@@ -13,10 +13,6 @@ wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
 
-# Start webrepl to allow connecting and uploading scripts over network
-# Do not put code before this, if it hangs will not be able to connect
-webrepl.start()
-
 # Turn onboard LED on
 led = Pin(2, Pin.OUT, value=1)
 
@@ -27,11 +23,18 @@ ntptime.settime()
 # Turn off LED to confirm time was set
 led.value(0)
 
+# Disconnect from wifi to reduce power usage
+wlan.disconnect()
+wlan.active(False)
+
 # PWM pin for LED strip
 pwm = PWM(Pin(4), duty=0)
 
 # PIR data pin connected to D15
 pir = Pin(15, Pin.IN)
+
+# Interrupt button reconnects to wifi (for debug/uploading new code)
+button = Pin(16, Pin.IN)
 
 # Used to set pwm duty cycle
 bright = 0
@@ -41,7 +44,17 @@ timer = Timer(0)
 
 # Stops the loop from running when True, hware timer resets after 5 min
 hold = False
+# Set to True by motion sensor interrupt
 motion = False
+# Set to True by interrupt button
+wifi = False
+
+# Breaks main loop, reconnects to wifi, starts webrepl (for debug/uploading new code)
+def buttonInterrupt(pin):
+    global wifi
+    wifi = True
+
+
 
 def resetTimer(timer):
     # Hold is set to True after lights fade on, prevents main loop from running
@@ -90,17 +103,31 @@ def fade(state):
 
 # Create interrupt, call handler function when motion detected
 pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
+# Call function when button pressed, used for uploading new code
+button.irq(trigger=Pin.IRQ_RISING, handler=buttonInterrupt)
 
 
 
 while True:
-    if not hold:
-        if motion:
-            now = time.localtime() # Create tuple, param 3 = hour
-            if now[3] in range(2, 13): # From 7 pm to 6:59 am lights ON
-                fade("on")
+    # wifi = False unless user presses interrupt button
+    if not wifi:
+        if not hold:
+            if motion:
+                now = time.localtime() # Create tuple, param 3 = hour
+                if now[3] in range(2, 13): # From 7 pm to 6:59 am lights ON
+                    fade("on")
+                else:
+                    motion = False
             else:
-                motion = False
-        else:
-            fade("off")
-        time.sleep_ms(20)
+                fade("off")
+            time.sleep_ms(20)
+    # If user pressed button, reconnect to wifi, start webrepl, break loop
+    else:
+        print("button pressed")
+        wlan.active(True)
+        wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
+        webrepl.start()
+        # LED indicates upload mode, stays on until unit reset
+        led.value(1)
+        # Break loop to allow webrepl connections
+        break
