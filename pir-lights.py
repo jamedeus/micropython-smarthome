@@ -8,25 +8,6 @@ import time
 import ntptime
 from machine import Pin, PWM, Timer
 
-# Connect to wifi
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
-
-# Turn onboard LED on
-led = Pin(2, Pin.OUT, value=1)
-
-# Get current time from internet - delay prevents hanging
-time.sleep(2)
-ntptime.settime()
-
-# Turn off LED to confirm time was set
-led.value(0)
-
-# Disconnect from wifi to reduce power usage
-wlan.disconnect()
-wlan.active(False)
-
 # PWM pin for LED strip
 pwm = PWM(Pin(4), duty=0)
 
@@ -48,6 +29,31 @@ hold = False
 motion = False
 # Set to True by interrupt button
 wifi = False
+
+
+
+def startup():
+    # Turn onboard LED on, indicates setup in progress
+    led = Pin(2, Pin.OUT, value=1)
+
+    # Connect to wifi
+    global wlan
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
+
+    # Get current time from internet - delay prevents hanging
+    time.sleep(2)
+    ntptime.settime()
+
+    # Disconnect from wifi to reduce power usage
+    wlan.disconnect()
+    wlan.active(False)
+
+    # Turn off LED to confirm setup completed successfully
+    led.value(0)
+
+
 
 # Breaks main loop, reconnects to wifi, starts webrepl (for debug/uploading new code)
 def buttonInterrupt(pin):
@@ -82,7 +88,6 @@ def motion_detected(pin):
 def fade(state):
     global bright
     if state == "on":
-        print(bright)
         while bright < 32:
             bright = bright + 1
             pwm.duty(bright)
@@ -93,7 +98,6 @@ def fade(state):
         hold = True
 
     elif state == "off":
-        print(bright)
         while bright > 0:
             bright = bright - 1
             pwm.duty(bright)
@@ -107,6 +111,8 @@ pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
 button.irq(trigger=Pin.IRQ_RISING, handler=buttonInterrupt)
 
 
+
+startup()
 
 while True:
     # wifi = False unless user presses interrupt button
@@ -123,11 +129,12 @@ while True:
             time.sleep_ms(20)
     # If user pressed button, reconnect to wifi, start webrepl, break loop
     else:
-        print("button pressed")
+        print("Entering maintenance mode")
+        global wlan
         wlan.active(True)
         wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
         webrepl.start()
-        # LED indicates upload mode, stays on until unit reset
-        led.value(1)
+        # LED indicates maintenance mode, stays on until unit reset
+        led = Pin(2, Pin.OUT, value=1)
         # Break loop to allow webrepl connections
         break
