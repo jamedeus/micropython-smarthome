@@ -23,6 +23,8 @@ bright = 0
 
 # Hardware timer used to keep lights on for 5 min
 timer = Timer(0)
+# Hardware timer used to call API for sunrise/sunset time
+api_timer = Timer(1)
 
 # Stops the loop from running when True, hware timer resets after 5 min
 hold = False
@@ -33,7 +35,8 @@ wifi = False
 
 
 
-def startup():
+# Parameter isn't actually used, just has to accept one so it can be called by timer (passes itself as arg)
+def startup(arg="unused"):
     # Turn onboard LED on, indicates setup in progress
     led = Pin(2, Pin.OUT, value=1)
 
@@ -46,8 +49,6 @@ def startup():
     # Get current time from internet - delay prevents hanging
     time.sleep(2)
     ntptime.settime()
-
-    # TODO: Hit sunrise/sunset api every week/day, otherwise will require reboots
 
     # Get sunrise/sunset time from API, returns class object
     response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
@@ -76,6 +77,9 @@ def startup():
     # Disconnect from wifi to reduce power usage
     wlan.disconnect()
     wlan.active(False)
+
+    # Re-run startup every 5 days to get up-to-date sunrise/sunset times
+    api_timer.init(period=432000000, mode=Timer.ONE_SHOT, callback=startup)
 
     # Turn off LED to confirm setup completed successfully
     led.value(0)
