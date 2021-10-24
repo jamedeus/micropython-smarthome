@@ -7,6 +7,7 @@ import network
 import time
 import ntptime
 from machine import Pin, PWM, Timer
+import urequests
 
 # PWM pin for LED strip
 pwm = PWM(Pin(4), duty=0)
@@ -46,12 +47,60 @@ def startup():
     time.sleep(2)
     ntptime.settime()
 
+    # TODO: Hit sunrise/sunset api every week/day, otherwise will require reboots
+
+    # Get sunrise/sunset time from API, returns class object
+    response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
+    # Convert to dictionairy - first index is response code, second index contains all location data
+    response = response.json()
+    # Select the second index and load it as another dict that can be parsed further
+    response = response['results']
+    # Parse desired params
+    global sunrise
+    global sunset
+    sunrise = response['sunrise']
+    sunset = response['sunset']
+
+    # Convert to 24h format
+    sunrise = convertTime(sunrise)
+    sunset = convertTime(sunset)
+
+    # Truncate minutes
+    sunrise = sunrise.split(":")[0]
+    sunset = sunset.split(":")[0]
+
+    # Move sunrise 1 hour later, sunset 1 hour earlier (fix issues from truncated minutes)
+    sunrise = int(sunrise) + 1
+    sunset = int(sunset) - 1
+
     # Disconnect from wifi to reduce power usage
     wlan.disconnect()
     wlan.active(False)
 
     # Turn off LED to confirm setup completed successfully
     led.value(0)
+
+
+
+# Convert times to 24h format, also truncate seconds
+def convertTime(t):
+    if t[-2:] == "AM":
+        if t[:2] == "12":
+            time = str("00" + t[2:5]) ## Change 12:xx to 00:xx
+        else:
+            time = t[:-6] ## No changes just truncate seconds + AM
+    elif t[-2:] == "PM":
+        if t[:2] == "12":
+            time = t[:-6] ## No changes just truncate seconds + AM
+        else:
+            # API hour does not have leading 0, so first 2 char may contain : (throws error when cast to int). This approach works with or without leading 0.
+            try:
+                time = str(int(t[:2]) + 12) + t[2:5] # Works if hour is double digit
+            except ValueError:
+                time = str(int(t[:1]) + 12) + t[1:4] # Works if hour is single-digit
+    else:
+        print("Fatal error: time format incorrect")
+    return time
 
 
 
@@ -120,10 +169,19 @@ while True:
         if not hold:
             if motion:
                 now = time.localtime() # Create tuple, param 3 = hour
-                if now[3] in range(2, 13): # From 7 pm to 6:59 am lights ON
-                    fade("on")
+                # Change timezone function in library is broken so stuck on GMT time
+                # In Spring/Summer/Fall sunset is 12-4 am GMT, so the else conditional is used
+                # In Winter sunset rolls over to 10-11 pm GMT, requiring 2 conditionals
+                if sunset > sunrise:
+                    if 0 <= now[3] <= sunrise or sunset <= now[3] <= 23: # If after sunset + before sunrise
+                        fade("on")
+                    else:
+                        motion = False
                 else:
-                    motion = False
+                    if sunset <= now[3] <= sunrise: # If after sunset + before sunrise
+                        fade("on")
+                    else:
+                        motion = False
             else:
                 fade("off")
             time.sleep_ms(20)
