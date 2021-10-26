@@ -147,11 +147,18 @@ def send(ip, bright, dev, state=1):
         sock_tcp.settimeout(10)
         sock_tcp.connect((ip, 9999))
         sock_tcp.settimeout(None)
+
+        # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
+        if dev == "dimmer":
+            sock_tcp.send(encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')) # Set on/off state before brightness
+            data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
+
+        # Set brightness
         sock_tcp.send(encrypt(cmd))
         data = sock_tcp.recv(2048)
         sock_tcp.close()
 
-        decrypted = decrypt(data[4:])
+        decrypted = decrypt(data[4:]) # Remove in final version (or put in debug conditional)
 
         print("Sent:     ", cmd)
         print("Received: ", decrypted)
@@ -256,7 +263,7 @@ while True:
                 action()
             else:
                 if lights:
-                    send("192.168.1.206", 1, "dimmer")
+                    send("192.168.1.206", 1, "dimmer", 0)
                     send("192.168.1.225", 1, "bulb", 0)
                     lights = False
             time.sleep_ms(20)
