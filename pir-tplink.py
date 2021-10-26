@@ -160,6 +160,52 @@ def send(ip, bright, dev, state=1):
         quit(f"Could not connect to host {ip}:{port}")
 
 
+
+# Determine what action is appropriate based on time
+def action():
+    global lights
+    global hold
+
+    now = time.localtime() # Create tuple, param 3 = hour
+
+    # Get hour in correct timezone
+    hour = now[3] - 7
+    if hour < 0:
+        hour = hour + 24
+
+    # TODO: Write class for schedule rules, import from file on esp32 at boot
+    # Eventually will probably query rules on boot from RPI or something
+    if 6 <= hour < 22: # From 6 am to 9:59 pm
+        if not lights:
+            print("Daytime lights ON")
+            send("192.168.1.206", 100, "dimmer")
+            send("192.168.1.225", 100, "bulb")
+            lights = True
+            hold = True
+    elif hour == 22: # From 10 pm to 10:59 pm
+        if not lights:
+            print("10pm lights ON")
+            send("192.168.1.206", 70, "dimmer")
+            send("192.168.1.225", 50, "bulb")
+            lights = True
+            hold = True
+    elif hour == 23: # From 11 pm to 11:59 pm
+        if not lights:
+            print("11pm lights ON")
+            send("192.168.1.206", 45, "dimmer")
+            send("192.168.1.225", 18, "bulb")
+            lights = True
+            hold = True
+    elif 0 <= hour < 6: # From midnight to 5:59 am
+        if not lights:
+            print("Nighttime lights ON")
+            send("192.168.1.206", 28, "dimmer")
+            send("192.168.1.225", 1, "bulb")
+            lights = True
+            hold = True
+
+
+
 # Breaks main loop, reconnects to wifi, starts webrepl (for debug/uploading new code)
 def buttonInterrupt(pin):
     global wifi
@@ -207,36 +253,7 @@ while True:
         if not hold:
             if motion:
                 print("motion detected")
-                now = time.localtime() # Create tuple, param 3 = hour
-                # Change timezone function in library is broken so stuck on GMT time
-                # In Spring/Summer/Fall sunset is 12-4 am GMT, so the else conditional is used
-                # In Winter sunset rolls over to 10-11 pm GMT, requiring 2 conditionals
-                if sunset > sunrise:
-                    if 0 <= now[3] <= sunrise or sunset <= now[3] <= 23: # If after sunset + before sunrise
-                        if not lights:
-                            send("192.168.1.206", 28, "dimmer")
-                            send("192.168.1.225", 1, "bulb")
-                            lights = True
-                            hold = True
-                    else:
-                        if not lights:
-                            send("192.168.1.206", 100, "dimmer")
-                            send("192.168.1.225", 100, "bulb")
-                            lights = True
-                            hold = True
-                else:
-                    if sunset <= now[3] <= sunrise: # If after sunset + before sunrise
-                        if not lights:
-                            send("192.168.1.206", 28, "dimmer")
-                            send("192.168.1.225", 1, "bulb")
-                            lights = True
-                            hold = True
-                    else:
-                        if not lights:
-                            send("192.168.1.206", 100, "dimmer")
-                            send("192.168.1.225", 100, "bulb")
-                            lights = True
-                            hold = True
+                action()
             else:
                 if lights:
                     send("192.168.1.206", 1, "dimmer")
