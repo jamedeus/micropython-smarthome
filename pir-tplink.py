@@ -271,3 +271,19 @@ while True:
         led = Pin(2, Pin.OUT, value=1)
         # Break loop to allow webrepl connections
         break
+
+
+
+# Automatically reboot when file on disk has changed (webrepl upload complete)
+# Only runs if maintenance mode button was pressed
+import machine
+import os
+old = os.stat("boot.py")
+while True:
+    new = os.stat("boot.py")
+    if new == old:
+        time.sleep(1)
+    else:
+        print("Upload complete, rebooting...")
+        time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+        machine.reset()
