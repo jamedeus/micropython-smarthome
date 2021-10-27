@@ -11,11 +11,16 @@ import webrepl
 import network
 import time
 from machine import Pin, PWM
+import ntptime
 
 # Connect to wifi
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
+
+# Get current time from internet - delay prevents hanging
+time.sleep(2)
+ntptime.settime()
 
 # Start webrepl to allow connecting and uploading scripts over network
 # Do not put code before this, if it hangs will not be able to connect
@@ -40,12 +45,61 @@ pir = Pin(15, Pin.IN)
 # Create interrupt, call handler function when motion detected
 pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
 
+# If True, onboard LED and PWM light will blink when motion detected
+# Disabled by default because the delay sometimes prevents a few log messages
+blink = False
+
+# If True, output timestamps when motion detected to log file
+# Useful for extended testing (cannot scrollback in screen/webrepl)
+log = True
+
+# Makes it easier to manually open log from screen/webrepl
+def view_log():
+    log = open('log.txt', 'r').read()
+    print()
+    print(log)
+
+    choice = input("Enter \"delete\" to clear the log: ")
+    if choice == "delete":
+        import os
+        os.remove('log.txt')
+        print("Log deleted")
+    else:
+        print("Log kept")
+
+
+
 while True:
     if motion:
-        print("Motion detected")
-        led.value(1)
-        pwm.duty(1023)
-        time.sleep(20)
-        led.value(0)
-        pwm.duty(0)
+        # Get time tuple
+        now = time.localtime()
+
+        # Create string, timestamp added in loop
+        log = "Motion detected at "
+
+        # Since tuple contains int not str, single digit hour/min/sec lack leading 0s
+        # For readability, check length of each and add leading 0 if single-digit
+        for i in range(3,6):
+            if len(str(now[i])) == 1:
+                log = log + "0" + str(now[i]) + ":"
+            else:
+                log = log + str(now[i]) + ":"
+        else:
+            log = log[0:-1] # Remove trailing : added by loop
+
+        # Print to console for real-time monitoring
+        print(log)
+
+        if log:
+            file = open('log.txt', 'a')
+            file.write(log + "\n") # Append to log with newline after
+            file.close() # Unlike CPython, nothing is written until file closed
+
+        if blink:
+            led.value(1)
+            pwm.duty(1023)
+            time.sleep_ms(25)
+            led.value(0)
+            pwm.duty(0)
+
         motion = False
