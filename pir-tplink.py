@@ -172,13 +172,7 @@ def send(ip, bright, dev, state=1):
 def action():
     global lights
     global hold
-
-    now = time.localtime() # Create tuple, param 3 = hour
-
-    # Get hour in correct timezone
-    hour = now[3] - 7
-    if hour < 0:
-        hour = hour + 24
+    global hour
 
     # TODO: Write class for schedule rules, import from file on esp32 at boot
     # Eventually will probably query rules on boot from RPI or something
@@ -237,9 +231,23 @@ def motion_detected(pin):
     global motion
     motion = True
 
+    now = time.localtime() # Create tuple, param 3 = hour
+
+    global hour
+
+    # Get hour in correct timezone
+    hour = now[3] - 7
+    if hour < 0:
+        hour = hour + 24
+
+    if 0 <= hour <= 5:
+        delay = 300000 # 5 minutes
+    else:
+        delay = 1500000 # 15 minutes
+
     # Start 5 minute timer, calls function that allows loop to run again
     # If motion is detected again this will be reset
-    timer.init(period=300000, mode=Timer.ONE_SHOT, callback=resetTimer)
+    timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
 
 
 
