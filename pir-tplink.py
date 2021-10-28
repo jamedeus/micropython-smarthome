@@ -271,11 +271,11 @@ while True:
     if not wifi:
         if not hold:
             if motion:
-                if not lights: # Only turn on if currently off
+                if lights is not True: # Only turn on if currently off
                     print("motion detected")
                     action()
             else:
-                if lights: # Only turn off if currently on
+                if lights is not False: # Only turn off if currently on
                     send("192.168.1.206", 1, "dimmer", 0)
                     send("192.168.1.225", 1, "bulb", 0)
             time.sleep_ms(20)
