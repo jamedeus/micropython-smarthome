@@ -44,14 +44,16 @@ def startup(arg="unused"):
     wlan.active(True)
     wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
 
-    # Get current time from internet - delay prevents hanging
-    time.sleep(2)
-    try:
-        ntptime.settime()
-    except OSError: # Happens sometimes if request times out
-        print("FATAL: Timed out getting ntp time, rebooting...\n")
-        import machine
-        machine.reset() # Reboot esp to try again
+    # Get current time from internet, retry if request times out
+    while True:
+        try:
+            time.sleep(2) # Without delay it always times out a couple times
+            ntptime.settime()
+        except OSError: # Timeout error
+            print("\nTimed out getting ntp time, retrying...\n")
+            continue # Restart loop to try again
+        else: # Runs when no exception encountered
+            break # End loop once time set successfully
 
     # Get sunrise/sunset time from API, returns class object
     response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
