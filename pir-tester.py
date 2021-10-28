@@ -20,7 +20,12 @@ wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
 
 # Get current time from internet - delay prevents hanging
 time.sleep(2)
-ntptime.settime()
+try:
+    ntptime.settime()
+except OSError: # Happens sometimes if request times out
+    print("Timed out getting ntp time, rebooting...\n")
+    import machine
+    machine.reset() # Reboot esp to try again
 
 # Start webrepl to allow connecting and uploading scripts over network
 # Do not put code before this, if it hangs will not be able to connect

@@ -48,7 +48,12 @@ def startup(arg="unused"):
 
     # Get current time from internet - delay prevents hanging
     time.sleep(2)
-    ntptime.settime()
+    try:
+        ntptime.settime()
+    except OSError: # Happens sometimes if request times out
+        print("FATAL: Timed out getting ntp time, rebooting...\n")
+        import machine
+        machine.reset() # Reboot esp to try again
 
     # Get sunrise/sunset time from API, returns class object
     response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
