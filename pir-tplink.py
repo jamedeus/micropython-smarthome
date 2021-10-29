@@ -10,6 +10,7 @@ from machine import Pin, Timer
 import urequests
 import socket
 from struct import pack
+import json
 
 
 
@@ -32,6 +33,10 @@ motion = False
 wifi = False
 # Remember state of lights to prevent spamming api calls
 lights = None
+
+# Load config file
+with open('config.json', 'r') as file:
+    config = json.load(file)
 
 # Parameter isn't actually used, just has to accept one so it can be called by timer (passes itself as arg)
 def startup(arg="unused"):
@@ -186,28 +191,35 @@ def send(ip, bright, dev, state=1):
 
 
 
-# Determine what action is appropriate based on time
+# For each configured device, iterate schedule rules and decide which to apply based on current time
 def action():
     global hour
+    global config
 
-    # TODO: Write class for schedule rules, import from file on esp32 at boot
-    # Eventually will probably query rules on boot from RPI or something
-    if 6 <= hour < 22: # From 6 am to 9:59 pm
-        print("Daytime lights ON")
-        send("192.168.1.206", 100, "dimmer")
-        send("192.168.1.225", 100, "bulb")
-    elif hour == 22: # From 10 pm to 10:59 pm
-        print("10pm lights ON")
-        send("192.168.1.206", 70, "dimmer")
-        send("192.168.1.225", 50, "bulb")
-    elif hour == 23: # From 11 pm to 11:59 pm
-        print("11pm lights ON")
-        send("192.168.1.206", 45, "dimmer")
-        send("192.168.1.225", 18, "bulb")
-    elif 0 <= hour < 6: # From midnight to 5:59 am
-        print("Nighttime lights ON")
-        send("192.168.1.206", 28, "dimmer")
-        send("192.168.1.225", 1, "bulb")
+    for device in config:
+        # Get rule start times, sort by time
+        schedule = list(config[device]["schedule"])
+        schedule.sort()
+
+        for rule in range(0, len(schedule)):
+            # The rules are sorted chronologically, so each rule ends when the next indexed rule begins
+
+            startHour = int(schedule[rule][0:2]) # Cut hour only, cast as int
+
+            if rule is not len(schedule) - 1: # If current rule isn't the last rule, then endHour = next rule
+                endHour = int(schedule[rule+1][0:2])
+            else:
+                endHour = int(schedule[0][0:2]) # If current rule IS last rule, then endHour = first rule
+
+            # Check if current hour is between startHour and endHour
+            if endHour > startHour:
+                if startHour <= hour < endHour: # Correct rule found, pass ip, brightness, and type to send function
+                    send(config[device]["ip"], config[device]["schedule"][schedule[rule]], config[device]["type"])
+                    break # Break loop once match found
+            else:
+                if startHour <= hour <= 23 or 0 <= hour < endHour: # Correct rule found, pass ip, brightness, and type to send function
+                    send(config[device]["ip"], config[device]["schedule"][schedule[rule]], config[device]["type"])
+                    break # Break loop once match found
 
 
 
