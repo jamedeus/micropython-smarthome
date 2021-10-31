@@ -191,43 +191,62 @@ def send(ip, bright, dev, state=1):
 
 
 
+# Receive sub-dictionairy containing schedule rules, compare each against current time, return correct rule
+def rule_parser(entry):
+    global config
+
+    # Get hour in correct timezone
+    hour = time.localtime()[3] - 7
+    if hour < 0:
+        hour = hour + 24
+
+    # Get rule start times, sort by time
+    schedule = list(config[entry]["schedule"])
+    schedule.sort()
+
+    for rule in range(0, len(schedule)):
+        # The rules are sorted chronologically, so each rule ends when the next indexed rule begins
+
+        startHour = int(schedule[rule][0:2]) # Cut hour, cast as int
+        startMin = int(schedule[rule][3:5]) # Cut minute, cast as int
+
+        if rule is not len(schedule) - 1: # If current rule isn't the last rule, then endHour = next rule
+            endHour = int(schedule[rule+1][0:2])
+            endMin = int(schedule[rule+1][3:5])
+        else:
+            endHour = int(schedule[0][0:2]) # If current rule IS last rule, then endHour = first rule
+            endMin = int(schedule[0][3:5])
+
+        # Check if current hour is between startHour and endHour
+        if endHour > startHour:
+            if startHour <= hour < endHour: # Can ignore minutes if next rule is in a different hour
+                return schedule[rule] # Return correct rule to the calling function
+                break # Break loop
+        elif startHour == hour == endHour:
+            minute = time.localtime()[4] # Get current minutes
+            if startMin <= minute < endMin: # Need to check minutes when start/end hours are same
+                return schedule[rule] # Return correct rule to the calling function
+                break # Break loop
+        else:
+            if startHour <= hour <= 23 or 0 <= hour < endHour: # Can ignore minutes, but need different conditional for hours when end < start
+                return schedule[rule] # Return correct rule to the calling function
+                break # Break loop
+
+
+
 # For each configured device, iterate schedule rules and decide which to apply based on current time
 def action():
-    global hour
     global config
 
     for device in config:
-        # Get rule start times, sort by time
-        schedule = list(config[device]["schedule"])
-        schedule.sort()
+        # Dictionairy contains other entries, skip if name isn't "device<no>"
+        if not device.startswith("device"): continue
 
-        for rule in range(0, len(schedule)):
-            # The rules are sorted chronologically, so each rule ends when the next indexed rule begins
+        # Call function that iterates rules, returns the correct rule for the current time
+        rule = rule_parser(device)
 
-            startHour = int(schedule[rule][0:2]) # Cut hour, cast as int
-            startMin = int(schedule[rule][3:5]) # Cut minute, cast as int
-
-            if rule is not len(schedule) - 1: # If current rule isn't the last rule, then endHour = next rule
-                endHour = int(schedule[rule+1][0:2])
-                endMin = int(schedule[rule+1][3:5])
-            else:
-                endHour = int(schedule[0][0:2]) # If current rule IS last rule, then endHour = first rule
-                endMin = int(schedule[0][3:5])
-
-            # Check if current hour is between startHour and endHour
-            if endHour > startHour:
-                if startHour <= hour < endHour: # Can ignore minutes if next rule is in a different hour
-                    send(config[device]["ip"], config[device]["schedule"][schedule[rule]], config[device]["type"])
-                    break # Break loop once match found
-            elif startHour == hour == endHour:
-                minute = time.localtime()[4] # Get current minutes
-                if startMin <= minute < endMin: # Need to check minutes when start/end hours are same
-                    send(config[device]["ip"], config[device]["schedule"][schedule[rule]], config[device]["type"])
-                    break # Break loop once match found
-            else:
-                if startHour <= hour <= 23 or 0 <= hour < endHour: # Can ignore minutes, but need different conditional for hours when end < start
-                    send(config[device]["ip"], config[device]["schedule"][schedule[rule]], config[device]["type"])
-                    break # Break loop once match found
+        # Send parameters for the current device + rule to send function
+        send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
 
 
 
@@ -255,22 +274,12 @@ def motion_detected(pin):
     global motion
     motion = True
 
-    now = time.localtime() # Create tuple, param 3 = hour
+    # Get correct delay period based on current time
+    delay = config["delay"]["schedule"][rule_parser("delay")]
+    # Convert to ms
+    delay = int(delay) * 60000
 
-    global hour
-
-    # Get hour in correct timezone
-    hour = now[3] - 7
-    if hour < 0:
-        hour = hour + 24
-
-    if 0 <= hour <= 5:
-        delay = 300000 # 5 minutes
-    else:
-        delay = 1500000 # 15 minutes
-
-    # Start 5 minute timer, calls function that allows loop to run again
-    # If motion is detected again this will be reset
+    # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
     timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
 
 
@@ -296,8 +305,9 @@ while True:
                     action()
             else:
                 if lights is not False: # Only turn off if currently on
-                    for device in config: #
-                        send(config[device]["ip"], config[device]["min"], config[device]["type"], 0)
+                    for device in config:
+                        if not device.startswith("device"): continue # If entry is not a device, skip
+                        send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
             time.sleep_ms(20)
     # If user pressed button, reconnect to wifi, start webrepl, break loop
     else:
