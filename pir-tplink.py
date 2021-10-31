@@ -204,20 +204,28 @@ def action():
         for rule in range(0, len(schedule)):
             # The rules are sorted chronologically, so each rule ends when the next indexed rule begins
 
-            startHour = int(schedule[rule][0:2]) # Cut hour only, cast as int
+            startHour = int(schedule[rule][0:2]) # Cut hour, cast as int
+            startMin = int(schedule[rule][3:5]) # Cut minute, cast as int
 
             if rule is not len(schedule) - 1: # If current rule isn't the last rule, then endHour = next rule
                 endHour = int(schedule[rule+1][0:2])
+                endMin = int(schedule[rule+1][3:5])
             else:
                 endHour = int(schedule[0][0:2]) # If current rule IS last rule, then endHour = first rule
+                endMin = int(schedule[0][3:5])
 
             # Check if current hour is between startHour and endHour
             if endHour > startHour:
-                if startHour <= hour < endHour: # Correct rule found, pass ip, brightness, and type to send function
+                if startHour <= hour < endHour: # Can ignore minutes if next rule is in a different hour
+                    send(config[device]["ip"], config[device]["schedule"][schedule[rule]], config[device]["type"])
+                    break # Break loop once match found
+            elif startHour == hour == endHour:
+                minute = time.localtime()[4] # Get current minutes
+                if startMin <= minute < endMin: # Need to check minutes when start/end hours are same
                     send(config[device]["ip"], config[device]["schedule"][schedule[rule]], config[device]["type"])
                     break # Break loop once match found
             else:
-                if startHour <= hour <= 23 or 0 <= hour < endHour: # Correct rule found, pass ip, brightness, and type to send function
+                if startHour <= hour <= 23 or 0 <= hour < endHour: # Can ignore minutes, but need different conditional for hours when end < start
                     send(config[device]["ip"], config[device]["schedule"][schedule[rule]], config[device]["type"])
                     break # Break loop once match found
 
