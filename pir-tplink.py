@@ -234,22 +234,6 @@ def rule_parser(entry):
 
 
 
-# For each configured device, iterate schedule rules and decide which to apply based on current time
-def action():
-    global config
-
-    for device in config:
-        # Dictionairy contains other entries, skip if name isn't "device<no>"
-        if not device.startswith("device"): continue
-
-        # Call function that iterates rules, returns the correct rule for the current time
-        rule = rule_parser(device)
-
-        # Send parameters for the current device + rule to send function
-        send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
-
-
-
 # Breaks main loop, reconnects to wifi, starts webrepl (for debug/uploading new code)
 def buttonInterrupt(pin):
     global wifi
@@ -298,17 +282,32 @@ motion = False
 while True:
     # wifi = False unless user presses interrupt button
     if not wifi:
-        if not hold:
+        if not hold: # Set to True when lights turn on, reset by timer interrupt. Prevents turning off prematurely.
+
             if motion:
                 if lights is not True: # Only turn on if currently off
                     print("motion detected")
-                    action()
+
+                    # For each device, get correct brightness from schedule rules, set brightness
+                    for device in config:
+                        # Dictionairy contains other entries, skip if name isn't "device<no>"
+                        if not device.startswith("device"): continue
+
+                        # Call function that iterates rules, returns the correct rule for the current time
+                        rule = rule_parser(device)
+
+                        # Send parameters for the current device + rule to send function
+                        send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
+
             else:
                 if lights is not False: # Only turn off if currently on
+
                     for device in config:
                         if not device.startswith("device"): continue # If entry is not a device, skip
                         send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
+
             time.sleep_ms(20)
+
     # If user pressed button, reconnect to wifi, start webrepl, break loop
     else:
         print("Entering maintenance mode")
