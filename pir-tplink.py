@@ -288,8 +288,8 @@ while True:
                     action()
             else:
                 if lights is not False: # Only turn off if currently on
-                    send("192.168.1.206", 1, "dimmer", 0)
-                    send("192.168.1.225", 1, "bulb", 0)
+                    for device in config: #
+                        send(config[device]["ip"], config[device]["min"], config[device]["type"], 0)
             time.sleep_ms(20)
     # If user pressed button, reconnect to wifi, start webrepl, break loop
     else:
