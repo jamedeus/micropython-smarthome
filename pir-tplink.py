@@ -45,9 +45,10 @@ def startup(arg="unused"):
 
     # Connect to wifi
     global wlan
+    global config
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
-    wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
+    wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
 
     # Get current time from internet, retry if request times out
     while True:
@@ -313,7 +314,7 @@ while True:
         print("Entering maintenance mode")
         global wlan
         wlan.active(True)
-        wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
+        wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
         webrepl.start()
         # LED indicates maintenance mode, stays on until unit reset
         led = Pin(2, Pin.OUT, value=1)
