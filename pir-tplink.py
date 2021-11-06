@@ -311,10 +311,13 @@ while True:
 
     # If user pressed button, reconnect to wifi, start webrepl, break loop
     else:
-        print("Entering maintenance mode")
+        print("\nEntering maintenance mode\n")
+        print("Device identifier: {0}".format(config["metadata"]["id"]))
+        print("Device location: {0}".format(config["metadata"]["location"]))
         global wlan
         wlan.active(True)
         wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+        print("Device IP: {0}\n".format(wlan.ifconfig()[0]))
         webrepl.start()
         # LED indicates maintenance mode, stays on until unit reset
         led = Pin(2, Pin.OUT, value=1)
