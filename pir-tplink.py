@@ -179,13 +179,17 @@ def convert_rules(device):
 
 
 def reset_rules_interrupt(timer):
+    print("Interrupt: Refreshing schedule rules...")
+
+    global config
+
     # Reload rules from disk (overwriting the old epoch timestamps from yesterday)
     with open('config.json', 'r') as file:
         config = json.load(file)
 
     # Generate timestamps for the next day
     for device in config:
-        if not device.startswith("device"): continue
+        if not device.startswith("device") and not device.startswith("delay"): continue
         convert_rules(device)
 
     # Get epoch time in current timezone
