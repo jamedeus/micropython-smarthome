@@ -33,6 +33,10 @@ motion = False
 # Set to True by interrupt button
 wifi = False
 
+# Load config file
+with open('config.json', 'r') as file:
+    config = json.load(file)
+
 
 
 # Parameter isn't actually used, just has to accept one so it can be called by timer (passes itself as arg)
@@ -42,9 +46,14 @@ def startup(arg="unused"):
 
     # Connect to wifi
     global wlan
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-    wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
+    global config
+    try:
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
+        wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+    except OSError: # Rare error, cannot be recovered, reboot
+        import machine
+        machine.reset()
 
     # Get current time from internet, retry if request times out
     while True:
@@ -139,9 +148,13 @@ def motion_detected(pin):
     global motion
     motion = True
 
-    # Start 5 minute timer, calls function that allows loop to run again
-    # If motion is detected again this will be reset
-    timer.init(period=300000, mode=Timer.ONE_SHOT, callback=resetTimer)
+    # Get correct delay period based on current time
+    delay = config["delay"]["schedule"][rule_parser("delay")]
+    # Convert to ms
+    delay = int(delay) * 60000
+
+    # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
+    timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
 
 
 
@@ -178,6 +191,7 @@ while True:
     # wifi = False unless user presses interrupt button
     if not wifi:
         if not hold:
+
             if motion:
                 now = time.localtime() # Create tuple, param 3 = hour
                 # Change timezone function in library is broken so stuck on GMT time
@@ -193,15 +207,18 @@ while True:
                         fade("on")
                     else:
                         motion = False
+
             else:
                 fade("off")
+
             time.sleep_ms(20)
+
     # If user pressed button, reconnect to wifi, start webrepl, break loop
     else:
         print("Entering maintenance mode")
         global wlan
         wlan.active(True)
-        wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
+        wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
         webrepl.start()
         # LED indicates maintenance mode, stays on until unit reset
         led = Pin(2, Pin.OUT, value=1)
