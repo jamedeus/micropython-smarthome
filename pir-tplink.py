@@ -24,6 +24,8 @@ button = Pin(16, Pin.IN)
 timer = Timer(0)
 # Hardware timer used to call API for sunrise/sunset time
 api_timer = Timer(1)
+# Timer reloads schedule rules every day at 3:00 am
+rule_timer = Timer(2)
 
 # Stops the loop from running when True, hware timer resets after 5 min
 hold = False
@@ -63,27 +65,52 @@ def startup(arg="unused"):
 
     # Get sunrise/sunset time from API, returns class object
     response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
-    # Convert to dictionairy - first index is response code, second index contains all location data
-    response = response.json()
-    # Select the second index and load it as another dict that can be parsed further
-    response = response['results']
-    # Parse desired params
+    # Parse out sunrise/sunset, convert to 24h format
     global sunrise
     global sunset
-    sunrise = response['sunrise']
-    sunset = response['sunset']
+    sunrise = convertTime(response.json()['results']['sunrise'])
+    sunset = convertTime(response.json()['results']['sunset'])
 
-    # Convert to 24h format
-    sunrise = convertTime(sunrise)
-    sunset = convertTime(sunset)
+    # Get offset for current timezone
+    response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
+    global offset
+    offset = response.json()["gmtOffset"]
 
-    # Truncate minutes
-    sunrise = sunrise.split(":")[0]
-    sunset = sunset.split(":")[0]
+    # Convert to correct timezone
+    sunrise = str(int(sunrise.split(":")[0]) + int(offset/3600)) + ":" + sunrise.split(":")[1]
+    sunset = str(int(sunset.split(":")[0]) + int(offset/3600)) + ":" + sunset.split(":")[1]
 
-    # Move sunrise 1 hour later, sunset 1 hour earlier (fix issues from truncated minutes)
-    sunrise = int(sunrise) + 1
-    sunset = int(sunset) - 1
+    # Correct sunrise hour if it is less than 0 or greater than 23
+    if int(sunrise.split(":")[0]) < 0:
+        sunrise = str(int(sunrise.split(":")[0]) + 24) + ":" + sunrise.split(":")[1]
+    elif int(sunrise.split(":")[0]) > 23:
+        sunrise = str(int(sunrise.split(":")[0]) - 24) + ":" + sunrise.split(":")[1]
+
+    # Correct sunset hour if it is less than 0 or greater than 23
+    if int(sunset.split(":")[0]) < 0:
+        sunset = str(int(sunset.split(":")[0]) + 24) + ":" + sunset.split(":")[1]
+    elif int(sunset.split(":")[0]) > 23:
+        sunset = str(int(sunset.split(":")[0]) - 24) + ":" + sunset.split(":")[1]
+
+    # Convert timestamps for each schedule rule into the literal epoch time when it runs
+    for device in config:
+        # Dictionairy contains other entries, skip if name isn't "device<no>"
+        if not device.startswith("device") and not device.startswith("delay"): continue
+        convert_rules(device)
+
+    # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
+    epoch = time.mktime(time.localtime()) + offset
+    now = time.localtime(epoch)
+    if now[3] < 3:
+        next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], 311))
+    else:
+        weekday = now[6] + 1
+        if weekday == 7: weekday = 0
+        next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, 311))
+
+    # Set interrupt to run at 3:00 am
+    next_reset = (next_reset - epoch) * 1000
+    rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reset_rules_interrupt)
 
     # Disconnect from wifi to reduce power usage
     #wlan.disconnect()
@@ -117,6 +144,67 @@ def convertTime(t):
     else:
         print("Fatal error: time format incorrect")
     return time
+
+
+
+# Convert literal timestamps in rules into actual unix timestamps when rule will run next
+# Needs to be called every 24 hours as rules will only work 1 time after being converted
+def convert_rules(device):
+    # Check for sunrise rule, replace "sunrise" with actual sunrise time
+    if "sunrise" in config[device]["schedule"]:
+        config[device]["schedule"][sunrise] = config[device]["schedule"]["sunrise"]
+        del config[device]["schedule"]["sunrise"]
+    # Same for sunset
+    if "sunset" in config[device]["schedule"]:
+        config[device]["schedule"][sunset] = config[device]["schedule"]["sunset"]
+        del config[device]["schedule"]["sunset"]
+
+    # Get rule start times
+    schedule = list(config[device]["schedule"])
+
+    # Get epoch time in current timezone
+    global offset
+    epoch = time.mktime(time.localtime()) + offset
+    # Get time tuple in current timezone
+    now = time.localtime(epoch)
+
+    for rule in schedule:
+        # Returns epoch time of rule, uses all current parameters but substitutes hour + min from schedule and 0 for seconds
+        trigger_time = time.mktime((now[0], now[1], now[2], int(rule.split(":")[0]), int(rule.split(":")[1]), 0, now[6], now[7]))
+
+        # In ORIGINAL config dict, replace the rule timestamp with epoch time of the next run
+        config[device]["schedule"][trigger_time] = config[device]["schedule"][rule]
+        del config[device]["schedule"][rule]
+
+
+
+def reset_rules_interrupt(timer):
+    # Reload rules from disk (overwriting the old epoch timestamps from yesterday)
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+
+    # Generate timestamps for the next day
+    for device in config:
+        if not device.startswith("device"): continue
+        convert_rules(device)
+
+    # Get epoch time in current timezone
+    global offset
+    epoch = time.mktime(time.localtime()) + offset
+    # Get time tuple in current timezone
+    now = time.localtime(epoch)
+
+    # Get epoch time of next 3:00 am
+    if now[3] < 3:
+        next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
+    else:
+        weekday = now[6] + 1
+        if weekday == 7: weekday = 0
+        next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
+
+    # Set interrupt to run at 3:00 am
+    next_reset = (next_reset - epoch) * 1000
+    rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reset_rules_interrupt)
 
 
 
@@ -193,45 +281,37 @@ def send(ip, bright, dev, state=1):
 
 
 # Receive sub-dictionairy containing schedule rules, compare each against current time, return correct rule
-def rule_parser(entry):
+def rule_parser(device):
     global config
 
-    # Get hour in correct timezone
-    hour = time.localtime()[3] - 7
-    if hour < 0:
-        hour = hour + 24
-
-    # Get rule start times, sort by time
-    schedule = list(config[entry]["schedule"])
+    # Get list of rule trigger times, sort chronologically
+    schedule = list(config[device]["schedule"])
     schedule.sort()
 
+    # Get epoch time in current timezone
+    global offset
+    epoch = time.mktime(time.localtime()) + offset
+
     for rule in range(0, len(schedule)):
-        # The rules are sorted chronologically, so each rule ends when the next indexed rule begins
+        if rule is not len(schedule) - 1: # If current rule isn't the last rule, then end = next rule
+            end = schedule[rule+1]
+        else: # If current rule IS last rule, then end = 3am (when rules are refreshed)
+            now = time.localtime(epoch)
+            if now[3] < 3:
+                end = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
+            else:
+                weekday = now[6] + 1
+                if weekday == 7: weekday = 0
+                end = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
 
-        startHour = int(schedule[rule][0:2]) # Cut hour, cast as int
-        startMin = int(schedule[rule][3:5]) # Cut minute, cast as int
+        # Check if actual epoch time is between current rule and next rule
+        if schedule[rule] <= epoch < end:
+            return schedule[rule]
+            break
 
-        if rule is not len(schedule) - 1: # If current rule isn't the last rule, then endHour = next rule
-            endHour = int(schedule[rule+1][0:2])
-            endMin = int(schedule[rule+1][3:5])
-        else:
-            endHour = int(schedule[0][0:2]) # If current rule IS last rule, then endHour = first rule
-            endMin = int(schedule[0][3:5])
-
-        # Check if current hour is between startHour and endHour
-        if endHour > startHour:
-            if startHour <= hour < endHour: # Can ignore minutes if next rule is in a different hour
-                return schedule[rule] # Return correct rule to the calling function
-                break # Break loop
-        elif startHour == hour == endHour:
-            minute = time.localtime()[4] # Get current minutes
-            if startMin <= minute < endMin: # Need to check minutes when start/end hours are same
-                return schedule[rule] # Return correct rule to the calling function
-                break # Break loop
-        else:
-            if startHour <= hour <= 23 or 0 <= hour < endHour: # Can ignore minutes, but need different conditional for hours when end < start
-                return schedule[rule] # Return correct rule to the calling function
-                break # Break loop
+    else:
+        print("no match found")
+        print()
 
 
 
@@ -269,14 +349,12 @@ def motion_detected(pin):
 
 
 
+startup()
+
 # Create interrupt, call handler function when motion detected
 pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
 # Call function when button pressed, used for uploading new code
 button.irq(trigger=Pin.IRQ_RISING, handler=buttonInterrupt)
-
-
-
-startup()
 
 motion = False
 
