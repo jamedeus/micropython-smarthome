@@ -312,6 +312,10 @@ def rule_parser(device):
         if schedule[rule] <= epoch < end:
             return schedule[rule]
             break
+        else:
+            # If rule has already expired, delete it so it doesn't have to be checked again
+            # Will be re-added tomorrow when rules refresh
+            del config[device]["schedule"][schedule[rule]]
 
     else:
         print("no match found")
