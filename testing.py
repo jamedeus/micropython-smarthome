@@ -37,6 +37,6 @@ def compare(old, new):
 
 
 def reload_config():
-    global config
     with open('config.json', 'r') as file:
         config = json.load(file)
+    return config
