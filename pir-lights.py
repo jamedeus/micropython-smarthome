@@ -8,9 +8,11 @@ import time
 import ntptime
 from machine import Pin, PWM, Timer
 import urequests
+import json
 
 # PWM pin for LED strip
 pwm = PWM(Pin(4), duty=0)
+pwm.duty(0) # Firmware bug workaround (in above line, duty=0 is ignored ~10% of the time)
 
 # PIR data pin connected to D15
 pir = Pin(15, Pin.IN)
@@ -121,6 +123,49 @@ def convertTime(t):
     else:
         print("Fatal error: time format incorrect")
     return time
+
+
+
+# Receive sub-dictionairy containing schedule rules, compare each against current time, return correct rule
+def rule_parser(entry):
+    global config
+
+    # Get hour in correct timezone
+    hour = time.localtime()[3] - 7
+    if hour < 0:
+        hour = hour + 24
+
+    # Get rule start times, sort by time
+    schedule = list(config[entry]["schedule"])
+    schedule.sort()
+
+    for rule in range(0, len(schedule)):
+        # The rules are sorted chronologically, so each rule ends when the next indexed rule begins
+
+        startHour = int(schedule[rule][0:2]) # Cut hour, cast as int
+        startMin = int(schedule[rule][3:5]) # Cut minute, cast as int
+
+        if rule is not len(schedule) - 1: # If current rule isn't the last rule, then endHour = next rule
+            endHour = int(schedule[rule+1][0:2])
+            endMin = int(schedule[rule+1][3:5])
+        else:
+            endHour = int(schedule[0][0:2]) # If current rule IS last rule, then endHour = first rule
+            endMin = int(schedule[0][3:5])
+
+        # Check if current hour is between startHour and endHour
+        if endHour > startHour:
+            if startHour <= hour < endHour: # Can ignore minutes if next rule is in a different hour
+                return schedule[rule] # Return correct rule to the calling function
+                break # Break loop
+        elif startHour == hour == endHour:
+            minute = time.localtime()[4] # Get current minutes
+            if startMin <= minute < endMin: # Need to check minutes when start/end hours are same
+                return schedule[rule] # Return correct rule to the calling function
+                break # Break loop
+        else:
+            if startHour <= hour <= 23 or 0 <= hour < endHour: # Can ignore minutes, but need different conditional for hours when end < start
+                return schedule[rule] # Return correct rule to the calling function
+                break # Break loop
 
 
 
