@@ -313,8 +313,10 @@ def rule_parser(device):
             return schedule[rule]
             break
         else:
-            # If rule has already expired, delete it so it doesn't have to be checked again
-            # Will be re-added tomorrow when rules refresh
+            # If rule has already expired, add 24 hours (move to tomorrow same time) and delete original
+            # This fixes rules between midnight - 3am (all rules are set for current day, so these are already in the past)
+            # Originally tried this in convert_rules(), but that causes *all* rules to be in future, so no match is found here
+            config[device]["schedule"][schedule[rule] + 86400] = config[device]["schedule"][schedule[rule]]
             del config[device]["schedule"][schedule[rule]]
 
     else:
