@@ -9,6 +9,9 @@ import json
 def timetest(call, runs=5):
     count=0
 
+    # The function takes this long to run an empty call, so it needs to be subtracted from runtime
+    overhead = 0.0024
+
     times = []
 
     while count < runs:
@@ -23,7 +26,7 @@ def timetest(call, runs=5):
     for i in times:
         total = total + i
 
-    avg = total / len(times)
+    avg = total / len(times) - overhead
     print(f"Avg run time = {avg}, n = {runs}")
 
 
