@@ -22,10 +22,8 @@ button = Pin(16, Pin.IN)
 
 # Hardware timer used to keep lights on for 5 min
 timer = Timer(0)
-# Hardware timer used to call API for sunrise/sunset time
-api_timer = Timer(1)
-# Timer reloads schedule rules every day at 3:00 am
-rule_timer = Timer(2)
+# Timer re-runs startup every day at 3:00 am (reload schedule rules, sunrise/sunset times, etc)
+rule_timer = Timer(1)
 
 # Stops the loop from running when True, hware timer resets after 5 min
 hold = False
@@ -36,21 +34,27 @@ wifi = False
 # Remember state of lights to prevent spamming api calls
 lights = None
 
-# Load config file
+# Turn onboard LED on, indicates setup in progress
+led = Pin(2, Pin.OUT, value=1)
+
+# Load config file from disk
 with open('config.json', 'r') as file:
     config = json.load(file)
 
+# Connect to wifi
+wlan = network.WLAN(network.STA_IF)
+wlan.active(True)
+wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+webrepl.start()
+
+
+
 # Parameter isn't actually used, just has to accept one so it can be called by timer (passes itself as arg)
 def startup(arg="unused"):
+    print("\nRunning startup routine...\n")
+
     # Turn onboard LED on, indicates setup in progress
     led = Pin(2, Pin.OUT, value=1)
-
-    # Connect to wifi
-    global wlan
-    global config
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-    wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
 
     # Get current time from internet, retry if request times out
     while True:
@@ -63,6 +67,11 @@ def startup(arg="unused"):
         else: # Runs when no exception encountered
             break # End loop once time set successfully
 
+    # Get offset for current timezone
+    response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
+    global offset
+    offset = response.json()["gmtOffset"]
+
     # Get sunrise/sunset time from API, returns class object
     response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
     # Parse out sunrise/sunset, convert to 24h format
@@ -70,11 +79,6 @@ def startup(arg="unused"):
     global sunset
     sunrise = convertTime(response.json()['results']['sunrise'])
     sunset = convertTime(response.json()['results']['sunset'])
-
-    # Get offset for current timezone
-    response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
-    global offset
-    offset = response.json()["gmtOffset"]
 
     # Convert to correct timezone
     sunrise = str(int(sunrise.split(":")[0]) + int(offset/3600)) + ":" + sunrise.split(":")[1]
@@ -92,9 +96,13 @@ def startup(arg="unused"):
     elif int(sunset.split(":")[0]) > 23:
         sunset = str(int(sunset.split(":")[0]) - 24) + ":" + sunset.split(":")[1]
 
-    # Convert timestamps for each schedule rule into the literal epoch time when it runs
+    # Load config file from disk
+    global config
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+
+    # Convert schedule rule timestamps from HH:MM to unix epoch time
     for device in config:
-        # Dictionairy contains other entries, skip if name isn't "device<no>"
         if not device.startswith("device") and not device.startswith("delay"): continue
         convert_rules(device)
 
@@ -108,17 +116,9 @@ def startup(arg="unused"):
         if weekday == 7: weekday = 0
         next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, 311))
 
-    # Set interrupt to run at 3:00 am
+    # Set interrupt to re-run setup at 3:00 am (epoch times only work once, need to refresh daily)
     next_reset = (next_reset - epoch) * 1000
-    rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reset_rules_interrupt)
-
-    # Disconnect from wifi to reduce power usage
-    #wlan.disconnect()
-    #wlan.active(False)
-    webrepl.start()
-
-    # Re-run startup every 5 days to get up-to-date sunrise/sunset times
-    api_timer.init(period=432000000, mode=Timer.ONE_SHOT, callback=startup)
+    rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=startup)
 
     # Turn off LED to confirm setup completed successfully
     led.value(0)
@@ -175,40 +175,6 @@ def convert_rules(device):
         # In ORIGINAL config dict, replace the rule timestamp with epoch time of the next run
         config[device]["schedule"][trigger_time] = config[device]["schedule"][rule]
         del config[device]["schedule"][rule]
-
-
-
-def reset_rules_interrupt(timer):
-    print("Interrupt: Refreshing schedule rules...")
-
-    global config
-
-    # Reload rules from disk (overwriting the old epoch timestamps from yesterday)
-    with open('config.json', 'r') as file:
-        config = json.load(file)
-
-    # Generate timestamps for the next day
-    for device in config:
-        if not device.startswith("device") and not device.startswith("delay"): continue
-        convert_rules(device)
-
-    # Get epoch time in current timezone
-    global offset
-    epoch = time.mktime(time.localtime()) + offset
-    # Get time tuple in current timezone
-    now = time.localtime(epoch)
-
-    # Get epoch time of next 3:00 am
-    if now[3] < 3:
-        next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
-    else:
-        weekday = now[6] + 1
-        if weekday == 7: weekday = 0
-        next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
-
-    # Set interrupt to run at 3:00 am
-    next_reset = (next_reset - epoch) * 1000
-    rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reset_rules_interrupt)
 
 
 
@@ -402,9 +368,8 @@ while True:
         print("\nEntering maintenance mode\n")
         print("Device identifier: {0}".format(config["metadata"]["id"]))
         print("Device location: {0}".format(config["metadata"]["location"]))
-        global wlan
-        wlan.active(True)
-        wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+        #wlan.active(True)
+        #wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
         print("Device IP: {0}\n".format(wlan.ifconfig()[0]))
         webrepl.start()
         # LED indicates maintenance mode, stays on until unit reset
