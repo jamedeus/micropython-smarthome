@@ -147,6 +147,13 @@ def convertTime(t):
 
 
 
+# I think convert fails if restarted after midnight?
+# Dimmer fell off wifi, before I realized I restarted ESP, then realized it's dimmer and restarted that
+# So then it worked but I get "KeyError: no match found" for delay (lights turn on, but never turn off cus delay timer doesn't start)
+# All delay rules are in the future - this isn't a problem with bright cus there is a midnight rule that is in past
+# So I need to add a default rule or something at 1 (this is how I fixed it on CLI: config["delay"]["schedule"][1] = 5
+# This way there will always be SOMETHING in the past that is < epoch < next rule
+
 # Convert literal timestamps in rules into actual unix timestamps when rule will run next
 # Needs to be called every 24 hours as rules will only work 1 time after being converted
 def convert_rules(device):
@@ -161,6 +168,7 @@ def convert_rules(device):
 
     # Get rule start times
     schedule = list(config[device]["schedule"])
+    schedule.sort()
 
     # Get epoch time in current timezone
     global offset
@@ -174,6 +182,13 @@ def convert_rules(device):
 
         # In ORIGINAL config dict, replace the rule timestamp with epoch time of the next run
         config[device]["schedule"][trigger_time] = config[device]["schedule"][rule]
+
+        # Also add a rule at the same time yesterday and tomorrow - temporary workaround for bug
+        # Bug causes no valid rules if rebooted between last and first rule - fix will be similar to this but more efficient
+        config[device]["schedule"][trigger_time-86400] = config[device]["schedule"][rule]
+        config[device]["schedule"][trigger_time+86400] = config[device]["schedule"][rule]
+
+        # Delete the original rule
         del config[device]["schedule"][rule]
 
 
