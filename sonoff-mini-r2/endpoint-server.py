@@ -16,21 +16,17 @@ print("\nCompleted startup\n")
 
 relay = Pin(12, Pin.OUT)
 
-on = socket.socket()
-on.bind((wlan.ifconfig()[0], 6969))
-on.listen(1)
-
-off = socket.socket()
-off.bind((wlan.ifconfig()[0], 9696))
-off.listen(1)
+s = socket.socket()
+s.bind((wlan.ifconfig()[0], 4200))
+s.listen(1)
 
 while True:
-    clientsocket, address = on.accept()
-    if address:
-        print("Turning ON")
+    conn, addr = s.accept()
+    msg = conn.recv(1024).decode()
+    if not msg:
+        break
+    if msg == "on":
         relay.value(1)
-    clientsocket, address = off.accept()
-    if address:
-        print("Turning OFF")
+    elif msg == "off":
         relay.value(0)
-    gc.collect()
+    conn.close()
