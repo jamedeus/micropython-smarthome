@@ -1,6 +1,7 @@
 import webrepl
 import network
 import socket
+import os
 from machine import Pin
 
 # Connect to wifi
@@ -16,11 +17,16 @@ print("\nCompleted startup\n")
 
 relay = Pin(12, Pin.OUT)
 
+old = os.stat("boot.py")
+
 s = socket.socket()
 s.bind((wlan.ifconfig()[0], 4200))
 s.listen(1)
 
 while True:
+    if not os.stat("boot.py") == old:
+        import machine
+        machine.reset()
     conn, addr = s.accept()
     msg = conn.recv(1024).decode()
     if not msg:
