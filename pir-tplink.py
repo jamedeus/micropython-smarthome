@@ -68,6 +68,7 @@ def startup(arg="unused"):
             break # End loop once time set successfully
 
     # Get offset for current timezone
+    # Got traceback on this line, OSError: -202 - add try/except
     response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
     global offset
     offset = response.json()["gmtOffset"]
@@ -110,11 +111,11 @@ def startup(arg="unused"):
     epoch = time.mktime(time.localtime()) + offset
     now = time.localtime(epoch)
     if now[3] < 3:
-        next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], 311))
+        next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
     else:
         weekday = now[6] + 1
         if weekday == 7: weekday = 0
-        next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, 311))
+        next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
 
     # Set interrupt to re-run setup at 3:00 am (epoch times only work once, need to refresh daily)
     next_reset = (next_reset - epoch) * 1000
