@@ -180,7 +180,7 @@ def convert_rules(device):
         # In ORIGINAL config dict, replace the rule timestamp with epoch time of the next run
         config[device]["schedule"][trigger_time] = config[device]["schedule"][rule]
 
-        # Also add a rule at the same time yesterday and tomorrow - temporary workaround for bug
+        # Also add a rule at the same time yesterday and tomorrow - temporary workaround for bug TODO - review this, see if there is a better approach
         # Bug causes no valid rules if rebooted between last and first rule - fix will be similar to this but more efficient
         config[device]["schedule"][trigger_time-86400] = config[device]["schedule"][rule]
         config[device]["schedule"][trigger_time+86400] = config[device]["schedule"][rule]
@@ -261,10 +261,10 @@ def send(ip, bright, dev, state=1):
         motion = False # Allow main loop to try again immediately
 
 
-# TODO remove hardcoded IP, receive IP as argument, calling function pulls UP from config
-def send_relay(state):
+
+def send_relay(dev, state):
     s = socket.socket()
-    s.connect(('192.168.1.227', 4200))
+    s.connect((dev, 4200))
     s.send(state.encode())
     s.close()
     # TODO - handle timed-out connection, currently whole thing crashes if target is unavailable
@@ -363,7 +363,7 @@ while True:
                     rule = rule_parser(device)
 
                     if config[device]["type"] == "relay":
-                        send_relay(config[device]["schedule"][rule])
+                        send_relay(config[device]["ip"], config[device]["schedule"][rule])
                     else:
                         # Send parameters for the current device + rule to send function
                         send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
@@ -375,7 +375,7 @@ while True:
                     if not device.startswith("device"): continue # If entry is not a device, skip
 
                     if config[device]["type"] == "relay":
-                        send_relay("off")
+                        send_relay(config[device]["ip"], "off")
                     else:
                         send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
 
