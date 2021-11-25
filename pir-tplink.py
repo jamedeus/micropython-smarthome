@@ -266,6 +266,14 @@ def send(ip, bright, dev, state=1):
 
 
 
+def send_relay(state):
+    s = socket.socket()
+    s.connect(('192.168.1.227', 4200))
+    s.send(state.encode())
+    s.close()
+
+
+
 # Receive sub-dictionairy containing schedule rules, compare each against current time, return correct rule
 def rule_parser(device):
     global config
@@ -367,15 +375,22 @@ while True:
                         # Call function that iterates rules, returns the correct rule for the current time
                         rule = rule_parser(device)
 
-                        # Send parameters for the current device + rule to send function
-                        send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
+                        if config[device]["type"] == "relay":
+                            send_relay(config[device]["schedule"][rule])
+                        else:
+                            # Send parameters for the current device + rule to send function
+                            send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
 
             else:
                 if lights is not False: # Only turn off if currently on
 
                     for device in config:
                         if not device.startswith("device"): continue # If entry is not a device, skip
-                        send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
+
+                        if config[device]["type"] == "relay":
+                            send_relay("off")
+                        else:
+                            send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
 
             time.sleep_ms(20)
 
