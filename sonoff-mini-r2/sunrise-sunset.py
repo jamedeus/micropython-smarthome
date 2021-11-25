@@ -20,6 +20,11 @@ sunset_timer = Timer(2)
 # Get filesize/modification time (to detect upload in future)
 old = os.stat("boot.py")
 
+# Stay connected to wifi + enable hot-reload for testing
+# This should be set to True when first installed in wall
+# Allows fixing bugs without having to remove from wall and resolder UART
+debug = True
+
 # Load config file from disk
 with open('config.json', 'r') as file:
     config = json.load(file)
@@ -89,9 +94,10 @@ def startup(arg="unused"):
     elif int(sunset.split(":")[0]) > 23:
         sunset = str(int(sunset.split(":")[0]) - 24) + ":" + sunset.split(":")[1]
 
-    # Disconnect from wifi to reduce power usage
-    wlan.disconnect()
-    wlan.active(False)
+    if not debug:
+        # Disconnect from wifi to reduce power usage
+        wlan.disconnect()
+        wlan.active(False)
 
     ## Timer Interrupts ##
 
@@ -195,3 +201,21 @@ if int(sunrise.split(":")[0]) <= now[3] < int(sunset.split(":")[0]):
     relay.value(0)
 else:
     relay.value(1)
+
+
+if debug:
+    # Connect to wifi
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+    webrepl.start()
+
+    while True:
+        if not os.stat("boot.py") == old:
+            # If file changed (new code received from webrepl), reboot
+            import machine
+            print("\nReceived new code from webrepl, rebooting...\n")
+            time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+            machine.reset()
+        else:
+            time.sleep(1) # Allow receiving upload
