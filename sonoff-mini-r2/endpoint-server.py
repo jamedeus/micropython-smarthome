@@ -10,6 +10,7 @@ with open('config.json', 'r') as file:
     config = json.load(file)
 
 # Connect to wifi
+# TODO retry until successful
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
@@ -46,13 +47,14 @@ s.listen(1)
 while True:
     # Accept connection, decode message
     conn, addr = s.accept()
-    msg = conn.recv(1024).decode()
+    msg = conn.recv(1024).decode() # TODO - reduce buffer size (maybe just 1 byte, either 1 or 0)
 
     if msg == "on":
         relay.value(1)
     elif msg == "off":
         if switch.value(): # Only allow turning off if switch is off (switch = manual override)
             relay.value(0)
+    # TODO - reply "msg ok", or if invalid msg received, reply with error
 
     # Close connection, restart loop and wait for next connection
     conn.close()
@@ -61,6 +63,12 @@ while True:
     if not os.stat("boot.py") == old:
         import machine
         machine.reset()
+
+
+
+# TODO - turn on LED and write log lines here, will run if uncaught exception breaks the loop
+
+# TODO - wrap whole script in try/except (in boot.py, run this code with execfile inside try)
 
 
 

@@ -38,6 +38,7 @@ with open('config.json', 'r') as file:
     config = json.load(file)
 
 # Connect to wifi
+# TODO retry until successful
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
@@ -61,18 +62,20 @@ def startup(arg="unused"):
             time.sleep(2) # Without delay it always times out a couple times
             ntptime.settime()
         except OSError: # Timeout error
+            # TODO - reboot after certain number of failed attempts
             print("\nTimed out getting ntp time, retrying...\n")
             continue # Restart loop to try again
         else: # Runs when no exception encountered
             break # End loop once time set successfully
 
     # Get offset for current timezone
-    # Got traceback on this line, OSError: -202 - add try/except
+    # TODO Got traceback on this line, OSError: -202 - add try/except
     response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
     global offset
     offset = response.json()["gmtOffset"]
 
     # Get sunrise/sunset time from API, returns class object
+    # TODO find way to retry until successful on this and all API calls
     response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
     # Parse out sunrise/sunset, convert to 24h format
     global sunrise
@@ -109,6 +112,7 @@ def startup(arg="unused"):
     # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
     epoch = time.mktime(time.localtime()) + offset
     now = time.localtime(epoch)
+    # TODO - handle last day of month, last day of year etc
     if now[3] < 3:
         next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
     else:
@@ -146,13 +150,6 @@ def convertTime(t):
     return time
 
 
-
-# I think convert fails if restarted after midnight?
-# Dimmer fell off wifi, before I realized I restarted ESP, then realized it's dimmer and restarted that
-# So then it worked but I get "KeyError: no match found" for delay (lights turn on, but never turn off cus delay timer doesn't start)
-# All delay rules are in the future - this isn't a problem with bright cus there is a midnight rule that is in past
-# So I need to add a default rule or something at 1 (this is how I fixed it on CLI: config["delay"]["schedule"][1] = 5
-# This way there will always be SOMETHING in the past that is < epoch < next rule
 
 # Convert literal timestamps in rules into actual unix timestamps when rule will run next
 # Needs to be called every 24 hours as rules will only work 1 time after being converted
@@ -264,12 +261,14 @@ def send(ip, bright, dev, state=1):
         motion = False # Allow main loop to try again immediately
 
 
-
+# TODO remove hardcoded IP, receive IP as argument, calling function pulls UP from config
 def send_relay(state):
     s = socket.socket()
     s.connect(('192.168.1.227', 4200))
     s.send(state.encode())
     s.close()
+    # TODO - handle timed-out connection, currently whole thing crashes if target is unavailable
+    # TODO - receive response (msg OK/Invalid), log errors
 
 
 
@@ -380,7 +379,7 @@ while True:
                     else:
                         send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
 
-        time.sleep_ms(20)
+        time.sleep_ms(20) # TODO - is this necessary?
 
     else:
         # While holding (motion sensor not being checked), check if file changed on disk
@@ -392,3 +391,7 @@ while True:
             machine.reset()
         else:
             time.sleep(1) # Allow receiving upload
+
+# TODO - turn on LED and write log lines here, will run if uncaught exception breaks the loop
+
+# TODO - wrap whole script in try/except (in boot.py, run this code with execfile inside try)
