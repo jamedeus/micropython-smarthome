@@ -11,14 +11,12 @@ import urequests
 import socket
 from struct import pack
 import json
+import os
 
 
 
 # PIR data pin connected to D15
 pir = Pin(15, Pin.IN, Pin.PULL_DOWN)
-
-# Interrupt button reconnects to wifi (for debug/uploading new code)
-button = Pin(16, Pin.IN)
 
 # Hardware timer used to keep lights on for 5 min
 timer = Timer(0)
@@ -29,8 +27,6 @@ rule_timer = Timer(1)
 hold = False
 # Set to True by motion sensor interrupt
 motion = False
-# Set to True by interrupt button
-wifi = False
 # Remember state of lights to prevent spamming api calls
 lights = None
 
@@ -46,6 +42,9 @@ wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
 webrepl.start()
+
+# Get filesize/modification time (to detect upload in future)
+old = os.stat("boot.py")
 
 
 
@@ -315,13 +314,6 @@ def rule_parser(device):
 
 
 
-# Breaks main loop, reconnects to wifi, starts webrepl (for debug/uploading new code)
-def buttonInterrupt(pin):
-    global wifi
-    wifi = True
-
-
-
 def resetTimer(timer):
     # Hold is set to True after lights fade on, prevents main loop from running
     # This keeps lights on until this function is called by 5 min timer
@@ -353,73 +345,50 @@ startup()
 
 # Create interrupt, call handler function when motion detected
 pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
-# Call function when button pressed, used for uploading new code
-button.irq(trigger=Pin.IRQ_RISING, handler=buttonInterrupt)
 
 motion = False
 
 while True:
-    # wifi = False unless user presses interrupt button
-    if not wifi:
-        if not hold: # Set to True when lights turn on, reset by timer interrupt. Prevents turning off prematurely.
+    if not hold: # Set to True when lights turn on, reset by timer interrupt. Prevents turning off prematurely.
 
-            if motion:
-                if lights is not True: # Only turn on if currently off
-                    print("motion detected")
+        if motion:
+            if lights is not True: # Only turn on if currently off
+                print("motion detected")
 
-                    # For each device, get correct brightness from schedule rules, set brightness
-                    for device in config:
-                        # Dictionairy contains other entries, skip if name isn't "device<no>"
-                        if not device.startswith("device"): continue
+                # For each device, get correct brightness from schedule rules, set brightness
+                for device in config:
+                    # Dictionairy contains other entries, skip if name isn't "device<no>"
+                    if not device.startswith("device"): continue
 
-                        # Call function that iterates rules, returns the correct rule for the current time
-                        rule = rule_parser(device)
+                    # Call function that iterates rules, returns the correct rule for the current time
+                    rule = rule_parser(device)
 
-                        if config[device]["type"] == "relay":
-                            send_relay(config[device]["schedule"][rule])
-                        else:
-                            # Send parameters for the current device + rule to send function
-                            send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
+                    if config[device]["type"] == "relay":
+                        send_relay(config[device]["schedule"][rule])
+                    else:
+                        # Send parameters for the current device + rule to send function
+                        send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
 
-            else:
-                if lights is not False: # Only turn off if currently on
+        else:
+            if lights is not False: # Only turn off if currently on
 
-                    for device in config:
-                        if not device.startswith("device"): continue # If entry is not a device, skip
+                for device in config:
+                    if not device.startswith("device"): continue # If entry is not a device, skip
 
-                        if config[device]["type"] == "relay":
-                            send_relay("off")
-                        else:
-                            send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
+                    if config[device]["type"] == "relay":
+                        send_relay("off")
+                    else:
+                        send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
 
-            time.sleep_ms(20)
+        time.sleep_ms(20)
 
-    # If user pressed button, reconnect to wifi, start webrepl, break loop
     else:
-        print("\nEntering maintenance mode\n")
-        print("Device identifier: {0}".format(config["metadata"]["id"]))
-        print("Device location: {0}".format(config["metadata"]["location"]))
-        #wlan.active(True)
-        #wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
-        print("Device IP: {0}\n".format(wlan.ifconfig()[0]))
-        webrepl.start()
-        # LED indicates maintenance mode, stays on until unit reset
-        led = Pin(2, Pin.OUT, value=1)
-        # Break loop to allow webrepl connections
-        break
-
-
-
-# Automatically reboot when file on disk has changed (webrepl upload complete)
-# Only runs if maintenance mode button was pressed
-import machine
-import os
-old = os.stat("boot.py")
-while True:
-    new = os.stat("boot.py")
-    if new == old:
-        time.sleep(1)
-    else:
-        print("Upload complete, rebooting...")
-        time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
-        machine.reset()
+        # While holding (motion sensor not being checked), check if file changed on disk
+        if not os.stat("boot.py") == old:
+            # If file changed (new code received from webrepl), reboot
+            import machine
+            print("\nReceived new code from webrepl, rebooting...\n")
+            time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+            machine.reset()
+        else:
+            time.sleep(1) # Allow receiving upload
