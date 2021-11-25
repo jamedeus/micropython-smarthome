@@ -14,11 +14,23 @@ wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
 webrepl.start()
 
 relay = Pin(12, Pin.OUT)
+switch = Pin(4, Pin.IN)
 
 # Get filesize/modification time (to detect upload in future)
 old = os.stat("boot.py")
 
 print("\nCompleted startup\n")
+
+# Interrupt function - lets lightswitch override relay state
+def switch_interrupt(pin):
+    if switch.value():
+        relay.value(0)
+    elif not switch.value():
+        relay.value(1)
+
+# Call interrupt function when switch changes in either direction
+switch.irq(trigger=Pin.IRQ_RISING, handler=switch_interrupt)
+switch.irq(trigger=Pin.IRQ_FALLING, handler=switch_interrupt)
 
 # Create socket listening on port 4200
 s = socket.socket()
@@ -34,7 +46,8 @@ while True:
     if msg == "on":
         relay.value(1)
     elif msg == "off":
-        relay.value(0)
+        if switch.value(): # Only allow turning off if switch is off (switch = manual override)
+            relay.value(0)
 
     # Close connection, restart loop and wait for next connection
     conn.close()
