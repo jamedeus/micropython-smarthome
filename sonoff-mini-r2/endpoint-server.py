@@ -1,13 +1,18 @@
 import webrepl
 import network
+import json
 import socket
 import os
 from machine import Pin
 
+# Load config file from disk
+with open('config.json', 'r') as file:
+    config = json.load(file)
+
 # Connect to wifi
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
-wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
+wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
 
 # Start webrepl to allow connecting and uploading scripts over network
 # Do not put code before this, if it hangs will not be able to connect
