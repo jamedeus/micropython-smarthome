@@ -17,8 +17,6 @@ from threading import Timer
 
 state = None
 
-os.system('export DISPLAY=":0"')
-
 # Turn monitor off, called by timer 5 seconds after lights go off
 # Gives user a chance to trigger motion sensor and prevent monitor turning off
 def off():
