@@ -49,9 +49,34 @@ old = os.stat("boot.py")
 
 
 
+# Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
+def log(message):
+    now = time.localtime()
+    line = str(now[0]) + "/"
+    for i in range(1,3):
+        if len(str(now[i])) == 1:
+            line = line + "0" + str(now[i]) + "/"
+        else:
+            line = line + str(now[i]) + "/"
+    else:
+        line = line[0:-1] + " " # Replace trailing "/" with " "
+    for i in range(3,6):
+        if len(str(now[i])) == 1:
+            line = line + "0" + str(now[i]) + ":"
+        else:
+            line = line + str(now[i]) + ":"
+    else:
+        line = line + " " + message + "\n"
+
+    with open('log.txt', 'a') as file:
+        file.write(line)
+
+
+
 # Parameter isn't actually used, just has to accept one so it can be called by timer (passes itself as arg)
 def startup(arg="unused"):
     print("\nRunning startup routine...\n")
+    log("Running startup routine...")
 
     # Turn onboard LED on, indicates setup in progress
     led = Pin(2, Pin.OUT, value=1)
@@ -83,6 +108,8 @@ def startup(arg="unused"):
     sunrise = convertTime(response.json()['results']['sunrise'])
     sunset = convertTime(response.json()['results']['sunset'])
 
+    log("Finished API calls...")
+
     # Convert to correct timezone
     sunrise = str(int(sunrise.split(":")[0]) + int(offset/3600)) + ":" + sunrise.split(":")[1]
     sunset = str(int(sunset.split(":")[0]) + int(offset/3600)) + ":" + sunset.split(":")[1]
@@ -109,6 +136,8 @@ def startup(arg="unused"):
         if not device.startswith("device") and not device.startswith("delay"): continue
         convert_rules(device)
 
+    log("Finished converting schedule rules...")
+
     # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
     epoch = time.mktime(time.localtime()) + offset
     now = time.localtime(epoch)
@@ -123,6 +152,8 @@ def startup(arg="unused"):
 
     # Turn off LED to confirm setup completed successfully
     led.value(0)
+
+    log("Startup complete")
 
 
 
@@ -144,6 +175,7 @@ def convertTime(t):
                 time = str(int(t[:1]) + 12) + t[1:4] # Works if hour is single-digit
     else:
         print("Fatal error: time format incorrect")
+        log("convertTime: Fatal error: time format incorrect")
     return time
 
 
@@ -216,6 +248,7 @@ def decrypt(string):
 # state is only used by bulb, sets on/off state
 # dimmer doesn't need to be turned off, just set brightness to 1 (no light below like 15 with these bulbs)
 def send(ip, bright, dev, state=1):
+    log("Starting send function, IP=" + str(ip) + ", Brightness=" + str(bright) + ", state=" + str(state))
     if dev == "dimmer":
         cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(bright) + '}}}'
     else:
@@ -225,18 +258,25 @@ def send(ip, bright, dev, state=1):
     try:
         sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock_tcp.settimeout(10)
+        log("Created socket")
         sock_tcp.connect((ip, 9999))
         sock_tcp.settimeout(None)
+        log("Connected to device")
 
         # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
         if dev == "dimmer":
             sock_tcp.send(encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')) # Set on/off state before brightness
+            log("Dimmer: Sent on/off command")
             data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
+            log("Dimmer: Received on/off reply")
 
         # Set brightness
         sock_tcp.send(encrypt(cmd))
+        log("Sent brightness command")
         data = sock_tcp.recv(2048)
+        log("Received brightness reply")
         sock_tcp.close()
+        log("Closed socket")
 
         decrypted = decrypt(data[4:]) # Remove in final version (or put in debug conditional)
 
@@ -248,22 +288,30 @@ def send(ip, bright, dev, state=1):
             hold = True # Keep on until reset timer expires
             global lights
             lights = True # Prevent main loop from turning on repeatedly
+            log("hold + lights bools set to True")
         else: # Lights were turned OFF
             global lights
             lights = False # Prevent main loop from turning off repeatedly
+            log("lights bool set to False")
 
     except: # Failed
         print(f"Could not connect to host {ip}")
+        log("Could not connect to host " + str(ip))
         global motion
         motion = False # Allow main loop to try again immediately
 
 
 
 def send_relay(dev, state):
+    log("Starting send_relay function, IP=" + str(dev) + ", state=" + str(state))
     s = socket.socket()
+    log("Created socket")
     s.connect((dev, 4200))
+    log("Connected to device")
     s.send(state.encode())
+    log("Sent command")
     s.close()
+    log("Closed socket")
     # TODO - handle timed-out connection, currently whole thing crashes if target is unavailable
     # TODO - receive response (msg OK/Invalid), log errors
 
@@ -305,6 +353,7 @@ def rule_parser(device):
             del config[device]["schedule"][schedule[rule]]
 
     else:
+        log("rule_parser: No match found for " + str(device))
         print("no match found")
         print()
 
@@ -313,17 +362,20 @@ def rule_parser(device):
 def resetTimer(timer):
     # Hold is set to True after lights fade on, prevents main loop from running
     # This keeps lights on until this function is called by 5 min timer
+    log("resetTimer interrupt called")
     global hold
     hold = False
 
     # Reset motion so lights fade off next time loop runs
     global motion
     motion = False
+    log("resetTimer interrupt finished")
 
 
 
 # Interrupt routine, called when motion sensor triggered
 def motion_detected(pin):
+    log("motion_detected interrupt called")
     global motion
     motion = True
 
@@ -334,6 +386,7 @@ def motion_detected(pin):
 
     # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
     timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
+    log("motion_detected interrupt finished")
 
 
 
@@ -344,37 +397,41 @@ pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
 
 motion = False
 
+log("Starting main loop...")
 while True:
     if not hold: # Set to True when lights turn on, reset by timer interrupt. Prevents turning off prematurely.
 
         if motion:
+            log("Main loop: Motion detected")
             if lights is not True: # Only turn on if currently off
                 print("motion detected")
-
+                log("Main loop: Parsing schedule rules...")
                 # For each device, get correct brightness from schedule rules, set brightness
                 for device in config:
                     # Dictionairy contains other entries, skip if name isn't "device<no>"
                     if not device.startswith("device"): continue
-
+                    log("Main loop: Calling rule_parser for " + str(device))
                     # Call function that iterates rules, returns the correct rule for the current time
                     rule = rule_parser(device)
-
+                    log("Main loop: Finished getting rule")
                     if config[device]["type"] == "relay":
                         send_relay(config[device]["ip"], config[device]["schedule"][rule])
                     else:
                         # Send parameters for the current device + rule to send function
                         send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
+                    log("Main loop: Finished turning on" + str(device))
 
         else:
             if lights is not False: # Only turn off if currently on
-
+                log("Main loop: Turning lights off...")
                 for device in config:
                     if not device.startswith("device"): continue # If entry is not a device, skip
-
+                    log("Main loop: Turning off " + str(device))
                     if config[device]["type"] == "relay":
                         send_relay(config[device]["ip"], "off")
                     else:
                         send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
+                    log("Main loop: Finished turning off " + str(device))
 
         time.sleep_ms(20) # TODO - is this necessary?
 
@@ -384,6 +441,7 @@ while True:
             # If file changed (new code received from webrepl), reboot
             import machine
             print("\nReceived new code from webrepl, rebooting...\n")
+            log("Received new code from webrepl, rebooting...")
             time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             machine.reset()
         else:
