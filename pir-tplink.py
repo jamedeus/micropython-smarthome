@@ -112,13 +112,10 @@ def startup(arg="unused"):
     # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
     epoch = time.mktime(time.localtime()) + offset
     now = time.localtime(epoch)
-    # TODO - handle last day of month, last day of year etc
     if now[3] < 3:
         next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
     else:
-        weekday = now[6] + 1
-        if weekday == 7: weekday = 0
-        next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
+        next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, now[6], now[7])) # In testing, only needed to increment day - other parameters roll over correctly
 
     # Set interrupt to re-run setup at 3:00 am (epoch times only work once, need to refresh daily)
     next_reset = (next_reset - epoch) * 1000
