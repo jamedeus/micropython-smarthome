@@ -22,6 +22,8 @@ pir = Pin(15, Pin.IN, Pin.PULL_DOWN)
 timer = Timer(0)
 # Timer re-runs startup every day at 3:00 am (reload schedule rules, sunrise/sunset times, etc)
 rule_timer = Timer(1)
+# Used to reboot if startup hangs for longer than 1 minute
+reboot_timer = Timer(2)
 
 # Stops the loop from running when True, hware timer resets after 5 min
 hold = False
@@ -75,8 +77,9 @@ def log(message):
 
 # Parameter isn't actually used, just has to accept one so it can be called by timer (passes itself as arg)
 def startup(arg="unused"):
-    # TODO Add timer interrupt for ~1 minute that reboots ESP, cancel interrupt at bottom of startup
-    # To prevent API calls inside while True getting stuck in infinite loop
+    # Auto-reboot if startup doesn't complete in 1 min (prevents API calls hanging, canceled at bottom of function)
+    reboot_timer.init(period=60000, mode=Timer.ONE_SHOT, callback=reboot)
+
     print("\nRunning startup routine...\n")
     log("Running startup routine...")
 
@@ -89,8 +92,7 @@ def startup(arg="unused"):
             time.sleep(2) # Without delay it always times out a couple times
             ntptime.settime()
             break # Break loop once request succeeds
-        except OSError: # Timeout error
-            # TODO - reboot after certain number of failed attempts
+        except:
             print("\nTimed out getting ntp time, retrying...\n")
             pass # Allow loop to continue
 
@@ -163,10 +165,18 @@ def startup(arg="unused"):
     next_reset = (next_reset - epoch) * 1000
     rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=startup)
 
+    log("Startup complete")
+    # Cancel reboot callback (startup completed with API calls hanging)
+    reboot_timer.init()
+
     # Turn off LED to confirm setup completed successfully
     led.value(0)
 
-    log("Startup complete")
+
+
+def reboot(arg="unused"):
+    import machine
+    machine.reset()
 
 
 
@@ -452,11 +462,10 @@ while True:
         # While holding (motion sensor not being checked), check if file changed on disk
         if not os.stat("boot.py") == old:
             # If file changed (new code received from webrepl), reboot
-            import machine
             print("\nReceived new code from webrepl, rebooting...\n")
             log("Received new code from webrepl, rebooting...")
             time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
-            machine.reset()
+            reboot()
         else:
             time.sleep(1) # Allow receiving upload
 

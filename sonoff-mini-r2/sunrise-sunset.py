@@ -12,6 +12,8 @@ switch = Pin(4, Pin.IN)
 
 # Timer re-runs startup every day at 3:00 am (reload sunrise/sunset times, daylight savings, etc)
 api_timer = Timer(0)
+# Used to reboot if startup hangs for longer than 1 minute
+reboot_timer = Timer(1)
 
 # Call interrupts to turn light on/off at sunset/sunrise
 sunrise_timer = Timer(1)
@@ -32,6 +34,9 @@ with open('config.json', 'r') as file:
 
 
 def startup(arg="unused"):
+    # Auto-reboot if startup doesn't complete in 1 min (prevents API calls hanging, canceled at bottom of function)
+    reboot_timer.init(period=60000, mode=Timer.ONE_SHOT, callback=reboot)
+
     # Turn onboard LED on, indicates setup in progress
     led = Pin(13, Pin.OUT, value=0)
 
@@ -51,8 +56,7 @@ def startup(arg="unused"):
             time.sleep(2) # Without delay it always times out a couple times
             ntptime.settime()
             break # Break loop once request succeeds
-        except OSError: # Timeout error
-            # TODO - reboot after certain number of failed attempts
+        except:
             print("\nTimed out getting ntp time, retrying...\n")
             pass # Allow loop to continue
 
@@ -150,8 +154,17 @@ def startup(arg="unused"):
 
 
 
+    # Cancel reboot callback (startup completed with API calls hanging)
+    reboot_timer.init()
+
     # Turn off LED to confirm setup completed successfully
     led.value(1)
+
+
+
+def reboot(arg="unused"):
+    import machine
+    machine.reset()
 
 
 
@@ -220,9 +233,8 @@ if debug:
     while True:
         if not os.stat("boot.py") == old:
             # If file changed (new code received from webrepl), reboot
-            import machine
             print("\nReceived new code from webrepl, rebooting...\n")
             time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
-            machine.reset()
+            reboot()
         else:
             time.sleep(1) # Allow receiving upload
