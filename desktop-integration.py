@@ -37,14 +37,18 @@ while True:
     msg = conn.recv(8).decode()
 
     if msg == "on":
-        # Turn monitor on immediately when motion detected
-        os.system('xset dpms force on')
-        os.system('xrandr --output DisplayPort-1-4 --set "PRIME Synchronization" 1;xrandr --output DisplayPort-1-3 --set "PRIME Synchronization" 1')
+        # Check if monitor is currently on or off
+        with open('/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/drm/card1/card1-DP-4/dpms', 'r') as file:
+            current = file.read()
+        # Only turn on if it's currently off (turning on when already on causes artifacting)
+        if current == "Off":
+            os.system('xset dpms force on')
+            os.system('xrandr --output DisplayPort-1-4 --set "PRIME Synchronization" 1;xrandr --output DisplayPort-1-3 --set "PRIME Synchronization" 1')
         state = True
     elif msg == "off":
         # Wait 5 seconds (after lights turn off) before turning monitor off
         state = False
-        t = Timer(interval = 5.0, function=off)
+        t = Timer(interval = 10.0, function=off)
         t.start()
 
     # Close connection, restart loop and wait for next connection
