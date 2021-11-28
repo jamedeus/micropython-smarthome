@@ -94,6 +94,7 @@ def startup(arg="unused"):
             break # Break loop once request succeeds
         except:
             print("\nTimed out getting ntp time, retrying...\n")
+            log("Timed out getting ntp time, retrying...")
             pass # Allow loop to continue
 
     # Get offset for current timezone, retry until successful
@@ -105,6 +106,7 @@ def startup(arg="unused"):
             break # Break loop once request succeeds
         except:
             print("Failed getting timezone, retrying...")
+            log("Failed getting timezone, retrying...")
             time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
             pass # Allow loop to continue
 
@@ -120,6 +122,7 @@ def startup(arg="unused"):
             break # Break loop once request succeeds
         except:
             print("Failed getting sunrise/sunset time, retrying...")
+            log("Failed getting sunrise/sunset time, retrying...")
             time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
             pass # Allow loop to continue
 
@@ -165,7 +168,7 @@ def startup(arg="unused"):
     next_reset = (next_reset - epoch) * 1000
     rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=startup)
 
-    log("Startup complete")
+    log("Startup complete\n")
     # Cancel reboot callback (startup completed with API calls hanging)
     reboot_timer.init()
 
@@ -175,6 +178,7 @@ def startup(arg="unused"):
 
 
 def reboot(arg="unused"):
+    log("Reboot function called, rebooting...\n")
     import machine
     machine.reset()
 
@@ -281,17 +285,14 @@ def send(ip, bright, dev, state=1):
     try:
         sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock_tcp.settimeout(10)
-        log("Created socket")
         sock_tcp.connect((ip, 9999))
-        sock_tcp.settimeout(None)
+        #sock_tcp.settimeout(None)
         log("Connected to device")
 
         # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
         if dev == "dimmer":
             sock_tcp.send(encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')) # Set on/off state before brightness
-            log("Dimmer: Sent on/off command")
             data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
-            log("Dimmer: Received on/off reply")
 
         # Set brightness
         sock_tcp.send(encrypt(cmd))
@@ -311,11 +312,9 @@ def send(ip, bright, dev, state=1):
             hold = True # Keep on until reset timer expires
             global lights
             lights = True # Prevent main loop from turning on repeatedly
-            log("hold + lights bools set to True")
         else: # Lights were turned OFF
             global lights
             lights = False # Prevent main loop from turning off repeatedly
-            log("lights bool set to False")
 
     except: # Failed
         print(f"Could not connect to host {ip}")
@@ -328,13 +327,11 @@ def send(ip, bright, dev, state=1):
 def send_relay(dev, state):
     log("Starting send_relay function, IP=" + str(dev) + ", state=" + str(state))
     s = socket.socket()
-    log("Created socket")
     s.connect((dev, 4200))
     log("Connected to device")
     s.send(state.encode())
     log("Sent command")
     s.close()
-    log("Closed socket")
     # TODO - handle timed-out connection, currently whole thing crashes if target is unavailable
     # TODO - receive response (msg OK/Invalid), log errors
 
@@ -392,7 +389,6 @@ def resetTimer(timer):
     # Reset motion so lights fade off next time loop runs
     global motion
     motion = False
-    log("resetTimer interrupt finished")
 
 
 
@@ -409,7 +405,6 @@ def motion_detected(pin):
 
     # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
     timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
-    log("motion_detected interrupt finished")
 
 
 
@@ -433,23 +428,23 @@ while True:
                 for device in config:
                     # Dictionairy contains other entries, skip if name isn't "device<no>"
                     if not device.startswith("device"): continue
-                    log("Main loop: Calling rule_parser for " + str(device))
+
                     # Call function that iterates rules, returns the correct rule for the current time
                     rule = rule_parser(device)
-                    log("Main loop: Finished getting rule")
+
                     if config[device]["type"] == "relay":
                         send_relay(config[device]["ip"], config[device]["schedule"][rule])
                     else:
                         # Send parameters for the current device + rule to send function
                         send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
-                    log("Main loop: Finished turning on" + str(device))
+                    log("Main loop: Finished turning on " + str(device))
 
         else:
             if lights is not False: # Only turn off if currently on
                 log("Main loop: Turning lights off...")
                 for device in config:
                     if not device.startswith("device"): continue # If entry is not a device, skip
-                    log("Main loop: Turning off " + str(device))
+
                     if config[device]["type"] == "relay":
                         send_relay(config[device]["ip"], "off")
                     else:
