@@ -50,11 +50,11 @@ def startup(arg="unused"):
         try:
             time.sleep(2) # Without delay it always times out a couple times
             ntptime.settime()
+            break # Break loop once request succeeds
         except OSError: # Timeout error
+            # TODO - reboot after certain number of failed attempts
             print("\nTimed out getting ntp time, retrying...\n")
-            continue # Restart loop to try again
-        else: # Runs when no exception encountered
-            break # End loop once time set successfully
+            pass # Allow loop to continue
 
     # If urequests module not installed (esp8266 binaries), install it
     try:
@@ -64,19 +64,32 @@ def startup(arg="unused"):
         upip.install('micropython-urequests')
         import urequests
 
-    # Get offset for current timezone
-    # Got traceback on this line, OSError: -202 - add try/except
-    response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
-    global offset
-    offset = response.json()["gmtOffset"]
+    # Get offset for current timezone, retry until successful
+    while True:
+        try:
+            response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
+            global offset
+            offset = response.json()["gmtOffset"]
+            break # Break loop once request succeeds
+        except:
+            print("Failed getting timezone, retrying...")
+            time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
+            pass # Allow loop to continue
 
-    # Get sunrise/sunset time from API, returns class object
-    response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
-    # Parse out sunrise/sunset, convert to 24h format
-    global sunrise
-    global sunset
-    sunrise = convertTime(response.json()['results']['sunrise'])
-    sunset = convertTime(response.json()['results']['sunset'])
+    # Get sunrise/sunset time, retry until successful
+    while True:
+        try:
+            response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
+            global sunrise
+            global sunset
+            # Parse out sunrise/sunset, convert to 24h format
+            sunrise = convertTime(response.json()['results']['sunrise'])
+            sunset = convertTime(response.json()['results']['sunset'])
+            break # Break loop once request succeeds
+        except:
+            print("Failed getting sunrise/sunset time, retrying...")
+            time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
+            pass # Allow loop to continue
 
     # Convert to correct timezone
     sunrise = str(int(sunrise.split(":")[0]) + int(offset/3600)) + ":" + sunrise.split(":")[1]

@@ -75,6 +75,8 @@ def log(message):
 
 # Parameter isn't actually used, just has to accept one so it can be called by timer (passes itself as arg)
 def startup(arg="unused"):
+    # TODO Add timer interrupt for ~1 minute that reboots ESP, cancel interrupt at bottom of startup
+    # To prevent API calls inside while True getting stuck in infinite loop
     print("\nRunning startup routine...\n")
     log("Running startup routine...")
 
@@ -86,27 +88,38 @@ def startup(arg="unused"):
         try:
             time.sleep(2) # Without delay it always times out a couple times
             ntptime.settime()
+            break # Break loop once request succeeds
         except OSError: # Timeout error
             # TODO - reboot after certain number of failed attempts
             print("\nTimed out getting ntp time, retrying...\n")
-            continue # Restart loop to try again
-        else: # Runs when no exception encountered
-            break # End loop once time set successfully
+            pass # Allow loop to continue
 
-    # Get offset for current timezone
-    # TODO Got traceback on this line, OSError: -202 - add try/except
-    response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
-    global offset
-    offset = response.json()["gmtOffset"]
+    # Get offset for current timezone, retry until successful
+    while True:
+        try:
+            response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
+            global offset
+            offset = response.json()["gmtOffset"]
+            break # Break loop once request succeeds
+        except:
+            print("Failed getting timezone, retrying...")
+            time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
+            pass # Allow loop to continue
 
-    # Get sunrise/sunset time from API, returns class object
-    # TODO find way to retry until successful on this and all API calls
-    response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
-    # Parse out sunrise/sunset, convert to 24h format
-    global sunrise
-    global sunset
-    sunrise = convertTime(response.json()['results']['sunrise'])
-    sunset = convertTime(response.json()['results']['sunset'])
+    # Get sunrise/sunset time, retry until successful
+    while True:
+        try:
+            response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
+            global sunrise
+            global sunset
+            # Parse out sunrise/sunset, convert to 24h format
+            sunrise = convertTime(response.json()['results']['sunrise'])
+            sunset = convertTime(response.json()['results']['sunset'])
+            break # Break loop once request succeeds
+        except:
+            print("Failed getting sunrise/sunset time, retrying...")
+            time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
+            pass # Allow loop to continue
 
     log("Finished API calls...")
 
