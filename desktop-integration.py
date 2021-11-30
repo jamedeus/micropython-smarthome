@@ -13,6 +13,8 @@
 
 import os
 import socket
+import re
+import subprocess
 from threading import Timer
 
 state = None
@@ -21,8 +23,11 @@ state = None
 # Gives user a chance to trigger motion sensor and prevent monitor turning off
 def off():
     if state == False: # Will be True if motion detected before timer expired
-        print("Timer expired, turning off")
-        os.system('xset dpms force off')
+        if int(re.sub("[^0-9]", "", str(subprocess.check_output('xprintidle', shell=True)))) > 60000: # Only turn off if user has been inactive for >60 seconds
+            print("Timer expired, turning off")
+            os.system('xset dpms force off')
+        else:
+            print("Timer expired, but user is active - keeping screen on")
 
 
 
@@ -52,9 +57,9 @@ while True:
     elif msg == "off":
         # Wait 5 seconds (after lights turn off) before turning monitor off
         state = False
-        t = Timer(interval = 10.0, function=off)
+        t = Timer(interval = 5.0, function=off)
         t.start()
-        print("Off command received, setting 10 sec timer")
+        print("Off command received, setting 5 sec timer")
 
     # Close connection, restart loop and wait for next connection
     conn.close()
