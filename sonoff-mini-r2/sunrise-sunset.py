@@ -41,19 +41,19 @@ def startup(arg="unused"):
     led = Pin(13, Pin.OUT, value=0)
 
     # Connect to wifi
-    global config
-    try:
-        wlan = network.WLAN(network.STA_IF)
-        wlan.active(True)
-        wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
-    except OSError: # Rare error, cannot be recovered, reboot
-        import machine
-        machine.reset()
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+
+    # Wait until finished connecting before proceeding
+    while not wlan.isconnected():
+        continue
+    else:
+        print("Successfully connected to ", {config["wifi"]["ssid"]})
 
     # Get current time from internet, retry if request times out
     while True:
         try:
-            time.sleep(2) # Without delay it always times out a couple times
             ntptime.settime()
             break # Break loop once request succeeds
         except:
@@ -154,7 +154,7 @@ def startup(arg="unused"):
 
 
 
-    # Cancel reboot callback (startup completed with API calls hanging)
+    # Cancel reboot callback (startup completed without API calls hanging)
     reboot_timer.init()
 
     # Turn off LED to confirm setup completed successfully
@@ -228,6 +228,10 @@ if debug:
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
     wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+
+    # Wait until finished connecting before proceeding
+    while not wlan.isconnected():
+        continue
     webrepl.start()
 
     while True:

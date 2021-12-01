@@ -18,10 +18,15 @@ wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
 
+# Wait until finished connecting before proceeding
+while not wlan.isconnected():
+    continue
+else:
+    print("Successfully connected to wifi")
+
 # Get current time from internet, retry if request times out
 while True:
     try:
-        time.sleep(2) # Without delay it always times out a couple times
         ntptime.settime()
     except OSError: # Timeout error
         print("\nTimed out getting ntp time, retrying...\n")

@@ -35,10 +35,6 @@ motion = False
 # Set to True by interrupt button
 wifi = False
 
-# Load config file
-with open('config.json', 'r') as file:
-    config = json.load(file)
-
 
 
 # Parameter isn't actually used, just has to accept one so it can be called by timer (passes itself as arg)
@@ -46,21 +42,26 @@ def startup(arg="unused"):
     # Turn onboard LED on, indicates setup in progress
     led = Pin(2, Pin.OUT, value=1)
 
+    # Load config file from disk
+    global config
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+
     # Connect to wifi
     global wlan
-    global config
-    try:
-        wlan = network.WLAN(network.STA_IF)
-        wlan.active(True)
-        wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
-    except OSError: # Rare error, cannot be recovered, reboot
-        import machine
-        machine.reset()
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+
+    # Wait until finished connecting before proceeding
+    while not wlan.isconnected():
+        continue
+    else:
+        print("Successfully connected to ", {config["wifi"]["ssid"]})
 
     # Get current time from internet, retry if request times out
     while True:
         try:
-            time.sleep(2) # Without delay it always times out a couple times
             ntptime.settime()
         except OSError: # Timeout error
             print("\nTimed out getting ntp time, retrying...\n")
@@ -261,7 +262,6 @@ while True:
     # If user pressed button, reconnect to wifi, start webrepl, break loop
     else:
         print("Entering maintenance mode")
-        global wlan
         wlan.active(True)
         wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
         webrepl.start()

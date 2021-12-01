@@ -35,17 +35,6 @@ lights = None
 # Turn onboard LED on, indicates setup in progress
 led = Pin(2, Pin.OUT, value=1)
 
-# Load config file from disk
-with open('config.json', 'r') as file:
-    config = json.load(file)
-
-# Connect to wifi
-# TODO retry until successful
-wlan = network.WLAN(network.STA_IF)
-wlan.active(True)
-wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
-webrepl.start()
-
 # Get filesize/modification time (to detect upload in future)
 old = os.stat("boot.py")
 
@@ -86,10 +75,27 @@ def startup(arg="unused"):
     # Turn onboard LED on, indicates setup in progress
     led = Pin(2, Pin.OUT, value=1)
 
+    # Load config file from disk
+    global config
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+
+    # Connect to wifi
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+
+    # Wait until finished connecting before proceeding
+    while not wlan.isconnected():
+        continue
+    else:
+        print("Successfully connected to ", {config["wifi"]["ssid"]})
+
+    webrepl.start()
+
     # Get current time from internet, retry if request times out
     while True:
         try:
-            time.sleep(2) # Without delay it always times out a couple times
             ntptime.settime()
             break # Break loop once request succeeds
         except:
@@ -144,11 +150,6 @@ def startup(arg="unused"):
     elif int(sunset.split(":")[0]) > 23:
         sunset = str(int(sunset.split(":")[0]) - 24) + ":" + sunset.split(":")[1]
 
-    # Load config file from disk
-    global config
-    with open('config.json', 'r') as file:
-        config = json.load(file)
-
     # Convert schedule rule timestamps from HH:MM to unix epoch time
     for device in config:
         if not device.startswith("device") and not device.startswith("delay"): continue
@@ -169,7 +170,7 @@ def startup(arg="unused"):
     rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=startup)
 
     log("Startup complete\n")
-    # Cancel reboot callback (startup completed with API calls hanging)
+    # Cancel reboot callback (startup completed without API calls hanging)
     reboot_timer.init()
 
     # Turn off LED to confirm setup completed successfully

@@ -10,10 +10,15 @@ with open('config.json', 'r') as file:
     config = json.load(file)
 
 # Connect to wifi
-# TODO retry until successful
 wlan = network.WLAN(network.STA_IF)
 wlan.active(True)
 wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+
+# Wait until finished connecting before proceeding
+while not wlan.isconnected():
+    continue
+else:
+    print("Successfully connected to ", {config["wifi"]["ssid"]})
 
 # Start webrepl to allow connecting and uploading scripts over network
 # Do not put code before this, if it hangs will not be able to connect
