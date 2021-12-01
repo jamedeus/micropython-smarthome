@@ -5,6 +5,18 @@ import socket
 import os
 from machine import Pin
 
+def reboot(arg="unused"):
+    import machine
+    machine.reset()
+
+relay = Pin(12, Pin.OUT)
+switch = Pin(4, Pin.IN)
+button = Pin(0, Pin.IN)
+
+# Reboot system if button is pressed or released
+button.irq(trigger=Pin.IRQ_RISING, handler=reboot)
+button.irq(trigger=Pin.IRQ_FALLING, handler=reboot)
+
 # Load config file from disk
 with open('config.json', 'r') as file:
     config = json.load(file)
@@ -23,9 +35,6 @@ else:
 # Start webrepl to allow connecting and uploading scripts over network
 # Do not put code before this, if it hangs will not be able to connect
 webrepl.start()
-
-relay = Pin(12, Pin.OUT)
-switch = Pin(4, Pin.IN)
 
 # Get filesize/modification time (to detect upload in future)
 old = os.stat("boot.py")

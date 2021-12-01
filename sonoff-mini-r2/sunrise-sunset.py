@@ -7,8 +7,17 @@ import socket
 import os
 from machine import Pin, Timer
 
+def reboot(arg="unused"):
+    import machine
+    machine.reset()
+
 relay = Pin(12, Pin.OUT)
 switch = Pin(4, Pin.IN)
+button = Pin(0, Pin.IN)
+
+# Reboot system if button is pressed or released
+button.irq(trigger=Pin.IRQ_RISING, handler=reboot)
+button.irq(trigger=Pin.IRQ_FALLING, handler=reboot)
 
 # Timer re-runs startup every day at 3:00 am (reload sunrise/sunset times, daylight savings, etc)
 api_timer = Timer(0)
@@ -159,12 +168,6 @@ def startup(arg="unused"):
 
     # Turn off LED to confirm setup completed successfully
     led.value(1)
-
-
-
-def reboot(arg="unused"):
-    import machine
-    machine.reset()
 
 
 
