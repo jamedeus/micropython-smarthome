@@ -204,9 +204,19 @@ def night(pin):
 # Interrupt function - lets lightswitch override relay state
 def switch_interrupt(pin):
     if switch.value():
-        relay.value(0)
+        while True:
+            if relay.value():
+                relay.value(0)
+                time.sleep_ms(75)
+            else:
+                break
     elif not switch.value():
-        relay.value(1)
+        while True:
+            if not relay.value():
+                relay.value(1)
+                time.sleep_ms(75)
+            else:
+                break
 
 # Call interrupt function when switch changes in either direction
 switch.irq(trigger=Pin.IRQ_RISING, handler=switch_interrupt)
@@ -221,9 +231,19 @@ now = time.localtime(epoch)
 
 # Just check hour since this will only run once after power outage anyway
 if int(sunrise.split(":")[0]) <= now[3] < int(sunset.split(":")[0]):
-    relay.value(0)
+    while True:
+        if relay.value():
+            relay.value(0)
+            time.sleep_ms(75)
+        else:
+            break
 else:
-    relay.value(1)
+    while True:
+        if not relay.value():
+            relay.value(1)
+            time.sleep_ms(75)
+        else:
+            break
 
 
 if debug:
