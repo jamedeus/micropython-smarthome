@@ -401,11 +401,19 @@ def motion_detected(pin):
 
     # Get correct delay period based on current time
     delay = config["delay"]["schedule"][rule_parser("delay")]
-    # Convert to ms
-    delay = int(delay) * 60000
 
-    # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
-    timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
+    # If value is "None", do not set a timer to turn lights off
+    if not "None" in delay:
+        delay = int(delay) * 60000 # Convert to ms
+        # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
+        timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
+    else:
+        # If no turn-off timer was set, reset hold + motion so main loop can resume
+        global hold
+        hold = False
+
+        global motion
+        motion = False
 
 
 
