@@ -39,12 +39,6 @@ led = Pin(2, Pin.OUT, value=1)
 # Get filesize/modification time (to detect upload in future)
 old = os.stat("boot.py")
 
-# Don't let log exceed 500 KB - can fill disk, also cannot be pulled via webrepl without timing out
-if os.stat('log.txt')[6] > 500000:
-    print("\nLog exceeded 500 KB, clearing...\n")
-    os.remove('log.txt')
-    log("Deleted old log (exceeded 500 KB size limit)")
-
 
 
 # Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
@@ -450,6 +444,17 @@ def desktop_integration():
 
 
 
+
+# Don't let log exceed 500 KB - can fill disk, also cannot be pulled via webrepl without timing out
+try:
+    if os.stat('log.txt')[6] > 500000:
+        print("\nLog exceeded 500 KB, clearing...\n")
+        os.remove('log.txt')
+        log("Deleted old log (exceeded 500 KB size limit)")
+except OSError: # File does not exist
+    pass
+
+# Run startup function (connect to wifi, API calls, load config, convert rules, etc)
 startup()
 
 # Create interrupt, call handler function when motion detected
