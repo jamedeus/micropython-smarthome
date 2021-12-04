@@ -77,6 +77,15 @@ def send(ip="192.168.1.233", bright=1, dev="dimmer", state=0):
         print("Sent:     ", cmd)
         print("Received: ", decrypted)
 
+        # Tell the motion sensor that lights were turned off
+        s = socket.socket()
+        s.connect(("192.168.1.224", 4200)) # TODO - implement config file, remove hardcoded IP
+        if state:
+            s.send("on".encode())
+        elif not state:
+            s.send("off".encode())
+        s.close()
+
     except: # Failed
         print(f"Could not connect to host {ip}")
 

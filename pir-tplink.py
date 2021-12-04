@@ -12,6 +12,7 @@ import socket
 from struct import pack
 import json
 import os
+import _thread
 
 
 
@@ -417,6 +418,35 @@ def motion_detected(pin):
         # If no turn-off timer was set, reset hold so main loop can resume
         global hold
         hold = False
+        # TODO - this should probably be removed, but there could be issues if desktop never goes to sleep (ie video left playing)
+        # Advantage of keeping it is that when next schedule rule is reached, brightness changes immediately (vs after desktop goes to sleep + motion detected)
+        # The best approach might be to remove this, and replace it with a resetTimer that expires when the next rule takes effect (if next rule is not "None")
+
+
+
+# Receive messages when desktop turns overhead lights on/off, change bools to reflect
+def desktop_integration():
+    # Create socket listening on port 4200
+    s = socket.socket()
+    s.bind(('', 4200))
+    s.listen(1)
+
+    # Handle connections
+    while True:
+        # Accept connection, decode message
+        conn, addr = s.accept()
+        msg = conn.recv(8).decode()
+
+        if msg == "on": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
+            print("Desktop turned lights ON")
+            global lights
+            lights = True
+        if msg == "off": # Allow main loop to continue when desktop turns lights off
+            print("Desktop turned lights OFF")
+            global lights
+            lights = False
+            global hold
+            hold = False
 
 
 
@@ -424,6 +454,14 @@ startup()
 
 # Create interrupt, call handler function when motion detected
 pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
+
+# Check if desktop integration is being used
+for device in config:
+    if not device.startswith("device"): continue
+    if config[device]["type"] == "desktop":
+        # Create thread, listen for messages from desktop and keep lights/hold booleans in sync
+        _thread.start_new_thread(desktop_integration, ())
+        break # Only need 1 thread, stop loop after first match
 
 motion = False
 
@@ -444,7 +482,7 @@ while True:
                     # Call function that iterates rules, returns the correct rule for the current time
                     rule = rule_parser(device)
 
-                    if config[device]["type"] == "relay":
+                    if config[device]["type"] == "relay" or config[device]["type"] == "desktop":
                         send_relay(config[device]["ip"], config[device]["schedule"][rule])
                     else:
                         # Send parameters for the current device + rule to send function
@@ -457,7 +495,7 @@ while True:
                 for device in config:
                     if not device.startswith("device"): continue # If entry is not a device, skip
 
-                    if config[device]["type"] == "relay":
+                    if config[device]["type"] == "relay" or config[device]["type"] == "desktop":
                         send_relay(config[device]["ip"], "off")
                     else:
                         send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
@@ -479,3 +517,5 @@ while True:
 # TODO - turn on LED and write log lines here, will run if uncaught exception breaks the loop
 
 # TODO - wrap whole script in try/except (in boot.py, run this code with execfile inside try)
+
+# TODO - create function for webrepl/auto-reboot-on-upload, run on new thread
