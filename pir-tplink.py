@@ -414,12 +414,9 @@ def motion_detected(pin):
         # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
         timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
     else:
-        # If no turn-off timer was set, reset hold + motion so main loop can resume
+        # If no turn-off timer was set, reset hold so main loop can resume
         global hold
         hold = False
-
-        global motion
-        motion = False
 
 
 
