@@ -95,7 +95,7 @@ def dpms_mon():
             if not current == state:
                 print(f"State changed from {state.strip()} to {current.strip()}")
                 state = current
-                if "Off" in current:
+                if "Off" in current or "Standby" in current:
                     send() # Turn overhead lights off when computer screen goes to sleep
         time.sleep(1)
 
