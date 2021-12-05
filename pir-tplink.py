@@ -43,6 +43,9 @@ old = os.stat("boot.py")
 
 # Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
 def log(message):
+    # TODO - when disk fills up, writing log causes OSError: 28 and everything hangs
+    # Could wrap this in try/except and delete log if OSError
+    # Probably better to just run a timer callback and check filesize every hour or something
     now = time.localtime()
     line = str(now[0]) + "/"
     for i in range(1,3):
@@ -396,7 +399,6 @@ def resetTimer(timer):
 
 # Interrupt routine, called when motion sensor triggered
 def motion_detected(pin):
-    log("motion_detected interrupt called")
     global motion
     motion = True
 
@@ -405,6 +407,7 @@ def motion_detected(pin):
 
     # If value is "None", do not set a timer to turn lights off
     if not "None" in delay:
+        log("motion_detected interrupt called")
         delay = int(delay) * 60000 # Convert to ms
         # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
         timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
