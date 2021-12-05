@@ -55,7 +55,7 @@ def send(ip="192.168.1.233", bright=1, dev="dimmer", state=0):
     else:
         cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(bright) + '}}}'
 
-    #Send command and receive reply
+    # Send command and receive reply
     try:
         sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock_tcp.settimeout(10)
@@ -73,9 +73,10 @@ def send(ip="192.168.1.233", bright=1, dev="dimmer", state=0):
         data = sock_tcp.recv(2048)
         sock_tcp.close()
 
-        decrypted = decrypt(data[4:]) # Remove in final version (or put in debug conditional)
-        print("Sent:     ", cmd)
-        print("Received: ", decrypted)
+        if state:
+            print("Turned overhead lights ON")
+        elif not state:
+            print("Turned overhead lights OFF")
 
         # Tell the motion sensor that lights were turned off
         s = socket.socket()
@@ -91,7 +92,7 @@ def send(ip="192.168.1.233", bright=1, dev="dimmer", state=0):
 
 
 
-# Monitor monitor power state, turn overhead lights off when monitors turn off
+# Watch monitor power state, turn overhead lights off when monitors turn off
 def dpms_mon():
     # Get initial state
     state = get_dpms_state()
@@ -100,7 +101,7 @@ def dpms_mon():
         # Check current state
         current = get_dpms_state()
         if not current == state:
-            print(f"State changed from {state.strip()} to {current.strip()}")
+            print(f"State changed from {state} to {current}")
             state = current
             if not "On" in current:
                 send() # Turn overhead lights off when computer screen goes to sleep
@@ -121,7 +122,7 @@ def get_dpms_state():
 
 
 # Turn monitor off, called by timer 5 seconds after lights go off
-# Gives user a chance to trigger motion sensor and prevent monitor turning off
+# User can prevent monitors from turning off by moving mouse OR triggering motion sensor
 def off():
     global state
     if state == False: # Will be True if motion detected before timer expired
@@ -151,7 +152,7 @@ def server():
         if msg == "on":
             # Check if monitor is currently on or off
             current = get_dpms_state()
-            # Only turn on if it's currently off (turning on when already on causes artifacting)
+            # Don't turn monitor on if already on (causes artifacting)
             if not "On" in current:
                 print("On command received, turning on")
                 os.system('xset dpms force on')
@@ -160,8 +161,8 @@ def server():
                 print("On command received, but monitors are already on")
             state = True
         elif msg == "off":
-            # Wait 5 seconds (after lights turn off) before turning monitor off
             state = False
+            # Wait 5 seconds (after lights turn off) before turning monitor off, gives user a chance to override
             t = threading.Timer(interval = 5.0, function=off)
             t.start()
             print("Off command received, setting 5 sec timer")
@@ -176,5 +177,3 @@ thread2 = threading.Thread(target=dpms_mon)
 
 thread1.start()
 thread2.start()
-
-# TODO - when screen wakes up, send message to ESP that resets hold + motion bools

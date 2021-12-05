@@ -286,7 +286,7 @@ def send(ip, bright, dev, state=1):
     else:
         cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(bright) + '}}}'
 
-    #Send command and receive reply
+    # Send command and receive reply
     try:
         sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock_tcp.settimeout(10)
