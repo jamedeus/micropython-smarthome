@@ -104,7 +104,7 @@ def dpms_mon():
             if not current == state:
                 print(f"State changed from {state.strip()} to {current.strip()}")
                 state = current
-                if "Off" in current or "Standby" in current:
+                if not "On" in current:
                     send() # Turn overhead lights off when computer screen goes to sleep
         time.sleep(1)
 
@@ -143,7 +143,7 @@ def server():
             with open('/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/drm/card1/card1-DP-4/dpms', 'r') as file:
                 current = file.read()
             # Only turn on if it's currently off (turning on when already on causes artifacting)
-            if "Off" in current:
+            if not "On" in current:
                 print("On command received, turning on")
                 os.system('xset dpms force on')
                 os.system('xrandr --output DisplayPort-1-4 --set "PRIME Synchronization" 1;xrandr --output DisplayPort-1-3 --set "PRIME Synchronization" 1')
