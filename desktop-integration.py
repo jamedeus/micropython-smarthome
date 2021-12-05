@@ -105,6 +105,10 @@ def dpms_mon():
             state = current
             if not "On" in current:
                 send() # Turn overhead lights off when computer screen goes to sleep
+            else:
+                # When monitors wake up, run PRIME sync (fix cursor flicker issue)
+                print("Running PRIME sync...")
+                os.system('xrandr --output DisplayPort-1-4 --set "PRIME Synchronization" 1;xrandr --output DisplayPort-1-3 --set "PRIME Synchronization" 1')
         time.sleep(1)
 
 
@@ -156,7 +160,6 @@ def server():
             if not "On" in current:
                 print("On command received, turning on")
                 os.system('xset dpms force on')
-                os.system('xrandr --output DisplayPort-1-4 --set "PRIME Synchronization" 1;xrandr --output DisplayPort-1-3 --set "PRIME Synchronization" 1')
             else:
                 print("On command received, but monitors are already on")
             state = True
