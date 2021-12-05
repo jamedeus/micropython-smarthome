@@ -94,19 +94,29 @@ def send(ip="192.168.1.233", bright=1, dev="dimmer", state=0):
 # Monitor monitor power state, turn overhead lights off when monitors turn off
 def dpms_mon():
     # Get initial state
-    with open('/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/drm/card1/card1-DP-4/dpms', 'r') as file:
-        state = file.read()
+    state = get_dpms_state()
 
     while True:
         # Check current state
-        with open('/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/drm/card1/card1-DP-4/dpms', 'r') as file:
-            current = file.read()
-            if not current == state:
-                print(f"State changed from {state.strip()} to {current.strip()}")
-                state = current
-                if not "On" in current:
-                    send() # Turn overhead lights off when computer screen goes to sleep
+        current = get_dpms_state()
+        if not current == state:
+            print(f"State changed from {state.strip()} to {current.strip()}")
+            state = current
+            if not "On" in current:
+                send() # Turn overhead lights off when computer screen goes to sleep
         time.sleep(1)
+
+
+
+# Query DPMS state (monitors on/off/standby etc)
+def get_dpms_state():
+    while True:
+        current = str(subprocess.check_output('xset -q | tail -1 | cut -d " " -f 5', shell=True))[2:-3]
+        if current == "Disabled": # Sometimes it's disabled for a few seconds, probably related to NVIDIA PRIME
+            time.sleep(0.25) # Wait 250 ms, try again (prevent high CPU usage)
+        else:
+            break
+    return current
 
 
 
@@ -140,8 +150,7 @@ def server():
 
         if msg == "on":
             # Check if monitor is currently on or off
-            with open('/sys/devices/pci0000:00/0000:00:01.0/0000:01:00.0/drm/card1/card1-DP-4/dpms', 'r') as file:
-                current = file.read()
+            current = get_dpms_state()
             # Only turn on if it's currently off (turning on when already on causes artifacting)
             if not "On" in current:
                 print("On command received, turning on")
