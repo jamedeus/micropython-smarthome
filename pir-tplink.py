@@ -444,6 +444,8 @@ def desktop_integration():
             lights = False
             global hold
             hold = False
+            global motion
+            motion = False
 
 
 
