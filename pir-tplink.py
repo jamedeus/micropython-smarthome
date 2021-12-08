@@ -484,6 +484,30 @@ def desktop_integration():
 
 
 
+def listen_for_upload():
+    # Get filesize/modification time (to detect upload in future)
+    old_code = os.stat("boot.py")
+    old_config = os.stat("config.json")
+
+    while True:
+        # Check if file changed on disk
+        if not os.stat("boot.py") == old_code:
+            # If file changed (new code received from webrepl), reboot
+            print("\nReceived new code from webrepl, rebooting...\n")
+            log("Received new code from webrepl, rebooting...")
+            time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+            reboot()
+        elif not os.stat("config.json") == old_config:
+            # If file changed (new config received from webrepl), reboot
+            print("\nReceived new config from webrepl, rebooting...\n")
+            log("Received new config from webrepl, rebooting...")
+            time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+            reboot()
+        else:
+            time.sleep(1) # Only check once per second
+
+
+
 # Don't let log exceed 500 KB - can fill disk, also cannot be pulled via webrepl without timing out
 try:
     if os.stat('log.txt')[6] > 500000:
@@ -498,6 +522,9 @@ startup()
 
 # Create interrupt, call handler function when motion detected
 pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
+
+# Start thread listening for upload so unit will auto-reboot if code is updated
+_thread.start_new_thread(listen_for_upload, ())
 
 # Check if desktop integration is being used
 for device in config:
