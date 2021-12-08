@@ -25,9 +25,9 @@ timer = Timer(0)
 rule_timer = Timer(1)
 # Used to reboot if startup hangs for longer than 1 minute
 reboot_timer = Timer(2)
+# Used when it is time to switch to the next schedule rule
+next_rule_timer = Timer(3)
 
-# Stops the loop from running when True, hware timer resets after 5 min
-hold = False
 # Set to True by motion sensor interrupt
 motion = False
 # Remember state of lights to prevent spamming api calls
@@ -35,9 +35,6 @@ lights = None
 
 # Turn onboard LED on, indicates setup in progress
 led = Pin(2, Pin.OUT, value=1)
-
-# Get filesize/modification time (to detect upload in future)
-old = os.stat("boot.py")
 
 
 
@@ -154,10 +151,18 @@ def startup(arg="unused"):
     elif int(sunset.split(":")[0]) > 23:
         sunset = str(int(sunset.split(":")[0]) - 24) + ":" + sunset.split(":")[1]
 
+    # Create empty dict that will hold params for currently active schedule rule
+    global current_rule
+    current_rule = {}
+
     # Convert schedule rule timestamps from HH:MM to unix epoch time
     for device in config:
         if not device.startswith("device") and not device.startswith("delay"): continue
         convert_rules(device)
+        current_rule[device] = {}
+
+    # Parse rules, find current rule, populate current_rule dict
+    rule_parser()
 
     log("Finished converting schedule rules...")
 
@@ -313,19 +318,20 @@ def send(ip, bright, dev, state=1):
         print("Received: ", decrypted)
 
         if state: # Lights were turned ON
-            global hold
-            hold = True # Keep on until reset timer expires
             global lights
             lights = True # Prevent main loop from turning on repeatedly
         else: # Lights were turned OFF
             global lights
             lights = False # Prevent main loop from turning off repeatedly
+            # TODO - schedule this to run in 5 seconds, otherwise if first device fails but second succeeds it will not try again!
 
     except: # Failed
         print(f"Could not connect to host {ip}")
         log("Could not connect to host " + str(ip))
         global motion
-        motion = False # Allow main loop to try again immediately
+        motion = True
+        global lights
+        lights = False # Allow main loop to try again immediately
 
 
 
@@ -343,44 +349,81 @@ def send_relay(dev, state):
 
 
 # Receive sub-dictionairy containing schedule rules, compare each against current time, return correct rule
-def rule_parser(device):
+def rule_parser(arg="unused"):
     global config
+    global current_rule
 
-    # Get list of rule trigger times, sort chronologically
-    schedule = list(config[device]["schedule"])
-    schedule.sort()
+    # Store timestamp of next rule, for callback timer
+    next_rule = None
 
-    # Get epoch time in current timezone
-    global offset
-    epoch = time.mktime(time.localtime()) + offset
+    # Iterate all devices in config
+    for device in config:
+        if not device.startswith("device") and not device.startswith("delay"): continue
 
-    for rule in range(0, len(schedule)):
-        if rule is not len(schedule) - 1: # If current rule isn't the last rule, then end = next rule
-            end = schedule[rule+1]
-        else: # If current rule IS last rule, then end = 3am (when rules are refreshed)
-            now = time.localtime(epoch)
-            if now[3] < 3:
-                end = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
+        # Get list of rule trigger times, sort chronologically
+        schedule = list(config[device]["schedule"])
+        schedule.sort()
+
+        # Get epoch time in current timezone
+        global offset
+        epoch = time.mktime(time.localtime()) + offset
+
+        for rule in range(0, len(schedule)):
+            if rule is not len(schedule) - 1: # If current rule isn't the last rule, then end = next rule
+                end = schedule[rule+1]
+            else: # If current rule IS last rule, then end = 3am (when rules are refreshed)
+                now = time.localtime(epoch)
+                if now[3] < 3:
+                    end = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
+                else:
+                    weekday = now[6] + 1
+                    if weekday == 7: weekday = 0
+                    end = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
+
+            # Check if actual epoch time is between current rule and next rule
+            if schedule[rule] <= epoch < end:
+
+                # Correct rule found, set parameters in current_rule dict
+                if "device" in device:
+                    current_rule[device]["ip"] = config[device]["ip"]
+                    current_rule[device]["type"] = config[device]["type"]
+                    current_rule[device]["state"] = config[device]["schedule"][schedule[rule]]
+                else: # delay
+                    current_rule["delay"] = config[device]["schedule"][schedule[rule]]
+
+                # Find the next rule (out of all devices)
+                # On first iteration, set next rule for current device
+                if next_rule == None:
+                    next_rule = end
+                # After first, overwrite current next_rule if the next rule for current device is sooner
+                else:
+                    if end < next_rule:
+                        next_rule = end
+
+                # Stop inner loop once match founce, move to next device in main loop
+                break
+
             else:
-                weekday = now[6] + 1
-                if weekday == 7: weekday = 0
-                end = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
+                # If rule has already expired, add 24 hours (move to tomorrow same time) and delete original
+                # This fixes rules between midnight - 3am (all rules are set for current day, so these are already in the past)
+                # Originally tried this in convert_rules(), but that causes *all* rules to be in future, so no match is found here
+                config[device]["schedule"][schedule[rule] + 86400] = config[device]["schedule"][schedule[rule]]
+                del config[device]["schedule"][schedule[rule]]
 
-        # Check if actual epoch time is between current rule and next rule
-        if schedule[rule] <= epoch < end:
-            return schedule[rule]
-            break
         else:
-            # If rule has already expired, add 24 hours (move to tomorrow same time) and delete original
-            # This fixes rules between midnight - 3am (all rules are set for current day, so these are already in the past)
-            # Originally tried this in convert_rules(), but that causes *all* rules to be in future, so no match is found here
-            config[device]["schedule"][schedule[rule] + 86400] = config[device]["schedule"][schedule[rule]]
-            del config[device]["schedule"][schedule[rule]]
+            log("rule_parser: No match found for " + str(device))
+            print("no match found")
+            print()
 
-    else:
-        log("rule_parser: No match found for " + str(device))
-        print("no match found")
-        print()
+    # Set a callback timer for the next rule
+    delay = (next_rule - epoch) * 1000
+    next_rule_timer.init(period=delay, mode=Timer.ONE_SHOT, callback=rule_parser)
+    print(f"rule_parser callback timer set for {next_rule}")
+
+    # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
+    global lights
+    if lights:
+        lights = False
 
 
 
@@ -388,8 +431,6 @@ def resetTimer(timer):
     # Hold is set to True after lights fade on, prevents main loop from running
     # This keeps lights on until this function is called by 5 min timer
     log("resetTimer interrupt called")
-    global hold
-    hold = False
 
     # Reset motion so lights fade off next time loop runs
     global motion
@@ -402,22 +443,16 @@ def motion_detected(pin):
     global motion
     motion = True
 
-    # Get correct delay period based on current time
-    delay = config["delay"]["schedule"][rule_parser("delay")]
+    # Set reset timer
+    delay = current_rule["delay"]
 
-    # If value is "None", do not set a timer to turn lights off
     if not "None" in delay:
-        log("motion_detected interrupt called")
         delay = int(delay) * 60000 # Convert to ms
         # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
         timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
     else:
-        # If no turn-off timer was set, reset hold so main loop can resume
-        global hold
-        hold = False
-        # TODO - this should probably be removed, but there could be issues if desktop never goes to sleep (ie video left playing)
-        # Advantage of keeping it is that when next schedule rule is reached, brightness changes immediately (vs after desktop goes to sleep + motion detected)
-        # The best approach might be to remove this, and replace it with a resetTimer that expires when the next rule takes effect (if next rule is not "None")
+        # Stop any reset timer that may be running from before delay = None
+        timer.deinit()
 
 
 
@@ -438,15 +473,14 @@ def desktop_integration():
             print("Desktop turned lights ON")
             global lights
             lights = True
+            global motion
+            motion = True
         if msg == "off": # Allow main loop to continue when desktop turns lights off
             print("Desktop turned lights OFF")
             global lights
             lights = False
-            global hold
-            hold = False
             global motion
             motion = False
-
 
 
 
@@ -469,60 +503,46 @@ pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
 for device in config:
     if not device.startswith("device"): continue
     if config[device]["type"] == "desktop":
-        # Create thread, listen for messages from desktop and keep lights/hold booleans in sync
+        # Create thread, listen for messages from desktop and keep lights boolean in sync
         _thread.start_new_thread(desktop_integration, ())
         break # Only need 1 thread, stop loop after first match
 
-motion = False
+
 
 log("Starting main loop...")
 while True:
-    if not hold: # Set to True when lights turn on, reset by timer interrupt. Prevents turning off prematurely.
+    if motion:
 
-        if motion:
-            log("Main loop: Motion detected")
-            if lights is not True: # Only turn on if currently off
-                print("motion detected")
-                log("Main loop: Parsing schedule rules...")
-                # For each device, get correct brightness from schedule rules, set brightness
-                for device in config:
-                    # Dictionairy contains other entries, skip if name isn't "device<no>"
-                    if not device.startswith("device"): continue
+        if lights is not True: # Only turn on if currently off
+            print("motion detected")
 
-                    # Call function that iterates rules, returns the correct rule for the current time
-                    rule = rule_parser(device)
+            # For each device, get correct brightness from schedule rules, set brightness
+            for device in current_rule:
+                # Dictionairy contains other entries, skip if name isn't "device<no>"
+                if not device.startswith("device"): continue
 
-                    if config[device]["type"] == "relay" or config[device]["type"] == "desktop":
-                        send_relay(config[device]["ip"], config[device]["schedule"][rule])
-                    else:
-                        # Send parameters for the current device + rule to send function
-                        send(config[device]["ip"], config[device]["schedule"][rule], config[device]["type"])
-                    log("Main loop: Finished turning on " + str(device))
-
-        else:
-            if lights is not False: # Only turn off if currently on
-                log("Main loop: Turning lights off...")
-                for device in config:
-                    if not device.startswith("device"): continue # If entry is not a device, skip
-
-                    if config[device]["type"] == "relay" or config[device]["type"] == "desktop":
-                        send_relay(config[device]["ip"], "off")
-                    else:
-                        send(config[device]["ip"], config[device]["min"], config[device]["type"], 0) # Turn off
-                    log("Main loop: Finished turning off " + str(device))
-
-        time.sleep_ms(20) # TODO - is this necessary?
+                if current_rule[device]["type"] == "relay" or current_rule[device]["type"] == "desktop":
+                    send_relay(current_rule[device]["ip"], current_rule[device]["state"])
+                else:
+                    # Send parameters for the current device + rule to send function
+                    send(current_rule[device]["ip"], current_rule[device]["state"], current_rule[device]["type"])
+                log("Main loop: Finished turning on " + str(device))
 
     else:
-        # While holding (motion sensor not being checked), check if file changed on disk
-        if not os.stat("boot.py") == old:
-            # If file changed (new code received from webrepl), reboot
-            print("\nReceived new code from webrepl, rebooting...\n")
-            log("Received new code from webrepl, rebooting...")
-            time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
-            reboot()
-        else:
-            time.sleep(1) # Allow receiving upload
+        if lights is not False: # Only turn off if currently on
+            log("Main loop: Turning lights off...")
+            for device in current_rule:
+                if not device.startswith("device"): continue # If entry is not a device, skip
+
+                if current_rule[device]["type"] == "relay" or current_rule[device]["type"] == "desktop":
+                    send_relay(current_rule[device]["ip"], "off")
+                else:
+                    send(current_rule[device]["ip"], 1, current_rule[device]["type"], 0) # Turn off
+                log("Main loop: Finished turning off " + str(device))
+
+    time.sleep_ms(20) # TODO - is this necessary?
+
+
 
 # TODO - turn on LED and write log lines here, will run if uncaught exception breaks the loop
 
