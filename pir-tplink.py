@@ -94,6 +94,9 @@ def startup(arg="unused"):
 
     webrepl.start()
 
+    # Prevent API calls hanging with nomem error
+    gc.collect()
+
     # Get current time from internet, retry if request times out
     while True:
         try:
@@ -519,6 +522,9 @@ except OSError: # File does not exist
 
 # Run startup function (connect to wifi, API calls, load config, convert rules, etc)
 startup()
+
+# Post-startup garbage collection
+gc.collect()
 
 # Create interrupt, call handler function when motion detected
 pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
