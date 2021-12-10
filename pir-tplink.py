@@ -38,6 +38,115 @@ led = Pin(2, Pin.OUT, value=1)
 
 
 
+# Used for TP-Link Kasa dimmers + smart bulbs
+class Tplink():
+    def __init__(self, name, ip, device, brightness):
+        self.name = name
+        self.ip = ip
+        self.device = device
+        self.brightness = brightness
+        log("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device))
+
+    # Encrypt messages to tp-link smarthome devices
+    def encrypt(self, string):
+        key = 171
+        result = pack(">I", len(string))
+        for i in string:
+            a = key ^ ord(i)
+            key = a
+            result += bytes([a])
+        return result
+
+    # Decrypt messages from tp-link smarthome devices
+    def decrypt(self, string):
+        key = 171
+        result = ""
+        for i in string:
+            a = key ^ i
+            key = i
+            result += chr(a)
+        return result
+
+    def send(self, state=1):
+        log("Tplink.send method called, IP=" + str(self.ip) + ", Brightness=" + str(self.brightness) + ", state=" + str(state))
+        if self.device == "dimmer":
+            cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.brightness) + '}}}'
+        else:
+            cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(self.brightness) + '}}}'
+
+        # Send command and receive reply
+        try:
+            sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock_tcp.settimeout(10)
+            sock_tcp.connect((self.ip, 9999))
+            #sock_tcp.settimeout(None)
+            log("Connected")
+
+            # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
+            if self.device == "dimmer":
+                sock_tcp.send(self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')) # Set on/off state before brightness
+                data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
+                log("Sent state (dimmer)")
+
+            # Set brightness
+            sock_tcp.send(self.encrypt(cmd))
+            log("Sent brightness")
+            data = sock_tcp.recv(2048)
+            log("Received reply")
+            sock_tcp.close()
+
+            decrypted = self.decrypt(data[4:]) # Remove in final version (or put in debug conditional)
+
+            print("Sent:     ", cmd)
+            print("Received: ", decrypted)
+
+            if state: # Lights were turned ON
+                global lights
+                lights = True # Prevent main loop from turning on repeatedly
+            else: # Lights were turned OFF
+                global lights
+                lights = False # Prevent main loop from turning off repeatedly
+                # TODO - schedule this to run in 5 seconds, otherwise if first device fails but second succeeds it will not try again!
+
+        except: # Failed
+            print(f"Could not connect to host {self.ip}")
+            log("Could not connect to host " + str(self.ip))
+            global motion
+            motion = True
+            global lights
+            lights = False # Allow main loop to try again immediately
+
+
+
+# Used for ESP8266 Relays + Desktops (running desktop-integration.py)
+class Relay():
+    def __init__(self, name, ip, enabled):
+        self.name = name
+        self.ip = ip
+        self.enabled = enabled
+        log("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
+
+    def send(self, state=1):
+        log("Relay.send method called, IP = " + str(self.ip) + ", state = " + str(state))
+        if self.enabled == "off" and state == 1:
+            pass
+        else:
+            s = socket.socket()
+            print(f"About to run send_relay, ip={self.ip}")
+            s.connect((self.ip, 4200))
+            if state:
+                print("Turned desktop ON")
+                s.send("on".encode())
+            else:
+                print("Turned desktop OFF")
+                s.send("off".encode())
+            s.close()
+            log("Relay.send finished")
+            # TODO - handle timed-out connection, currently whole thing crashes if target is unavailable
+            # TODO - receive response (msg OK/Invalid), log errors
+
+
+
 # Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
 def log(message):
     # TODO - when disk fills up, writing log causes OSError: 28 and everything hangs
@@ -138,6 +247,8 @@ def startup(arg="unused"):
 
     log("Finished API calls...")
 
+    # TODO - end startup here, move rest to function within config class (also add config class + move other functions there)
+
     # Convert to correct timezone
     sunrise = str(int(sunrise.split(":")[0]) + int(offset/3600)) + ":" + sunrise.split(":")[1]
     sunset = str(int(sunset.split(":")[0]) + int(offset/3600)) + ":" + sunset.split(":")[1]
@@ -155,14 +266,18 @@ def startup(arg="unused"):
         sunset = str(int(sunset.split(":")[0]) - 24) + ":" + sunset.split(":")[1]
 
     # Create empty dict that will hold params for currently active schedule rule
-    global current_rule
-    current_rule = {}
+    global devices
+    devices = []
 
     # Convert schedule rule timestamps from HH:MM to unix epoch time
     for device in config:
         if not device.startswith("device") and not device.startswith("delay"): continue
         convert_rules(device)
-        current_rule[device] = {}
+        if not device.startswith("delay"):
+            if config[device]["type"] == "dimmer" or config[device]["type"] == "bulb":
+                devices.append( Tplink( device, config[device]["ip"], config[device]["type"], None) )
+            elif config[device]["type"] == "relay" or config[device]["type"] == "desktop":
+                devices.append( Relay( device, config[device]["ip"], None) )
 
     # Parse rules, find current rule, populate current_rule dict
     rule_parser()
@@ -259,102 +374,10 @@ def convert_rules(device):
 
 
 
-# Encrypt messages to tp-link smarthome devices
-def encrypt(string):
-    key = 171
-    result = pack(">I", len(string))
-    for i in string:
-        a = key ^ ord(i)
-        key = a
-        result += bytes([a])
-    return result
-
-
-
-# Dencrypt messages from tp-link smarthome devices
-def decrypt(string):
-    key = 171
-    result = ""
-    for i in string:
-        a = key ^ i
-        key = i
-        result += chr(a)
-    return result
-
-
-
-# Send set_brightness command to tp-link dimmers/smartbulbs
-# dev is needed because dimmer and bulb use different syntax
-# state is only used by bulb, sets on/off state
-# dimmer doesn't need to be turned off, just set brightness to 1 (no light below like 15 with these bulbs)
-def send(ip, bright, dev, state=1):
-    log("Starting send function, IP=" + str(ip) + ", Brightness=" + str(bright) + ", state=" + str(state))
-    if dev == "dimmer":
-        cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(bright) + '}}}'
-    else:
-        cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(bright) + '}}}'
-
-    # Send command and receive reply
-    try:
-        sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock_tcp.settimeout(10)
-        sock_tcp.connect((ip, 9999))
-        #sock_tcp.settimeout(None)
-        log("Connected to device")
-
-        # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
-        if dev == "dimmer":
-            sock_tcp.send(encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')) # Set on/off state before brightness
-            data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
-
-        # Set brightness
-        sock_tcp.send(encrypt(cmd))
-        log("Sent brightness command")
-        data = sock_tcp.recv(2048)
-        log("Received brightness reply")
-        sock_tcp.close()
-        log("Closed socket")
-
-        decrypted = decrypt(data[4:]) # Remove in final version (or put in debug conditional)
-
-        print("Sent:     ", cmd)
-        print("Received: ", decrypted)
-
-        if state: # Lights were turned ON
-            global lights
-            lights = True # Prevent main loop from turning on repeatedly
-        else: # Lights were turned OFF
-            global lights
-            lights = False # Prevent main loop from turning off repeatedly
-            # TODO - schedule this to run in 5 seconds, otherwise if first device fails but second succeeds it will not try again!
-
-    except: # Failed
-        print(f"Could not connect to host {ip}")
-        log("Could not connect to host " + str(ip))
-        global motion
-        motion = True
-        global lights
-        lights = False # Allow main loop to try again immediately
-
-
-
-def send_relay(dev, state):
-    log("Starting send_relay function, IP=" + str(dev) + ", state=" + str(state))
-    s = socket.socket()
-    s.connect((dev, 4200))
-    log("Connected to device")
-    s.send(state.encode())
-    log("Sent command")
-    s.close()
-    # TODO - handle timed-out connection, currently whole thing crashes if target is unavailable
-    # TODO - receive response (msg OK/Invalid), log errors
-
-
-
 # Receive sub-dictionairy containing schedule rules, compare each against current time, return correct rule
 def rule_parser(arg="unused"):
     global config
-    global current_rule
+    global devices
 
     # Store timestamp of next rule, for callback timer
     next_rule = None
@@ -386,13 +409,16 @@ def rule_parser(arg="unused"):
             # Check if actual epoch time is between current rule and next rule
             if schedule[rule] <= epoch < end:
 
-                # Correct rule found, set parameters in current_rule dict
-                if "device" in device:
-                    current_rule[device]["ip"] = config[device]["ip"]
-                    current_rule[device]["type"] = config[device]["type"]
-                    current_rule[device]["state"] = config[device]["schedule"][schedule[rule]]
-                else: # delay
-                    current_rule["delay"] = config[device]["schedule"][schedule[rule]]
+                if "delay" in device: # Set global delay parameter, used by motion_detected
+                    global delay
+                    delay = config[device]["schedule"][schedule[rule]]
+                else:
+                    for i in devices: # Find the class instance for the current device
+                        if i.name == device:
+                            if config[device]["type"] == "dimmer" or config[device]["type"] == "bulb": # If Tplink instance, overwrite brightness parameter
+                                i.brightness = config[device]["schedule"][schedule[rule]]
+                            elif config[device]["type"] == "relay" or config[device]["type"] == "desktop": # If Relay instance, overwrite enabled parameter
+                                i.enabled = config[device]["schedule"][schedule[rule]]
 
                 # Find the next rule (out of all devices)
                 # On first iteration, set next rule for current device
@@ -419,8 +445,8 @@ def rule_parser(arg="unused"):
             print()
 
     # Set a callback timer for the next rule
-    delay = (next_rule - epoch) * 1000
-    next_rule_timer.init(period=delay, mode=Timer.ONE_SHOT, callback=rule_parser)
+    miliseconds = (next_rule - epoch) * 1000
+    next_rule_timer.init(period=miliseconds, mode=Timer.ONE_SHOT, callback=rule_parser)
     print(f"rule_parser callback timer set for {next_rule}")
 
     # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
@@ -447,12 +473,12 @@ def motion_detected(pin):
     motion = True
 
     # Set reset timer
-    delay = current_rule["delay"]
+    global delay
 
-    if not "None" in delay:
-        delay = int(delay) * 60000 # Convert to ms
+    if not "None" in str(delay):
+        off = int(delay) * 60000 # Convert to ms
         # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
-        timer.init(period=delay, mode=Timer.ONE_SHOT, callback=resetTimer)
+        timer.init(period=off, mode=Timer.ONE_SHOT, callback=resetTimer)
     else:
         # Stop any reset timer that may be running from before delay = None
         timer.deinit()
@@ -474,12 +500,14 @@ def desktop_integration():
 
         if msg == "on": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
             print("Desktop turned lights ON")
+            log("Desktop turned lights ON")
             global lights
             lights = True
             global motion
             motion = True
         if msg == "off": # Allow main loop to continue when desktop turns lights off
             print("Desktop turned lights OFF")
+            log("Desktop turned lights OFF")
             global lights
             lights = False
             global motion
@@ -538,6 +566,7 @@ for device in config:
     if config[device]["type"] == "desktop":
         # Create thread, listen for messages from desktop and keep lights boolean in sync
         _thread.start_new_thread(desktop_integration, ())
+        log("Desktop integration is being used, starting thread to listen for messages")
         break # Only need 1 thread, stop loop after first match
 
 
@@ -547,31 +576,18 @@ while True:
     if motion:
 
         if lights is not True: # Only turn on if currently off
+            log("Motion detected (main loop)")
             print("motion detected")
 
             # For each device, get correct brightness from schedule rules, set brightness
-            for device in current_rule:
-                # Dictionairy contains other entries, skip if name isn't "device<no>"
-                if not device.startswith("device"): continue
-
-                if current_rule[device]["type"] == "relay" or current_rule[device]["type"] == "desktop":
-                    send_relay(current_rule[device]["ip"], current_rule[device]["state"])
-                else:
-                    # Send parameters for the current device + rule to send function
-                    send(current_rule[device]["ip"], current_rule[device]["state"], current_rule[device]["type"])
-                log("Main loop: Finished turning on " + str(device))
+            for i in devices:
+                i.send()
 
     else:
         if lights is not False: # Only turn off if currently on
             log("Main loop: Turning lights off...")
-            for device in current_rule:
-                if not device.startswith("device"): continue # If entry is not a device, skip
-
-                if current_rule[device]["type"] == "relay" or current_rule[device]["type"] == "desktop":
-                    send_relay(current_rule[device]["ip"], "off")
-                else:
-                    send(current_rule[device]["ip"], 1, current_rule[device]["type"], 0) # Turn off
-                log("Main loop: Finished turning off " + str(device))
+            for i in devices:
+                i.send(0)
 
     time.sleep_ms(20) # TODO - is this necessary?
 
