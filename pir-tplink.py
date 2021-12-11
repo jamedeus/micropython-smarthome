@@ -38,6 +38,276 @@ led = Pin(2, Pin.OUT, value=1)
 
 
 
+class Config():
+    def __init__(self, conf):
+        print("\nInstantiating config object...\n")
+        log("Instantiating config object...")
+
+        # Load wifi credentials tuple
+        self.credentials = (conf["wifi"]["ssid"], conf["wifi"]["password"])
+
+        # Load metadata parameters - (unused so far)
+        self.identifier = conf["metadata"]["id"]
+        self.location = conf["metadata"]["location"]
+        self.floor = conf["metadata"]["floor"]
+
+        # Call function to connect to wifi + hit APIs
+        self.api_calls()
+
+        # Create sub-dict containing delay schedule rules (how long lights stay on after motion)
+        self.delay = {}
+        self.delay["schedule"] = self.convert_rules(conf["delay"]["schedule"])
+
+        # Create empty dictionairy, will contain sub-dict for each device
+        self.devices = {}
+
+        # Iterate json
+        for device in conf:
+            if not device.startswith("device"): continue
+            # Copy contents of each json device section to self.devices dict
+            self.devices[device] = conf[device]
+            # Overwrite schedule section with unix timestamp rules
+            self.devices[device]["schedule"] = self.convert_rules(conf[device]["schedule"])
+
+            # Instantiate each device as the appropriate class, add to dictionairy under "instance" param
+            # TODO - It might be easier to just use the instances instead of "device1" "device2"
+            # Can still access the instance's .name attribute (which is "device1", "device2" etc)
+            # Syntax: self.devices[ Tplink( device, self.devices[device]["ip"], self.devices[device]["type"], None) ] = self.devices[device]
+            if self.devices[device]["type"] == "dimmer" or self.devices[device]["type"] == "bulb":
+                self.devices[device]["instance"] = Tplink( device, self.devices[device]["ip"], self.devices[device]["type"], None)
+            elif self.devices[device]["type"] == "relay" or self.devices[device]["type"] == "desktop":
+                self.devices[device]["instance"] = Relay( device, self.devices[device]["ip"], None)
+
+        self.rule_parser()
+
+        log("Finished instantiating config")
+
+
+
+    def api_calls(self):
+        # Auto-reboot if startup doesn't complete in 1 min (prevents API calls hanging, canceled at bottom of function)
+        reboot_timer.init(period=60000, mode=Timer.ONE_SHOT, callback=reboot)
+
+        # Turn onboard LED on, indicates setup in progress
+        led = Pin(2, Pin.OUT, value=1)
+
+        # Connect to wifi
+        wlan = network.WLAN(network.STA_IF)
+        wlan.active(True)
+        wlan.connect(self.credentials[0], self.credentials[1])
+
+        # Wait until finished connecting before proceeding
+        while not wlan.isconnected():
+            continue
+        else:
+            print(f"Successfully connected to {self.credentials[0]}")
+
+        # Get current time from internet, retry if request times out
+        while True:
+            try:
+                ntptime.settime()
+                break # Break loop once request succeeds
+            except:
+                print("\nTimed out getting ntp time, retrying...\n")
+                log("Timed out getting ntp time, retrying...")
+                pass # Allow loop to continue
+
+        # Get offset for current timezone, retry until successful
+        while True:
+            try:
+                response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
+                self.offset = response.json()["gmtOffset"]
+                break # Break loop once request succeeds
+            except:
+                print("Failed getting timezone, retrying...")
+                log("Failed getting timezone, retrying...")
+                time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
+                pass # Allow loop to continue
+
+        # Get sunrise/sunset time, retry until successful
+        while True:
+            try:
+                response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
+                # Parse out sunrise/sunset, convert to 24h format
+                self.sunrise = self.convert_time(response.json()['results']['sunrise'])
+                self.sunset = self.convert_time(response.json()['results']['sunset'])
+                break # Break loop once request succeeds
+            except:
+                print("Failed getting sunrise/sunset time, retrying...")
+                log("Failed getting sunrise/sunset time, retrying...")
+                time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
+                pass # Allow loop to continue
+
+        log("Finished API calls...")
+
+        # Stop timer once API calls finish
+        reboot_timer.deinit()
+
+        # Turn off LED to confirm setup completed successfully
+        led.value(0)
+
+        # Convert sunrise/sunset to correct timezone
+        self.sunrise = str(int(self.sunrise.split(":")[0]) + int(self.offset/3600)) + ":" + self.sunrise.split(":")[1]
+        self.sunset = str(int(self.sunset.split(":")[0]) + int(self.offset/3600)) + ":" + self.sunset.split(":")[1]
+
+        # Correct sunrise hour if less than 0 or greater than 23
+        if int(self.sunrise.split(":")[0]) < 0:
+            self.sunrise = str(int(self.sunrise.split(":")[0]) + 24) + ":" + self.sunrise.split(":")[1]
+        elif int(self.sunrise.split(":")[0]) > 23:
+            self.sunrise = str(int(self.sunrise.split(":")[0]) - 24) + ":" + self.sunrise.split(":")[1]
+
+        # Correct sunset hour if less than 0 or greater than 23
+        if int(self.sunset.split(":")[0]) < 0:
+            self.sunset = str(int(self.sunset.split(":")[0]) + 24) + ":" + self.sunset.split(":")[1]
+        elif int(sunset.split(":")[0]) > 23:
+            self.sunset = str(int(self.sunset.split(":")[0]) - 24) + ":" + self.sunset.split(":")[1]
+
+
+
+    # Convert times to 24h format, also truncate seconds
+    def convert_time(self, t):
+        if t[-2:] == "AM":
+            if t[:2] == "12":
+                time = str("00" + t[2:5]) ## Change 12:xx to 00:xx
+            else:
+                time = t[:-6] # No changes just truncate seconds + AM
+        elif t[-2:] == "PM":
+            if t[:2] == "12":
+                time = t[:-6] # No changes just truncate seconds + AM
+            else:
+                # API hour does not have leading 0, so first 2 char may contain : (throws error when cast to int). This approach works with or without leading 0.
+                try:
+                    time = str(int(t[:2]) + 12) + t[2:5] # Works if hour is double digit
+                except ValueError:
+                    time = str(int(t[:1]) + 12) + t[1:4] # Works if hour is single-digit
+        else:
+            print("Fatal error: time format incorrect")
+            log("convert_time: Fatal error: time format incorrect")
+        return time
+
+
+
+    # Receives a dictionairy of schedule rules with HH:MM timestamps
+    # Returns a dictionairy of the same rules with unix epoch timestamps (next run only)
+    # Called every day at 3:00 am since epoch times only work once
+    def convert_rules(self, rules):
+        # Create empty dict to store new schedule rules
+        result = {}
+
+        # Check for sunrise/sunet rules, replace "sunrise"/"sunset" with today's timestamps (converted to epoch time in loop below)
+        if "sunrise" in rules:
+            rules[self.sunrise] = rules["sunrise"]
+            del rules["sunrise"]
+        if "sunset" in rules:
+            rules[self.sunset] = rules["sunset"]
+            del rules["sunset"]
+
+        # Get rule start times, sort chronologically
+        schedule = list(rules)
+        schedule.sort()
+
+        # Get epoch time in current timezone
+        epoch = time.mktime(time.localtime()) + self.offset
+        # Get time tuple in current timezone
+        now = time.localtime(epoch)
+
+        for rule in schedule:
+            # Returns epoch time of rule, uses all current parameters but substitutes hour + min from schedule and 0 for seconds
+            trigger_time = time.mktime((now[0], now[1], now[2], int(rule.split(":")[0]), int(rule.split(":")[1]), 0, now[6], now[7]))
+
+            # Add to results: Key = unix timestamp, value = value from original rules dict
+            result[trigger_time] = rules[rule]
+            # Also add a rule at the same time yesterday and tomorrow - temporary workaround for bug TODO - review this, see if there is a better approach
+            result[trigger_time-86400] = rules[rule]
+            result[trigger_time+86400] = rules[rule]
+
+        # Return the finished dictionairy
+        return result
+
+
+
+    # Receive sub-dictionairy containing schedule rules, compare each against current time, return correct rule
+    def rule_parser(self, arg="unused"):
+        # Store timestamp of next rule, for callback timer
+        next_rule = None
+
+        items = {}
+        items["delay"] = self.delay["schedule"]
+
+        for i in self.devices:
+            items[i] = self.devices[i]["schedule"]
+
+
+        # Iterate all devices in config
+        for i in items:
+            # Get list of rule trigger times, sort chronologically
+            schedule = list(items[i])
+            schedule.sort()
+
+            # Get epoch time in current timezone
+            epoch = time.mktime(time.localtime()) + self.offset
+
+            for rule in range(0, len(schedule)):
+                if rule is not len(schedule) - 1: # If current rule isn't the last rule, then end = next rule
+                    end = schedule[rule+1]
+                else: # If current rule IS last rule, then end = 3am (when rules are refreshed)
+                    now = time.localtime(epoch)
+                    if now[3] < 3:
+                        end = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
+                    else:
+                        weekday = now[6] + 1
+                        if weekday == 7: weekday = 0
+                        end = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
+
+                # Check if actual epoch time is between current rule and next rule
+                if schedule[rule] <= epoch < end:
+
+                    if i == "delay":
+                        self.delay["current"] = self.delay["schedule"][schedule[rule]]
+                    else:
+                        for device in self.devices:
+                            if i == device:
+                                if "Tplink" in str(self.devices[device]["instance"]):
+                                    self.devices[device]["instance"].brightness = self.devices[i]["schedule"][schedule[rule]]
+                                else:
+                                    self.devices[device]["instance"].enabled = self.devices[i]["schedule"][schedule[rule]]
+
+                    # Find the next rule (out of all devices)
+                    # On first iteration, set next rule for current device
+                    if next_rule == None:
+                        next_rule = end
+                    # After first, overwrite current next_rule if the next rule for current device is sooner
+                    else:
+                        if end < next_rule:
+                            next_rule = end
+
+                    # Stop inner loop once match found, move to next device in main loop
+                    break
+
+                #else:
+                    # If rule has already expired, add 24 hours (move to tomorrow same time) and delete original
+                    # This fixes rules between midnight - 3am (all rules are set for current day, so these are already in the past)
+                    # Originally tried this in convert_rules(), but that causes *all* rules to be in future, so no match is found here
+                    #config[device]["schedule"][schedule[rule] + 86400] = config[device]["schedule"][schedule[rule]]
+                    #del config[device]["schedule"][schedule[rule]]
+
+            else:
+                log("rule_parser: No match found for " + str(device))
+                print("no match found")
+                print()
+
+        # Set a callback timer for the next rule
+        miliseconds = (next_rule - epoch) * 1000
+        next_rule_timer.init(period=miliseconds, mode=Timer.ONE_SHOT, callback=self.rule_parser)
+        print(f"rule_parser callback timer set for {next_rule}")
+
+        # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
+        global lights
+        if lights:
+            lights = False
+
+
+
 # Used for TP-Link Kasa dimmers + smart bulbs
 class Tplink():
     def __init__(self, name, ip, device, brightness):
@@ -46,6 +316,8 @@ class Tplink():
         self.device = device
         self.brightness = brightness
         log("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device))
+
+
 
     # Encrypt messages to tp-link smarthome devices
     def encrypt(self, string):
@@ -57,6 +329,8 @@ class Tplink():
             result += bytes([a])
         return result
 
+
+
     # Decrypt messages from tp-link smarthome devices
     def decrypt(self, string):
         key = 171
@@ -66,6 +340,8 @@ class Tplink():
             key = i
             result += chr(a)
         return result
+
+
 
     def send(self, state=1):
         log("Tplink.send method called, IP=" + str(self.ip) + ", Brightness=" + str(self.brightness) + ", state=" + str(state))
@@ -126,13 +402,15 @@ class Relay():
         self.enabled = enabled
         log("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
 
+
+
     def send(self, state=1):
         log("Relay.send method called, IP = " + str(self.ip) + ", state = " + str(state))
         if self.enabled == "off" and state == 1:
             pass
         else:
             s = socket.socket()
-            print(f"About to run send_relay, ip={self.ip}")
+            print(f"Running send_relay, ip={self.ip}")
             s.connect((self.ip, 4200))
             if state:
                 print("Turned desktop ON")
@@ -174,134 +452,10 @@ def log(message):
 
 
 
-# Parameter isn't actually used, just has to accept one so it can be called by timer (passes itself as arg)
-def startup(arg="unused"):
-    # Auto-reboot if startup doesn't complete in 1 min (prevents API calls hanging, canceled at bottom of function)
-    reboot_timer.init(period=60000, mode=Timer.ONE_SHOT, callback=reboot)
-
-    print("\nRunning startup routine...\n")
-    log("Running startup routine...")
-
-    # Turn onboard LED on, indicates setup in progress
-    led = Pin(2, Pin.OUT, value=1)
-
-    # Load config file from disk
-    global config
-    with open('config.json', 'r') as file:
-        config = json.load(file)
-
-    # Connect to wifi
-    wlan = network.WLAN(network.STA_IF)
-    wlan.active(True)
-    wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
-
-    # Wait until finished connecting before proceeding
-    while not wlan.isconnected():
-        continue
-    else:
-        print("Successfully connected to ", {config["wifi"]["ssid"]})
-
-    webrepl.start()
-
-    # Prevent API calls hanging with nomem error
-    gc.collect()
-
-    # Get current time from internet, retry if request times out
-    while True:
-        try:
-            ntptime.settime()
-            break # Break loop once request succeeds
-        except:
-            print("\nTimed out getting ntp time, retrying...\n")
-            log("Timed out getting ntp time, retrying...")
-            pass # Allow loop to continue
-
-    # Get offset for current timezone, retry until successful
-    while True:
-        try:
-            response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
-            global offset
-            offset = response.json()["gmtOffset"]
-            break # Break loop once request succeeds
-        except:
-            print("Failed getting timezone, retrying...")
-            log("Failed getting timezone, retrying...")
-            time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
-            pass # Allow loop to continue
-
-    # Get sunrise/sunset time, retry until successful
-    while True:
-        try:
-            response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
-            global sunrise
-            global sunset
-            # Parse out sunrise/sunset, convert to 24h format
-            sunrise = convertTime(response.json()['results']['sunrise'])
-            sunset = convertTime(response.json()['results']['sunset'])
-            break # Break loop once request succeeds
-        except:
-            print("Failed getting sunrise/sunset time, retrying...")
-            log("Failed getting sunrise/sunset time, retrying...")
-            time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
-            pass # Allow loop to continue
-
-    log("Finished API calls...")
-
-    # TODO - end startup here, move rest to function within config class (also add config class + move other functions there)
-
-    # Convert to correct timezone
-    sunrise = str(int(sunrise.split(":")[0]) + int(offset/3600)) + ":" + sunrise.split(":")[1]
-    sunset = str(int(sunset.split(":")[0]) + int(offset/3600)) + ":" + sunset.split(":")[1]
-
-    # Correct sunrise hour if it is less than 0 or greater than 23
-    if int(sunrise.split(":")[0]) < 0:
-        sunrise = str(int(sunrise.split(":")[0]) + 24) + ":" + sunrise.split(":")[1]
-    elif int(sunrise.split(":")[0]) > 23:
-        sunrise = str(int(sunrise.split(":")[0]) - 24) + ":" + sunrise.split(":")[1]
-
-    # Correct sunset hour if it is less than 0 or greater than 23
-    if int(sunset.split(":")[0]) < 0:
-        sunset = str(int(sunset.split(":")[0]) + 24) + ":" + sunset.split(":")[1]
-    elif int(sunset.split(":")[0]) > 23:
-        sunset = str(int(sunset.split(":")[0]) - 24) + ":" + sunset.split(":")[1]
-
-    # Create empty dict that will hold params for currently active schedule rule
-    global devices
-    devices = []
-
-    # Convert schedule rule timestamps from HH:MM to unix epoch time
-    for device in config:
-        if not device.startswith("device") and not device.startswith("delay"): continue
-        convert_rules(device)
-        if not device.startswith("delay"):
-            if config[device]["type"] == "dimmer" or config[device]["type"] == "bulb":
-                devices.append( Tplink( device, config[device]["ip"], config[device]["type"], None) )
-            elif config[device]["type"] == "relay" or config[device]["type"] == "desktop":
-                devices.append( Relay( device, config[device]["ip"], None) )
-
-    # Parse rules, find current rule, populate current_rule dict
-    rule_parser()
-
-    log("Finished converting schedule rules...")
-
-    # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
-    epoch = time.mktime(time.localtime()) + offset
-    now = time.localtime(epoch)
-    if now[3] < 3:
-        next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
-    else:
-        next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, now[6], now[7])) # In testing, only needed to increment day - other parameters roll over correctly
-
-    # Set interrupt to re-run setup at 3:00 am (epoch times only work once, need to refresh daily)
-    next_reset = (next_reset - epoch) * 1000
-    rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=startup)
-
-    log("Startup complete\n")
-    # Cancel reboot callback (startup completed without API calls hanging)
-    reboot_timer.init()
-
-    # Turn off LED to confirm setup completed successfully
-    led.value(0)
+# Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)
+def reload_schedule_rules(timer):
+    print("3:00 am callback, reloading schedule rules...")
+    Config(json.load(open('config.json', 'r')))
 
 
 
@@ -309,150 +463,6 @@ def reboot(arg="unused"):
     log("Reboot function called, rebooting...\n")
     import machine
     machine.reset()
-
-
-
-# Convert times to 24h format, also truncate seconds
-def convertTime(t):
-    if t[-2:] == "AM":
-        if t[:2] == "12":
-            time = str("00" + t[2:5]) ## Change 12:xx to 00:xx
-        else:
-            time = t[:-6] ## No changes just truncate seconds + AM
-    elif t[-2:] == "PM":
-        if t[:2] == "12":
-            time = t[:-6] ## No changes just truncate seconds + AM
-        else:
-            # API hour does not have leading 0, so first 2 char may contain : (throws error when cast to int). This approach works with or without leading 0.
-            try:
-                time = str(int(t[:2]) + 12) + t[2:5] # Works if hour is double digit
-            except ValueError:
-                time = str(int(t[:1]) + 12) + t[1:4] # Works if hour is single-digit
-    else:
-        print("Fatal error: time format incorrect")
-        log("convertTime: Fatal error: time format incorrect")
-    return time
-
-
-
-# Convert literal timestamps in rules into actual unix timestamps when rule will run next
-# Needs to be called every 24 hours as rules will only work 1 time after being converted
-def convert_rules(device):
-    # Check for sunrise rule, replace "sunrise" with actual sunrise time
-    if "sunrise" in config[device]["schedule"]:
-        config[device]["schedule"][sunrise] = config[device]["schedule"]["sunrise"]
-        del config[device]["schedule"]["sunrise"]
-    # Same for sunset
-    if "sunset" in config[device]["schedule"]:
-        config[device]["schedule"][sunset] = config[device]["schedule"]["sunset"]
-        del config[device]["schedule"]["sunset"]
-
-    # Get rule start times
-    schedule = list(config[device]["schedule"])
-    schedule.sort()
-
-    # Get epoch time in current timezone
-    global offset
-    epoch = time.mktime(time.localtime()) + offset
-    # Get time tuple in current timezone
-    now = time.localtime(epoch)
-
-    for rule in schedule:
-        # Returns epoch time of rule, uses all current parameters but substitutes hour + min from schedule and 0 for seconds
-        trigger_time = time.mktime((now[0], now[1], now[2], int(rule.split(":")[0]), int(rule.split(":")[1]), 0, now[6], now[7]))
-
-        # In ORIGINAL config dict, replace the rule timestamp with epoch time of the next run
-        config[device]["schedule"][trigger_time] = config[device]["schedule"][rule]
-
-        # Also add a rule at the same time yesterday and tomorrow - temporary workaround for bug TODO - review this, see if there is a better approach
-        # Bug causes no valid rules if rebooted between last and first rule - fix will be similar to this but more efficient
-        config[device]["schedule"][trigger_time-86400] = config[device]["schedule"][rule]
-        config[device]["schedule"][trigger_time+86400] = config[device]["schedule"][rule]
-
-        # Delete the original rule
-        del config[device]["schedule"][rule]
-
-
-
-# Receive sub-dictionairy containing schedule rules, compare each against current time, return correct rule
-def rule_parser(arg="unused"):
-    global config
-    global devices
-
-    # Store timestamp of next rule, for callback timer
-    next_rule = None
-
-    # Iterate all devices in config
-    for device in config:
-        if not device.startswith("device") and not device.startswith("delay"): continue
-
-        # Get list of rule trigger times, sort chronologically
-        schedule = list(config[device]["schedule"])
-        schedule.sort()
-
-        # Get epoch time in current timezone
-        global offset
-        epoch = time.mktime(time.localtime()) + offset
-
-        for rule in range(0, len(schedule)):
-            if rule is not len(schedule) - 1: # If current rule isn't the last rule, then end = next rule
-                end = schedule[rule+1]
-            else: # If current rule IS last rule, then end = 3am (when rules are refreshed)
-                now = time.localtime(epoch)
-                if now[3] < 3:
-                    end = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
-                else:
-                    weekday = now[6] + 1
-                    if weekday == 7: weekday = 0
-                    end = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
-
-            # Check if actual epoch time is between current rule and next rule
-            if schedule[rule] <= epoch < end:
-
-                if "delay" in device: # Set global delay parameter, used by motion_detected
-                    global delay
-                    delay = config[device]["schedule"][schedule[rule]]
-                else:
-                    for i in devices: # Find the class instance for the current device
-                        if i.name == device:
-                            if config[device]["type"] == "dimmer" or config[device]["type"] == "bulb": # If Tplink instance, overwrite brightness parameter
-                                i.brightness = config[device]["schedule"][schedule[rule]]
-                            elif config[device]["type"] == "relay" or config[device]["type"] == "desktop": # If Relay instance, overwrite enabled parameter
-                                i.enabled = config[device]["schedule"][schedule[rule]]
-
-                # Find the next rule (out of all devices)
-                # On first iteration, set next rule for current device
-                if next_rule == None:
-                    next_rule = end
-                # After first, overwrite current next_rule if the next rule for current device is sooner
-                else:
-                    if end < next_rule:
-                        next_rule = end
-
-                # Stop inner loop once match founce, move to next device in main loop
-                break
-
-            else:
-                # If rule has already expired, add 24 hours (move to tomorrow same time) and delete original
-                # This fixes rules between midnight - 3am (all rules are set for current day, so these are already in the past)
-                # Originally tried this in convert_rules(), but that causes *all* rules to be in future, so no match is found here
-                config[device]["schedule"][schedule[rule] + 86400] = config[device]["schedule"][schedule[rule]]
-                del config[device]["schedule"][schedule[rule]]
-
-        else:
-            log("rule_parser: No match found for " + str(device))
-            print("no match found")
-            print()
-
-    # Set a callback timer for the next rule
-    miliseconds = (next_rule - epoch) * 1000
-    next_rule_timer.init(period=miliseconds, mode=Timer.ONE_SHOT, callback=rule_parser)
-    print(f"rule_parser callback timer set for {next_rule}")
-
-    # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
-    global lights
-    if lights:
-        lights = False
 
 
 
@@ -475,8 +485,8 @@ def motion_detected(pin):
     # Set reset timer
     global delay
 
-    if not "None" in str(delay):
-        off = int(delay) * 60000 # Convert to ms
+    if not "None" in str(config.delay["current"]):
+        off = int(config.delay["current"]) * 60000 # Convert to ms
         # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
         timer.init(period=off, mode=Timer.ONE_SHOT, callback=resetTimer)
     else:
@@ -489,7 +499,7 @@ def motion_detected(pin):
 def desktop_integration():
     # Create socket listening on port 4200
     s = socket.socket()
-    s.bind(('', 4200))
+    s.bind(('', 4200)) # TODO add port in config, replace hardcoded value
     s.listen(1)
 
     # Handle connections
@@ -540,6 +550,7 @@ def listen_for_upload():
 
 
 # Don't let log exceed 500 KB - can fill disk, also cannot be pulled via webrepl without timing out
+# TODO move this into listen_for_upload, rename disk_monitor or something
 try:
     if os.stat('log.txt')[6] > 500000:
         print("\nLog exceeded 500 KB, clearing...\n")
@@ -548,11 +559,12 @@ try:
 except OSError: # File does not exist
     pass
 
-# Run startup function (connect to wifi, API calls, load config, convert rules, etc)
-startup()
 
-# Post-startup garbage collection
-gc.collect()
+
+# Instantiate config object - init method replaces old startup function (convert rules, connect to wifi, API calls, etc)
+config = Config(json.load(open('config.json', 'r')))
+
+webrepl.start()
 
 # Create interrupt, call handler function when motion detected
 pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
@@ -561,13 +573,26 @@ pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
 _thread.start_new_thread(listen_for_upload, ())
 
 # Check if desktop integration is being used
-for device in config:
-    if not device.startswith("device"): continue
-    if config[device]["type"] == "desktop":
+for device in config.devices:
+    if config.devices[device]["type"] == "desktop":
         # Create thread, listen for messages from desktop and keep lights boolean in sync
         _thread.start_new_thread(desktop_integration, ())
         log("Desktop integration is being used, starting thread to listen for messages")
         break # Only need 1 thread, stop loop after first match
+
+
+
+# Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
+epoch = time.mktime(time.localtime()) + config.offset
+now = time.localtime(epoch)
+if now[3] < 3:
+    next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
+else:
+    next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, now[6], now[7])) # In testing, only needed to increment day - other parameters roll over correctly
+
+# Set interrupt to re-run setup at 3:00 am (epoch times only work once, need to refresh daily)
+next_reset = (next_reset - epoch) * 1000
+rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedule_rules)
 
 
 
@@ -580,14 +605,14 @@ while True:
             print("motion detected")
 
             # For each device, get correct brightness from schedule rules, set brightness
-            for i in devices:
-                i.send()
+            for i in config.devices:
+                config.devices[i]["instance"].send()
 
     else:
         if lights is not False: # Only turn off if currently on
             log("Main loop: Turning lights off...")
-            for i in devices:
-                i.send(0)
+            for i in config.devices:
+                config.devices[i]["instance"].send(0)
 
     time.sleep_ms(20) # TODO - is this necessary?
 
