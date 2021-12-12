@@ -64,19 +64,17 @@ class Config():
         # Iterate json
         for device in conf:
             if not device.startswith("device"): continue
-            # Copy contents of each json device section to self.devices dict
-            self.devices[device] = conf[device]
-            # Overwrite schedule section with unix timestamp rules
-            self.devices[device]["schedule"] = self.convert_rules(conf[device]["schedule"])
 
-            # Instantiate each device as the appropriate class, add to dictionairy under "instance" param
-            # TODO - It might be easier to just use the instances instead of "device1" "device2"
-            # Can still access the instance's .name attribute (which is "device1", "device2" etc)
-            # Syntax: self.devices[ Tplink( device, self.devices[device]["ip"], self.devices[device]["type"], None) ] = self.devices[device]
-            if self.devices[device]["type"] == "dimmer" or self.devices[device]["type"] == "bulb":
-                self.devices[device]["instance"] = Tplink( device, self.devices[device]["ip"], self.devices[device]["type"], None)
-            elif self.devices[device]["type"] == "relay" or self.devices[device]["type"] == "desktop":
-                self.devices[device]["instance"] = Relay( device, self.devices[device]["ip"], None)
+            # Instantiate each device as appropriate class
+            if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
+                instance = Tplink( device, conf[device]["ip"], conf[device]["type"], None )
+            elif conf[device]["type"] == "relay" or conf[device]["type"] == "desktop":
+                instance = Relay( device, conf[device]["ip"], None )
+
+            # Add to self.devices dict with class object as key + json sub-dict as value
+            self.devices[instance]  = conf[device]
+            # Overwrite schedule section with unix timestamp rules
+            self.devices[instance]["schedule"] = self.convert_rules(conf[device]["schedule"])
 
         self.rule_parser()
 
@@ -267,10 +265,10 @@ class Config():
                     else:
                         for device in self.devices:
                             if i == device:
-                                if "Tplink" in str(self.devices[device]["instance"]):
-                                    self.devices[device]["instance"].brightness = self.devices[i]["schedule"][schedule[rule]]
+                                if "Tplink" in str(device):
+                                    device.brightness = self.devices[device]["schedule"][schedule[rule]]
                                 else:
-                                    self.devices[device]["instance"].enabled = self.devices[i]["schedule"][schedule[rule]]
+                                    device.enabled = self.devices[device]["schedule"][schedule[rule]]
 
                     # Find the next rule (out of all devices)
                     # On first iteration, set next rule for current device
@@ -604,22 +602,20 @@ while True:
             log("Motion detected (main loop)")
             print("motion detected")
 
-            # For each device, get correct brightness from schedule rules, set brightness
-            for i in config.devices:
-                config.devices[i]["instance"].send()
+            # Call send method of each class instance, argument = turn ON
+            for device in config.devices:
+                device.send(1)
 
     else:
         if lights is not False: # Only turn off if currently on
             log("Main loop: Turning lights off...")
-            for i in config.devices:
-                config.devices[i]["instance"].send(0)
+
+            # Call send method of each class instance, argument = turn OFF
+            for device in config.devices:
+                device.send(0)
 
     time.sleep_ms(20) # TODO - is this necessary?
 
 
 
 # TODO - turn on LED and write log lines here, will run if uncaught exception breaks the loop
-
-# TODO - wrap whole script in try/except (in boot.py, run this code with execfile inside try)
-
-# TODO - create function for webrepl/auto-reboot-on-upload, run on new thread
