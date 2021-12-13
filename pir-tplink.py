@@ -5,8 +5,7 @@
 import webrepl
 import network
 import time
-import ntptime
-from machine import Pin, Timer
+from machine import Pin, Timer, RTC
 import urequests
 import socket
 from struct import pack
@@ -15,7 +14,7 @@ import os
 import _thread
 from random import randrange
 
-
+print("--------Booted--------")
 
 # PIR data pin connected to D15
 pir = Pin(15, Pin.IN, Pin.PULL_DOWN)
@@ -23,7 +22,7 @@ pir = Pin(15, Pin.IN, Pin.PULL_DOWN)
 # Hardware timer used to keep lights on for 5 min
 timer = Timer(0)
 # Timer re-runs startup every day at 3:00 am (reload schedule rules, sunrise/sunset times, etc)
-rule_timer = Timer(1)
+config_timer = Timer(1)
 # Used to reboot if startup hangs for longer than 1 minute
 reboot_timer = Timer(2)
 # Used when it is time to switch to the next schedule rule
@@ -33,6 +32,8 @@ next_rule_timer = Timer(3)
 motion = False
 # Remember state of lights to prevent spamming api calls
 lights = None
+# Timer sets this to True at 3:00 am, causes main loop to reload config
+reload_config = False
 
 # Turn onboard LED on, indicates setup in progress
 led = Pin(2, Pin.OUT, value=1)
@@ -93,7 +94,7 @@ class Config():
         # Connect to wifi
         wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
-        wlan.connect(self.credentials[0], self.credentials[1])
+        if not wlan.isconnected(): wlan.connect(self.credentials[0], self.credentials[1])
 
         # Wait until finished connecting before proceeding
         while not wlan.isconnected():
@@ -101,40 +102,50 @@ class Config():
         else:
             print(f"Successfully connected to {self.credentials[0]}")
 
-        # Get current time from internet, retry if request times out
-        while True:
-            try:
-                ntptime.settime()
-                break # Break loop once request succeeds
-            except:
-                print("\nTimed out getting ntp time, retrying...\n")
-                log("Timed out getting ntp time, retrying...")
-                pass # Allow loop to continue
+        failed_attempts = 0
 
-        # Get offset for current timezone, retry until successful
+        # Prevent no-mem error when API response received
+        # TODO - Keep testing. This fixed all failures with try/except commented, but they happen again with try/except
+        gc.collect()
+
+        # Set current time from internet in correct timezone, retry until successful (note: ntptime is easier but doesn't support timezone)
+        # TODO: Continue to optimize this - it seems to only fail when inside try/except (about 50% of the time), otherwise it always works...
+        # Since RTC call will traceback if request fail, could just rely on reboot_timer to recover from failure
         while True:
             try:
-                response = urequests.get("http://api.timezonedb.com/v2.1/get-time-zone?key=N49YL8DI5IDS&format=json&by=zone&zone=America/Los_Angeles")
-                self.offset = response.json()["gmtOffset"]
-                break # Break loop once request succeeds
+                response = urequests.get("https://api.ipgeolocation.io/timezone?apiKey=ddcf9be5a455453e99d84de3dfe825bc&tz=America/Los_Angeles")
+                now = time.localtime(int(response.json()["date_time_unix"]) - 946713600) # Convert unix epoch (from API) to micropython epoch (starts in 2000), then get time tuple
+                RTC().datetime((now[0], now[1], now[2], now[6], now[3], now[4], now[5], 0)) # Set RTC - micropython is stupid and uses different parameter order for RTC
+                response.close()
+                break
             except:
-                print("Failed getting timezone, retrying...")
-                log("Failed getting timezone, retrying...")
+                print("Failed setting system time, retrying...")
+                log("Failed setting system time, retrying...")
+                failed_attempts += 1
+                if failed_attempts > 5: reboot()
                 time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
-                pass # Allow loop to continue
+                gc.collect() # Free up memory before retrying
+                pass
+
+        # Prevent no-mem error when API response received
+        gc.collect()
 
         # Get sunrise/sunset time, retry until successful
         while True:
             try:
-                response = urequests.get("https://api.sunrise-sunset.org/json?lat=45.524722&lng=-122.6771891")
+                response = urequests.get("https://api.ipgeolocation.io/astronomy?apiKey=ddcf9be5a455453e99d84de3dfe825bc&lat=45.524722&long=-122.6771891")
                 # Parse out sunrise/sunset, convert to 24h format
-                self.sunrise = self.convert_time(response.json()['results']['sunrise'])
-                self.sunset = self.convert_time(response.json()['results']['sunset'])
+                self.sunrise = response.json()["sunrise"]
+                self.sunset = response.json()["sunset"]
+                response.close()
                 break # Break loop once request succeeds
             except:
                 print("Failed getting sunrise/sunset time, retrying...")
                 log("Failed getting sunrise/sunset time, retrying...")
+                failed_attempts += 1
+                if failed_attempts > 5: reboot()
                 time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
+                gc.collect() # Free up memory before retrying
                 pass # Allow loop to continue
 
         log("Finished API calls...")
@@ -144,22 +155,6 @@ class Config():
 
         # Turn off LED to confirm setup completed successfully
         led.value(0)
-
-        # Convert sunrise/sunset to correct timezone
-        self.sunrise = str(int(self.sunrise.split(":")[0]) + int(self.offset/3600)) + ":" + self.sunrise.split(":")[1]
-        self.sunset = str(int(self.sunset.split(":")[0]) + int(self.offset/3600)) + ":" + self.sunset.split(":")[1]
-
-        # Correct sunrise hour if less than 0 or greater than 23
-        if int(self.sunrise.split(":")[0]) < 0:
-            self.sunrise = str(int(self.sunrise.split(":")[0]) + 24) + ":" + self.sunrise.split(":")[1]
-        elif int(self.sunrise.split(":")[0]) > 23:
-            self.sunrise = str(int(self.sunrise.split(":")[0]) - 24) + ":" + self.sunrise.split(":")[1]
-
-        # Correct sunset hour if less than 0 or greater than 23
-        if int(self.sunset.split(":")[0]) < 0:
-            self.sunset = str(int(self.sunset.split(":")[0]) + 24) + ":" + self.sunset.split(":")[1]
-        elif int(sunset.split(":")[0]) > 23:
-            self.sunset = str(int(self.sunset.split(":")[0]) - 24) + ":" + self.sunset.split(":")[1]
 
 
 
@@ -206,7 +201,7 @@ class Config():
         schedule.sort()
 
         # Get epoch time in current timezone
-        epoch = time.mktime(time.localtime()) + self.offset
+        epoch = time.mktime(time.localtime())
         # Get time tuple in current timezone
         now = time.localtime(epoch)
 
@@ -244,7 +239,7 @@ class Config():
             schedule.sort()
 
             # Get epoch time in current timezone
-            epoch = time.mktime(time.localtime()) + self.offset
+            epoch = time.mktime(time.localtime())
 
             for rule in range(0, len(schedule)):
                 if rule is not len(schedule) - 1: # If current rule isn't the last rule, then end = next rule
@@ -455,11 +450,15 @@ def log(message):
 def reload_schedule_rules(timer):
     print("3:00 am callback, reloading schedule rules...")
     log("3:00 am callback, reloading schedule rules...")
-    Config(json.load(open('config.json', 'r')))
+    #global config
+    #config = Config(json.load(open('config.json', 'r')))
+    global reload_config
+    reload_config = True
 
 
 
 def reboot(arg="unused"):
+    print("Reboot function called, rebooting...")
     log("Reboot function called, rebooting...\n")
     import machine
     machine.reset()
@@ -583,7 +582,7 @@ for device in config.devices:
 
 
 # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
-epoch = time.mktime(time.localtime()) + config.offset
+epoch = time.mktime(time.localtime())
 now = time.localtime(epoch)
 if now[3] < 3:
     next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
@@ -592,31 +591,42 @@ else:
 
 # Set timer to reload schedule rules at a random time between 3-4 am (prevent multiple units hitting API at same second)
 next_reset = (next_reset - epoch + randrange(3600)) * 1000
-rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedule_rules)
-
+config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedule_rules)
+# TODO - This will only run once! Need to do it at end of API calls function
 
 
 log("Starting main loop...")
 while True:
-    if motion:
+    if not reload_config:
 
-        if lights is not True: # Only turn on if currently off
-            log("Motion detected (main loop)")
-            print("motion detected")
+        if motion:
 
-            # Call send method of each class instance, argument = turn ON
-            for device in config.devices:
-                device.send(1)
+            if lights is not True: # Only turn on if currently off
+                log("Motion detected (main loop)")
+                print("motion detected")
+
+                # Call send method of each class instance, argument = turn ON
+                for device in config.devices:
+                    device.send(1)
+
+        else:
+            if lights is not False: # Only turn off if currently on
+                log("Main loop: Turning lights off...")
+
+                # Call send method of each class instance, argument = turn OFF
+                for device in config.devices:
+                    device.send(0)
+
+        time.sleep_ms(20) # TODO - is this necessary?
 
     else:
-        if lights is not False: # Only turn off if currently on
-            log("Main loop: Turning lights off...")
-
-            # Call send method of each class instance, argument = turn OFF
-            for device in config.devices:
-                device.send(0)
-
-    time.sleep_ms(20) # TODO - is this necessary?
+        # TODO - continue testing this, it has theoretical advantages but so far it works just as well just using reload_schedule_rules function
+        pir.irq(handler=None)
+        del config
+        gc.collect()
+        config = Config(json.load(open('config.json', 'r')))
+        pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
+        reload_config = False
 
 
 
