@@ -13,6 +13,7 @@ from struct import pack
 import json
 import os
 import _thread
+from random import randrange
 
 
 
@@ -453,6 +454,7 @@ def log(message):
 # Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)
 def reload_schedule_rules(timer):
     print("3:00 am callback, reloading schedule rules...")
+    log("3:00 am callback, reloading schedule rules...")
     Config(json.load(open('config.json', 'r')))
 
 
@@ -588,8 +590,8 @@ if now[3] < 3:
 else:
     next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, now[6], now[7])) # In testing, only needed to increment day - other parameters roll over correctly
 
-# Set interrupt to re-run setup at 3:00 am (epoch times only work once, need to refresh daily)
-next_reset = (next_reset - epoch) * 1000
+# Set timer to reload schedule rules at a random time between 3-4 am (prevent multiple units hitting API at same second)
+next_reset = (next_reset - epoch + randrange(3600)) * 1000
 rule_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedule_rules)
 
 
