@@ -56,10 +56,6 @@ class Config():
         # Call function to connect to wifi + hit APIs
         self.api_calls()
 
-        # Create sub-dict containing delay schedule rules (how long lights stay on after motion)
-        self.delay = {}
-        self.delay["schedule"] = self.convert_rules(conf["delay"]["schedule"])
-
         # Create empty dictionairy, will contain sub-dict for each device
         self.devices = {}
 
@@ -78,7 +74,15 @@ class Config():
             # Overwrite schedule section with unix timestamp rules
             self.devices[instance]["schedule"] = self.convert_rules(conf[device]["schedule"])
 
-        self.rule_parser()
+        # Create empty dictionairy, will contain sub-dict for each sensor
+        self.sensors = {}
+
+        for sensor in conf:
+            if not sensor.startswith("sensor"): continue
+
+            if conf[sensor]["type"] == "pir":
+                # Temporarily load whole contents, will be replaced by Thermostat init method later
+                self.sensors[sensor] = conf[sensor]
 
         log("Finished instantiating config")
 
@@ -226,11 +230,12 @@ class Config():
         next_rule = None
 
         items = {}
-        items["delay"] = self.delay["schedule"]
 
         for i in self.devices:
             items[i] = self.devices[i]["schedule"]
 
+        for i in self.sensors:
+            items[i] = self.sensors[i]["schedule"]
 
         # Iterate all devices in config
         for i in items:
@@ -256,15 +261,23 @@ class Config():
                 # Check if actual epoch time is between current rule and next rule
                 if schedule[rule] <= epoch < end:
 
-                    if i == "delay":
-                        self.delay["current"] = self.delay["schedule"][schedule[rule]]
-                    else:
-                        for device in self.devices:
-                            if i == device:
-                                if "Tplink" in str(device):
-                                    device.brightness = self.devices[device]["schedule"][schedule[rule]]
-                                else:
-                                    device.enabled = self.devices[device]["schedule"][schedule[rule]]
+                    # TODO - simplify this (make all classes have a "current_rule" param so they all match)
+                    # Also check if "Tplink" in i before iterating self.*, use result to decide which to iterate
+
+                    for device in self.devices:
+                        if i == device:
+                            if "Tplink" in str(device):
+                                device.brightness = self.devices[device]["schedule"][schedule[rule]]
+                            else:
+                                device.enabled = self.devices[device]["schedule"][schedule[rule]]
+
+                    for sensor in self.sensors:
+                        if i == sensor:
+                            if "MotionSensor" in str(sensor):
+                                sensor.delay = self.sensors[sensor]["schedule"][schedule[rule]]
+                            else:
+                                sensor.setting = self.sensors[sensor]["schedule"][schedule[rule]]
+
 
                     # Find the next rule (out of all devices)
                     # On first iteration, set next rule for current device
@@ -419,6 +432,85 @@ class Relay():
 
 
 
+class MotionSensor():
+    def __init__(self, name, pin, targets, delay):
+        # Pin setup
+        self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+
+        self.name = name
+        self.delay = delay
+
+        # For each target: find device instance with matching name, add to list
+        self.targets = []
+        for t in targets:
+            for device in config.devices:
+                if device.name == t:
+                    self.targets.append(device)
+
+        # Changed by hware interrupt
+        self.motion = False
+
+        # Remember target state, don't turn on/off if already on/off
+        self.state = None
+
+        _thread.start_new_thread(self.loop, ())
+
+        # Create hardware interrupt
+        self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
+
+
+    # Interrupt routine, called when motion sensor triggered
+    def motion_detected(self, pin):
+        self.motion = True
+
+        # Set reset timer
+        # TODO - since can't reliably know how many sensors, move to software timers and self them
+        if not "None" in str(self.delay):
+            off = int(self.delay) * 60000 # Convert to ms
+            # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
+            timer.init(period=off, mode=Timer.ONE_SHOT, callback=self.resetTimer)
+        else:
+            # Stop any reset timer that may be running from before delay = None
+            timer.deinit()
+
+
+
+    def resetTimer(self, timer):
+        log("resetTimer interrupt called")
+        # Reset motion, causes self.loop to fade lights off
+        self.motion = False
+
+
+
+    def loop(self):
+        while True:
+
+            if self.motion:
+
+                if self.state is not True: # Only turn on if currently off
+                    log("Motion detected")
+                    print("motion detected")
+
+                    # Call send method of each class instance, argument = turn ON
+                    for device in self.targets:
+                        device.send(1)
+
+                    self.state = True
+
+            else:
+                if self.state is not False: # Only turn off if currently on
+                    log("Main loop: Turning lights off...")
+
+                    # Call send method of each class instance, argument = turn OFF
+                    for device in self.targets:
+                        device.send(0)
+
+                    self.state = False
+
+            time.sleep_ms(20) # TODO - is this necessary?
+
+
+
 # Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
 def log(message):
     # TODO - when disk fills up, writing log causes OSError: 28 and everything hangs
@@ -462,35 +554,6 @@ def reboot(arg="unused"):
     log("Reboot function called, rebooting...\n")
     import machine
     machine.reset()
-
-
-
-def resetTimer(timer):
-    # Hold is set to True after lights fade on, prevents main loop from running
-    # This keeps lights on until this function is called by 5 min timer
-    log("resetTimer interrupt called")
-
-    # Reset motion so lights fade off next time loop runs
-    global motion
-    motion = False
-
-
-
-# Interrupt routine, called when motion sensor triggered
-def motion_detected(pin):
-    global motion
-    motion = True
-
-    # Set reset timer
-    global delay
-
-    if not "None" in str(config.delay["current"]):
-        off = int(config.delay["current"]) * 60000 # Convert to ms
-        # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
-        timer.init(period=off, mode=Timer.ONE_SHOT, callback=resetTimer)
-    else:
-        # Stop any reset timer that may be running from before delay = None
-        timer.deinit()
 
 
 
@@ -563,10 +626,26 @@ except OSError: # File does not exist
 # Instantiate config object - init method replaces old startup function (convert rules, connect to wifi, API calls, etc)
 config = Config(json.load(open('config.json', 'r')))
 
-webrepl.start()
+# Instantiate sensor objects
+for sensor in config.sensors:
+    if config.sensors[sensor]["type"] == "pir":
+        if not type(sensor) == str: continue # Hack prevents it from iterating over the new items I add in the loop - TODO find a better way that is actually supported
+        # Create instance
+        instance = MotionSensor(sensor, config.sensors[sensor]["pin"], config.sensors[sensor]["targets"], None)
 
-# Create interrupt, call handler function when motion detected
-pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
+        # Replace key with instance object
+        config.sensors[instance] = config.sensors[sensor]
+        del config.sensors[sensor]
+
+        # Overwrite schedule section with unix timestamp rules
+        config.sensors[instance]["schedule"] = config.convert_rules(config.sensors[instance]["schedule"])
+
+# Now that config.devices and config.sensors both contain schedule rules in correct format, rule_parser finds correct rule for each and sets their instance attribute accordingly
+# TODO - Move this and the sensor instantiation back into config.__init__
+# Will need to find all calls to config.* in sensor.__init__ methods and find alterantives (pass parameters to init maybe?)
+config.rule_parser()
+
+webrepl.start()
 
 # Start thread listening for upload so unit will auto-reboot if code is updated
 _thread.start_new_thread(listen_for_upload, ())
@@ -595,27 +674,11 @@ config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedu
 # TODO - This will only run once! Need to do it at end of API calls function
 
 
+
+# TODO - Move this into function
 log("Starting main loop...")
 while True:
     if not reload_config:
-
-        if motion:
-
-            if lights is not True: # Only turn on if currently off
-                log("Motion detected (main loop)")
-                print("motion detected")
-
-                # Call send method of each class instance, argument = turn ON
-                for device in config.devices:
-                    device.send(1)
-
-        else:
-            if lights is not False: # Only turn off if currently on
-                log("Main loop: Turning lights off...")
-
-                # Call send method of each class instance, argument = turn OFF
-                for device in config.devices:
-                    device.send(0)
 
         time.sleep_ms(20) # TODO - is this necessary?
 
