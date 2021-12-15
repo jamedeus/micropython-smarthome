@@ -16,9 +16,6 @@ from random import randrange
 
 print("--------Booted--------")
 
-# PIR data pin connected to D15
-pir = Pin(15, Pin.IN, Pin.PULL_DOWN)
-
 # Hardware timer used to keep lights on for 5 min
 timer = Timer(0)
 # Timer re-runs startup every day at 3:00 am (reload schedule rules, sunrise/sunset times, etc)
@@ -28,10 +25,6 @@ reboot_timer = Timer(2)
 # Used when it is time to switch to the next schedule rule
 next_rule_timer = Timer(3)
 
-# Set to True by motion sensor interrupt
-motion = False
-# Remember state of lights to prevent spamming api calls
-lights = None
 # Timer sets this to True at 3:00 am, causes main loop to reload config
 reload_config = False
 
@@ -309,9 +302,9 @@ class Config():
         print(f"rule_parser callback timer set for {next_rule}")
 
         # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
-        global lights
-        if lights:
-            lights = False
+        for i in self.sensors:
+            if "MotionSensor" in str(type(i)):
+                i.state = False
 
 
 
@@ -384,20 +377,16 @@ class Tplink():
             print("Received: ", decrypted)
 
             if state: # Lights were turned ON
-                global lights
-                lights = True # Prevent main loop from turning on repeatedly
+                return True # Prevent main loop from turning on repeatedly
             else: # Lights were turned OFF
-                global lights
-                lights = False # Prevent main loop from turning off repeatedly
-                # TODO - schedule this to run in 5 seconds, otherwise if first device fails but second succeeds it will not try again!
+                return False # Prevent main loop from turning off repeatedly
+                # TODO - schedule this to re-run in 5 seconds, otherwise if first device fails but second succeeds it will not try again!
+                # Can use a software timer self'd to this instance, main loop doesn't need to call again
 
         except: # Failed
             print(f"Could not connect to host {self.ip}")
             log("Could not connect to host " + str(self.ip))
-            global motion
-            motion = True
-            global lights
-            lights = False # Allow main loop to try again immediately
+            # TODO: Find way for main loop to try again immediately (old way using global variables broken by class re-write)
 
 
 
@@ -493,6 +482,7 @@ class MotionSensor():
 
                     # Call send method of each class instance, argument = turn ON
                     for device in self.targets:
+                        # TODO - read return value from send function (implemented in TPlink, but not in Relay). Use to determine if all succeeded - if not, retry
                         device.send(1)
 
                     self.state = True
@@ -573,17 +563,19 @@ def desktop_integration():
         if msg == "on": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
             print("Desktop turned lights ON")
             log("Desktop turned lights ON")
-            global lights
-            lights = True
-            global motion
-            motion = True
+            # Set sensor instance attributes so it knows that desktop changed state
+            for sensor in config.sensors:
+                if config.sensors[sensor]["type"] == "pir":
+                    sensor.state = True
+                    sensor.motion = True
         if msg == "off": # Allow main loop to continue when desktop turns lights off
             print("Desktop turned lights OFF")
             log("Desktop turned lights OFF")
-            global lights
-            lights = False
-            global motion
-            motion = False
+            # Set sensor instance attributes so it knows that desktop changed state
+            for sensor in config.sensors:
+                if config.sensors[sensor]["type"] == "pir":
+                    sensor.state = False
+                    sensor.motion = False
 
 
 
@@ -684,11 +676,9 @@ while True:
 
     else:
         # TODO - continue testing this, it has theoretical advantages but so far it works just as well just using reload_schedule_rules function
-        pir.irq(handler=None)
         del config
         gc.collect()
         config = Config(json.load(open('config.json', 'r')))
-        pir.irq(trigger=Pin.IRQ_RISING, handler=motion_detected)
         reload_config = False
 
 
