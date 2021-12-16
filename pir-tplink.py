@@ -62,8 +62,8 @@ class Config():
             elif conf[device]["type"] == "relay" or conf[device]["type"] == "desktop":
                 instance = Relay( device, conf[device]["ip"], None )
 
-            # Add to self.devices dict with class object as key + json sub-dict as value
-            self.devices[instance]  = conf[device]
+            # Add to config.devices dict with class object as key + json sub-dict as value
+            self.devices[instance] = conf[device]
             # Overwrite schedule section with unix timestamp rules
             self.devices[instance]["schedule"] = self.convert_rules(conf[device]["schedule"])
 
@@ -73,9 +73,23 @@ class Config():
         for sensor in conf:
             if not sensor.startswith("sensor"): continue
 
+            # Get class instances of each of the sensor's targets
+            targets = []
+            for target in conf[sensor]["targets"]:
+                for device in self.devices:
+                    if device.name == target:
+                        targets.append(device)
+
+            # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
-                # Temporarily load whole contents, will be replaced by Thermostat init method later
-                self.sensors[sensor] = conf[sensor]
+                instance = MotionSensor(sensor, conf[sensor]["pin"], targets, None)
+
+            # Add to config.sensors dict with class object as key + json sub-dict as value
+            self.sensors[instance] = conf[sensor]
+            # Overwrite schedule section with unix timestamp rules
+            self.sensors[instance]["schedule"] = self.convert_rules(conf[sensor]["schedule"])
+
+        self.rule_parser()
 
         log("Finished instantiating config")
 
@@ -430,11 +444,7 @@ class MotionSensor():
         self.delay = delay
 
         # For each target: find device instance with matching name, add to list
-        self.targets = []
-        for t in targets:
-            for device in config.devices:
-                if device.name == t:
-                    self.targets.append(device)
+        self.targets = targets
 
         # Changed by hware interrupt
         self.motion = False
@@ -617,25 +627,6 @@ except OSError: # File does not exist
 
 # Instantiate config object - init method replaces old startup function (convert rules, connect to wifi, API calls, etc)
 config = Config(json.load(open('config.json', 'r')))
-
-# Instantiate sensor objects
-for sensor in config.sensors:
-    if config.sensors[sensor]["type"] == "pir":
-        if not type(sensor) == str: continue # Hack prevents it from iterating over the new items I add in the loop - TODO find a better way that is actually supported
-        # Create instance
-        instance = MotionSensor(sensor, config.sensors[sensor]["pin"], config.sensors[sensor]["targets"], None)
-
-        # Replace key with instance object
-        config.sensors[instance] = config.sensors[sensor]
-        del config.sensors[sensor]
-
-        # Overwrite schedule section with unix timestamp rules
-        config.sensors[instance]["schedule"] = config.convert_rules(config.sensors[instance]["schedule"])
-
-# Now that config.devices and config.sensors both contain schedule rules in correct format, rule_parser finds correct rule for each and sets their instance attribute accordingly
-# TODO - Move this and the sensor instantiation back into config.__init__
-# Will need to find all calls to config.* in sensor.__init__ methods and find alterantives (pass parameters to init maybe?)
-config.rule_parser()
 
 webrepl.start()
 
