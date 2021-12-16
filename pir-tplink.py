@@ -609,7 +609,7 @@ def desktop_integration():
 
 
 
-def listen_for_upload():
+def disk_monitor():
     # Get filesize/modification time (to detect upload in future)
     old_code = os.stat("boot.py")
     old_config = os.stat("config.json")
@@ -623,27 +623,25 @@ def listen_for_upload():
             time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             reboot()
         elif not os.stat("config.json") == old_config:
-            # If file changed (new config received from webrepl), reboot
             print("\nReceived new config from webrepl, rebooting...\n")
             log("Received new config from webrepl, rebooting...")
             time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             reboot()
+        # Don't let the log exceed 500 KB, full disk hangs system + can't pull log via webrepl
+        elif os.stat('log.txt')[6] > 500000:
+            print("\nLog exceeded 500 KB, clearing...\n")
+            os.remove('log.txt')
+            log("Deleted old log (exceeded 500 KB size limit)")
         else:
             time.sleep(1) # Only check once per second
 
 
 
-# Don't let log exceed 500 KB - can fill disk, also cannot be pulled via webrepl without timing out
-# TODO move this into listen_for_upload, rename disk_monitor or something
+# Check if log file exists, create if not
 try:
-    if os.stat('log.txt')[6] > 500000:
-        print("\nLog exceeded 500 KB, clearing...\n")
-        os.remove('log.txt')
-        log("Deleted old log (exceeded 500 KB size limit)")
+    os.stat('log.txt')
 except OSError: # File does not exist
-    pass
-
-
+    log("Created log file")
 
 # Instantiate config object - init method replaces old startup function (convert rules, connect to wifi, API calls, etc)
 config = Config(json.load(open('config.json', 'r')))
@@ -651,24 +649,17 @@ config = Config(json.load(open('config.json', 'r')))
 webrepl.start()
 
 # Start thread listening for upload so unit will auto-reboot if code is updated
-_thread.start_new_thread(listen_for_upload, ())
+_thread.start_new_thread(disk_monitor, ())
 
 
 
 # TODO - Move this into function
-log("Starting main loop...")
 while True:
     if not reload_config:
-
-        time.sleep_ms(20) # TODO - is this necessary?
-
+        time.sleep(30)
     else:
         # TODO - continue testing this, it has theoretical advantages but so far it works just as well just using reload_schedule_rules function
         del config
         gc.collect()
         config = Config(json.load(open('config.json', 'r')))
         reload_config = False
-
-
-
-# TODO - turn on LED and write log lines here, will run if uncaught exception breaks the loop
