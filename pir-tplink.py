@@ -189,29 +189,6 @@ class Config():
 
 
 
-    # Convert times to 24h format, also truncate seconds
-    def convert_time(self, t):
-        if t[-2:] == "AM":
-            if t[:2] == "12":
-                time = str("00" + t[2:5]) ## Change 12:xx to 00:xx
-            else:
-                time = t[:-6] # No changes just truncate seconds + AM
-        elif t[-2:] == "PM":
-            if t[:2] == "12":
-                time = t[:-6] # No changes just truncate seconds + AM
-            else:
-                # API hour does not have leading 0, so first 2 char may contain : (throws error when cast to int). This approach works with or without leading 0.
-                try:
-                    time = str(int(t[:2]) + 12) + t[2:5] # Works if hour is double digit
-                except ValueError:
-                    time = str(int(t[:1]) + 12) + t[1:4] # Works if hour is single-digit
-        else:
-            print("Fatal error: time format incorrect")
-            log("convert_time: Fatal error: time format incorrect")
-        return time
-
-
-
     # Receives a dictionairy of schedule rules with HH:MM timestamps
     # Returns a dictionairy of the same rules with unix epoch timestamps (next run only)
     # Called every day at 3:00 am since epoch times only work once
