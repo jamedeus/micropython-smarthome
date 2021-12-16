@@ -91,6 +91,26 @@ class Config():
 
         self.rule_parser()
 
+        # Check if desktop integration is being used
+        for device in self.devices:
+            if self.devices[device]["type"] == "desktop":
+                # Create thread, listen for messages from desktop and keep lights boolean in sync
+                _thread.start_new_thread(desktop_integration, ())
+                log("Desktop integration is being used, starting thread to listen for messages")
+                break # Only need 1 thread, stop loop after first match
+
+        # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
+        epoch = time.mktime(time.localtime())
+        now = time.localtime(epoch)
+        if now[3] < 3:
+            next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
+        else:
+            next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, now[6], now[7])) # In testing, only needed to increment day - other parameters roll over correctly
+
+        # Set timer to reload schedule rules at a random time between 3-4 am (prevent multiple units hitting API at same second)
+        next_reset = (next_reset - epoch + randrange(3600)) * 1000
+        config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedule_rules)
+
         log("Finished instantiating config")
 
 
@@ -632,29 +652,6 @@ webrepl.start()
 
 # Start thread listening for upload so unit will auto-reboot if code is updated
 _thread.start_new_thread(listen_for_upload, ())
-
-# Check if desktop integration is being used
-for device in config.devices:
-    if config.devices[device]["type"] == "desktop":
-        # Create thread, listen for messages from desktop and keep lights boolean in sync
-        _thread.start_new_thread(desktop_integration, ())
-        log("Desktop integration is being used, starting thread to listen for messages")
-        break # Only need 1 thread, stop loop after first match
-
-
-
-# Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
-epoch = time.mktime(time.localtime())
-now = time.localtime(epoch)
-if now[3] < 3:
-    next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
-else:
-    next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, now[6], now[7])) # In testing, only needed to increment day - other parameters roll over correctly
-
-# Set timer to reload schedule rules at a random time between 3-4 am (prevent multiple units hitting API at same second)
-next_reset = (next_reset - epoch + randrange(3600)) * 1000
-config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedule_rules)
-# TODO - This will only run once! Need to do it at end of API calls function
 
 
 
