@@ -49,6 +49,9 @@ class Config():
         # Call function to connect to wifi + hit APIs
         self.api_calls()
 
+        # Remember if a thread has been started running desktop_integration
+        self.desktop = False
+
         # Create empty dictionairy, will contain sub-dict for each device
         self.devices = {}
 
@@ -61,6 +64,11 @@ class Config():
                 instance = Tplink( device, conf[device]["ip"], conf[device]["type"], None )
             elif conf[device]["type"] == "relay" or conf[device]["type"] == "desktop":
                 instance = Relay( device, conf[device]["ip"], None )
+                # If device type is desktop, start desktop_integration thread (unless already running)
+                if conf[device]["type"] == "desktop" and not self.desktop:
+                    _thread.start_new_thread(desktop_integration, ())
+                    log("Desktop integration is being used, starting thread to listen for messages")
+                    self.desktop = True
 
             # Add to config.devices dict with class object as key + json sub-dict as value
             self.devices[instance] = conf[device]
@@ -90,14 +98,6 @@ class Config():
             self.sensors[instance]["schedule"] = self.convert_rules(conf[sensor]["schedule"])
 
         self.rule_parser()
-
-        # Check if desktop integration is being used
-        for device in self.devices:
-            if self.devices[device]["type"] == "desktop":
-                # Create thread, listen for messages from desktop and keep lights boolean in sync
-                _thread.start_new_thread(desktop_integration, ())
-                log("Desktop integration is being used, starting thread to listen for messages")
-                break # Only need 1 thread, stop loop after first match
 
         # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
         epoch = time.mktime(time.localtime())
