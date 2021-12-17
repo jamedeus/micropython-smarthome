@@ -272,23 +272,13 @@ class Config():
                 # Check if actual epoch time is between current rule and next rule
                 if schedule[rule] <= epoch < end:
 
-                    # TODO - simplify this (make all classes have a "current_rule" param so they all match)
-                    # Also check if "Tplink" in i before iterating self.*, use result to decide which to iterate
-
                     for device in self.devices:
                         if i == device:
-                            if "Tplink" in str(device):
-                                device.brightness = self.devices[device]["schedule"][schedule[rule]]
-                            else:
-                                device.enabled = self.devices[device]["schedule"][schedule[rule]]
+                            i.current_rule = self.devices[device]["schedule"][schedule[rule]]
 
                     for sensor in self.sensors:
                         if i == sensor:
-                            if "MotionSensor" in str(sensor):
-                                sensor.delay = self.sensors[sensor]["schedule"][schedule[rule]]
-                            else:
-                                sensor.setting = self.sensors[sensor]["schedule"][schedule[rule]]
-
+                            i.current_rule = self.sensors[sensor]["schedule"][schedule[rule]]
 
                     # Find the next rule (out of all devices)
                     # On first iteration, set next rule for current device
@@ -329,11 +319,11 @@ class Config():
 
 # Used for TP-Link Kasa dimmers + smart bulbs
 class Tplink():
-    def __init__(self, name, ip, device, brightness):
+    def __init__(self, name, ip, device, current_rule):
         self.name = name
         self.ip = ip
         self.device = device
-        self.brightness = brightness
+        self.current_rule = current_rule
         log("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device))
 
 
@@ -363,11 +353,11 @@ class Tplink():
 
 
     def send(self, state=1):
-        log("Tplink.send method called, IP=" + str(self.ip) + ", Brightness=" + str(self.brightness) + ", state=" + str(state))
+        log("Tplink.send method called, IP=" + str(self.ip) + ", Brightness=" + str(self.current_rule) + ", state=" + str(state))
         if self.device == "dimmer":
-            cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.brightness) + '}}}'
+            cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.current_rule) + '}}}'
         else:
-            cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(self.brightness) + '}}}'
+            cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(self.current_rule) + '}}}'
 
         # Send command and receive reply
         try:
@@ -407,17 +397,17 @@ class Tplink():
 
 # Used for ESP8266 Relays + Desktops (running desktop-integration.py)
 class Relay():
-    def __init__(self, name, ip, enabled):
+    def __init__(self, name, ip, current_rule):
         self.name = name
         self.ip = ip
-        self.enabled = enabled
+        self.current_rule = current_rule
         log("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
 
 
 
     def send(self, state=1):
         log("Relay.send method called, IP = " + str(self.ip) + ", state = " + str(state))
-        if self.enabled == "off" and state == 1:
+        if self.current_rule == "off" and state == 1:
             pass
         else:
             try:
@@ -442,12 +432,12 @@ class Relay():
 
 
 class MotionSensor():
-    def __init__(self, name, pin, targets, delay):
+    def __init__(self, name, pin, targets, current_rule):
         # Pin setup
         self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
 
         self.name = name
-        self.delay = delay
+        self.current_rule = current_rule
 
         # For each target: find device instance with matching name, add to list
         self.targets = targets
@@ -471,8 +461,8 @@ class MotionSensor():
 
         # Set reset timer
         # TODO - since can't reliably know how many sensors, move to software timers and self them
-        if not "None" in str(self.delay):
-            off = int(self.delay) * 60000 # Convert to ms
+        if not "None" in str(self.current_rule):
+            off = int(self.current_rule) * 60000 # Convert to ms
             # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
             timer.init(period=off, mode=Timer.ONE_SHOT, callback=self.resetTimer)
         else:
