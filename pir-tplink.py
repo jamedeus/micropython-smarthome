@@ -452,7 +452,18 @@ class MotionSensor():
         self.loop_started = False
 
         # Create hardware interrupt
+        self.enable()
+
+
+
+    def enable(self):
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
+
+
+
+    def disable(self):
+        self.sensor.irq(handler=None)
+
 
 
     # Interrupt routine, called when motion sensor triggered
