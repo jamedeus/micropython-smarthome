@@ -555,10 +555,9 @@ def log(message):
 def reload_schedule_rules(timer):
     print("3:00 am callback, reloading schedule rules...")
     log("3:00 am callback, reloading schedule rules...")
-    #global config
-    #config = Config(json.load(open('config.json', 'r')))
-    global reload_config
-    reload_config = True
+    # Temporary fix: Unable to reload after 2-3 days due to mem fragmentation (no continuous free block long enough for API response)
+    # Since this will take a lot of testing to figure out, just reboot until then. TODO - fix memory issue
+    reboot()
 
 
 
@@ -643,16 +642,3 @@ webrepl.start()
 
 # Start thread listening for upload so unit will auto-reboot if code is updated
 _thread.start_new_thread(disk_monitor, ())
-
-
-
-# TODO - Move this into function
-while True:
-    if not reload_config:
-        time.sleep(30)
-    else:
-        # TODO - continue testing this, it has theoretical advantages but so far it works just as well just using reload_schedule_rules function
-        del config
-        gc.collect()
-        config = Config(json.load(open('config.json', 'r')))
-        reload_config = False
