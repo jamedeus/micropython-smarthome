@@ -395,17 +395,13 @@ class Tplink():
             print("Sent:     ", cmd)
             print("Received: ", decrypted)
 
-            if state: # Lights were turned ON
-                return True # Prevent main loop from turning on repeatedly
-            else: # Lights were turned OFF
-                return False # Prevent main loop from turning off repeatedly
-                # TODO - schedule this to re-run in 5 seconds, otherwise if first device fails but second succeeds it will not try again!
-                # Can use a software timer self'd to this instance, main loop doesn't need to call again
+            return True # Tell calling function that request succeeded
 
         except: # Failed
             print(f"Could not connect to host {self.ip}")
             log("Could not connect to host " + str(self.ip))
-            # TODO: Find way for main loop to try again immediately (old way using global variables broken by class re-write)
+
+            return False # Tell calling function that request failed
 
 
 
@@ -424,17 +420,22 @@ class Relay():
         if self.enabled == "off" and state == 1:
             pass
         else:
-            s = socket.socket()
-            print(f"Running send_relay, ip={self.ip}")
-            s.connect((self.ip, 4200))
-            if state:
-                print("Turned desktop ON")
-                s.send("on".encode())
-            else:
-                print("Turned desktop OFF")
-                s.send("off".encode())
-            s.close()
-            log("Relay.send finished")
+            try:
+                s = socket.socket()
+                print(f"Running send_relay, ip={self.ip}")
+                s.connect((self.ip, 4200))
+                if state:
+                    print("Turned desktop ON")
+                    s.send("on".encode())
+                else:
+                    print("Turned desktop OFF")
+                    s.send("off".encode())
+                s.close()
+                log("Relay.send finished")
+
+                return True # Tell calling function that request succeeded
+            except:
+                return False # Tell calling function that request failed
             # TODO - handle timed-out connection, currently whole thing crashes if target is unavailable
             # TODO - receive response (msg OK/Invalid), log errors
 
@@ -496,22 +497,31 @@ class MotionSensor():
                     log("Motion detected")
                     print("motion detected")
 
+                    # Record whether each send succeeded/failed
+                    responses = []
+
                     # Call send method of each class instance, argument = turn ON
                     for device in self.targets:
-                        # TODO - read return value from send function (implemented in TPlink, but not in Relay). Use to determine if all succeeded - if not, retry
-                        device.send(1)
+                        responses.append(device.send(1)) # Send method returns either True or False
 
-                    self.state = True
+                    # If all succeded, set bool to prevent retrying
+                    if not False in responses:
+                        self.state = True
 
             else:
                 if self.state is not False: # Only turn off if currently on
                     log("Main loop: Turning lights off...")
 
+                    # Record whether each send succeeded/failed
+                    responses = []
+
                     # Call send method of each class instance, argument = turn OFF
                     for device in self.targets:
-                        device.send(0)
+                        responses.append(device.send(0)) # Send method returns either True or False
 
-                    self.state = False
+                    # If all succeded, set bool to prevent retrying
+                    if not False in responses:
+                        self.state = False
 
             time.sleep_ms(20) # TODO - is this necessary?
 
