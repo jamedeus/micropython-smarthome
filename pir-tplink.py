@@ -99,6 +99,13 @@ class Config():
 
         self.rule_parser()
 
+        # Now that rule_parser has replaced placeholder brightness for each target, start the sensors' loops (allows them to turn targets on)
+        for sensor in self.sensors:
+            if not sensor.loop_started:
+                # Start loop if not already running, set bool to stop multiple threads being created when this re-runs (every 3 am)
+                _thread.start_new_thread(sensor.loop, ())
+                sensor.loop_started = True
+
         # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
         epoch = time.mktime(time.localtime())
         now = time.localtime(epoch)
@@ -296,6 +303,7 @@ class Config():
                     break
 
                 #else:
+                    # TODO - Test whether this functionality is worth restoring (was advantageous when this funct ran every time ligths turned on, not sure if it is now)
                     # If rule has already expired, add 24 hours (move to tomorrow same time) and delete original
                     # This fixes rules between midnight - 3am (all rules are set for current day, so these are already in the past)
                     # Originally tried this in convert_rules(), but that causes *all* rules to be in future, so no match is found here
@@ -314,7 +322,7 @@ class Config():
 
         # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
         for i in self.sensors:
-            if "MotionSensor" in str(type(i)):
+            if "MotionSensor" in str(type(i)) and i.state == True:
                 i.state = False
 
 
@@ -449,7 +457,8 @@ class MotionSensor():
         # Remember target state, don't turn on/off if already on/off
         self.state = None
 
-        _thread.start_new_thread(self.loop, ())
+        # Remember if loop is running (started by Config init method, since it runs again at 3 am don't want multiple threads w/ same loop)
+        self.loop_started = False
 
         # Create hardware interrupt
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
@@ -510,9 +519,6 @@ class MotionSensor():
 
 # Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
 def log(message):
-    # TODO - when disk fills up, writing log causes OSError: 28 and everything hangs
-    # Could wrap this in try/except and delete log if OSError
-    # Probably better to just run a timer callback and check filesize every hour or something
     now = time.localtime()
     line = str(now[0]) + "/"
     for i in range(1,3):
