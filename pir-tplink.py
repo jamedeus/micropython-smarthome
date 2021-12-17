@@ -463,6 +463,7 @@ class MotionSensor():
 
     def disable(self):
         self.sensor.irq(handler=None)
+        timer.deinit()
 
 
 
