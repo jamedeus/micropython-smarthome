@@ -1,0 +1,10 @@
+[Unit]
+Description=Micropython smarthome desktop integration
+After=network.target
+
+[Service]
+User=jamedeus
+ExecStart=/usr/bin/python3 /home/jamedeus/git/micropython-smarthome/desktop-integration.py
+
+[Install]
+WantedBy=network.target
