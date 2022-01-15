@@ -272,13 +272,10 @@ class Config():
                 # Check if actual epoch time is between current rule and next rule
                 if schedule[rule] <= epoch < end:
 
-                    for device in self.devices:
-                        if i == device:
-                            i.current_rule = self.devices[device]["schedule"][schedule[rule]]
-
-                    for sensor in self.sensors:
-                        if i == sensor:
-                            i.current_rule = self.sensors[sensor]["schedule"][schedule[rule]]
+                    if i.name.startswith("device"):
+                        i.current_rule = self.devices[i]["schedule"][schedule[rule]]
+                    elif i.name.startswith("sensor"):
+                        i.current_rule = self.sensors[i]["schedule"][schedule[rule]]
 
                     # Find the next rule (out of all devices)
                     # On first iteration, set next rule for current device
