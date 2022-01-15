@@ -101,7 +101,7 @@ def dpms_mon():
         # Check current state
         current = get_dpms_state()
         if not current == state:
-            print(f"State changed from {state} to {current}")
+            print(f"Monitors changed from {state} to {current}")
             state = current
             if not "On" in current:
                 send() # Turn overhead lights off when computer screen goes to sleep
@@ -131,7 +131,7 @@ def off():
     global state
     if state == False: # Will be True if motion detected before timer expired
         if int(re.sub("[^0-9]", "", str(subprocess.check_output('xprintidle', shell=True)))) > 60000: # Only turn off if user has been inactive for >60 seconds
-            print("Off command received, turning off")
+            print("Off command received from motion sensor, turning screen off")
             os.system('xset dpms force off')
         else:
             print("Off command received - user is active, keeping screen on")
@@ -158,7 +158,7 @@ def server():
             current = get_dpms_state()
             # Don't turn monitor on if already on (causes artifacting)
             if not "On" in current:
-                print("On command received, turning on")
+                print("On command received from motion sensor, turning screen on")
                 os.system('xset dpms force on')
             else:
                 print("On command received, but monitors are already on")
@@ -168,7 +168,7 @@ def server():
             # Wait 5 seconds (after lights turn off) before turning monitor off, gives user a chance to override
             t = threading.Timer(interval = 5.0, function=off)
             t.start()
-            print("Off command received, setting 5 sec timer")
+            print("Off command received from motion sensor, setting 5 sec timer")
 
         # Close connection, restart loop and wait for next connection
         conn.close()
