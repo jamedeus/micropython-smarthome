@@ -650,21 +650,6 @@ def remote_control():
             print("received status request, getting json...")
             status_dict = get_status_dict()
             conn.send(json.dumps(status_dict))
-
-        #Client side:
-        #>>> def request(arg):
-        #...     s = socket.socket()
-        #...     s.connect(('192.168.1.224', 6969))
-        #...     s.send(json.dumps(arg).encode())
-        #...     data = s.recv(4096)
-        #...     return json.loads(data)
-        #
-        #
-        # Possible arguments:
-        # - "status"
-        # - ['enable', 'sensor1']
-        # - ['disable', 'sensor1']
-
         else:
             if msg[0] == "disable" and msg[1].startswith("sensor"):
                 for i in config.sensors:
@@ -678,6 +663,9 @@ def remote_control():
                         print(f"Received command to enable {msg[1]}, enabling...")
                         i.enable()
                         conn.send(json.dumps("done"))
+
+        # Prevent running out of mem after repeated requests
+        gc.collect()
 
 
 
