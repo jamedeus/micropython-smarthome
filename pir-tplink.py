@@ -63,7 +63,7 @@ class Config():
             if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
                 instance = Tplink( device, conf[device]["ip"], conf[device]["type"], None )
             elif conf[device]["type"] == "relay" or conf[device]["type"] == "desktop":
-                instance = Relay( device, conf[device]["ip"], None )
+                instance = Relay( device, conf[device]["ip"], conf[device]["type"], None )
                 # If device type is desktop, start desktop_integration thread (unless already running)
                 if conf[device]["type"] == "desktop" and not self.desktop:
                     _thread.start_new_thread(desktop_integration, ())
@@ -90,7 +90,7 @@ class Config():
 
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
-                instance = MotionSensor(sensor, conf[sensor]["pin"], targets, None)
+                instance = MotionSensor(sensor, conf[sensor]["pin"], conf[sensor]["type"], targets, None)
 
             # Add to config.sensors dict with class object as key + json sub-dict as value
             self.sensors[instance] = conf[sensor]
@@ -394,9 +394,10 @@ class Tplink():
 
 # Used for ESP8266 Relays + Desktops (running desktop-integration.py)
 class Relay():
-    def __init__(self, name, ip, current_rule):
+    def __init__(self, name, ip, device, current_rule):
         self.name = name
         self.ip = ip
+        self.device = device
         self.current_rule = current_rule
         log("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
 
@@ -429,11 +430,12 @@ class Relay():
 
 
 class MotionSensor():
-    def __init__(self, name, pin, targets, current_rule):
+    def __init__(self, name, pin, device, targets, current_rule):
         # Pin setup
         self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
 
         self.name = name
+        self.device = device
         self.current_rule = current_rule
 
         # For each target: find device instance with matching name, add to list
@@ -455,12 +457,16 @@ class MotionSensor():
 
     def enable(self):
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
+        # Allows remote clients to query whether interrupt is active or not
+        self.active = True
 
 
 
     def disable(self):
         self.sensor.irq(handler=None)
         timer.deinit()
+        # Allows remote clients to query whether interrupt is active or not
+        self.active = False
 
 
 
@@ -628,6 +634,83 @@ def disk_monitor():
 
 
 
+def remote_control():
+    # Create socket listening on port 6969
+    s = socket.socket()
+    s.bind(('', 6969)) # TODO add port in config, replace hardcoded value
+    s.listen(1)
+
+    # Handle connections
+    while True:
+        # Accept connection, decode message
+        conn, addr = s.accept()
+        msg = json.loads(conn.recv(1024).decode())
+
+        if msg == "status": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
+            print("received status request, getting json...")
+            status_dict = get_status_dict()
+            conn.send(json.dumps(status_dict))
+
+        #Client side:
+        #>>> def request(arg):
+        #...     s = socket.socket()
+        #...     s.connect(('192.168.1.224', 6969))
+        #...     s.send(json.dumps(arg).encode())
+        #...     data = s.recv(4096)
+        #...     return json.loads(data)
+        #
+        #
+        # Possible arguments:
+        # - "status"
+        # - ['enable', 'sensor1']
+        # - ['disable', 'sensor1']
+
+        else:
+            if msg[0] == "disable" and msg[1].startswith("sensor"):
+                for i in config.sensors:
+                    if i.name == msg[1]:
+                        print(f"Received command to disable {msg[1]}, disabling...")
+                        i.disable()
+                        conn.send(json.dumps("done"))
+            elif msg[0] == "enable" and msg[1].startswith("sensor"):
+                for i in config.sensors:
+                    if i.name == msg[1]:
+                        print(f"Received command to enable {msg[1]}, enabling...")
+                        i.enable()
+                        conn.send(json.dumps("done"))
+
+
+
+def get_status_dict():
+    status_dict = {}
+    status_dict["metadata"] = {}
+    status_dict["metadata"]["id"] = config.identifier
+    status_dict["metadata"]["floor"] = config.floor
+    status_dict["metadata"]["location"] = config.location
+
+    status_dict["devices"] = {}
+    for i in config.devices:
+        status_dict["devices"][i.name] = {}
+        status_dict["devices"][i.name]["type"] = i.device
+        status_dict["devices"][i.name]["current_rule"] = i.current_rule
+
+    status_dict["sensors"] = {}
+    for i in config.sensors:
+        status_dict["sensors"][i.name] = {}
+        status_dict["sensors"][i.name]["type"] = i.device
+        status_dict["sensors"][i.name]["current_rule"] = i.current_rule
+        status_dict["sensors"][i.name]["targets"] = []
+        for t in i.targets:
+            status_dict["sensors"][i.name]["targets"].append(t.name)
+            for q in status_dict["devices"]:
+                if q == t.name:
+                    status_dict["devices"][q]["turned_on"] = i.state
+        status_dict["sensors"][i.name]["enabled"] = i.active
+
+    return status_dict
+
+
+
 # Check if log file exists, create if not
 try:
     os.stat('log.txt')
@@ -641,3 +724,5 @@ webrepl.start()
 
 # Start thread listening for upload so unit will auto-reboot if code is updated
 _thread.start_new_thread(disk_monitor, ())
+
+_thread.start_new_thread(remote_control, ())
