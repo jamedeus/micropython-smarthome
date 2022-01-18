@@ -74,6 +74,7 @@ class Humidifier():
 
 # TODO remove below here after testing
 
+instance = Humidifier("humidifier", 27, (33, 32, 35), 34)
 
 def remote():
     # Create socket listening on port 4200
@@ -88,12 +89,10 @@ def remote():
         msg = conn.recv(8).decode()
 
         if msg == "on":
-            test()
+            instance.simulate_button()
 
         # Close connection, restart loop and wait for next connection
         conn.close()
 
 
 _thread.start_new_thread(remote, ())
-
-instance = Humidifier("humidifier", 27, (33, 32, 35), 34)
