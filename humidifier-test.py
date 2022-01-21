@@ -35,11 +35,15 @@ class Humidifier():
         self.on_med = Pin(level_pins[1], Pin.IN)
         self.on_hi = Pin(level_pins[2], Pin.IN)
 
-        self.empty_pin = Pin(empty_pin, Pin.IN)
         self.empty = False
+        self.empty_pin = Pin(empty_pin, Pin.IN)
+        self.empty_pin.irq(trigger=Pin.IRQ_FALLING, handler=falling)
 
         # Will be 0 for off, 1 for low, 2 for med, 3 for hi setting
         self.status = 0
+
+        # Used to detect when empty light is blinking
+        self.interrupted = False
 
         _thread.start_new_thread(self.loop, ())
 
@@ -52,21 +56,42 @@ class Humidifier():
 
 
 
+    # Called by interrupt when empty light is blinking
+    def falling(pin):
+        self.interrupted = True
+
+
+
     def loop(self):
         while True:
-            if self.on_low.value():
+            if not self.on_low.value():
                 self.status = 1
-            elif self.on_med.value():
+                led = Pin(2, Pin.OUT, value=0)
+            elif not self.on_med.value():
                 self.status = 2
-            elif self.on_hi.value():
+                led = Pin(2, Pin.OUT, value=1)
+            elif not self.on_hi.value():
                 self.status = 3
+                led = Pin(2, Pin.OUT, value=0)
             else:
                 self.status = 0
+                led = Pin(2, Pin.OUT, value=0)
 
-            if self.empty_pin.value():
+            # Boolean set to True when red empty light blinks (interrupt)
+            if self.interrupted:
                 self.empty = True
-            else:
-                self.empty = False
+                while True:
+                    # Set to False, then wait 2 seconds - if light is blinking it will be flipped back
+                    self.interrupted = False
+                    time.sleep(2)
+
+                    # If light still blinking, stay in loop (all functions disabled until refilled anyway)
+                    if interrupted:
+                        continue
+                    # Once light quits blinking, set reset empty and break
+                    else:
+                        self.empty = False
+                        break
 
             time.sleep(1)
 
