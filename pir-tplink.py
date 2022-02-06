@@ -650,19 +650,34 @@ def remote_control():
             print("received status request, getting json...")
             status_dict = get_status_dict()
             conn.send(json.dumps(status_dict))
-        else:
-            if msg[0] == "disable" and msg[1].startswith("sensor"):
+        elif msg[0] == "disable" and msg[1].startswith("sensor"):
+            for i in config.sensors:
+                if i.name == msg[1]:
+                    print(f"Received command to disable {msg[1]}, disabling...")
+                    i.disable()
+                    conn.send(json.dumps("done"))
+        elif msg[0] == "enable" and msg[1].startswith("sensor"):
+            for i in config.sensors:
+                if i.name == msg[1]:
+                    print(f"Received command to enable {msg[1]}, enabling...")
+                    i.enable()
+                    conn.send(json.dumps("done"))
+        elif msg[0] == "set_rule" and msg[1].startswith("sensor") or msg[1].startswith("device"):
+            target = msg[1]
+
+            if target.startswith("sensor"):
                 for i in config.sensors:
-                    if i.name == msg[1]:
-                        print(f"Received command to disable {msg[1]}, disabling...")
-                        i.disable()
+                    if i.name == target:
+                        print(f"Received command to set {target} delay to {msg[2]} minutes, setting...")
+                        i.current_rule = msg[2]
+
+            elif target.startswith("device"):
+                for i in config.devices:
+                    if i.name == target:
+                        print(f"Received command to set {target} brightness to {msg[2]}, setting...")
+                        i.current_rule = msg[2]
                         conn.send(json.dumps("done"))
-            elif msg[0] == "enable" and msg[1].startswith("sensor"):
-                for i in config.sensors:
-                    if i.name == msg[1]:
-                        print(f"Received command to enable {msg[1]}, enabling...")
-                        i.enable()
-                        conn.send(json.dumps("done"))
+
 
         # Prevent running out of mem after repeated requests
         gc.collect()
@@ -707,6 +722,7 @@ except OSError: # File does not exist
 
 # Instantiate config object - init method replaces old startup function (convert rules, connect to wifi, API calls, etc)
 config = Config(json.load(open('config.json', 'r')))
+# TODO - close file, see if it fixes mem fragmentation
 
 webrepl.start()
 
