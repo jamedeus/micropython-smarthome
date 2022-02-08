@@ -322,7 +322,6 @@ class LedStrip():
         self.device = device
 
         self.pwm = PWM(Pin(pin), duty=0)
-        self.pwm.duty(0) # Firmware bug workaround (in above line, duty=0 is ignored ~10% of the time)
 
         self.bright = 0 # Store current brightness, allows smooth transition when rule changes
 
@@ -536,7 +535,7 @@ def disk_monitor():
             os.remove('log.txt')
             log("Deleted old log (exceeded 500 KB size limit)")
         else:
-            time.sleep(1) # Only check once per second
+            time.sleep(300) # Only check every 5 minutes, reduces PWM fade stutter
 
 
 
@@ -636,4 +635,8 @@ webrepl.start()
 # Start thread listening for upload so unit will auto-reboot if code is updated
 _thread.start_new_thread(disk_monitor, ())
 
-_thread.start_new_thread(remote_control, ())
+# Causes PWM fade to stutter (switching back and forth between threads), disabling until better solution found
+# TODO figure out what makes most sense:
+#   - New concurancy solution (uasyncio)
+#   - Remote_control makes requests instead of listening (user's command goes to server, server waits until request from node)
+#_thread.start_new_thread(remote_control, ())
