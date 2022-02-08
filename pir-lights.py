@@ -70,7 +70,7 @@ class Config():
                     log("Desktop integration is being used, starting thread to listen for messages")
                     self.desktop = True
             elif conf[device]["type"] == "pwm":
-                instance = LedStrip( device, conf[device]["pin"], None )
+                instance = LedStrip( device, conf[device]["type"], conf[device]["pin"], None )
 
             # Add to config.devices dict with class object as key + json sub-dict as value
             self.devices[instance] = conf[device]
@@ -317,8 +317,9 @@ class Config():
 
 
 class LedStrip():
-    def __init__(self, name, pin, current_rule):
+    def __init__(self, name, device, pin, current_rule):
         self.name = name
+        self.device = device
 
         self.pwm = PWM(Pin(pin), duty=0)
         self.pwm.duty(0) # Firmware bug workaround (in above line, duty=0 is ignored ~10% of the time)
@@ -574,13 +575,13 @@ def remote_control():
                 for i in config.sensors:
                     if i.name == target:
                         print(f"Received command to set {target} delay to {msg[2]} minutes, setting...")
-                        i.current_rule = msg[2]
+                        i.current_rule = int(msg[2])
 
             elif target.startswith("device"):
                 for i in config.devices:
                     if i.name == target:
                         print(f"Received command to set {target} brightness to {msg[2]}, setting...")
-                        i.current_rule = msg[2]
+                        i.current_rule = int(msg[2])
                         conn.send(json.dumps("done"))
 
 
