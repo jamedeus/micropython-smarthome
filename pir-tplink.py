@@ -670,6 +670,7 @@ def remote_control():
                     if i.name == target:
                         print(f"Received command to set {target} delay to {msg[2]} minutes, setting...")
                         i.current_rule = msg[2]
+                        conn.send(json.dumps("done"))
 
             elif target.startswith("device"):
                 for i in config.devices:
