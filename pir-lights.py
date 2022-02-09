@@ -534,6 +534,9 @@ class RemoteControl:
                 if data[0] == "status":
                     # TODO: Figure out a way to receive on client side (socket.recv() doesn't work)
                     print("received status request - not yet implemented, ignored")
+                elif data[0] == "reboot":
+                    print(f"\nAPI: Reboot command received from {sreader.get_extra_info('peername')[0]}\n")
+                    reboot()
                 elif data[0] == "disable" and data[1].startswith("sensor"):
                     for i in config.sensors:
                         if i.name == data[1]:

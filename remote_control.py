@@ -9,7 +9,7 @@ import threading
 import time
 import json
 
-functions = ("status", "enable", "disable", "set_rule")
+functions = ("status", "reboot", "enable", "disable", "set_rule")
 
 def error():
     print()
@@ -56,6 +56,8 @@ if sys.argv[1] == "status":
     #data = request("status")
     #print(json.dumps(data, indent=4))
 
+elif sys.argv[1] == "reboot":
+    request(['reboot'])
 elif sys.argv[1] == "disable" and sys.argv[2].startswith("sensor"):
     request(['disable', sys.argv[2]])
     if len(sys.argv) > 3:
