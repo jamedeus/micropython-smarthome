@@ -125,6 +125,36 @@ class Config():
 
 
 
+    def get_status(self):
+        status_dict = {}
+        status_dict["metadata"] = {}
+        status_dict["metadata"]["id"] = self.identifier
+        status_dict["metadata"]["floor"] = self.floor
+        status_dict["metadata"]["location"] = self.location
+
+        status_dict["devices"] = {}
+        for i in self.devices:
+            status_dict["devices"][i.name] = {}
+            status_dict["devices"][i.name]["type"] = i.device
+            status_dict["devices"][i.name]["current_rule"] = i.current_rule
+
+        status_dict["sensors"] = {}
+        for i in self.sensors:
+            status_dict["sensors"][i.name] = {}
+            status_dict["sensors"][i.name]["type"] = i.device
+            status_dict["sensors"][i.name]["current_rule"] = i.current_rule
+            status_dict["sensors"][i.name]["targets"] = []
+            for t in i.targets:
+                status_dict["sensors"][i.name]["targets"].append(t.name)
+                for q in status_dict["devices"]:
+                    if q == t.name:
+                        status_dict["devices"][q]["turned_on"] = i.state
+            status_dict["sensors"][i.name]["enabled"] = i.active
+
+        return status_dict
+
+
+
     def api_calls(self):
         # Auto-reboot if startup doesn't complete in 1 min (prevents API calls hanging, canceled at bottom of function)
         reboot_timer.init(period=60000, mode=Timer.ONE_SHOT, callback=reboot)
@@ -600,36 +630,6 @@ def disk_monitor():
             log("Deleted old log (exceeded 500 KB size limit)")
         else:
             time.sleep(300) # Only check every 5 minutes, reduces PWM fade stutter
-
-
-
-def get_status_dict():
-    status_dict = {}
-    status_dict["metadata"] = {}
-    status_dict["metadata"]["id"] = config.identifier
-    status_dict["metadata"]["floor"] = config.floor
-    status_dict["metadata"]["location"] = config.location
-
-    status_dict["devices"] = {}
-    for i in config.devices:
-        status_dict["devices"][i.name] = {}
-        status_dict["devices"][i.name]["type"] = i.device
-        status_dict["devices"][i.name]["current_rule"] = i.current_rule
-
-    status_dict["sensors"] = {}
-    for i in config.sensors:
-        status_dict["sensors"][i.name] = {}
-        status_dict["sensors"][i.name]["type"] = i.device
-        status_dict["sensors"][i.name]["current_rule"] = i.current_rule
-        status_dict["sensors"][i.name]["targets"] = []
-        for t in i.targets:
-            status_dict["sensors"][i.name]["targets"].append(t.name)
-            for q in status_dict["devices"]:
-                if q == t.name:
-                    status_dict["devices"][q]["turned_on"] = i.state
-        status_dict["sensors"][i.name]["enabled"] = i.active
-
-    return status_dict
 
 
 
