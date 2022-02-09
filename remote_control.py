@@ -28,11 +28,13 @@ def request(arg):
         s.settimeout(10)
         s.connect(('192.168.1.224', 6969))
         s.send(json.dumps(arg).encode())
-        data = s.recv(4096)
-        if json.loads(data) == "done":
-            print("Success")
-        else:
-            print("Invalid input, command failed")
+        # TODO: Figure out how to receive data (below doesn't work), may need to use asyncio on both sides?
+        #data = s.recv(4096)
+        #return data
+        #if json.loads(data) == "done":
+            #print("Success")
+        #else:
+            #print("Invalid input, command failed")
     except socket.timeout:
         print("Timed out while connecting to node")
 
@@ -49,8 +51,10 @@ except IndexError:
 
 # Parse argument, call request function with appropriate params
 if sys.argv[1] == "status":
-    data = request("status")
-    print(json.dumps(data, indent=4))
+    print("Status command under construction, exiting")
+    exit()
+    #data = request("status")
+    #print(json.dumps(data, indent=4))
 
 elif sys.argv[1] == "disable" and sys.argv[2].startswith("sensor"):
     request(['disable', sys.argv[2]])

@@ -13,6 +13,7 @@ import json
 import os
 import _thread
 from random import randrange
+import uasyncio as asyncio
 
 print("--------Booted--------")
 
@@ -469,6 +470,69 @@ class MotionSensor():
 
 
 
+class RemoteControl:
+    def __init__(self, host='0.0.0.0', port=6969, backlog=5, timeout=20):
+        self.host = host
+        self.port = port
+        self.backlog = backlog
+        self.timeout = timeout
+
+    async def run(self):
+        print('Remote control: Awaiting client connection.')
+        self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
+        while True:
+            await asyncio.sleep(100)
+
+    async def run_client(self, sreader, swriter):
+        global config
+        try:
+            while True:
+                try:
+                    res = await asyncio.wait_for(sreader.readline(), self.timeout)
+                except asyncio.TimeoutError:
+                    res = b''
+                if res == b'':
+                    raise OSError
+
+                data = json.loads(res.rstrip())
+
+                if data[0] == "status":
+                    # TODO: Figure out a way to receive on client side (socket.recv() doesn't work)
+                    print("received status request - not yet implemented, ignored")
+                elif data[0] == "disable" and data[1].startswith("sensor"):
+                    for i in config.sensors:
+                        if i.name == data[1]:
+                            print(f"Received command to disable {data[1]}, disabling...")
+                            i.disable()
+                elif data[0] == "enable" and data[1].startswith("sensor"):
+                    for i in config.sensors:
+                        if i.name == data[1]:
+                            print(f"Received command to enable {data[1]}, enabling...")
+                            i.enable()
+                elif data[0] == "set_rule" and data[1].startswith("sensor") or data[1].startswith("device"):
+                    target = data[1]
+
+                    if target.startswith("sensor"):
+                        for i in config.sensors:
+                            if i.name == target:
+                                print(f"Received command to set {target} delay to {data[2]} minutes, setting...")
+                                i.current_rule = data[2]
+
+                    elif target.startswith("device"):
+                        for i in config.devices:
+                            if i.name == target:
+                                print(f"Received command to set {target} brightness to {data[2]}, setting...")
+                                i.current_rule = int(data[2])
+
+                    # Prevent running out of mem after repeated requests
+                    gc.collect()
+
+        except OSError:
+            pass
+        await sreader.wait_closed()
+
+
+
 # Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
 def log(message):
     now = time.localtime()
@@ -539,57 +603,6 @@ def disk_monitor():
 
 
 
-def remote_control():
-    # Create socket listening on port 6969
-    s = socket.socket()
-    s.bind(('', 6969)) # TODO add port in config, replace hardcoded value
-    s.listen(1)
-
-    # Handle connections
-    while True:
-        # Accept connection, decode message
-        conn, addr = s.accept()
-        msg = json.loads(conn.recv(1024).decode())
-
-        if msg == "status": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
-            print("received status request, getting json...")
-            status_dict = get_status_dict()
-            conn.send(json.dumps(status_dict))
-        elif msg[0] == "disable" and msg[1].startswith("sensor"):
-            for i in config.sensors:
-                if i.name == msg[1]:
-                    print(f"Received command to disable {msg[1]}, disabling...")
-                    i.disable()
-                    conn.send(json.dumps("done"))
-        elif msg[0] == "enable" and msg[1].startswith("sensor"):
-            for i in config.sensors:
-                if i.name == msg[1]:
-                    print(f"Received command to enable {msg[1]}, enabling...")
-                    i.enable()
-                    conn.send(json.dumps("done"))
-        elif msg[0] == "set_rule" and msg[1].startswith("sensor") or msg[1].startswith("device"):
-            target = msg[1]
-
-            if target.startswith("sensor"):
-                for i in config.sensors:
-                    if i.name == target:
-                        print(f"Received command to set {target} delay to {msg[2]} minutes, setting...")
-                        i.current_rule = msg[2]
-                        conn.send(json.dumps("done"))
-
-            elif target.startswith("device"):
-                for i in config.devices:
-                    if i.name == target:
-                        print(f"Received command to set {target} brightness to {msg[2]}, setting...")
-                        i.current_rule = int(msg[2])
-                        conn.send(json.dumps("done"))
-
-
-        # Prevent running out of mem after repeated requests
-        gc.collect()
-
-
-
 def get_status_dict():
     status_dict = {}
     status_dict["metadata"] = {}
@@ -635,8 +648,6 @@ webrepl.start()
 # Start thread listening for upload so unit will auto-reboot if code is updated
 _thread.start_new_thread(disk_monitor, ())
 
-# Causes PWM fade to stutter (switching back and forth between threads), disabling until better solution found
-# TODO figure out what makes most sense:
-#   - New concurancy solution (uasyncio)
-#   - Remote_control makes requests instead of listening (user's command goes to server, server waits until request from node)
-#_thread.start_new_thread(remote_control, ())
+# Start listening for remote commands
+server = RemoteControl()
+asyncio.run(server.run())
