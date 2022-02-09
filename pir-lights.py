@@ -105,9 +105,8 @@ class Config():
         # Now that rule_parser has replaced placeholder brightness for each target, start the sensors' loops (allows them to turn targets on)
         for sensor in self.sensors:
             if not sensor.loop_started:
-                # Start loop if not already running, set bool to stop multiple threads being created when this re-runs (every 3 am)
-                _thread.start_new_thread(sensor.loop, ())
-                sensor.loop_started = True
+                # Create hardware interrupt and start loop if not already running
+                sensor.enable()
 
         # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
         epoch = time.mktime(time.localtime())
@@ -418,15 +417,15 @@ class MotionSensor():
         # Remember if loop is running (started by Config init method, since it runs again at 3 am don't want multiple threads w/ same loop)
         self.loop_started = False
 
-        # Create hardware interrupt
-        self.enable()
-
 
 
     def enable(self):
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
         # Allows remote clients to query whether interrupt is active or not
         self.active = True
+        if not self.loop_started == True:
+            self.loop_started = True
+            _thread.start_new_thread(self.loop, ())
 
 
 
@@ -435,6 +434,7 @@ class MotionSensor():
         timer.deinit()
         # Allows remote clients to query whether interrupt is active or not
         self.active = False
+        self.loop_started = False # Loop checks this variable, kills thread if False
 
 
 
@@ -495,6 +495,11 @@ class MotionSensor():
                     # If all succeded, set bool to prevent retrying
                     if not False in responses:
                         self.state = False
+
+            # If sensor was disabled
+            if not self.loop_started:
+                self.motion = False
+                _thread.exit() # Kill thread
 
             time.sleep_ms(20) # TODO - is this necessary?
 
