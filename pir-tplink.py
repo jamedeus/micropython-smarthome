@@ -496,7 +496,7 @@ class MotionSensor():
         # Set reset timer
         # TODO - since can't reliably know how many sensors, move to software timers and self them
         if not "None" in str(self.current_rule):
-            off = int(self.current_rule) * 60000 # Convert to ms
+            off = int(float(self.current_rule) * 60000) # Convert to ms
             # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
             timer.init(period=off, mode=Timer.ONE_SHOT, callback=self.resetTimer)
         else:
@@ -613,8 +613,8 @@ class RemoteControl:
                                 print(f"Received command to set {target} brightness to {data[2]}, setting...")
                                 i.current_rule = int(data[2])
 
-                    # Prevent running out of mem after repeated requests
-                    gc.collect()
+                # Prevent running out of mem after repeated requests
+                gc.collect()
 
         except OSError:
             pass

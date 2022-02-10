@@ -550,8 +550,8 @@ class RemoteControl:
                                 print(f"Received command to set {target} brightness to {data[2]}, setting...")
                                 i.current_rule = int(data[2])
 
-                    # Prevent running out of mem after repeated requests
-                    gc.collect()
+                # Prevent running out of mem after repeated requests
+                gc.collect()
 
         except OSError:
             pass
