@@ -11,7 +11,6 @@ import socket
 from struct import pack
 import json
 import os
-import _thread
 from random import randrange
 import uasyncio as asyncio
 
@@ -50,7 +49,7 @@ class Config():
         # Call function to connect to wifi + hit APIs
         self.api_calls()
 
-        # Remember if a thread has been started running desktop_integration
+        # Remember if a task has been created running desktop_integration
         self.desktop = False
 
         # Create empty dictionairy, will contain sub-dict for each device
@@ -65,11 +64,6 @@ class Config():
                 instance = Tplink( device, conf[device]["ip"], conf[device]["type"], None )
             elif conf[device]["type"] == "relay" or conf[device]["type"] == "desktop":
                 instance = Relay( device, conf[device]["ip"], conf[device]["type"], None )
-                # If device type is desktop, start desktop_integration thread (unless already running)
-                if conf[device]["type"] == "desktop" and not self.desktop:
-                    _thread.start_new_thread(desktop_integration, ())
-                    log("Desktop integration is being used, starting thread to listen for messages")
-                    self.desktop = True
             elif conf[device]["type"] == "pwm":
                 instance = LedStrip( device, conf[device]["type"], conf[device]["pin"], None )
 
@@ -101,12 +95,6 @@ class Config():
             self.sensors[instance]["schedule"] = self.convert_rules(conf[sensor]["schedule"])
 
         self.rule_parser()
-
-        # Now that rule_parser has replaced placeholder brightness for each target, start the sensors' loops (allows them to turn targets on)
-        for sensor in self.sensors:
-            if not sensor.loop_started:
-                # Create hardware interrupt and start loop if not already running
-                sensor.enable()
 
         # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
         epoch = time.mktime(time.localtime())
@@ -414,7 +402,7 @@ class MotionSensor():
         # Remember target state, don't turn on/off if already on/off
         self.state = None
 
-        # Remember if loop is running (started by Config init method, since it runs again at 3 am don't want multiple threads w/ same loop)
+        # Remember if loop is running (prevents multiple asyncio tasks running same loop)
         self.loop_started = False
 
 
@@ -425,7 +413,7 @@ class MotionSensor():
         self.active = True
         if not self.loop_started == True:
             self.loop_started = True
-            _thread.start_new_thread(self.loop, ())
+            asyncio.create_task(self.loop())
 
 
 
@@ -434,7 +422,7 @@ class MotionSensor():
         timer.deinit()
         # Allows remote clients to query whether interrupt is active or not
         self.active = False
-        self.loop_started = False # Loop checks this variable, kills thread if False
+        self.loop_started = False # Loop checks this variable, kills asyncio task if False
 
 
 
@@ -461,7 +449,7 @@ class MotionSensor():
 
 
 
-    def loop(self):
+    async def loop(self):
         while True:
 
             if self.motion:
@@ -499,9 +487,9 @@ class MotionSensor():
             # If sensor was disabled
             if not self.loop_started:
                 self.motion = False
-                _thread.exit() # Kill thread
+                return True # Kill async task
 
-            time.sleep_ms(20) # TODO - is this necessary?
+            await asyncio.sleep_ms(20)
 
 
 
@@ -513,7 +501,7 @@ class RemoteControl:
         self.timeout = timeout
 
     async def run(self):
-        print('Remote control: Awaiting client connection.')
+        print('\nRemote control: Awaiting client connection.\n')
         self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
         while True:
             await asyncio.sleep(100)
@@ -613,7 +601,9 @@ def reboot(arg="unused"):
 
 
 
-def disk_monitor():
+async def disk_monitor():
+    print("Disk Monitor Started\n")
+
     # Get filesize/modification time (to detect upload in future)
     old_code = os.stat("boot.py")
     old_config = os.stat("config.json")
@@ -637,7 +627,34 @@ def disk_monitor():
             os.remove('log.txt')
             log("Deleted old log (exceeded 500 KB size limit)")
         else:
-            time.sleep(300) # Only check every 5 minutes, reduces PWM fade stutter
+            await asyncio.sleep(1) # Only check once per second
+
+
+
+async def main():
+    # Check if desktop device configured, start desktop_integration (unless already running)
+    # TODO - removed this from config while porting to async, need to rewrite function (blocks all other async tasks)
+    for i in config.devices:
+        if i.device == "desktop" and not config.desktop:
+            log("Desktop integration is being used, creating asyncio task to listen for messages")
+            asyncio.create_task(desktop_integration())
+            config.desktop = True
+
+    # Create hardware interrupts + create async task for sensor loops
+    for sensor in config.sensors:
+        if not sensor.loop_started:
+            sensor.enable()
+
+    # Start listening for remote commands
+    server = RemoteControl()
+    asyncio.create_task(server.run())
+
+    # Listen for new code upload (auto-reboot when updated), prevent log from filling disk
+    asyncio.create_task(disk_monitor())
+
+    # Keep running, all tasks stop if function exits
+    while True:
+        await asyncio.sleep(1)
 
 
 
@@ -653,9 +670,4 @@ config = Config(json.load(open('config.json', 'r')))
 
 webrepl.start()
 
-# Start thread listening for upload so unit will auto-reboot if code is updated
-_thread.start_new_thread(disk_monitor, ())
-
-# Start listening for remote commands
-server = RemoteControl()
-asyncio.run(server.run())
+asyncio.run(main())
