@@ -49,9 +49,6 @@ class Config():
         # Call function to connect to wifi + hit APIs
         self.api_calls()
 
-        # Remember if a task has been created running desktop_integration
-        self.desktop = False
-
         # Create empty dictionairy, will contain sub-dict for each device
         self.devices = {}
 
@@ -563,69 +560,6 @@ class RemoteControl:
 
 
 
-class DesktopIntegration:
-    def __init__(self, host='0.0.0.0', port=4200, backlog=5, timeout=10):
-        self.host = host
-        self.port = port
-        self.backlog = backlog
-        self.timeout = timeout
-
-    async def run(self):
-        print('\nDesktop integration running.\n')
-        self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
-        while True:
-            await asyncio.sleep(100)
-
-    async def run_client(self, sreader, swriter):
-        global config
-        try:
-            while True:
-                try:
-                    res = await asyncio.wait_for(sreader.readline(), self.timeout)
-                except asyncio.TimeoutError:
-                    res = b''
-                if res == b'':
-                    raise OSError
-
-                data = res.decode()
-
-                if data == "on": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
-                    print("Desktop turned lights ON")
-                    log("Desktop turned lights ON")
-                    # Set sensor instance attributes so it knows that desktop changed state
-                    for sensor in config.sensors:
-                        if config.sensors[sensor]["type"] == "pir":
-                            sensor.state = True
-                            sensor.motion = True
-                elif data == "off": # Allow main loop to continue when desktop turns lights off
-                    print("Desktop turned lights OFF")
-                    log("Desktop turned lights OFF")
-                    # Set sensor instance attributes so it knows that desktop changed state
-                    for sensor in config.sensors:
-                        if config.sensors[sensor]["type"] == "pir":
-                            sensor.state = False
-                            sensor.motion = False
-                elif data == "enable":
-                    print("Desktop re-enabled (user logged in)")
-                    for desktop in config.devices:
-                        if desktop.device == "desktop":
-                            desktop.enable()
-
-                elif data == "disable":
-                    print("Desktop disabled (at login screen)")
-                    for desktop in config.devices:
-                        if desktop.device == "desktop":
-                            desktop.disable()
-
-                # Prevent running out of mem after repeated requests
-                gc.collect()
-
-        except OSError:
-            pass
-        await sreader.wait_closed()
-
-
-
 # Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
 def log(message):
     now = time.localtime()
@@ -701,11 +635,10 @@ async def disk_monitor():
 async def main():
     # Check if desktop device configured, start desktop_integration (unless already running)
     for i in config.devices:
-        if i.device == "desktop" and not config.desktop:
+        if i.device == "desktop" and not i.integration_running:
             log("Desktop integration is being used, creating asyncio task to listen for messages")
-            desktop = DesktopIntegration()
-            asyncio.create_task(desktop.run())
-            config.desktop = True
+            asyncio.create_task(i.desktop_integration())
+            i.integration_running = True
 
     # Create hardware interrupts + create async task for sensor loops
     for sensor in config.sensors:
