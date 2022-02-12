@@ -30,6 +30,7 @@ class Tplink():
         self.bright = bright
 
 
+
     def encrypt(self, string):
         key = 171
         result = pack(">I", len(string))
@@ -53,8 +54,8 @@ class Tplink():
 
 
     # Send set_brightness command to tp-link dimmers/smartbulbs (dev type needed, dimmer and bulb use different syntax)
-    def send(state=0):
-        if self.dev == "dimmer":
+    def send(self, state=0):
+        if self.device == "dimmer":
             cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.bright) + '}}}'
         else:
             cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(self.bright) + '}}}'
@@ -67,13 +68,13 @@ class Tplink():
             #sock_tcp.settimeout(None)
 
             # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
-            if self.dev == "dimmer":
-                foo = encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')
+            if self.device == "dimmer":
+                foo = self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')
                 sock_tcp.send(foo) # Set on/off state before brightness
                 data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
 
             # Set brightness
-            sock_tcp.send(encrypt(cmd))
+            sock_tcp.send(self.encrypt(cmd))
             data = sock_tcp.recv(2048)
             sock_tcp.close()
 

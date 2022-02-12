@@ -583,7 +583,7 @@ class DesktopIntegration:
                 if res == b'':
                     raise OSError
 
-                data = json.loads(res.rstrip())
+                data = res.decode()
 
                 if data == "on": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
                     print("Desktop turned lights ON")
