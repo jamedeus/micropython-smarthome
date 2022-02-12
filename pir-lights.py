@@ -585,7 +585,7 @@ class DesktopIntegration:
 
                 data = json.loads(res.rstrip())
 
-                if data[0] == "on": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
+                if data == "on": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
                     print("Desktop turned lights ON")
                     log("Desktop turned lights ON")
                     # Set sensor instance attributes so it knows that desktop changed state
@@ -593,7 +593,7 @@ class DesktopIntegration:
                         if config.sensors[sensor]["type"] == "pir":
                             sensor.state = True
                             sensor.motion = True
-                elif data[0] == "off": # Allow main loop to continue when desktop turns lights off
+                elif data == "off": # Allow main loop to continue when desktop turns lights off
                     print("Desktop turned lights OFF")
                     log("Desktop turned lights OFF")
                     # Set sensor instance attributes so it knows that desktop changed state
