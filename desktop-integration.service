@@ -1,8 +1,11 @@
 [Unit]
 Description=Micropython smarthome desktop integration
 After=network.target
+StartLimitIntervalSec=5
+StartLimitBurst=12
 
 [Service]
+Restart=on-failure
 User=jamedeus
 Environment="DISPLAY=:0"
 ExecStart=/usr/bin/python3 -u /home/jamedeus/git/micropython-smarthome/desktop-integration.py

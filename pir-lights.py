@@ -294,8 +294,10 @@ class Config():
 
                     if i.name.startswith("device"):
                         i.current_rule = self.devices[i]["schedule"][schedule[rule]]
+                        i.scheduled_rule = self.devices[i]["schedule"][schedule[rule]]
                     elif i.name.startswith("sensor"):
                         i.current_rule = self.sensors[i]["schedule"][schedule[rule]]
+                        i.scheduled_rule = self.sensors[i]["schedule"][schedule[rule]]
 
                     # Find the next rule (out of all devices)
                     # On first iteration, set next rule for current device
@@ -391,7 +393,9 @@ class MotionSensor():
 
         self.name = name
         self.device = device
-        self.current_rule = current_rule
+        self.current_rule = current_rule # The rule actually being followed
+        self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
+
 
         # For each target: find device instance with matching name, add to list
         self.targets = targets
@@ -601,6 +605,17 @@ class DesktopIntegration:
                         if config.sensors[sensor]["type"] == "pir":
                             sensor.state = False
                             sensor.motion = False
+                elif data == "enable":
+                    print("Desktop re-enabled (user logged in)")
+                    for desktop in config.devices:
+                        if desktop.device == "desktop":
+                            desktop.enable()
+
+                elif data == "disable":
+                    print("Desktop disabled (at login screen)")
+                    for desktop in config.devices:
+                        if desktop.device == "desktop":
+                            desktop.disable()
 
                 # Prevent running out of mem after repeated requests
                 gc.collect()

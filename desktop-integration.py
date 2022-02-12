@@ -9,7 +9,7 @@
 # - type = "relay"
 # - schedule rule values are "on" and "off"
 #
-# Install in ~/.config/autorun-scripts
+# Install desktop-integration.service to /lib/systemd/system
 
 state = None
 
@@ -20,6 +20,14 @@ import re
 import subprocess
 import threading
 import time
+
+
+
+def send_to_node(msg):
+    s = socket.socket()
+    s.connect(("192.168.1.224", 4200)) # TODO - implement config file, remove hardcoded IP
+    s.send(msg.encode())
+    s.close()
 
 
 
@@ -84,13 +92,10 @@ class Tplink():
                 print("Turned overhead lights OFF")
 
             # Tell the motion sensor that lights were turned off
-            s = socket.socket()
-            s.connect(("192.168.1.224", 4200)) # TODO - implement config file, remove hardcoded IP
             if state:
-                s.send("on".encode())
+                send_to_node("on")
             elif not state:
-                s.send("off".encode())
-            s.close()
+                send_to_node("off")
 
         except: # Failed
             print(f"Could not connect to host {self.ip}")
@@ -98,6 +103,36 @@ class Tplink():
 
 
 class Desktop():
+    def __init__(self):
+        self.login = False # Remember if user is at login screen (cannot query monitor state before login)
+        self.disable()
+
+        # When desktop boots to login screen, monitor state cannot be queried until user logs in (returns error string, not state)
+        # For some reason after about 5 seconds it returns "On" a single time, then goes back to error string
+        # Loop waits until there have been 2 non-errors (confirming user logged in) before enabling
+        ct = 0
+        while ct < 2:
+            if not "xset" in self.get_dpms_state():
+                ct += 1
+            time.sleep(1)
+
+        self.enable()
+
+
+    def disable(self):
+        self.login = True
+        print("Cannot query DPMS state at login screen, waiting for user to log in...")
+        send_to_node("disable")
+
+
+
+    def enable(self):
+        self.login = False
+        print("User logged in, re-enabling")
+        send_to_node("enable")
+
+
+
     # Watch monitor power state, turn overhead lights off when monitors turn off
     def dpms_mon(self):
         # Create target instance
@@ -125,9 +160,11 @@ class Desktop():
     # Query DPMS state (monitors on/off/standby etc)
     def get_dpms_state(self):
         while True:
-            current = str(subprocess.check_output('xset -q | tail -1 | cut -d " " -f 5', shell=True))[2:-3]
+            current = str(subprocess.check_output('xset -q | tail -1 | cut -d " " -f 5', shell=True, stderr=subprocess.STDOUT))[2:-3]
             if current == "Disabled": # Sometimes it's disabled for a few seconds, probably related to NVIDIA PRIME
                 time.sleep(0.25) # Wait 250 ms, try again (prevent high CPU usage)
+            elif "xset" in current:
+                time.sleep(1) # If user is at login screen, wait 1 second and try again
             else:
                 break
         return current

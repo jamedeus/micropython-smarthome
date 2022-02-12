@@ -292,8 +292,10 @@ class Config():
 
                     if i.name.startswith("device"):
                         i.current_rule = self.devices[i]["schedule"][schedule[rule]]
+                        i.scheduled_rule = self.devices[i]["schedule"][schedule[rule]]
                     elif i.name.startswith("sensor"):
                         i.current_rule = self.sensors[i]["schedule"][schedule[rule]]
+                        i.scheduled_rule = self.sensors[i]["schedule"][schedule[rule]]
 
                     # Find the next rule (out of all devices)
                     # On first iteration, set next rule for current device
@@ -338,7 +340,9 @@ class Tplink():
         self.name = name
         self.ip = ip
         self.device = device
-        self.current_rule = current_rule
+        self.current_rule = current_rule # The rule actually being followed
+        self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
+
         log("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device))
 
 
@@ -416,18 +420,45 @@ class Relay():
         self.name = name
         self.ip = ip
         self.device = device
-        self.current_rule = current_rule
+        self.current_rule = current_rule # The rule actually being followed
+        self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
+        self.enabled = True
+
         log("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
+
+
+
+    def enable(self):
+        self.enabled = True
+        global config
+        for i in config.sensors:
+            if i.device == "pir" and i.scheduled_rule == "None":
+                i.current_rule = i.scheduled_rule  # Revert to scheduled rule once desktop is enabled again
+
+
+
+    def disable(self):
+        self.enabled = False
+        global config
+        for i in config.sensors:
+            if i.device == "pir" and i.current_rule == "None": # If sensor currently has no reset timer (ie relying on desktop to turn off lights when screen goes off)
+                i.current_rule = "1" # Set reset time to 15 minutes so lights don't get stuck on
 
 
 
     def send(self, state=1):
         log("Relay.send method called, IP = " + str(self.ip) + ", state = " + str(state))
+
+        if not self.enabled:
+            log("Device is currently disabled, skipping")
+            return True # Tell sensor that send succeeded so it doesn't retry forever
+
         if self.current_rule == "off" and state == 1:
             pass
         else:
             try:
                 s = socket.socket()
+                s.settimeout(10)
                 print(f"Running send_relay, ip={self.ip}")
                 s.connect((self.ip, 4200))
                 if state:
@@ -440,9 +471,11 @@ class Relay():
                 log("Relay.send finished")
 
                 return True # Tell calling function that request succeeded
+            except OSError:
+                # Desktop is either off or at login screen - disable device until it comes back online
+                self.disable()
             except:
-                return False # Tell calling function that request failed
-            # TODO - handle timed-out connection, currently whole thing crashes if target is unavailable
+                return False # Tell calling function that request failed, will retry until it succeeds
             # TODO - receive response (msg OK/Invalid), log errors
 
 
@@ -454,7 +487,8 @@ class MotionSensor():
 
         self.name = name
         self.device = device
-        self.current_rule = current_rule
+        self.current_rule = current_rule # The rule actually being followed
+        self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
 
         # For each target: find device instance with matching name, add to list
         self.targets = targets
@@ -664,6 +698,17 @@ class DesktopIntegration:
                         if config.sensors[sensor]["type"] == "pir":
                             sensor.state = False
                             sensor.motion = False
+                elif data == "enable":
+                    print("Desktop re-enabled (user logged in)")
+                    for desktop in config.devices:
+                        if desktop.device == "desktop":
+                            desktop.enable()
+
+                elif data == "disable":
+                    print("Desktop disabled (at login screen)")
+                    for desktop in config.devices:
+                        if desktop.device == "desktop":
+                            desktop.disable()
 
                 # Prevent running out of mem after repeated requests
                 gc.collect()
