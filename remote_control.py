@@ -5,9 +5,10 @@ import sys
 from colorama import Fore, Style
 import socket
 import subprocess
-import threading
+import threading # TODO remove
 import time
 import json
+import asyncio
 
 functions = ("status", "reboot", "enable", "disable", "set_rule")
 
@@ -22,21 +23,22 @@ def error():
 
 
 
-def request(arg):
+async def request(msg):
+    reader, writer = await asyncio.open_connection('192.168.1.224', 8123)
     try:
-        s = socket.socket()
-        s.settimeout(10)
-        s.connect(('192.168.1.224', 6969))
-        s.send(json.dumps(arg).encode())
-        # TODO: Figure out how to receive data (below doesn't work), may need to use asyncio on both sides?
-        #data = s.recv(4096)
-        #return data
-        #if json.loads(data) == "done":
-            #print("Success")
-        #else:
-            #print("Invalid input, command failed")
-    except socket.timeout:
-        print("Timed out while connecting to node")
+        writer.write('{}\n'.format(json.dumps(msg)).encode())
+        await writer.drain()
+        res = await reader.read(1000)
+    except OSError:
+        return "Error: Request failed"
+    try:
+        response = json.loads(res)
+    except ValueError:
+        return "Error: Unable to decode response"
+    writer.close()
+    await writer.wait_closed()
+
+    return response
 
 
 
@@ -47,28 +49,36 @@ try:
 except IndexError:
     error()
 
-
-
 # Parse argument, call request function with appropriate params
 if sys.argv[1] == "status":
-    print("Status command under construction, exiting")
+    response = asyncio.run(request(['status']))
+
+    # Requires formatting, print here and exit before other print statement
+    print(json.dumps(response, indent=4))
     exit()
-    #data = request("status")
-    #print(json.dumps(data, indent=4))
 
 elif sys.argv[1] == "reboot":
-    request(['reboot'])
-elif sys.argv[1] == "disable" and sys.argv[2].startswith("sensor"):
-    request(['disable', sys.argv[2]])
+    response = asyncio.run(request(['reboot']))
+
+elif len(sys.argv) > 2 and sys.argv[1] == "disable" and sys.argv[2].startswith("sensor"):
+    response = asyncio.run(request(['disable', sys.argv[2]]))
     if len(sys.argv) > 3:
         if sys.argv[3].isdecimal():
-            t = threading.Timer(int(sys.argv[3])*60, lambda: request(['enable', sys.argv[2]]))
+            t = threading.Timer(int(sys.argv[3])*60, lambda: asyncio.run(request(['enable', sys.argv[2]])))
             t.start()
         else:
             print(Fore.RED + "Error: 3rd argument must either be blank or contain number of minutes to disable sensor" + Fore.RESET + "\n")
 
-elif sys.argv[1] == "enable" and sys.argv[2].startswith("sensor"):
-    request(['enable', sys.argv[2]])
+elif len(sys.argv) > 2 and sys.argv[1] == "enable" and sys.argv[2].startswith("sensor"):
+    response = asyncio.run(request(['enable', sys.argv[2]]))
 
-elif sys.argv[1] == "set_rule" and sys.argv[2].startswith("sensor") or sys.argv[2].startswith("device") and sys.argv[3]:
-    request(['set_rule', sys.argv[2], sys.argv[3]])
+elif len(sys.argv) > 3 and sys.argv[1] == "set_rule" and (sys.argv[2].startswith("sensor") or sys.argv[2].startswith("device")):
+    response = asyncio.run(request(['set_rule', sys.argv[2], sys.argv[3]]))
+
+else:
+    response = "Error: Invalid argument"
+
+if response == "OK":
+    exit()
+else:
+    print(response)
