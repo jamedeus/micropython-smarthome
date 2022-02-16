@@ -760,22 +760,14 @@ class RemoteControl:
 
 # Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
 def log(message):
-    now = time.localtime()
-    line = str(now[0]) + "/"
-    for i in range(1,3):
+    now = list(time.localtime())
+
+    # If month/day/hour/min/sec are single digit, add leading 0 for readability
+    for i in range(1,6):
         if len(str(now[i])) == 1:
-            line = line + "0" + str(now[i]) + "/"
-        else:
-            line = line + str(now[i]) + "/"
-    else:
-        line = line[0:-1] + " " # Replace trailing "/" with " "
-    for i in range(3,6):
-        if len(str(now[i])) == 1:
-            line = line + "0" + str(now[i]) + ":"
-        else:
-            line = line + str(now[i]) + ":"
-    else:
-        line = line + " " + message + "\n"
+            now[i] = "0" + str(now[i])
+
+    line = "{0}/{1}/{2} {3}:{4}:{5}".format(*now) + " " + message + "\n"
 
     with open('log.txt', 'a') as file:
         file.write(line)
