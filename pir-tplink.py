@@ -13,8 +13,14 @@ import json
 import os
 from random import randrange
 import uasyncio as asyncio
+import logging
 
 print("--------Booted--------")
+
+# Set log file and syntax
+logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+log = logging.getLogger("Main")
+log.info("Booted")
 
 # Hardware timer used to keep lights on for 5 min
 timer = Timer(0)
@@ -36,7 +42,7 @@ led = Pin(2, Pin.OUT, value=1)
 class Config():
     def __init__(self, conf):
         print("\nInstantiating config object...\n")
-        log("Instantiating config object...")
+        log.info("Instantiating config object...")
 
         # Load wifi credentials tuple
         self.credentials = (conf["wifi"]["ssid"], conf["wifi"]["password"])
@@ -61,11 +67,15 @@ class Config():
                 instance = Tplink( device, conf[device]["ip"], conf[device]["type"], None )
             elif conf[device]["type"] == "relay" or conf[device]["type"] == "desktop":
                 instance = Relay( device, conf[device]["ip"], conf[device]["type"], None )
+            elif conf[device]["type"] == "pwm":
+                instance = LedStrip( device, conf[device]["type"], conf[device]["pin"], None )
 
             # Add to config.devices dict with class object as key + json sub-dict as value
             self.devices[instance] = conf[device]
             # Overwrite schedule section with unix timestamp rules
             self.devices[instance]["schedule"] = self.convert_rules(conf[device]["schedule"])
+
+        log.debug("Finished creating device instances")
 
         # Create empty dictionairy, will contain sub-dict for each sensor
         self.sensors = {}
@@ -89,6 +99,8 @@ class Config():
             # Overwrite schedule section with unix timestamp rules
             self.sensors[instance]["schedule"] = self.convert_rules(conf[sensor]["schedule"])
 
+        log.debug("Finished creating sensor instances")
+
         self.rule_parser()
 
         # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
@@ -103,7 +115,7 @@ class Config():
         next_reset = (next_reset - epoch + randrange(3600)) * 1000
         config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedule_rules)
 
-        log("Finished instantiating config")
+        log.info("Finished instantiating config")
 
 
 
@@ -154,6 +166,7 @@ class Config():
             continue
         else:
             print(f"Successfully connected to {self.credentials[0]}")
+            log.info(f"Successfully connected to {self.credentials[0]}")
 
         failed_attempts = 0
 
@@ -173,7 +186,7 @@ class Config():
                 break
             except:
                 print("Failed setting system time, retrying...")
-                log("Failed setting system time, retrying...")
+                log.info("Failed setting system time, retrying...")
                 failed_attempts += 1
                 if failed_attempts > 5: reboot()
                 time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
@@ -194,14 +207,14 @@ class Config():
                 break # Break loop once request succeeds
             except:
                 print("Failed getting sunrise/sunset time, retrying...")
-                log("Failed getting sunrise/sunset time, retrying...")
+                log.info("Failed getting sunrise/sunset time, retrying...")
                 failed_attempts += 1
                 if failed_attempts > 5: reboot()
                 time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
                 gc.collect() # Free up memory before retrying
                 pass # Allow loop to continue
 
-        log("Finished API calls...")
+        log.info("Finished API calls...")
 
         # Stop timer once API calls finish
         reboot_timer.deinit()
@@ -315,14 +328,14 @@ class Config():
                     #del config[device]["schedule"][schedule[rule]]
 
             else:
-                log("rule_parser: No match found for " + str(device))
-                print("no match found")
-                print()
+                log.info("rule_parser: No match found for " + str(device))
+                print("no match found\n")
 
         # Set a callback timer for the next rule
         miliseconds = (next_rule - epoch) * 1000
         next_rule_timer.init(period=miliseconds, mode=Timer.ONE_SHOT, callback=self.rule_parser)
         print(f"rule_parser callback timer set for {next_rule}")
+        log.debug(f"rule_parser callback timer set for {next_rule}")
 
         # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
         for i in self.sensors:
@@ -340,7 +353,7 @@ class Tplink():
         self.current_rule = current_rule # The rule actually being followed
         self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
 
-        log("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device))
+        log.info("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device))
 
 
 
@@ -369,7 +382,7 @@ class Tplink():
 
 
     def send(self, state=1):
-        log("Tplink.send method called, IP=" + str(self.ip) + ", Brightness=" + str(self.current_rule) + ", state=" + str(state))
+        log.info("Tplink.send method called, IP=" + str(self.ip) + ", Brightness=" + str(self.current_rule) + ", state=" + str(state))
         if self.device == "dimmer":
             cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.current_rule) + '}}}'
         else:
@@ -381,19 +394,19 @@ class Tplink():
             sock_tcp.settimeout(10)
             sock_tcp.connect((self.ip, 9999))
             #sock_tcp.settimeout(None)
-            log("Connected")
+            log.debug("Connected")
 
             # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
             if self.device == "dimmer":
                 sock_tcp.send(self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')) # Set on/off state before brightness
                 data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
-                log("Sent state (dimmer)")
+                log.debug("Sent state (dimmer)")
 
             # Set brightness
             sock_tcp.send(self.encrypt(cmd))
-            log("Sent brightness")
+            log.debug("Sent brightness")
             data = sock_tcp.recv(2048)
-            log("Received reply")
+            log.debug("Received reply")
             sock_tcp.close()
 
             decrypted = self.decrypt(data[4:]) # Remove in final version (or put in debug conditional)
@@ -405,7 +418,7 @@ class Tplink():
 
         except: # Failed
             print(f"Could not connect to host {self.ip}")
-            log("Could not connect to host " + str(self.ip))
+            log.info("Could not connect to host " + str(self.ip))
 
             return False # Tell calling function that request failed
 
@@ -422,7 +435,7 @@ class Relay():
         self.enabled = True
         self.integration_running = False
 
-        log("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
+        log.info("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
 
 
 
@@ -432,6 +445,7 @@ class Relay():
         for i in config.sensors:
             if i.device == "pir" and i.scheduled_rule == "None":
                 i.current_rule = i.scheduled_rule  # Revert to scheduled rule once desktop is enabled again
+        log.info(f"{self.name} enabled")
 
 
 
@@ -441,14 +455,15 @@ class Relay():
         for i in config.sensors:
             if i.device == "pir" and i.current_rule == "None": # If sensor currently has no reset timer (ie relying on desktop to turn off lights when screen goes off)
                 i.current_rule = "15" # Set reset time to 15 minutes so lights don't get stuck on
+        log.info(f"{self.name} disabled")
 
 
 
     def send(self, state=1):
-        log("Relay.send method called, IP = " + str(self.ip) + ", state = " + str(state))
+        log.info("Relay.send method called, IP = " + str(self.ip) + ", state = " + str(state))
 
         if not self.enabled:
-            log("Device is currently disabled, skipping")
+            log.info("Device is currently disabled, skipping")
             return True # Tell sensor that send succeeded so it doesn't retry forever
 
         if self.current_rule == "off" and state == 1:
@@ -466,7 +481,7 @@ class Relay():
                     print("Turned desktop OFF")
                     s.send("off".encode())
                 s.close()
-                log("Relay.send finished")
+                log.info("Relay.send finished")
 
                 return True # Tell calling function that request succeeded
             except OSError:
@@ -480,6 +495,7 @@ class Relay():
 
     async def desktop_integration(self):
         print('\nDesktop integration running.\n')
+        log.info("Desktop integration running")
         self.server = await asyncio.start_server(self.desktop_integration_client, host='0.0.0.0', port=4200, backlog=5)
         while True:
             await asyncio.sleep(100)
@@ -501,7 +517,7 @@ class Relay():
 
                 if data == "on": # Unsure if this will be used - currently desktop only turns lights off (when monitors sleep)
                     print("Desktop turned lights ON")
-                    log("Desktop turned lights ON")
+                    log.info("Desktop turned lights ON")
                     # Set sensor instance attributes so it knows that desktop changed state
                     for sensor in config.sensors:
                         if config.sensors[sensor]["type"] == "pir":
@@ -509,7 +525,7 @@ class Relay():
                             sensor.motion = True
                 elif data == "off": # Allow main loop to continue when desktop turns lights off
                     print("Desktop turned lights OFF")
-                    log("Desktop turned lights OFF")
+                    log.info("Desktop turned lights OFF")
                     # Set sensor instance attributes so it knows that desktop changed state
                     for sensor in config.sensors:
                         if config.sensors[sensor]["type"] == "pir":
@@ -554,6 +570,8 @@ class MotionSensor():
         # Remember if loop is running (prevents multiple asyncio tasks running same loop)
         self.loop_started = False
 
+        log.info(f"Instantiated motion sensor on pin {pin}")
+
 
 
     def enable(self):
@@ -563,6 +581,7 @@ class MotionSensor():
         if not self.loop_started == True:
             self.loop_started = True
             asyncio.create_task(self.loop())
+        log.info(f"{self.name} enabled")
 
 
 
@@ -572,6 +591,7 @@ class MotionSensor():
         # Allows remote clients to query whether interrupt is active or not
         self.active = False
         self.loop_started = False # Loop checks this variable, kills asyncio task if False
+        log.info(f"{self.name} disabled")
 
 
 
@@ -592,7 +612,7 @@ class MotionSensor():
 
 
     def resetTimer(self, timer):
-        log("resetTimer interrupt called")
+        log.info("resetTimer interrupt called")
         # Reset motion, causes self.loop to fade lights off
         self.motion = False
 
@@ -604,7 +624,7 @@ class MotionSensor():
             if self.motion:
 
                 if self.state is not True: # Only turn on if currently off
-                    log("Motion detected")
+                    log.info(f"{self.name}: Motion detected")
                     print("motion detected")
 
                     # Record whether each send succeeded/failed
@@ -620,7 +640,7 @@ class MotionSensor():
 
             else:
                 if self.state is not False: # Only turn off if currently on
-                    log("Main loop: Turning lights off...")
+                    log.info(f"{self.name}: Turning lights off...")
 
                     # Record whether each send succeeded/failed
                     responses = []
@@ -651,6 +671,7 @@ class RemoteControl:
 
     async def run(self):
         print('\nRemote control: Awaiting client connection.\n')
+        log.info("API ready")
         self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
         while True:
             await asyncio.sleep(100)
@@ -758,26 +779,10 @@ class RemoteControl:
 
 
 
-# Takes string as argument, writes to log file with YYYY/MM/DD HH:MM:SS timestamp
-def log(message):
-    now = list(time.localtime())
-
-    # If month/day/hour/min/sec are single digit, add leading 0 for readability
-    for i in range(1,6):
-        if len(str(now[i])) == 1:
-            now[i] = "0" + str(now[i])
-
-    line = "{0}/{1}/{2} {3}:{4}:{5}".format(*now) + " " + message + "\n"
-
-    with open('log.txt', 'a') as file:
-        file.write(line)
-
-
-
 # Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)
 def reload_schedule_rules(timer):
     print("3:00 am callback, reloading schedule rules...")
-    log("3:00 am callback, reloading schedule rules...")
+    log.info("3:00 am callback, reloading schedule rules...")
     # Temporary fix: Unable to reload after 2-3 days due to mem fragmentation (no continuous free block long enough for API response)
     # Since this will take a lot of testing to figure out, just reboot until then. TODO - fix memory issue
     reboot()
@@ -786,7 +791,7 @@ def reload_schedule_rules(timer):
 
 def reboot(arg="unused"):
     print("Reboot function called, rebooting...")
-    log("Reboot function called, rebooting...\n")
+    log.info("Reboot function called, rebooting...\n")
     import machine
     machine.reset()
 
@@ -804,19 +809,19 @@ async def disk_monitor():
         if not os.stat("boot.py") == old_code:
             # If file changed (new code received from webrepl), reboot
             print("\nReceived new code from webrepl, rebooting...\n")
-            log("Received new code from webrepl, rebooting...")
+            log.info("Received new code from webrepl, rebooting...")
             time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             reboot()
         elif not os.stat("config.json") == old_config:
             print("\nReceived new config from webrepl, rebooting...\n")
-            log("Received new config from webrepl, rebooting...")
+            log.info("Received new config from webrepl, rebooting...")
             time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             reboot()
         # Don't let the log exceed 500 KB, full disk hangs system + can't pull log via webrepl
-        elif os.stat('log.txt')[6] > 500000:
+        elif os.stat('app.log')[6] > 500000:
             print("\nLog exceeded 500 KB, clearing...\n")
             os.remove('log.txt')
-            log("Deleted old log (exceeded 500 KB size limit)")
+            log.info("Deleted old log (exceeded 500 KB size limit)")
         else:
             await asyncio.sleep(1) # Only check once per second
 
@@ -826,7 +831,7 @@ async def main():
     # Check if desktop device configured, start desktop_integration (unless already running)
     for i in config.devices:
         if i.device == "desktop" and not i.integration_running:
-            log("Desktop integration is being used, creating asyncio task to listen for messages")
+            log.info("Desktop integration is being used, creating asyncio task to listen for messages")
             asyncio.create_task(i.desktop_integration())
             i.integration_running = True
 
@@ -847,12 +852,6 @@ async def main():
         await asyncio.sleep(1)
 
 
-
-# Check if log file exists, create if not
-try:
-    os.stat('log.txt')
-except OSError: # File does not exist
-    log("Created log file")
 
 # Instantiate config object - init method replaces old startup function (convert rules, connect to wifi, API calls, etc)
 config = Config(json.load(open('config.json', 'r')))
