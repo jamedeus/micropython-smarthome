@@ -328,7 +328,7 @@ class Config():
                     #del config[device]["schedule"][schedule[rule]]
 
             else:
-                log.info("rule_parser: No match found for " + str(device))
+                log.info("rule_parser: No match found for " + str(i.name))
                 print("no match found\n")
 
         # Set a callback timer for the next rule
