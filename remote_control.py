@@ -10,7 +10,7 @@ import time
 import json
 import asyncio
 
-functions = ("status", "reboot", "enable", "disable", "set_rule")
+functions = ("status", "reboot", "enable", "disable", "set_rule", "ir")
 
 def error():
     print()
@@ -19,12 +19,13 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "disable [sensor] [minutes]" + Style.RESET_ALL + "     Disable [sensor], keeps lights in current state. Optionally schedule to re-enable in [minutes]")
     print("- " + Fore.YELLOW + Style.BRIGHT + "enable [sensor]" + Style.RESET_ALL + "                Enable [sensor], allows it to turn lights on/off again")
     print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [sensor||device]" + Style.RESET_ALL + "      Change current rule (brightness for dev, delay for sensor). Lasts until next rule change.\n")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "               Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac).\n")
     exit()
 
 
 
 async def request(msg):
-    reader, writer = await asyncio.open_connection('192.168.1.224', 8123)
+    reader, writer = await asyncio.open_connection('192.168.1.234', 8123)
     try:
         writer.write('{}\n'.format(json.dumps(msg)).encode())
         await writer.drain()
@@ -74,6 +75,12 @@ elif len(sys.argv) > 2 and sys.argv[1] == "enable" and sys.argv[2].startswith("s
 
 elif len(sys.argv) > 3 and sys.argv[1] == "set_rule" and (sys.argv[2].startswith("sensor") or sys.argv[2].startswith("device")):
     response = asyncio.run(request(['set_rule', sys.argv[2], sys.argv[3]]))
+
+elif len(sys.argv) > 3 and sys.argv[1] == "ir" and (sys.argv[2] == "tv" or sys.argv[2] == "ac"):
+    response = asyncio.run(request(['ir', sys.argv[2], sys.argv[3]]))
+
+elif len(sys.argv) > 3 and sys.argv[1] == "ir" and sys.argv[2] == "backlight" and (sys.argv[3] == "on" or sys.argv[3] == "off"):
+    response = asyncio.run(request(['ir', 'backlight', sys.argv[3]]))
 
 else:
     response = "Error: Invalid argument"

@@ -457,6 +457,39 @@ class RemoteControl:
                         print(f"API: Received invalid command from {sreader.get_extra_info('peername')[0]}")
                         reply = 'Error: 2nd param must be name of a sensor or device - use status to see options'
 
+
+
+                elif data[0] == "ir" and (data[1] == "tv" or data[1] == "ac"):
+                    for i in config.devices:
+                        if i.device == "ir_blaster":
+                            if not data[1] in i.codes:
+                                reply = 'Error: No codes found for target "{}"'.format(data[1])
+                            else:
+                                if not data[2]:
+                                    reply = 'Error: Please specify which key to simulate'
+                                else:
+                                    i.send(data[1], data[2])
+                                    reply = 'OK'
+
+                    if not reply:
+                        reply = 'Error: No IR blaster configured'
+
+
+
+                elif data[0] == "ir" and data[1] == "backlight":
+                    if not (data[2] == "on" or data[2] == "off"):
+                        reply = 'Error: Backlight setting must be "on" or "off"'
+                    else:
+                        for i in config.devices:
+                            if i.device == "ir_blaster":
+                                i.backlight(data[2])
+                                reply = 'OK'
+
+                        if not reply:
+                            reply = 'Error: No IR blaster configured'
+
+
+
                 else:
                     print(f"API: Received invalid command from {sreader.get_extra_info('peername')[0]}")
                     reply = 'Error: first arg must be one of: status, reboot, enable, disable, set_rule'
