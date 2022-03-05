@@ -5,10 +5,8 @@
 import webrepl
 import network
 import time
-from machine import Pin, Timer, RTC, PWM
+from machine import Pin, Timer, RTC
 import urequests
-import socket
-from struct import pack
 import json
 import os
 from random import randrange
@@ -344,172 +342,6 @@ class Config():
 
 
 
-class LedStrip():
-    def __init__(self, name, device, pin, current_rule):
-        self.name = name
-        self.device = device
-
-        # TODO - Find optimal PWM freq. Default (5 KHz) causes very noticable coil whine in downstairs bathroom at 128 duty cycle.
-        # Raising significantly reduces max brightness (exceeded MOSFET switching time), may just need different power supply?
-        self.pwm = PWM(Pin(pin), duty=0)
-
-        self.bright = 0 # Store current brightness, allows smooth transition when rule changes
-
-        self.current_rule = current_rule
-        log.info("Created LedStrip class instance named " + str(self.name) + ": pin = " + str(pin))
-
-
-
-    def send(self, state=1):
-        if state:
-            target = self.current_rule
-        else:
-            target = 0
-
-        # Exit if current already matches target, prevent division by 0 below
-        if self.bright == target: return True
-
-        # Fade DOWN
-        if self.bright > target:
-            # Calculate correct delay for 1 second fade
-            steps = self.bright - target
-            delay = int(1000000 / steps)
-
-            while self.bright > target:
-                self.bright -= 1
-                self.pwm.duty(self.bright)
-                time.sleep_us(delay)
-
-        # Fade UP
-        else:
-            # Calculate correct delay for 1 second fade
-            steps = target - self.bright
-            delay = int(1000000 / steps)
-
-            while self.bright < target:
-                self.bright += 1
-                self.pwm.duty(self.bright)
-                time.sleep_us(delay)
-
-        return True # Tell calling function that request succeeded
-
-
-
-
-class MotionSensor():
-    def __init__(self, name, pin, device, targets, current_rule):
-        # Pin setup
-        self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
-
-        self.name = name
-        self.device = device
-        self.current_rule = current_rule # The rule actually being followed
-        self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
-
-        # For each target: find device instance with matching name, add to list
-        self.targets = targets
-
-        # Changed by hware interrupt
-        self.motion = False
-
-        # Remember target state, don't turn on/off if already on/off
-        self.state = None
-
-        # Remember if loop is running (prevents multiple asyncio tasks running same loop)
-        self.loop_started = False
-
-        log.info(f"Instantiated motion sensor on pin {pin}")
-
-
-
-    def enable(self):
-        self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
-        # Allows remote clients to query whether interrupt is active or not
-        self.active = True
-        if not self.loop_started == True:
-            self.loop_started = True
-            asyncio.create_task(self.loop())
-        log.info(f"{self.name} enabled")
-
-
-
-    def disable(self):
-        self.sensor.irq(handler=None)
-        timer.deinit()
-        # Allows remote clients to query whether interrupt is active or not
-        self.active = False
-        self.loop_started = False # Loop checks this variable, kills asyncio task if False
-        log.info(f"{self.name} disabled")
-
-
-
-    # Interrupt routine, called when motion sensor triggered
-    def motion_detected(self, pin):
-        self.motion = True
-
-        # Set reset timer
-        # TODO - since can't reliably know how many sensors, move to software timers and self them
-        if not "None" in str(self.current_rule):
-            off = int(float(self.current_rule) * 60000) # Convert to ms
-            # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
-            timer.init(period=off, mode=Timer.ONE_SHOT, callback=self.resetTimer)
-        else:
-            # Stop any reset timer that may be running from before delay = None
-            timer.deinit()
-
-
-
-    def resetTimer(self, timer):
-        log.info("resetTimer interrupt called")
-        # Reset motion, causes self.loop to fade lights off
-        self.motion = False
-
-
-
-    async def loop(self):
-        while True:
-
-            if self.motion:
-
-                if self.state is not True: # Only turn on if currently off
-                    log.info(f"{self.name}: Motion detected")
-                    print("motion detected")
-
-                    # Record whether each send succeeded/failed
-                    responses = []
-
-                    # Call send method of each class instance, argument = turn ON
-                    for device in self.targets:
-                        responses.append(device.send(1)) # Send method returns either True or False
-
-                    # If all succeded, set bool to prevent retrying
-                    if not False in responses:
-                        self.state = True
-
-            else:
-                if self.state is not False: # Only turn off if currently on
-                    log.info(f"{self.name}: Turning lights off...")
-
-                    # Record whether each send succeeded/failed
-                    responses = []
-
-                    # Call send method of each class instance, argument = turn OFF
-                    for device in self.targets:
-                        responses.append(device.send(0)) # Send method returns either True or False
-
-                    # If all succeded, set bool to prevent retrying
-                    if not False in responses:
-                        self.state = False
-
-            # If sensor was disabled
-            if not self.loop_started:
-                self.motion = False
-                return True # Kill async task
-
-            await asyncio.sleep_ms(20)
-
-
-
 class RemoteControl:
     def __init__(self, host='0.0.0.0', port=8123, backlog=5, timeout=20):
         self.host = host
@@ -701,9 +533,29 @@ async def main():
 
 
 
-# Instantiate config object - init method replaces old startup function (convert rules, connect to wifi, API calls, etc)
-config = Config(json.load(open('config.json', 'r')))
-# TODO - close file, see if it fixes mem fragmentation
+# Load config file
+with open('config.json', 'r') as file:
+    conf = json.load(file)
+
+# Parse device and sensor types, import corresponding class
+for i in conf:
+    if i.startswith("device") or i.startswith("sensor"):
+        if conf[i]["type"] == "dimmer" or conf[i]["type"] == "bulb":
+            from Tplink import Tplink
+        if conf[i]["type"] == "relay" or conf[i]["type"] == "desktop":
+            from Relay import Relay
+        if conf[i]["type"] == "pwm":
+            from LedStrip import LedStrip
+        if conf[i]["type"] == "pir":
+            from MotionSensor import MotionSensor
+
+
+
+# Instantiate config object
+config = Config(conf)
+del conf
+
+gc.collect()
 
 webrepl.start()
 
