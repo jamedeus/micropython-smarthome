@@ -561,7 +561,7 @@ async def main():
     for i in config.devices:
         if i.device == "desktop" and not i.integration_running:
             log.info("Desktop integration is being used, creating asyncio task to listen for messages")
-            asyncio.create_task(i.desktop_integration())
+            asyncio.create_task(i.desktop_integration(config))
             i.integration_running = True
 
     # Create hardware interrupts + create async task for sensor loops

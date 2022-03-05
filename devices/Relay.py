@@ -80,17 +80,21 @@ class Relay():
 
 
 
-    async def desktop_integration(self):
+    async def desktop_integration(self, config):
+        # TODO find better way to pass config object to desktop_integration_client
+        self.config = config
         print('\nDesktop integration running.\n')
         log.info("Desktop integration running")
         self.server = await asyncio.start_server(self.desktop_integration_client, host='0.0.0.0', port=4200, backlog=5)
+
+        # TODO add handshake here, try to connect to self.ip until successful. Desktop gets node IP from handshake, remove hardcoded IP in desktop-integration.py
+
         while True:
             await asyncio.sleep(100)
 
 
 
     async def desktop_integration_client(self, sreader, swriter):
-        global config
         try:
             while True:
                 try:
@@ -106,16 +110,16 @@ class Relay():
                     print("Desktop turned lights ON")
                     log.info("Desktop turned lights ON")
                     # Set sensor instance attributes so it knows that desktop changed state
-                    for sensor in config.sensors:
-                        if config.sensors[sensor]["type"] == "pir":
+                    for sensor in self.config.sensors:
+                        if self.config.sensors[sensor]["type"] == "pir":
                             sensor.state = True
                             sensor.motion = True
                 elif data == "off": # Allow main loop to continue when desktop turns lights off
                     print("Desktop turned lights OFF")
                     log.info("Desktop turned lights OFF")
                     # Set sensor instance attributes so it knows that desktop changed state
-                    for sensor in config.sensors:
-                        if config.sensors[sensor]["type"] == "pir":
+                    for sensor in self.config.sensors:
+                        if self.config.sensors[sensor]["type"] == "pir":
                             sensor.state = False
                             sensor.motion = False
                 elif data == "enable":
