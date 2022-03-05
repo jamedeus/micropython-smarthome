@@ -62,10 +62,15 @@ class Config():
 
             # Instantiate each device as appropriate class
             if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
+                from Tplink import Tplink
                 instance = Tplink( device, conf[device]["ip"], conf[device]["type"], None )
+
             elif conf[device]["type"] == "relay" or conf[device]["type"] == "desktop":
+                from Relay import Relay
                 instance = Relay( device, conf[device]["ip"], conf[device]["type"], None )
+
             elif conf[device]["type"] == "pwm":
+                from LedStrip import LedStrip
                 instance = LedStrip( device, conf[device]["type"], conf[device]["pin"], None )
 
             # Add to config.devices dict with class object as key + json sub-dict as value
@@ -90,6 +95,7 @@ class Config():
 
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
+                from MotionSensor import MotionSensor
                 instance = MotionSensor(sensor, conf[sensor]["pin"], conf[sensor]["type"], targets, None)
 
             # Add to config.sensors dict with class object as key + json sub-dict as value
@@ -533,27 +539,9 @@ async def main():
 
 
 
-# Load config file
-with open('config.json', 'r') as file:
-    conf = json.load(file)
-
-# Parse device and sensor types, import corresponding class
-for i in conf:
-    if i.startswith("device") or i.startswith("sensor"):
-        if conf[i]["type"] == "dimmer" or conf[i]["type"] == "bulb":
-            from Tplink import Tplink
-        if conf[i]["type"] == "relay" or conf[i]["type"] == "desktop":
-            from Relay import Relay
-        if conf[i]["type"] == "pwm":
-            from LedStrip import LedStrip
-        if conf[i]["type"] == "pir":
-            from MotionSensor import MotionSensor
-
-
-
 # Instantiate config object
-config = Config(conf)
-del conf
+with open('config.json', 'r') as file:
+    config = Config(json.load(file))
 
 gc.collect()
 
