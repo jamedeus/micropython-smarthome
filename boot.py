@@ -73,10 +73,18 @@ class Config():
                 from LedStrip import LedStrip
                 instance = LedStrip( device, conf[device]["type"], conf[device]["pin"], None )
 
+            elif conf[device]["type"] == "ir_blaster":
+                from IrBlaster import IrBlaster
+                instance = IrBlaster( conf[device]["pin"], conf[device]["target"] )
+
             # Add to config.devices dict with class object as key + json sub-dict as value
             self.devices[instance] = conf[device]
+
             # Overwrite schedule section with unix timestamp rules
-            self.devices[instance]["schedule"] = self.convert_rules(conf[device]["schedule"])
+            try:
+                self.devices[instance]["schedule"] = self.convert_rules(conf[device]["schedule"])
+            except KeyError:
+                pass # Skip devices with no schedule section
 
         log.debug("Finished creating device instances")
 
@@ -275,10 +283,16 @@ class Config():
         items = {}
 
         for i in self.devices:
-            items[i] = self.devices[i]["schedule"]
+            try:
+                items[i] = self.devices[i]["schedule"]
+            except KeyError:
+                pass # Skip devices with no schedule rules
 
         for i in self.sensors:
-            items[i] = self.sensors[i]["schedule"]
+            try:
+                items[i] = self.sensors[i]["schedule"]
+            except KeyError:
+                pass # Skip devices with no schedule rules
 
         # Iterate all devices in config
         for i in items:
@@ -335,11 +349,13 @@ class Config():
                 log.info("rule_parser: No match found for " + str(i.name))
                 print("no match found\n")
 
-        # Set a callback timer for the next rule
-        miliseconds = (next_rule - epoch) * 1000
-        next_rule_timer.init(period=miliseconds, mode=Timer.ONE_SHOT, callback=self.rule_parser)
-        print(f"rule_parser callback timer set for {next_rule}")
-        log.debug(f"rule_parser callback timer set for {next_rule}")
+        # Do not set callback timer if there are no future rules
+        if not next_rule == None:
+            # Set a callback timer for the next rule
+            miliseconds = (next_rule - epoch) * 1000
+            next_rule_timer.init(period=miliseconds, mode=Timer.ONE_SHOT, callback=self.rule_parser)
+            print(f"rule_parser callback timer set for {next_rule}")
+            log.debug(f"rule_parser callback timer set for {next_rule}")
 
         # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
         for i in self.sensors:
@@ -445,6 +461,39 @@ class RemoteControl:
                     else:
                         print(f"API: Received invalid command from {sreader.get_extra_info('peername')[0]}")
                         reply = 'Error: 2nd param must be name of a sensor or device - use status to see options'
+
+
+
+                elif data[0] == "ir" and (data[1] == "tv" or data[1] == "ac"):
+                    for i in config.devices:
+                        if i.device == "ir_blaster":
+                            if not data[1] in i.codes:
+                                reply = 'Error: No codes found for target "{}"'.format(data[1])
+                            else:
+                                if not data[2]:
+                                    reply = 'Error: Please specify which key to simulate'
+                                else:
+                                    i.send(data[1], data[2])
+                                    reply = 'OK'
+
+                    if not reply:
+                        reply = 'Error: No IR blaster configured'
+
+
+
+                elif data[0] == "ir" and data[1] == "backlight":
+                    if not (data[2] == "on" or data[2] == "off"):
+                        reply = 'Error: Backlight setting must be "on" or "off"'
+                    else:
+                        for i in config.devices:
+                            if i.device == "ir_blaster":
+                                i.backlight(data[2])
+                                reply = 'OK'
+
+                        if not reply:
+                            reply = 'Error: No IR blaster configured'
+
+
 
                 else:
                     print(f"API: Received invalid command from {sreader.get_extra_info('peername')[0]}")
