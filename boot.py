@@ -536,20 +536,14 @@ async def disk_monitor():
     print("Disk Monitor Started\n")
 
     # Get filesize/modification time (to detect upload in future)
-    old_code = os.stat("boot.py")
-    old_config = os.stat("config.json")
+    old = os.stat("boot.py")
 
     while True:
         # Check if file changed on disk
-        if not os.stat("boot.py") == old_code:
+        if not os.stat("boot.py") == old:
             # If file changed (new code received from webrepl), reboot
             print("\nReceived new code from webrepl, rebooting...\n")
             log.info("Received new code from webrepl, rebooting...")
-            time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
-            reboot()
-        elif not os.stat("config.json") == old_config:
-            print("\nReceived new config from webrepl, rebooting...\n")
-            log.info("Received new config from webrepl, rebooting...")
             time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             reboot()
         # Don't let the log exceed 500 KB, full disk hangs system + can't pull log via webrepl
