@@ -289,5 +289,8 @@ upload(host, port, config, "config.json")
 # Upload Config module
 upload(host, port, "Config.py", "Config.py")
 
+# Upload API module
+upload(host, port, "Api.py", "Api.py")
+
 # Upload main code last (triggers automatic reboot)
 upload(host, port, "boot.py", "boot.py")
