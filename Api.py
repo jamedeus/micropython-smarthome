@@ -19,7 +19,7 @@ class Api:
         self.timeout = timeout
 
     async def run(self):
-        print('\nRemote control: Awaiting client connection.\n')
+        print('\API: Awaiting client connection.\n')
         log.info("API ready")
         self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
         while True:

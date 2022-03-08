@@ -12,8 +12,6 @@ log = logging.getLogger("MotionSensor")
 
 
 
-# TODO timer might have scope issues
-
 class MotionSensor():
     def __init__(self, name, pin, device, targets, current_rule):
         # Pin setup
