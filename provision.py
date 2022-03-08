@@ -279,10 +279,15 @@ for i in modules:
     src_file = i
     dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
 
+    # TODO - Also get dependencies (ir-tx for ir_blaster) and upload them
+
     upload(host, port, src_file, dst_file)
 
 # Upload config file
 upload(host, port, config, "config.json")
+
+# Upload Config module
+upload(host, port, "Config.py", "Config.py")
 
 # Upload main code last (triggers automatic reboot)
 upload(host, port, "boot.py", "boot.py")
