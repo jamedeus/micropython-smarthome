@@ -19,71 +19,61 @@ class Api:
         self.timeout = timeout
 
     def disable(self, sensor):
-        for i in Config.config.sensors:
-            if i.name == sensor:
-                print(f"API: Received command to disable {sensor}, disabling...")
-                log.info(f"API: Received command to disable {sensor}, enabling...")
-                i.disable()
-                return 'OK'
+        sensor = Config.config.find(sensor)
 
-        # If no match found
-        return 'Error: Sensor not found'
+        if not sensor:
+            return 'Error: Sensor not found'
+
+        print(f"API: Received command to disable {sensor}, disabling...")
+        log.info(f"API: Received command to disable {sensor}, disabling...")
+        sensor.disable()
+        return 'OK'
 
 
 
     def enable(self, sensor):
-        for i in Config.config.sensors:
-            if i.name == sensor:
-                print(f"API: Received command to enable {sensor}, disabling...")
-                log.info(f"API: Received command to enable {sensor}, enabling...")
-                i.enable()
-                return 'OK'
+        sensor = Config.config.find(sensor)
 
-        # If no match found
-        return 'Error: Sensor not found'
+        if not sensor:
+            return 'Error: Sensor not found'
+
+        print(f"API: Received command to enable {sensor}, enabling...")
+        log.info(f"API: Received command to enable {sensor}, enabling...")
+        sensor.enable()
+        return 'OK'
 
 
 
     def set_rule(self, target, rule, client):
-        if target.startswith("sensor"):
-            for i in Config.config.sensors:
-                if i.name == target:
-                    print(f"API: Received command to set {target} delay to {rule} minutes, setting...")
-                    try:
-                        i.current_rule = rule
-                        return 'OK'
-                    except:
-                        return 'Error: Bad rule parameter, int required'
+        target = Config.config.find(target)
 
-        elif target.startswith("device"):
-            for i in Config.config.devices:
-                if i.name == target:
-                    print(f"API: Received command to set {target} brightness to {rule}, setting...")
-                    try:
-                        i.current_rule = rule
-                        return 'OK'
-                    except:
-                        return 'Error: Bad rule parameter. Relay requires "on" or "off", all others require int'
-
-        else:
+        if not target:
             print(f"API: Received invalid command from {client}")
             return 'Error: 2nd param must be name of a sensor or device - use status to see options'
+
+        try:
+            target.current_rule = rule
+            return 'OK'
+        except:
+            return 'Error: Bad rule parameter'
 
 
 
     def ir_key(self, target, key):
         for i in Config.config.devices:
             if i.device == "ir_blaster":
-                if not target in i.codes:
-                    return 'Error: No codes found for target "{}"'.format(target)
-                else:
-                    if not key:
-                        return 'Error: Please specify which key to simulate'
-                    else:
-                        i.send(target, key)
-                        return 'OK'
+                blaster = i
+                break
+        else:
+            return 'Error: No IR blaster configured'
 
-        return 'Error: No IR blaster configured'
+        if not target in i.codes:
+            return 'Error: No codes found for target "{}"'.format(target)
+        if not key in i.codes[target]:
+            return 'Error: Target "{}" has no key {}'.format(target, key)
+        else:
+            i.send(target, key)
+            return 'OK'
 
 
 
@@ -101,7 +91,7 @@ class Api:
 
 
     async def run(self):
-        print('\API: Awaiting client connection.\n')
+        print('API: Awaiting client connection.\n')
         log.info("API ready")
         self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
         while True:

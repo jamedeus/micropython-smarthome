@@ -85,9 +85,7 @@ class Config():
             # Get class instances of each of the sensor's targets
             targets = []
             for target in conf[sensor]["targets"]:
-                for device in self.devices:
-                    if device.name == target:
-                        targets.append(device)
+                targets.append(self.find(target))
 
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
@@ -349,6 +347,22 @@ class Config():
         for i in self.sensors:
             if "MotionSensor" in str(type(i)) and i.state == True:
                 i.state = False
+
+
+
+    def find(self, target):
+        if target.startswith("device"):
+            for i in self.devices:
+                if i.name == target:
+                    return i
+
+        elif target.startswith("sensor"):
+            for i in self.sensors:
+                if i.name == target:
+                    return i
+
+        else:
+            return False
 
 
 
