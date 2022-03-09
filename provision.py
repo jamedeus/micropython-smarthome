@@ -231,6 +231,7 @@ def get_modules(config):
 
         elif conf[i]["type"] == "pir":
             modules.append("sensors/MotionSensor.py")
+            modules.append("sensors/Sensor.py")
 
     # Remove duplicates
     modules = set(modules)

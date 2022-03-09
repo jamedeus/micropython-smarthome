@@ -92,7 +92,7 @@ class Config():
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
                 from MotionSensor import MotionSensor
-                instance = MotionSensor(sensor, conf[sensor]["pin"], conf[sensor]["type"], targets, None)
+                instance = MotionSensor(sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["pin"])
 
             # Add the instance to each of it's target's "triggered_by" list
             for t in targets:

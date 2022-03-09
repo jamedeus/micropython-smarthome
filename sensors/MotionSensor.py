@@ -2,6 +2,7 @@ from machine import Pin, Timer
 import uasyncio as asyncio
 import logging
 import time
+from Sensor import Sensor
 
 # Hardware timer used to keep lights on for 5 min
 timer = Timer(0)
@@ -12,18 +13,11 @@ log = logging.getLogger("MotionSensor")
 
 
 
-class MotionSensor():
-    def __init__(self, name, pin, device, targets, current_rule):
+class MotionSensor(Sensor):
+    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets, pin):
+        super().__init__(name, sensor_type, enabled, current_rule, scheduled_rule, targets)
         # Pin setup
         self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
-
-        self.name = name
-        self.device = device
-        self.current_rule = current_rule # The rule actually being followed
-        self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
-
-        # For each target: find device instance with matching name, add to list
-        self.targets = targets
 
         # Changed by hware interrupt
         self.motion = False
