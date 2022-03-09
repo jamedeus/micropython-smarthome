@@ -63,7 +63,7 @@ if sys.argv[1] == "status":
 elif sys.argv[1] == "reboot":
     response = asyncio.run(request(['reboot']))
 
-elif len(sys.argv) > 2 and sys.argv[1] == "disable" and sys.argv[2].startswith("sensor"):
+elif len(sys.argv) > 2 and sys.argv[1] == "disable" and (sys.argv[2].startswith("sensor") or sys.argv[2].startswith("device")):
     response = asyncio.run(request(['disable', sys.argv[2]]))
     if len(sys.argv) > 3:
         if sys.argv[3].isdecimal():
@@ -72,7 +72,7 @@ elif len(sys.argv) > 2 and sys.argv[1] == "disable" and sys.argv[2].startswith("
         else:
             print(Fore.RED + "Error: 3rd argument must either be blank or contain number of minutes to disable sensor" + Fore.RESET + "\n")
 
-elif len(sys.argv) > 2 and sys.argv[1] == "enable" and sys.argv[2].startswith("sensor"):
+elif len(sys.argv) > 2 and sys.argv[1] == "enable" and (sys.argv[2].startswith("sensor") or sys.argv[2].startswith("device")):
     response = asyncio.run(request(['enable', sys.argv[2]]))
 
 elif len(sys.argv) > 3 and sys.argv[1] == "set_rule" and (sys.argv[2].startswith("sensor") or sys.argv[2].startswith("device")):

@@ -18,28 +18,28 @@ class Api:
         self.backlog = backlog
         self.timeout = timeout
 
-    def disable(self, sensor):
-        sensor = Config.config.find(sensor)
+    def disable(self, instance):
+        inst = Config.config.find(instance)
 
-        if not sensor:
-            return 'Error: Sensor not found'
+        if not inst:
+            return 'Error: Instance not found'
 
-        print(f"API: Received command to disable {sensor}, disabling...")
-        log.info(f"API: Received command to disable {sensor}, disabling...")
-        sensor.disable()
+        print(f"API: Received command to disable {instance}, disabling...")
+        log.info(f"API: Received command to disable {instance}, disabling...")
+        inst.disable()
         return 'OK'
 
 
 
-    def enable(self, sensor):
-        sensor = Config.config.find(sensor)
+    def enable(self, instance):
+        inst = Config.config.find(instance)
 
-        if not sensor:
-            return 'Error: Sensor not found'
+        if not inst:
+            return 'Error: Instance not found'
 
-        print(f"API: Received command to enable {sensor}, enabling...")
-        log.info(f"API: Received command to enable {sensor}, enabling...")
-        sensor.enable()
+        print(f"API: Received command to enable {instance}, enabling...")
+        log.info(f"API: Received command to enable {instance}, enabling...")
+        inst.enable()
         return 'OK'
 
 
@@ -148,13 +148,13 @@ class Api:
                 elif data[0] == "humid":
                     reply = self.get_humid()
 
-                elif data[0] == "disable" and data[1].startswith("sensor"):
+                elif data[0] == "disable" and (data[1].startswith("sensor") or data[1].startswith("device")):
                     reply = self.disable(data[1])
 
-                elif data[0] == "enable" and data[1].startswith("sensor"):
+                elif data[0] == "enable" and (data[1].startswith("sensor") or data[1].startswith("device")):
                     reply = self.enable(data[1])
 
-                elif data[0] == "set_rule" and data[1].startswith("sensor") or data[1].startswith("device"):
+                elif data[0] == "set_rule" and (data[1].startswith("sensor") or data[1].startswith("device")):
                     reply = self.set_rule(data[1], data[2], sreader.get_extra_info('peername')[0])
 
                 elif data[0] == "ir" and (data[1] == "tv" or data[1] == "ac"):

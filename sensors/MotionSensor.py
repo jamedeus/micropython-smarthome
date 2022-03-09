@@ -35,6 +35,7 @@ class MotionSensor(Sensor):
     def enable(self):
         super().enable()
 
+        self.motion = False
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
 
 
@@ -93,7 +94,9 @@ class MotionSensor(Sensor):
 
                     # Call send method of each class instance, argument = turn ON
                     for device in self.targets:
-                        responses.append(device.send(1)) # Send method returns either True or False
+                        # Only send if the target is enabled
+                        if self.targets[device]:
+                            responses.append(device.send(1)) # Send method returns either True or False
 
                     # If all succeded, set bool to prevent retrying
                     if not False in responses:
@@ -108,7 +111,9 @@ class MotionSensor(Sensor):
 
                     # Call send method of each class instance, argument = turn OFF
                     for device in self.targets:
-                        responses.append(device.send(0)) # Send method returns either True or False
+                        # Only send if the target is enabled
+                        if self.targets[device]:
+                            responses.append(device.send(0)) # Send method returns either True or False
 
                     # If all succeded, set bool to prevent retrying
                     if not False in responses:

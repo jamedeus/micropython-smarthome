@@ -16,3 +16,20 @@ class Device():
 
         # Will be populated with instances of all triggering sensors later
         self.triggered_by = []
+
+
+
+    def enable(self):
+        self.enabled = True
+
+        # Enable self in sensor's targets dict
+        for sensor in self.triggered_by:
+            sensor.targets[self] = True
+
+
+    def disable(self):
+        self.enabled = False
+
+        # Disable self in sensor's targets dict
+        for sensor in self.triggered_by:
+            sensor.targets[self] = False

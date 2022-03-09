@@ -84,10 +84,11 @@ class Config():
         for sensor in conf:
             if not sensor.startswith("sensor"): continue
 
-            # Get class instances of each of the sensor's targets
-            targets = []
+            # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
+            targets = {}
             for target in conf[sensor]["targets"]:
-                targets.append(self.find(target))
+                t = self.find(target)
+                targets[t] = t.enabled
 
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
@@ -98,7 +99,7 @@ class Config():
                 from Thermostat import Thermostat
                 instance = Thermostat(sensor, conf[sensor]["type"], True, int(conf[sensor]["default_setting"]), conf[sensor]["default_setting"], targets)
 
-            # Add the instance to each of it's target's "triggered_by" list
+            # Add the sensor instance to each of it's target's "triggered_by" list
             for t in targets:
                 t.triggered_by.append(instance)
 

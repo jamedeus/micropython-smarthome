@@ -35,20 +35,24 @@ class Relay(Device):
 
 
     def enable(self):
-        self.enabled = True
-        for sensor in self.triggered_by:
-            if sensor.scheduled_rule == "None":
-                sensor.current_rule = sensor.scheduled_rule  # Revert to scheduled rule once desktop is enabled again
-        log.info(f"{self.name} enabled")
+        super().enable()
+
+        # If sensor relies on desktop to turn lights off and behavior was overriden when desktop was disabled: revert.
+        if self.integration_running:
+            for sensor in self.triggered_by:
+                if sensor.scheduled_rule == "None":
+                    sensor.current_rule = sensor.scheduled_rule  # Revert to scheduled rule once desktop is enabled again
 
 
 
     def disable(self):
-        self.enabled = False
-        for sensor in self.triggered_by:
-            if sensor.current_rule == "None": # If sensor currently has no reset timer (ie relying on desktop to turn off lights when screen goes off)
-                sensor.current_rule = "15" # Set reset time to 15 minutes so lights don't get stuck on
-        log.info(f"{self.name} disabled")
+        super().disable()
+
+        # If sensor relies on desktop to turn lights off, override with 15 minute timeout so lights don't get stuck on
+        if self.integration_running:
+            for sensor in self.triggered_by:
+                if sensor.current_rule == "None":
+                    sensor.current_rule = "15"
 
 
 
