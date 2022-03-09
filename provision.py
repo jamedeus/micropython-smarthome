@@ -233,6 +233,10 @@ def get_modules(config):
             modules.append("sensors/MotionSensor.py")
             modules.append("sensors/Sensor.py")
 
+        elif conf[i]["type"] == "si7021":
+            modules.append("sensors/Thermostat.py")
+            modules.append("sensors/Sensor.py")
+
     # Remove duplicates
     modules = set(modules)
 

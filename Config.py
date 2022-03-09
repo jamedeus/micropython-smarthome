@@ -94,6 +94,10 @@ class Config():
                 from MotionSensor import MotionSensor
                 instance = MotionSensor(sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["pin"])
 
+            elif conf[sensor]["type"] == "si7021":
+                from Thermostat import Thermostat
+                instance = Thermostat(sensor, conf[sensor]["type"], True, conf[sensor]["default_setting"], conf[sensor]["default_setting"], targets)
+
             # Add the instance to each of it's target's "triggered_by" list
             for t in targets:
                 t.triggered_by.append(instance)
