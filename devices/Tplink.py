@@ -21,6 +21,18 @@ class Tplink(Device):
 
 
 
+    def set_rule(self, rule):
+        try:
+            if 1 <= int(rule) <= 100:
+                self.current_rule = int(rule)
+                return True
+            else:
+                return False
+        except ValueError:
+            return False
+
+
+
     # Encrypt messages to tp-link smarthome devices
     def encrypt(self, string):
         key = 171

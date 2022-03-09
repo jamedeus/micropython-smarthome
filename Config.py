@@ -59,7 +59,7 @@ class Config():
 
             elif conf[device]["type"] == "pwm":
                 from LedStrip import LedStrip
-                instance = LedStrip( device, conf[device]["type"], True, None, None, conf[device]["pin"] )
+                instance = LedStrip( device, conf[device]["type"], True, None, None, conf[device]["pin"], conf[device]["min"], conf[device]["max"] )
 
             # Add to config.devices dict with class object as key + json sub-dict as value
             self.devices[instance] = conf[device]
@@ -96,7 +96,7 @@ class Config():
 
             elif conf[sensor]["type"] == "si7021":
                 from Thermostat import Thermostat
-                instance = Thermostat(sensor, conf[sensor]["type"], True, conf[sensor]["default_setting"], conf[sensor]["default_setting"], targets)
+                instance = Thermostat(sensor, conf[sensor]["type"], True, int(conf[sensor]["default_setting"]), conf[sensor]["default_setting"], targets)
 
             # Add the instance to each of it's target's "triggered_by" list
             for t in targets:
@@ -143,7 +143,7 @@ class Config():
         status_dict["sensors"] = {}
         for i in self.sensors:
             status_dict["sensors"][i.name] = {}
-            status_dict["sensors"][i.name]["type"] = i.device_type
+            status_dict["sensors"][i.name]["type"] = i.sensor_type
             status_dict["sensors"][i.name]["current_rule"] = i.current_rule
             status_dict["sensors"][i.name]["targets"] = []
             for t in i.targets:
@@ -151,7 +151,7 @@ class Config():
                 for q in status_dict["devices"]:
                     if q == t.name:
                         status_dict["devices"][q]["turned_on"] = i.state
-            status_dict["sensors"][i.name]["enabled"] = i.active
+            status_dict["sensors"][i.name]["enabled"] = i.enabled
 
         return status_dict
 

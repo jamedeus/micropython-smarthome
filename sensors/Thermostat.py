@@ -20,9 +20,6 @@ class Thermostat(Sensor):
         self.i2c = SoftI2C(Pin(22), Pin(21))
         self.temp_sensor = si7021.Si7021(self.i2c)
 
-        # Force integer
-        self.current_rule = int(self.current_rule)
-
         # Remember if loop is running (prevents multiple asyncio tasks running same loop)
         self.loop_started = False
 
@@ -30,6 +27,22 @@ class Thermostat(Sensor):
 
     def fahrenheit(self):
         return si7021.convert_celcius_to_fahrenheit(self.temp_sensor.temperature)
+
+
+
+    # Receive rule from API, validate, set and return True if valid, otherwise return False
+    def set_rule(self, rule):
+        try:
+            # Constrain to range 65-80
+            if 65 <= int(rule) <= 80:
+                self.current_rule = int(rule)
+                return True
+            else:
+                print("Regex fail")
+                return False
+        except ValueError:
+            print("Try fail")
+            return False
 
 
 

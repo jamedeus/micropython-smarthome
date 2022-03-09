@@ -47,6 +47,15 @@ class MotionSensor(Sensor):
 
 
 
+    def set_rule(self, rule):
+        try:
+            self.current_rule = float(rule)
+            return True
+        except ValueError:
+            return False
+
+
+
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin):
         self.motion = True

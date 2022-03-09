@@ -51,10 +51,9 @@ class Api:
             print(f"API: Received invalid command from {client}")
             return 'Error: 2nd param must be name of a sensor or device - use status to see options'
 
-        try:
-            target.current_rule = rule
+        if target.set_rule(rule):
             return 'OK'
-        except:
+        else:
             return 'Error: Bad rule parameter'
 
 

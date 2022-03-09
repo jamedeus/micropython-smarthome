@@ -25,6 +25,15 @@ class Relay(Device):
 
 
 
+    def set_rule(self, rule):
+        if rule == "on" or rule =="off":
+            self.current_rule = rule
+            return True
+        else:
+            return False
+
+
+
     def enable(self):
         self.enabled = True
         for sensor in self.triggered_by:
