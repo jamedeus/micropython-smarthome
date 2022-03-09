@@ -1,6 +1,7 @@
 import socket
 from struct import pack
 import logging
+from Device import Device
 
 
 
@@ -11,18 +12,12 @@ log = logging.getLogger("Tplink")
 
 
 # Used to control TP-Link Kasa dimmers + smart bulbs
-class Tplink():
-    def __init__(self, name, ip, device, current_rule):
-        self.name = name
+class Tplink(Device):
+    def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, ip):
+        super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
         self.ip = ip
-        self.device = device
-        self.current_rule = current_rule # The rule actually being followed
-        self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
 
-        # Will be populated with instances of all triggering sensors later
-        self.triggered_by = []
-
-        log.info("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device))
+        log.info("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device_type))
 
 
 
@@ -52,7 +47,7 @@ class Tplink():
 
     def send(self, state=1):
         log.info("Tplink.send method called, IP=" + str(self.ip) + ", Brightness=" + str(self.current_rule) + ", state=" + str(state))
-        if self.device == "dimmer":
+        if self.device_type == "dimmer":
             cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.current_rule) + '}}}'
         else:
             cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(self.current_rule) + '}}}'
@@ -66,7 +61,7 @@ class Tplink():
             log.debug("Connected")
 
             # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
-            if self.device == "dimmer":
+            if self.device_type == "dimmer":
                 sock_tcp.send(self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')) # Set on/off state before brightness
                 data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
                 log.debug("Sent state (dimmer)")

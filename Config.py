@@ -51,19 +51,15 @@ class Config():
             # Instantiate each device as appropriate class
             if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
                 from Tplink import Tplink
-                instance = Tplink( device, conf[device]["ip"], conf[device]["type"], None )
+                instance = Tplink( device, conf[device]["type"], True, None, None, conf[device]["ip"] )
 
             elif conf[device]["type"] == "relay" or conf[device]["type"] == "desktop":
                 from Relay import Relay
-                instance = Relay( device, conf[device]["ip"], conf[device]["type"], None )
+                instance = Relay( device, conf[device]["type"], True, None, None, conf[device]["ip"] )
 
             elif conf[device]["type"] == "pwm":
                 from LedStrip import LedStrip
-                instance = LedStrip( device, conf[device]["type"], conf[device]["pin"], None )
-
-            elif conf[device]["type"] == "ir_blaster":
-                from IrBlaster import IrBlaster
-                instance = IrBlaster( conf[device]["pin"], conf[device]["target"] )
+                instance = LedStrip( device, conf[device]["type"], True, None, None, conf[device]["pin"] )
 
             # Add to config.devices dict with class object as key + json sub-dict as value
             self.devices[instance] = conf[device]
@@ -73,6 +69,12 @@ class Config():
                 self.devices[instance]["schedule"] = self.convert_rules(conf[device]["schedule"])
             except KeyError:
                 pass # Skip devices with no schedule section
+
+        # Can only have 1 instance (driver limitation)
+        # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
+        if "ir_blaster" in conf:
+            from IrBlaster import IrBlaster
+            self.ir_blaster = IrBlaster( conf["ir_blaster"]["pin"], conf["ir_blaster"]["target"] )
 
         log.debug("Finished creating device instances")
 
@@ -131,13 +133,13 @@ class Config():
         status_dict["devices"] = {}
         for i in self.devices:
             status_dict["devices"][i.name] = {}
-            status_dict["devices"][i.name]["type"] = i.device
+            status_dict["devices"][i.name]["type"] = i.device_type
             status_dict["devices"][i.name]["current_rule"] = i.current_rule
 
         status_dict["sensors"] = {}
         for i in self.sensors:
             status_dict["sensors"][i.name] = {}
-            status_dict["sensors"][i.name]["type"] = i.device
+            status_dict["sensors"][i.name]["type"] = i.device_type
             status_dict["sensors"][i.name]["current_rule"] = i.current_rule
             status_dict["sensors"][i.name]["targets"] = []
             for t in i.targets:

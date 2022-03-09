@@ -3,6 +3,7 @@ import socket
 import logging
 import time
 import gc
+from Device import Device
 
 
 
@@ -13,18 +14,12 @@ log = logging.getLogger("Relay")
 
 
 # Used for ESP8266 Relays + Desktops (running desktop-integration.py)
-class Relay():
-    def __init__(self, name, ip, device, current_rule):
-        self.name = name
-        self.ip = ip
-        self.device = device
-        self.current_rule = current_rule # The rule actually being followed
-        self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
-        self.enabled = True
-        self.integration_running = False
+class Relay(Device):
+    def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, ip):
+        super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
 
-        # Will be populated with instances of all triggering sensors later
-        self.triggered_by = []
+        self.ip = ip
+        self.integration_running = False
 
         log.info("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
 

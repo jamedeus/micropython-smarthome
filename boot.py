@@ -47,7 +47,7 @@ async def disk_monitor():
 async def main():
     # Check if desktop device configured, start desktop_integration (unless already running)
     for i in Config.config.devices:
-        if i.device == "desktop" and not i.integration_running:
+        if i.device_type == "desktop" and not i.integration_running:
             log.info("Desktop integration is being used, creating asyncio task to listen for messages")
             asyncio.create_task(i.desktop_integration())
             i.integration_running = True

@@ -1,6 +1,7 @@
 from machine import Pin, PWM
 import logging
 import time
+from Device import Device
 
 
 
@@ -10,10 +11,9 @@ log = logging.getLogger("LedStrip")
 
 
 
-class LedStrip():
-    def __init__(self, name, device, pin, current_rule):
-        self.name = name
-        self.device = device
+class LedStrip(Device):
+    def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, pin):
+        super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
 
         # TODO - Find optimal PWM freq. Default (5 KHz) causes very noticable coil whine in downstairs bathroom at 128 duty cycle.
         # Raising significantly reduces max brightness (exceeded MOSFET switching time), may just need different power supply?
@@ -21,11 +21,7 @@ class LedStrip():
 
         self.bright = 0 # Store current brightness, allows smooth transition when rule changes
 
-        self.current_rule = current_rule
         log.info("Created LedStrip class instance named " + str(self.name) + ": pin = " + str(pin))
-
-        # Will be populated with instances of all triggering sensors later
-        self.triggered_by = []
 
 
 

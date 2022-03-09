@@ -216,12 +216,15 @@ def get_modules(config):
 
         if conf[i]["type"] == "dimmer" or conf[i]["type"] == "bulb":
             modules.append("devices/Tplink.py")
+            modules.append("devices/Device.py")
 
         elif conf[i]["type"] == "relay" or conf[i]["type"] == "desktop":
             modules.append("devices/Relay.py")
+            modules.append("devices/Device.py")
 
         elif conf[i]["type"] == "pwm":
             modules.append("devices/LedStrip.py")
+            modules.append("devices/Device.py")
 
         elif conf[i]["type"] == "ir_blaster":
             modules.append("devices/IrBlaster.py")

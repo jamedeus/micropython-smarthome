@@ -60,19 +60,17 @@ class Api:
 
 
     def ir_key(self, target, key):
-        for i in Config.config.devices:
-            if i.device == "ir_blaster":
-                blaster = i
-                break
-        else:
+        try:
+            blaster = Config.config.ir_blaster
+        except AttributeError:
             return 'Error: No IR blaster configured'
 
-        if not target in i.codes:
+        if not target in blaster.codes:
             return 'Error: No codes found for target "{}"'.format(target)
-        if not key in i.codes[target]:
+        if not key in blaster.codes[target]:
             return 'Error: Target "{}" has no key {}'.format(target, key)
         else:
-            i.send(target, key)
+            blaster.send(target, key)
             return 'OK'
 
 
@@ -80,13 +78,14 @@ class Api:
     def ir_backlight(self, state):
         if not (state == "on" or state == "off"):
             return 'Error: Backlight setting must be "on" or "off"'
-        else:
-            for i in Config.config.devices:
-                if i.device == "ir_blaster":
-                    i.backlight(state)
-                    return 'OK'
 
-        return 'Error: No IR blaster configured'
+        try:
+            blaster = Config.config.ir_blaster
+        except AttributeError:
+            return 'Error: No IR blaster configured'
+
+        blaster.backlight(state)
+        return 'OK'
 
 
 
