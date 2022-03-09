@@ -26,6 +26,13 @@ class Device():
         for sensor in self.triggered_by:
             sensor.targets[self] = True
 
+            # Allow loop to run again immediately so newly-enabled device can sync up with other devices
+            if sensor.sensor_type == "pir":
+                if sensor.motion:
+                    sensor.state = False
+                else:
+                    sensor.state = True
+
 
     def disable(self):
         self.enabled = False
