@@ -1,11 +1,9 @@
-from machine import Pin, Timer
+from machine import Pin
 import uasyncio as asyncio
 import logging
 import time
 from Sensor import Sensor
-
-# Hardware timer used to keep lights on for 5 min
-timer = Timer(0)
+import SoftwareTimer
 
 # Set log file and syntax
 logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
@@ -44,7 +42,8 @@ class MotionSensor(Sensor):
         super().disable()
 
         self.sensor.irq(handler=None)
-        timer.deinit()
+        # Stop any reset timer that may be running
+        SoftwareTimer.timer.cancel(self.name)
 
 
 
@@ -62,18 +61,18 @@ class MotionSensor(Sensor):
         self.motion = True
 
         # Set reset timer
-        # TODO - since can't reliably know how many sensors, move to software timers and self them
         if not "None" in str(self.current_rule):
-            off = int(float(self.current_rule) * 60000) # Convert to ms
-            # Start timer (restarts every time motion detected), calls function that resumes main loop when it times out
-            timer.init(period=off, mode=Timer.ONE_SHOT, callback=self.resetTimer)
+
+            off = float(self.current_rule) * 60000
+            SoftwareTimer.timer.create(off, self.resetTimer, self.name)
+
         else:
             # Stop any reset timer that may be running from before delay = None
-            timer.deinit()
+            SoftwareTimer.timer.cancel(self.name)
 
 
 
-    def resetTimer(self, timer):
+    def resetTimer(self, timer="optional"):
         log.info("resetTimer interrupt called")
         # Reset motion, causes self.loop to fade lights off
         self.motion = False

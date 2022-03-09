@@ -232,6 +232,7 @@ def get_modules(config):
         elif conf[i]["type"] == "pir":
             modules.append("sensors/MotionSensor.py")
             modules.append("sensors/Sensor.py")
+            modules.append("SoftwareTimer.py")
 
         elif conf[i]["type"] == "si7021":
             modules.append("sensors/Thermostat.py")
