@@ -24,6 +24,9 @@ class LedStrip():
         self.current_rule = current_rule
         log.info("Created LedStrip class instance named " + str(self.name) + ": pin = " + str(pin))
 
+        # Will be populated with instances of all triggering sensors later
+        self.triggered_by = []
+
 
 
     def send(self, state=1):

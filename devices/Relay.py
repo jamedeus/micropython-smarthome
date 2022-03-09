@@ -2,7 +2,6 @@ import uasyncio as asyncio
 import socket
 import logging
 import time
-import Config
 import gc
 
 
@@ -24,24 +23,27 @@ class Relay():
         self.enabled = True
         self.integration_running = False
 
+        # Will be populated with instances of all triggering sensors later
+        self.triggered_by = []
+
         log.info("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
 
 
 
     def enable(self):
         self.enabled = True
-        for i in Config.config.sensors:
-            if i.device == "pir" and i.scheduled_rule == "None":
-                i.current_rule = i.scheduled_rule  # Revert to scheduled rule once desktop is enabled again
+        for sensor in self.triggered_by:
+            if sensor.scheduled_rule == "None":
+                sensor.current_rule = sensor.scheduled_rule  # Revert to scheduled rule once desktop is enabled again
         log.info(f"{self.name} enabled")
 
 
 
     def disable(self):
         self.enabled = False
-        for i in Config.config.sensors:
-            if i.device == "pir" and i.current_rule == "None": # If sensor currently has no reset timer (ie relying on desktop to turn off lights when screen goes off)
-                i.current_rule = "15" # Set reset time to 15 minutes so lights don't get stuck on
+        for sensor in self.triggered_by:
+            if sensor.current_rule == "None": # If sensor currently has no reset timer (ie relying on desktop to turn off lights when screen goes off)
+                sensor.current_rule = "15" # Set reset time to 15 minutes so lights don't get stuck on
         log.info(f"{self.name} disabled")
 
 
@@ -110,18 +112,16 @@ class Relay():
                     print("Desktop turned lights ON")
                     log.info("Desktop turned lights ON")
                     # Set sensor instance attributes so it knows that desktop changed state
-                    for sensor in Config.config.sensors:
-                        if Config.config.sensors[sensor]["type"] == "pir":
-                            sensor.state = True
-                            sensor.motion = True
+                    for sensor in self.triggered_by:
+                        sensor.state = True
+                        sensor.motion = True
                 elif data == "off": # Allow main loop to continue when desktop turns lights off
                     print("Desktop turned lights OFF")
                     log.info("Desktop turned lights OFF")
                     # Set sensor instance attributes so it knows that desktop changed state
-                    for sensor in Config.config.sensors:
-                        if Config.config.sensors[sensor]["type"] == "pir":
-                            sensor.state = False
-                            sensor.motion = False
+                    for sensor in self.triggered_by:
+                        sensor.state = False
+                        sensor.motion = False
                 elif data == "enable":
                     print("Desktop re-enabled (user logged in)")
                     self.enable()

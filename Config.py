@@ -92,6 +92,10 @@ class Config():
                 from MotionSensor import MotionSensor
                 instance = MotionSensor(sensor, conf[sensor]["pin"], conf[sensor]["type"], targets, None)
 
+            # Add the instance to each of it's target's "triggered_by" list
+            for t in targets:
+                t.triggered_by.append(instance)
+
             # Add to config.sensors dict with class object as key + json sub-dict as value
             self.sensors[instance] = conf[sensor]
             # Overwrite schedule section with unix timestamp rules

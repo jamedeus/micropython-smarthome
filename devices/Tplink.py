@@ -19,6 +19,9 @@ class Tplink():
         self.current_rule = current_rule # The rule actually being followed
         self.scheduled_rule = current_rule # The rule scheduled for current time - may be overriden, stored here so can revert
 
+        # Will be populated with instances of all triggering sensors later
+        self.triggered_by = []
+
         log.info("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device))
 
 
