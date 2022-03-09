@@ -33,23 +33,17 @@ class MotionSensor(Sensor):
 
 
     def enable(self):
+        super().enable()
+
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
-        # Allows remote clients to query whether interrupt is active or not
-        self.active = True
-        if not self.loop_started == True:
-            self.loop_started = True
-            asyncio.create_task(self.loop())
-        log.info(f"{self.name} enabled")
 
 
 
     def disable(self):
+        super().disable()
+
         self.sensor.irq(handler=None)
         timer.deinit()
-        # Allows remote clients to query whether interrupt is active or not
-        self.active = False
-        self.loop_started = False # Loop checks this variable, kills asyncio task if False
-        log.info(f"{self.name} disabled")
 
 
 

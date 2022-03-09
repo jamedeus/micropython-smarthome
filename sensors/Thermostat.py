@@ -28,20 +28,6 @@ class Thermostat(Sensor):
 
 
 
-    def enable(self):
-        if not self.loop_started == True:
-            self.loop_started = True
-            asyncio.create_task(self.loop())
-        log.info(f"{self.name} enabled")
-
-
-
-    def disable(self):
-        self.loop_started = False # Loop checks this variable, kills asyncio task if False
-        log.info(f"{self.name} disabled")
-
-
-
     def fahrenheit(self):
         return si7021.convert_celcius_to_fahrenheit(self.temp_sensor.temperature)
 
