@@ -10,7 +10,7 @@ import time
 import json
 import asyncio
 
-functions = ("status", "reboot", "enable", "disable", "set_rule", "ir")
+functions = ("status", "reboot", "enable", "disable", "set_rule", "ir", "temp", "humid")
 
 def error():
     print()
@@ -20,6 +20,8 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "enable [sensor]" + Style.RESET_ALL + "                Enable [sensor], allows it to turn lights on/off again")
     print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [sensor||device]" + Style.RESET_ALL + "      Change current rule (brightness for dev, delay for sensor). Lasts until next rule change.\n")
     print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "               Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac).\n")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "temp" + Style.RESET_ALL + "                           Get current reading from temp sensor in Farenheit.\n")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "humid" + Style.RESET_ALL + "                          Get current relative humidity from temp sensor.\n")
     exit()
 
 
@@ -81,6 +83,12 @@ elif len(sys.argv) > 3 and sys.argv[1] == "ir" and (sys.argv[2] == "tv" or sys.a
 
 elif len(sys.argv) > 3 and sys.argv[1] == "ir" and sys.argv[2] == "backlight" and (sys.argv[3] == "on" or sys.argv[3] == "off"):
     response = asyncio.run(request(['ir', 'backlight', sys.argv[3]]))
+
+elif sys.argv[1] == "temp":
+    response = asyncio.run(request(['temp']))
+
+elif sys.argv[1] == "humid":
+    response = asyncio.run(request(['humid']))
 
 else:
     response = "Error: Invalid argument"

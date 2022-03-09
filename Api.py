@@ -89,6 +89,24 @@ class Api:
 
 
 
+    def get_temp(self):
+        for sensor in Config.config.sensors:
+            if sensor.sensor_type == "si7021":
+                return sensor.fahrenheit()
+        else:
+            return 'Error: No temp sensor connected'
+
+
+
+    def get_humid(self):
+        for sensor in Config.config.sensors:
+            if sensor.sensor_type == "si7021":
+                return sensor.temp_sensor.relative_humidity
+        else:
+            return 'Error: No temp sensor connected'
+
+
+
     async def run(self):
         print('API: Awaiting client connection.\n')
         log.info("API ready")
@@ -115,7 +133,6 @@ class Api:
                 if data[0] == "status":
                     print(f"\nAPI: Status request received from {sreader.get_extra_info('peername')[0]}, sending dict\n")
                     reply = Config.config.get_status()
-                    type(reply)
 
                 elif data[0] == "reboot":
                     print(f"API: Reboot command received from {sreader.get_extra_info('peername')[0]}")
@@ -125,6 +142,12 @@ class Api:
                     swriter.write(json.dumps(reply))
                     await swriter.drain()  # Echo back
                     Config.reboot()
+
+                elif data[0] == "temp":
+                    reply = self.get_temp()
+
+                elif data[0] == "humid":
+                    reply = self.get_humid()
 
                 elif data[0] == "disable" and data[1].startswith("sensor"):
                     reply = self.disable(data[1])
