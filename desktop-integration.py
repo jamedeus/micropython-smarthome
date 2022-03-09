@@ -13,6 +13,9 @@
 
 state = None
 
+# ESP32's address saved here when first connection received
+node_ip = None
+
 import os
 import socket
 from struct import pack
@@ -23,9 +26,9 @@ import time
 
 
 
-def send_to_node(msg):
+def send_to_node(msg, ip):
     s = socket.socket()
-    s.connect(("192.168.1.224", 4200)) # TODO - implement config file, remove hardcoded IP
+    s.connect((ip, 4200))
     s.send(msg.encode())
     s.close()
 
@@ -91,11 +94,11 @@ class Tplink():
             elif not state:
                 print("Turned overhead lights OFF")
 
-            # Tell the motion sensor that lights were turned off
-            if state:
-                send_to_node("on")
-            elif not state:
-                send_to_node("off")
+            # Tell the motion sensor that lights were turned off (unless IP is still unknown)
+            if state and node_ip:
+                send_to_node("on", node_ip)
+            elif not state and node_ip:
+                send_to_node("off", node_ip)
 
         except: # Failed
             print(f"Could not connect to host {self.ip}")
@@ -104,9 +107,6 @@ class Tplink():
 
 class Desktop():
     def __init__(self):
-        self.login = False # Remember if user is at login screen (cannot query monitor state before login)
-        self.disable()
-
         # When desktop boots to login screen, monitor state cannot be queried until user logs in (returns error string, not state)
         # For some reason after about 5 seconds it returns "On" a single time, then goes back to error string
         # Loop waits until there have been 2 non-errors (confirming user logged in) before enabling
@@ -116,20 +116,31 @@ class Desktop():
                 ct += 1
             time.sleep(1)
 
-        self.enable()
 
+
+    # TODO Review rational for adding this in the first place - issue was that when desktop OFF, ESP would get stuck in loop retrying
+    # Solved this by adding the disable/enable methods on BOTH ends. When at login, send signal to disable. Once logged in, re-enable.
+    # However, can just as easily avoid the loop by (on ESP) putting return True in the except block instead of self.disable(). This
+    # way it will keep retrying, and desktop can pick up IP when it does boot up and receives first connection.
+    #
+    # So the ONLY advantage of the enable/disable methods is being able to set a timeout for the lights (prevent scenario where they
+    # get stuck on). This is substantial, but I need to find another way
+    #
+    # Temp fix: Removed calls to disable/enable
 
     def disable(self):
         self.login = True
         print("Cannot query DPMS state at login screen, waiting for user to log in...")
-        send_to_node("disable")
+        if node_ip:
+            send_to_node("disable", node_ip)
 
 
 
     def enable(self):
         self.login = False
         print("User logged in, re-enabling")
-        send_to_node("enable")
+        if node_ip:
+            send_to_node("enable", node_ip)
 
 
 
@@ -190,6 +201,8 @@ class Desktop():
         s.bind(('', 4200))
         s.listen(1)
 
+        global node_ip
+
         # Handle connections
         while True:
             # Accept connection, decode message
@@ -213,6 +226,8 @@ class Desktop():
                 t.start()
                 print("Off command received from motion sensor, setting 5 sec timer")
 
+            # Save address of ESP32
+            node_ip = addr[0]
             # Close connection, restart loop and wait for next connection
             conn.close()
 

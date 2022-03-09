@@ -72,8 +72,10 @@ class Relay():
 
                 return True # Tell calling function that request succeeded
             except OSError:
-                # Desktop is either off or at login screen - disable device until it comes back online
-                self.disable()
+                # Desktop is either off or at login screen - lie that request succeeded so calling function can proceed (temp fix)
+                return True
+                ## Desktop is either off or at login screen - disable device until it comes back online
+                #self.disable()
             except:
                 return False # Tell calling function that request failed, will retry until it succeeds
             # TODO - receive response (msg OK/Invalid), log errors
