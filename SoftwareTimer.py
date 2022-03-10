@@ -33,6 +33,13 @@ class SoftwareTimer():
         # In miliseconds
         expiration = now + int(period)
 
+        # Prevent overwriting existing item with same expiration time
+        if expiration in self.schedule:
+            while True:
+                expiration += 1 # Add 1 ms until expiration is unique
+                if not expiration in self.schedule:
+                    break
+
         # Callers are only allowed 1 timer each - delete any existing timers with same name before adding
         for i in self.schedule:
             if name in self.schedule[i]:
@@ -63,8 +70,6 @@ class SoftwareTimer():
             self.queue.append(i)
 
         self.queue.sort()
-
-        print(f"Deleted timers set by {name}")
 
         # Call init to cancel running timer, start next timer
         self.init_hware()
