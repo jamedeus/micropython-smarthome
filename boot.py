@@ -6,7 +6,6 @@ print("--------Booted--------")
 
 import webrepl
 import time
-import json
 import os
 import uasyncio as asyncio
 import logging
@@ -52,12 +51,12 @@ async def main():
             asyncio.create_task(i.desktop_integration())
             i.integration_running = True
 
-    # Create hardware interrupts + create async task for sensor loops
+    # Create hardware interrupts + create async tasks for sensor loops
     for sensor in Config.config.sensors:
         if not sensor.loop_started:
             sensor.enable()
 
-    # Start listening for remote commands
+    # Start listening for API commands
     asyncio.create_task(Api.server.run())
 
     # Listen for new code upload (auto-reboot when updated), prevent log from filling disk

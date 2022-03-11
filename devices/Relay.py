@@ -5,8 +5,6 @@ import time
 import gc
 from Device import Device
 
-
-
 # Set log file and syntax
 logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
 log = logging.getLogger("Relay")

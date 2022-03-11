@@ -14,6 +14,7 @@ log = logging.getLogger("MotionSensor")
 class MotionSensor(Sensor):
     def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets, pin):
         super().__init__(name, sensor_type, enabled, current_rule, scheduled_rule, targets)
+
         # Pin setup
         self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
 
@@ -22,9 +23,6 @@ class MotionSensor(Sensor):
 
         # Remember target state, don't turn on/off if already on/off
         self.state = None
-
-        # Remember if loop is running (prevents multiple asyncio tasks running same loop)
-        self.loop_started = False
 
         log.info(f"Instantiated motion sensor on pin {pin}")
 

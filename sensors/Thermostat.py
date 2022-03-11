@@ -20,9 +20,6 @@ class Thermostat(Sensor):
         self.i2c = SoftI2C(Pin(22), Pin(21))
         self.temp_sensor = si7021.Si7021(self.i2c)
 
-        # Remember if loop is running (prevents multiple asyncio tasks running same loop)
-        self.loop_started = False
-
 
 
     def fahrenheit(self):

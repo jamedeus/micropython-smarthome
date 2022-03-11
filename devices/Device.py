@@ -1,7 +1,9 @@
 
 
+
 class Device():
     def __init__(self, name, device_type, enabled, current_rule, scheduled_rule):
+
         self.name = name
 
         self.device_type = device_type
@@ -26,7 +28,7 @@ class Device():
         for sensor in self.triggered_by:
             sensor.targets[self] = True
 
-            # Allow loop to run again immediately so newly-enabled device can sync up with other devices
+            # Run loop again immediately so newly-enabled device acquires same on/off state as other devices
             if sensor.sensor_type == "pir":
                 if sensor.motion:
                     sensor.state = False

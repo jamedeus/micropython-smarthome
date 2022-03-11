@@ -2,6 +2,7 @@ from machine import Pin
 from Device import Device
 
 
+
 class Mosfet(Device):
     def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, pin):
         super().__init__(name, device_type, enabled, current_rule, scheduled_rule)

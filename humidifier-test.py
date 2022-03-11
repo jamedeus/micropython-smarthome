@@ -121,3 +121,10 @@ def remote():
 
 
 _thread.start_new_thread(remote, ())
+
+# Client side
+#def test():
+    #s = socket.socket()
+    #s.connect(('192.168.1.228', 4200))
+    #s.send("on".encode())
+    #s.close()

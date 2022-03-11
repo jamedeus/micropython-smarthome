@@ -11,11 +11,6 @@
 #
 # Install desktop-integration.service to /lib/systemd/system
 
-state = None
-
-# ESP32's address saved here when first connection received
-node_ip = None
-
 import os
 import socket
 from struct import pack
@@ -23,6 +18,11 @@ import re
 import subprocess
 import threading
 import time
+
+state = None
+
+# ESP32's address saved here when first connection received
+node_ip = None
 
 
 

@@ -3,8 +3,6 @@ from struct import pack
 import logging
 from Device import Device
 
-
-
 # Set log file and syntax
 logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
 log = logging.getLogger("Tplink")
@@ -15,6 +13,7 @@ log = logging.getLogger("Tplink")
 class Tplink(Device):
     def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, ip):
         super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
+
         self.ip = ip
 
         log.info("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device_type))
