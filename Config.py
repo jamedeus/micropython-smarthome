@@ -61,6 +61,10 @@ class Config():
                 from LedStrip import LedStrip
                 instance = LedStrip( device, conf[device]["type"], True, None, None, conf[device]["pin"], conf[device]["min"], conf[device]["max"] )
 
+            elif conf[device]["type"] == "mosfet":
+                from Mosfet import Mosfet
+                instance = Mosfet( device, conf[device]["type"], True, None, None, conf[device]["pin"] )
+
             # Add to config.devices dict with class object as key + json sub-dict as value
             self.devices[instance] = conf[device]
 

@@ -229,6 +229,10 @@ def get_modules(config):
         elif conf[i]["type"] == "ir_blaster":
             modules.append("devices/IrBlaster.py")
 
+        elif conf[i]["type"] == "mosfet":
+            modules.append("devices/Mosfet.py")
+            modules.append("devices/Device.py")
+
         elif conf[i]["type"] == "pir":
             modules.append("sensors/MotionSensor.py")
             modules.append("sensors/Sensor.py")
