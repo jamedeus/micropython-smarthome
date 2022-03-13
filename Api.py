@@ -111,6 +111,9 @@ class Api:
     def clear_log(self):
         try:
             os.remove('app.log')
+            # Create blank log file so disk_monitor doesn't throw error
+            with open('app.log', 'w') as file:
+                file.write("")
             return 'OK'
         except OSError:
             return 'Error: no log file found'
