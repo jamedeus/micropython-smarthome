@@ -2,7 +2,6 @@ import json
 import os
 import uasyncio as asyncio
 import logging
-import Config
 import gc
 
 # Set log file and syntax
@@ -12,16 +11,18 @@ log = logging.getLogger("API")
 
 
 class Api:
-    def __init__(self, host='0.0.0.0', port=8123, backlog=5, timeout=20):
+    def __init__(self, config, host='0.0.0.0', port=8123, backlog=5, timeout=20):
         self.host = host
         self.port = port
         self.backlog = backlog
         self.timeout = timeout
 
+        self.config = config
+
 
 
     def disable(self, instance):
-        inst = Config.config.find(instance)
+        inst = self.config.find(instance)
 
         if not inst:
             return 'Error: Instance not found'
@@ -34,7 +35,7 @@ class Api:
 
 
     def enable(self, instance):
-        inst = Config.config.find(instance)
+        inst = self.config.find(instance)
 
         if not inst:
             return 'Error: Instance not found'
@@ -47,7 +48,7 @@ class Api:
 
 
     def set_rule(self, target, rule, client):
-        target = Config.config.find(target)
+        target = self.config.find(target)
 
         if not target:
             print(f"API: Received invalid command from {client}")
@@ -62,7 +63,7 @@ class Api:
 
     def ir_key(self, target, key):
         try:
-            blaster = Config.config.ir_blaster
+            blaster = self.config.ir_blaster
         except AttributeError:
             return 'Error: No IR blaster configured'
 
@@ -81,7 +82,7 @@ class Api:
             return 'Error: Backlight setting must be "on" or "off"'
 
         try:
-            blaster = Config.config.ir_blaster
+            blaster = self.config.ir_blaster
         except AttributeError:
             return 'Error: No IR blaster configured'
 
@@ -91,7 +92,7 @@ class Api:
 
 
     def get_temp(self):
-        for sensor in Config.config.sensors:
+        for sensor in self.config.sensors:
             if sensor.sensor_type == "si7021":
                 return sensor.fahrenheit()
         else:
@@ -100,7 +101,7 @@ class Api:
 
 
     def get_humid(self):
-        for sensor in Config.config.sensors:
+        for sensor in self.config.sensors:
             if sensor.sensor_type == "si7021":
                 return sensor.temp_sensor.relative_humidity
         else:
@@ -147,7 +148,7 @@ class Api:
 
                 if data[0] == "status":
                     print(f"\nAPI: Status request received from {sreader.get_extra_info('peername')[0]}, sending dict\n")
-                    reply = Config.config.get_status()
+                    reply = self.config.get_status()
 
                 elif data[0] == "reboot":
                     print(f"API: Reboot command received from {sreader.get_extra_info('peername')[0]}")
@@ -156,7 +157,8 @@ class Api:
                     reply = 'OK'
                     swriter.write(json.dumps(reply))
                     await swriter.drain()  # Echo back
-                    Config.reboot()
+                    from Config import reboot
+                    reboot()
 
                 elif data[0] == "temp":
                     reply = self.get_temp()
@@ -198,7 +200,3 @@ class Api:
             pass
         # Client disconnected, close socket
         await sreader.wait_closed()
-
-
-
-server = Api()

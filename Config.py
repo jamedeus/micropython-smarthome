@@ -402,9 +402,3 @@ def reboot(arg="unused"):
     log.info("Reboot function called, rebooting...\n")
     import machine
     machine.reset()
-
-
-
-# Instantiate config object
-with open('config.json', 'r') as file:
-    config = Config(json.load(file))
