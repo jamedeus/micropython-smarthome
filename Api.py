@@ -108,6 +108,15 @@ class Api:
 
 
 
+    def clear_log(self):
+        try:
+            os.remove('app.log')
+            return 'OK'
+        except OSError:
+            return 'Error: no log file found'
+
+
+
     async def run(self):
         print('API: Awaiting client connection.\n')
         log.info("API ready")
@@ -152,6 +161,9 @@ class Api:
                 elif data[0] == "humid":
                     reply = self.get_humid()
 
+                elif data[0] == "clear_log":
+                    reply = self.clear_log()
+
                 elif data[0] == "disable" and (data[1].startswith("sensor") or data[1].startswith("device")):
                     reply = self.disable(data[1])
 
@@ -169,7 +181,7 @@ class Api:
 
                 else:
                     print(f"API: Received invalid command from {sreader.get_extra_info('peername')[0]}")
-                    reply = 'Error: first arg must be one of: status, reboot, enable, disable, set_rule'
+                    reply = 'Error: first arg must be one of: status, reboot, enable, disable, set_rule, clear_log, temp, humid, ir'
 
                 # Send the reply
                 swriter.write(json.dumps(reply))

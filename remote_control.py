@@ -10,7 +10,7 @@ import time
 import json
 import asyncio
 
-functions = ("status", "reboot", "enable", "disable", "set_rule", "ir", "temp", "humid")
+functions = ("status", "reboot", "enable", "disable", "set_rule", "ir", "temp", "humid", "clear_log")
 
 def error():
     print()
@@ -18,10 +18,11 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "status" + Style.RESET_ALL + "                         Get dict containing status of the node (including names of sensors)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "disable [sensor] [minutes]" + Style.RESET_ALL + "     Disable [sensor], keeps lights in current state. Optionally schedule to re-enable in [minutes]")
     print("- " + Fore.YELLOW + Style.BRIGHT + "enable [sensor]" + Style.RESET_ALL + "                Enable [sensor], allows it to turn lights on/off again")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [sensor||device]" + Style.RESET_ALL + "      Change current rule (brightness for dev, delay for sensor). Lasts until next rule change.\n")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "               Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac).\n")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "temp" + Style.RESET_ALL + "                           Get current reading from temp sensor in Farenheit.\n")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "humid" + Style.RESET_ALL + "                          Get current relative humidity from temp sensor.\n")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [sensor||device]" + Style.RESET_ALL + "      Change current rule (brightness for dev, delay for sensor). Lasts until next rule change.")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "               Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac).")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "temp" + Style.RESET_ALL + "                           Get current reading from temp sensor in Farenheit.")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "humid" + Style.RESET_ALL + "                          Get current relative humidity from temp sensor.")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "clear_log" + Style.RESET_ALL + "                      Delete node's log file.\n")
     exit()
 
 
@@ -89,6 +90,9 @@ elif sys.argv[1] == "temp":
 
 elif sys.argv[1] == "humid":
     response = asyncio.run(request(['humid']))
+
+elif sys.argv[1] == "clear_log":
+    response = asyncio.run(request(['clear_log']))
 
 else:
     response = "Error: Invalid argument"
