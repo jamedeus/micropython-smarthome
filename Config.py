@@ -10,7 +10,7 @@ import logging
 import gc
 
 # Set log file and syntax
-logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+logging.basicConfig(level=logging.DEBUG, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
 log = logging.getLogger("Config")
 
 # Timer re-runs startup every day at 3:00 am (reload schedule rules, sunrise/sunset times, etc)
@@ -119,13 +119,15 @@ class Config():
         # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
         epoch = time.mktime(time.localtime())
         now = time.localtime(epoch)
-        if now[3] < 3:
+        if now[3] < 2:
             next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
         else:
             next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, now[6], now[7])) # In testing, only needed to increment day - other parameters roll over correctly
 
-        # Set timer to reload schedule rules at a random time between 3-4 am (prevent multiple units hitting API at same second)
-        next_reset = (next_reset - epoch + randrange(3600)) * 1000
+        # Set timer to reload schedule rules at a random time between 3-4 am (prevent multiple nodes hitting API at same second)
+        adjust = randrange(3600)
+        log.debug(f"Reload_schedule_rules reboot scheduled for {time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]} am")
+        next_reset = (next_reset - epoch + adjust) * 1000
         config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedule_rules)
 
         log.info("Finished instantiating config")
@@ -169,6 +171,8 @@ class Config():
         # Turn onboard LED on, indicates setup in progress
         led = Pin(2, Pin.OUT, value=1)
 
+        log.debug(f"Attempting to connect to {self.credentials[0]}")
+
         # Connect to wifi
         wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
@@ -206,6 +210,8 @@ class Config():
                 gc.collect() # Free up memory before retrying
                 pass
 
+        log.debug("Successfully set system time")
+
         # Prevent no-mem error when API response received
         gc.collect()
 
@@ -227,7 +233,7 @@ class Config():
                 gc.collect() # Free up memory before retrying
                 pass # Allow loop to continue
 
-        log.info("Finished API calls...")
+        log.info("Finished API calls (timestamp may look weird due to system clock change)")
 
         # Stop timer once API calls finish
         reboot_timer.deinit()
