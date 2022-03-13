@@ -28,6 +28,7 @@ class Config():
     def __init__(self, conf):
         print("\nInstantiating config object...\n")
         log.info("Instantiating config object...")
+        log.debug(f"Config file: {conf}")
 
         # Load wifi credentials tuple
         self.credentials = (conf["wifi"]["ssid"], conf["wifi"]["password"])
@@ -202,9 +203,11 @@ class Config():
                 break
             except:
                 print("Failed setting system time, retrying...")
-                log.info("Failed setting system time, retrying...")
+                log.debug("Failed setting system time, retrying...")
                 failed_attempts += 1
-                if failed_attempts > 5: reboot()
+                if failed_attempts > 5:
+                    log.info("Failed to get system time 5 times, reboot triggered")
+                    reboot()
                 time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
                 gc.collect() # Free up memory before retrying
                 pass
@@ -225,9 +228,11 @@ class Config():
                 break # Break loop once request succeeds
             except:
                 print("Failed getting sunrise/sunset time, retrying...")
-                log.info("Failed getting sunrise/sunset time, retrying...")
+                log.debug("Failed getting sunrise/sunset time, retrying...")
                 failed_attempts += 1
-                if failed_attempts > 5: reboot()
+                if failed_attempts > 5:
+                    log.info("Failed to get sunrise/sunset time 5 times, reboot triggered")
+                    reboot()
                 time.sleep_ms(1500) # If failed, wait 1.5 seconds before retrying
                 gc.collect() # Free up memory before retrying
                 pass # Allow loop to continue
@@ -353,7 +358,6 @@ class Config():
 
             else:
                 log.info("rule_parser: No match found for " + str(i.name))
-                print("no match found\n")
 
         # Do not set callback timer if there are no future rules
         if not next_rule == None:
@@ -361,7 +365,7 @@ class Config():
             miliseconds = (next_rule - epoch) * 1000
             next_rule_timer.init(period=miliseconds, mode=Timer.ONE_SHOT, callback=self.rule_parser)
             print(f"rule_parser callback timer set for {next_rule}")
-            log.debug(f"rule_parser callback timer set for {next_rule}")
+            log.debug(f"rule_parser callback timer set for {time.localtime(next_rule)[3]}:{time.localtime(next_rule)[4]}")
 
         # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
         for i in self.sensors:
@@ -382,6 +386,7 @@ class Config():
                     return i
 
         else:
+            log.debug(f"Config.find: Unable to find {target}")
             return False
 
 

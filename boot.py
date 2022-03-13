@@ -22,6 +22,7 @@ log.info("Booted")
 
 async def disk_monitor():
     print("Disk Monitor Started\n")
+    log.debug("Disk Monitor Started")
 
     # Get filesize/modification time (to detect upload in future)
     old = os.stat("boot.py")
@@ -56,6 +57,7 @@ async def main():
     for sensor in config.sensors:
         if not sensor.loop_started:
             sensor.enable()
+            log.debug(f"Enabled {sensor.name}")
 
     # Start listening for API commands
     server = Api(config)
