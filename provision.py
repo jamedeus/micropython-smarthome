@@ -212,6 +212,10 @@ def get_modules(config):
     modules = []
 
     for i in conf:
+        if i == "ir_blaster":
+            modules.append("devices/IrBlaster.py")
+            continue
+
         if not i.startswith("device") and not i.startswith("sensor"): continue
 
         if conf[i]["type"] == "dimmer" or conf[i]["type"] == "bulb":
@@ -225,9 +229,6 @@ def get_modules(config):
         elif conf[i]["type"] == "pwm":
             modules.append("devices/LedStrip.py")
             modules.append("devices/Device.py")
-
-        elif conf[i]["type"] == "ir_blaster":
-            modules.append("devices/IrBlaster.py")
 
         elif conf[i]["type"] == "mosfet":
             modules.append("devices/Mosfet.py")
