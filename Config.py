@@ -9,8 +9,7 @@ import uasyncio as asyncio
 import logging
 import gc
 
-# Set log file and syntax
-logging.basicConfig(level=logging.DEBUG, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+# Set name for module's log lines
 log = logging.getLogger("Config")
 
 # Timer re-runs startup every day at 3:00 am (reload schedule rules, sunrise/sunset times, etc)

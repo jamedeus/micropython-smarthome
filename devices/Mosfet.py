@@ -1,5 +1,9 @@
 from machine import Pin
 from Device import Device
+import logging
+
+# Set name for module's log lines
+log = logging.getLogger("Mosfet")
 
 
 
@@ -8,6 +12,8 @@ class Mosfet(Device):
         super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
 
         self.mosfet = Pin(pin, Pin.OUT, Pin.PULL_DOWN)
+
+        log.info(f"Instantiated Mosfet named {self.name} on pin {pin}")
 
 
 

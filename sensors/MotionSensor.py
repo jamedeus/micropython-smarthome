@@ -5,8 +5,7 @@ import time
 from Sensor import Sensor
 import SoftwareTimer
 
-# Set log file and syntax
-logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+# Set name for module's log lines
 log = logging.getLogger("MotionSensor")
 
 
@@ -24,7 +23,7 @@ class MotionSensor(Sensor):
         # Remember target state, don't turn on/off if already on/off
         self.state = None
 
-        log.info(f"Instantiated motion sensor on pin {pin}")
+        log.info(f"Instantiated MotionSensor named {self.name} on pin {pin}")
 
 
 

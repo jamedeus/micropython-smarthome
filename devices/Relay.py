@@ -5,8 +5,7 @@ import time
 import gc
 from Device import Device
 
-# Set log file and syntax
-logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+# Set name for module's log lines
 log = logging.getLogger("Relay")
 
 
@@ -19,7 +18,7 @@ class Relay(Device):
         self.ip = ip
         self.integration_running = False
 
-        log.info("Created Relay class instance named " + str(self.name) + ": ip = " + str(self.ip))
+        log.info(f"Instantiated Relay named {self.name}: ip = {self.ip}")
 
 
 

@@ -3,8 +3,7 @@ from struct import pack
 import logging
 from Device import Device
 
-# Set log file and syntax
-logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+# Set name for module's log lines
 log = logging.getLogger("Tplink")
 
 
@@ -16,7 +15,7 @@ class Tplink(Device):
 
         self.ip = ip
 
-        log.info("Created Tplink class instance named " + str(self.name) + ": ip = " + str(self.ip) + ", type = " + str(self.device_type))
+        log.info(f"Instantiated Tplink device named {self.name}: ip = {self.ip}, type = {self.device_type}")
 
 
 

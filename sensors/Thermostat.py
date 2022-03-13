@@ -6,8 +6,7 @@ import logging
 import uasyncio as asyncio
 from Sensor import Sensor
 
-# Set log file and syntax
-logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+# Set name for module's log lines
 log = logging.getLogger("Thermostat")
 
 
@@ -19,6 +18,8 @@ class Thermostat(Sensor):
         # Setup I2C interface
         self.i2c = SoftI2C(Pin(22), Pin(21))
         self.temp_sensor = si7021.Si7021(self.i2c)
+
+        log.info(f"Instantiated Thermostat named {self.name}")
 
 
 

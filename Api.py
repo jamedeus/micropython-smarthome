@@ -4,8 +4,7 @@ import uasyncio as asyncio
 import logging
 import gc
 
-# Set log file and syntax
-logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+# Set name for module's log lines
 log = logging.getLogger("API")
 
 

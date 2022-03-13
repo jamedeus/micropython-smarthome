@@ -2,6 +2,11 @@ from ir_tx import Player
 from machine import Pin
 import json
 import time
+import logging
+
+# Set name for module's log lines
+log = logging.getLogger("IrBlaster")
+
 
 
 class IrBlaster():
@@ -26,6 +31,8 @@ class IrBlaster():
                 self.codes["tv"] = json.load(file)
             with open('whynter-codes.json', 'r') as file:
                 self.codes["ac"] = json.load(file)
+
+        log.info(f"Instantiated IrBlaster on pin {pin}")
 
 
 

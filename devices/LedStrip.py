@@ -3,8 +3,7 @@ import logging
 import time
 from Device import Device
 
-# Set log file and syntax
-logging.basicConfig(level=logging.INFO, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+# Set name for module's log lines
 log = logging.getLogger("LedStrip")
 
 
@@ -22,7 +21,7 @@ class LedStrip(Device):
         self.min_bright = int(min_bright)
         self.max_bright = int(max_bright)
 
-        log.info("Created LedStrip class instance named " + str(self.name) + ": pin = " + str(pin))
+        log.info(f"Instantiated LedStrip named {self.name} on pin {pin}")
 
 
 
