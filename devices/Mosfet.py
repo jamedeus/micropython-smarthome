@@ -20,8 +20,10 @@ class Mosfet(Device):
     def set_rule(self, rule):
         if rule == "on" or rule =="off":
             self.current_rule = rule
+            log.info(f"Rule changed to {self.current_rule}")
             return True
         else:
+            log.error(f"Failed to change rule to {rule}")
             return False
 
 

@@ -23,10 +23,13 @@ class Tplink(Device):
         try:
             if 1 <= int(rule) <= 100:
                 self.current_rule = int(rule)
+                log.info(f"Rule changed to {self.current_rule}")
                 return True
             else:
+                log.error(f"Failed to change rule to {rule}")
                 return False
         except ValueError:
+            log.error(f"Failed to change rule to {rule}")
             return False
 
 

@@ -47,8 +47,10 @@ class MotionSensor(Sensor):
     def set_rule(self, rule):
         try:
             self.current_rule = float(rule)
+            log.info(f"Rule changed to {self.current_rule}")
             return True
         except ValueError:
+            log.error(f"Failed to change rule to {rule}")
             return False
 
 

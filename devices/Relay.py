@@ -25,8 +25,10 @@ class Relay(Device):
     def set_rule(self, rule):
         if rule == "on" or rule =="off":
             self.current_rule = rule
+            log.info(f"Rule changed to {self.current_rule}")
             return True
         else:
+            log.error(f"Failed to change rule to {rule}")
             return False
 
 
@@ -75,7 +77,7 @@ class Relay(Device):
                     print("Turned desktop OFF")
                     s.send("off".encode())
                 s.close()
-                log.info("Relay.send finished")
+                log.debug("Relay.send finished")
 
                 return True # Tell calling function that request succeeded
             except OSError:
@@ -129,10 +131,12 @@ class Relay(Device):
                         sensor.motion = False
                 elif data == "enable":
                     print("Desktop re-enabled (user logged in)")
+                    log.debug("Desktop re-enabled (user logged in)")
                     self.enable()
 
                 elif data == "disable":
                     print("Desktop disabled (at login screen)")
+                    log.debug("Desktop disabled (at login screen)")
                     self.disable()
 
                 # Prevent running out of mem after repeated requests

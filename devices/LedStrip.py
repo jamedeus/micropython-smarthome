@@ -29,10 +29,13 @@ class LedStrip(Device):
         try:
             if self.min_bright <= int(rule) <= self.max_bright:
                 self.current_rule = int(rule)
+                log.info(f"Rule changed to {self.current_rule}")
                 return True
             else:
+                log.error(f"Failed to change rule to {rule}")
                 return False
         except ValueError:
+            log.error(f"Failed to change rule to {rule}")
             return False
 
 

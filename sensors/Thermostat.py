@@ -34,12 +34,12 @@ class Thermostat(Sensor):
             # Constrain to range 65-80
             if 65 <= int(rule) <= 80:
                 self.current_rule = int(rule)
+                log.info(f"Rule changed to {self.current_rule}")
                 return True
             else:
-                print("Regex fail")
                 return False
         except ValueError:
-            print("Try fail")
+            log.error(f"Failed to change rule to {rule}")
             return False
 
 
@@ -49,12 +49,14 @@ class Thermostat(Sensor):
             current = self.fahrenheit()
             if current < (self.current_rule - 1):
                 print(f"Current temp ({current}) less than setting ({self.current_rule})")
+                log.info(f"Current temp ({current}) less than setting ({self.current_rule})")
                 for target in self.targets:
                     # Only send if the target is enabled
                     if self.targets[device]:
                         target.send(1)
             elif current > (self.current_rule + 1):
                 print(f"Current temp ({current}) greater than setting ({self.current_rule})")
+                log.info(f"Current temp ({current}) greater than setting ({self.current_rule})")
                 for target in self.targets:
                     # Only send if the target is enabled
                     if self.targets[device]:
