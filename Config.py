@@ -395,6 +395,10 @@ class Config():
 def reload_schedule_rules(timer):
     print("3:00 am callback, reloading schedule rules...")
     log.info("3:00 am callback, reloading schedule rules...")
+
+    # Allow timer to deinit before rebooting, otherwise will reboot several times
+    time.sleep(2)
+
     # Temporary fix: Unable to reload after 2-3 days due to mem fragmentation (no continuous free block long enough for API response)
     # Since this will take a lot of testing to figure out, just reboot until then. TODO - fix memory issue
     reboot()
@@ -404,5 +408,5 @@ def reload_schedule_rules(timer):
 def reboot(arg="unused"):
     print("Reboot function called, rebooting...")
     log.info("Reboot function called, rebooting...\n")
-    import machine
-    machine.reset()
+    from machine import reset
+    reset()
