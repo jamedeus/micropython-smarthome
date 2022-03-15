@@ -55,6 +55,16 @@ class MotionSensor(Sensor):
 
 
 
+    def next_rule(self):
+        super().next_rule()
+
+        # If reset timer currently running, replace so new rule takes effect
+        if self.motion:
+            off = float(self.current_rule) * 60000
+            SoftwareTimer.timer.create(off, self.resetTimer, self.name)
+
+
+
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin):
         self.motion = True
