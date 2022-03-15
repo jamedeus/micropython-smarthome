@@ -8,6 +8,7 @@ from random import randrange
 import uasyncio as asyncio
 import logging
 import gc
+import SoftwareTimer
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -16,8 +17,6 @@ log = logging.getLogger("Config")
 config_timer = Timer(1)
 # Used to reboot if startup hangs for longer than 1 minute
 reboot_timer = Timer(2)
-# Used when it is time to switch to the next schedule rule
-next_rule_timer = Timer(3)
 
 # Turn onboard LED on, indicates setup in progress
 led = Pin(2, Pin.OUT, value=1)
@@ -41,12 +40,18 @@ class Config():
         # Call function to connect to wifi + hit APIs
         self.api_calls()
 
+        # Dictionairy holds schedule rules for all devices and sensors
+        self.schedule = {}
+
         # Create empty dictionairy, will contain sub-dict for each device
         self.devices = {}
 
         # Iterate json
         for device in conf:
             if not device.startswith("device"): continue
+
+            # Add device's schedule rules to dict
+            self.schedule[device] = conf[device]["schedule"]
 
             # Instantiate each device as appropriate class
             if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
@@ -68,12 +73,6 @@ class Config():
             # Add to config.devices dict with class object as key + json sub-dict as value
             self.devices[instance] = conf[device]
 
-            # Overwrite schedule section with unix timestamp rules
-            try:
-                self.devices[instance]["schedule"] = self.convert_rules(conf[device]["schedule"])
-            except KeyError:
-                pass # Skip devices with no schedule section
-
         # Can only have 1 instance (driver limitation)
         # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
         if "ir_blaster" in conf:
@@ -87,6 +86,9 @@ class Config():
 
         for sensor in conf:
             if not sensor.startswith("sensor"): continue
+
+            # Add sensor's schedule rules to dict
+            self.schedule[sensor] = conf[sensor]["schedule"]
 
             # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
             targets = {}
@@ -109,14 +111,13 @@ class Config():
 
             # Add to config.sensors dict with class object as key + json sub-dict as value
             self.sensors[instance] = conf[sensor]
-            # Overwrite schedule section with unix timestamp rules
-            self.sensors[instance]["schedule"] = self.convert_rules(conf[sensor]["schedule"])
 
         log.debug("Finished creating sensor instances")
 
-        self.rule_parser()
+        # Create timers for all schedule rules expiring in next 24 hours
+        self.build_queue()
 
-        # Get epoch time of next 3:00 am (re-run timestamp to epoch conversion)
+        # Get epoch time of next 3:00 am (re-build schedule rule queue for next 24 hours)
         epoch = time.mktime(time.localtime())
         now = time.localtime(epoch)
         if now[3] < 2:
@@ -128,7 +129,7 @@ class Config():
         adjust = randrange(3600)
         log.debug(f"Reload_schedule_rules reboot scheduled for {time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]} am")
         next_reset = (next_reset - epoch + adjust) * 1000
-        config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=reload_schedule_rules)
+        config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
 
         log.info("Finished instantiating config")
 
@@ -277,100 +278,67 @@ class Config():
 
             # Add to results: Key = unix timestamp, value = value from original rules dict
             result[trigger_time] = rules[rule]
-            # Also add a rule at the same time yesterday and tomorrow - temporary workaround for bug TODO - review this, see if there is a better approach
+            # Also add same rule with timestamp 24 hours earlier (ensures there are expired rules so possible to find currently-active rule)
             result[trigger_time-86400] = rules[rule]
+            # Also add same rule with timestamp 24 hours later (moves rules that have already expired today to tomorrow)
             result[trigger_time+86400] = rules[rule]
+
+        # Get chronological list of rule timestamps
+        schedule = []
+        for rule in result:
+            schedule.append(rule)
+        schedule.sort()
+
+        # Find the currently active rule (last rule with timestamp before current time)
+        for rule in schedule:
+            if epoch > rule:
+                current = rule
+            else:
+                break
+
+        # Delete all expired rules except current
+        for rule in schedule:
+            if not rule == current:
+                del result[rule]
+            else:
+                break
 
         # Return the finished dictionairy
         return result
 
 
 
-    # Receive sub-dictionairy containing schedule rules, compare each against current time, return correct rule
-    def rule_parser(self, arg="unused"):
-        # Store timestamp of next rule, for callback timer
-        next_rule = None
+    def build_queue(self):
+        for i in self.schedule:
+            rules = self.convert_rules(self.schedule[i])
 
-        items = {}
+            # Get list of timestamps, sort chronologically
+            queue = []
+            for j in rules:
+                queue.append(j)
+            queue.sort()
 
-        for i in self.devices:
-            try:
-                items[i] = self.devices[i]["schedule"]
-            except KeyError:
-                pass # Skip devices with no schedule rules
+            # Get target instance
+            instance = self.find(i)
 
-        for i in self.sensors:
-            try:
-                items[i] = self.sensors[i]["schedule"]
-            except KeyError:
-                pass # Skip devices with no schedule rules
+            # Set target's current rule
+            instance.scheduled_rule = rules[queue.pop(0)]
+            instance.current_rule = instance.scheduled_rule
 
-        # Iterate all devices in config
-        for i in items:
-            # Get list of rule trigger times, sort chronologically
-            schedule = list(items[i])
-            schedule.sort()
+            # Clear target's queue
+            instance.rule_queue = []
+
+            # Populate target's queue with chronological rule values
+            for k in queue:
+                instance.rule_queue.append(rules[k])
 
             # Get epoch time in current timezone
             epoch = time.mktime(time.localtime())
 
-            for rule in range(0, len(schedule)):
-                if rule is not len(schedule) - 1: # If current rule isn't the last rule, then end = next rule
-                    end = schedule[rule+1]
-                else: # If current rule IS last rule, then end = 3am (when rules are refreshed)
-                    now = time.localtime(epoch)
-                    if now[3] < 3:
-                        end = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
-                    else:
-                        weekday = now[6] + 1
-                        if weekday == 7: weekday = 0
-                        end = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, weekday, now[7]+1))
-
-                # Check if actual epoch time is between current rule and next rule
-                if schedule[rule] <= epoch < end:
-
-                    if i.name.startswith("device"):
-                        i.current_rule = self.devices[i]["schedule"][schedule[rule]]
-                        i.scheduled_rule = self.devices[i]["schedule"][schedule[rule]]
-                    elif i.name.startswith("sensor"):
-                        i.current_rule = self.sensors[i]["schedule"][schedule[rule]]
-                        i.scheduled_rule = self.sensors[i]["schedule"][schedule[rule]]
-
-                    # Find the next rule (out of all devices)
-                    # On first iteration, set next rule for current device
-                    if next_rule == None:
-                        next_rule = end
-                    # After first, overwrite current next_rule if the next rule for current device is sooner
-                    else:
-                        if end < next_rule:
-                            next_rule = end
-
-                    # Stop inner loop once match found, move to next device in main loop
-                    break
-
-                #else:
-                    # TODO - Test whether this functionality is worth restoring (was advantageous when this funct ran every time ligths turned on, not sure if it is now)
-                    # If rule has already expired, add 24 hours (move to tomorrow same time) and delete original
-                    # This fixes rules between midnight - 3am (all rules are set for current day, so these are already in the past)
-                    # Originally tried this in convert_rules(), but that causes *all* rules to be in future, so no match is found here
-                    #config[device]["schedule"][schedule[rule] + 86400] = config[device]["schedule"][schedule[rule]]
-                    #del config[device]["schedule"][schedule[rule]]
-
-            else:
-                log.info("rule_parser: No match found for " + str(i.name))
-
-        # Do not set callback timer if there are no future rules
-        if not next_rule == None:
-            # Set a callback timer for the next rule
-            miliseconds = (next_rule - epoch) * 1000
-            next_rule_timer.init(period=miliseconds, mode=Timer.ONE_SHOT, callback=self.rule_parser)
-            print(f"rule_parser callback timer set for {next_rule}")
-            log.debug(f"rule_parser callback timer set for {time.localtime(next_rule)[3]}:{time.localtime(next_rule)[4]}")
-
-        # If lights are currently on, set bool to False (forces main loop to turn lights on, new brightness takes effect)
-        for i in self.sensors:
-            if "MotionSensor" in str(type(i)) and i.state == True:
-                i.state = False
+            # Create timers for all rules
+            for k in queue:
+                miliseconds = (k - epoch) * 1000
+                SoftwareTimer.timer.create(miliseconds, instance.next_rule, "scheduler")
 
 
 
@@ -391,17 +359,16 @@ class Config():
 
 
 
-# Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)
-def reload_schedule_rules(timer):
-    print("3:00 am callback, reloading schedule rules...")
-    log.info("3:00 am callback, reloading schedule rules...")
+    # Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)
+    def reload_schedule_rules(self, t):
+        print("3:00 am callback, reloading schedule rules...")
+        log.info("3:00 am callback, reloading schedule rules...")
 
-    # Allow timer to deinit before rebooting, otherwise will reboot several times
-    time.sleep(2)
+        # Delete all existing timers
+        SoftwareTimer.timer.cancel("scheduler")
 
-    # Temporary fix: Unable to reload after 2-3 days due to mem fragmentation (no continuous free block long enough for API response)
-    # Since this will take a lot of testing to figure out, just reboot until then. TODO - fix memory issue
-    reboot()
+        # Create timers for all rules in next 24 hours
+        self.build_queue()
 
 
 

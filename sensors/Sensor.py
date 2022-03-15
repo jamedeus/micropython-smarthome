@@ -17,6 +17,9 @@ class Sensor():
         # The rule that should be followed at the current time (used to undo API changes to current_rule)
         self.scheduled_rule = scheduled_rule
 
+        # Will hold sequential schedule rules so they can be quickly changed when interrupt runs
+        self.rule_queue = []
+
         # Dictionary, keys are device instances, value is True/False for Enabled/Disabled
         self.targets = targets
 
@@ -37,3 +40,9 @@ class Sensor():
     def disable(self):
         self.enabled = False
         self.loop_started = False # Loop checks this variable, kills asyncio task if False
+
+
+
+    def next_rule(self):
+        self.scheduled_rule = self.rule_queue.pop(0)
+        self.current_rule = self.scheduled_rule

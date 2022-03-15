@@ -40,10 +40,11 @@ class SoftwareTimer():
                 if not expiration in self.schedule:
                     break
 
-        # Callers are only allowed 1 timer each - delete any existing timers with same name before adding
-        for i in self.schedule:
-            if name in self.schedule[i]:
-                del self.schedule[i]
+        # Callers are only allowed 1 timer each (scheduler is exempt) - delete any existing timers with same name before adding
+        if not name == "scheduler":
+            for i in self.schedule:
+                if name in self.schedule[i]:
+                    del self.schedule[i]
 
         self.schedule[expiration] = [name, callback]
 
