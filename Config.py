@@ -194,18 +194,25 @@ class Config():
 
         failed_attempts = 0
 
-        # Prevent no-mem error when API response received
-        # TODO - Keep testing. This fixed all failures with try/except commented, but they happen again with try/except
+        # Ensure enough free ram for API resopnse
         gc.collect()
 
         # Set current time from internet in correct timezone, retry until successful (note: ntptime is easier but doesn't support timezone)
-        # TODO: Continue to optimize this - it seems to only fail when inside try/except (about 50% of the time), otherwise it always works...
-        # Since RTC call will traceback if request fail, could just rely on reboot_timer to recover from failure
+
         while True:
             try:
                 response = urequests.get("https://api.ipgeolocation.io/timezone?apiKey=ddcf9be5a455453e99d84de3dfe825bc&tz=America/Los_Angeles")
-                now = time.localtime(int(response.json()["date_time_unix"]) - 946713600) # Convert unix epoch (from API) to micropython epoch (starts in 2000), then get time tuple
-                RTC().datetime((now[0], now[1], now[2], now[6], now[3], now[4], now[5], 0)) # Set RTC - micropython is stupid and uses different parameter order for RTC
+
+                # Convert epoch (seconds since 01/01/1970 GMT) to micropython epoch (since 01/01/2000: -946684800 for 30 years, -28800 for PST timezone)
+                mepoch = int(response.json()["date_time_unix"]) - 946713600
+
+                # Epoch does not include daylight savings - adjust if needed
+                if response.json()["is_dst"]:
+                    mepoch += 3600
+
+                # Get datetime object, set system clock
+                now = time.localtime(mepoch)
+                RTC().datetime((now[0], now[1], now[2], now[6], now[3], now[4], now[5], 0)) # RTC uses different parameter order
                 response.close()
                 break
             except:
