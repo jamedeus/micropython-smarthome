@@ -40,6 +40,9 @@ class Config():
         # Call function to connect to wifi + hit APIs
         self.api_calls()
 
+        # Tells loop when it is time to re-run API calls + build schedule rule queue
+        self.reload_rules = False
+
         # Dictionairy holds schedule rules for all devices and sensors
         self.schedule = {}
 
@@ -130,6 +133,9 @@ class Config():
         log.debug(f"Reload_schedule_rules reboot scheduled for {time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]} am")
         next_reset = (next_reset - epoch + adjust) * 1000
         config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
+
+        # Start loop (re-builds schedule rule queue when timer above expires)
+        asyncio.create_task(self.loop())
 
         log.info("Finished instantiating config")
 
@@ -361,14 +367,36 @@ class Config():
 
     # Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)
     def reload_schedule_rules(self, t):
-        print("3:00 am callback, reloading schedule rules...")
-        log.info("3:00 am callback, reloading schedule rules...")
+        self.reload_rules = True
 
-        # Delete all existing timers
-        SoftwareTimer.timer.cancel("scheduler")
 
-        # Create timers for all rules in next 24 hours
-        self.build_queue()
+
+    async def loop(self):
+        while True:
+            # Set to True by timer every night between 3-4 am
+            if self.reload_rules:
+                print("Reloading schedule rules...")
+                log.info("3:00 am callback, reloading schedule rules...")
+                # Get up-to-date sunrise/sunset, set system clock (in case of daylight savings)
+                self.api_calls()
+
+                # Create timers for all schedule rules expiring in next 24 hours
+                self.build_queue()
+
+                self.reload_rules = False
+
+                # Set timer to run again tomorrow between 3-4 am
+                epoch = time.mktime(time.localtime())
+                now = time.localtime(epoch)
+                next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, now[6], now[7]))
+                adjust = randrange(3600)
+                log.debug(f"Reload_schedule_rules reboot scheduled for {time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]} am")
+                next_reset = (next_reset - epoch + adjust) * 1000
+                config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
+
+            else:
+                # Check every minute
+                await asyncio.sleep_ms(60)
 
 
 
