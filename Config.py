@@ -325,6 +325,10 @@ class Config():
         for i in self.schedule:
             rules = self.convert_rules(self.schedule[i])
 
+            # Skip devices/sensors with no schedule rules
+            if len(rules) == 0:
+                continue
+
             # Get list of timestamps, sort chronologically
             queue = []
             for j in rules:
