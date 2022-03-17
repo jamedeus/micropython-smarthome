@@ -275,36 +275,52 @@ def upload(host, port, src_file, dst_file):
 
 
 
+def provision(config):
+    # Read config file, determine which device/sensor modules need to be uploaded
+    modules = get_modules(config)
+
+    port = 8266
+
+    # Upload all device/sensor modules
+    for i in modules:
+        src_file = i
+        dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
+
+        # TODO - Also get dependencies (ir-tx for ir_blaster) and upload them
+
+        upload(host, port, src_file, dst_file)
+
+    # Upload config file
+    upload(host, port, config, "config.json")
+
+    # Upload Config module
+    upload(host, port, "Config.py", "Config.py")
+
+    # Upload API module
+    upload(host, port, "Api.py", "Api.py")
+
+    # Upload main code last (triggers automatic reboot)
+    upload(host, port, "boot.py", "boot.py")
+
+
+
+
 # Relative paths break if run from other dir
 if not os.getcwd().split('/')[-1] == 'micropython-smarthome':
     print("ERROR: Must be run from 'micropython-smarthome' directory")
     exit()
 
-# Get config file and target IP from cli arguments
-passwd, config, host = arg_parse()
 
-# Read config file, determine which device/sensor modules need to be uploaded
-modules = get_modules(config)
+if not sys.argv[1] == "--all":
+    # Get config file and target IP from cli arguments
+    passwd, config, host = arg_parse()
 
-port = 8266
+    provision(config)
+else:
+    nodes = {'config/bedroom.json': '192.168.1.224', 'config/downstairs-bathroom.json': '192.168.1.201', 'config/living-room.json': '192.168.1.228', 'config/kitchen.json': '192.168.1.246'}
 
-# Upload all device/sensor modules
-for i in modules:
-    src_file = i
-    dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
-
-    # TODO - Also get dependencies (ir-tx for ir_blaster) and upload them
-
-    upload(host, port, src_file, dst_file)
-
-# Upload config file
-upload(host, port, config, "config.json")
-
-# Upload Config module
-upload(host, port, "Config.py", "Config.py")
-
-# Upload API module
-upload(host, port, "Api.py", "Api.py")
-
-# Upload main code last (triggers automatic reboot)
-upload(host, port, "boot.py", "boot.py")
+    for i in nodes:
+        passwd = "password"
+        config = i
+        host = nodes[i]
+        provision(config)
