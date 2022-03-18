@@ -70,26 +70,21 @@ class Tplink(Device):
             sock_tcp = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             sock_tcp.settimeout(10)
             sock_tcp.connect((self.ip, 9999))
-            #sock_tcp.settimeout(None)
-            log.debug("Connected")
 
             # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
             if self.device_type == "dimmer":
                 sock_tcp.send(self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')) # Set on/off state before brightness
                 data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
-                log.debug("Sent state (dimmer)")
 
             # Set brightness
             sock_tcp.send(self.encrypt(cmd))
-            log.debug("Sent brightness")
             data = sock_tcp.recv(2048)
-            log.debug("Received reply")
             sock_tcp.close()
 
             decrypted = self.decrypt(data[4:]) # Remove in final version (or put in debug conditional)
 
-            print("Sent:     ", cmd)
-            print("Received: ", decrypted)
+            print(f"{self.name}: brightness = {self.current_rule}, state = {state}")
+            log.debug("Success")
 
             return True # Tell calling function that request succeeded
 
