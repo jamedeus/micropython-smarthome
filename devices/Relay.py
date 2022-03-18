@@ -68,13 +68,11 @@ class Relay(Device):
             try:
                 s = socket.socket()
                 s.settimeout(10)
-                print(f"Running send_relay, ip={self.ip}")
+                print(f"{self.name}: Relay state = {state}")
                 s.connect((self.ip, 4200))
                 if state:
-                    print("Turned desktop ON")
                     s.send("on".encode())
                 else:
-                    print("Turned desktop OFF")
                     s.send("off".encode())
                 s.close()
                 log.debug("Relay.send finished")
