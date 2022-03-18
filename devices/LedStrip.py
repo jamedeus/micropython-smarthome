@@ -60,6 +60,8 @@ class LedStrip(Device):
                 self.pwm.duty(self.bright)
                 time.sleep_us(delay)
 
+            print(f"{self.name}: Faded down to {target}")
+
         # Fade UP
         else:
             # Calculate correct delay for 1 second fade
@@ -70,5 +72,7 @@ class LedStrip(Device):
                 self.bright += 1
                 self.pwm.duty(self.bright)
                 time.sleep_us(delay)
+
+            print(f"{self.name}: Faded up to {target}")
 
         return True # Tell calling function that request succeeded
