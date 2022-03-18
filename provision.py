@@ -313,16 +313,31 @@ if not os.getcwd().split('/')[-1] == 'micropython-smarthome':
     exit()
 
 
-if not sys.argv[1] == "--all":
+
+# Load config file
+with open('nodes.json', 'r') as file:
+    nodes = json.load(file)
+
+
+
+# If user selected node by name
+if sys.argv[1] in nodes:
+    passwd = "password"
+    config = nodes[sys.argv[1]]["config"]
+    host = nodes[sys.argv[1]]["ip"]
+    provision(config)
+
+# If user selected all nodes
+elif sys.argv[1] == "--all":
+    passwd = "password"
+    for i in nodes:
+        config = nodes[i]["config"]
+        host = nodes[i]["ip"]
+        provision(config)
+
+# If user used keyword args
+else:
     # Get config file and target IP from cli arguments
     passwd, config, host = arg_parse()
 
     provision(config)
-else:
-    nodes = {'config/bedroom.json': '192.168.1.224', 'config/downstairs-bathroom.json': '192.168.1.201', 'config/living-room.json': '192.168.1.228', 'config/kitchen.json': '192.168.1.246'}
-
-    for i in nodes:
-        passwd = "password"
-        config = i
-        host = nodes[i]
-        provision(config)

@@ -1,0 +1,1 @@
+{"bedroom": {"config": "config/bedroom.json", "ip": "192.168.1.224"}, "living-room": {"config": "config/living-room.json", "ip": "192.168.1.228"}, "kitchen": {"config": "config/kitchen.json", "ip": "192.168.1.246"}, "downstairs-bathroom": {"config": "config/downstairs-bathroom.json", "ip": "192.168.1.201"}}
