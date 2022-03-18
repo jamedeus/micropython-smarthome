@@ -356,6 +356,7 @@ class Config():
             for k in queue:
                 miliseconds = (k - epoch) * 1000
                 SoftwareTimer.timer.create(miliseconds, instance.next_rule, "scheduler")
+                gc.collect()
 
 
 
