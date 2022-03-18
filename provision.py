@@ -237,7 +237,6 @@ def get_modules(config):
         elif conf[i]["type"] == "pir":
             modules.append("sensors/MotionSensor.py")
             modules.append("sensors/Sensor.py")
-            modules.append("SoftwareTimer.py")
 
         elif conf[i]["type"] == "si7021":
             modules.append("sensors/Thermostat.py")
@@ -295,6 +294,9 @@ def provision(config):
 
     # Upload Config module
     upload(host, port, "Config.py", "Config.py")
+
+    # Upload SoftwareTimer module
+    upload(host, port, "SoftwareTimer.py", "SoftwareTimer.py")
 
     # Upload API module
     upload(host, port, "Api.py", "Api.py")
