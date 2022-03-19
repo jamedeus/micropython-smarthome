@@ -358,6 +358,8 @@ class Config():
                 SoftwareTimer.timer.create(miliseconds, instance.next_rule, "scheduler")
                 gc.collect()
 
+        print(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
+
 
 
     def find(self, target):
@@ -391,6 +393,10 @@ class Config():
                 log.info("3:00 am callback, reloading schedule rules...")
                 # Get up-to-date sunrise/sunset, set system clock (in case of daylight savings)
                 self.api_calls()
+
+                # Cancel all timers created yesterday to avoid duplicates
+                # ie node boots at 12:00, sets rules until 12:00 next day. Reloads rules at 3:00, creating 2 copies of all between 3:00 - 12:00
+                SoftwareTimer.timer.cancel("scheduler")
 
                 # Create timers for all schedule rules expiring in next 24 hours
                 self.build_queue()
