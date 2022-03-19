@@ -47,7 +47,7 @@ async def request(ip, msg):
 
 
 
-def argparse():
+def parse_ip():
     # Load config file
     with open('nodes.json', 'r') as file:
         nodes = json.load(file)
@@ -56,62 +56,76 @@ def argparse():
     # Get target ip
     for i in range(len(sys.argv)):
 
-        if sys.argv[i] in nodes:
+        if sys.argv[i] == "--all":
+            sys.argv.pop(i)
+            for i in nodes:
+                ip = nodes[i]["ip"]
+                print(ip)
+                # Use copy of original args since items are removed by parser
+                cmd = sys.argv.copy()
+                parse_command(ip, cmd)
+            exit()
+
+        elif sys.argv[i] in nodes:
             ip = nodes[sys.argv[i]]["ip"]
             sys.argv.pop(i)
-            break
+            parse_command(ip, sys.argv)
+            exit()
 
         elif sys.argv[i] == "-ip":
             sys.argv.pop(i)
             ip = sys.argv.pop(i)
             if re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", ip):
-                break
+                parse_command(ip, sys.argv)
+                exit()
             else:
                 print("Error: Invalid IP format")
                 exit()
 
         elif re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", sys.argv[i]):
             ip = sys.argv.pop(i)
-            break
+            parse_command(ip, sys.argv)
+            exit()
 
 
 
+def parse_command(ip, args):
     # Get command and args
     for i in range(len(sys.argv)):
-        if sys.argv[i] == "status":
+        if args[i] == "status":
             response = asyncio.run(request(ip, ['status']))
 
             # Requires formatting, print here and exit before other print statement
-            print(json.dumps(response, indent=4))
-            exit()
+            print(json.dumps(response, indent=4) + "\n")
+            return True
 
-        elif sys.argv[i] == "reboot":
+        elif args[i] == "reboot":
             response = asyncio.run(request(ip, ['reboot']))
 
-        elif sys.argv[i] == "disable":
-            sys.argv.pop(i)
-            if sys.argv[i].startswith("sensor") or sys.argv[i].startswith("device"):
-                response = asyncio.run(request(ip, ['disable', sys.argv[i]]))
+        elif args[i] == "disable":
+            args.pop(i)
+            if args[i].startswith("sensor") or args[i].startswith("device"):
+                response = asyncio.run(request(ip, ['disable', args[i]]))
                 break
             else:
                 print("Error: Can only disable devices and sensors.")
                 exit()
 
-        elif sys.argv[i] == "enable":
-            sys.argv.pop(i)
-            if sys.argv[i].startswith("sensor") or sys.argv[i].startswith("device"):
-                response = asyncio.run(request(ip, ['enable', sys.argv[i]]))
+        elif args[i] == "enable":
+            args.pop(i)
+            if args[i].startswith("sensor") or args[i].startswith("device"):
+                response = asyncio.run(request(ip, ['enable', args[i]]))
                 break
             else:
                 print("Error: Can only enable devices and sensors.")
                 exit()
 
-        elif sys.argv[i] == "set_rule":
-            sys.argv.pop(i)
-            if sys.argv[i].startswith("sensor") or sys.argv[i].startswith("device"):
-                target = sys.argv.pop(i)
+        elif args[i] == "set_rule":
+            args.pop(i)
+            if args[i].startswith("sensor") or args[i].startswith("device"):
+                target = args.pop(i)
                 try:
-                    response = asyncio.run(request(ip, ['set_rule', target, sys.argv[i]]))
+                    response = asyncio.run(request(ip, ['set_rule', target, args[i]]))
                     break
                 except IndexError:
                     print("Error: Must speficy new rule")
@@ -120,23 +134,23 @@ def argparse():
                 print("Error: Can only set rules for devices and sensors.")
                 exit()
 
-        elif sys.argv[i] == "ir":
-            sys.argv.pop(i)
+        elif args[i] == "ir":
+            args.pop(i)
 
-            if len(sys.argv) > 1 and (sys.argv[i] == "tv" or sys.argv[i] == "ac"):
-                target = sys.argv.pop(i)
+            if len(sys.argv) > 1 and (args[i] == "tv" or args[i] == "ac"):
+                target = args.pop(i)
                 try:
-                    response = asyncio.run(request(ip, ['ir', target, sys.argv[i]]))
+                    response = asyncio.run(request(ip, ['ir', target, args[i]]))
                     break
                 except IndexError:
                     print("Error: Must speficy command")
                     exit()
 
-            elif len(sys.argv) > 1 and sys.argv[i] == "backlight":
-                sys.argv.pop(i)
+            elif len(sys.argv) > 1 and args[i] == "backlight":
+                args.pop(i)
                 try:
-                    if sys.argv[i] == "on" or sys.argv[i] == "off":
-                        response = asyncio.run(request(ip, ['ir', 'backlight', sys.argv[i]]))
+                    if args[i] == "on" or args[i] == "off":
+                        response = asyncio.run(request(ip, ['ir', 'backlight', args[i]]))
                         break
                     else:
                         raise IndexError
@@ -147,13 +161,13 @@ def argparse():
                 print("Error: Must specify target device (tv or ac) or specify backlight [on|off]")
                 exit()
 
-        elif sys.argv[i] == "temp":
+        elif args[i] == "temp":
             response = asyncio.run(request(ip, ['temp']))
 
-        elif sys.argv[i] == "humid":
+        elif args[i] == "humid":
             response = asyncio.run(request(ip, ['humid']))
 
-        elif sys.argv[i] == "clear_log":
+        elif args[i] == "clear_log":
             response = asyncio.run(request(ip, ['clear_log']))
 
 
@@ -161,7 +175,7 @@ def argparse():
     try:
         # Print response, if any
         if response == "OK":
-            exit()
+            return True
         else:
             print(response)
     except UnboundLocalError:
@@ -169,4 +183,4 @@ def argparse():
 
 
 
-argparse()
+parse_ip()
