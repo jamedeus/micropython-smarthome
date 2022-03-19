@@ -359,6 +359,7 @@ class Config():
                 gc.collect()
 
         print(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
+        log.debug(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
 
 
 
