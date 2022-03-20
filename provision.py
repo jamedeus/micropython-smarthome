@@ -12,6 +12,7 @@ import os
 import struct
 import json
 import socket
+from colorama import Fore, Style
 
 DEBUG = 0
 
@@ -211,9 +212,18 @@ def get_modules(config):
 
     modules = []
 
+    libs = []
+    libs.append('lib/logging.py')
+
     for i in conf:
         if i == "ir_blaster":
+            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, the directory /lib/ir_tx/ must be created manually\n")
+
             modules.append("devices/IrBlaster.py")
+            modules.append("ir-remote/samsung-codes.json")
+            modules.append("ir-remote/whynter-codes.json")
+            libs.append("lib/ir_tx/__init__.py")
+            libs.append("lib/ir_tx/nec.py")
             continue
 
         if not i.startswith("device") and not i.startswith("sensor"): continue
@@ -239,13 +249,16 @@ def get_modules(config):
             modules.append("sensors/Sensor.py")
 
         elif conf[i]["type"] == "si7021":
+            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, the directory /lib/ must be created manually\n")
+
             modules.append("sensors/Thermostat.py")
             modules.append("sensors/Sensor.py")
+            libs.append("lib/si7021.py")
 
     # Remove duplicates
     modules = set(modules)
 
-    return modules
+    return modules, libs
 
 
 
@@ -276,7 +289,7 @@ def upload(host, port, src_file, dst_file):
 
 def provision(config):
     # Read config file, determine which device/sensor modules need to be uploaded
-    modules = get_modules(config)
+    modules, libs = get_modules(config)
 
     port = 8266
 
@@ -285,7 +298,12 @@ def provision(config):
         src_file = i
         dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
 
-        # TODO - Also get dependencies (ir-tx for ir_blaster) and upload them
+        upload(host, port, src_file, dst_file)
+
+    # Upload all libraries
+    for i in libs:
+        src_file = i
+        dst_file = i
 
         upload(host, port, src_file, dst_file)
 
