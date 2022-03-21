@@ -415,7 +415,7 @@ class Config():
 
             else:
                 # Check every minute
-                await asyncio.sleep_ms(60)
+                await asyncio.sleep(60)
 
 
 
