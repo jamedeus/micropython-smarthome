@@ -46,3 +46,5 @@ class Sensor():
     def next_rule(self):
         self.scheduled_rule = self.rule_queue.pop(0)
         self.current_rule = self.scheduled_rule
+        log.debug(f"{self.name}: Scheduled rule changed to {self.current_rule}")
+        print(f"{self.name}: Scheduled rule changed to {self.current_rule}")
