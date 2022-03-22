@@ -130,7 +130,7 @@ class Config():
 
         # Set timer to reload schedule rules at a random time between 3-4 am (prevent multiple nodes hitting API at same second)
         adjust = randrange(3600)
-        log.debug(f"Reload_schedule_rules reboot scheduled for {time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]} am")
+        log.debug(f"Reload_schedule_rules callback scheduled for {time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]} am")
         next_reset = (next_reset - epoch + adjust) * 1000
         config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
 
@@ -409,7 +409,7 @@ class Config():
                 now = time.localtime(epoch)
                 next_reset = time.mktime((now[0], now[1], now[2]+1, 3, 0, 0, now[6], now[7]))
                 adjust = randrange(3600)
-                log.debug(f"Reload_schedule_rules reboot scheduled for {time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]} am")
+                log.debug(f"Reload_schedule_rules callback scheduled for {time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]} am")
                 next_reset = (next_reset - epoch + adjust) * 1000
                 config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
 
