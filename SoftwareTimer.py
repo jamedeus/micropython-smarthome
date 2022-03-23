@@ -113,8 +113,11 @@ class SoftwareTimer():
 
                 # Delete rules that were just run
                 for i in self.delete:
-                    del self.schedule[i]
-                    del self.queue[self.queue.index(i)]
+                    try:
+                        del self.schedule[i]
+                        del self.queue[self.queue.index(i)]
+                    except KeyError:
+                        pass # Prevent crash if rule was removed by self.cancel while loop running
 
                 self.delete = []
 
@@ -133,9 +136,12 @@ class SoftwareTimer():
                         await asyncio.sleep_ms(1)
 
                     # Run action, remove from queue
-                    self.schedule[next_rule][1]()
-                    del self.schedule[next_rule]
-                    del self.queue[self.queue.index(next_rule)]
+                    try:
+                        self.schedule[next_rule][1]()
+                        del self.schedule[next_rule]
+                        del self.queue[self.queue.index(next_rule)]
+                    except KeyError:
+                        pass # Prevent crash if rule was removed by self.cancel while loop running
 
             else:
                 # Wait for timer to unpause loop
