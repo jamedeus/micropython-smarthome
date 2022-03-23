@@ -46,8 +46,8 @@ class Config():
         # Dictionairy holds schedule rules for all devices and sensors
         self.schedule = {}
 
-        # Create empty dictionairy, will contain sub-dict for each device
-        self.devices = {}
+        # Create empty list, will contain instances for each device
+        self.devices = []
 
         # Iterate json
         for device in conf:
@@ -73,8 +73,8 @@ class Config():
                 from Mosfet import Mosfet
                 instance = Mosfet( device, conf[device]["type"], True, None, None, conf[device]["pin"] )
 
-            # Add to config.devices dict with class object as key + json sub-dict as value
-            self.devices[instance] = conf[device]
+            # Add instance to config.devices
+            self.devices.append(instance)
 
         # Can only have 1 instance (driver limitation)
         # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
@@ -84,8 +84,8 @@ class Config():
 
         log.debug("Finished creating device instances")
 
-        # Create empty dictionairy, will contain sub-dict for each sensor
-        self.sensors = {}
+        # Create empty list, will contain instances for each sensor
+        self.sensors = []
 
         for sensor in conf:
             if not sensor.startswith("sensor"): continue
@@ -112,8 +112,8 @@ class Config():
             for t in targets:
                 t.triggered_by.append(instance)
 
-            # Add to config.sensors dict with class object as key + json sub-dict as value
-            self.sensors[instance] = conf[sensor]
+            # Add instance to config.sensors
+            self.sensors.append(instance)
 
         log.debug("Finished creating sensor instances")
 
