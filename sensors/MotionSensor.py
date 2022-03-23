@@ -11,11 +11,13 @@ log = logging.getLogger("MotionSensor")
 
 
 class MotionSensor(Sensor):
-    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets, pin):
+    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets, pins):
         super().__init__(name, sensor_type, enabled, current_rule, scheduled_rule, targets)
 
         # Pin setup
-        self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+        self.sensor = []
+        for pin in pins:
+            self.sensor.append(Pin(pin, Pin.IN, Pin.PULL_DOWN))
 
         # Changed by hware interrupt
         self.motion = False
@@ -31,14 +33,20 @@ class MotionSensor(Sensor):
         super().enable()
 
         self.motion = False
-        self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
+
+        # Create hardware interrupts for all sensors in group
+        for i in self.sensor:
+            i.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
 
 
 
     def disable(self):
         super().disable()
 
-        self.sensor.irq(handler=None)
+        # Disable hardware interrupts for all sensors in group
+        for i in self.sensor:
+            i.irq(handler=None)
+
         # Stop any reset timer that may be running
         SoftwareTimer.timer.cancel(self.name)
 
