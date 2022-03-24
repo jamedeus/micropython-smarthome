@@ -68,8 +68,11 @@ class MotionSensor(Sensor):
 
         # If reset timer currently running, replace so new rule takes effect
         if self.motion:
-            off = float(self.current_rule) * 60000
-            SoftwareTimer.timer.create(off, self.resetTimer, self.name)
+            try:
+                off = float(self.current_rule) * 60000
+                SoftwareTimer.timer.create(off, self.resetTimer, self.name)
+            except TypeError:
+                pass # Prevent crash when rule changed to "None" (no timeout)
 
 
 
