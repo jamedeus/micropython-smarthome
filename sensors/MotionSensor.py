@@ -11,13 +11,16 @@ log = logging.getLogger("MotionSensor")
 
 
 class MotionSensor(Sensor):
-    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets, pins):
+    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets, pins, scheduler_name):
         super().__init__(name, sensor_type, enabled, current_rule, scheduled_rule, targets)
 
         # Pin setup
         self.sensor = []
         for pin in pins:
             self.sensor.append(Pin(pin, Pin.IN, Pin.PULL_DOWN))
+
+        # Name used when creating software timers - allows 2 sensors using same name to share a reset timer
+        self.scheduler_name = scheduler_name
 
         # Changed by hware interrupt
         self.motion = False
@@ -48,7 +51,7 @@ class MotionSensor(Sensor):
             i.irq(handler=None)
 
         # Stop any reset timer that may be running
-        SoftwareTimer.timer.cancel(self.name)
+        SoftwareTimer.timer.cancel(self.scheduler_name)
 
 
 
@@ -66,6 +69,17 @@ class MotionSensor(Sensor):
     def next_rule(self):
         super().next_rule()
 
+        # Workaround to allow enabling/disabling in config, permanent solution requires major rewrite
+        if self.current_rule == "Disabled":
+            self.disable()
+            return True
+
+        if self.current_rule == "Enabled":
+            self.enable()
+            # Immediately replace with sane default so resetTimer can be set
+            self.current_rule = 15
+            return True
+
         # If reset timer currently running, replace so new rule takes effect
         if self.motion:
             try:
@@ -76,19 +90,22 @@ class MotionSensor(Sensor):
 
 
 
+
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin):
         self.motion = True
 
         # Set reset timer
-        if not "None" in str(self.current_rule):
-
-            off = float(self.current_rule) * 60000
-            SoftwareTimer.timer.create(off, self.resetTimer, self.name)
+        if not ("None" in str(self.current_rule) or "Enabled" in str(self.current_rule) or "Disabled" in str(self.current_rule)):
+            try:
+                off = float(self.current_rule) * 60000
+                SoftwareTimer.timer.create(off, self.resetTimer, self.scheduler_name)
+            except:
+                print(f"CAUGHT: name = {self.name}, rule = {self.current_rule}")
 
         else:
             # Stop any reset timer that may be running from before delay = None
-            SoftwareTimer.timer.cancel(self.name)
+            SoftwareTimer.timer.cancel(self.scheduler_name)
 
 
 

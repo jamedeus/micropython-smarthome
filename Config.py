@@ -102,7 +102,7 @@ class Config():
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
                 from MotionSensor import MotionSensor
-                instance = MotionSensor(sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["pins"])
+                instance = MotionSensor(sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["pins"], conf[sensor]["scheduler_name"])
 
             elif conf[sensor]["type"] == "si7021":
                 from Thermostat import Thermostat
