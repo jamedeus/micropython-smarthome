@@ -87,6 +87,8 @@ class MotionSensor(Sensor):
                 SoftwareTimer.timer.create(off, self.resetTimer, self.name)
             except TypeError:
                 pass # Prevent crash when rule changed to "None" (no timeout)
+            except ValueError:
+                pass # Prevent crash when rule changes to "Enabled" or "Disabled"
 
 
 
@@ -123,7 +125,7 @@ class MotionSensor(Sensor):
 
                 if self.state is not True: # Only turn on if currently off
                     log.info(f"{self.name}: Motion detected")
-                    print("motion detected")
+                    print(f"{self.name}: motion detected")
 
                     # Record whether each send succeeded/failed
                     responses = []
