@@ -33,7 +33,6 @@ class Device():
 
         # Enable self in sensor's targets dict
         for sensor in self.triggered_by:
-            sensor.targets[self] = True
 
             # Run loop again immediately so newly-enabled device acquires same on/off state as other devices
             if sensor.sensor_type == "pir":
@@ -45,10 +44,6 @@ class Device():
 
     def disable(self):
         self.enabled = False
-
-        # Disable self in sensor's targets dict
-        for sensor in self.triggered_by:
-            sensor.targets[self] = False
 
 
 

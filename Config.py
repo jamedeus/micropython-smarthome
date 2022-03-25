@@ -94,10 +94,9 @@ class Config():
             self.schedule[sensor] = conf[sensor]["schedule"]
 
             # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
-            targets = {}
+            targets = []
             for target in conf[sensor]["targets"]:
-                t = self.find(target)
-                targets[t] = t.enabled
+                targets.append(self.find(target))
 
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":

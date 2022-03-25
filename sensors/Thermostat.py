@@ -52,14 +52,14 @@ class Thermostat(Sensor):
                 log.info(f"Current temp ({current}) less than setting ({self.current_rule})")
                 for target in self.targets:
                     # Only send if the target is enabled
-                    if self.targets[target]:
+                    if target.enabled:
                         target.send(1)
             elif current > (self.current_rule + 1):
                 print(f"Current temp ({current}) greater than setting ({self.current_rule})")
                 log.info(f"Current temp ({current}) greater than setting ({self.current_rule})")
                 for target in self.targets:
                     # Only send if the target is enabled
-                    if self.targets[target]:
+                    if target.enabled:
                         target.send(0)
 
             # If sensor was disabled

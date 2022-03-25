@@ -133,7 +133,7 @@ class MotionSensor(Sensor):
                     # Call send method of each class instance, argument = turn ON
                     for device in self.targets:
                         # Only send if the target is enabled
-                        if self.targets[device]:
+                        if device.enabled:
                             responses.append(device.send(1)) # Send method returns either True or False
 
                     # If all succeded, set bool to prevent retrying
@@ -150,7 +150,7 @@ class MotionSensor(Sensor):
                     # Call send method of each class instance, argument = turn OFF
                     for device in self.targets:
                         # Only send if the target is enabled
-                        if self.targets[device]:
+                        if device.enabled:
                             responses.append(device.send(0)) # Send method returns either True or False
 
                     # If all succeded, set bool to prevent retrying

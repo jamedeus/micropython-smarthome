@@ -24,7 +24,7 @@ class Sensor():
         # Will hold sequential schedule rules so they can be quickly changed when interrupt runs
         self.rule_queue = []
 
-        # Dictionary, keys are device instances, value is True/False for Enabled/Disabled
+        # List of instances
         self.targets = targets
 
         # Remember if loop is running (prevents multiple asyncio tasks running same loop)
