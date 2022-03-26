@@ -23,7 +23,7 @@ class MotionSensor(Sensor):
         self.scheduler_name = scheduler_name
 
         # Changed by hware interrupt
-        self.motion = False
+        self.condition_met = False
 
         # Remember target state, don't turn on/off if already on/off
         self.state = None
@@ -35,7 +35,7 @@ class MotionSensor(Sensor):
     def enable(self):
         super().enable()
 
-        self.motion = False
+        self.condition_met = False
 
         # Create hardware interrupts for all sensors in group
         for i in self.sensor:
@@ -81,7 +81,7 @@ class MotionSensor(Sensor):
             return True
 
         # If reset timer currently running, replace so new rule takes effect
-        if self.motion:
+        if self.condition_met:
             try:
                 off = float(self.current_rule) * 60000
                 SoftwareTimer.timer.create(off, self.resetTimer, self.name)
@@ -95,7 +95,7 @@ class MotionSensor(Sensor):
 
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin):
-        self.motion = True
+        self.condition_met = True
 
         # Set reset timer
         if not ("None" in str(self.current_rule) or "Enabled" in str(self.current_rule) or "Disabled" in str(self.current_rule)):
@@ -114,52 +114,4 @@ class MotionSensor(Sensor):
     def resetTimer(self, timer="optional"):
         log.info("resetTimer interrupt called")
         # Reset motion, causes self.loop to fade lights off
-        self.motion = False
-
-
-
-    async def loop(self):
-        while True:
-
-            if self.motion:
-
-                if self.state is not True: # Only turn on if currently off
-                    log.info(f"{self.name}: Motion detected")
-                    print(f"{self.name}: motion detected")
-
-                    # Record whether each send succeeded/failed
-                    responses = []
-
-                    # Call send method of each class instance, argument = turn ON
-                    for device in self.targets:
-                        # Only send if the target is enabled
-                        if device.enabled:
-                            responses.append(device.send(1)) # Send method returns either True or False
-
-                    # If all succeded, set bool to prevent retrying
-                    if not False in responses:
-                        self.state = True
-
-            else:
-                if self.state is not False: # Only turn off if currently on
-                    log.info(f"{self.name}: Turning lights off...")
-
-                    # Record whether each send succeeded/failed
-                    responses = []
-
-                    # Call send method of each class instance, argument = turn OFF
-                    for device in self.targets:
-                        # Only send if the target is enabled
-                        if device.enabled:
-                            responses.append(device.send(0)) # Send method returns either True or False
-
-                    # If all succeded, set bool to prevent retrying
-                    if not False in responses:
-                        self.state = False
-
-            # If sensor was disabled
-            if not self.loop_started:
-                self.motion = False
-                return True # Kill async task
-
-            await asyncio.sleep_ms(20)
+        self.condition_met = False

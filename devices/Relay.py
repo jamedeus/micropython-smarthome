@@ -63,7 +63,7 @@ class Relay(Device):
             return True # Tell sensor that send succeeded so it doesn't retry forever
 
         if self.current_rule == "off" and state == 1:
-            pass
+            return True # Tell sensor that send succeeded so it doesn't retry forever
         else:
             try:
                 s = socket.socket()
@@ -119,14 +119,14 @@ class Relay(Device):
                     # Set sensor instance attributes so it knows that desktop changed state
                     for sensor in self.triggered_by:
                         sensor.state = True
-                        sensor.motion = True
+                        sensor.condition_met = True
                 elif data == "off": # Allow main loop to continue when desktop turns lights off
                     print("Desktop turned lights OFF")
                     log.info("Desktop turned lights OFF")
                     # Set sensor instance attributes so it knows that desktop changed state
                     for sensor in self.triggered_by:
                         sensor.state = False
-                        sensor.motion = False
+                        sensor.condition_met = False
                 elif data == "enable":
                     print("Desktop re-enabled (user logged in)")
                     log.debug("Desktop re-enabled (user logged in)")

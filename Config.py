@@ -119,6 +119,11 @@ class Config():
         # Create timers for all schedule rules expiring in next 24 hours
         self.build_queue()
 
+        # Map relationships between sensors ("triggers") and devices ("targets")
+        # If multiple sensors have identical targets, they will be merged into a "group". Otherwise, group is created for each sensor.
+        # Iterated by main loop in boot.py
+        self.build_groups()
+
         # Get epoch time of next 3:00 am (re-build schedule rule queue for next 24 hours)
         epoch = time.mktime(time.localtime())
         now = time.localtime(epoch)
@@ -152,19 +157,17 @@ class Config():
             status_dict["devices"][i.name] = {}
             status_dict["devices"][i.name]["type"] = i.device_type
             status_dict["devices"][i.name]["current_rule"] = i.current_rule
+            status_dict["devices"][i.name]["turned_on"] = i.state
 
         status_dict["sensors"] = {}
         for i in self.sensors:
             status_dict["sensors"][i.name] = {}
             status_dict["sensors"][i.name]["type"] = i.sensor_type
+            status_dict["sensors"][i.name]["enabled"] = i.enabled
             status_dict["sensors"][i.name]["current_rule"] = i.current_rule
             status_dict["sensors"][i.name]["targets"] = []
             for t in i.targets:
                 status_dict["sensors"][i.name]["targets"].append(t.name)
-                for q in status_dict["devices"]:
-                    if q == t.name:
-                        status_dict["devices"][q]["turned_on"] = i.state
-            status_dict["sensors"][i.name]["enabled"] = i.enabled
 
         return status_dict
 
@@ -362,7 +365,54 @@ class Config():
 
 
 
+    def build_groups(self):
+
+        # Stores relationships between sensors ("triggers") and devices ("targets"), iterated by main loop
+        self.groups = {}
+
+        for sensor in self.sensors:
+
+            # First iteration
+            if not len(self.groups) > 0:
+                self.new_group(sensor)
+
+            else:
+                match_found = False
+
+                # If another group with same targets exists, add sensor to group's triggers
+                for group in self.groups:
+                    # Check if lists contain same elements (instances aren't sortable, use set to ignore order)
+                    if set(sensor.targets) == set(self.groups[group]["targets"]):
+                        self.groups[group]["triggers"].append(sensor)
+                        match_found = True
+
+                # If no group matches, create new group
+                if not match_found:
+                    self.new_group(sensor)
+
+
+
+    def new_group(self, sensor):
+        # Generate sequential names (group1, group2 ...)
+        name = "group" + str(len(self.groups) + 1)
+        self.groups[name] = {}
+
+        # Records whether targets are turned ON or OFF
+        self.groups[name]["state"] = None
+
+        # List of sensor instances
+        self.groups[name]["triggers"] = []
+        self.groups[name]["triggers"].append(sensor)
+
+        # List of devices that are turned on by sensor's in triggers
+        self.groups[name]["targets"] = []
+        for target in sensor.targets:
+            self.groups[name]["targets"].append(target)
+
+
+
     def find(self, target):
+        # TODO return False if unable to find in self.devices/self.sensors
         if target.startswith("device"):
             for i in self.devices:
                 if i.name == target:

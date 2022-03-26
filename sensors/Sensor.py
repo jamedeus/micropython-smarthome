@@ -35,15 +35,15 @@ class Sensor():
     # Each sub-class has a different loop, all can be started/stopped with .enable()/.disable() syntax
     def enable(self):
         self.enabled = True
-        if not self.loop_started == True:
-            self.loop_started = True
-            asyncio.create_task(self.loop())
+        #if not self.loop_started == True:
+            #self.loop_started = True
+            #asyncio.create_task(self.loop())
 
 
 
     def disable(self):
         self.enabled = False
-        self.loop_started = False # Loop checks this variable, kills asyncio task if False
+        #self.loop_started = False # Loop checks this variable, kills asyncio task if False
 
 
 

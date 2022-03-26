@@ -14,6 +14,9 @@ class Device():
 
         self.enabled = enabled
 
+        # Record device's on/off state
+        self.state = None
+
         # The rule actually followed when the device is triggered (can be changed through API)
         self.current_rule = current_rule
 
@@ -36,10 +39,10 @@ class Device():
 
             # Run loop again immediately so newly-enabled device acquires same on/off state as other devices
             if sensor.sensor_type == "pir":
-                if sensor.motion:
-                    sensor.state = False
+                if sensor.condition_met:
+                    self.state = False
                 else:
-                    sensor.state = True
+                    self.state = True
 
 
     def disable(self):
@@ -56,7 +59,7 @@ class Device():
         # Allow loop to run again immediately so rule change takes effect
         for sensor in self.triggered_by:
             if sensor.sensor_type == "pir":
-                if sensor.motion:
-                    sensor.state = False
+                if sensor.condition_met:
+                    self.state = False
                 else:
-                    sensor.state = True
+                    self.state = True

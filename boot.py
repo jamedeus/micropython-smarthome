@@ -66,9 +66,34 @@ async def main():
     # Listen for new code upload (auto-reboot when updated), prevent log from filling disk
     asyncio.create_task(disk_monitor())
 
-    # Keep running, all tasks stop if function exits
+    # Main loop - monitor sensors, apply actions if conditions met
     while True:
-        await asyncio.sleep(1)
+        for group in config.groups:
+
+            # Default is turn off - overridden if condition is met for 1 or more trigger in group
+            action = False
+
+            # Check if conditions are met, excluding disabled sensors
+            for sensor in config.groups[group]["triggers"]:
+                if sensor.enabled and sensor.condition_met:
+                    action = True
+                    break # Only need 1 condition to be met
+
+            # TODO consider re-introducing sensor.state - could then skip iterating devices if all states match action. Can also print "Motion detected" only when first detected
+            # Issue: When device rules change, device's state is flipped to allow to take effect - this will not take effect if sensor.state blocks loop. Could change sensor.state?
+
+            # Apply action (turn targets on/off)
+            for device in config.groups[group]["targets"]:
+                # Do not turn device on/off if already on/off
+                if not action == device.state:
+                    # int converts True to 1, False to 0
+                    success = device.send(int(action))
+
+                    # Only change device state if send returned True
+                    if success:
+                        device.state = action
+
+        await asyncio.sleep_ms(20)
 
 
 
