@@ -45,6 +45,7 @@ class Device():
                     self.state = True
 
 
+
     def disable(self):
         self.enabled = False
 

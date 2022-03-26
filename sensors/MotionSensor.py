@@ -17,8 +17,8 @@ class MotionSensor(Sensor):
         # Pin setup
         self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
 
-        # Changed by hware interrupt
-        self.motion = False
+        # Create hardware interrupt
+        self.enable()
 
         # Remember target state, don't turn on/off if already on/off
         self.state = None
@@ -32,7 +32,7 @@ class MotionSensor(Sensor):
 
         self.motion = False
 
-        # Create hardware interrupts for all sensors in group
+        # Create hardware interrupt
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
 
 
@@ -40,7 +40,7 @@ class MotionSensor(Sensor):
     def disable(self):
         super().disable()
 
-        # Disable hardware interrupts for all sensors in group
+        # Disable hardware interrupt
         self.sensor.irq(handler=None)
 
         # Stop any reset timer that may be running

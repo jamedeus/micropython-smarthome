@@ -53,12 +53,6 @@ async def main():
             asyncio.create_task(i.desktop_integration())
             i.integration_running = True
 
-    # Create hardware interrupts + create async tasks for sensor loops
-    for sensor in config.sensors:
-        if not sensor.loop_started:
-            sensor.enable()
-            log.debug(f"Enabled {sensor.name}")
-
     # Start listening for API commands
     server = Api(config)
     asyncio.create_task(server.run())
@@ -83,8 +77,8 @@ async def main():
                     if action == True or action == None:
                         break
 
-            if action == None:
-                continue # Skip to next group
+            # Skip to next group if no action required
+            if action == None: continue
 
             # TODO consider re-introducing sensor.state - could then skip iterating devices if all states match action. Can also print "Motion detected" only when first detected
             # Issue: When device rules change, device's state is flipped to allow to take effect - this will not take effect if sensor.state blocks loop. Could change sensor.state?
