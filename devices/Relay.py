@@ -119,14 +119,14 @@ class Relay(Device):
                     # Set sensor instance attributes so it knows that desktop changed state
                     for sensor in self.triggered_by:
                         sensor.state = True
-                        sensor.condition_met = True
+                        sensor.motion = True
                 elif data == "off": # Allow main loop to continue when desktop turns lights off
                     print("Desktop turned lights OFF")
                     log.info("Desktop turned lights OFF")
                     # Set sensor instance attributes so it knows that desktop changed state
                     for sensor in self.triggered_by:
                         sensor.state = False
-                        sensor.condition_met = False
+                        sensor.motion = False
                 elif data == "enable":
                     print("Desktop re-enabled (user logged in)")
                     log.debug("Desktop re-enabled (user logged in)")

@@ -1,0 +1,1 @@
+{"wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "metadata": {"id": "Living room", "location": "Bookcase", "floor": "1"}, "device1": {"ip": "192.168.1.227", "type": "relay", "schedule": {"12:00": "on", "00:00": "on"}}, "sensor1": {"type": "si7021", "default_setting": 72, "targets": ["device1"], "schedule": {"00:00": 74, "12:00": 74}}}

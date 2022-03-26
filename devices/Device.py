@@ -39,7 +39,7 @@ class Device():
 
             # Run loop again immediately so newly-enabled device acquires same on/off state as other devices
             if sensor.sensor_type == "pir":
-                if sensor.condition_met:
+                if sensor.motion:
                     self.state = False
                 else:
                     self.state = True
@@ -59,7 +59,7 @@ class Device():
         # Allow loop to run again immediately so rule change takes effect
         for sensor in self.triggered_by:
             if sensor.sensor_type == "pir":
-                if sensor.condition_met:
+                if sensor.motion:
                     self.state = False
                 else:
                     self.state = True

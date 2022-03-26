@@ -18,7 +18,7 @@ class MotionSensor(Sensor):
         self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
 
         # Changed by hware interrupt
-        self.condition_met = False
+        self.motion = False
 
         # Remember target state, don't turn on/off if already on/off
         self.state = None
@@ -30,7 +30,7 @@ class MotionSensor(Sensor):
     def enable(self):
         super().enable()
 
-        self.condition_met = False
+        self.motion = False
 
         # Create hardware interrupts for all sensors in group
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
@@ -45,6 +45,11 @@ class MotionSensor(Sensor):
 
         # Stop any reset timer that may be running
         SoftwareTimer.timer.cancel(self.name)
+
+
+
+    def condition_met(self):
+        return self.motion
 
 
 
@@ -74,7 +79,7 @@ class MotionSensor(Sensor):
             return True
 
         # If reset timer currently running, replace so new rule takes effect
-        if self.condition_met:
+        if self.motion:
             try:
                 off = float(self.current_rule) * 60000
                 SoftwareTimer.timer.create(off, self.resetTimer, self.name)
@@ -88,7 +93,7 @@ class MotionSensor(Sensor):
 
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin):
-        self.condition_met = True
+        self.motion = True
 
         # Set reset timer
         if not ("None" in str(self.current_rule) or "Enabled" in str(self.current_rule) or "Disabled" in str(self.current_rule)):
@@ -106,5 +111,5 @@ class MotionSensor(Sensor):
 
     def resetTimer(self, timer="optional"):
         log.info("resetTimer interrupt called")
-        # Reset motion, causes self.loop to fade lights off
-        self.condition_met = False
+        # Reset motion, causes main loop to fade lights off
+        self.motion = False

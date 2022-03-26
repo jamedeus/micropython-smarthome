@@ -28,6 +28,17 @@ class Thermostat(Sensor):
 
 
 
+    def condition_met(self):
+        current = self.fahrenheit()
+        if current < (self.current_rule - 1):
+            return True
+        elif current > (self.current_rule + 1):
+            return False
+        else:
+            return None
+
+
+
     # Receive rule from API, validate, set and return True if valid, otherwise return False
     def set_rule(self, rule):
         try:
@@ -41,29 +52,3 @@ class Thermostat(Sensor):
         except ValueError:
             log.error(f"Failed to change rule to {rule}")
             return False
-
-
-
-    async def loop(self):
-        while True:
-            current = self.fahrenheit()
-            if current < (self.current_rule - 1):
-                print(f"Current temp ({current}) less than setting ({self.current_rule})")
-                log.info(f"Current temp ({current}) less than setting ({self.current_rule})")
-                for target in self.targets:
-                    # Only send if the target is enabled
-                    if target.enabled:
-                        target.send(1)
-            elif current > (self.current_rule + 1):
-                print(f"Current temp ({current}) greater than setting ({self.current_rule})")
-                log.info(f"Current temp ({current}) greater than setting ({self.current_rule})")
-                for target in self.targets:
-                    # Only send if the target is enabled
-                    if target.enabled:
-                        target.send(0)
-
-            # If sensor was disabled
-            if not self.loop_started:
-                return True # Kill async task
-
-            await asyncio.sleep(15)

@@ -70,14 +70,21 @@ async def main():
     while True:
         for group in config.groups:
 
-            # Default is turn off - overridden if condition is met for 1 or more trigger in group
-            action = False
+            # The action applied to target devices: True = turn on, False = turn off, None = do nothing
+            action = None
 
             # Check if conditions are met, excluding disabled sensors
+            # Turn on: Requires only 1 sensor to return True
+            # Nothing: Requires only 1 sensor to return None
+            # Turn off: Requires ALL sensors to return False
             for sensor in config.groups[group]["triggers"]:
-                if sensor.enabled and sensor.condition_met:
-                    action = True
-                    break # Only need 1 condition to be met
+                if sensor.enabled:
+                    action = sensor.condition_met()
+                    if action == True or action == None:
+                        break
+
+            if action == None:
+                continue # Skip to next group
 
             # TODO consider re-introducing sensor.state - could then skip iterating devices if all states match action. Can also print "Motion detected" only when first detected
             # Issue: When device rules change, device's state is flipped to allow to take effect - this will not take effect if sensor.state blocks loop. Could change sensor.state?
