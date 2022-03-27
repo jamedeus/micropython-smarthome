@@ -23,19 +23,23 @@ class Desktop_trigger(Sensor):
 
 
     def get_idle_time(self):
-        # TODO catch ValueError ("syntax error in JSON") if API goes down
+        # TODO find cause of ValueError ("syntax error in JSON")
         return urequests.get('http://' + str(self.ip) + ':5000/idle_time').json()
 
 
 
     def get_monitor_state(self):
-        # TODO catch ValueError ("syntax error in JSON") if API goes down
-        return urequests.get('http://' + str(self.ip) + ':5000/state').json()
+        # TODO find cause of ValueError ("syntax error in JSON")
+        try:
+            return urequests.get('http://' + str(self.ip) + ':5000/state').json()["state"]
+        except OSError:
+            # Wifi interruption, return False - caller will try again in 1 second
+            return False
 
 
 
     def condition_met(self):
-        if "off" in self.current:
+        if self.current == "off":
             # Necessary and sufficient condition to turn lights off
             return "Override"
         else:
@@ -48,15 +52,14 @@ class Desktop_trigger(Sensor):
     # If main loop queried directly, would have to retry until valid reading returned, blocking
     # To prevent, loop just queries self.current attr. This loop monitors and only updates self.current when valid value received
     async def monitor(self):
-        self.current = self.get_monitor_state()["state"]
+        self.current = self.get_monitor_state()
 
         while True:
-            new = self.get_monitor_state()["state"]
+            new = self.get_monitor_state()
 
-            if not new == self.current:
+            if new != self.current:
 
-                if not "On" in new and not "Off" in new:
-                    print(f"Invalid reading: {new}")
+                if new != "On" and new != "Off":
                     # At lock screen, or getting "Disabled" for a few seconds (NVIDIA Prime sync quirk)
                     # Keep old value for self.current, wait 1 second, try again
                     await asyncio.sleep(1)
@@ -69,7 +72,7 @@ class Desktop_trigger(Sensor):
                 # Maybe better to put this on desktop end + add API command for desktop to turn off lights?
                 # Or just run it on both ends?
 
-                if "Off" in self.current:
+                if self.current == "Off":
                     for device in self.targets:
                         if not device.state == False:
                             success = device.send(0)

@@ -31,14 +31,18 @@ class Desktop_target(Device):
 
 
     def off(self):
-        response = urequests.get('http://' + str(self.ip) + ':5000/idle_time')
+        try:
+            response = urequests.get('http://' + str(self.ip) + ':5000/idle_time')
 
-        # Do not turn off screen unless user idle for >1 minute
-        if int(response.json()["idle_time"]) > 5:
-            print(f"{self.name}: Turned screen off")
-            response = urequests.get('http://' + str(self.ip) + ':5000/off')
-        else:
-            print(f"{self.name}: User not idle, keeping screen on")
+            # Do not turn off screen unless user idle for >1 minute
+            if int(response.json()["idle_time"]) > 60000:
+                print(f"{self.name}: Turned screen off")
+                response = urequests.get('http://' + str(self.ip) + ':5000/off')
+            else:
+                print(f"{self.name}: User not idle, keeping screen on")
+        except OSError:
+            # Wifi interruption, put back in timer queue for 5 seconds and try again
+            SoftwareTimer.timer.create(5000, self.off, self.name)
 
 
 
@@ -57,8 +61,14 @@ class Desktop_target(Device):
             if state:
                 # Make sure a previous off command (has 5 sec delay) doesn't turn screen off immediately after turning on
                 SoftwareTimer.timer.cancel(self.name)
-                response = urequests.get('http://' + str(self.ip) + ':5000/on')
-                print("Turned screen on")
+                try:
+                    response = urequests.get('http://' + str(self.ip) + ':5000/on')
+                    print("Turned screen on")
+                except OSError:
+                    # TODO make possible for timer to accept args, then add to timer queue instead of going back to main loop
+                    #SoftwareTimer.timer.create(5000, self.send, self.name)
+                    # Wifi interruption, send failed
+                    return False
 
             elif not state:
                 # Give user 5 seconds to react before screen turns off
