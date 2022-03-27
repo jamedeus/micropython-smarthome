@@ -46,13 +46,6 @@ async def disk_monitor():
 
 
 async def main():
-    # Check if desktop device configured, start desktop_integration (unless already running)
-    for i in config.devices:
-        if i.device_type == "desktop" and not i.integration_running:
-            log.info("Desktop integration is being used, creating asyncio task to listen for messages")
-            asyncio.create_task(i.desktop_integration())
-            i.integration_running = True
-
     # Start listening for API commands
     server = Api(config)
     asyncio.create_task(server.run())
@@ -75,6 +68,10 @@ async def main():
                 if sensor.enabled:
                     action = sensor.condition_met()
                     if action == True or action == None:
+                        break
+                    if action == "Override":
+                        # TODO force all other sensor's conditions to False (currently possible for them to turn lights back on immediately)
+                        action = False
                         break
 
             # Skip to next group if no action required

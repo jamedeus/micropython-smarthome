@@ -61,9 +61,13 @@ class Config():
                 from Tplink import Tplink
                 instance = Tplink( device, conf[device]["type"], True, None, None, conf[device]["ip"] )
 
-            elif conf[device]["type"] == "relay" or conf[device]["type"] == "desktop":
+            elif conf[device]["type"] == "relay":
                 from Relay import Relay
                 instance = Relay( device, conf[device]["type"], True, None, None, conf[device]["ip"] )
+
+            elif conf[device]["type"] == "desktop":
+                from Desktop_target import Desktop_target
+                instance = Desktop_target( device, conf[device]["type"], True, None, None, conf[device]["ip"] )
 
             elif conf[device]["type"] == "pwm":
                 from LedStrip import LedStrip
@@ -102,6 +106,10 @@ class Config():
             if conf[sensor]["type"] == "pir":
                 from MotionSensor import MotionSensor
                 instance = MotionSensor(sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["pin"])
+
+            elif conf[sensor]["type"] == "desktop":
+                from Desktop_trigger import Desktop_trigger
+                instance = Desktop_trigger( sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["ip"] )
 
             elif conf[sensor]["type"] == "si7021":
                 from Thermostat import Thermostat

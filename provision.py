@@ -232,9 +232,17 @@ def get_modules(config):
             modules.append("devices/Tplink.py")
             modules.append("devices/Device.py")
 
-        elif conf[i]["type"] == "relay" or conf[i]["type"] == "desktop":
+        elif conf[i]["type"] == "relay":
             modules.append("devices/Relay.py")
             modules.append("devices/Device.py")
+
+        elif conf[i]["type"] == "desktop":
+            if i.startswith("device"):
+                modules.append("devices/Desktop_target.py")
+                modules.append("devices/Device.py")
+            elif i.startswith("sensor"):
+                modules.append("sensors/Desktop_trigger.py")
+                modules.append("sensors/Sensor.py")
 
         elif conf[i]["type"] == "pwm":
             modules.append("devices/LedStrip.py")
