@@ -1,7 +1,7 @@
 [Unit]
 Description=Micropython smarthome desktop integration
 After=network.target
-StartLimitIntervalSec=5
+StartLimitIntervalSec=30
 StartLimitBurst=12
 
 [Service]
