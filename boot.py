@@ -57,25 +57,25 @@ async def main():
     while True:
         for group in config.groups:
 
-            # The action applied to target devices: True = turn on, False = turn off, None = do nothing
-            action = None
+            # Store return value from each sensor in group
+            conditions = []
 
-            # Check if conditions are met, excluding disabled sensors
-            # Turn on: Requires only 1 sensor to return True
-            # Nothing: Requires only 1 sensor to return None
-            # Turn off: Requires ALL sensors to return False
+            # Check conditions for all enabled sensors
             for sensor in config.groups[group]["triggers"]:
                 if sensor.enabled:
-                    action = sensor.condition_met()
-                    if action == True or action == None:
-                        break
-                    if action == "Override":
-                        # TODO force all other sensor's conditions to False (currently possible for them to turn lights back on immediately)
-                        action = False
-                        break
+                    conditions.append(sensor.condition_met())
 
-            # Skip to next group if no action required
-            if action == None: continue
+            # Determine action to apply to target devices: True = turn on, False = turn off, None = do nothing
+            # Turn on: Requires only 1 sensor to return True
+            # Turn off: ALL sensors to return False
+            # Nothing: Requires 1 sensor to return None and 0 sensors returning True
+            if True in conditions:
+                action = True
+            elif None in conditions:
+                # Skip to next group if no action required
+                continue
+            else:
+                action = False
 
             # TODO consider re-introducing sensor.state - could then skip iterating devices if all states match action. Can also print "Motion detected" only when first detected
             # Issue: When device rules change, device's state is flipped to allow to take effect - this will not take effect if sensor.state blocks loop. Could change sensor.state?

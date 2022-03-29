@@ -63,7 +63,7 @@ class Desktop_target(Device):
                 SoftwareTimer.timer.cancel(self.name)
                 try:
                     response = urequests.get('http://' + str(self.ip) + ':5000/on')
-                    print("Turned screen on")
+                    print(f"{self.name}: Turned screen on")
                 except OSError:
                     # TODO make possible for timer to accept args, then add to timer queue instead of going back to main loop
                     #SoftwareTimer.timer.create(5000, self.send, self.name)

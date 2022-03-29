@@ -39,11 +39,9 @@ class Desktop_trigger(Sensor):
 
 
     def condition_met(self):
-        if self.current == "off":
-            # Necessary and sufficient condition to turn lights off
-            return "Override"
+        if self.current == "On":
+            return True
         else:
-            # Necessary but insufficient condition to turn lights off - will stay on until unless all other sensors also return False
             return False
 
 
@@ -65,22 +63,21 @@ class Desktop_trigger(Sensor):
                     await asyncio.sleep(1)
                     continue
 
-                print(f"Monitors changed from {self.current} to {new}")
+                print(f"{self.name}: Monitors changed from {self.current} to {new}")
                 self.current = new
 
-                # ISSUE: Cannot run prime sync from here...
-                # Maybe better to put this on desktop end + add API command for desktop to turn off lights?
-                # Or just run it on both ends?
-
+                # If monitors just turned off, turn off lights (overrides main loop)
                 if self.current == "Off":
                     for device in self.targets:
                         if not device.state == False:
                             success = device.send(0)
 
                             if success:
+                                # Override motion sensors so they don't turn lights back on
+                                for i in device.triggered_by:
+                                    if i.sensor_type == "pir":
+                                        i.motion = False
                                 device.state = False
 
             # Poll every second
             await asyncio.sleep(1)
-
-

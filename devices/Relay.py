@@ -7,7 +7,7 @@ log = logging.getLogger("Relay")
 
 
 
-# Used for ESP8266 Relays + Desktops (running desktop-integration.py)
+# Used for Sonoff relays running Tasmota
 class Relay(Device):
     def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, ip):
         super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
