@@ -37,9 +37,11 @@ class Desktop_target(Device):
             # Do not turn off screen unless user idle for >1 minute
             if int(response.json()["idle_time"]) > 60000:
                 print(f"{self.name}: Turned screen off")
+                log.debug(f"{self.name}: Turned OFF")
                 response = urequests.get('http://' + str(self.ip) + ':5000/off')
             else:
                 print(f"{self.name}: User not idle, keeping screen on")
+                log.debug(f"{self.name}: User not idle, keeping screen on")
         except OSError:
             # Wifi interruption, put back in timer queue for 5 seconds and try again
             SoftwareTimer.timer.create(5000, self.off, self.name)
@@ -64,6 +66,7 @@ class Desktop_target(Device):
                 try:
                     response = urequests.get('http://' + str(self.ip) + ':5000/on')
                     print(f"{self.name}: Turned screen on")
+                    log.debug(f"{self.name}: Turned ON")
                 except OSError:
                     # TODO make possible for timer to accept args, then add to timer queue instead of going back to main loop
                     #SoftwareTimer.timer.create(5000, self.send, self.name)

@@ -22,6 +22,17 @@ class Desktop_trigger(Sensor):
 
 
 
+    def set_rule(self, rule):
+        if rule == "Enabled" or rule =="Disabled":
+            self.current_rule = rule
+            log.info(f"Rule changed to {self.current_rule}")
+            return True
+        else:
+            log.error(f"Failed to change rule to {rule}")
+            return False
+
+
+
     def get_idle_time(self):
         # TODO find cause of ValueError ("syntax error in JSON")
         return urequests.get('http://' + str(self.ip) + ':5000/idle_time').json()
@@ -64,6 +75,7 @@ class Desktop_trigger(Sensor):
                     continue
 
                 print(f"{self.name}: Monitors changed from {self.current} to {new}")
+                log.debug(f"{self.name}: Monitors changed from {self.current} to {new}")
                 self.current = new
 
                 # If monitors just turned off, turn off lights (overrides main loop)
