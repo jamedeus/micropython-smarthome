@@ -67,17 +67,6 @@ class MotionSensor(Sensor):
     def next_rule(self):
         super().next_rule()
 
-        # Workaround to allow enabling/disabling in config, permanent solution requires major rewrite
-        if self.current_rule == "Disabled":
-            self.disable()
-            return True
-
-        if self.current_rule == "Enabled":
-            self.enable()
-            # Immediately replace with sane default so resetTimer can be set
-            self.current_rule = 15
-            return True
-
         # If reset timer currently running, replace so new rule takes effect
         if self.motion:
             try:

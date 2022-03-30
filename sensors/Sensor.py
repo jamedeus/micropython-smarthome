@@ -44,3 +44,10 @@ class Sensor():
         self.current_rule = self.scheduled_rule
         log.debug(f"{self.name}: Scheduled rule changed to {self.current_rule}")
         print(f"{self.name}: Scheduled rule changed to {self.current_rule}")
+
+        # Rule just changed to disabled
+        if self.current_rule == "Disabled":
+            self.disable()
+        # Sensor was previously disabled, enable now that rule has changed
+        elif self.enabled == False:
+            self.enable()
