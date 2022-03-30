@@ -57,10 +57,12 @@ class Device():
         log.debug(f"{self.name}: Scheduled rule changed to {self.current_rule}")
         print(f"{self.name}: Scheduled rule changed to {self.current_rule}")
 
-        # Allow loop to run again immediately so rule change takes effect
-        for sensor in self.triggered_by:
-            if sensor.sensor_type == "pir":
-                if sensor.motion:
-                    self.state = False
-                else:
-                    self.state = True
+        # Rule just changed to disabled
+        if self.current_rule == "Disabled":
+            self.disable()
+        # Sensor was previously disabled, enable now that rule has changed
+        elif self.enabled == False:
+            self.enable()
+        # Device is currently on, run send so new rule can take effect
+        elif self.state == True:
+            self.send(1)
