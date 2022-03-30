@@ -39,15 +39,16 @@ async def disk_monitor():
         elif os.stat('app.log')[6] > 500000:
             print("\nLog exceeded 500 KB, clearing...\n")
 
-            # Close file before removing
+            # Close file, remove
             logging.root.handlers[0].close()
-
-            # Remove file and handler
             os.remove('app.log')
-            del logging.root.handlers[0]
 
-            # Create new handler
+            # Create new handler, set format
             h = logging.FileHandler('app.log')
+            h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+
+            # Replace old handler with new
+            logging.root.handlers.clear()
             logging.root.addHandler(h)
 
             log.info("Deleted old log (exceeded 500 KB size limit)")

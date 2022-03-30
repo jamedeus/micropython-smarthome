@@ -110,15 +110,16 @@ class Api:
 
     def clear_log(self):
         try:
-            # Close file before removing
+            # Close file, remove
             logging.root.handlers[0].close()
-
-            # Remove file and handler
             os.remove('app.log')
-            del logging.root.handlers[0]
 
-            # Create new handler
+            # Create new handler, set format
             h = logging.FileHandler('app.log')
+            h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+
+            # Replace old handler with new
+            logging.root.handlers.clear()
             logging.root.addHandler(h)
 
             log.info("Deleted old log (API request)")
