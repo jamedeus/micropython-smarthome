@@ -38,8 +38,22 @@ async def disk_monitor():
         # Don't let the log exceed 500 KB, full disk hangs system + can't pull log via webrepl
         elif os.stat('app.log')[6] > 500000:
             print("\nLog exceeded 500 KB, clearing...\n")
+
+            # Close file before removing
+            logging.root.handlers[0].close()
+
+            # Remove file and handler
             os.remove('app.log')
+            del logging.root.handlers[0]
+
+            # Create new handler
+            h = logging.FileHandler('app.log')
+            logging.root.addHandler(h)
+
             log.info("Deleted old log (exceeded 500 KB size limit)")
+
+            # Allow logger to write new log file to disk before loop checks size again (crashes if doesn't exist yet)
+            await asyncio.sleep(1)
         else:
             await asyncio.sleep(1) # Only check once per second
 
