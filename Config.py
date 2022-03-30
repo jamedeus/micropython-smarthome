@@ -352,6 +352,9 @@ class Config():
             instance.scheduled_rule = rules[queue.pop(0)]
             instance.current_rule = instance.scheduled_rule
 
+            if instance.current_rule == "Disabled":
+                instance.disable()
+
             # Clear target's queue
             instance.rule_queue = []
 
