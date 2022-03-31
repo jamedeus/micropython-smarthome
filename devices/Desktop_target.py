@@ -22,10 +22,10 @@ class Desktop_target(Device):
     def set_rule(self, rule):
         if rule == "on" or rule =="off":
             self.current_rule = rule
-            log.info(f"Rule changed to {self.current_rule}")
+            log.info(f"{self.name}: Rule changed to {self.current_rule}")
             return True
         else:
-            log.error(f"Failed to change rule to {rule}")
+            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False
 
 
@@ -49,10 +49,10 @@ class Desktop_target(Device):
 
 
     def send(self, state=1):
-        log.info(f"Desktop.send method called, ip = {self.ip}, state = {state}")
+        log.info(f"{self.name}: send method called, state = {state}")
 
         if not self.enabled:
-            log.info("Device is currently disabled, skipping")
+            log.info(f"{self.name}: Device is currently disabled, skipping")
             return True # Tell sensor that send succeeded so it doesn't retry forever
 
         # TODO disable instead? Prevents 100ms delay from log line

@@ -56,10 +56,10 @@ class MotionSensor(Sensor):
     def set_rule(self, rule):
         try:
             self.current_rule = float(rule)
-            log.info(f"Rule changed to {self.current_rule}")
+            log.info(f"{self.name}: Rule changed to {self.current_rule}")
             return True
         except ValueError:
-            log.error(f"Failed to change rule to {rule}")
+            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False
 
 
@@ -82,6 +82,10 @@ class MotionSensor(Sensor):
 
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin):
+        if not self.motion:
+            print(f"{self.name}: Motion detected")
+            log.debug(f"{self.name}: Motion detected")
+
         self.motion = True
 
         # Set reset timer
@@ -99,6 +103,6 @@ class MotionSensor(Sensor):
 
 
     def resetTimer(self, timer="optional"):
-        log.info("resetTimer interrupt called")
+        log.info(f"{self.name}: resetTimer interrupt")
         # Reset motion, causes main loop to fade lights off
         self.motion = False

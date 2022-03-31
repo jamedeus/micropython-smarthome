@@ -20,15 +20,17 @@ class Desktop_trigger(Sensor):
         # Run monitor loop
         asyncio.create_task(self.monitor())
 
+        log.info(f"Instantiated Desktop named {self.name}: ip = {self.ip}")
+
 
 
     def set_rule(self, rule):
         if rule == "Enabled" or rule =="Disabled":
             self.current_rule = rule
-            log.info(f"Rule changed to {self.current_rule}")
+            log.info(f"{self.name}: Rule changed to {self.current_rule}")
             return True
         else:
-            log.error(f"Failed to change rule to {rule}")
+            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False
 
 

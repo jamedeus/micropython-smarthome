@@ -23,13 +23,13 @@ class Tplink(Device):
         try:
             if 1 <= int(rule) <= 100:
                 self.current_rule = int(rule)
-                log.info(f"Rule changed to {self.current_rule}")
+                log.info(f"{self.name}: Rule changed to {self.current_rule}")
                 return True
             else:
-                log.error(f"Failed to change rule to {rule}")
+                log.error(f"{self.name}: Failed to change rule to {rule}")
                 return False
         except ValueError:
-            log.error(f"Failed to change rule to {rule}")
+            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False
 
 
@@ -59,7 +59,7 @@ class Tplink(Device):
 
 
     def send(self, state=1):
-        log.info("Tplink.send method called, IP=" + str(self.ip) + ", Brightness=" + str(self.current_rule) + ", state=" + str(state))
+        log.info(f"{self.name}: send method called, brightness={self.current_rule}, state={state}")
         if self.device_type == "dimmer":
             cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.current_rule) + '}}}'
         else:
@@ -84,12 +84,12 @@ class Tplink(Device):
             decrypted = self.decrypt(data[4:]) # Remove in final version (or put in debug conditional)
 
             print(f"{self.name}: brightness = {self.current_rule}, state = {state}")
-            log.debug("Success")
+            log.debug(f"{self.name}: Success")
 
             return True # Tell calling function that request succeeded
 
         except: # Failed
             print(f"Could not connect to host {self.ip}")
-            log.info("Could not connect to host " + str(self.ip))
+            log.info(f"{self.name}: Could not connect to host {self.ip}")
 
             return False # Tell calling function that request failed

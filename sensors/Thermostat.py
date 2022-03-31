@@ -45,10 +45,10 @@ class Thermostat(Sensor):
             # Constrain to range 65-80
             if 65 <= int(rule) <= 80:
                 self.current_rule = int(rule)
-                log.info(f"Rule changed to {self.current_rule}")
+                log.info(f"{self.name}: Rule changed to {self.current_rule}")
                 return True
             else:
                 return False
         except ValueError:
-            log.error(f"Failed to change rule to {rule}")
+            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False

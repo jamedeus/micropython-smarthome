@@ -21,10 +21,10 @@ class Relay(Device):
     def set_rule(self, rule):
         if rule == "on" or rule =="off":
             self.current_rule = rule
-            log.info(f"Rule changed to {self.current_rule}")
+            log.info(f"{self.name}: Rule changed to {self.current_rule}")
             return True
         else:
-            log.error(f"Failed to change rule to {rule}")
+            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False
 
 
@@ -38,10 +38,10 @@ class Relay(Device):
 
 
     def send(self, state=1):
-        log.info("Relay.send method called, IP = " + str(self.ip) + ", state = " + str(state))
+        log.info(f"{self.name}: send method called, state = {state}")
 
         if not self.enabled:
-            log.info("Device is currently disabled, skipping")
+            log.info(f"{self.name}: currently disabled, skipping")
             return True # Tell sensor that send succeeded so it doesn't retry forever
 
         if self.current_rule == "off" and state == 1:
