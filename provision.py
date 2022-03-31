@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Upload config file + boot.py + all required modules in a single step
 
