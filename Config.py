@@ -423,16 +423,21 @@ class Config():
 
 
     def find(self, target):
-        # TODO return False if unable to find in self.devices/self.sensors
         if target.startswith("device"):
             for i in self.devices:
                 if i.name == target:
                     return i
+            else:
+                log.debug(f"Config.find: Unable to find {target}")
+                return False
 
         elif target.startswith("sensor"):
             for i in self.sensors:
                 if i.name == target:
                     return i
+            else:
+                log.debug(f"Config.find: Unable to find {target}")
+                return False
 
         else:
             log.debug(f"Config.find: Unable to find {target}")
