@@ -1,4 +1,8 @@
 import uasyncio as asyncio
+import logging
+
+# Set name for module's log lines
+log = logging.getLogger("Sensor")
 
 
 
@@ -17,23 +21,33 @@ class Sensor():
         # The rule that should be followed at the current time (used to undo API changes to current_rule)
         self.scheduled_rule = scheduled_rule
 
-        # Dictionary, keys are device instances, value is True/False for Enabled/Disabled
+        # Will hold sequential schedule rules so they can be quickly changed when interrupt runs
+        self.rule_queue = []
+
+        # List of instances
         self.targets = targets
 
-        # Remember if loop is running (prevents multiple asyncio tasks running same loop)
-        self.loop_started = False
 
 
-
-    # Each sub-class has a different loop, all can be started/stopped with .enable()/.disable() syntax
     def enable(self):
         self.enabled = True
-        if not self.loop_started == True:
-            self.loop_started = True
-            asyncio.create_task(self.loop())
 
 
 
     def disable(self):
         self.enabled = False
-        self.loop_started = False # Loop checks this variable, kills asyncio task if False
+
+
+
+    def next_rule(self):
+        self.scheduled_rule = self.rule_queue.pop(0)
+        self.current_rule = self.scheduled_rule
+        log.debug(f"{self.name}: Scheduled rule changed to {self.current_rule}")
+        print(f"{self.name}: Scheduled rule changed to {self.current_rule}")
+
+        # Rule just changed to disabled
+        if self.current_rule == "Disabled":
+            self.disable()
+        # Sensor was previously disabled, enable now that rule has changed
+        elif self.enabled == False:
+            self.enable()

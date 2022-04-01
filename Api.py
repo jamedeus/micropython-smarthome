@@ -110,10 +110,20 @@ class Api:
 
     def clear_log(self):
         try:
+            # Close file, remove
+            logging.root.handlers[0].close()
             os.remove('app.log')
-            # Create blank log file so disk_monitor doesn't throw error
-            with open('app.log', 'w') as file:
-                file.write("")
+
+            # Create new handler, set format
+            h = logging.FileHandler('app.log')
+            h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+
+            # Replace old handler with new
+            logging.root.handlers.clear()
+            logging.root.addHandler(h)
+
+            log.info("Deleted old log (API request)")
+
             return 'OK'
         except OSError:
             return 'Error: no log file found'

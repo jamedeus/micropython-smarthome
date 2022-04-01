@@ -1,5 +1,6 @@
 from machine import Timer
 import time
+import uasyncio as asyncio
 
 
 
@@ -15,8 +16,14 @@ class SoftwareTimer():
         # Sorted first to last, same keys as self.schedule
         self.queue = []
 
-        self.current_run = None
-        self.next_callback = None
+        # Stores expired timers so they can be removed from schedule after iterating
+        self.delete = []
+
+        # Allows loop to be paused while rebuilding queue to avoid conflicts
+        self.pause = False
+
+        # Start loop
+        asyncio.create_task(self.loop())
 
 
 
@@ -28,6 +35,9 @@ class SoftwareTimer():
 
     # Period in miliseconds
     def create(self, period, callback, name):
+        # Stop loop while adding timer (queue briefly empty)
+        self.pause = True
+
         now = self.epoch_now()
 
         # In miliseconds
@@ -40,10 +50,11 @@ class SoftwareTimer():
                 if not expiration in self.schedule:
                     break
 
-        # Callers are only allowed 1 timer each - delete any existing timers with same name before adding
-        for i in self.schedule:
-            if name in self.schedule[i]:
-                del self.schedule[i]
+        # Callers are only allowed 1 timer each (scheduler is exempt) - delete any existing timers with same name before adding
+        if not name == "scheduler":
+            for i in self.schedule:
+                if name in self.schedule[i]:
+                    del self.schedule[i]
 
         self.schedule[expiration] = [name, callback]
 
@@ -53,12 +64,16 @@ class SoftwareTimer():
 
         self.queue.sort()
 
-        self.init_hware()
+        # Resume loop
+        self.pause = False
 
 
 
     # Allow a calling function to cancel all it's existing timers
     def cancel(self, name):
+        # Stop loop while canceling timer (queue briefly empty)
+        self.pause = True
+
         # Delete any items with same name
         for i in self.schedule:
             if name in self.schedule[i]:
@@ -71,44 +86,66 @@ class SoftwareTimer():
 
         self.queue.sort()
 
-        # Call init to cancel running timer, start next timer
-        self.init_hware()
+        # Resume loop
+        self.pause = False
 
 
 
-    def init_hware(self):
-
-        now = self.epoch_now()
-
-        # Stop any running timer
-        self.timer.deinit()
-
-        # Only get first valid item (expires in future)
-        for i in self.queue:
-            if now < i:
-                self.current_run = i
-                self.next_callback = self.schedule[i][1]
-                break
-        else:
-            # print("No timers in queue")
-            return True
-
-        period = int(self.current_run - now)
-
-        self.timer.init(period=period, mode=Timer.ONE_SHOT, callback=self.run)
+    def resume(self, timer):
+        self.pause = False
 
 
 
-    def run(self, timer="optional"):
-        # Remove the expired entry
-        del self.schedule[self.current_run]
-        del self.queue[self.queue.index(self.current_run)]
+    async def loop(self):
+        while True:
+            if not self.pause:
 
-        # Run callback
-        self.next_callback()
+                for i in self.queue:
+                    # Run actions for all expired rules, add to list to be removed from queue
+                    if self.epoch_now() >= i:
+                        self.schedule[i][1]() # Run action
+                        self.delete.append(i)
 
-        # Start next timer
-        self.init_hware()
+                    else:
+                        # First unexpired rule found
+                        next_rule = i
+                        break
+
+                # Delete rules that were just run
+                for i in self.delete:
+                    try:
+                        del self.schedule[i]
+                        del self.queue[self.queue.index(i)]
+                    except KeyError:
+                        pass # Prevent crash if rule was removed by self.cancel while loop running
+
+                self.delete = []
+
+                # Get time until next rule due
+                period = int(next_rule - self.epoch_now())
+
+                # If next rule >5 seconds away: pause loop, set hardware timer to unpause when rule due
+                if period > 5000:
+                    self.pause = True
+                    self.timer.init(period=period, mode=Timer.ONE_SHOT, callback=self.resume)
+
+                # If next rule 5> seconds away: calculate ticks until due, wait until due, run action
+                else:
+                    deadline = time.ticks_add(time.ticks_ms(), period)
+                    while time.ticks_diff(deadline, time.ticks_ms()) > 0:
+                        await asyncio.sleep_ms(1)
+
+                    # Run action, remove from queue
+                    try:
+                        self.schedule[next_rule][1]()
+                        del self.schedule[next_rule]
+                        del self.queue[self.queue.index(next_rule)]
+                    except KeyError:
+                        pass # Prevent crash if rule was removed by self.cancel while loop running
+
+            else:
+                # Wait for timer to unpause loop
+                await asyncio.sleep_ms(50)
 
 
 

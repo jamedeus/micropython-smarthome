@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Upload config file + boot.py + all required modules in a single step
 
@@ -12,6 +12,7 @@ import os
 import struct
 import json
 import socket
+from colorama import Fore, Style
 
 DEBUG = 0
 
@@ -211,9 +212,18 @@ def get_modules(config):
 
     modules = []
 
+    libs = []
+    libs.append('lib/logging.py')
+
     for i in conf:
         if i == "ir_blaster":
+            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, the directory /lib/ir_tx/ must be created manually\n")
+
             modules.append("devices/IrBlaster.py")
+            modules.append("ir-remote/samsung-codes.json")
+            modules.append("ir-remote/whynter-codes.json")
+            libs.append("lib/ir_tx/__init__.py")
+            libs.append("lib/ir_tx/nec.py")
             continue
 
         if not i.startswith("device") and not i.startswith("sensor"): continue
@@ -222,9 +232,17 @@ def get_modules(config):
             modules.append("devices/Tplink.py")
             modules.append("devices/Device.py")
 
-        elif conf[i]["type"] == "relay" or conf[i]["type"] == "desktop":
+        elif conf[i]["type"] == "relay":
             modules.append("devices/Relay.py")
             modules.append("devices/Device.py")
+
+        elif conf[i]["type"] == "desktop":
+            if i.startswith("device"):
+                modules.append("devices/Desktop_target.py")
+                modules.append("devices/Device.py")
+            elif i.startswith("sensor"):
+                modules.append("sensors/Desktop_trigger.py")
+                modules.append("sensors/Sensor.py")
 
         elif conf[i]["type"] == "pwm":
             modules.append("devices/LedStrip.py")
@@ -237,16 +255,18 @@ def get_modules(config):
         elif conf[i]["type"] == "pir":
             modules.append("sensors/MotionSensor.py")
             modules.append("sensors/Sensor.py")
-            modules.append("SoftwareTimer.py")
 
         elif conf[i]["type"] == "si7021":
+            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, the directory /lib/ must be created manually\n")
+
             modules.append("sensors/Thermostat.py")
             modules.append("sensors/Sensor.py")
+            libs.append("lib/si7021.py")
 
     # Remove duplicates
     modules = set(modules)
 
-    return modules
+    return modules, libs
 
 
 
@@ -275,36 +295,75 @@ def upload(host, port, src_file, dst_file):
 
 
 
+def provision(config):
+    # Read config file, determine which device/sensor modules need to be uploaded
+    modules, libs = get_modules(config)
+
+    port = 8266
+
+    # Upload all device/sensor modules
+    for i in modules:
+        src_file = i
+        dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
+
+        upload(host, port, src_file, dst_file)
+
+    # Upload all libraries
+    for i in libs:
+        src_file = i
+        dst_file = i
+
+        upload(host, port, src_file, dst_file)
+
+    # Upload config file
+    upload(host, port, config, "config.json")
+
+    # Upload Config module
+    upload(host, port, "Config.py", "Config.py")
+
+    # Upload SoftwareTimer module
+    upload(host, port, "SoftwareTimer.py", "SoftwareTimer.py")
+
+    # Upload API module
+    upload(host, port, "Api.py", "Api.py")
+
+    # Upload main code last (triggers automatic reboot)
+    upload(host, port, "boot.py", "boot.py")
+
+
+
+
 # Relative paths break if run from other dir
 if not os.getcwd().split('/')[-1] == 'micropython-smarthome':
     print("ERROR: Must be run from 'micropython-smarthome' directory")
     exit()
 
-# Get config file and target IP from cli arguments
-passwd, config, host = arg_parse()
 
-# Read config file, determine which device/sensor modules need to be uploaded
-modules = get_modules(config)
 
-port = 8266
+# Load config file
+with open('nodes.json', 'r') as file:
+    nodes = json.load(file)
 
-# Upload all device/sensor modules
-for i in modules:
-    src_file = i
-    dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
 
-    # TODO - Also get dependencies (ir-tx for ir_blaster) and upload them
 
-    upload(host, port, src_file, dst_file)
+# If user selected node by name
+if sys.argv[1] in nodes:
+    passwd = "password"
+    config = nodes[sys.argv[1]]["config"]
+    host = nodes[sys.argv[1]]["ip"]
+    provision(config)
 
-# Upload config file
-upload(host, port, config, "config.json")
+# If user selected all nodes
+elif sys.argv[1] == "--all":
+    passwd = "password"
+    for i in nodes:
+        config = nodes[i]["config"]
+        host = nodes[i]["ip"]
+        provision(config)
 
-# Upload Config module
-upload(host, port, "Config.py", "Config.py")
+# If user used keyword args
+else:
+    # Get config file and target IP from cli arguments
+    passwd, config, host = arg_parse()
 
-# Upload API module
-upload(host, port, "Api.py", "Api.py")
-
-# Upload main code last (triggers automatic reboot)
-upload(host, port, "boot.py", "boot.py")
+    provision(config)

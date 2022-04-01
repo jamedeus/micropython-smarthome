@@ -29,13 +29,13 @@ class LedStrip(Device):
         try:
             if self.min_bright <= int(rule) <= self.max_bright:
                 self.current_rule = int(rule)
-                log.info(f"Rule changed to {self.current_rule}")
+                log.info(f"{self.name}: Rule changed to {self.current_rule}")
                 return True
             else:
-                log.error(f"Failed to change rule to {rule}")
+                log.error(f"{self.name}: Failed to change rule to {rule}")
                 return False
         except ValueError:
-            log.error(f"Failed to change rule to {rule}")
+            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False
 
 
@@ -60,6 +60,8 @@ class LedStrip(Device):
                 self.pwm.duty(self.bright)
                 time.sleep_us(delay)
 
+            print(f"{self.name}: Faded down to {target}")
+
         # Fade UP
         else:
             # Calculate correct delay for 1 second fade
@@ -70,5 +72,7 @@ class LedStrip(Device):
                 self.bright += 1
                 self.pwm.duty(self.bright)
                 time.sleep_us(delay)
+
+            print(f"{self.name}: Faded up to {target}")
 
         return True # Tell calling function that request succeeded

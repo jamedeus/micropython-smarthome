@@ -1,14 +1,15 @@
 [Unit]
-Description=Micropython smarthome desktop integration
+Description=Micropython smarthome desktop integration served by gunicorn
 After=network.target
-StartLimitIntervalSec=5
+StartLimitIntervalSec=30
 StartLimitBurst=12
 
 [Service]
 Restart=on-failure
 User=jamedeus
 Environment="DISPLAY=:0"
-ExecStart=/usr/bin/python3 -u /home/jamedeus/git/micropython-smarthome/desktop-integration.py
+WorkingDirectory=/home/jamedeus/git/micropython-smarthome
+ExecStart=/home/jamedeus/.local/bin/gunicorn --workers 2 --bind 0.0.0.0:5000 desktop-integration:app
 
 [Install]
 WantedBy=network.target

@@ -38,27 +38,29 @@ async def disk_monitor():
         # Don't let the log exceed 500 KB, full disk hangs system + can't pull log via webrepl
         elif os.stat('app.log')[6] > 500000:
             print("\nLog exceeded 500 KB, clearing...\n")
-            os.remove('log.txt')
+
+            # Close file, remove
+            logging.root.handlers[0].close()
+            os.remove('app.log')
+
+            # Create new handler, set format
+            h = logging.FileHandler('app.log')
+            h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+
+            # Replace old handler with new
+            logging.root.handlers.clear()
+            logging.root.addHandler(h)
+
             log.info("Deleted old log (exceeded 500 KB size limit)")
+
+            # Allow logger to write new log file to disk before loop checks size again (crashes if doesn't exist yet)
+            await asyncio.sleep(1)
         else:
             await asyncio.sleep(1) # Only check once per second
 
 
 
 async def main():
-    # Check if desktop device configured, start desktop_integration (unless already running)
-    for i in config.devices:
-        if i.device_type == "desktop" and not i.integration_running:
-            log.info("Desktop integration is being used, creating asyncio task to listen for messages")
-            asyncio.create_task(i.desktop_integration())
-            i.integration_running = True
-
-    # Create hardware interrupts + create async tasks for sensor loops
-    for sensor in config.sensors:
-        if not sensor.loop_started:
-            sensor.enable()
-            log.debug(f"Enabled {sensor.name}")
-
     # Start listening for API commands
     server = Api(config)
     asyncio.create_task(server.run())
@@ -66,9 +68,45 @@ async def main():
     # Listen for new code upload (auto-reboot when updated), prevent log from filling disk
     asyncio.create_task(disk_monitor())
 
-    # Keep running, all tasks stop if function exits
+    # Main loop - monitor sensors, apply actions if conditions met
     while True:
-        await asyncio.sleep(1)
+        for group in config.groups:
+
+            # Store return value from each sensor in group
+            conditions = []
+
+            # Check conditions for all enabled sensors
+            for sensor in config.groups[group]["triggers"]:
+                if sensor.enabled:
+                    conditions.append(sensor.condition_met())
+
+            # Determine action to apply to target devices: True = turn on, False = turn off, None = do nothing
+            # Turn on: Requires only 1 sensor to return True
+            # Turn off: ALL sensors to return False
+            # Nothing: Requires 1 sensor to return None and 0 sensors returning True
+            if True in conditions:
+                action = True
+            elif None in conditions:
+                # Skip to next group if no action required
+                continue
+            else:
+                action = False
+
+            # TODO consider re-introducing sensor.state - could then skip iterating devices if all states match action. Can also print "Motion detected" only when first detected
+            # Issue: When device rules change, device's state is flipped to allow to take effect - this will not take effect if sensor.state blocks loop. Could change sensor.state?
+
+            # Apply action (turn targets on/off)
+            for device in config.groups[group]["targets"]:
+                # Do not turn device on/off if already on/off
+                if not action == device.state:
+                    # int converts True to 1, False to 0
+                    success = device.send(int(action))
+
+                    # Only change device state if send returned True
+                    if success:
+                        device.state = action
+
+        await asyncio.sleep_ms(20)
 
 
 

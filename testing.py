@@ -1,11 +1,9 @@
-import machine
-import os
 import micropython
 import time
-import json
 
 
 
+# Pass callable as call, no ()
 def timetest(call, runs=5):
     count=0
 
@@ -16,7 +14,7 @@ def timetest(call, runs=5):
 
     while count < runs:
         start = time.time_ns()
-        eval(call)
+        call()
         end = time.time_ns()
         times.append((end-start)/1000000000)
         count = count + 1
@@ -33,10 +31,3 @@ def timetest(call, runs=5):
 
 def compare(old, new):
     print(f"New was {old-new} seconds faster ({round((old-new)/old*100, 2)}%) than Old")
-
-
-
-def reload_config():
-    with open('config.json', 'r') as file:
-        config = json.load(file)
-    return config
