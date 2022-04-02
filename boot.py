@@ -11,7 +11,6 @@ import json
 import uasyncio as asyncio
 import logging
 from Config import Config, reboot
-from Api import Api
 
 # Set log file and syntax
 logging.basicConfig(level=logging.DEBUG, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
@@ -60,15 +59,8 @@ async def disk_monitor():
 
 
 
+# Main loop - monitor sensors, apply actions if conditions met
 async def main():
-    # Start listening for API commands
-    server = Api(config)
-    asyncio.create_task(server.run())
-
-    # Listen for new code upload (auto-reboot when updated), prevent log from filling disk
-    asyncio.create_task(disk_monitor())
-
-    # Main loop - monitor sensors, apply actions if conditions met
     while True:
         for group in config.groups:
 
@@ -118,4 +110,21 @@ gc.collect()
 
 webrepl.start()
 
-asyncio.run(main())
+# Import + initialize API
+from Api import app
+app.run(host="0.0.0.0")
+
+# Pass config object
+app.config = config
+
+# Create main loop, add tasks
+# TODO determine if SoftwareTimer.loop and Config.loop are running on this loop or different
+# If different, remove call from their init methods and move it here
+# TODO probably should move here regardless to keep in one place
+loop = asyncio.get_event_loop()
+loop.create_task(disk_monitor())
+loop.create_task(main())
+loop.create_task(asyncio.start_server(app._handle, "0.0.0.0", 8081))
+
+# Run
+loop.run_forever()
