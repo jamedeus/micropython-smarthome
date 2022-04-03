@@ -112,7 +112,7 @@ webrepl.start()
 
 # Import + initialize API
 from Api import app
-app.run(host="0.0.0.0")
+app.run(host="0.0.0.0", debug=-1)
 
 # Pass config object
 app.config = config
