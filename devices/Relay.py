@@ -59,7 +59,7 @@ class Relay(Device):
             elif not state:
                 try:
                     response = urequests.get('http://' + str(self.ip) + '/cm?cmnd=Power%20Off')
-                    print(f"{self.name}: Turned on")
+                    print(f"{self.name}: Turned off")
                 except OSError:
                     # Wifi interruption, send failed
                     return False
