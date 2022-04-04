@@ -109,11 +109,15 @@ class Config():
 
             elif conf[sensor]["type"] == "desktop":
                 from Desktop_trigger import Desktop_trigger
-                instance = Desktop_trigger( sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["ip"] )
+                instance = Desktop_trigger(sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["ip"])
 
             elif conf[sensor]["type"] == "si7021":
                 from Thermostat import Thermostat
                 instance = Thermostat(sensor, conf[sensor]["type"], True, int(conf[sensor]["default_setting"]), conf[sensor]["default_setting"], targets)
+
+            elif conf[sensor]["type"] == "dummy":
+                from Dummy import Dummy
+                instance = Dummy(sensor, conf[sensor]["type"], True, None, None, targets)
 
             # Add the sensor instance to each of it's target's "triggered_by" list
             for t in targets:
