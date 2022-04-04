@@ -263,6 +263,9 @@ def get_modules(config):
             modules.append("sensors/Sensor.py")
             libs.append("lib/si7021.py")
 
+        elif conf[i]["type"] == "dummy":
+            modules.append("sensors/Dummy.py")
+
     # Remove duplicates
     modules = set(modules)
 
