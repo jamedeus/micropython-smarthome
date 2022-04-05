@@ -122,7 +122,11 @@ class SoftwareTimer():
                 self.delete = []
 
                 # Get time until next rule due
-                period = int(next_rule - self.epoch_now())
+                try:
+                    period = int(next_rule - self.epoch_now())
+                except NameError:
+                    # No tasks in queue - sleep for 1 hour (will be interrupted if task is added)
+                    period = 3600000
 
                 # If next rule >5 seconds away: pause loop, set hardware timer to unpause when rule due
                 if period > 5000:
