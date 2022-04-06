@@ -1,11 +1,4 @@
-try:
-    import picoweb
-except:
-    import upip
-    upip.install('picoweb')
-    gc.collect()
-    import picoweb
-
+import picoweb
 import json
 import os
 import uasyncio as asyncio

@@ -207,6 +207,11 @@ def arg_parse():
 
 # Read config file and return list of required device/sensor modules
 def get_modules(config):
+
+    # Used for initial setup, uploads code that automatically installs dependencies with upip
+    if config == "setup.json":
+        return [], []
+
     with open(config, 'r') as file:
         conf = json.load(file)
 
@@ -214,6 +219,7 @@ def get_modules(config):
 
     libs = []
     libs.append('lib/logging.py')
+
 
     for i in conf:
         if i == "ir_blaster":
@@ -334,8 +340,12 @@ def provision(config):
     # Upload API module
     upload(host, port, "Api.py", "Api.py")
 
-    # Upload main code last (triggers automatic reboot)
-    upload(host, port, "boot.py", "boot.py")
+    if not "setup.json" in config:
+        # Upload main code last (triggers automatic reboot)
+        upload(host, port, "boot.py", "boot.py")
+    else:
+        # Upload code to install dependencies
+        upload(host, port, "setup.py", "boot.py")
 
 
 
