@@ -4,6 +4,7 @@ import os
 import uasyncio as asyncio
 import logging
 import gc
+import SoftwareTimer
 
 
 
@@ -65,6 +66,23 @@ def enable(req, resp):
 
 
 
+@app.route("/enable_in")
+def enable_for(req, resp):
+    target = app.config.find(req.qs.split("=")[0])
+    period = req.qs.split("=")[1]
+
+    if not target:
+        yield from picoweb.start_response(resp)
+        yield from resp.awrite("ERROR: Instance not found")
+    else:
+        period = int(period) * 60000
+        SoftwareTimer.timer.create(period, target.enable, "API")
+        data = {"Enabled": target.name, "Disable_in_seconds": period/1000}
+        yield from picoweb.start_response(resp)
+        yield from resp.awrite(json.dumps(data))
+
+
+
 @app.route("/disable")
 def disable(req, resp):
     target = app.config.find(req.qs)
@@ -75,6 +93,23 @@ def disable(req, resp):
     else:
         target.disable()
         data = {"Disabled": target.name}
+        yield from picoweb.start_response(resp)
+        yield from resp.awrite(json.dumps(data))
+
+
+
+@app.route("/disable_in")
+def disable_for(req, resp):
+    target = app.config.find(req.qs.split("=")[0])
+    period = req.qs.split("=")[1]
+
+    if not target:
+        yield from picoweb.start_response(resp)
+        yield from resp.awrite("ERROR: Instance not found")
+    else:
+        period = int(period) * 60000
+        SoftwareTimer.timer.create(period, target.disable, "API")
+        data = {"Disabled": target.name, "Enable_in_seconds": period/1000}
         yield from picoweb.start_response(resp)
         yield from resp.awrite(json.dumps(data))
 
