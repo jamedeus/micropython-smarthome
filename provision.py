@@ -217,7 +217,7 @@ def get_modules(config):
 
     for i in conf:
         if i == "ir_blaster":
-            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, the directory /lib/ir_tx/ must be created manually\n")
+            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
 
             modules.append("devices/IrBlaster.py")
             modules.append("ir-remote/samsung-codes.json")
@@ -257,7 +257,7 @@ def get_modules(config):
             modules.append("sensors/Sensor.py")
 
         elif conf[i]["type"] == "si7021":
-            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, the directory /lib/ must be created manually\n")
+            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
 
             modules.append("sensors/Thermostat.py")
             modules.append("sensors/Sensor.py")
