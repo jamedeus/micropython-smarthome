@@ -295,7 +295,11 @@ def upload(host, port, src_file, dst_file):
     # Set websocket to send data marked as "binary"
     ws.ioctl(9, 2)
 
-    put_file(ws, src_file, dst_file)
+    try:
+        put_file(ws, src_file, dst_file)
+    except AssertionError:
+        print(Fore.RED + "ERROR"  + Fore.RESET + ": Unable to upload " + str(dst_file) + ". This is normal on first setup, but otherwise node may crash after reboot.")
+        pass
 
     s.close()
 
