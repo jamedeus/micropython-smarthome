@@ -97,8 +97,8 @@ async def main():
 
             # Apply action (turn targets on/off)
             for device in config.groups[group]["targets"]:
-                # Do not turn device on/off if already on/off
-                if not action == device.state:
+                # Do not turn device on/off if already on/off, or if device is disabled
+                if device.enabled and not action == device.state:
                     # int converts True to 1, False to 0
                     success = device.send(int(action))
 

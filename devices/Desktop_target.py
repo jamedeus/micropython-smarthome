@@ -51,10 +51,6 @@ class Desktop_target(Device):
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
 
-        if not self.enabled:
-            log.info(f"{self.name}: Device is currently disabled, skipping")
-            return True # Tell sensor that send succeeded so it doesn't retry forever
-
         # TODO disable instead? Prevents 100ms delay from log line
         if self.current_rule == "off" and state == 1:
             return True # Tell sensor that send succeeded so it doesn't retry forever

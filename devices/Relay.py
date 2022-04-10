@@ -40,10 +40,6 @@ class Relay(Device):
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
 
-        if not self.enabled:
-            log.info(f"{self.name}: currently disabled, skipping")
-            return True # Tell sensor that send succeeded so it doesn't retry forever
-
         if self.current_rule == "off" and state == 1:
             return True # Tell sensor that send succeeded so it doesn't retry forever
         else:
