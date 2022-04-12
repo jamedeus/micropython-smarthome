@@ -65,6 +65,10 @@ class Config():
                 from Relay import Relay
                 instance = Relay( device, conf[device]["type"], True, None, None, conf[device]["ip"] )
 
+            elif conf[device]["type"] == "dumb-relay":
+                from DumbRelay import DumbRelay
+                instance = DumbRelay( device, conf[device]["type"], True, None, None, conf[device]["pin"] )
+
             elif conf[device]["type"] == "desktop":
                 from Desktop_target import Desktop_target
                 instance = Desktop_target( device, conf[device]["type"], True, None, None, conf[device]["ip"] )

@@ -236,6 +236,10 @@ def get_modules(config):
             modules.append("devices/Relay.py")
             modules.append("devices/Device.py")
 
+        elif conf[i]["type"] == "dumb-relay":
+            modules.append("devices/DumbRelay.py")
+            modules.append("devices/Device.py")
+
         elif conf[i]["type"] == "desktop":
             if i.startswith("device"):
                 modules.append("devices/Desktop_target.py")
