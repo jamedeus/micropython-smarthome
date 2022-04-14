@@ -52,8 +52,8 @@ class Tplink(Device):
             # Parse parameters from rule
             cmd, target, period = self.rule_queue.pop(0).split("/")
 
-            # Ensure device is enabled
-            self.enable()
+            # Ensure device is enabled - do not call method, flips state and interferes with brightness check in fade
+            self.enabled = True
 
             # Start fade animation
             self.fade(target, period)
@@ -86,6 +86,14 @@ class Tplink(Device):
 
     def send(self, state=1):
         log.info(f"{self.name}: send method called, brightness={self.current_rule}, state={state}")
+
+        # TODO Temporary fix, prevents crash if current rule = fade when node boots. Find better solution
+        try:
+            int(self.current_rule)
+        except ValueError:
+            # Override with sane default
+            self.current_rule = 50
+
         if self.device_type == "dimmer":
             cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.current_rule) + '}}}'
         else:
@@ -123,7 +131,7 @@ class Tplink(Device):
 
 
     # Fade brightness from current to target over a period of n seconds (defaults to fade on over 30 min)
-    def fade(self, target=98, period=108000):
+    def fade(self, target=98, period=1800):
 
         # Stops fade if device disabled while in progress
         if not self.enabled:
@@ -151,9 +159,9 @@ class Tplink(Device):
                 steps = brightness - int(target)
                 self.fade_period = float(period) / steps * 1000
                 self.current_rule = int(self.current_rule) - 1
-                print(self.current_rule)
 
             elif int(target) == brightness:
+                print("Already at target brightness, skipping fade")
                 # Already at target brightness, do nothing
                 return True
 
@@ -174,15 +182,15 @@ class Tplink(Device):
         # Fade already started, called again by timer
         else:
 
-            if self.fade_target > self.current_rule:
+            if self.fade_target > int(self.current_rule):
                 self.current_rule = int(self.current_rule) + 1
                 self.send(1)
 
-            elif self.fade_target < self.current_rule:
+            elif self.fade_target < int(self.current_rule):
                 self.current_rule = int(self.current_rule) - 1
                 self.send(1)
 
-            if self.current_rule == self.fade_target:
+            if self.fade_target == int(self.current_rule):
                 # Animation complete
                 self.scheduled_rule = self.current_rule
                 self.fading = False
