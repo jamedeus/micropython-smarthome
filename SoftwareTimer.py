@@ -22,6 +22,11 @@ class SoftwareTimer():
         # Allows loop to be paused while rebuilding queue to avoid conflicts
         self.pause = False
 
+        # Wakes up loop when new rule added
+        # Prevents issue where loop has already determined time until next rule when create is called. Create blocks loop mid-run, adds
+        # new rule expiring even sooner, then unblocks. Loop sleeps for the previously determined period, causing new rule to run late.
+        self.new_rule_added = False
+
         # Start loop
         asyncio.create_task(self.loop())
 
@@ -66,6 +71,7 @@ class SoftwareTimer():
 
         # Resume loop
         self.pause = False
+        self.new_rule_added = True
 
 
 
@@ -99,7 +105,6 @@ class SoftwareTimer():
     async def loop(self):
         while True:
             if not self.pause:
-
                 for i in self.queue:
                     # Run actions for all expired rules, add to list to be removed from queue
                     if self.epoch_now() >= i:
@@ -128,28 +133,19 @@ class SoftwareTimer():
                     # No tasks in queue - sleep for 1 hour (will be interrupted if task is added)
                     period = 3600000
 
-                # If next rule >5 seconds away: pause loop, set hardware timer to unpause when rule due
-                if period > 5000:
+                # If next rule >1 seconds away: pause loop, set hardware timer to unpause when rule due
+                if period > 1000:
                     self.pause = True
                     self.timer.init(period=period, mode=Timer.ONE_SHOT, callback=self.resume)
 
-                # If next rule 5> seconds away: calculate ticks until due, wait until due, run action
-                else:
-                    deadline = time.ticks_add(time.ticks_ms(), period)
-                    while time.ticks_diff(deadline, time.ticks_ms()) > 0:
-                        await asyncio.sleep_ms(1)
-
-                    # Run action, remove from queue
-                    try:
-                        self.schedule[next_rule][1]()
-                        del self.schedule[next_rule]
-                        del self.queue[self.queue.index(next_rule)]
-                    except KeyError:
-                        pass # Prevent crash if rule was removed by self.cancel while loop running
-
             else:
-                # Wait for timer to unpause loop
-                await asyncio.sleep_ms(50)
+                if self.new_rule_added == True:
+                    # Unpause immediately if a new rule was added
+                    self.pause = False
+                    self.new_rule_added = False
+                else:
+                    # Wait for timer to unpause loop
+                    await asyncio.sleep_ms(50)
 
 
 
