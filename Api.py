@@ -123,6 +123,7 @@ class Api:
             logging.root.addHandler(h)
 
             log.info("Deleted old log (API request)")
+            print("Deleted old log (API request)")
 
             return 'OK'
         except OSError:
