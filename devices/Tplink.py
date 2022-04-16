@@ -154,6 +154,14 @@ class Tplink(Device):
             else:
                 brightness = 0
 
+            if int(target) == brightness:
+                print("Already at target brightness, skipping fade")
+                log.debug("Already at target brightness, skipping fade")
+                return True
+            else:
+                # Set correct starting point (otherwise if lights are off but current rule is not 0, will jump to current_rule)
+                self.current_rule = brightness
+
             # Get number of steps, period between steps, and add callback for each step to queue
             if int(target) > brightness:
                 steps = int(target) - brightness
@@ -176,11 +184,6 @@ class Tplink(Device):
                     brightness -= 1
                     next_step += fade_period
                     SoftwareTimer.timer.create(next_step, self.fade, "fade")
-
-            elif int(target) == brightness:
-                print("Already at target brightness, skipping fade")
-                # Already at target brightness, do nothing
-                return True
 
             self.fade_target = int(target)
             self.fading = True
