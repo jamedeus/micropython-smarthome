@@ -53,9 +53,9 @@ class Device():
 
     def set_rule(self, rule):
         # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
-        rule = self.rule_validator(rule)
-        if not str(rule) == "False":
-            self.current_rule = rule
+        valid_rule = self.rule_validator(rule)
+        if not str(valid_rule) == "False":
+            self.current_rule = valid_rule
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
             print(f"{self.name}: Rule changed to {self.current_rule}")
 
