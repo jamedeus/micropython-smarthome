@@ -51,18 +51,37 @@ class Device():
 
 
 
-    def next_rule(self):
-        self.scheduled_rule = self.rule_queue.pop(0)
-        self.current_rule = self.scheduled_rule
-        log.debug(f"{self.name}: Scheduled rule changed to {self.current_rule}")
-        print(f"{self.name}: Scheduled rule changed to {self.current_rule}")
+    def set_rule(self, rule):
+        # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
+        rule = self.rule_validator(rule)
+        if not str(rule) == "False":
+            self.current_rule = rule
+            log.info(f"{self.name}: Rule changed to {self.current_rule}")
+            print(f"{self.name}: Rule changed to {self.current_rule}")
 
-        # Rule just changed to disabled
-        if self.current_rule == "Disabled":
-            self.disable()
-        # Sensor was previously disabled, enable now that rule has changed
-        elif self.enabled == False:
-            self.enable()
-        # Device is currently on, run send so new rule can take effect
-        elif self.state == True:
-            self.send(1)
+            # Rule just changed to disabled
+            if self.current_rule == "Disabled":
+                self.send(0)
+                self.disable()
+            # Sensor was previously disabled, enable now that rule has changed
+            elif self.enabled == False:
+                self.enable()
+            # Device is currently on, run send so new rule can take effect
+            elif self.state == True:
+                self.send(1)
+
+            return True
+
+        else:
+            log.error(f"{self.name}: Failed to change rule to {rule}")
+            print(f"{self.name}: Failed to change rule to {rule}")
+            return False
+
+
+
+    def next_rule(self):
+        log.debug(f"{self.name}: Scheduled rule change")
+        print(f"{self.name}: Scheduled rule change")
+        if self.set_rule(self.rule_queue.pop(0)):
+            # If new rule is valid, also change scheduled_rule
+            self.scheduled_rule = self.current_rule

@@ -40,15 +40,14 @@ class Thermostat(Sensor):
 
 
     # Receive rule from API, validate, set and return True if valid, otherwise return False
-    def set_rule(self, rule):
+    def rule_validator(self, rule):
         try:
+            if rule == "Disabled":
+                return rule
             # Constrain to range 65-80
-            if 65 <= int(rule) <= 80:
-                self.current_rule = int(rule)
-                log.info(f"{self.name}: Rule changed to {self.current_rule}")
-                return True
+            elif 65 <= int(rule) <= 80:
+                return int(rule)
             else:
                 return False
         except ValueError:
-            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False

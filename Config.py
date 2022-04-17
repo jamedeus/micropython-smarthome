@@ -59,27 +59,27 @@ class Config():
             # Instantiate each device as appropriate class
             if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
                 from Tplink import Tplink
-                instance = Tplink( device, conf[device]["type"], True, None, None, conf[device]["ip"] )
+                instance = Tplink( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
             elif conf[device]["type"] == "relay":
                 from Relay import Relay
-                instance = Relay( device, conf[device]["type"], True, None, None, conf[device]["ip"] )
+                instance = Relay( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
             elif conf[device]["type"] == "dumb-relay":
                 from DumbRelay import DumbRelay
-                instance = DumbRelay( device, conf[device]["type"], True, None, None, conf[device]["pin"] )
+                instance = DumbRelay( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"] )
 
             elif conf[device]["type"] == "desktop":
                 from Desktop_target import Desktop_target
-                instance = Desktop_target( device, conf[device]["type"], True, None, None, conf[device]["ip"] )
+                instance = Desktop_target( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
             elif conf[device]["type"] == "pwm":
                 from LedStrip import LedStrip
-                instance = LedStrip( device, conf[device]["type"], True, None, None, conf[device]["pin"], conf[device]["min"], conf[device]["max"] )
+                instance = LedStrip( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"], conf[device]["min"], conf[device]["max"] )
 
             elif conf[device]["type"] == "mosfet":
                 from Mosfet import Mosfet
-                instance = Mosfet( device, conf[device]["type"], True, None, None, conf[device]["pin"] )
+                instance = Mosfet( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"] )
 
             # Add instance to config.devices
             self.devices.append(instance)
@@ -109,19 +109,19 @@ class Config():
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
                 from MotionSensor import MotionSensor
-                instance = MotionSensor(sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["pin"])
+                instance = MotionSensor(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["pin"])
 
             elif conf[sensor]["type"] == "desktop":
                 from Desktop_trigger import Desktop_trigger
-                instance = Desktop_trigger(sensor, conf[sensor]["type"], True, None, None, targets, conf[sensor]["ip"])
+                instance = Desktop_trigger(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["ip"])
 
             elif conf[sensor]["type"] == "si7021":
                 from Thermostat import Thermostat
-                instance = Thermostat(sensor, conf[sensor]["type"], True, int(conf[sensor]["default_setting"]), conf[sensor]["default_setting"], targets)
+                instance = Thermostat(sensor, conf[sensor]["type"], True, int(conf[sensor]["default_rule"]), conf[sensor]["default_rule"], targets)
 
             elif conf[sensor]["type"] == "dummy":
                 from Dummy import Dummy
-                instance = Dummy(sensor, conf[sensor]["type"], True, None, None, targets)
+                instance = Dummy(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets)
 
             # Add the sensor instance to each of it's target's "triggered_by" list
             for t in targets:
@@ -356,9 +356,13 @@ class Config():
             # Get target instance
             instance = self.find(i)
 
-            # Set target's current rule
-            instance.scheduled_rule = rules[queue.pop(0)]
-            instance.current_rule = instance.scheduled_rule
+            # Set target's current_rule (set_rule method passes to syntax validator, returns True if valid, False if not)
+            if instance.set_rule(rules[queue.pop(0)]):
+                # If rule valid, overwrite scheduled_rule placeholder (default_rule)
+                instance.scheduled_rule = instance.current_rule
+            else:
+                # If rule not valid, use default_rule as current_rule
+                instance.current_rule = instance.scheduled_rule
 
             if instance.current_rule == "Disabled":
                 instance.disable()

@@ -14,6 +14,12 @@ class Dummy(Sensor):
 
 
 
+    def rule_validator(self, rule):
+        if rule == "on" or rule == "off" or rule == "Disabled":
+            return rule
+
+
+
     def condition_met(self):
         if self.current_rule == "on":
             return True

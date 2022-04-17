@@ -24,13 +24,10 @@ class Desktop_trigger(Sensor):
 
 
 
-    def set_rule(self, rule):
+    def rule_validator(self, rule):
         if rule == "Enabled" or rule =="Disabled":
-            self.current_rule = rule
-            log.info(f"{self.name}: Rule changed to {self.current_rule}")
-            return True
+            return rule
         else:
-            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False
 
 

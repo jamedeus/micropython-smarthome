@@ -25,17 +25,15 @@ class LedStrip(Device):
 
 
 
-    def set_rule(self, rule):
+    def rule_validator(self, rule):
         try:
-            if self.min_bright <= int(rule) <= self.max_bright:
-                self.current_rule = int(rule)
-                log.info(f"{self.name}: Rule changed to {self.current_rule}")
-                return True
+            if rule == "Disabled":
+                return rule
+            elif self.min_bright <= int(rule) <= self.max_bright:
+                return int(rule)
             else:
-                log.error(f"{self.name}: Failed to change rule to {rule}")
                 return False
         except ValueError:
-            log.error(f"{self.name}: Failed to change rule to {rule}")
             return False
 
 
