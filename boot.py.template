@@ -5,6 +5,8 @@
 import webrepl
 import network
 import time
+import os
+import uasyncio as asyncio
 
 # Connect to wifi
 wlan = network.WLAN(network.STA_IF)
@@ -13,3 +15,29 @@ wlan.connect('jamnet', 'cjZY8PTa4ZQ6S83A')
 
 # Start webrepl to allow connecting and uploading scripts from browser
 webrepl.start()
+
+async def disk_monitor():
+    print("Disk Monitor Started\n")
+
+    # Get filesize/modification time (to detect upload in future)
+    old = os.stat("boot.py")
+
+    while True:
+        # Check if file changed on disk
+        if not os.stat("boot.py") == old:
+            # If file changed (new code received from webrepl), reboot
+            print("\nReceived new code from webrepl, rebooting...\n")
+            time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+            from machine import reset
+            reset()
+        else:
+            await asyncio.sleep(1) # Only check once per second
+
+async def main():
+    # Listen for new code upload (auto-reboot when updated)
+    asyncio.create_task(disk_monitor())
+
+    while True:
+        await asyncio.sleep(1)
+
+asyncio.run(main())
