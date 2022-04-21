@@ -40,8 +40,12 @@ class Tplink(Device):
                     print(f"{self.name}: fading to {target} in {period} seconds")
                     log.debug(f"{self.name}: fading to {target} in {period} seconds")
 
-                    # Get current brightness
-                    brightness = int(self.current_rule)
+                    if not self.current_rule == "Disabled":
+                        # Get current brightness
+                        brightness = int(self.current_rule)
+                    else:
+                        # Default to 0 if device disabled when fade starts
+                        brightness = 0
 
                     if int(target) == brightness:
                         print("Already at target brightness, skipping fade")
