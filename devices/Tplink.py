@@ -58,7 +58,7 @@ class Tplink(Device):
                         fade_period = int(period) / steps * 1000
 
                     # Ensure device is enabled
-                    self.enable()
+                    self.enabled = True
 
                     # Cancel existing fade timers (prior fade may be in progress)
                     SoftwareTimer.timer.cancel(self.name + "_fade")
