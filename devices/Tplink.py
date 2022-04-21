@@ -16,17 +16,8 @@ class Tplink(Device):
 
         self.ip = ip
 
-        # Stores target brightness during fade animation
-        self.fade_target = None
-
-        # Delay between each step in fade (ms)
-        self.fade_period = None
-
-        # Timestamp (ms) when fade began, used to catch up if something blocks
-        self.fade_started = None
-
-        # Starting brightness
-        self.fade_start_bright = None
+        # Stores parameters in dict when fade in progress
+        self.fading = False
 
         log.info(f"Instantiated Tplink device named {self.name}: ip = {self.ip}, type = {self.device_type}")
 
@@ -57,28 +48,26 @@ class Tplink(Device):
                         log.debug("Already at target brightness, skipping fade")
                         return int(target)
 
-                    self.fade_target = int(target)
-
                     # Find fade direction, get number of steps, period between steps
-                    if self.fade_target > brightness:
-                        steps = self.fade_target - brightness
-                        self.fade_period = int(period) / steps * 1000
+                    if int(target) > brightness:
+                        steps = int(target) - brightness
+                        fade_period = int(period) / steps * 1000
 
-                    elif self.fade_target < brightness:
-                        steps = brightness - self.fade_target
-                        self.fade_period = int(period) / steps * 1000
+                    elif int(target) < brightness:
+                        steps = brightness - int(target)
+                        fade_period = int(period) / steps * 1000
 
                     # Ensure device is enabled
                     self.enable()
-
-                    self.fade_started = SoftwareTimer.timer.epoch_now()
-                    self.fade_start_bright = brightness
 
                     # Cancel existing fade timers (prior fade may be in progress)
                     SoftwareTimer.timer.cancel(self.name + "_fade")
 
                     # Create fade timer
-                    SoftwareTimer.timer.create(self.fade_period, self.fade, self.name + "_fade")
+                    SoftwareTimer.timer.create(fade_period, self.fade, self.name + "_fade")
+
+                    # Store fade parameters in dict, used by fade method below
+                    self.fading = {"started": SoftwareTimer.timer.epoch_now(), "starting_brightness": brightness, "target": int(target), "period": fade_period}
 
                     # Return starting point (will be set as current rule by device.set_rule)
                     return brightness
@@ -163,41 +152,38 @@ class Tplink(Device):
     # Called by SoftwareTimer during fade animation, initialized in rule_validator above
     def fade(self):
 
-        # Abort if disabled mid-fade
-        if not self.enabled:
+        # Abort if disabled mid-fade, or if called after fade complete
+        if not self.enabled or not self.fading:
             return True
 
         # Fade to next step (unless fade already complete)
-        if not self.fade_target == int(self.current_rule):
+        if not self.fading["target"] == int(self.current_rule):
 
-            # Use starting time, current time, and time for each step (fade_period) to determine how many steps should have been taken
-            steps = (SoftwareTimer.timer.epoch_now() - self.fade_started) // self.fade_period
+            # Use starting time, current time, and period (time for each step) to determine how many steps should have been taken
+            steps = (SoftwareTimer.timer.epoch_now() - self.fading["started"]) // self.fading["period"]
 
-            if self.fade_target > int(self.current_rule):
-                new_rule = int(self.fade_start_bright) + steps
-                if new_rule > self.fade_target:
-                    new_rule = self.fade_target
+            if self.fading["target"] > int(self.current_rule):
+                new_rule = self.fading["starting_brightness"] + steps
+                if new_rule > self.fading["target"]:
+                    new_rule = self.fading["target"]
 
-            elif self.fade_target < int(self.current_rule):
-                new_rule = int(self.fade_start_bright) + steps * -1
-                if new_rule < self.fade_target:
-                    new_rule = self.fade_target
+            elif self.fading["target"] < int(self.current_rule):
+                new_rule = self.fading["starting_brightness"] + steps * -1
+                if new_rule < self.fading["target"]:
+                    new_rule = self.fading["target"]
 
             self.set_rule(new_rule)
 
         # Check if fade complete after step
-        if self.fade_target == int(self.current_rule):
-            # Animation complete
+        if self.fading["target"] == int(self.current_rule):
+            # Complete
             self.scheduled_rule = self.current_rule
-            self.fade_target = None
-            self.fade_period = None
-            self.fade_started = None
-            self.fade_start_bright = None
+            self.fading = False
 
             if self.current_rule == 0:
                 self.state = False
 
         else:
             # Sleep until next step
-            next_step = int(self.fade_period - ((SoftwareTimer.timer.epoch_now() - self.fade_started) % self.fade_period))
+            next_step = int(self.fading["period"] - ((SoftwareTimer.timer.epoch_now() - self.fading["started"]) % self.fading["period"]))
             SoftwareTimer.timer.create(next_step, self.fade, self.name + "_fade")
