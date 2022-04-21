@@ -56,7 +56,7 @@ class SoftwareTimer():
                     break
 
         # Callers are only allowed 1 timer each (scheduler is exempt) - delete any existing timers with same name before adding
-        if not (name == "scheduler" or name == "fade"):
+        if not (name == "scheduler" or "fade" in name):
             for i in self.schedule:
                 if name in self.schedule[i]:
                     del self.schedule[i]
@@ -106,10 +106,13 @@ class SoftwareTimer():
         while True:
             if not self.pause:
                 for i in self.queue:
-                    # Run actions for all expired rules, add to list to be removed from queue
-                    if self.epoch_now() >= i:
-                        self.schedule[i][1]() # Run action
-                        self.delete.append(i)
+                    try:
+                        # Run actions for all expired rules, add to list to be removed from queue
+                        if self.epoch_now() >= i:
+                            self.schedule[i][1]() # Run action
+                            self.delete.append(i)
+                    except KeyError:
+                        pass # Prevent crash if rule was removed by self.cancel while loop running
 
                     else:
                         # First unexpired rule found
