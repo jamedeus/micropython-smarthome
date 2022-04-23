@@ -1,4 +1,3 @@
-import picoweb
 import json
 import os
 import uasyncio as asyncio
@@ -6,166 +5,204 @@ import logging
 import gc
 import SoftwareTimer
 
-
-
-# Subclass for compatibility with boot.py
-class Api(picoweb.WebApp):
-    def __init__(self, pkg, routes=None, serve_static=True):
-        super().__init__(pkg, routes=None, serve_static=True)
+# Set name for module's log lines
+log = logging.getLogger("API")
 
 
 
-    # Removed own event loop, boot.py adds to main event loop
-    def run(self, host="127.0.0.1", port=8081, debug=False, lazy_init=False, log=None):
-        self.log = logging.getLogger("API")
-        gc.collect()
-        self.debug = int(debug)
-        self.init()
-        if not lazy_init:
-            for app in self.mounts:
-                app.init()
+class Api:
+    def __init__(self, host='0.0.0.0', port=8123, backlog=5, timeout=20):
+        self.host = host
+        self.port = port
+        self.backlog = backlog
+        self.timeout = timeout
 
-        if debug > 0:
-            print("* Running on http://%s:%s/" % (host, port))
+        self.url_map = []
 
 
 
-app = Api(__name__)
+    def route(self, url, **kwargs):
+        def _route(func):
+            self.url_map.append((url, func, kwargs))
+            return func
+        return _route
 
 
 
-@app.route("/reboot")
-def index(req, resp):
-    yield from picoweb.start_response(resp)
-    yield from resp.awrite("Rebooting...")
+    async def run(self):
+        print('API: Awaiting client connection.\n')
+        log.info("API ready")
+        self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
+        while True:
+            await asyncio.sleep(100)
+
+
+
+    async def run_client(self, sreader, swriter):
+        try:
+            # Read client request
+            res = await asyncio.wait_for(sreader.readline(), self.timeout)
+
+            # Receives null when client closes write stream - break and close read stream
+            if not res: raise OSError
+
+            # Get dict of parameters
+            data = json.loads(res.rstrip())
+
+            print(f"Received: {data}")
+
+            # Find correct endpoint + handler function
+            for endpoint in self.url_map:
+                if data[0] == endpoint[0]:
+                    handler = endpoint[1]
+                    data.pop(0)
+                    break
+            else:
+                # Exit with error if no match found
+                swriter.write(json.dumps({"ERROR": "Invalid command"}))
+                await swriter.drain()
+                raise OSError
+
+            # Call handler, receive reply for client
+            reply = handler(data)
+
+            print(f"Sending reply: {reply}")
+
+            # Send reply to client
+            swriter.write(json.dumps(reply))
+            await swriter.drain()
+
+            # Prevent running out of mem after repeated requests
+            gc.collect()
+
+        except OSError:
+            pass
+        except asyncio.TimeoutError:
+            pass
+        # Client disconnected, close socket
+        await sreader.wait_closed()
+
+
+
+app = Api()
+
+
+
+@app.route("reboot")
+def index(sreader, swriter):
     from Config import reboot
-    reboot()
+    SoftwareTimer.timer.create(1000, reboot, "API")
+
+    return {"Reboot_in": "1 second"}
 
 
 
-@app.route("/status")
-def status(req, resp):
-    status = app.config.get_status()
-    yield from picoweb.start_response(resp)
-    yield from resp.awrite(json.dumps(status))
+@app.route("status")
+def status(params):
+    return app.config.get_status()
 
 
 
-@app.route("/enable")
-def enable(req, resp):
-    target = app.config.find(req.qs)
+@app.route("enable")
+def enable(params):
+    target = app.config.find(params[0])
 
     if not target:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite("ERROR: Instance not found")
+        return {"ERROR": "Instance not found, use status to see options"}
     else:
         target.enable()
-        data = {"Enabled": target.name}
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite(json.dumps(data))
+        return {"Enabled": target.name}
 
 
 
-@app.route("/enable_in")
-def enable_for(req, resp):
-    target = app.config.find(req.qs.split("=")[0])
-    period = req.qs.split("=")[1]
+@app.route("enable_in")
+def enable_for(params):
+    if not len(params) >= 2:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+    period = params[1]
 
     if not target:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite("ERROR: Instance not found")
+        return {"ERROR": "Instance not found, use status to see options"}
     else:
-        period = int(period) * 60000
+        period = float(period) * 60000
+        # TODO change name to scheduler, or make API exempt
         SoftwareTimer.timer.create(period, target.enable, "API")
-        data = {"Enabled": target.name, "Disable_in_seconds": period/1000}
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite(json.dumps(data))
+        return {"Enabled": target.name, "Enable_in_seconds": period/1000}
 
 
 
-@app.route("/disable")
-def disable(req, resp):
-    target = app.config.find(req.qs)
+@app.route("disable")
+def disable(params):
+    target = app.config.find(params[0])
 
     if not target:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite("ERROR: Instance not found")
+        return {"ERROR": "Instance not found, use status to see options"}
     else:
         target.disable()
-        data = {"Disabled": target.name}
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite(json.dumps(data))
+        return {"Disabled": target.name}
 
 
 
-@app.route("/disable_in")
-def disable_for(req, resp):
-    target = app.config.find(req.qs.split("=")[0])
-    period = req.qs.split("=")[1]
+@app.route("disable_in")
+def disable_for(params):
+    if not len(params) >= 2:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+    period = params[1]
 
     if not target:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite("ERROR: Instance not found")
+        return {"ERROR": "Instance not found, use status to see options"}
     else:
-        period = int(period) * 60000
+        period = float(period) * 60000
+        # TODO change name to scheduler, or make API exempt
         SoftwareTimer.timer.create(period, target.disable, "API")
-        data = {"Disabled": target.name, "Enable_in_seconds": period/1000}
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite(json.dumps(data))
+        return {"Disabled": target.name, "Disable_in_seconds": period/1000}
 
 
 
-@app.route("/set_rule")
-def set_rule(req, resp):
-    target = req.qs.split("=")[0]
-    rule = req.qs.split("=")[1]
+@app.route("set_rule")
+def set_rule(params):
+    if not len(params) >= 2:
+        return {"ERROR": "Invalid syntax"}
 
-    if not target.startswith("sensor") and not target.startswith("device"):
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite(f"No device/sensor named {target}, use status to see options")
-        return
-    else:
-        target = app.config.find(target)
+    target = app.config.find(params[0])
+    rule = params[1]
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
 
     if target.set_rule(rule):
-        data = {target.name: rule}
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite(json.dumps(data))
-
+        return {target.name : rule}
     else:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite(f"ERROR: Invalid rule {rule}")
+        return {"ERROR": "Invalid rule"}
 
 
 
-@app.route("/get_temp")
-def get_temp(req, resp):
-    yield from picoweb.start_response(resp)
+@app.route("get_temp")
+def get_temp(params):
     for sensor in app.config.sensors:
         if sensor.sensor_type == "si7021":
-            data = {"Temp": sensor.fahrenheit()}
-            yield from resp.awrite(json.dumps(data))
-            return True
+            return {"Temp": sensor.fahrenheit()}
     else:
-        yield from resp.awrite("No temperature sensor configured")
+        return {"ERROR": "No temperature sensor configured"}
 
 
 
-@app.route("/get_humid")
-def get_temp(req, resp):
-    yield from picoweb.start_response(resp)
+@app.route("get_humid")
+def get_temp(params):
     for sensor in app.config.sensors:
         if sensor.sensor_type == "si7021":
-            data = {"Humidity": sensor.temp_sensor.relative_humidity}
-            yield from resp.awrite(json.dumps(data))
-            return True
+            return {"Humidity": sensor.temp_sensor.relative_humidity}
     else:
-        yield from resp.awrite("No temperature sensor configured")
+        return {"ERROR": "No temperature sensor configured"}
 
 
 
-@app.route("/clear_log")
-def clear_log(req, resp):
+@app.route("clear_log")
+def clear_log(params):
     try:
         # Close file, remove
         logging.root.handlers[0].close()
@@ -179,56 +216,45 @@ def clear_log(req, resp):
         logging.root.handlers.clear()
         logging.root.addHandler(h)
 
-        app.log.info("Deleted old log (API request)")
+        log.info("Deleted old log (API request)")
 
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite("OK")
+        return {"clear_log": "success"}
     except OSError:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite("Error: no log file found")
+        return {"ERROR": "no log file found"}
 
 
 
-@app.route("/ir_key")
-def ir_key(req, resp):
+@app.route("ir_key")
+def ir_key(params):
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite("Error: No IR blaster configured")
+        return {"ERROR": "No IR blaster configured"}
 
-    target = req.qs.split("=")[0]
-    key = req.qs.split("=")[1]
+    target = params[0]
+    key = params[1]
 
     if not target in blaster.codes:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite('Error: No codes found for target "{}"'.format(target))
-        return
+        return {"ERROR": 'No codes found for target "{}"'.format(target)}
+
     if not key in blaster.codes[target]:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite('Error: Target "{}" has no key {}'.format(target, key))
-        return
+        return {"ERROR": 'Target "{}" has no key {}'.format(target, key)}
+
     else:
         blaster.send(target, key)
-        data = {target: key}
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite(json.dumps(data))
+        return {target: key}
 
 
 
-@app.route("/backlight")
-def backlight(req, resp):
+@app.route("backlight")
+def backlight(params):
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite("Error: No IR blaster configured")
+        return {"Error": "No IR blaster configured"}
 
-    if not req.qs == "on" and not req.qs == "off":
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite('Error: Backlight setting must be "on" or "off"')
+    if not params[0] == "on" and not params[0] == "off":
+        return {'ERROR': 'Backlight setting must be "on" or "off"'}
     else:
-        blaster.backlight(req.qs)
-        data = {"backlight": req.qs}
-        yield from picoweb.start_response(resp)
-        yield from resp.awrite(json.dumps(data))
+        blaster.backlight(params[0])
+        return {"backlight": params[0]}
