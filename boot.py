@@ -110,11 +110,8 @@ gc.collect()
 
 webrepl.start()
 
-# Import + initialize API
+# Import + initialize API, pass config object
 from Api import app
-app.run(host="0.0.0.0", debug=-1)
-
-# Pass config object
 app.config = config
 
 # Create main loop, add tasks
@@ -124,7 +121,7 @@ app.config = config
 loop = asyncio.get_event_loop()
 loop.create_task(disk_monitor())
 loop.create_task(main())
-loop.create_task(asyncio.start_server(app._handle, "0.0.0.0", 8081))
+loop.create_task(app.run())
 
 # Run
 loop.run_forever()

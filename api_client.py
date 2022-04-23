@@ -11,7 +11,7 @@ import json
 import asyncio
 import re
 
-functions = ("status", "reboot", "enable", "disable", "set_rule", "ir", "temp", "humid", "clear_log")
+functions = ("status", "reboot", "enable", "disable", "set_rule", "ir", "get_temp", "get_humid", "clear_log")
 
 def error():
     print()
@@ -21,8 +21,8 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "enable [sensor]" + Style.RESET_ALL + "                Enable [sensor], allows it to turn lights on/off again")
     print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [sensor||device]" + Style.RESET_ALL + "      Change current rule (brightness for dev, delay for sensor). Lasts until next rule change.")
     print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "               Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac).")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "temp" + Style.RESET_ALL + "                           Get current reading from temp sensor in Farenheit.")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "humid" + Style.RESET_ALL + "                          Get current relative humidity from temp sensor.")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "get_temp" + Style.RESET_ALL + "                           Get current reading from temp sensor in Farenheit.")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "get_humid" + Style.RESET_ALL + "                          Get current relative humidity from temp sensor.")
     print("- " + Fore.YELLOW + Style.BRIGHT + "clear_log" + Style.RESET_ALL + "                      Delete node's log file.\n")
     exit()
 
@@ -161,11 +161,11 @@ def parse_command(ip, args):
                 print("Error: Must specify target device (tv or ac) or specify backlight [on|off]")
                 exit()
 
-        elif args[i] == "temp":
-            response = asyncio.run(request(ip, ['temp']))
+        elif args[i] == "get_temp":
+            response = asyncio.run(request(ip, ['get_temp']))
 
-        elif args[i] == "humid":
-            response = asyncio.run(request(ip, ['humid']))
+        elif args[i] == "get_humid":
+            response = asyncio.run(request(ip, ['get_humid']))
 
         elif args[i] == "clear_log":
             response = asyncio.run(request(ip, ['clear_log']))
