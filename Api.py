@@ -49,24 +49,17 @@ class Api:
             # Get dict of parameters
             data = json.loads(res.rstrip())
 
-            print(f"Received: {data}")
-
             # Find correct endpoint + handler function
             for endpoint in self.url_map:
                 if data[0] == endpoint[0]:
-                    handler = endpoint[1]
-                    data.pop(0)
+                    # Call handler, receive reply for client
+                    reply = endpoint[1](data[1:])
                     break
             else:
                 # Exit with error if no match found
                 swriter.write(json.dumps({"ERROR": "Invalid command"}))
                 await swriter.drain()
                 raise OSError
-
-            # Call handler, receive reply for client
-            reply = handler(data)
-
-            print(f"Sending reply: {reply}")
 
             # Send reply to client
             swriter.write(json.dumps(reply))
