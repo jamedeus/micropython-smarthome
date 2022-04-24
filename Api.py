@@ -174,6 +174,20 @@ def set_rule(params):
 
 
 
+@app.route("condition_met")
+def condition_met(params):
+    if not len(params) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+    else:
+        return {"Condition": target.condition_met()}
+
+
+
 @app.route("get_temp")
 def get_temp(params):
     for sensor in app.config.sensors:
