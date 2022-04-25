@@ -81,6 +81,10 @@ class Config():
                 from Mosfet import Mosfet
                 instance = Mosfet( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"] )
 
+            elif conf[device]["type"] == "api-target":
+                from ApiTarget import ApiTarget
+                instance = ApiTarget( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+
             # Add instance to config.devices
             self.devices.append(instance)
 

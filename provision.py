@@ -262,6 +262,10 @@ def get_modules(config):
             modules.append("devices/Mosfet.py")
             modules.append("devices/Device.py")
 
+        elif conf[i]["type"] == "api-target":
+            modules.append("devices/ApiTarget.py")
+            modules.append("devices/Device.py")
+
         elif conf[i]["type"] == "pir":
             modules.append("sensors/MotionSensor.py")
             modules.append("sensors/Sensor.py")
