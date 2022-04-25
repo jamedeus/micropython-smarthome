@@ -18,6 +18,9 @@ class ApiTarget(Device):
 
 
 
+    # TODO test enable/disable, see if methods need to be subclassed (they set device's state, could block loop from sending/send at incorrect time)
+
+
     # Takes list containing entire API request
     def rule_validator(self, rule):
         if not isinstance(rule, list):
@@ -47,6 +50,7 @@ class ApiTarget(Device):
             pass
             #return "Request failed"
         try:
+            # TODO probably don't need the response since I don't return anything
             response = json.loads(res)
         except ValueError:
             pass
@@ -57,13 +61,18 @@ class ApiTarget(Device):
 
 
     def send(self, state=1):
+        print("send method")
         if not state == 1:
             # Cannot be turned off
+            # TODO add on_rule and off_rule (either can be null), will allow using this with switch sensor_type etc.
             return True
 
         asyncio.create_task(self.request(self.current_rule))
 
-        # Tell main loop send succeeded
-        # Note that when used to trigger a motion sensor this will prevent re-triggering (to restart reset timer)
-        # Workaround: Set an extremely short rule for motionSensor that triggers this (can still fail if constant motion detected)
+        # Reset motion sensor to allow retriggering the remote motion sensor (restarts reset timer)
+        # Retrigger when motion = True only restarts sensor's own resetTimer, but does not send another API command
+        for sensor in self.triggered_by:
+            if sensor.sensor_type == "pir":
+                sensor.motion = False
+
         return True
