@@ -188,6 +188,24 @@ def condition_met(params):
 
 
 
+@app.route("trigger_sensor")
+def trigger_sensor(params):
+    if not len(params) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    result = target.trigger()
+    if result:
+        return {"Triggered": target.name}
+    else:
+        return {"ERROR": "Cannot trigger {} sensor type".format(target.sensor_type)}
+
+
+
 @app.route("get_temp")
 def get_temp(params):
     for sensor in app.config.sensors:

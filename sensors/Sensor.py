@@ -70,3 +70,22 @@ class Sensor():
         if self.set_rule(self.rule_queue.pop(0)):
             # If new rule is valid, also change scheduled_rule
             self.scheduled_rule = self.current_rule
+
+
+
+    # Allow API commands to simulate the sensor being triggered
+    def trigger(self):
+        if self.sensor_type == "pir":
+            self.motion_detected()
+            return True
+
+        elif self.sensor_type == "desktop":
+            self.current = "On"
+            return True
+
+        elif self.sensor_type == "si7021":
+            return False
+
+        elif self.sensor_type == "dummy":
+            self.current_rule = "on"
+            return True
