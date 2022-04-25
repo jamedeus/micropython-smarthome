@@ -82,7 +82,7 @@ app = Api()
 
 
 @app.route("reboot")
-def index(sreader, swriter):
+def index(params):
     from Config import reboot
     SoftwareTimer.timer.create(1000, reboot, "API")
 
