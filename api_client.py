@@ -11,7 +11,7 @@ import json
 import asyncio
 import re
 
-functions = ("status", "reboot", "enable", "disable", "set_rule", "ir", "get_temp", "get_humid", "clear_log")
+functions = ("status", "reboot", "enable", "enable_in", "disable", "disable_in", "set_rule", "condition_met", "trigger_sensor", "ir", "get_temp", "get_humid", "clear_log")
 
 def error():
     print()
@@ -111,10 +111,40 @@ def parse_command(ip, args):
                 print("Error: Can only disable devices and sensors.")
                 exit()
 
+        elif args[i] == "disable_in":
+            args.pop(i)
+            if args[i].startswith("sensor") or args[i].startswith("device"):
+                target = args.pop(i)
+                try:
+                    period = float(args[i])
+                    response = asyncio.run(request(ip, ['disable_in', target, period]))
+                except ValueError:
+                    print("Error: Please specify delay in minutes")
+                    exit()
+                break
+            else:
+                print("Error: Can only disable devices and sensors.")
+                exit()
+
         elif args[i] == "enable":
             args.pop(i)
             if args[i].startswith("sensor") or args[i].startswith("device"):
                 response = asyncio.run(request(ip, ['enable', args[i]]))
+                break
+            else:
+                print("Error: Can only enable devices and sensors.")
+                exit()
+
+        elif args[i] == "enable_in":
+            args.pop(i)
+            if args[i].startswith("sensor") or args[i].startswith("device"):
+                target = args.pop(i)
+                try:
+                    period = float(args[i])
+                    response = asyncio.run(request(ip, ['enable_in', target, period]))
+                except ValueError:
+                    print("Error: Please specify delay in minutes")
+                    exit()
                 break
             else:
                 print("Error: Can only enable devices and sensors.")
@@ -170,7 +200,19 @@ def parse_command(ip, args):
         elif args[i] == "clear_log":
             response = asyncio.run(request(ip, ['clear_log']))
 
+        elif args[i] == "condition_met":
+            args.pop(i)
+            if args[i].startswith("sensor"):
+                target = args.pop(i)
+                response = asyncio.run(request(ip, ['condition_met', target]))
+                break
 
+        elif args[i] == "trigger_sensor":
+            args.pop(i)
+            if args[i].startswith("sensor"):
+                target = args.pop(i)
+                response = asyncio.run(request(ip, ['trigger_sensor', target]))
+                break
 
     try:
         # Print response, if any
