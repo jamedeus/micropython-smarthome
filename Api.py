@@ -120,7 +120,6 @@ def enable_for(params):
         return {"ERROR": "Instance not found, use status to see options"}
     else:
         period = float(period) * 60000
-        # TODO change name to scheduler, or make API exempt
         SoftwareTimer.timer.create(period, target.enable, "API")
         return {"Enabled": target.name, "Enable_in_seconds": period/1000}
 
@@ -150,7 +149,6 @@ def disable_for(params):
         return {"ERROR": "Instance not found, use status to see options"}
     else:
         period = float(period) * 60000
-        # TODO change name to scheduler, or make API exempt
         SoftwareTimer.timer.create(period, target.disable, "API")
         return {"Disabled": target.name, "Disable_in_seconds": period/1000}
 
