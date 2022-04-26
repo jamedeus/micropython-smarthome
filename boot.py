@@ -5,7 +5,6 @@
 print("--------Booted--------")
 
 import webrepl
-import time
 import os
 import json
 import uasyncio as asyncio
@@ -32,7 +31,7 @@ async def disk_monitor():
             # If file changed (new code received from webrepl), reboot
             print("\nReceived new code from webrepl, rebooting...\n")
             log.info("Received new code from webrepl, rebooting...")
-            time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+            await asyncio.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             reboot()
         # Don't let the log exceed 500 KB, full disk hangs system + can't pull log via webrepl
         elif os.stat('app.log')[6] > 500000:

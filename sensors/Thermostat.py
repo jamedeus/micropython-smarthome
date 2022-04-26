@@ -1,9 +1,6 @@
 from machine import Pin, SoftI2C
-import time
 import si7021
-import Sensor
 import logging
-import uasyncio as asyncio
 from Sensor import Sensor
 
 # Set name for module's log lines

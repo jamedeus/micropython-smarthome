@@ -3,10 +3,6 @@
 import os
 import sys
 from colorama import Fore, Style
-import socket
-import subprocess
-import threading # TODO remove
-import time
 import json
 import asyncio
 import re

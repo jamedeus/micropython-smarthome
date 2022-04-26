@@ -1,7 +1,5 @@
 from machine import Pin
-import uasyncio as asyncio
 import logging
-import time
 from Sensor import Sensor
 import SoftwareTimer
 

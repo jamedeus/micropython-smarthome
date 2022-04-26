@@ -3,7 +3,6 @@ import time
 from machine import Pin, Timer, RTC
 import urequests
 import json
-import os
 from random import randrange
 import uasyncio as asyncio
 import logging

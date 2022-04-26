@@ -1,4 +1,3 @@
-import uasyncio as asyncio
 import logging
 
 # Set name for module's log lines
