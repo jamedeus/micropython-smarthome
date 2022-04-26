@@ -7,7 +7,7 @@ import json
 import asyncio
 import re
 
-functions = ("status", "reboot", "enable", "enable_in", "disable", "disable_in", "set_rule", "condition_met", "trigger_sensor", "ir", "get_temp", "get_humid", "clear_log")
+functions = ("status", "reboot", "enable", "enable_in", "disable", "disable_in", "set_rule", "reset_rule", "condition_met", "trigger_sensor", "ir", "get_temp", "get_humid", "clear_log")
 
 def error():
     print()
@@ -18,6 +18,7 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "enable [target]" + Style.RESET_ALL + "                Enable [target], can be device or sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "enable_in [target] [minutes]" + Style.RESET_ALL + "   Create timer to enable [target] in [minutes]")
     print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [target]" + Style.RESET_ALL + "              Change [target]'s current rule, can be device or sensor, lasts until next rule change")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "reset_rule [target]" + Style.RESET_ALL + "            Replace [target]'s current rule with scheduled rule, used to undo a set_rule request")
     print("- " + Fore.YELLOW + Style.BRIGHT + "condition_met [sensor]" + Style.RESET_ALL + "         Check if [sensor]'s condition is met (turns on target devices)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "trigger_sensor [sensor]" + Style.RESET_ALL + "        Simulates the sensor being triggered (turns on target devices)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "               Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac)")
@@ -162,6 +163,17 @@ def parse_command(ip, args):
                     exit()
             else:
                 print("Error: Can only set rules for devices and sensors.")
+                exit()
+
+        elif args[i] == "reset_rule":
+            args.pop(i)
+            if args[i].startswith("sensor") or args[i].startswith("device"):
+                target = args.pop(i)
+                response = asyncio.run(request(ip, ['reset_rule', target]))
+                break
+
+            else:
+                print("Error: Can only reset rules for devices and sensors.")
                 exit()
 
         elif args[i] == "ir":

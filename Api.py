@@ -172,6 +172,23 @@ def set_rule(params):
 
 
 
+@app.route("reset_rule")
+def reset_rule(params):
+    if not len(params) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    target.current_rule = target.scheduled_rule
+
+    return {target.name : "Reverted to scheduled rule", "current_rule" : target.current_rule}
+
+
+
+
 @app.route("condition_met")
 def condition_met(params):
     if not len(params) >= 1:
