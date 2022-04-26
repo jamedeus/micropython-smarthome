@@ -347,8 +347,12 @@ class Config():
         for i in self.schedule:
             rules = self.convert_rules(self.schedule[i])
 
-            # Skip devices/sensors with no schedule rules
+            # Get target instance
+            instance = self.find(i)
+
+            # If no schedule rules, set default_rule as current and skip to next
             if len(rules) == 0:
+                instance.current_rule = instance.scheduled_rule
                 continue
 
             # Get list of timestamps, sort chronologically
@@ -356,9 +360,6 @@ class Config():
             for j in rules:
                 queue.append(j)
             queue.sort()
-
-            # Get target instance
-            instance = self.find(i)
 
             # Set target's current_rule (set_rule method passes to syntax validator, returns True if valid, False if not)
             if instance.set_rule(rules[queue.pop(0)]):
