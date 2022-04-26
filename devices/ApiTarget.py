@@ -48,13 +48,6 @@ class ApiTarget(Device):
             res = await reader.read(1000)
         except OSError:
             pass
-            #return "Request failed"
-        try:
-            # TODO probably don't need the response since I don't return anything
-            response = json.loads(res)
-        except ValueError:
-            pass
-            #return "Error: Unable to decode response"
         writer.close()
         await writer.wait_closed()
 
