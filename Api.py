@@ -188,6 +188,19 @@ def reset_rule(params):
 
 
 
+@app.route("get_schedule_rules")
+def get_schedule_rules(params):
+    if not len(params) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    try:
+        rules = app.config.schedule[params[0]]
+    except KeyError:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    return rules
+
+
 
 @app.route("condition_met")
 def condition_met(params):
