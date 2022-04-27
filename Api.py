@@ -221,6 +221,44 @@ def trigger_sensor(params):
 
 
 
+@app.route("turn_on")
+def turn_on(params):
+    if not len(params) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    result = target.send(1)
+    if result:
+        target.state = True
+        return {"On": target.name}
+    else:
+        return {"ERROR": "Unable to turn on {}".format(target.name)}
+
+
+
+@app.route("turn_off")
+def turn_on(params):
+    if not len(params) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    result = target.send(0)
+    if result:
+        target.state = False
+        return {"Off": target.name}
+    else:
+        return {"ERROR": "Unable to turn off {}".format(target.name)}
+
+
+
 @app.route("get_temp")
 def get_temp(params):
     for sensor in app.config.sensors:

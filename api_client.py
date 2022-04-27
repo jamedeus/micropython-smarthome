@@ -7,7 +7,7 @@ import json
 import asyncio
 import re
 
-functions = ("status", "reboot", "enable", "enable_in", "disable", "disable_in", "set_rule", "reset_rule", "condition_met", "trigger_sensor", "ir", "get_temp", "get_humid", "clear_log")
+functions = ("status", "reboot", "enable", "enable_in", "disable", "disable_in", "set_rule", "reset_rule", "condition_met", "trigger_sensor", "turn_on", "turn_off", "ir", "get_temp", "get_humid", "clear_log")
 
 def error():
     print()
@@ -21,6 +21,8 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "reset_rule [target]" + Style.RESET_ALL + "            Replace [target]'s current rule with scheduled rule, used to undo a set_rule request")
     print("- " + Fore.YELLOW + Style.BRIGHT + "condition_met [sensor]" + Style.RESET_ALL + "         Check if [sensor]'s condition is met (turns on target devices)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "trigger_sensor [sensor]" + Style.RESET_ALL + "        Simulates the sensor being triggered (turns on target devices)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "turn_on [device]" + Style.RESET_ALL + "               Turn the device on (note: loop may undo this in some situations, disable sensor to prevent)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "turn_off [device]" + Style.RESET_ALL + "              Turn the device off (note: loop may undo this in some situations, disable sensor to prevent)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "               Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_temp" + Style.RESET_ALL + "                       Get current reading from temp sensor in Farenheit")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_humid" + Style.RESET_ALL + "                      Get current relative humidity from temp sensor")
@@ -225,6 +227,26 @@ def parse_command(ip, args):
                 target = args.pop(i)
                 response = asyncio.run(request(ip, ['trigger_sensor', target]))
                 break
+
+        elif args[i] == "turn_on":
+            args.pop(i)
+            if args[i].startswith("device"):
+                target = args.pop(i)
+                response = asyncio.run(request(ip, ['turn_on', target]))
+                break
+            else:
+                print("Error: Can only turn on/off devices, use enable/disable for sensors.")
+                exit()
+
+        elif args[i] == "turn_off":
+            args.pop(i)
+            if args[i].startswith("device"):
+                target = args.pop(i)
+                response = asyncio.run(request(ip, ['turn_off', target]))
+                break
+            else:
+                print("Error: Can only turn on/off devices, use enable/disable for sensors.")
+                exit()
 
     try:
         # Print response, if any
