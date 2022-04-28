@@ -39,6 +39,9 @@ class LedStrip(Device):
 
 
     def send(self, state=1):
+        if not self.enabled:
+            return False
+
         if state:
             target = self.current_rule
         else:
