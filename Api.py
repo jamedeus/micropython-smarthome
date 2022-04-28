@@ -202,6 +202,48 @@ def get_schedule_rules(params):
 
 
 
+@app.route("get_attributes")
+def get_attributes(params):
+    if not len(params) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    attributes = target.__dict__.copy()
+
+    # Make dict json-compatible
+    for i in attributes.keys():
+        # Remove module references
+        if i == "pwm":
+            del attributes["pwm"]
+        if i == "i2c":
+            del attributes["i2c"]
+        if i == "temp_sensor":
+            del attributes["temp_sensor"]
+        if i == "mosfet":
+            del attributes["mosfet"]
+        if i == "relay":
+            del attributes["relay"]
+        if i == "sensor":
+            del attributes["sensor"]
+
+        # Replace instances with instance.name attribute
+        elif i == "triggered_by":
+            attributes["triggered_by"] = []
+            for i in target.triggered_by:
+                attributes["triggered_by"].append(i.name)
+        elif i == "targets":
+            attributes["targets"] = []
+            for i in target.targets:
+                attributes["targets"].append(i.name)
+
+    return attributes
+
+
+
 @app.route("condition_met")
 def condition_met(params):
     if not len(params) >= 1:

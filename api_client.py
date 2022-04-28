@@ -7,7 +7,7 @@ import json
 import asyncio
 import re
 
-functions = ("status", "reboot", "enable", "enable_in", "disable", "disable_in", "set_rule", "reset_rule", "get_schedule_rules", "condition_met", "trigger_sensor", "turn_on", "turn_off", "ir", "get_temp", "get_humid", "clear_log")
+functions = ("status", "reboot", "enable", "enable_in", "disable", "disable_in", "set_rule", "reset_rule", "get_schedule_rules", "get_attributes", "condition_met", "trigger_sensor", "turn_on", "turn_off", "ir", "get_temp", "get_humid", "clear_log")
 
 def error():
     print()
@@ -20,6 +20,7 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [target]" + Style.RESET_ALL + "              Change [target]'s current rule, can be device or sensor, lasts until next rule change")
     print("- " + Fore.YELLOW + Style.BRIGHT + "reset_rule [target]" + Style.RESET_ALL + "            Replace [target]'s current rule with scheduled rule, used to undo a set_rule request")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_schedule_rules [target]" + Style.RESET_ALL + "    View scheduled rule changes for [target], can be device or sensor")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "get_attributes [target]" + Style.RESET_ALL + "        View all of [target]'s attributes, can be device or sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "condition_met [sensor]" + Style.RESET_ALL + "         Check if [sensor]'s condition is met (turns on target devices)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "trigger_sensor [sensor]" + Style.RESET_ALL + "        Simulates the sensor being triggered (turns on target devices)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "turn_on [device]" + Style.RESET_ALL + "               Turn the device on (note: loop may undo this in some situations, disable sensor to prevent)")
@@ -184,6 +185,20 @@ def parse_command(ip, args):
             if args[i].startswith("sensor") or args[i].startswith("device"):
                 target = args.pop(i)
                 response = asyncio.run(request(ip, ['get_schedule_rules', target]))
+
+                # Requires formatting, print here and exit before other print statement
+                print(json.dumps(response, indent=4) + "\n")
+                return True
+
+            else:
+                print("Error: Only devices and sensors have schedule rules.")
+                exit()
+
+        elif args[i] == "get_attributes":
+            args.pop(i)
+            if args[i].startswith("sensor") or args[i].startswith("device"):
+                target = args.pop(i)
+                response = asyncio.run(request(ip, ['get_attributes', target]))
 
                 # Requires formatting, print here and exit before other print statement
                 print(json.dumps(response, indent=4) + "\n")
