@@ -10,23 +10,24 @@ import re
 def error():
     print()
     print(Fore.RED + "Error: please pass one of the following commands as argument:" + Fore.RESET + "\n")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "status" + Style.RESET_ALL + "                         Get dict containing status of the node (including names of sensors)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "disable [target]" + Style.RESET_ALL + "               Disable [target], can be device or sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "disable_in [target] [minutes]" + Style.RESET_ALL + "  Create timer to disable [target] in [minutes]")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "enable [target]" + Style.RESET_ALL + "                Enable [target], can be device or sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "enable_in [target] [minutes]" + Style.RESET_ALL + "   Create timer to enable [target] in [minutes]")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [target]" + Style.RESET_ALL + "              Change [target]'s current rule, can be device or sensor, lasts until next rule change")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "reset_rule [target]" + Style.RESET_ALL + "            Replace [target]'s current rule with scheduled rule, used to undo a set_rule request")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "get_schedule_rules [target]" + Style.RESET_ALL + "    View scheduled rule changes for [target], can be device or sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "get_attributes [target]" + Style.RESET_ALL + "        View all of [target]'s attributes, can be device or sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "condition_met [sensor]" + Style.RESET_ALL + "         Check if [sensor]'s condition is met (turns on target devices)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "trigger_sensor [sensor]" + Style.RESET_ALL + "        Simulates the sensor being triggered (turns on target devices)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "turn_on [device]" + Style.RESET_ALL + "               Turn the device on (note: loop may undo this in some situations, disable sensor to prevent)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "turn_off [device]" + Style.RESET_ALL + "              Turn the device off (note: loop may undo this in some situations, disable sensor to prevent)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "               Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "get_temp" + Style.RESET_ALL + "                       Get current reading from temp sensor in Farenheit")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "get_humid" + Style.RESET_ALL + "                      Get current relative humidity from temp sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "clear_log" + Style.RESET_ALL + "                      Delete node's log file\n")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "status" + Style.RESET_ALL + "                            Get dict containing status of the node (including names of sensors)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "disable [target]" + Style.RESET_ALL + "                  Disable [target], can be device or sensor")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "disable_in [target] [minutes]" + Style.RESET_ALL + "     Create timer to disable [target] in [minutes]")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "enable [target]" + Style.RESET_ALL + "                   Enable [target], can be device or sensor")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "enable_in [target] [minutes]" + Style.RESET_ALL + "      Create timer to enable [target] in [minutes]")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [target]" + Style.RESET_ALL + "                 Change [target]'s current rule, can be device or sensor, lasts until next rule change")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "reset_rule [target]" + Style.RESET_ALL + "               Replace [target]'s current rule with scheduled rule, used to undo a set_rule request")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "get_schedule_rules [target]" + Style.RESET_ALL + "       View scheduled rule changes for [target], can be device or sensor")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "add_rule [target] [HH:MM] [rule]" + Style.RESET_ALL + "  Add scheduled rule change, will persist until next reboot")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "get_attributes [target]" + Style.RESET_ALL + "           View all of [target]'s attributes, can be device or sensor")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "condition_met [sensor]" + Style.RESET_ALL + "            Check if [sensor]'s condition is met (turns on target devices)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "trigger_sensor [sensor]" + Style.RESET_ALL + "           Simulates the sensor being triggered (turns on target devices)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "turn_on [device]" + Style.RESET_ALL + "                  Turn the device on (note: loop may undo this in some situations, disable sensor to prevent)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "turn_off [device]" + Style.RESET_ALL + "                 Turn the device off (note: loop may undo this in some situations, disable sensor to prevent)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "                  Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "get_temp" + Style.RESET_ALL + "                          Get current reading from temp sensor in Farenheit")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "get_humid" + Style.RESET_ALL + "                         Get current relative humidity from temp sensor")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "clear_log" + Style.RESET_ALL + "                         Delete node's log file\n")
     exit()
 
 
@@ -210,6 +211,21 @@ def get_schedule_rules(ip, params):
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
         response = asyncio.run(request(ip, ['get_schedule_rules', target]))
+    else:
+        response = {"ERROR": "Only devices and sensors have schedule rules"}
+
+    return response
+
+@add_endpoint("add_rule")
+def add_schedule_rule(ip, params):
+    if params[0].startswith("sensor") or params[0].startswith("device"):
+        target = params.pop(0)
+
+        try:
+            response = asyncio.run(request(ip, ['add_schedule_rule', target, params[0], params[1]]))
+        except IndexError:
+            response = {"ERROR": "Must specify time (HH:MM) followed by rule"}
+
     else:
         response = {"ERROR": "Only devices and sensors have schedule rules"}
 

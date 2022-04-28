@@ -4,6 +4,7 @@ import uasyncio as asyncio
 import logging
 import gc
 import SoftwareTimer
+import re
 
 # Set name for module's log lines
 log = logging.getLogger("API")
@@ -199,6 +200,33 @@ def get_schedule_rules(params):
         return {"ERROR": "Instance not found, use status to see options"}
 
     return rules
+
+
+
+@app.route("add_schedule_rule")
+def add_schedule_rule(params):
+    if not len(params) == 3:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    rules = app.config.schedule[params[0]]
+
+    if re.match("^[0-9][0-9]:[0-9][0-9]$", params[1]):
+        timestamp = params[1]
+    else:
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+
+    if target.rule_validator(params[2]):
+        rules[timestamp] = params[2]
+        app.config.schedule[params[0]] = rules
+        app.config.build_queue()
+        return {"Rule added" : params[2], "time" : timestamp}
+    else:
+        return {"ERROR": "Invalid rule"}
 
 
 
