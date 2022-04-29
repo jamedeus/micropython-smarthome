@@ -249,7 +249,7 @@ def remove_rule(params):
 
     try:
         del rules[timestamp]
-    except ValueError: # IndexError
+    except KeyError:
         return {"ERROR": "No rule exists at that time"}
 
     return {"Deleted": timestamp}
