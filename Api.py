@@ -230,6 +230,32 @@ def add_schedule_rule(params):
 
 
 
+@app.route("remove_rule")
+def remove_rule(params):
+    if not len(params) == 2:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(params[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    rules = app.config.schedule[params[0]]
+
+    if re.match("^[0-9][0-9]:[0-9][0-9]$", params[1]):
+        timestamp = params[1]
+    else:
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+
+    try:
+        del rules[timestamp]
+    except ValueError: # IndexError
+        return {"ERROR": "No rule exists at that time"}
+
+    return {"Deleted": timestamp}
+
+
+
 @app.route("get_attributes")
 def get_attributes(params):
     if not len(params) == 1:
