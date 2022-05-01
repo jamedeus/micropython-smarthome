@@ -23,6 +23,82 @@ class Tplink(Device):
 
 
 
+    def set_rule(self, rule):
+        # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
+        valid_rule = self.rule_validator(rule)
+        if str(valid_rule) == "False":
+            log.error(f"{self.name}: Failed to change rule to {rule}")
+            print(f"{self.name}: Failed to change rule to {rule}")
+            return False
+
+        elif str(valid_rule).startswith("fade"):
+                # Parse parameters from rule
+                cmd, target, period = valid_rule.split("/")
+
+                # If first rule on boot is fade, set target as current_rule (animation probably overdue)
+                if self.current_rule == None:
+                    self.current_rule = int(target)
+                    print(f"{self.name}: Rule changed to {self.current_rule}")
+                    log.info(f"{self.name}: Rule changed to {self.current_rule}")
+                    return True
+
+                # If rule changes to fade after boot, start fade and return first step as current_rule
+                print(f"{self.name}: fading to {target} in {period} seconds")
+                log.info(f"{self.name}: fading to {target} in {period} seconds")
+
+                if not self.current_rule == "Disabled":
+                    # Get current brightness
+                    brightness = int(self.current_rule)
+                else:
+                    # Default to 0 if device disabled when fade starts
+                    brightness = 0
+
+                if int(target) == brightness:
+                    print("Already at target brightness, skipping fade")
+                    log.info("Already at target brightness, skipping fade")
+                    return True
+
+                # Find fade direction, get number of steps, period between steps
+                if int(target) > brightness:
+                    steps = int(target) - brightness
+                    fade_period = int(period) / steps * 1000
+
+                elif int(target) < brightness:
+                    steps = brightness - int(target)
+                    fade_period = int(period) / steps * 1000
+
+                # Ensure device is enabled
+                self.enabled = True
+
+                # Create fade timer
+                SoftwareTimer.timer.create(fade_period, self.fade, self.name + "_fade")
+
+                # Store fade parameters in dict, used by fade method below
+                self.fading = {"started": SoftwareTimer.timer.epoch_now(), "starting_brightness": brightness, "target": int(target), "period": fade_period}
+
+                # Return starting point (will be set as current rule by device.set_rule)
+                return True
+
+        else:
+            self.current_rule = valid_rule
+            print(f"{self.name}: Rule changed to {self.current_rule}")
+            log.info(f"{self.name}: Rule changed to {self.current_rule}")
+
+            # Rule just changed to disabled
+            if self.current_rule == "Disabled":
+                self.send(0)
+                self.disable()
+            # Sensor was previously disabled, enable now that rule has changed
+            elif self.enabled == False:
+                self.enable()
+            # Device is currently on, run send so new rule can take effect
+            elif self.state == True:
+                self.send(1)
+
+            return True
+
+
+
     # TODO Maybe add a 3rd param "init=False" - will be omitted except by Config. If True, and rule is fade,
     # then check Config.schedule, see when fade was supposed to start, and calculate current position in fade
     def rule_validator(self, rule):
@@ -31,47 +107,13 @@ class Tplink(Device):
                 # Parse parameters from rule
                 cmd, target, period = rule.split("/")
 
-                if self.current_rule == None:
-                    # If first rule on boot is fade, set target as current_rule (animation probably overdue)
-                    return int(target)
+                try:
+                    int(target)
+                    int(period)
+                except ValueError:
+                    return False
 
-                else:
-                    # If rule changes to fade after boot, start fade and return first step as current_rule
-                    print(f"{self.name}: fading to {target} in {period} seconds")
-                    log.debug(f"{self.name}: fading to {target} in {period} seconds")
-
-                    if not self.current_rule == "Disabled":
-                        # Get current brightness
-                        brightness = int(self.current_rule)
-                    else:
-                        # Default to 0 if device disabled when fade starts
-                        brightness = 0
-
-                    if int(target) == brightness:
-                        print("Already at target brightness, skipping fade")
-                        log.debug("Already at target brightness, skipping fade")
-                        return int(target)
-
-                    # Find fade direction, get number of steps, period between steps
-                    if int(target) > brightness:
-                        steps = int(target) - brightness
-                        fade_period = int(period) / steps * 1000
-
-                    elif int(target) < brightness:
-                        steps = brightness - int(target)
-                        fade_period = int(period) / steps * 1000
-
-                    # Ensure device is enabled
-                    self.enabled = True
-
-                    # Create fade timer
-                    SoftwareTimer.timer.create(fade_period, self.fade, self.name + "_fade")
-
-                    # Store fade parameters in dict, used by fade method below
-                    self.fading = {"started": SoftwareTimer.timer.epoch_now(), "starting_brightness": brightness, "target": int(target), "period": fade_period}
-
-                    # Return starting point (will be set as current rule by device.set_rule)
-                    return brightness
+                return rule
 
             elif rule == "Disabled":
                 return rule
