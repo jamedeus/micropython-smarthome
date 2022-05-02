@@ -249,6 +249,8 @@ def remove_rule(params):
 
     try:
         del rules[timestamp]
+        app.config.schedule[params[0]] = rules
+        app.config.build_queue()
     except KeyError:
         return {"ERROR": "No rule exists at that time"}
 
