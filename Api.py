@@ -18,14 +18,15 @@ class Api:
         self.backlog = backlog
         self.timeout = timeout
 
-        self.url_map = []
+        # Populated with decorators + self.route
+        # Key = endpoint, value = function
+        self.url_map = {}
 
 
 
-    def route(self, url, **kwargs):
+    def route(self, url):
         def _route(func):
-            self.url_map.append((url, func, kwargs))
-            return func
+            self.url_map[url] = func
         return _route
 
 
@@ -50,13 +51,11 @@ class Api:
             # Get dict of parameters
             data = json.loads(res.rstrip())
 
-            # Find correct endpoint + handler function
-            for endpoint in self.url_map:
-                if data[0] == endpoint[0]:
-                    # Call handler, receive reply for client
-                    reply = endpoint[1](data[1:])
-                    break
-            else:
+            # Find endpoint matching data[0], call handler function and pass remaining args (data[1:])
+            try:
+                # Call handler, receive reply for client
+                reply = self.url_map[data[0]](data[1:])
+            except KeyError:
                 # Exit with error if no match found
                 swriter.write(json.dumps({"ERROR": "Invalid command"}))
                 await swriter.drain()
