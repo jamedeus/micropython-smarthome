@@ -35,7 +35,7 @@ class Api:
         log.info("API ready")
         self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
         while True:
-            await asyncio.sleep(100)
+            await asyncio.sleep(25)
 
 
 
