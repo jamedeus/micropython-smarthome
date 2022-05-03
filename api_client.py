@@ -54,8 +54,12 @@ async def request(ip, msg):
 
 def parse_ip():
     # Load config file
-    with open('nodes.json', 'r') as file:
-        nodes = json.load(file)
+    try:
+        with open(os.path.dirname(os.path.realpath(__file__)) + '/nodes.json', 'r') as file:
+            nodes = json.load(file)
+    except FileNotFoundError:
+        print("Warning: Unable to find nodes.json, friendly names will not work")
+        nodes = {}
 
     # Remove name of application from args
     sys.argv.pop(0)
