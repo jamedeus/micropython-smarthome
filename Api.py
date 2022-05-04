@@ -48,21 +48,51 @@ class Api:
             # Receives null when client closes write stream - break and close read stream
             if not res: raise OSError
 
-            # Get dict of parameters
-            data = json.loads(res.rstrip())
+            res = res.decode()
+
+            # Determine if request is HTTP (browser) or raw JSON (much faster, used by api_client.py and other nodes)
+            if res.startswith("GET"):
+                http = True
+                path = res.split()[1]
+
+                path = path.split("?", 1)
+                qs = ""
+                if len(path) > 1:
+                    qs = path[1]
+                    qs = qs.split("/")
+                path = path[0][1:]
+
+                # Skip headers
+                while True:
+                    l = await asyncio.wait_for(sreader.readline(), self.timeout)
+                    if l == b"\r\n":
+                        break
+
+            else:
+                http = False
+                # Get dict of parameters
+                data = json.loads(res.rstrip())
+                path = data[0]
+                qs = data[1:]
 
             # Find endpoint matching data[0], call handler function and pass remaining args (data[1:])
             try:
                 # Call handler, receive reply for client
-                reply = self.url_map[data[0]](data[1:])
+                reply = self.url_map[path](qs)
             except KeyError:
                 # Exit with error if no match found
                 swriter.write(json.dumps({"ERROR": "Invalid command"}))
                 await swriter.drain()
                 raise OSError
 
-            # Send reply to client
-            swriter.write(json.dumps(reply))
+            if http:
+                # Send headers before reply
+                swriter.write("HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n")
+                swriter.write(json.dumps(reply).encode())
+            else:
+                # Send reply to client
+                swriter.write(json.dumps(reply))
+
             await swriter.drain()
 
             # Prevent running out of mem after repeated requests
