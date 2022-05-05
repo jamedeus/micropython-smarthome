@@ -309,8 +309,24 @@ def upload(host, port, src_file, dst_file):
     try:
         put_file(ws, src_file, dst_file)
     except AssertionError:
-        print(Fore.RED + "ERROR"  + Fore.RESET + ": Unable to upload " + str(dst_file) + ". This is normal on first setup, but otherwise node may crash after reboot.")
-        pass
+
+        if src_file.startswith("lib/"):
+            print(Fore.RED + "\nERROR: Unable to upload libraries, /lib/ does not exist" + Fore.RESET)
+            print("This is normal for new nodes - would you like to upload setup to fix? " + Fore.CYAN + "[Y/n]" + Fore.RESET)
+            x = input()
+            if x == "n":
+                print(Fore.YELLOW + "\nWARNING" + Fore.RESET + ": Skipping " + src_file + " library, node may fail to boot after upload.\n")
+                pass
+            else:
+                upload(host, port, 'config/setup.json', 'config.json')
+                upload(host, port, 'setup.py', 'boot.py')
+                print(Fore.CYAN + "Please reboot target node and wait 30 seconds, then press enter to resume upload." + Fore.RESET)
+                x = input()
+                upload(host, port, src_file, dst_file)
+
+        else:
+            print(Fore.RED + "ERROR"  + Fore.RESET + ": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
+            pass
 
     s.close()
 

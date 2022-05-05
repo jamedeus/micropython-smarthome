@@ -1,4 +1,4 @@
-import network, gc, upip, json
+import network, json, os
 
 with open('config.json', 'r') as file:
     config = json.load(file)
@@ -9,16 +9,12 @@ wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
 while not wlan.isconnected():
     continue
 
-gc.collect()
-
-print("\nInstalling dependencies...\n")
-
-upip.install('picoweb')
+os.mkdir('lib')
 
 import webrepl
 webrepl.start()
 
-print("\nFinished installing dependencies - please upload final code\n")
+print("\nFinished setup - please upload final code\n")
 
 import uasyncio as asyncio
 
