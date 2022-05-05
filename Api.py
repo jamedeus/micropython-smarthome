@@ -43,42 +43,55 @@ class Api:
     async def run_client(self, sreader, swriter):
         try:
             # Read client request
-            res = await asyncio.wait_for(sreader.readline(), self.timeout)
+            req = await asyncio.wait_for(sreader.readline(), self.timeout)
 
             # Receives null when client closes write stream - break and close read stream
-            if not res: raise OSError
+            if not req: raise OSError
 
-            res = res.decode()
+            req = req.decode()
 
             # Determine if request is HTTP (browser) or raw JSON (much faster, used by api_client.py and other nodes)
-            if res.startswith("GET"):
+            if req.startswith("GET"):
+                # Received something like "GET /status HTTP1.1"
                 http = True
-                path = res.split()[1]
 
+                # Drop all except "/status"
+                path = req.split()[1]
+
+                # Convert to list, path ("/status") as first index, query string (if present) as second
                 path = path.split("?", 1)
-                qs = ""
+
                 if len(path) > 1:
-                    qs = path[1]
-                    qs = qs.split("/")
+                    # If query string present, split all parameters into args list
+                    args = path[1]
+                    args = args.split("/")
+                else:
+                    # No query string
+                    args = ""
+
+                # Drop all except path ("/status"), remove leading "/"
                 path = path[0][1:]
 
                 # Skip headers
                 while True:
                     l = await asyncio.wait_for(sreader.readline(), self.timeout)
+                    # Sequence indicates end of headers
                     if l == b"\r\n":
                         break
 
             else:
+                # Received serialized json, no headers etc
                 http = False
-                # Get dict of parameters
-                data = json.loads(res.rstrip())
-                path = data[0]
-                qs = data[1:]
 
-            # Find endpoint matching data[0], call handler function and pass remaining args (data[1:])
+                # Convert to dict, get path and args
+                data = json.loads(req.rstrip())
+                path = data[0]
+                args = data[1:]
+
+            # Find endpoint matching path, call handler function and pass args
             try:
                 # Call handler, receive reply for client
-                reply = self.url_map[path](qs)
+                reply = self.url_map[path](args)
             except KeyError:
                 # Exit with error if no match found
                 swriter.write(json.dumps({"ERROR": "Invalid command"}))
@@ -112,7 +125,7 @@ app = Api()
 
 
 @app.route("reboot")
-def index(params):
+def index(args):
     from Config import reboot
     SoftwareTimer.timer.create(1000, reboot, "API")
 
@@ -121,14 +134,14 @@ def index(params):
 
 
 @app.route("status")
-def status(params):
+def status(args):
     return app.config.get_status()
 
 
 
 @app.route("enable")
-def enable(params):
-    target = app.config.find(params[0])
+def enable(args):
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -139,12 +152,12 @@ def enable(params):
 
 
 @app.route("enable_in")
-def enable_for(params):
-    if not len(params) >= 2:
+def enable_for(args):
+    if not len(args) >= 2:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
-    period = params[1]
+    target = app.config.find(args[0])
+    period = args[1]
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -156,8 +169,8 @@ def enable_for(params):
 
 
 @app.route("disable")
-def disable(params):
-    target = app.config.find(params[0])
+def disable(args):
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -168,12 +181,12 @@ def disable(params):
 
 
 @app.route("disable_in")
-def disable_for(params):
-    if not len(params) >= 2:
+def disable_for(args):
+    if not len(args) >= 2:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
-    period = params[1]
+    target = app.config.find(args[0])
+    period = args[1]
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -185,12 +198,12 @@ def disable_for(params):
 
 
 @app.route("set_rule")
-def set_rule(params):
-    if not len(params) >= 2:
+def set_rule(args):
+    if not len(args) >= 2:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
-    rule = params[1]
+    target = app.config.find(args[0])
+    rule = args[1]
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -203,11 +216,11 @@ def set_rule(params):
 
 
 @app.route("reset_rule")
-def reset_rule(params):
-    if not len(params) == 1:
+def reset_rule(args):
+    if not len(args) == 1:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -219,12 +232,12 @@ def reset_rule(params):
 
 
 @app.route("get_schedule_rules")
-def get_schedule_rules(params):
-    if not len(params) == 1:
+def get_schedule_rules(args):
+    if not len(args) == 1:
         return {"ERROR": "Invalid syntax"}
 
     try:
-        rules = app.config.schedule[params[0]]
+        rules = app.config.schedule[args[0]]
     except KeyError:
         return {"ERROR": "Instance not found, use status to see options"}
 
@@ -233,52 +246,52 @@ def get_schedule_rules(params):
 
 
 @app.route("add_schedule_rule")
-def add_schedule_rule(params):
-    if not len(params) == 3:
+def add_schedule_rule(args):
+    if not len(args) == 3:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
 
-    rules = app.config.schedule[params[0]]
+    rules = app.config.schedule[args[0]]
 
-    if re.match("^[0-9][0-9]:[0-9][0-9]$", params[1]):
-        timestamp = params[1]
+    if re.match("^[0-9][0-9]:[0-9][0-9]$", args[1]):
+        timestamp = args[1]
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
 
-    if target.rule_validator(params[2]):
-        rules[timestamp] = params[2]
-        app.config.schedule[params[0]] = rules
+    if target.rule_validator(args[2]):
+        rules[timestamp] = args[2]
+        app.config.schedule[args[0]] = rules
         app.config.build_queue()
-        return {"Rule added" : params[2], "time" : timestamp}
+        return {"Rule added" : args[2], "time" : timestamp}
     else:
         return {"ERROR": "Invalid rule"}
 
 
 
 @app.route("remove_rule")
-def remove_rule(params):
-    if not len(params) == 2:
+def remove_rule(args):
+    if not len(args) == 2:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
 
-    rules = app.config.schedule[params[0]]
+    rules = app.config.schedule[args[0]]
 
-    if re.match("^[0-9][0-9]:[0-9][0-9]$", params[1]):
-        timestamp = params[1]
+    if re.match("^[0-9][0-9]:[0-9][0-9]$", args[1]):
+        timestamp = args[1]
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
 
     try:
         del rules[timestamp]
-        app.config.schedule[params[0]] = rules
+        app.config.schedule[args[0]] = rules
         app.config.build_queue()
     except KeyError:
         return {"ERROR": "No rule exists at that time"}
@@ -288,11 +301,11 @@ def remove_rule(params):
 
 
 @app.route("get_attributes")
-def get_attributes(params):
-    if not len(params) == 1:
+def get_attributes(args):
+    if not len(args) == 1:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -330,11 +343,11 @@ def get_attributes(params):
 
 
 @app.route("condition_met")
-def condition_met(params):
-    if not len(params) >= 1:
+def condition_met(args):
+    if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -344,11 +357,11 @@ def condition_met(params):
 
 
 @app.route("trigger_sensor")
-def trigger_sensor(params):
-    if not len(params) >= 1:
+def trigger_sensor(args):
+    if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -362,11 +375,11 @@ def trigger_sensor(params):
 
 
 @app.route("turn_on")
-def turn_on(params):
-    if not len(params) >= 1:
+def turn_on(args):
+    if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -381,11 +394,11 @@ def turn_on(params):
 
 
 @app.route("turn_off")
-def turn_on(params):
-    if not len(params) >= 1:
+def turn_on(args):
+    if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
-    target = app.config.find(params[0])
+    target = app.config.find(args[0])
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
@@ -400,7 +413,7 @@ def turn_on(params):
 
 
 @app.route("get_temp")
-def get_temp(params):
+def get_temp(args):
     for sensor in app.config.sensors:
         if sensor.sensor_type == "si7021":
             return {"Temp": sensor.fahrenheit()}
@@ -410,7 +423,7 @@ def get_temp(params):
 
 
 @app.route("get_humid")
-def get_temp(params):
+def get_temp(args):
     for sensor in app.config.sensors:
         if sensor.sensor_type == "si7021":
             return {"Humidity": sensor.temp_sensor.relative_humidity}
@@ -420,7 +433,7 @@ def get_temp(params):
 
 
 @app.route("clear_log")
-def clear_log(params):
+def clear_log(args):
     try:
         # Close file, remove
         logging.root.handlers[0].close()
@@ -443,14 +456,14 @@ def clear_log(params):
 
 
 @app.route("ir_key")
-def ir_key(params):
+def ir_key(args):
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
         return {"ERROR": "No IR blaster configured"}
 
-    target = params[0]
-    key = params[1]
+    target = args[0]
+    key = args[1]
 
     if not target in blaster.codes:
         return {"ERROR": 'No codes found for target "{}"'.format(target)}
@@ -465,14 +478,14 @@ def ir_key(params):
 
 
 @app.route("backlight")
-def backlight(params):
+def backlight(args):
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
         return {"Error": "No IR blaster configured"}
 
-    if not params[0] == "on" and not params[0] == "off":
+    if not args[0] == "on" and not args[0] == "off":
         return {'ERROR': 'Backlight setting must be "on" or "off"'}
     else:
-        blaster.backlight(params[0])
-        return {"backlight": params[0]}
+        blaster.backlight(args[0])
+        return {"backlight": args[0]}
