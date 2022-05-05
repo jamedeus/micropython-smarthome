@@ -32,9 +32,9 @@ class Api:
 
 
     async def run(self):
+        self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
         print('API: Awaiting client connection.\n')
         log.info("API ready")
-        self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
         while True:
             await asyncio.sleep(25)
 
