@@ -18,7 +18,7 @@ class Api:
         self.backlog = backlog
         self.timeout = timeout
 
-        # Populated with decorators + self.route
+        # Populated by decorators + self.route
         # Key = endpoint, value = function
         self.url_map = {}
 
@@ -48,12 +48,12 @@ class Api:
             # Receives null when client closes write stream - break and close read stream
             if not req: raise OSError
 
-            req = req.decode()
-
             # Determine if request is HTTP (browser) or raw JSON (much faster, used by api_client.py and other nodes)
             if req.startswith("GET"):
-                # Received something like "GET /status HTTP1.1"
+                # Received something like "GET /status HTTP/1.1"
                 http = True
+
+                req = req.decode()
 
                 # Drop all except "/status"
                 path = req.split()[1]
@@ -84,7 +84,7 @@ class Api:
                 http = False
 
                 # Convert to dict, get path and args
-                data = json.loads(req.rstrip())
+                data = json.loads(req)
                 path = data[0]
                 args = data[1:]
 
