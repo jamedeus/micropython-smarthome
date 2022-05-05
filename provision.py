@@ -206,13 +206,13 @@ def arg_parse():
 
 
 # Read config file and return list of required device/sensor modules
-def get_modules(config):
+def get_modules(config, basepath):
 
     # Used for initial setup, uploads code that automatically installs dependencies with upip
     if config == "setup.json":
         return [], []
 
-    with open(config, 'r') as file:
+    with open(basepath + "/" + config, 'r') as file:
         conf = json.load(file)
 
     modules = []
@@ -288,7 +288,7 @@ def get_modules(config):
 
 
 # Modified from webrepl_cli.py main() function
-def upload(host, port, src_file, dst_file):
+def upload(host, port, src_file, dst_file, basepath):
     print(f"{src_file} -> {host}:/{dst_file}")
 
     s = socket.socket()
@@ -307,7 +307,7 @@ def upload(host, port, src_file, dst_file):
     ws.ioctl(9, 2)
 
     try:
-        put_file(ws, src_file, dst_file)
+        put_file(ws, basepath + "/" + src_file, dst_file)
     except AssertionError:
 
         if src_file.startswith("lib/"):
@@ -332,9 +332,9 @@ def upload(host, port, src_file, dst_file):
 
 
 
-def provision(config):
+def provision(config, basepath):
     # Read config file, determine which device/sensor modules need to be uploaded
-    modules, libs = get_modules(config)
+    modules, libs = get_modules(config, basepath)
 
     port = 8266
 
@@ -343,47 +343,45 @@ def provision(config):
         src_file = i
         dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
 
-        upload(host, port, src_file, dst_file)
+        upload(host, port, src_file, dst_file, basepath)
 
     # Upload all libraries
     for i in libs:
         src_file = i
         dst_file = i
 
-        upload(host, port, src_file, dst_file)
+        upload(host, port, src_file, dst_file, basepath)
 
     # Upload config file
-    upload(host, port, config, "config.json")
+    upload(host, port, config, "config.json", basepath)
 
     # Upload Config module
-    upload(host, port, "Config.py", "Config.py")
+    upload(host, port, "Config.py", "Config.py", basepath)
 
     # Upload SoftwareTimer module
-    upload(host, port, "SoftwareTimer.py", "SoftwareTimer.py")
+    upload(host, port, "SoftwareTimer.py", "SoftwareTimer.py", basepath)
 
     # Upload API module
-    upload(host, port, "Api.py", "Api.py")
+    upload(host, port, "Api.py", "Api.py", basepath)
 
     if not "setup.json" in config:
         # Upload main code last (triggers automatic reboot)
-        upload(host, port, "boot.py", "boot.py")
+        upload(host, port, "boot.py", "boot.py", basepath)
     else:
         # Upload code to install dependencies
-        upload(host, port, "setup.py", "boot.py")
+        upload(host, port, "setup.py", "boot.py", basepath)
 
 
 
-
-# Relative paths break if run from other dir
-if not os.getcwd().split('/')[-1] == 'micropython-smarthome':
-    print("ERROR: Must be run from 'micropython-smarthome' directory")
-    exit()
-
-
+basepath = os.path.dirname(os.path.realpath(__file__))
 
 # Load config file
-with open('nodes.json', 'r') as file:
-    nodes = json.load(file)
+try:
+    with open(basepath + "/" + '/nodes.json', 'r') as file:
+        nodes = json.load(file)
+except FileNotFoundError:
+    print("Warning: Unable to find nodes.json, friendly names will not work")
+    nodes = {}
 
 
 
@@ -407,4 +405,4 @@ else:
     # Get config file and target IP from cli arguments
     passwd, config, host = arg_parse()
 
-    provision(config)
+    provision(config, basepath)
