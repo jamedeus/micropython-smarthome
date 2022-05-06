@@ -121,7 +121,6 @@ def parse_command(ip, args):
         error()
 
     print(json.dumps(response, indent=4) + "\n")
-    exit()
 
 
 
