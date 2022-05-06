@@ -113,13 +113,21 @@ webrepl.start()
 from Api import app
 app.config = config
 
+# Import SoftwareTimer instance, add to async loop below
+from SoftwareTimer import timer
+
 # Create main loop, add tasks
-# TODO determine if SoftwareTimer.loop and Config.loop are running on this loop or different
-# If different, remove call from their init methods and move it here
-# TODO probably should move here regardless to keep in one place
 loop = asyncio.get_event_loop()
-loop.create_task(disk_monitor())
+
+# Main loop, checks sensors, turns devices on/off
 loop.create_task(main())
+# SoftwareTimer loop checks if timers have expired, applies actions
+loop.create_task(timer.loop())
+# Disk_monitor deletes log when size limit exceeded, reboots when new code upload received
+loop.create_task(disk_monitor())
+# Config loop rebuilds schedule rules when config_timer expires around 3am every day
+loop.create_task(config.loop())
+# Start API server, await requests
 loop.create_task(app.run())
 
 # Run

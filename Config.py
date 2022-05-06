@@ -157,9 +157,6 @@ class Config():
         next_reset = (next_reset - epoch + adjust) * 1000
         config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
 
-        # Start loop (re-builds schedule rule queue when timer above expires)
-        asyncio.create_task(self.loop())
-
         log.info("Finished instantiating config")
 
 
@@ -470,6 +467,7 @@ class Config():
 
 
 
+    # Loop re-builds schedule rule queue when config_timer expires
     async def loop(self):
         while True:
             # Set to True by timer every night between 3-4 am

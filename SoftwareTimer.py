@@ -27,9 +27,6 @@ class SoftwareTimer():
         # new rule expiring even sooner, then unblocks. Loop sleeps for the previously determined period, causing new rule to run late.
         self.new_rule_added = False
 
-        # Start loop
-        asyncio.create_task(self.loop())
-
 
 
     # Return epoch time in miliseconds
