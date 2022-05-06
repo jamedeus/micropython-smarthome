@@ -3,7 +3,6 @@ import time
 from machine import Pin, Timer, RTC
 import urequests
 import json
-import os
 from random import randrange
 import uasyncio as asyncio
 import logging
@@ -81,6 +80,10 @@ class Config():
                 from Mosfet import Mosfet
                 instance = Mosfet( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"] )
 
+            elif conf[device]["type"] == "api-target":
+                from ApiTarget import ApiTarget
+                instance = ApiTarget( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+
             # Add instance to config.devices
             self.devices.append(instance)
 
@@ -153,9 +156,6 @@ class Config():
         log.debug(f"Reload_schedule_rules callback scheduled for {time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]} am")
         next_reset = (next_reset - epoch + adjust) * 1000
         config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
-
-        # Start loop (re-builds schedule rule queue when timer above expires)
-        asyncio.create_task(self.loop())
 
         log.info("Finished instantiating config")
 
@@ -340,11 +340,18 @@ class Config():
 
 
     def build_queue(self):
+        # Delete all existing schedule rule timers to avoid conflicts
+        SoftwareTimer.timer.cancel("scheduler")
+
         for i in self.schedule:
             rules = self.convert_rules(self.schedule[i])
 
-            # Skip devices/sensors with no schedule rules
+            # Get target instance
+            instance = self.find(i)
+
+            # If no schedule rules, set default_rule as current and skip to next
             if len(rules) == 0:
+                instance.current_rule = instance.scheduled_rule
                 continue
 
             # Get list of timestamps, sort chronologically
@@ -352,9 +359,6 @@ class Config():
             for j in rules:
                 queue.append(j)
             queue.sort()
-
-            # Get target instance
-            instance = self.find(i)
 
             # Set target's current_rule (set_rule method passes to syntax validator, returns True if valid, False if not)
             if instance.set_rule(rules[queue.pop(0)]):
@@ -463,6 +467,7 @@ class Config():
 
 
 
+    # Loop re-builds schedule rule queue when config_timer expires
     async def loop(self):
         while True:
             # Set to True by timer every night between 3-4 am
@@ -471,10 +476,6 @@ class Config():
                 log.info("3:00 am callback, reloading schedule rules...")
                 # Get up-to-date sunrise/sunset, set system clock (in case of daylight savings)
                 self.api_calls()
-
-                # Cancel all timers created yesterday to avoid duplicates
-                # ie node boots at 12:00, sets rules until 12:00 next day. Reloads rules at 3:00, creating 2 copies of all between 3:00 - 12:00
-                SoftwareTimer.timer.cancel("scheduler")
 
                 # Create timers for all schedule rules expiring in next 24 hours
                 self.build_queue()

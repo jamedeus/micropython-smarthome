@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 
-# Upload config file + boot.py + all required modules in a single step
+# Upload config file + boot.py + all required modules and libraries in a single step
 
 # Usage: ./provision.py -c path/to/config.json -ip <target>
+# Usage: ./provision.py <friendly-name-from-nodes.json>
+# Usage: ./provision.py --all
 
-# Everything above line 167 copied from webrepl_cli.py with minimal modifications
+# Everything above line 170 copied from webrepl_cli.py with minimal modifications
 # https://github.com/micropython/webrepl
 
 import sys
@@ -169,208 +171,244 @@ Sec-WebSocket-Key: foo\r
 
 
 
-def arg_parse():
-    if len(sys.argv) < 5:
-        print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
-        exit()
+class Provisioner():
+    def __init__(self, args):
+        # Location of provision.py, used to get relative path to other modules if run from outside dir
+        self.basepath = os.path.dirname(os.path.realpath(__file__))
 
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == '-p' or sys.argv[i] == '--password':
-            sys.argv.pop(i)
-            passwd = sys.argv.pop(i)
-            break
-    else:
-        print("Using default password (password)\n")
-        passwd = "password"
+        # Load config file
+        try:
+            with open(self.basepath + "/" + '/nodes.json', 'r') as file:
+                self.nodes = json.load(file)
+        except FileNotFoundError:
+            print("Warning: Unable to find nodes.json, friendly names will not work")
+            self.nodes = {}
 
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == '-c' or sys.argv[i] == '--config':
-            sys.argv.pop(i)
-            config = sys.argv.pop(i)
-            break
-    else:
-        print("ERROR: Must specify config file.")
-        exit()
+        # If user selected node by name
+        if args[1] in self.nodes:
+            self.passwd = "password"
+            self.config = self.nodes[args[1]]["config"]
+            self.host = self.nodes[args[1]]["ip"]
+            self.provision()
 
-    for i in range(len(sys.argv)):
-        if sys.argv[i] == '-ip' or sys.argv[i] == '-t' or sys.argv[i] == '--node':
-            sys.argv.pop(i)
-            ip = sys.argv.pop(i)
-            break
-    else:
-        print("ERROR: Must specify target IP.")
-        exit()
+        # If user selected all nodes
+        elif args[1] == "--all":
+            self.passwd = "password"
+            for i in self.nodes:
+                self.config = self.nodes[i]["config"]
+                self.host = self.nodes[i]["ip"]
+                self.provision()
 
-    return passwd, config, ip
+        # If user used keyword args
+        else:
+            # Get config file and target IP from cli arguments
+            self.passwd, self.config, self.host = self.arg_parse(args)
+            self.provision()
 
 
 
-# Read config file and return list of required device/sensor modules
-def get_modules(config):
-    with open(config, 'r') as file:
-        conf = json.load(file)
+    def arg_parse(self, args):
+        if len(args) < 5:
+            print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
+            exit()
 
-    modules = []
+        for i in range(len(args)):
+            if args[i] == '-p' or args[i] == '--password':
+                args.pop(i)
+                passwd = args.pop(i)
+                break
+        else:
+            print("Using default password (password)\n")
+            passwd = "password"
 
-    libs = []
-    libs.append('lib/logging.py')
+        for i in range(len(args)):
+            if args[i] == '-c' or args[i] == '--config':
+                args.pop(i)
+                config = args.pop(i)
+                break
+        else:
+            print("ERROR: Must specify config file.")
+            exit()
 
-    for i in conf:
-        if i == "ir_blaster":
-            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
+        for i in range(len(args)):
+            if args[i] == '-ip' or args[i] == '-t' or args[i] == '--node':
+                args.pop(i)
+                ip = args.pop(i)
+                break
+        else:
+            print("ERROR: Must specify target IP.")
+            exit()
 
-            modules.append("devices/IrBlaster.py")
-            modules.append("ir-remote/samsung-codes.json")
-            modules.append("ir-remote/whynter-codes.json")
-            libs.append("lib/ir_tx/__init__.py")
-            libs.append("lib/ir_tx/nec.py")
-            continue
+        return passwd, config, ip
 
-        if not i.startswith("device") and not i.startswith("sensor"): continue
 
-        if conf[i]["type"] == "dimmer" or conf[i]["type"] == "bulb":
-            modules.append("devices/Tplink.py")
-            modules.append("devices/Device.py")
 
-        elif conf[i]["type"] == "relay":
-            modules.append("devices/Relay.py")
-            modules.append("devices/Device.py")
+    def provision(self):
+        # Read config file, determine which device/sensor modules need to be uploaded
+        modules, libs = self.get_modules()
 
-        elif conf[i]["type"] == "dumb-relay":
-            modules.append("devices/DumbRelay.py")
-            modules.append("devices/Device.py")
+        # Upload all device/sensor modules
+        for i in modules:
+            src_file = i
+            dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
 
-        elif conf[i]["type"] == "desktop":
-            if i.startswith("device"):
-                modules.append("devices/Desktop_target.py")
+            self.upload(src_file, dst_file)
+
+        # Upload all libraries
+        for i in libs:
+            src_file = i
+            dst_file = i
+
+            self.upload(src_file, dst_file)
+
+        # Upload config file
+        self.upload(self.config, "config.json")
+
+        # Upload Config module
+        self.upload("Config.py", "Config.py")
+
+        # Upload SoftwareTimer module
+        self.upload("SoftwareTimer.py", "SoftwareTimer.py")
+
+        # Upload API module
+        self.upload("Api.py", "Api.py")
+
+        if not "setup.json" in self.config:
+            # Upload main code last (triggers automatic reboot)
+            self.upload("boot.py", "boot.py")
+        else:
+            # Upload code to install dependencies
+            self.upload("setup.py", "boot.py")
+
+
+
+    # Read config file and return list of required device/sensor modules
+    def get_modules(self):
+
+        # Used for initial setup, uploads code that automatically creates required subdirs
+        if self.config == "setup.json":
+            return [], []
+
+        with open(self.basepath + "/" + self.config, 'r') as file:
+            conf = json.load(file)
+
+        modules = []
+
+        libs = []
+        libs.append('lib/logging.py')
+
+        for i in conf:
+            if i == "ir_blaster":
+                print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
+
+                modules.append("devices/IrBlaster.py")
+                modules.append("ir-remote/samsung-codes.json")
+                modules.append("ir-remote/whynter-codes.json")
+                libs.append("lib/ir_tx/__init__.py")
+                libs.append("lib/ir_tx/nec.py")
+                continue
+
+            if not i.startswith("device") and not i.startswith("sensor"): continue
+
+            if conf[i]["type"] == "dimmer" or conf[i]["type"] == "bulb":
+                modules.append("devices/Tplink.py")
                 modules.append("devices/Device.py")
-            elif i.startswith("sensor"):
-                modules.append("sensors/Desktop_trigger.py")
+
+            elif conf[i]["type"] == "relay":
+                modules.append("devices/Relay.py")
+                modules.append("devices/Device.py")
+
+            elif conf[i]["type"] == "dumb-relay":
+                modules.append("devices/DumbRelay.py")
+                modules.append("devices/Device.py")
+
+            elif conf[i]["type"] == "desktop":
+                if i.startswith("device"):
+                    modules.append("devices/Desktop_target.py")
+                    modules.append("devices/Device.py")
+                elif i.startswith("sensor"):
+                    modules.append("sensors/Desktop_trigger.py")
+                    modules.append("sensors/Sensor.py")
+
+            elif conf[i]["type"] == "pwm":
+                modules.append("devices/LedStrip.py")
+                modules.append("devices/Device.py")
+
+            elif conf[i]["type"] == "mosfet":
+                modules.append("devices/Mosfet.py")
+                modules.append("devices/Device.py")
+
+            elif conf[i]["type"] == "api-target":
+                modules.append("devices/ApiTarget.py")
+                modules.append("devices/Device.py")
+
+            elif conf[i]["type"] == "pir":
+                modules.append("sensors/MotionSensor.py")
                 modules.append("sensors/Sensor.py")
 
-        elif conf[i]["type"] == "pwm":
-            modules.append("devices/LedStrip.py")
-            modules.append("devices/Device.py")
+            elif conf[i]["type"] == "si7021":
+                print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
 
-        elif conf[i]["type"] == "mosfet":
-            modules.append("devices/Mosfet.py")
-            modules.append("devices/Device.py")
+                modules.append("sensors/Thermostat.py")
+                modules.append("sensors/Sensor.py")
+                libs.append("lib/si7021.py")
 
-        elif conf[i]["type"] == "pir":
-            modules.append("sensors/MotionSensor.py")
-            modules.append("sensors/Sensor.py")
+            elif conf[i]["type"] == "dummy":
+                modules.append("sensors/Dummy.py")
 
-        elif conf[i]["type"] == "si7021":
-            print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
+        # Remove duplicates
+        modules = set(modules)
 
-            modules.append("sensors/Thermostat.py")
-            modules.append("sensors/Sensor.py")
-            libs.append("lib/si7021.py")
-
-        elif conf[i]["type"] == "dummy":
-            modules.append("sensors/Dummy.py")
-
-    # Remove duplicates
-    modules = set(modules)
-
-    return modules, libs
+        return modules, libs
 
 
 
-# Modified from webrepl_cli.py main() function
-def upload(host, port, src_file, dst_file):
-    print(f"{src_file} -> {host}:/{dst_file}")
+    # Modified from webrepl_cli.py main() function
+    def upload(self, src_file, dst_file):
+        print(f"{src_file} -> {self.host}:/{dst_file}")
 
-    s = socket.socket()
+        s = socket.socket()
 
-    ai = socket.getaddrinfo(host, port)
-    addr = ai[0][4]
+        ai = socket.getaddrinfo(self.host, 8266)
+        addr = ai[0][4]
 
-    s.connect(addr)
-    client_handshake(s)
+        s.connect(addr)
+        client_handshake(s)
 
-    ws = websocket(s)
+        ws = websocket(s)
 
-    login(ws, passwd)
+        login(ws, self.passwd)
 
-    # Set websocket to send data marked as "binary"
-    ws.ioctl(9, 2)
+        # Set websocket to send data marked as "binary"
+        ws.ioctl(9, 2)
 
-    put_file(ws, src_file, dst_file)
+        try:
+            put_file(ws, self.basepath + "/" + src_file, dst_file)
+        except AssertionError:
 
-    s.close()
+            if src_file.startswith("lib/"):
+                print(Fore.RED + "\nERROR: Unable to upload libraries, /lib/ does not exist" + Fore.RESET)
+                print("This is normal for new nodes - would you like to upload setup to fix? " + Fore.CYAN + "[Y/n]" + Fore.RESET)
 
+                x = input()
+                if x == "n":
+                    print(Fore.YELLOW + "\nWARNING" + Fore.RESET + ": Skipping " + src_file + " library, node may fail to boot after upload.\n")
+                    pass
+                else:
+                    self.upload('config/setup.json', 'config.json')
+                    self.upload('setup.py', 'boot.py')
+                    print(Fore.CYAN + "Please reboot target node and wait 30 seconds, then press enter to resume upload." + Fore.RESET)
 
+                    x = input()
+                    self.upload(src_file, dst_file)
 
-def provision(config):
-    # Read config file, determine which device/sensor modules need to be uploaded
-    modules, libs = get_modules(config)
+            else:
+                print(Fore.RED + "ERROR"  + Fore.RESET + ": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
+                pass
 
-    port = 8266
-
-    # Upload all device/sensor modules
-    for i in modules:
-        src_file = i
-        dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
-
-        upload(host, port, src_file, dst_file)
-
-    # Upload all libraries
-    for i in libs:
-        src_file = i
-        dst_file = i
-
-        upload(host, port, src_file, dst_file)
-
-    # Upload config file
-    upload(host, port, config, "config.json")
-
-    # Upload Config module
-    upload(host, port, "Config.py", "Config.py")
-
-    # Upload SoftwareTimer module
-    upload(host, port, "SoftwareTimer.py", "SoftwareTimer.py")
-
-    # Upload API module
-    upload(host, port, "Api.py", "Api.py")
-
-    # Upload main code last (triggers automatic reboot)
-    upload(host, port, "boot.py", "boot.py")
+        s.close()
 
 
 
-
-# Relative paths break if run from other dir
-if not os.getcwd().split('/')[-1] == 'micropython-smarthome':
-    print("ERROR: Must be run from 'micropython-smarthome' directory")
-    exit()
-
-
-
-# Load config file
-with open('nodes.json', 'r') as file:
-    nodes = json.load(file)
-
-
-
-# If user selected node by name
-if sys.argv[1] in nodes:
-    passwd = "password"
-    config = nodes[sys.argv[1]]["config"]
-    host = nodes[sys.argv[1]]["ip"]
-    provision(config)
-
-# If user selected all nodes
-elif sys.argv[1] == "--all":
-    passwd = "password"
-    for i in nodes:
-        config = nodes[i]["config"]
-        host = nodes[i]["ip"]
-        provision(config)
-
-# If user used keyword args
-else:
-    # Get config file and target IP from cli arguments
-    passwd, config, host = arg_parse()
-
-    provision(config)
+# Create instance, pass CLI arguments to init
+app = Provisioner(sys.argv)

@@ -5,13 +5,11 @@
 print("--------Booted--------")
 
 import webrepl
-import time
 import os
 import json
 import uasyncio as asyncio
 import logging
 from Config import Config, reboot
-from Api import Api
 
 # Set log file and syntax
 logging.basicConfig(level=logging.DEBUG, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
@@ -33,7 +31,7 @@ async def disk_monitor():
             # If file changed (new code received from webrepl), reboot
             print("\nReceived new code from webrepl, rebooting...\n")
             log.info("Received new code from webrepl, rebooting...")
-            time.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+            await asyncio.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             reboot()
         # Don't let the log exceed 500 KB, full disk hangs system + can't pull log via webrepl
         elif os.stat('app.log')[6] > 500000:
@@ -60,15 +58,8 @@ async def disk_monitor():
 
 
 
+# Main loop - monitor sensors, apply actions if conditions met
 async def main():
-    # Start listening for API commands
-    server = Api(config)
-    asyncio.create_task(server.run())
-
-    # Listen for new code upload (auto-reboot when updated), prevent log from filling disk
-    asyncio.create_task(disk_monitor())
-
-    # Main loop - monitor sensors, apply actions if conditions met
     while True:
         for group in config.groups:
 
@@ -118,4 +109,26 @@ gc.collect()
 
 webrepl.start()
 
-asyncio.run(main())
+# Import + initialize API, pass config object
+from Api import app
+app.config = config
+
+# Import SoftwareTimer instance, add to async loop below
+from SoftwareTimer import timer
+
+# Create main loop, add tasks
+loop = asyncio.get_event_loop()
+
+# Main loop, checks sensors, turns devices on/off
+loop.create_task(main())
+# SoftwareTimer loop checks if timers have expired, applies actions
+loop.create_task(timer.loop())
+# Disk_monitor deletes log when size limit exceeded, reboots when new code upload received
+loop.create_task(disk_monitor())
+# Config loop rebuilds schedule rules when config_timer expires around 3am every day
+loop.create_task(config.loop())
+# Start API server, await requests
+loop.create_task(app.run())
+
+# Run
+loop.run_forever()

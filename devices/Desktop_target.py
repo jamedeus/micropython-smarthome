@@ -1,6 +1,5 @@
 import logging
 import urequests
-import uasyncio as asyncio
 from Device import Device
 import SoftwareTimer
 

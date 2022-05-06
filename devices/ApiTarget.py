@@ -1,0 +1,101 @@
+import logging
+from Device import Device
+import SoftwareTimer
+import uasyncio as asyncio
+import json
+
+# Set name for module's log lines
+log = logging.getLogger("ApiTarget")
+
+
+
+class ApiTarget(Device):
+    def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, ip):
+        super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
+
+        # IP that API command is sent to
+        self.ip = ip
+
+
+
+    # TODO test enable/disable, see if methods need to be subclassed (they set device's state, could block loop from sending/send at incorrect time)
+
+
+    # Takes dict containing 2 entries named "on" and "off"
+    # Both entries are lists containing a full API request
+    # "on" sent when self.send(1) called, "off" when self.send(0) called
+    def rule_validator(self, rule):
+        if not isinstance(rule, dict):
+            return False
+
+        # Reject if more than 2 sub-rules
+        if not len(rule) == 2:
+            return False
+
+        for i in rule:
+            # Index must be "on" or "off"
+            if not i == "on" or i == "off":
+                return False
+
+            if not isinstance(rule[i], list):
+                return False
+
+            # "ignore" is not a valid command, it allows only using on/off and ignoring the other
+            if rule[i][0] in ['reboot', 'clear_log', 'ignore'] and len(rule[i]) == 1:
+                continue
+
+            elif rule[i][0] in ['enable', 'disable', 'condition_met', 'trigger_sensor'] and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")) and len(rule[i]) == 2:
+                continue
+
+            elif rule[i][0] in ['enable_in', 'disable_in', 'set_rule'] and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")) and len(rule[i]) == 3:
+                continue
+
+            else:
+                # Did not match any valid patterns
+                return False
+
+        else:
+            # Iteration finished without a return False, rule is valid
+            return rule
+
+
+
+    async def request(self, msg):
+        reader, writer = await asyncio.open_connection(self.ip, 8123)
+        try:
+            writer.write('{}\n'.format(json.dumps(msg)).encode())
+            await writer.drain()
+            res = await reader.read(1000)
+        except OSError:
+            pass
+        writer.close()
+        await writer.wait_closed()
+
+
+
+    def send(self, state=1):
+
+        # "On" rule
+        if state:
+            if self.current_rule["on"][0] == "ignore":
+                # If rule is ignore, do nothing
+                return True
+
+            asyncio.create_task(self.request(self.current_rule["on"]))
+
+            # Reset motion sensor to allow retriggering the remote motion sensor (restarts reset timer)
+            # Retrigger when motion = True only restarts sensor's own resetTimer, but does not send another API command
+            for sensor in self.triggered_by:
+                if sensor.sensor_type == "pir":
+                    sensor.motion = False
+
+        # "Off" rule
+        else:
+            if self.current_rule["off"][0] == "ignore":
+                # If rule is ignore, do nothing
+                return True
+
+            asyncio.create_task(self.request(self.current_rule["off"]))
+
+        # Tells main loop send succeeded
+        return True

@@ -27,9 +27,6 @@ class SoftwareTimer():
         # new rule expiring even sooner, then unblocks. Loop sleeps for the previously determined period, causing new rule to run late.
         self.new_rule_added = False
 
-        # Start loop
-        asyncio.create_task(self.loop())
-
 
 
     # Return epoch time in miliseconds
@@ -56,7 +53,7 @@ class SoftwareTimer():
                     break
 
         # Callers are only allowed 1 timer each (scheduler is exempt) - delete any existing timers with same name before adding
-        if not name == "scheduler":
+        if not name == "scheduler" and not name == "API":
             for i in self.schedule:
                 if name in self.schedule[i]:
                     del self.schedule[i]

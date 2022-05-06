@@ -3,6 +3,8 @@ import os
 import uasyncio as asyncio
 import logging
 import gc
+import SoftwareTimer
+import re
 
 # Set name for module's log lines
 log = logging.getLogger("API")
@@ -10,203 +12,480 @@ log = logging.getLogger("API")
 
 
 class Api:
-    def __init__(self, config, host='0.0.0.0', port=8123, backlog=5, timeout=20):
+    def __init__(self, host='0.0.0.0', port=8123, backlog=5, timeout=20):
         self.host = host
         self.port = port
         self.backlog = backlog
         self.timeout = timeout
 
-        self.config = config
+        # Populated by decorators + self.route
+        # Key = endpoint, value = function
+        self.url_map = {}
 
 
 
-    def disable(self, instance):
-        inst = self.config.find(instance)
-
-        if not inst:
-            return 'Error: Instance not found'
-
-        print(f"API: Received command to disable {instance}, disabling...")
-        log.info(f"API: Received command to disable {instance}, disabling...")
-        inst.disable()
-        return 'OK'
-
-
-
-    def enable(self, instance):
-        inst = self.config.find(instance)
-
-        if not inst:
-            return 'Error: Instance not found'
-
-        print(f"API: Received command to enable {instance}, enabling...")
-        log.info(f"API: Received command to enable {instance}, enabling...")
-        inst.enable()
-        return 'OK'
-
-
-
-    def set_rule(self, target, rule, client):
-        target = self.config.find(target)
-
-        if not target:
-            print(f"API: Received invalid command from {client}")
-            return 'Error: 2nd param must be name of a sensor or device - use status to see options'
-
-        if target.set_rule(rule):
-            return 'OK'
-        else:
-            return 'Error: Bad rule parameter'
-
-
-
-    def ir_key(self, target, key):
-        try:
-            blaster = self.config.ir_blaster
-        except AttributeError:
-            return 'Error: No IR blaster configured'
-
-        if not target in blaster.codes:
-            return 'Error: No codes found for target "{}"'.format(target)
-        if not key in blaster.codes[target]:
-            return 'Error: Target "{}" has no key {}'.format(target, key)
-        else:
-            blaster.send(target, key)
-            return 'OK'
-
-
-
-    def ir_backlight(self, state):
-        if not (state == "on" or state == "off"):
-            return 'Error: Backlight setting must be "on" or "off"'
-
-        try:
-            blaster = self.config.ir_blaster
-        except AttributeError:
-            return 'Error: No IR blaster configured'
-
-        blaster.backlight(state)
-        return 'OK'
-
-
-
-    def get_temp(self):
-        for sensor in self.config.sensors:
-            if sensor.sensor_type == "si7021":
-                return sensor.fahrenheit()
-        else:
-            return 'Error: No temp sensor connected'
-
-
-
-    def get_humid(self):
-        for sensor in self.config.sensors:
-            if sensor.sensor_type == "si7021":
-                return sensor.temp_sensor.relative_humidity
-        else:
-            return 'Error: No temp sensor connected'
-
-
-
-    def clear_log(self):
-        try:
-            # Close file, remove
-            logging.root.handlers[0].close()
-            os.remove('app.log')
-
-            # Create new handler, set format
-            h = logging.FileHandler('app.log')
-            h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
-
-            # Replace old handler with new
-            logging.root.handlers.clear()
-            logging.root.addHandler(h)
-
-            log.info("Deleted old log (API request)")
-            print("Deleted old log (API request)")
-
-            return 'OK'
-        except OSError:
-            return 'Error: no log file found'
+    def route(self, url):
+        def _route(func):
+            self.url_map[url] = func
+        return _route
 
 
 
     async def run(self):
+        self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
         print('API: Awaiting client connection.\n')
         log.info("API ready")
-        self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
         while True:
-            await asyncio.sleep(100)
+            await asyncio.sleep(25)
 
 
 
     async def run_client(self, sreader, swriter):
         try:
-            while True:
-                try:
-                    res = await asyncio.wait_for(sreader.readline(), self.timeout)
-                except asyncio.TimeoutError:
-                    raise OSError
+            # Read client request
+            req = await asyncio.wait_for(sreader.readline(), self.timeout)
 
-                # Receives null when client closes write stream - break and close read stream
-                if not res: break
+            # Receives null when client closes write stream - break and close read stream
+            if not req: raise OSError
 
-                data = json.loads(res.rstrip())
+            # Determine if request is HTTP (browser) or raw JSON (much faster, used by api_client.py and other nodes)
+            if req.startswith("GET"):
+                # Received something like "GET /status HTTP/1.1"
+                http = True
 
-                # Will be overwritten if command is valid, checked after conditional before sending invalid syntax error
-                reply = False
+                req = req.decode()
 
-                if data[0] == "status":
-                    print(f"\nAPI: Status request received from {sreader.get_extra_info('peername')[0]}, sending dict\n")
-                    reply = self.config.get_status()
+                # Drop all except "/status"
+                path = req.split()[1]
 
-                elif data[0] == "reboot":
-                    print(f"API: Reboot command received from {sreader.get_extra_info('peername')[0]}")
+                # Convert to list, path ("/status") as first index, query string (if present) as second
+                path = path.split("?", 1)
 
-                    # Send response before rebooting (cannot rely on the send call after conditional)
-                    reply = 'OK'
-                    swriter.write(json.dumps(reply))
-                    await swriter.drain()  # Echo back
-                    from Config import reboot
-                    reboot()
-
-                elif data[0] == "temp":
-                    reply = self.get_temp()
-
-                elif data[0] == "humid":
-                    reply = self.get_humid()
-
-                elif data[0] == "clear_log":
-                    reply = self.clear_log()
-
-                elif data[0] == "disable" and (data[1].startswith("sensor") or data[1].startswith("device")):
-                    reply = self.disable(data[1])
-
-                elif data[0] == "enable" and (data[1].startswith("sensor") or data[1].startswith("device")):
-                    reply = self.enable(data[1])
-
-                elif data[0] == "set_rule" and (data[1].startswith("sensor") or data[1].startswith("device")):
-                    reply = self.set_rule(data[1], data[2], sreader.get_extra_info('peername')[0])
-
-                elif data[0] == "ir" and (data[1] == "tv" or data[1] == "ac"):
-                    reply = self.ir_key(data[1], data[2])
-
-                elif data[0] == "ir" and data[1] == "backlight":
-                    reply = self.ir_backlight(data[2])
-
+                if len(path) > 1:
+                    # If query string present, split all parameters into args list
+                    args = path[1]
+                    args = args.split("/")
                 else:
-                    print(f"API: Received invalid command from {sreader.get_extra_info('peername')[0]}")
-                    reply = 'Error: first arg must be one of: status, reboot, enable, disable, set_rule, clear_log, temp, humid, ir'
+                    # No query string
+                    args = ""
 
-                # Send the reply
-                swriter.write(json.dumps(reply))
+                # Drop all except path ("/status"), remove leading "/"
+                path = path[0][1:]
+
+                # Skip headers
+                while True:
+                    l = await asyncio.wait_for(sreader.readline(), self.timeout)
+                    # Sequence indicates end of headers
+                    if l == b"\r\n":
+                        break
+
+            else:
+                # Received serialized json, no headers etc
+                http = False
+
+                # Convert to dict, get path and args
+                data = json.loads(req)
+                path = data[0]
+                args = data[1:]
+
+            # Find endpoint matching path, call handler function and pass args
+            try:
+                # Call handler, receive reply for client
+                reply = self.url_map[path](args)
+            except KeyError:
+                # Exit with error if no match found
+                swriter.write(json.dumps({"ERROR": "Invalid command"}))
                 await swriter.drain()
-                reply = False
+                raise OSError
 
-                # Prevent running out of mem after repeated requests
-                gc.collect()
+            if http:
+                # Send headers before reply
+                swriter.write("HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n")
+                swriter.write(json.dumps(reply).encode())
+            else:
+                # Send reply to client
+                swriter.write(json.dumps(reply))
+
+            await swriter.drain()
+
+            # Prevent running out of mem after repeated requests
+            gc.collect()
 
         except OSError:
             pass
+        except asyncio.TimeoutError:
+            pass
         # Client disconnected, close socket
         await sreader.wait_closed()
+
+
+
+app = Api()
+
+
+
+@app.route("reboot")
+def index(args):
+    from Config import reboot
+    SoftwareTimer.timer.create(1000, reboot, "API")
+
+    return {"Reboot_in": "1 second"}
+
+
+
+@app.route("status")
+def status(args):
+    return app.config.get_status()
+
+
+
+@app.route("enable")
+def enable(args):
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+    else:
+        target.enable()
+        return {"Enabled": target.name}
+
+
+
+@app.route("enable_in")
+def enable_for(args):
+    if not len(args) >= 2:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+    period = args[1]
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+    else:
+        period = float(period) * 60000
+        SoftwareTimer.timer.create(period, target.enable, "API")
+        return {"Enabled": target.name, "Enable_in_seconds": period/1000}
+
+
+
+@app.route("disable")
+def disable(args):
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+    else:
+        target.disable()
+        return {"Disabled": target.name}
+
+
+
+@app.route("disable_in")
+def disable_for(args):
+    if not len(args) >= 2:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+    period = args[1]
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+    else:
+        period = float(period) * 60000
+        SoftwareTimer.timer.create(period, target.disable, "API")
+        return {"Disabled": target.name, "Disable_in_seconds": period/1000}
+
+
+
+@app.route("set_rule")
+def set_rule(args):
+    if not len(args) >= 2:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+    rule = args[1]
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    if target.set_rule(rule):
+        return {target.name : rule}
+    else:
+        return {"ERROR": "Invalid rule"}
+
+
+
+@app.route("reset_rule")
+def reset_rule(args):
+    if not len(args) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    target.current_rule = target.scheduled_rule
+
+    return {target.name : "Reverted to scheduled rule", "current_rule" : target.current_rule}
+
+
+
+@app.route("get_schedule_rules")
+def get_schedule_rules(args):
+    if not len(args) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    try:
+        rules = app.config.schedule[args[0]]
+    except KeyError:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    return rules
+
+
+
+@app.route("add_schedule_rule")
+def add_schedule_rule(args):
+    if not len(args) == 3:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    rules = app.config.schedule[args[0]]
+
+    if re.match("^[0-9][0-9]:[0-9][0-9]$", args[1]):
+        timestamp = args[1]
+    else:
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+
+    if target.rule_validator(args[2]):
+        rules[timestamp] = args[2]
+        app.config.schedule[args[0]] = rules
+        app.config.build_queue()
+        return {"Rule added" : args[2], "time" : timestamp}
+    else:
+        return {"ERROR": "Invalid rule"}
+
+
+
+@app.route("remove_rule")
+def remove_rule(args):
+    if not len(args) == 2:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    rules = app.config.schedule[args[0]]
+
+    if re.match("^[0-9][0-9]:[0-9][0-9]$", args[1]):
+        timestamp = args[1]
+    else:
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+
+    try:
+        del rules[timestamp]
+        app.config.schedule[args[0]] = rules
+        app.config.build_queue()
+    except KeyError:
+        return {"ERROR": "No rule exists at that time"}
+
+    return {"Deleted": timestamp}
+
+
+
+@app.route("get_attributes")
+def get_attributes(args):
+    if not len(args) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    attributes = target.__dict__.copy()
+
+    # Make dict json-compatible
+    for i in attributes.keys():
+        # Remove module references
+        if i == "pwm":
+            del attributes["pwm"]
+        if i == "i2c":
+            del attributes["i2c"]
+        if i == "temp_sensor":
+            del attributes["temp_sensor"]
+        if i == "mosfet":
+            del attributes["mosfet"]
+        if i == "relay":
+            del attributes["relay"]
+        if i == "sensor":
+            del attributes["sensor"]
+
+        # Replace instances with instance.name attribute
+        elif i == "triggered_by":
+            attributes["triggered_by"] = []
+            for i in target.triggered_by:
+                attributes["triggered_by"].append(i.name)
+        elif i == "targets":
+            attributes["targets"] = []
+            for i in target.targets:
+                attributes["targets"].append(i.name)
+
+    return attributes
+
+
+
+@app.route("condition_met")
+def condition_met(args):
+    if not len(args) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+    else:
+        return {"Condition": target.condition_met()}
+
+
+
+@app.route("trigger_sensor")
+def trigger_sensor(args):
+    if not len(args) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    result = target.trigger()
+    if result:
+        return {"Triggered": target.name}
+    else:
+        return {"ERROR": "Cannot trigger {} sensor type".format(target.sensor_type)}
+
+
+
+@app.route("turn_on")
+def turn_on(args):
+    if not len(args) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    result = target.send(1)
+    if result:
+        target.state = True
+        return {"On": target.name}
+    else:
+        return {"ERROR": "Unable to turn on {}".format(target.name)}
+
+
+
+@app.route("turn_off")
+def turn_on(args):
+    if not len(args) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+
+    if not target:
+        return {"ERROR": "Instance not found, use status to see options"}
+
+    result = target.send(0)
+    if result:
+        target.state = False
+        return {"Off": target.name}
+    else:
+        return {"ERROR": "Unable to turn off {}".format(target.name)}
+
+
+
+@app.route("get_temp")
+def get_temp(args):
+    for sensor in app.config.sensors:
+        if sensor.sensor_type == "si7021":
+            return {"Temp": sensor.fahrenheit()}
+    else:
+        return {"ERROR": "No temperature sensor configured"}
+
+
+
+@app.route("get_humid")
+def get_temp(args):
+    for sensor in app.config.sensors:
+        if sensor.sensor_type == "si7021":
+            return {"Humidity": sensor.temp_sensor.relative_humidity}
+    else:
+        return {"ERROR": "No temperature sensor configured"}
+
+
+
+@app.route("clear_log")
+def clear_log(args):
+    try:
+        # Close file, remove
+        logging.root.handlers[0].close()
+        os.remove('app.log')
+
+        # Create new handler, set format
+        h = logging.FileHandler('app.log')
+        h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+
+        # Replace old handler with new
+        logging.root.handlers.clear()
+        logging.root.addHandler(h)
+
+        log.info("Deleted old log (API request)")
+
+        return {"clear_log": "success"}
+    except OSError:
+        return {"ERROR": "no log file found"}
+
+
+
+@app.route("ir_key")
+def ir_key(args):
+    try:
+        blaster = app.config.ir_blaster
+    except AttributeError:
+        return {"ERROR": "No IR blaster configured"}
+
+    target = args[0]
+    key = args[1]
+
+    if not target in blaster.codes:
+        return {"ERROR": 'No codes found for target "{}"'.format(target)}
+
+    if not key in blaster.codes[target]:
+        return {"ERROR": 'Target "{}" has no key {}'.format(target, key)}
+
+    else:
+        blaster.send(target, key)
+        return {target: key}
+
+
+
+@app.route("backlight")
+def backlight(args):
+    try:
+        blaster = app.config.ir_blaster
+    except AttributeError:
+        return {"Error": "No IR blaster configured"}
+
+    if not args[0] == "on" and not args[0] == "off":
+        return {'ERROR': 'Backlight setting must be "on" or "off"'}
+    else:
+        blaster.backlight(args[0])
+        return {"backlight": args[0]}

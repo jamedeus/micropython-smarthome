@@ -1,7 +1,5 @@
 from machine import Pin
-import uasyncio as asyncio
 import logging
-import time
 from Sensor import Sensor
 import SoftwareTimer
 
@@ -81,7 +79,7 @@ class MotionSensor(Sensor):
 
 
     # Interrupt routine, called when motion sensor triggered
-    def motion_detected(self, pin):
+    def motion_detected(self, pin=""):
         if not self.motion:
             print(f"{self.name}: Motion detected")
             log.debug(f"{self.name}: Motion detected")
