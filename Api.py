@@ -225,7 +225,7 @@ def reset_rule(args):
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
 
-    target.current_rule = target.scheduled_rule
+    target.set_rule(target.scheduled_rule)
 
     return {target.name : "Reverted to scheduled rule", "current_rule" : target.current_rule}
 
