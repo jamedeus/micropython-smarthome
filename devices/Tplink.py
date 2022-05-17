@@ -84,6 +84,10 @@ class Tplink(Device):
             print(f"{self.name}: Rule changed to {self.current_rule}")
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
 
+            # If fade in progress when rule changed, abort
+            if self.fading:
+                self.fading = False
+
             # Rule just changed to disabled
             if self.current_rule == "Disabled":
                 self.send(0)
@@ -113,7 +117,10 @@ class Tplink(Device):
                 except ValueError:
                     return False
 
-                return rule
+                if 0 <= int(target) <= 100:
+                    return rule
+                else:
+                    return False
 
             elif rule == "Disabled":
                 return rule
@@ -215,7 +222,9 @@ class Tplink(Device):
                 if new_rule < self.fading["target"]:
                     new_rule = self.fading["target"]
 
-            self.set_rule(new_rule)
+            self.current_rule = int(new_rule)
+            if self.state == True:
+                self.send(1)
 
         # Check if fade complete after step
         if self.fading["target"] == int(self.current_rule):
