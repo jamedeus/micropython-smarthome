@@ -6,7 +6,7 @@
 # Usage: ./provision.py <friendly-name-from-nodes.json>
 # Usage: ./provision.py --all
 
-# Everything above line 170 copied from webrepl_cli.py with minimal modifications
+# Everything above line 171 copied from webrepl_cli.py with minimal modifications
 # https://github.com/micropython/webrepl
 
 import sys
@@ -14,6 +14,7 @@ import os
 import struct
 import json
 import socket
+import re
 from colorama import Fore, Style
 
 DEBUG = 0
@@ -198,6 +199,23 @@ class Provisioner():
                 self.config = self.nodes[i]["config"]
                 self.host = self.nodes[i]["ip"]
                 self.provision()
+
+        # If user selected unit tests
+        elif args[1] == "--test":
+            # Get config file and target IP from cli arguments
+            self.passwd = "password"
+            for i in args:
+                if re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", i):
+                    self.host = i
+                    break
+            else:
+                print("Example usage: ./provision.py --test <ip>")
+                exit()
+
+            for i in os.listdir('/home/jamedeus/git/micropython-smarthome/tests'):
+                if i.startswith("test_"):
+                    self.upload("tests/" + i, "tests/" + i)
+            self.upload("tests/unit_test_boot.py", "boot.py")
 
         # If user used keyword args
         else:
