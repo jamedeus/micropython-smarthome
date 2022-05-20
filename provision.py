@@ -212,9 +212,29 @@ class Provisioner():
                 print("Example usage: ./provision.py --test <ip>")
                 exit()
 
+            # Upload all tests
             for i in os.listdir('/home/jamedeus/git/micropython-smarthome/tests'):
                 if i.startswith("test_"):
                     self.upload("tests/" + i, "tests/" + i)
+
+            # Upload all device classes
+            for i in os.listdir('/home/jamedeus/git/micropython-smarthome/devices'):
+                self.upload("devices/" + i, i)
+
+            # Upload all sensor classes
+            for i in os.listdir('/home/jamedeus/git/micropython-smarthome/sensors'):
+                self.upload("sensors/" + i, i)
+
+            # Upload Config module
+            self.upload("Config.py", "Config.py")
+
+            # Upload SoftwareTimer module
+            self.upload("SoftwareTimer.py", "SoftwareTimer.py")
+
+            # Upload API module
+            self.upload("Api.py", "Api.py")
+
+            # Upload boot.py (unit test version automatically runs all tests on boot)
             self.upload("tests/unit_test_boot.py", "boot.py")
 
         # If user used keyword args
