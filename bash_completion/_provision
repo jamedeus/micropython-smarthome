@@ -1,0 +1,101 @@
+_provision()
+{
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    # Get all node friendly names in space-seperated list
+    opts=$(cat nodes.json | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+
+    # Options grouped by category to allow different options per category
+    ip_opts="-ip --node"
+
+    password_opts="-p --password"
+
+    config_opts="-c --config"
+
+    # Takes options list as arg
+    # Returns 0 if ANY used args are in options list
+    # Returns 1 if NO used args are in options list
+    option_used() {
+        for i in $1; do
+            for j in ${COMP_WORDS[*]}; do
+                if [[ $i == $j ]]; then
+                    return 0
+                fi
+            done
+        done
+        return 1
+    }
+
+    # Check if IP or friendly name has been used
+    all=""
+    option_used $opts
+    opts_result=$?
+    option_used $ip_opts
+    ip_result=$?
+
+    # If neither IP nor friendly name has been used, add to "all" options list
+    if [[ $ip_result == 1 && $opts_result == 1 ]]; then
+        all+=$opts
+        all+=" "
+        all+=$ip_opts
+        all+=" "
+    fi
+
+    # Check if password options have been used
+    option_used $password_opts
+    result=$?
+
+    # If password options haven't been used, add to "all" options list
+    if [[ $result == 1 ]]; then
+        all+=$password_opts
+        all+=" "
+    fi
+
+    # Check if config options have been used
+    option_used $config_opts
+    result=$?
+
+    # If config options have not been used, add to "all" options list
+    if [[ $result == 1 ]]; then
+        all+=$config_opts
+        all+=" "
+    fi
+
+    # Set result of above checks as current command completion options (this may be overriden in loops below)
+    # stderr is redirected to /dev/null due to error when completing words that start with -- on Ubuntu (bug in default config)
+    COMPREPLY=( $(compgen -W "${all}" ${cur} 2>/dev/null) )
+
+    # Display nothing if prev is a password flag (user must type a password before selecting another option)
+    for i in $password_opts; do
+        if [[ $i == $prev ]]; then
+            COMPREPLY=( $(compgen -W "" ${cur}) )
+        fi
+    done
+
+    # Display nothing if prev is an ip flag (user must type an IP before selecting another option)
+    for i in $ip_opts; do
+        if [[ $i == $prev ]]; then
+            COMPREPLY=( $(compgen -W "" ${cur}) )
+        fi
+    done
+
+    # Display config files if prev is a config flag (user must select a config file before other adding options)
+    for i in $config_opts; do
+        if [[ $i == $prev ]]; then
+            config_files=$(ls -CF config/*.json)
+            COMPREPLY=( $(compgen -W "${config_files}" ${cur}) )
+        fi
+    done
+
+    # Display nothing if node has already been selected (node name is sufficient, other options are read from nodes.json)
+    option_used $opts
+    opts_result=$?
+    if [[ $opts_result == 0 ]]; then
+        COMPREPLY=( $(compgen -W "" ${cur}) )
+    fi
+
+    return 0
+}
+complete -F _provision ./provision.py
