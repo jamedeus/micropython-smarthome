@@ -410,5 +410,8 @@ class Provisioner():
 
 
 
-# Create instance, pass CLI arguments to init
-app = Provisioner(sys.argv)
+if len(sys.argv) < 2:
+    print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
+else:
+    # Create instance, pass CLI arguments to init
+    app = Provisioner(sys.argv)
