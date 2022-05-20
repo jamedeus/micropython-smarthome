@@ -1,0 +1,96 @@
+_api_client()
+{
+    local cur prev opts
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+
+    # Get all node friendly names in space-seperated list
+    opts=$(cat nodes.json | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+
+    # All API endpoints
+    endpoints="status reboot disable disable_in enable enable_in set_rule reset_rule get_schedule_rules add_rule remove_rule get_attributes ir get_temp get_humid clear_log condition_met trigger_sensor turn_on turn_off"
+
+    # Endpoints which require a device/sensor target
+    target_endpoints="disable disable_in enable enable_in set_rule reset_rule get_schedule_rules add_rule remove_rule get_attributes"
+
+    # Endpoints which require a device target
+    device_endpoints="turn_on turn_off"
+
+    # Endpoints which require a sensor target
+    sensor_endpoints="trigger_sensor condition_met"
+
+    # Display node friendly names first
+    if [[ $prev == "./api_client.py" ]]; then
+        COMPREPLY=( $(compgen -W "${opts}" ${cur}) )
+        return 0
+    fi
+
+    # Display endpoints if prev is a node friendly name
+    for i in $opts; do
+        if [[ $prev == $i ]]; then
+            COMPREPLY=( $(compgen -W "${endpoints}" ${cur}) )
+            return 0
+        fi
+    done
+
+    # Display endpoints if prev is an IP address
+    if [[ $prev =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        COMPREPLY=( $(compgen -W "${endpoints}" ${cur}) )
+        return 0
+
+    # Display IR categories if prev is ir
+    elif [[ $prev == "ir" ]]; then
+        COMPREPLY=( $(compgen -W "ac tv backlight" ${cur}) )
+        return 0
+
+    # Display AC remote keys if prev is ac
+    elif [[ $prev == "ac" ]]; then
+        COMPREPLY=( $(compgen -W "ON OFF START STOP UP DOWN TIMER UNITS FAN MODE" ${cur}) )
+        return 0
+
+    # Display TV remote keys if prev is tv
+    elif [[ $prev == "tv" ]]; then
+        COMPREPLY=( $(compgen -W "power vol_up vol_down mute up down left right enter settings exit source" ${cur}) )
+        return 0
+
+    # Display baclight presets if prev is backlight
+    elif [[ $prev == "backlight" ]]; then
+        COMPREPLY=( $(compgen -W "on off" ${cur}) )
+        return 0
+    fi
+
+    # Display available devices/sensors if prev command accepts both as target
+    for i in $target_endpoints; do
+        if [[ $prev == $i ]]; then
+            # Call API status command, parse devices and sensors from response object
+            targets=$(python3 api_client.py ${COMP_WORDS[COMP_CWORD-2]} status | jq '.devices, .sensors' | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            COMPREPLY=( $(compgen -W "${targets}" ${cur}) )
+            return 0
+
+        fi
+    done
+
+    # Display available devices if prev command requires device target
+    for i in $device_endpoints; do
+        if [[ $prev == $i ]]; then
+            # Call API status command, parse devices and sensors from response object
+            targets=$(python3 api_client.py ${COMP_WORDS[COMP_CWORD-2]} status | jq '.devices' | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            COMPREPLY=( $(compgen -W "${targets}" ${cur}) )
+            return 0
+
+        fi
+    done
+
+    # Display available sensors if prev command requires sensor target
+    for i in $sensor_endpoints; do
+        if [[ $prev == $i ]]; then
+            # Call API status command, parse devices and sensors from response object
+            targets=$(python3 api_client.py ${COMP_WORDS[COMP_CWORD-2]} status | jq '.sensors' | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            COMPREPLY=( $(compgen -W "${targets}" ${cur}) )
+            return 0
+
+        fi
+    done
+
+}
+complete -F _api_client ./api_client.py
