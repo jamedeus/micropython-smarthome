@@ -6,6 +6,7 @@ class TestMosfet(unittest.TestCase):
 
     def test_instantiation(self):
         self.instance = Mosfet("device1", "mosfet", True, None, "off", 4)
+        self.assertIsInstance(self.instance, Mosfet)
 
     def test_initial_state(self):
         self.assertFalse(self.instance.mosfet.value())

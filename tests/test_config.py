@@ -12,6 +12,7 @@ class TestConfig(unittest.TestCase):
         loaded_json = {'device1': {'max': 1023, 'min': '0', 'schedule': {'sunrise': 0, 'sunset': 32}, 'type': 'pwm', 'pin': 4, 'default_rule': 32}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'metadata': {'id': 'Upstairs bathroom', 'location': 'Under counter', 'floor': '2'}, 'sensor1': {'schedule': {'10:00': '5', '22:00': '5'}, 'pin': 15, 'targets': ['device1'], 'type': 'pir', 'default_rule': 5}}
 
         self.config = Config(loaded_json)
+        self.assertIsInstance(self.config, Config)
 
     def test_wifi_connected(self):
         # Check if network connected successfully

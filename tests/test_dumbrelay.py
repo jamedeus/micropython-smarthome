@@ -6,6 +6,7 @@ class TestDumbRelay(unittest.TestCase):
 
     def test_instantiation(self):
         self.instance = DumbRelay("device1", "dumb-relay", True, None, "off", 4)
+        self.assertIsInstance(self.instance, DumbRelay)
 
     def test_initial_state(self):
         self.assertFalse(self.instance.relay.value())
