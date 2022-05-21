@@ -60,9 +60,11 @@ class TestLedStrip(unittest.TestCase):
         self.assertTrue(self.instance.enabled)
 
     def test_turn_on(self):
+        self.instance.set_rule(32)
         self.assertTrue(self.instance.send(1))
-        self.assertEqual(self.instance.pwm.duty(), 512)
+        self.assertEqual(self.instance.pwm.duty(), 32)
 
     def test_turn_off(self):
+        self.instance.enable()
         self.assertTrue(self.instance.send(0))
         self.assertEqual(self.instance.pwm.duty(), 0)
