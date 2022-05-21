@@ -58,6 +58,8 @@ class TestDumbRelay(unittest.TestCase):
         self.assertEqual(self.instance.relay.value(), 0)
 
     def test_turn_on_while_rule_is_off(self):
+        # Make sure initial state is OFF
+        self.instance.send(0)
         self.instance.set_rule("off")
         self.assertTrue(self.instance.send(1))
         # Should have ignored send command since current_rule == "off"
