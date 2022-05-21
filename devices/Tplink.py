@@ -111,10 +111,7 @@ class Tplink(Device):
                 # Parse parameters from rule
                 cmd, target, period = rule.split("/")
 
-                try:
-                    int(target)
-                    int(period)
-                except ValueError:
+                if int(period) < 0:
                     return False
 
                 if 0 <= int(target) <= 100:
@@ -125,13 +122,16 @@ class Tplink(Device):
             elif rule == "Disabled":
                 return rule
 
+            elif isinstance(rule, bool):
+                return False
+
             elif 0 <= int(rule) <= 100:
                 return int(rule)
 
             else:
                 return False
 
-        except ValueError:
+        except (ValueError, TypeError):
             return False
 
 
