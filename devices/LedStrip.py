@@ -112,18 +112,22 @@ class LedStrip(Device):
                     # Parse parameters from rule
                     cmd, target, period = rule.split("/")
 
-                    int(period)
+                    if int(period) < 0:
+                        return False
 
                     if self.min_bright <= int(target) <= self.max_bright:
                         return rule
                     else:
                         return False
 
-                except ValueError:
+                except (ValueError, TypeError):
                     return False
 
             elif rule == "Disabled":
                 return rule
+
+            elif isinstance(rule, bool):
+                return False
 
             elif self.min_bright <= int(rule) <= self.max_bright:
                 return int(rule)
@@ -131,7 +135,7 @@ class LedStrip(Device):
             else:
                 return False
 
-        except ValueError:
+        except (ValueError, TypeError):
             return False
 
 
