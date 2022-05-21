@@ -34,7 +34,7 @@ class ApiTarget(Device):
 
         for i in rule:
             # Index must be "on" or "off"
-            if not i == "on" or i == "off":
+            if not i == "on" and not i == "off":
                 return False
 
             if not isinstance(rule[i], list):
@@ -44,10 +44,20 @@ class ApiTarget(Device):
             if rule[i][0] in ['reboot', 'clear_log', 'ignore'] and len(rule[i]) == 1:
                 continue
 
-            elif rule[i][0] in ['enable', 'disable', 'condition_met', 'trigger_sensor'] and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")) and len(rule[i]) == 2:
+            elif rule[i][0] in ['enable', 'disable'] and len(rule[i]) == 2 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
                 continue
 
-            elif rule[i][0] in ['enable_in', 'disable_in', 'set_rule'] and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")) and len(rule[i]) == 3:
+            elif rule[i][0] in ['condition_met', 'trigger_sensor'] and len(rule[i]) == 2 and rule[i][1].startswith("sensor"):
+                continue
+
+            elif rule[i][0] in ['enable_in', 'disable_in'] and len(rule[i]) == 3 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
+                try:
+                    float(rule[i][2])
+                    continue
+                except ValueError:
+                    return False
+
+            elif rule[i][0] == 'set_rule' and len(rule[i]) == 3 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
                 continue
 
             else:
