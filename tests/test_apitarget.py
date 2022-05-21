@@ -23,10 +23,20 @@ class TestApiTarget(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator({'on': ['set_rule'], 'off': ['ignore']}))
         self.assertFalse(self.instance.rule_validator({'ON': ['set_rule', 'sensor1', 5], 'OFF': ['ignore']}))
 
+    def test_rule_change(self):
+        self.assertTrue(self.instance.set_rule({'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']}))
+        self.assertEqual(self.instance.current_rule, {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
+
     def test_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
 
     def test_enable(self):
         self.instance.enable()
+        self.assertTrue(self.instance.enabled)
+
+    def test_enable_by_rule_change(self):
+        self.instance.disable()
+        self.assertFalse(self.instance.enabled)
+        self.instance.set_rule({'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
         self.assertTrue(self.instance.enabled)
