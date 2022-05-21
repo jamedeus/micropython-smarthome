@@ -42,6 +42,11 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(self.config.devices[0].enabled)
         self.assertEqual(self.config.devices[0].triggered_by[0], self.config.sensors[0])
 
+    def test_for_unexpected_devices(self):
+        # Should only be one device
+        with self.assertRaises(IndexError):
+            self.config.devices[1].device_type
+
     def test_sensor_instantiation(self):
         # Confirm correct sensors were instantiated
         self.assertEqual(len(self.config.sensors), 1)
@@ -49,11 +54,21 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(self.config.sensors[0].enabled)
         self.assertEqual(self.config.sensors[0].targets[0], self.config.devices[0])
 
+    def test_for_unexpected_sensors(self):
+        # Should only be one sensor
+        with self.assertRaises(IndexError):
+            self.config.sensors[1].sensor_type
+
     def test_group_instantiation(self):
         # Confirm group created correctly
         self.assertEqual(len(self.config.groups), 1)
         self.assertEqual(self.config.groups["group1"]["targets"][0], self.config.devices[0])
         self.assertEqual(self.config.groups["group1"]["triggers"][0], self.config.sensors[0])
+
+    def test_for_unexpected_groups(self):
+        # Should only be one group
+        with self.assertRaises(KeyError):
+            self.config.groups["group2"]
 
     def test_reload_timer(self):
         # Confirm reload_config timer is running
@@ -69,3 +84,14 @@ class TestConfig(unittest.TestCase):
     def test_get_status_method(self):
         # Test get_status method
         self.assertEqual(type(self.config.get_status()), dict)
+
+    def test_rebuilding_queue(self):
+        # Get current rule queue before rebuilding
+        device_before = self.config.devices[0].rule_queue
+        sensor_before = self.config.sensors[0].rule_queue
+
+        self.config.build_queue()
+
+        # Confirm duplicate rules were not added
+        self.assertEqual(device_before, self.config.devices[0].rule_queue)
+        self.assertEqual(sensor_before, self.config.sensors[0].rule_queue)
