@@ -10,6 +10,7 @@ while not wlan.isconnected():
     continue
 
 os.mkdir('lib')
+os.mkdir('lib/ir_tx')
 
 import webrepl
 webrepl.start()
