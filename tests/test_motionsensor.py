@@ -10,8 +10,6 @@ class TestMotionSensor(unittest.TestCase):
     def test_instantiation(self):
         self.instance = MotionSensor("sensor1", "pir", True, None, None, [], 15)
         self.assertIsInstance(self.instance, MotionSensor)
-
-    def test_initial_state(self):
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.motion)
         self.assertEqual(self.instance.sensor.value(), 0)
@@ -36,11 +34,9 @@ class TestMotionSensor(unittest.TestCase):
         self.assertTrue(self.instance.set_rule("1.5"))
         self.assertEqual(self.instance.current_rule, 1.5)
 
-    def test_disable(self):
+    def test_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
-
-    def test_enable(self):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 

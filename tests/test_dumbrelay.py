@@ -8,8 +8,6 @@ class TestDumbRelay(unittest.TestCase):
     def test_instantiation(self):
         self.instance = DumbRelay("device1", "dumb-relay", True, None, "off", 4)
         self.assertIsInstance(self.instance, DumbRelay)
-
-    def test_initial_state(self):
         self.assertFalse(self.instance.relay.value())
         self.assertTrue(self.instance.enabled)
 
@@ -34,11 +32,9 @@ class TestDumbRelay(unittest.TestCase):
         self.assertTrue(self.instance.set_rule("on"))
         self.assertEqual(self.instance.current_rule, 'on')
 
-    def test_disable(self):
+    def test_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
-
-    def test_enable(self):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 

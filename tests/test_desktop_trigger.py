@@ -31,13 +31,11 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertEqual(self.instance.current_rule, 'Disabled')
         self.assertFalse(self.instance.enabled)
 
-    def test_enable(self):
-        self.instance.enable()
-        self.assertTrue(self.instance.enabled)
-
-    def test_disable(self):
+    def test_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
+        self.instance.enable()
+        self.assertTrue(self.instance.enabled)
 
     def test_get_idle_time(self):
         idle_time = self.instance.get_idle_time()

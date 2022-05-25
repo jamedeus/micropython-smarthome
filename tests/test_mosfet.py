@@ -8,8 +8,6 @@ class TestMosfet(unittest.TestCase):
     def test_instantiation(self):
         self.instance = Mosfet("device1", "mosfet", True, None, "off", 4)
         self.assertIsInstance(self.instance, Mosfet)
-
-    def test_initial_state(self):
         self.assertFalse(self.instance.mosfet.value())
         self.assertTrue(self.instance.enabled)
 
@@ -34,11 +32,9 @@ class TestMosfet(unittest.TestCase):
         self.assertTrue(self.instance.set_rule("on"))
         self.assertEqual(self.instance.current_rule, 'on')
 
-    def test_disable(self):
+    def test_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
-
-    def test_enable(self):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 

@@ -28,11 +28,9 @@ class TestThermostat(unittest.TestCase):
         self.assertTrue(self.instance.set_rule(75))
         self.assertEqual(self.instance.current_rule, 75)
 
-    def test_disable(self):
+    def test_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
-
-    def test_enable(self):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 

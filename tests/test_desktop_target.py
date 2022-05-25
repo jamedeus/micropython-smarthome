@@ -8,8 +8,6 @@ class TestDesktopTarget(unittest.TestCase):
     def test_instantiation(self):
         self.instance = Desktop_target("device1", "desktop", True, None, None, "192.168.1.216")
         self.assertIsInstance(self.instance, Desktop_target)
-
-    def test_initial_state(self):
         self.assertTrue(self.instance.enabled)
 
     def test_rule_validation_valid(self):
@@ -33,11 +31,9 @@ class TestDesktopTarget(unittest.TestCase):
         self.assertTrue(self.instance.set_rule("on"))
         self.assertEqual(self.instance.current_rule, 'on')
 
-    def test_disable(self):
+    def test_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
-
-    def test_enable(self):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 

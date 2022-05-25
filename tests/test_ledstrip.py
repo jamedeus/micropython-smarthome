@@ -8,8 +8,6 @@ class TestLedStrip(unittest.TestCase):
     def test_instantiation(self):
         self.instance = LedStrip("device1", "pwm", True, None, "off", 4, 0, 1023)
         self.assertIsInstance(self.instance, LedStrip)
-
-    def test_initial_state(self):
         self.assertFalse(self.instance.pwm.duty())
         self.assertTrue(self.instance.enabled)
 
@@ -43,11 +41,9 @@ class TestLedStrip(unittest.TestCase):
         self.assertTrue(self.instance.set_rule(1023))
         self.assertEqual(self.instance.current_rule, 1023)
 
-    def test_disable(self):
+    def test_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
-
-    def test_enable(self):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 

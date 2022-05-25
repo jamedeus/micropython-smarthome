@@ -8,8 +8,6 @@ class TestTplink(unittest.TestCase):
     def test_instantiation(self):
         self.instance = Tplink("device1", "dimmer", True, None, None, "192.168.1.233")
         self.assertIsInstance(self.instance, Tplink)
-
-    def test_initial_state(self):
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.fading)
 
@@ -42,11 +40,9 @@ class TestTplink(unittest.TestCase):
         self.assertTrue(self.instance.set_rule(50))
         self.assertEqual(self.instance.current_rule, 50)
 
-    def test_disable(self):
+    def test_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
-
-    def test_enable(self):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 

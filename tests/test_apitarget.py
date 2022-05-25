@@ -8,8 +8,6 @@ class TestApiTarget(unittest.TestCase):
     def test_instantiation(self):
         self.instance = ApiTarget("device1", "api-target", True, None, None, "192.168.1.223")
         self.assertIsInstance(self.instance, ApiTarget)
-
-    def test_initial_state(self):
         self.assertTrue(self.instance.enabled)
 
     def test_rule_validation_valid(self):
@@ -27,11 +25,9 @@ class TestApiTarget(unittest.TestCase):
         self.assertTrue(self.instance.set_rule({'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']}))
         self.assertEqual(self.instance.current_rule, {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
 
-    def test_disable(self):
+    def test_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
-
-    def test_enable(self):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 
