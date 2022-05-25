@@ -3,6 +3,11 @@ import os
 import sys
 import gc
 import uasyncio as asyncio
+import logging
+
+# Set level to prevent logging from slowing down tests, using memory, etc
+logging.basicConfig(level=logging.CRITICAL, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+log = logging.getLogger("Main")
 
 # Add tests to path
 sys.path.insert(len(sys.path), '/tests')
