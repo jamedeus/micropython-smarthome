@@ -59,7 +59,12 @@ async def run_tests():
         total_tests += detailed_results[i]["tests_run"]
         total_failed += detailed_results[i]["failed"]
 
-    print(f"Total:  {total_tests}\nFailed: {total_failed}\n\n")
+    print(f"Total:  {total_tests}\nFailed: {total_failed}\n")
+
+    print("Memory remaining:")
+    import micropython
+    micropython.mem_info()
+    print("\n\n")
 
     asyncio.create_task(post_test())
 

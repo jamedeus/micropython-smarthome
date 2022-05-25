@@ -2,6 +2,7 @@ import unittest
 from DumbRelay import DumbRelay
 
 
+
 class TestDumbRelay(unittest.TestCase):
 
     def test_instantiation(self):
