@@ -4,8 +4,11 @@ from Thermostat import Thermostat
 
 
 class TestThermostat(unittest.TestCase):
-    def test_instantiation(self):
+
+    def __init__(self):
         self.instance = Thermostat("sensor1", "si7021", True, 74, 74, [])
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, Thermostat)
         self.assertTrue(self.instance.enabled)
 

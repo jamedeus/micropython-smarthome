@@ -5,8 +5,10 @@ from Tplink import Tplink
 
 class TestTplink(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = Tplink("device1", "dimmer", True, None, None, "192.168.1.233")
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, Tplink)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.fading)

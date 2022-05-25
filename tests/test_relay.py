@@ -5,8 +5,10 @@ from Relay import Relay
 
 class TestRelay(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = Relay("device1", "relay", True, "on", "on", "192.168.1.202")
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, Relay)
         self.assertTrue(self.instance.enabled)
 

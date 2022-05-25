@@ -5,8 +5,10 @@ from Desktop_target import Desktop_target
 
 class TestDesktopTarget(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = Desktop_target("device1", "desktop", True, None, None, "192.168.1.216")
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, Desktop_target)
         self.assertTrue(self.instance.enabled)
 

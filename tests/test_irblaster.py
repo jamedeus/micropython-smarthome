@@ -5,8 +5,10 @@ from IrBlaster import IrBlaster
 
 class TestIrBlaster(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = IrBlaster(4, "both")
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, IrBlaster)
         self.assertEqual(len(self.instance.codes), 2)
         self.assertEqual(len(self.instance.codes['ac']), 10)

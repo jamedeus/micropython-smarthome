@@ -5,8 +5,10 @@ from DumbRelay import DumbRelay
 
 class TestDumbRelay(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = DumbRelay("device1", "dumb-relay", True, None, "off", 4)
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, DumbRelay)
         self.assertFalse(self.instance.relay.value())
         self.assertTrue(self.instance.enabled)

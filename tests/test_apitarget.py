@@ -5,8 +5,10 @@ from ApiTarget import ApiTarget
 
 class TestApiTarget(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = ApiTarget("device1", "api-target", True, None, None, "192.168.1.223")
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, ApiTarget)
         self.assertTrue(self.instance.enabled)
 

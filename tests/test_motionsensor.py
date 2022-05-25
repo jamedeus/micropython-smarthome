@@ -7,8 +7,10 @@ import time
 
 class TestMotionSensor(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = MotionSensor("sensor1", "pir", True, None, None, [], 15)
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, MotionSensor)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.motion)

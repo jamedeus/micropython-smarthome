@@ -5,8 +5,10 @@ from Mosfet import Mosfet
 
 class TestMosfet(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = Mosfet("device1", "mosfet", True, None, "off", 4)
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, Mosfet)
         self.assertFalse(self.instance.mosfet.value())
         self.assertTrue(self.instance.enabled)

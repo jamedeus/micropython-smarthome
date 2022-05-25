@@ -5,8 +5,10 @@ from LedStrip import LedStrip
 
 class TestLedStrip(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = LedStrip("device1", "pwm", True, None, "off", 4, 0, 1023)
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, LedStrip)
         self.assertFalse(self.instance.pwm.duty())
         self.assertTrue(self.instance.enabled)

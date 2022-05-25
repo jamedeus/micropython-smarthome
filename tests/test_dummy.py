@@ -5,8 +5,10 @@ from Dummy import Dummy
 
 class TestDummySensor(unittest.TestCase):
 
-    def test_instantiation(self):
+    def __init__(self):
         self.instance = Dummy("sensor1", "dummy", True, None, None, [])
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, Dummy)
         self.assertTrue(self.instance.enabled)
 

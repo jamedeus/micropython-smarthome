@@ -4,8 +4,11 @@ from Desktop_trigger import Desktop_trigger
 
 
 class TestDesktopTrigger(unittest.TestCase):
-    def test_instantiation(self):
+
+    def __init__(self):
         self.instance = Desktop_trigger("sensor1", "desktop", True, None, None, [], "192.168.1.216")
+
+    def test_instantiation(self):
         self.assertIsInstance(self.instance, Desktop_trigger)
         self.assertTrue(self.instance.enabled)
 
