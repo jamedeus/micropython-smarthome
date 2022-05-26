@@ -5,10 +5,11 @@ from LedStrip import LedStrip
 
 class TestLedStrip(unittest.TestCase):
 
-    def __init__(self):
-        self.instance = LedStrip("device1", "pwm", True, None, "off", 4, 0, 1023)
+    def __dir__(self):
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off"]
 
     def test_instantiation(self):
+        self.instance = LedStrip("device1", "pwm", True, None, "off", 4, 0, 1023)
         self.assertIsInstance(self.instance, LedStrip)
         self.assertFalse(self.instance.pwm.duty())
         self.assertTrue(self.instance.enabled)

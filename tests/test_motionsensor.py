@@ -1,16 +1,16 @@
 import unittest
 from MotionSensor import MotionSensor
 import SoftwareTimer
-import time
 
 
 
 class TestMotionSensor(unittest.TestCase):
 
-    def __init__(self):
-        self.instance = MotionSensor("sensor1", "pir", True, None, None, [], 15)
+    def __dir__(self):
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_reset_timer"]
 
     def test_instantiation(self):
+        self.instance = MotionSensor("sensor1", "pir", True, None, None, [], 15)
         self.assertIsInstance(self.instance, MotionSensor)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.motion)
