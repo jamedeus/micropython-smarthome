@@ -4,6 +4,8 @@ import sys
 import gc
 import uasyncio as asyncio
 import logging
+import json
+import network
 
 # Set level to prevent logging from slowing down tests, using memory, etc
 logging.basicConfig(level=logging.CRITICAL, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
@@ -17,6 +19,22 @@ sys.path.insert(len(sys.path), '/tests')
 async def run_tests():
     print("\n\n---BEGIN TESTING---\n\n")
 
+    # Load config, records results from last boot + which test to run on next boot
+    try:
+        with open('testing_config.json', 'r') as file:
+            testing_config = json.load(file)
+    except OSError:
+        # If config doesn't exist, create template
+        testing_config = {}
+        testing_config["next"] = "module"
+        testing_config["results"] = {}
+        testing_config["results"]["module"] = {}
+        testing_config["results"]["core"] = {}
+
+    target = testing_config["next"]
+
+    print(f"---RUNNING {target.upper()} TESTS---\n\n")
+
     runner = unittest.TestRunner()
 
     # Record total tests, failed, errored, and skipped for each test case
@@ -24,7 +42,11 @@ async def run_tests():
 
     # Import all modules under /tests
     for test in os.listdir('tests'):
-        module = __import__(test.split(".")[0])
+        # Only run tests if they are in correct category (module or core)
+        if test.startswith("test_" + target):
+            module = __import__(test.split(".")[0])
+        else:
+            continue
 
         # Find and run test case classes in module
         for i in dir(module):
@@ -51,50 +73,86 @@ async def run_tests():
 
     print("\n\n---TESTING COMPLETE---\n\n")
 
-    total_tests = 0
-    total_failed = 0
-
-    # Print results summary
-    for i in detailed_results:
-        print(i.split(".")[0].split("_")[1])
-        print(f" - Tests:         {detailed_results[i]["tests_run"]}")
-        print(f"   - Failed:      {detailed_results[i]["failed"]}")
-        print(f"   - Errored:     {detailed_results[i]["errors"]}")
-        print(f"   - Skipped:     {detailed_results[i]["skipped"]}\n")
-        total_tests += detailed_results[i]["tests_run"]
-        total_failed += detailed_results[i]["failed"]
-
-    print(f"Total:  {total_tests}\nFailed: {total_failed}\n")
+    print_report(detailed_results)
 
     print("Memory remaining:")
     import micropython
     micropython.mem_info()
-    print("\n\n")
+    print()
 
-    asyncio.create_task(post_test())
+    # Set test to run on next boot, add results to report
+    if testing_config["next"] == "module":
+        testing_config["next"] = "core"
+        testing_config["results"]["module"] = detailed_results
+    elif testing_config["next"] == "core":
+        testing_config["next"] = "module"
+        testing_config["results"]["core"] = detailed_results
+
+    # Write to disk
+    with open('testing_config.json', 'w') as file:
+        json.dump(testing_config, file)
+
+    # Start webrepl to allow upload
+    import webrepl
+    webrepl.start()
+
+    while True:
+        print("\nWhat would you like to do next?")
+        print(" [1] Run module tests")
+        print(" [2] Run core tests")
+        print(f" [3] View results from current test ({target})")
+        print(" [4] View results from last test")
+        print(" [5] Reboot on upload")
+        choice = input()
+        print()
+
+        if choice == "1":
+            testing_config["next"] = "module"
+            with open('testing_config.json', 'w') as file:
+                json.dump(testing_config, file)
+            import machine
+            machine.reset()
+
+        elif choice == "2":
+            testing_config["next"] = "core"
+            with open('testing_config.json', 'w') as file:
+                json.dump(testing_config, file)
+            import machine
+            machine.reset()
+
+        elif choice == "3":
+            print_report(testing_config["results"][target])
+
+        elif choice == "4":
+            if target == "core":
+                print_report(testing_config["results"]["module"])
+            elif target == "module":
+                print_report(testing_config["results"]["core"])
+
+        elif choice == "5":
+            asyncio.create_task(disk_monitor())
+            break
+
+        else:
+            print("\nERROR: Please enter a number and press enter.\n")
 
 
 
-async def post_test():
-    # After testing: listen for upload, reboot when new code received
-    import network, webrepl
+def print_report(results):
+    total_tests = 0
+    total_failed = 0
 
-    # Connect to wifi
-    wlan = network.WLAN()
-    wlan.active(True)
-    if not wlan.isconnected():
-        import json
-        with open('config.json', 'r') as file:
-            config = json.load(file)
-        wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+    # Print results summary
+    for i in results:
+        print(i.split(".")[0].split("_")[2])
+        print(f" - Tests:         {results[i]["tests_run"]}")
+        print(f"   - Failed:      {results[i]["failed"]}")
+        print(f"   - Errored:     {results[i]["errors"]}")
+        print(f"   - Skipped:     {results[i]["skipped"]}\n")
+        total_tests += results[i]["tests_run"]
+        total_failed += results[i]["failed"]
 
-    # Wait until connected before starting webrepl
-    while not wlan.isconnected():
-        continue
-    else:
-        webrepl.start()
-
-    asyncio.create_task(disk_monitor())
+    print(f"Total:  {total_tests}\nFailed: {total_failed}\n")
 
 
 
@@ -102,6 +160,8 @@ async def disk_monitor():
     from machine import reset
     # Get filesize/modification time (to detect upload in future)
     old = os.stat("boot.py")
+
+    print("Waiting for new code...")
 
     while True:
         # Reboot if file changed on disk
@@ -112,6 +172,19 @@ async def disk_monitor():
             await asyncio.sleep(1) # Only check once per second
 
 
+
+# Connect to wifi
+wlan = network.WLAN()
+wlan.active(True)
+if not wlan.isconnected():
+    import json
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+    wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+
+# Wait until connected
+while not wlan.isconnected():
+    continue
 
 # Import + initialize API
 from Api import app
