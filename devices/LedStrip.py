@@ -17,6 +17,9 @@ class LedStrip(Device):
         # Raising significantly reduces max brightness (exceeded MOSFET switching time), may just need different power supply?
         self.pwm = PWM(Pin(pin), duty=0)
 
+        # Hardware bug workaround, occasionally 100% brightness on boot despite reading 0% in software
+        self.pwm.duty(0)
+
         self.bright = 0 # Store current brightness, allows smooth transition when rule changes
 
         self.min_bright = int(min_bright)
