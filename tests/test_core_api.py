@@ -195,8 +195,14 @@ class TestApi(unittest.TestCase):
         # State should now be True
         response = self.send_command(['condition_met', 'sensor2'])
         self.assertEqual(response, {'Condition': True})
-        # TODO find way to wait for timer to expire, check again.
-        # Tried calling seperate function containing await asyncio.sleep(1), blocks SoftwareTimer somehow - probably related to fade bug
+        # Set very short timeout
+        response = self.send_command(['set_rule', 'sensor2', '0.0001'])
+        # Wait for reset timer to expire
+        loop = asyncio.get_event_loop()
+        response = loop.run_until_complete(await asyncio.sleep(1))
+        # State should now be False
+        response = self.send_command(['condition_met', 'sensor2'])
+        self.assertEqual(response, {'Condition': False})
 
     def test_turn_on(self):
         # Make sure device is enabled and turned off before testing
