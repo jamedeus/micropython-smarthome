@@ -131,7 +131,8 @@ async def run_tests():
 
         elif choice == "5":
             asyncio.create_task(disk_monitor())
-            break
+            while True:
+                await asyncio.sleep(0)
 
         else:
             print("\nERROR: Please enter a number and press enter.\n")
@@ -173,37 +174,28 @@ async def disk_monitor():
 
 
 
-# Connect to wifi
-wlan = network.WLAN()
-wlan.active(True)
-if not wlan.isconnected():
-    import json
-    with open('config.json', 'r') as file:
-        config = json.load(file)
-    wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+if __name__ == "__main__":
+    # Connect to wifi
+    wlan = network.WLAN()
+    wlan.active(True)
+    if not wlan.isconnected():
+        import json
+        with open('config.json', 'r') as file:
+            config = json.load(file)
+        wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
 
-# Wait until connected
-while not wlan.isconnected():
-    continue
+    # Wait until connected
+    while not wlan.isconnected():
+        continue
 
-# Import + initialize API
-from Api import app
+    # Import SoftwareTimer instance, add to async loop
+    from SoftwareTimer import timer
+    asyncio.create_task(timer.loop())
 
-# Import SoftwareTimer instance, add to async loop below
-from SoftwareTimer import timer
+    # Import + initialize API
+    from Api import app
+    asyncio.create_task(app.run())
 
-# Create main loop, add tasks
-loop = asyncio.get_event_loop()
+    gc.collect()
 
-# SoftwareTimer loop checks if timers have expired, applies actions
-loop.create_task(timer.loop())
-# Start API server, await requests
-loop.create_task(app.run())
-
-# Add test runner last, ensure SoftwareTimer and API are ready for testing
-loop.create_task(run_tests())
-
-gc.collect()
-
-# Run
-loop.run_forever()
+    asyncio.run(run_tests())
