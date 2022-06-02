@@ -247,7 +247,7 @@ def get_schedule_rules(args):
 
 @app.route("add_schedule_rule")
 def add_schedule_rule(args):
-    if not len(args) == 3:
+    if not len(args) >= 3:
         return {"ERROR": "Invalid syntax"}
 
     target = app.config.find(args[0])
@@ -262,13 +262,16 @@ def add_schedule_rule(args):
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
 
-    if target.rule_validator(args[2]):
+    if not target.rule_validator(args[2]):
+        return {"ERROR": "Invalid rule"}
+
+    if timestamp in rules and (not len(args) >=4 or not args[3] == "overwrite"):
+        return {"ERROR": "Rule already exists at {}, add 'overwrite' arg to replace".format(timestamp)}
+    else:
         rules[timestamp] = args[2]
         app.config.schedule[args[0]] = rules
         app.config.build_queue()
         return {"Rule added" : args[2], "time" : timestamp}
-    else:
-        return {"ERROR": "Invalid rule"}
 
 
 

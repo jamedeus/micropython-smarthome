@@ -226,7 +226,13 @@ def add_schedule_rule(ip, params):
         target = params.pop(0)
 
         try:
-            response = asyncio.run(request(ip, ['add_schedule_rule', target, params[0], params[1]]))
+            # User may have added "overwrite" argument to replace existing rule at same time
+            if len(params) == 2:
+                cmd = ['add_schedule_rule', target, params[0], params[1]]
+            else:
+                cmd = ['add_schedule_rule', target, params[0], params[1], params[2]]
+
+            response = asyncio.run(request(ip, cmd))
         except IndexError:
             response = {"ERROR": "Must specify time (HH:MM) followed by rule"}
 
