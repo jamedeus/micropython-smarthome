@@ -5,9 +5,18 @@ import logging
 import gc
 import SoftwareTimer
 import re
+from uasyncio import Lock
 
 # Set name for module's log lines
 log = logging.getLogger("API")
+
+lock = Lock()
+
+async def reboot():
+    # Lock released when API finishes sending reply
+    await lock.acquire()
+    from Config import reboot
+    reboot()
 
 
 
@@ -88,6 +97,9 @@ class Api:
                 path = data[0]
                 args = data[1:]
 
+            # Acquire lock, prevents reboot until finished sending reply
+            await lock.acquire()
+
             # Find endpoint matching path, call handler function and pass args
             try:
                 # Call handler, receive reply for client
@@ -118,6 +130,9 @@ class Api:
         # Client disconnected, close socket
         await sreader.wait_closed()
 
+        # Allow reboot (if reboot endpoint was called)
+        lock.release()
+
 
 
 app = Api()
@@ -126,10 +141,8 @@ app = Api()
 
 @app.route("reboot")
 def index(args):
-    from Config import reboot
-    SoftwareTimer.timer.create(1000, reboot, "API")
-
-    return {"Reboot_in": "1 second"}
+    asyncio.create_task(reboot())
+    return "Rebooting"
 
 
 
