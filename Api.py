@@ -471,11 +471,11 @@ def ir_key(args):
     if not target in blaster.codes:
         return {"ERROR": 'No codes found for target "{}"'.format(target)}
 
-    if not key in blaster.codes[target]:
+    if not key.lower() in blaster.codes[target]:
         return {"ERROR": 'Target "{}" has no key {}'.format(target, key)}
 
     else:
-        blaster.send(target, key)
+        blaster.send(target, key.lower())
         return {target: key}
 
 

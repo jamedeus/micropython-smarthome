@@ -381,7 +381,6 @@ class TestParseCommandInvalid(unittest.TestCase):
         self.assertEqual(response, {'Example usage': './api_client.py ir [tv|ac|backlight] [command]'})
 
         response = parse_command("192.168.1.223", ['ir', 'ac'])
-        # TODO make these case-insensitive
         self.assertEqual(response, {'ERROR': 'Must speficy one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START'})
 
         response = parse_command("192.168.1.223", ['ir', 'ac', 'power'])
