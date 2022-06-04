@@ -1,5 +1,6 @@
 import unittest
 from api_client import *
+import time
 
 
 
@@ -24,6 +25,14 @@ class TestParseIP(unittest.TestCase):
 
 
 class TestParseCommand(unittest.TestCase):
+
+    # Test reboot first for predictable initial state (replace schedule rules deleted by last test etc)
+    def test_1(self):
+        response = parse_command("192.168.1.223", ['reboot'])
+        self.assertEqual(response, {'Reboot_in': '1 second'})
+
+        # Wait for node to finish booting before running next test
+        time.sleep(20)
 
     def test_status(self):
         response = parse_command("192.168.1.223", ['status'])
@@ -129,8 +138,3 @@ class TestParseCommand(unittest.TestCase):
 
         response = parse_command("192.168.1.223", ['turn_off', 'device1'])
         self.assertEqual(response, {'Off': 'device1'})
-
-    #def test_reboot(self):
-        #response = parse_command("192.168.1.223", ['reboot'])
-        #self.assertIsInstance(response, dict)
-        #self.assertEqual(response, {'Reboot_in': '1 second'})
