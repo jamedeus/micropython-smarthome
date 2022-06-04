@@ -11,7 +11,7 @@ class TestParseIP(unittest.TestCase):
         self.assertTrue(parse_ip(args))
 
     def test_node_name(self):
-        args = ['--all', 'status']
+        args = ['bedroom', 'status']
         self.assertTrue(parse_ip(args))
 
     def test_ip_flag(self):
@@ -21,6 +21,55 @@ class TestParseIP(unittest.TestCase):
     def test_no_ip_flag(self):
         args = ['192.168.1.223', 'status']
         self.assertTrue(parse_ip(args))
+
+
+
+class TestParseIPInvalid(unittest.TestCase):
+
+    def test_all_nodes_no_command(self):
+        args = ['--all']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+    def test_all_nodes_invalid_command(self):
+        args = ['--all', 'notacommand']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+    def test_node_name_no_command(self):
+        args = ['bedroom']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+    def test_node_name_invalid_command(self):
+        args = ['bedroom', 'notacommand']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+    def test_invalid_node_name(self):
+        args = ['fakeroom', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+    def test_ip_flag_no_command(self):
+        args = ['-ip', '192.168.1.223']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+    def test_ip_flag_invalid_command(self):
+        args = ['-ip', '192.168.1.223', 'notacommand']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+    def test_no_ip_flag_no_command(self):
+        args = ['192.168.1.223']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+    def test_no_ip_flag_invalid_command(self):
+        args = ['192.168.1.223', 'notacommand']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
 
 
 

@@ -29,7 +29,7 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_temp" + Style.RESET_ALL + "                          Get current reading from temp sensor in Farenheit")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_humid" + Style.RESET_ALL + "                         Get current relative humidity from temp sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "clear_log" + Style.RESET_ALL + "                         Delete node's log file\n")
-    exit()
+    raise SystemExit
 
 
 
@@ -89,7 +89,7 @@ def parse_ip(args):
                 break
             else:
                 print("Error: Invalid IP format")
-                return False
+                raise SystemExit
 
         elif re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", args[i]):
             ip = args.pop(i)
@@ -100,7 +100,7 @@ def parse_ip(args):
         print(Fore.RED + "Error: Must specify target ip, or one of the following names:" + Fore.RESET)
         for name in nodes:
             print(f" - {name}")
-        return False
+        raise SystemExit
 
     print(json.dumps(response, indent=4) + "\n")
     return True
