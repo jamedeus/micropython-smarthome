@@ -120,7 +120,7 @@ class TestParseCommand(unittest.TestCase):
     # Test reboot first for predictable initial state (replace schedule rules deleted by last test etc)
     def test_1(self):
         response = parse_command("192.168.1.223", ['reboot'])
-        self.assertEqual(response, {'Reboot_in': '1 second'})
+        self.assertEqual(response, "Rebooting")
 
         # Wait for node to finish booting before running next test
         time.sleep(20)
