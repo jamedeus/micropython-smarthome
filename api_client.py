@@ -52,7 +52,7 @@ async def request(ip, msg):
 
 
 
-def parse_ip():
+def parse_ip(args):
     # Load config file
     try:
         with open(os.path.dirname(os.path.realpath(__file__)) + '/nodes.json', 'r') as file:
@@ -61,47 +61,49 @@ def parse_ip():
         print("Warning: Unable to find nodes.json, friendly names will not work")
         nodes = {}
 
-    # Remove name of application from args
-    sys.argv.pop(0)
-
     # Get target ip
-    for i in range(len(sys.argv)):
+    for i in range(len(args)):
 
-        if sys.argv[i] == "--all":
-            sys.argv.pop(i)
+        if args[i] == "--all":
+            args.pop(i)
             for i in nodes:
                 ip = nodes[i]["ip"]
                 print(ip)
                 # Use copy of original args since items are removed by parser
-                cmd = sys.argv.copy()
-                parse_command(ip, cmd)
-            exit()
+                cmd = args.copy()
+                response = parse_command(ip, cmd)
+                print(json.dumps(response, indent=4) + "\n")
+            return True
 
-        elif sys.argv[i] in nodes:
-            ip = nodes[sys.argv[i]]["ip"]
-            sys.argv.pop(i)
-            parse_command(ip, sys.argv)
-            exit()
+        elif args[i] in nodes:
+            ip = nodes[args[i]]["ip"]
+            args.pop(i)
+            response = parse_command(ip, args)
+            break
 
-        elif sys.argv[i] == "-ip":
-            sys.argv.pop(i)
-            ip = sys.argv.pop(i)
+        elif args[i] == "-ip":
+            args.pop(i)
+            ip = args.pop(i)
             if re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", ip):
-                parse_command(ip, sys.argv)
-                exit()
+                response = parse_command(ip, args)
+                break
             else:
                 print("Error: Invalid IP format")
-                exit()
+                return False
 
-        elif re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", sys.argv[i]):
-            ip = sys.argv.pop(i)
-            parse_command(ip, sys.argv)
-            exit()
+        elif re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", args[i]):
+            ip = args.pop(i)
+            response = parse_command(ip, args)
+            break
 
     else:
         print(Fore.RED + "Error: Must specify target ip, or one of the following names:" + Fore.RESET)
         for name in nodes:
             print(f" - {name}")
+        return False
+
+    print(json.dumps(response, indent=4) + "\n")
+    return True
 
 
 
@@ -114,13 +116,10 @@ def parse_command(ip, args):
             # Remove endpoint arg
             args.pop(0)
             # Send remaining args to handler function
-            response = endpoint[1](ip, args)
-            break
+            return endpoint[1](ip, args)
 
     else:
         error()
-
-    print(json.dumps(response, indent=4) + "\n")
 
 
 
@@ -354,4 +353,8 @@ def turn_on(ip, params):
 
 
 
-parse_ip()
+if __name__ == "__main__":
+    # Remove name of application from args
+    sys.argv.pop(0)
+
+    parse_ip(sys.argv)
