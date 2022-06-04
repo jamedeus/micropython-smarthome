@@ -61,6 +61,27 @@ class TestParseIPInvalid(unittest.TestCase):
         with self.assertRaises(SystemExit):
             parse_ip(args)
 
+    def test_ip_flag_invalid_ip(self):
+        args = ['-ip', '192.168.1', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+        args = ['-ip', '999.999.999.999', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+        args = ['-ip', '192.168.1.999', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+        args = ['-ip', '192.168.o.ll', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+        args = ['-ip', '1921681223', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
     def test_no_ip_flag_no_command(self):
         args = ['192.168.1.223']
         with self.assertRaises(SystemExit):
@@ -68,6 +89,27 @@ class TestParseIPInvalid(unittest.TestCase):
 
     def test_no_ip_flag_invalid_command(self):
         args = ['192.168.1.223', 'notacommand']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+    def test_no_ip_flag_invalid_ip(self):
+        args = ['192.168.1', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+        args = ['999.999.999.999', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+        args = ['192.168.1.999', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+        args = ['192.168.o.ll', 'status']
+        with self.assertRaises(SystemExit):
+            parse_ip(args)
+
+        args = ['1921681223', 'status']
         with self.assertRaises(SystemExit):
             parse_ip(args)
 

@@ -84,14 +84,14 @@ def parse_ip(args):
         elif args[i] == "-ip":
             args.pop(i)
             ip = args.pop(i)
-            if re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", ip):
+            if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip):
                 response = parse_command(ip, args)
                 break
             else:
                 print("Error: Invalid IP format")
                 raise SystemExit
 
-        elif re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", args[i]):
+        elif re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", args[i]):
             ip = args.pop(i)
             response = parse_command(ip, args)
             break
