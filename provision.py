@@ -6,7 +6,7 @@
 # Usage: ./provision.py <friendly-name-from-nodes.json>
 # Usage: ./provision.py --all
 
-# Everything above line 171 copied from webrepl_cli.py with minimal modifications
+# Everything above line 156 copied from webrepl_cli.py with minimal modifications
 # https://github.com/micropython/webrepl
 
 import sys
@@ -109,21 +109,6 @@ def read_resp(ws):
 
 
 
-def send_req(ws, op, sz=0, fname=b""):
-    rec = struct.pack(WEBREPL_REQ_S, b"WA", op, 0, 0, sz, len(fname), fname)
-    debugmsg("%r %d" % (rec, len(rec)))
-    ws.write(rec)
-
-
-
-def get_ver(ws):
-    send_req(ws, WEBREPL_GET_VER)
-    d = ws.read(3)
-    d = struct.unpack("<BBB", d)
-    return d
-
-
-
 def put_file(ws, local_file, remote_file):
     sz = os.stat(local_file)[6]
     dest_fname = remote_file.encode("utf-8")
@@ -190,7 +175,6 @@ class Provisioner():
             self.passwd = "password"
             self.config = self.nodes[args[1]]["config"]
             self.host = self.nodes[args[1]]["ip"]
-            self.provision()
 
         # If user selected all nodes
         elif args[1] == "--all":
@@ -205,12 +189,12 @@ class Provisioner():
             # Get config file and target IP from cli arguments
             self.passwd = "password"
             for i in args:
-                if re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", i):
+                if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", i):
                     self.host = i
                     break
             else:
                 print("Example usage: ./provision.py --test <ip>")
-                exit()
+                raise SystemExit
 
             # Upload all tests
             for i in os.listdir('/home/jamedeus/git/micropython-smarthome/tests'):
@@ -241,14 +225,13 @@ class Provisioner():
         else:
             # Get config file and target IP from cli arguments
             self.passwd, self.config, self.host = self.arg_parse(args)
-            self.provision()
 
 
 
     def arg_parse(self, args):
         if len(args) < 5:
             print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
-            exit()
+            raise SystemExit
 
         for i in range(len(args)):
             if args[i] == '-p' or args[i] == '--password':
@@ -263,19 +246,25 @@ class Provisioner():
             if args[i] == '-c' or args[i] == '--config':
                 args.pop(i)
                 config = args.pop(i)
+                if not config.endswith('.json'):
+                    print("ERROR: Config file must be json.")
+                    raise SystemExit
                 break
         else:
             print("ERROR: Must specify config file.")
-            exit()
+            raise SystemExit
 
         for i in range(len(args)):
             if args[i] == '-ip' or args[i] == '-t' or args[i] == '--node':
                 args.pop(i)
                 ip = args.pop(i)
+                if not re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip):
+                    print("ERROR: Invalid IP address.")
+                    raise SystemExit
                 break
         else:
             print("ERROR: Must specify target IP.")
-            exit()
+            raise SystemExit
 
         return passwd, config, ip
 
@@ -283,7 +272,8 @@ class Provisioner():
 
     def provision(self):
         # Read config file, determine which device/sensor modules need to be uploaded
-        modules, libs = self.get_modules()
+        with open(self.basepath + "/" + self.config, 'r') as file:
+            modules, libs = self.get_modules(json.load(file))
 
         # Upload all device/sensor modules
         for i in modules:
@@ -320,15 +310,12 @@ class Provisioner():
 
 
 
-    # Read config file and return list of required device/sensor modules
-    def get_modules(self):
+    # Takes loaded config file as arg, returns list of required device/sensor/library modules
+    def get_modules(self, conf):
 
         # Used for initial setup, uploads code that automatically creates required subdirs
         if self.config == "setup.json":
             return [], []
-
-        with open(self.basepath + "/" + self.config, 'r') as file:
-            conf = json.load(file)
 
         modules = []
 
@@ -448,5 +435,7 @@ class Provisioner():
 
 
 
-# Create instance, pass CLI arguments to init
-app = Provisioner(sys.argv)
+if __name__ == "__main__":
+    # Create instance, pass CLI arguments to init
+    app = Provisioner(sys.argv)
+    app.provision()
