@@ -78,34 +78,26 @@ def parse_ip(args):
         elif args[i] in nodes:
             ip = nodes[args[i]]["ip"]
             args.pop(i)
-            response = parse_command(ip, args)
-            break
-
-        # TODO replace these response = with return, remove return True, add unit tests to make sure correct error messages are displayed here
+            return parse_command(ip, args)
 
         elif args[i] == "-ip":
             args.pop(i)
             ip = args.pop(i)
             if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip):
-                response = parse_command(ip, args)
-                break
+                return parse_command(ip, args)
             else:
                 print("Error: Invalid IP format")
                 raise SystemExit
 
         elif re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", args[i]):
             ip = args.pop(i)
-            response = parse_command(ip, args)
-            break
+            return parse_command(ip, args)
 
     else:
         print(Fore.RED + "Error: Must specify target ip, or one of the following names:" + Fore.RESET)
         for name in nodes:
             print(f" - {name}")
         raise SystemExit
-
-    print(json.dumps(response, indent=4) + "\n")
-    return True
 
 
 
@@ -364,4 +356,5 @@ if __name__ == "__main__":
     # Remove name of application from args
     sys.argv.pop(0)
 
-    parse_ip(sys.argv)
+    response = parse_ip(sys.argv)
+    print(json.dumps(response, indent=4) + "\n")

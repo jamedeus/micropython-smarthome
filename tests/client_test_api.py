@@ -12,15 +12,24 @@ class TestParseIP(unittest.TestCase):
 
     def test_node_name(self):
         args = ['bedroom', 'status']
-        self.assertTrue(parse_ip(args))
+        response = parse_ip(args)
+        self.assertIsInstance(response, dict)
+        self.assertEqual(len(response), 3)
+        self.assertEqual(response["metadata"]["id"], 'Bedroom')
 
     def test_ip_flag(self):
         args = ['-ip', '192.168.1.223', 'status']
-        self.assertTrue(parse_ip(args))
+        response = parse_ip(args)
+        self.assertIsInstance(response, dict)
+        self.assertEqual(len(response), 3)
+        self.assertEqual(response["metadata"]["id"], 'unit testing config')
 
     def test_no_ip_flag(self):
         args = ['192.168.1.223', 'status']
-        self.assertTrue(parse_ip(args))
+        response = parse_ip(args)
+        self.assertIsInstance(response, dict)
+        self.assertEqual(len(response), 3)
+        self.assertEqual(response["metadata"]["id"], 'unit testing config')
 
 
 
