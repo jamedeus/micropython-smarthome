@@ -38,9 +38,9 @@ class IrBlaster():
 
     def send(self, dev, key):
         try:
-            self.ir.play(self.codes[dev][key])
+            self.ir.play(self.codes[dev.lower()][key.lower()])
             return True
-        except KeyError:
+        except (KeyError, AttributeError):
             return False
 
 

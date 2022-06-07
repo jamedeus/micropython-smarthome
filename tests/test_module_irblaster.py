@@ -29,3 +29,5 @@ class TestIrBlaster(unittest.TestCase):
         self.assertFalse(self.instance.send("tv", "vol_mute"))
         self.assertFalse(self.instance.send("ac", "cool"))
         self.assertFalse(self.instance.send("ac", "hot"))
+        self.assertFalse(self.instance.send("ac", 2))
+        self.assertFalse(self.instance.send(5, "foo"))
