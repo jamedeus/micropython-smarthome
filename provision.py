@@ -221,6 +221,9 @@ class Provisioner():
             # Upload boot.py (unit test version automatically runs all tests on boot)
             self.upload("tests/unit_test_boot.py", "boot.py")
 
+            # Exit to prevent provision from running (already provisioned)
+            raise SystemExit
+
         # If user used keyword args
         else:
             # Get config file and target IP from cli arguments
