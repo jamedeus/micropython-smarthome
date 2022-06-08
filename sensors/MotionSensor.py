@@ -55,9 +55,13 @@ class MotionSensor(Sensor):
         try:
             if rule == "Disabled":
                 return rule
+            elif rule is None:
+                return rule
+            elif isinstance(rule, bool):
+                return False
             else:
                 return float(rule)
-        except ValueError:
+        except (ValueError, TypeError):
             return False
 
 

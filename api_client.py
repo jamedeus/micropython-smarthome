@@ -29,7 +29,7 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_temp" + Style.RESET_ALL + "                          Get current reading from temp sensor in Farenheit")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_humid" + Style.RESET_ALL + "                         Get current relative humidity from temp sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "clear_log" + Style.RESET_ALL + "                         Delete node's log file\n")
-    exit()
+    raise SystemExit
 
 
 
@@ -52,7 +52,7 @@ async def request(ip, msg):
 
 
 
-def parse_ip():
+def parse_ip(args):
     # Load config file
     try:
         with open(os.path.dirname(os.path.realpath(__file__)) + '/nodes.json', 'r') as file:
@@ -61,47 +61,43 @@ def parse_ip():
         print("Warning: Unable to find nodes.json, friendly names will not work")
         nodes = {}
 
-    # Remove name of application from args
-    sys.argv.pop(0)
-
     # Get target ip
-    for i in range(len(sys.argv)):
+    for i in range(len(args)):
 
-        if sys.argv[i] == "--all":
-            sys.argv.pop(i)
+        if args[i] == "--all":
+            args.pop(i)
             for i in nodes:
                 ip = nodes[i]["ip"]
                 print(ip)
                 # Use copy of original args since items are removed by parser
-                cmd = sys.argv.copy()
-                parse_command(ip, cmd)
-            exit()
+                cmd = args.copy()
+                response = parse_command(ip, cmd)
+                print(json.dumps(response, indent=4) + "\n")
+            return True
 
-        elif sys.argv[i] in nodes:
-            ip = nodes[sys.argv[i]]["ip"]
-            sys.argv.pop(i)
-            parse_command(ip, sys.argv)
-            exit()
+        elif args[i] in nodes:
+            ip = nodes[args[i]]["ip"]
+            args.pop(i)
+            return parse_command(ip, args)
 
-        elif sys.argv[i] == "-ip":
-            sys.argv.pop(i)
-            ip = sys.argv.pop(i)
-            if re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", ip):
-                parse_command(ip, sys.argv)
-                exit()
+        elif args[i] == "-ip":
+            args.pop(i)
+            ip = args.pop(i)
+            if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip):
+                return parse_command(ip, args)
             else:
                 print("Error: Invalid IP format")
-                exit()
+                raise SystemExit
 
-        elif re.match("^[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$", sys.argv[i]):
-            ip = sys.argv.pop(i)
-            parse_command(ip, sys.argv)
-            exit()
+        elif re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", args[i]):
+            ip = args.pop(i)
+            return parse_command(ip, args)
 
     else:
         print(Fore.RED + "Error: Must specify target ip, or one of the following names:" + Fore.RESET)
         for name in nodes:
             print(f" - {name}")
+        raise SystemExit
 
 
 
@@ -114,13 +110,10 @@ def parse_command(ip, args):
             # Remove endpoint arg
             args.pop(0)
             # Send remaining args to handler function
-            response = endpoint[1](ip, args)
-            break
+            return endpoint[1](ip, args)
 
     else:
         error()
-
-    print(json.dumps(response, indent=4) + "\n")
 
 
 
@@ -135,233 +128,233 @@ def add_endpoint(url):
 
 @add_endpoint("status")
 def status(ip, params):
-    response = asyncio.run(request(ip, ['status']))
-    return response
+    return asyncio.run(request(ip, ['status']))
 
 @add_endpoint("reboot")
 def reboot(ip, params):
-    response = asyncio.run(request(ip, ['reboot']))
-    return response
+    return asyncio.run(request(ip, ['reboot']))
 
 @add_endpoint("disable")
 def disable(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor to disable"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
-        response = asyncio.run(request(ip, ['disable', params[0]]))
+        return {"Example usage" : "./api_client.py disable [device|sensor]"}
+
+    if params[0].startswith("sensor") or params[0].startswith("device"):
+        return asyncio.run(request(ip, ['disable', params[0]]))
     else:
-        response = {"ERROR" : "Can only disable devices and sensors."}
-    return response
+        return {"ERROR" : "Can only disable devices and sensors"}
 
 @add_endpoint("disable_in")
 def disable_in(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor to disable"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
+        return {"Example usage" : "./api_client.py disable_in [device|sensor] [minutes]"}
+
+    if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
         try:
             period = float(params[0])
-            response = asyncio.run(request(ip, ['disable_in', target, period]))
-        except ValueError:
-            response = {"ERROR": "Please specify delay in minutes"}
+            return asyncio.run(request(ip, ['disable_in', target, period]))
+        except IndexError:
+            return {"ERROR": "Please specify delay in minutes"}
     else:
-        response = {"ERROR": "Can only disable devices and sensors"}
-
-    return response
+        return {"ERROR": "Can only disable devices and sensors"}
 
 @add_endpoint("enable")
 def disable(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor to enable"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
-        response = asyncio.run(request(ip, ['enable', params[0]]))
+        return {"Example usage" : "./api_client.py enable [device|sensor]"}
+
+    if params[0].startswith("sensor") or params[0].startswith("device"):
+        return asyncio.run(request(ip, ['enable', params[0]]))
     else:
-        response = {"ERROR" : "Can only disable devices and sensors."}
-    return response
+        return {"ERROR" : "Can only enable devices and sensors"}
 
 @add_endpoint("enable_in")
 def enable_in(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor to enable"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
+        return {"Example usage" : "./api_client.py enable_in [device|sensor] [minutes]"}
+
+    if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
         try:
             period = float(params[0])
-            response = asyncio.run(request(ip, ['enable_in', target, period]))
-        except ValueError:
-            response = {"ERROR": "Please specify delay in minutes"}
+            return asyncio.run(request(ip, ['enable_in', target, period]))
+        except IndexError:
+            return {"ERROR": "Please specify delay in minutes"}
     else:
-        response = {"ERROR": "Can only enable devices and sensors"}
-
-    return response
+        return {"ERROR": "Can only enable devices and sensors"}
 
 @add_endpoint("set_rule")
 def set_rule(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
+        return {"Example usage" : "./api_client.py set_rule [device|sensor] [rule]"}
+
+    if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
         try:
-            response = asyncio.run(request(ip, ['set_rule', target, params[0]]))
+            return asyncio.run(request(ip, ['set_rule', target, params[0]]))
         except IndexError:
-            response = {"ERROR": "Must specify new rule"}
+            return {"ERROR": "Must specify new rule"}
     else:
-        response = {"ERROR": "Can only set rules for devices and sensors"}
-
-    return response
+        return {"ERROR": "Can only set rules for devices and sensors"}
 
 @add_endpoint("reset_rule")
 def reset_rule(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
-        target = params.pop(0)
-        response = asyncio.run(request(ip, ['reset_rule', target]))
-    else:
-        response = {"ERROR": "Can only set rules for devices and sensors"}
+        return {"Example usage" : "./api_client.py reset_rule [device|sensor]"}
 
-    return response
+    if params[0].startswith("sensor") or params[0].startswith("device"):
+        target = params.pop(0)
+        return asyncio.run(request(ip, ['reset_rule', target]))
+    else:
+        return {"ERROR": "Can only set rules for devices and sensors"}
 
 @add_endpoint("get_schedule_rules")
 def get_schedule_rules(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
-        target = params.pop(0)
-        response = asyncio.run(request(ip, ['get_schedule_rules', target]))
-    else:
-        response = {"ERROR": "Only devices and sensors have schedule rules"}
+        return {"Example usage" : "./api_client.py get_schedule_rules [device|sensor]"}
 
-    return response
+    if params[0].startswith("sensor") or params[0].startswith("device"):
+        target = params.pop(0)
+        return asyncio.run(request(ip, ['get_schedule_rules', target]))
+    else:
+        return {"ERROR": "Only devices and sensors have schedule rules"}
 
 @add_endpoint("add_rule")
 def add_schedule_rule(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
+        return {"Example usage" : "./api_client.py add_rule [device|sensor] [HH:MM] [rule] <overwrite>"}
+
+    if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
-
-        try:
-            response = asyncio.run(request(ip, ['add_schedule_rule', target, params[0], params[1]]))
-        except IndexError:
-            response = {"ERROR": "Must specify time (HH:MM) followed by rule"}
-
     else:
-        response = {"ERROR": "Only devices and sensors have schedule rules"}
+        return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    return response
+    if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
+        timestamp = params.pop(0)
+    else:
+        return {"ERROR": "Must specify time (HH:MM) followed by rule"}
+
+    if len(params) == 0:
+        return {"ERROR": "Must specify new rule"}
+
+    cmd = ['add_schedule_rule', target, timestamp]
+
+    # Add remaining args to cmd - may contain rule, or rule + overwrite
+    for i in params:
+        cmd.append(i)
+
+    return asyncio.run(request(ip, cmd))
 
 @add_endpoint("remove_rule")
 def remove_rule(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
+        return {"Example usage" : "./api_client.py remove_rule [device|sensor] [HH:MM]"}
+
+    if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
-
-        try:
-            response = asyncio.run(request(ip, ['remove_rule', target, params[0]]))
-        except IndexError:
-            response = {"ERROR": "Must specify time (HH:MM) of rule to remove, use get_schedule_rules to see options"}
-
     else:
-        response = {"ERROR": "Only devices and sensors have schedule rules"}
+        return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    return response
+    if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
+        timestamp = params.pop(0)
+    else:
+        return {"ERROR": "Must specify time (HH:MM) followed by rule"}
+
+    return asyncio.run(request(ip, ['remove_rule', target, timestamp]))
 
 @add_endpoint("get_attributes")
 def get_attributes(ip, params):
     if len(params) == 0:
-        response = {"ERROR" : "Must specify a device or sensor"}
-    elif params[0].startswith("sensor") or params[0].startswith("device"):
-        target = params.pop(0)
-        response = asyncio.run(request(ip, ['get_attributes', target]))
-    else:
-        response = {"ERROR": "Must specify device or sensor"}
+        return {"Example usage" : "./api_client.py get_attributes [device|sensor]"}
 
-    return response
+    if params[0].startswith("sensor") or params[0].startswith("device"):
+        target = params.pop(0)
+        return asyncio.run(request(ip, ['get_attributes', target]))
+    else:
+        return {"ERROR": "Must specify device or sensor"}
 
 @add_endpoint("ir")
 def ir(ip, params):
-    if len(params) > 1 and (params[0] == "tv" or params[0] == "ac"):
+    if len(params) > 0 and (params[0] == "tv" or params[0] == "ac"):
         target = params.pop(0)
         try:
-            response = asyncio.run(request(ip, ['ir_key', target, params[0]]))
+            return asyncio.run(request(ip, ['ir_key', target, params[0]]))
         except IndexError:
-            response = {"ERROR": "Must specify command"}
+            if target == "tv":
+                return {"ERROR": "Must speficy one of the following commands: power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source"}
+            elif target == "ac":
+                return {"ERROR": "Must speficy one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"}
 
-    elif len(params) > 1 and params[0] == "backlight":
+    elif len(params) > 0 and params[0] == "backlight":
         params.pop(0)
         try:
             if params[0] == "on" or params[0] == "off":
-                response = asyncio.run(request(ip, ['backlight', params[0]]))
+                return asyncio.run(request(ip, ['backlight', params[0]]))
             else:
                 raise IndexError
         except IndexError:
-            response = {"ERROR": "Must specify 'on' or 'off'"}
+            return {"ERROR": "Must specify 'on' or 'off'"}
     else:
-        response = {"ERROR": "Must specify target device (tv or ac) or specify backlight [on|off]"}
-
-    return response
+        return {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"}
 
 @add_endpoint("get_temp")
 def get_temp(ip, params):
-    response = asyncio.run(request(ip, ['get_temp']))
-    return response
+    return asyncio.run(request(ip, ['get_temp']))
 
 @add_endpoint("get_humid")
 def get_humid(ip, params):
-    response = asyncio.run(request(ip, ['get_humid']))
-    return response
+    return asyncio.run(request(ip, ['get_humid']))
 
 @add_endpoint("clear_log")
 def clear_log(ip, params):
-    response = asyncio.run(request(ip, ['clear_log']))
-    return response
+    return asyncio.run(request(ip, ['clear_log']))
 
 @add_endpoint("condition_met")
 def condition_met(ip, params):
-    if len(params) == 0:
-        response = {"ERROR": "Must specify sensor"}
-    elif params[0].startswith("sensor"):
-        response = asyncio.run(request(ip, ['condition_met', params[0]]))
-    else:
-        response = {"ERROR": "Must specify sensor"}
-
-    return response
+    try:
+        if params[0].startswith("sensor"):
+            return asyncio.run(request(ip, ['condition_met', params[0]]))
+        else:
+            raise IndexError
+    except IndexError:
+        return {"ERROR": "Must specify sensor"}
 
 @add_endpoint("trigger_sensor")
 def trigger_sensor(ip, params):
-    if len(params) == 0:
-        response = {"ERROR": "Must specify sensor"}
-    elif params[0].startswith("sensor"):
-        response = asyncio.run(request(ip, ['trigger_sensor', params[0]]))
-    else:
-        response = {"ERROR": "Must specify sensor"}
-
-    return response
+    try:
+        if params[0].startswith("sensor"):
+            return asyncio.run(request(ip, ['trigger_sensor', params[0]]))
+        else:
+            raise IndexError
+    except IndexError:
+        return {"ERROR": "Must specify sensor"}
 
 @add_endpoint("turn_on")
 def turn_on(ip, params):
-    if len(params) == 0:
-        response = {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
-    elif params[0].startswith("device"):
-        response = asyncio.run(request(ip, ['turn_on', params[0]]))
-    else:
-        response = {"ERROR": "Must specify device"}
-
-    return response
+    try:
+        if params[0].startswith("device"):
+            return asyncio.run(request(ip, ['turn_on', params[0]]))
+        else:
+            raise IndexError
+    except IndexError:
+        return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
 @add_endpoint("turn_off")
 def turn_on(ip, params):
-    if len(params) == 0:
-        response = {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
-    elif params[0].startswith("device"):
-        response = asyncio.run(request(ip, ['turn_off', params[0]]))
-    else:
-        response = {"ERROR": "Must specify sensor"}
-
-    return response
-
+    try:
+        if params[0].startswith("device"):
+            return asyncio.run(request(ip, ['turn_off', params[0]]))
+        else:
+            raise IndexError
+    except IndexError:
+        return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
 
-parse_ip()
+
+if __name__ == "__main__":
+    # Remove name of application from args
+    sys.argv.pop(0)
+
+    response = parse_ip(sys.argv)
+    print(json.dumps(response, indent=4) + "\n")

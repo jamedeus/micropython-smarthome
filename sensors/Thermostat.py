@@ -46,5 +46,5 @@ class Thermostat(Sensor):
                 return int(rule)
             else:
                 return False
-        except ValueError:
+        except (ValueError, TypeError):
             return False

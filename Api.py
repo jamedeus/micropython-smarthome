@@ -5,9 +5,18 @@ import logging
 import gc
 import SoftwareTimer
 import re
+from uasyncio import Lock
 
 # Set name for module's log lines
 log = logging.getLogger("API")
+
+lock = Lock()
+
+async def reboot():
+    # Lock released when API finishes sending reply
+    await lock.acquire()
+    from Config import reboot
+    reboot()
 
 
 
@@ -88,6 +97,9 @@ class Api:
                 path = data[0]
                 args = data[1:]
 
+            # Acquire lock, prevents reboot until finished sending reply
+            await lock.acquire()
+
             # Find endpoint matching path, call handler function and pass args
             try:
                 # Call handler, receive reply for client
@@ -118,6 +130,9 @@ class Api:
         # Client disconnected, close socket
         await sreader.wait_closed()
 
+        # Allow reboot (if reboot endpoint was called)
+        lock.release()
+
 
 
 app = Api()
@@ -126,10 +141,8 @@ app = Api()
 
 @app.route("reboot")
 def index(args):
-    from Config import reboot
-    SoftwareTimer.timer.create(1000, reboot, "API")
-
-    return {"Reboot_in": "1 second"}
+    asyncio.create_task(reboot())
+    return "Rebooting"
 
 
 
@@ -247,7 +260,7 @@ def get_schedule_rules(args):
 
 @app.route("add_schedule_rule")
 def add_schedule_rule(args):
-    if not len(args) == 3:
+    if not len(args) >= 3:
         return {"ERROR": "Invalid syntax"}
 
     target = app.config.find(args[0])
@@ -262,13 +275,16 @@ def add_schedule_rule(args):
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
 
-    if target.rule_validator(args[2]):
+    if not target.rule_validator(args[2]):
+        return {"ERROR": "Invalid rule"}
+
+    if timestamp in rules and (not len(args) >=4 or not args[3] == "overwrite"):
+        return {"ERROR": "Rule already exists at {}, add 'overwrite' arg to replace".format(timestamp)}
+    else:
         rules[timestamp] = args[2]
         app.config.schedule[args[0]] = rules
         app.config.build_queue()
         return {"Rule added" : args[2], "time" : timestamp}
-    else:
-        return {"ERROR": "Invalid rule"}
 
 
 
@@ -468,11 +484,11 @@ def ir_key(args):
     if not target in blaster.codes:
         return {"ERROR": 'No codes found for target "{}"'.format(target)}
 
-    if not key in blaster.codes[target]:
+    if not key.lower() in blaster.codes[target]:
         return {"ERROR": 'Target "{}" has no key {}'.format(target, key)}
 
     else:
-        blaster.send(target, key)
+        blaster.send(target, key.lower())
         return {target: key}
 
 

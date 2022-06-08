@@ -6,7 +6,7 @@
 # Usage: ./provision.py <friendly-name-from-nodes.json>
 # Usage: ./provision.py --all
 
-# Everything above line 170 copied from webrepl_cli.py with minimal modifications
+# Everything above line 156 copied from webrepl_cli.py with minimal modifications
 # https://github.com/micropython/webrepl
 
 import sys
@@ -14,6 +14,7 @@ import os
 import struct
 import json
 import socket
+import re
 from colorama import Fore, Style
 
 DEBUG = 0
@@ -108,21 +109,6 @@ def read_resp(ws):
 
 
 
-def send_req(ws, op, sz=0, fname=b""):
-    rec = struct.pack(WEBREPL_REQ_S, b"WA", op, 0, 0, sz, len(fname), fname)
-    debugmsg("%r %d" % (rec, len(rec)))
-    ws.write(rec)
-
-
-
-def get_ver(ws):
-    send_req(ws, WEBREPL_GET_VER)
-    d = ws.read(3)
-    d = struct.unpack("<BBB", d)
-    return d
-
-
-
 def put_file(ws, local_file, remote_file):
     sz = os.stat(local_file)[6]
     dest_fname = remote_file.encode("utf-8")
@@ -173,6 +159,10 @@ Sec-WebSocket-Key: foo\r
 
 class Provisioner():
     def __init__(self, args):
+        # Show example usage and exit if no args given
+        if len(args) < 2:
+            print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
+
         # Location of provision.py, used to get relative path to other modules if run from outside dir
         self.basepath = os.path.dirname(os.path.realpath(__file__))
 
@@ -189,7 +179,6 @@ class Provisioner():
             self.passwd = "password"
             self.config = self.nodes[args[1]]["config"]
             self.host = self.nodes[args[1]]["ip"]
-            self.provision()
 
         # If user selected all nodes
         elif args[1] == "--all":
@@ -199,18 +188,57 @@ class Provisioner():
                 self.host = self.nodes[i]["ip"]
                 self.provision()
 
+        # If user selected unit tests
+        elif args[1] == "--test":
+            # Get config file and target IP from cli arguments
+            self.passwd = "password"
+            for i in args:
+                if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", i):
+                    self.host = i
+                    break
+            else:
+                print("Example usage: ./provision.py --test <ip>")
+                raise SystemExit
+
+            # Upload all tests
+            for i in os.listdir('/home/jamedeus/git/micropython-smarthome/tests'):
+                if i.startswith("test_"):
+                    self.upload("tests/" + i, "tests/" + i)
+
+            # Upload all device classes
+            for i in os.listdir('/home/jamedeus/git/micropython-smarthome/devices'):
+                self.upload("devices/" + i, i)
+
+            # Upload all sensor classes
+            for i in os.listdir('/home/jamedeus/git/micropython-smarthome/sensors'):
+                self.upload("sensors/" + i, i)
+
+            # Upload Config module
+            self.upload("Config.py", "Config.py")
+
+            # Upload SoftwareTimer module
+            self.upload("SoftwareTimer.py", "SoftwareTimer.py")
+
+            # Upload API module
+            self.upload("Api.py", "Api.py")
+
+            # Upload boot.py (unit test version automatically runs all tests on boot)
+            self.upload("tests/unit_test_boot.py", "boot.py")
+
+            # Exit to prevent provision from running (already provisioned)
+            raise SystemExit
+
         # If user used keyword args
         else:
             # Get config file and target IP from cli arguments
             self.passwd, self.config, self.host = self.arg_parse(args)
-            self.provision()
 
 
 
     def arg_parse(self, args):
         if len(args) < 5:
             print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
-            exit()
+            raise SystemExit
 
         for i in range(len(args)):
             if args[i] == '-p' or args[i] == '--password':
@@ -225,19 +253,25 @@ class Provisioner():
             if args[i] == '-c' or args[i] == '--config':
                 args.pop(i)
                 config = args.pop(i)
+                if not config.endswith('.json'):
+                    print("ERROR: Config file must be json.")
+                    raise SystemExit
                 break
         else:
             print("ERROR: Must specify config file.")
-            exit()
+            raise SystemExit
 
         for i in range(len(args)):
             if args[i] == '-ip' or args[i] == '-t' or args[i] == '--node':
                 args.pop(i)
                 ip = args.pop(i)
+                if not re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip):
+                    print("ERROR: Invalid IP address.")
+                    raise SystemExit
                 break
         else:
             print("ERROR: Must specify target IP.")
-            exit()
+            raise SystemExit
 
         return passwd, config, ip
 
@@ -245,7 +279,8 @@ class Provisioner():
 
     def provision(self):
         # Read config file, determine which device/sensor modules need to be uploaded
-        modules, libs = self.get_modules()
+        with open(self.basepath + "/" + self.config, 'r') as file:
+            modules, libs = self.get_modules(json.load(file))
 
         # Upload all device/sensor modules
         for i in modules:
@@ -282,15 +317,12 @@ class Provisioner():
 
 
 
-    # Read config file and return list of required device/sensor modules
-    def get_modules(self):
+    # Takes loaded config file as arg, returns list of required device/sensor/library modules
+    def get_modules(self, conf):
 
         # Used for initial setup, uploads code that automatically creates required subdirs
         if self.config == "setup.json":
             return [], []
-
-        with open(self.basepath + "/" + self.config, 'r') as file:
-            conf = json.load(file)
 
         modules = []
 
@@ -410,8 +442,7 @@ class Provisioner():
 
 
 
-if len(sys.argv) < 2:
-    print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
-else:
+if __name__ == "__main__":
     # Create instance, pass CLI arguments to init
     app = Provisioner(sys.argv)
+    app.provision()

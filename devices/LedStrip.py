@@ -17,6 +17,9 @@ class LedStrip(Device):
         # Raising significantly reduces max brightness (exceeded MOSFET switching time), may just need different power supply?
         self.pwm = PWM(Pin(pin), duty=0)
 
+        # Hardware bug workaround, occasionally 100% brightness on boot despite reading 0% in software
+        self.pwm.duty(0)
+
         self.bright = 0 # Store current brightness, allows smooth transition when rule changes
 
         self.min_bright = int(min_bright)
@@ -108,22 +111,22 @@ class LedStrip(Device):
     def rule_validator(self, rule):
         try:
             if str(rule).startswith("fade"):
-                try:
-                    # Parse parameters from rule
-                    cmd, target, period = rule.split("/")
+                # Parse parameters from rule
+                cmd, target, period = rule.split("/")
 
-                    int(period)
+                if int(period) < 0:
+                    return False
 
-                    if self.min_bright <= int(target) <= self.max_bright:
-                        return rule
-                    else:
-                        return False
-
-                except ValueError:
+                if self.min_bright <= int(target) <= self.max_bright:
+                    return rule
+                else:
                     return False
 
             elif rule == "Disabled":
                 return rule
+
+            elif isinstance(rule, bool):
+                return False
 
             elif self.min_bright <= int(rule) <= self.max_bright:
                 return int(rule)
@@ -131,7 +134,7 @@ class LedStrip(Device):
             else:
                 return False
 
-        except ValueError:
+        except (ValueError, TypeError):
             return False
 
 

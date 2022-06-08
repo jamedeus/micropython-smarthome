@@ -7,7 +7,7 @@ log = logging.getLogger("DumbRelay")
 
 
 
-# Used for Sonoff relays running Tasmota
+# Used for relay breakout board
 class DumbRelay(Device):
     def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, pin):
         super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
@@ -30,7 +30,8 @@ class DumbRelay(Device):
         log.info(f"{self.name}: send method called, state = {state}")
 
         if self.current_rule == "off" and state == 1:
-            return True # Tell sensor that send succeeded so it doesn't retry forever
+            pass
         else:
             self.relay.value(state)
-            return True
+
+        return True
