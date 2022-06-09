@@ -130,9 +130,9 @@ async def run_tests():
                 print_report(testing_config["results"]["core"])
 
         elif choice == "5":
-            asyncio.create_task(disk_monitor())
-            while True:
-                await asyncio.sleep(0)
+            loop = asyncio.new_event_loop()
+            loop.create_task(disk_monitor())
+            loop.run_forever()
 
         else:
             print("\nERROR: Please enter a number and press enter.\n")
