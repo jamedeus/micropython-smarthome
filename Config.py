@@ -126,6 +126,10 @@ class Config():
                 from Dummy import Dummy
                 instance = Dummy(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets)
 
+            elif conf[sensor]["type"] == "switch":
+                from Switch import Switch
+                instance = Switch(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["pin"])
+
             # Add the sensor instance to each of it's target's "triggered_by" list
             for t in targets:
                 t.triggered_by.append(instance)

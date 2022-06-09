@@ -387,6 +387,11 @@ class Provisioner():
 
             elif conf[i]["type"] == "dummy":
                 modules.append("sensors/Dummy.py")
+                modules.append("sensors/Sensor.py")
+
+            elif conf[i]["type"] == "switch":
+                modules.append("sensors/Switch.py")
+                modules.append("sensors/Sensor.py")
 
         # Remove duplicates
         modules = set(modules)
