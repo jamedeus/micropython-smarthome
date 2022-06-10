@@ -50,3 +50,11 @@ class TestDesktopTrigger(unittest.TestCase):
         state = self.instance.get_monitor_state()
         self.assertIsInstance(state, str)
         self.assertIn(state, ['On', 'Off', 'Disabled'])
+
+    def test_trigger(self):
+        # Ensure not already triggered to avoid false positive
+        self.instance.current = "Off"
+        self.assertFalse(self.instance.condition_met())
+        # Trigger, condition should now be met
+        self.assertTrue(self.instance.trigger())
+        self.assertTrue(self.instance.condition_met())

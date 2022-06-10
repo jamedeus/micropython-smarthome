@@ -59,3 +59,10 @@ class TestMotionSensor(unittest.TestCase):
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
         # Motion attribute should be True
         self.assertTrue(self.instance.motion)
+
+    def test_trigger_sensor(self):
+        # Ensure not already tiggered to avoid false positive
+        self.instance.motion = False
+        # Trigger, condition should now be met
+        self.assertTrue(self.instance.trigger())
+        self.assertTrue(self.instance.condition_met())

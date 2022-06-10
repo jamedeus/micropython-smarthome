@@ -57,3 +57,11 @@ class TestDummySensor(unittest.TestCase):
 
         self.instance.set_rule("Disabled")
         self.assertEqual(self.instance.condition_met(), None)
+
+    def test_trigger(self):
+        # Ensure current rule is off to avoid false positive
+        self.instance.set_rule("off")
+        self.assertFalse(self.instance.condition_met())
+        # Trigger, condition should now be met
+        self.assertTrue(self.instance.trigger())
+        self.assertTrue(self.condition_met())

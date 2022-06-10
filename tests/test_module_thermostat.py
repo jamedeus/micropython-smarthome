@@ -62,3 +62,7 @@ class TestThermostat(unittest.TestCase):
 
         self.instance.set_rule(current+2)
         self.assertTrue(self.instance.condition_met())
+
+    def test_trigger(self):
+        # Should not be able to trigger this sensor type
+        self.assertFalse(self.instance.trigger())
