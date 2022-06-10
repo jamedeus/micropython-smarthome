@@ -196,6 +196,11 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['condition_met', 'sensor2'])
         self.assertEqual(response, {'Condition': True})
 
+    def test_trigger_sensor_invalid(self):
+        # Trigger sensor not compatible with endpoint
+        response = self.send_command(['trigger_sensor', 'sensor1'])
+        self.assertEqual(response, {"ERROR": "Cannot trigger si7021 sensor type"})
+
     def test_turn_on(self):
         # Make sure device is enabled and turned off before testing
         self.device1.enable()
