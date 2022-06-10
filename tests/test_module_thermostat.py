@@ -6,7 +6,7 @@ from Thermostat import Thermostat
 class TestThermostat(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_sensor", "test_condition_met"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_sensor", "test_condition_met", "test_trigger"]
 
     def test_instantiation(self):
         self.instance = Thermostat("sensor1", "si7021", True, 74, 74, [])

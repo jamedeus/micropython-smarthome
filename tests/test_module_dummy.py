@@ -6,7 +6,7 @@ from Dummy import Dummy
 class TestDummySensor(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_condition_met"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_condition_met", "test_trigger"]
 
     def test_instantiation(self):
         self.instance = Dummy("sensor1", "dummy", True, None, None, [])
@@ -64,4 +64,4 @@ class TestDummySensor(unittest.TestCase):
         self.assertFalse(self.instance.condition_met())
         # Trigger, condition should now be met
         self.assertTrue(self.instance.trigger())
-        self.assertTrue(self.condition_met())
+        self.assertTrue(self.instance.condition_met())

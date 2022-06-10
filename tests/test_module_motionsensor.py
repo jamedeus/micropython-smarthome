@@ -7,7 +7,7 @@ import SoftwareTimer
 class TestMotionSensor(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_reset_timer"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_reset_timer", "test_trigger"]
 
     def test_instantiation(self):
         self.instance = MotionSensor("sensor1", "pir", True, None, None, [], 15)
@@ -60,7 +60,7 @@ class TestMotionSensor(unittest.TestCase):
         # Motion attribute should be True
         self.assertTrue(self.instance.motion)
 
-    def test_trigger_sensor(self):
+    def test_trigger(self):
         # Ensure not already tiggered to avoid false positive
         self.instance.motion = False
         # Trigger, condition should now be met
