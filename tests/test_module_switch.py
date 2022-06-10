@@ -6,7 +6,7 @@ from Switch import Switch
 class TestSwitch(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_trigger"]
 
     def test_instantiation(self):
         self.instance = Switch("sensor1", "switch", True, None, None, [], 19)
@@ -40,3 +40,7 @@ class TestSwitch(unittest.TestCase):
         self.assertFalse(self.instance.enabled)
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
+
+    def test_trigger(self):
+        # Should not be able to trigger this sensor type
+        self.assertFalse(self.instance.trigger())

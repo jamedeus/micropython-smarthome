@@ -88,3 +88,6 @@ class Sensor():
         elif self.sensor_type == "dummy":
             self.current_rule = "on"
             return True
+
+        elif self.sensor_type == "switch":
+            return False
