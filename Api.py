@@ -154,6 +154,9 @@ def status(args):
 
 @app.route("enable")
 def enable(args):
+    if not len(args) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
     target = app.config.find(args[0])
 
     if not target:
@@ -183,6 +186,9 @@ def enable_for(args):
 
 @app.route("disable")
 def disable(args):
+    if not len(args) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
     target = app.config.find(args[0])
 
     if not target:
@@ -473,6 +479,9 @@ def clear_log(args):
 
 @app.route("ir_key")
 def ir_key(args):
+    if not len(args) >= 2:
+        return {"ERROR": "Invalid syntax"}
+
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
@@ -495,6 +504,9 @@ def ir_key(args):
 
 @app.route("backlight")
 def backlight(args):
+    if not len(args) >= 1:
+        return {"ERROR": "Invalid syntax"}
+
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
