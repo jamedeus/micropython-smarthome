@@ -316,3 +316,46 @@ class TestApi(unittest.TestCase):
 
         response = self.send_command(['backlight'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+    def test_invalid_instance(self):
+        response = self.send_command(['enable', 'device99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['disable', 'device99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['enable_in', 'device99', '5'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['disable_in', 'device99', '5'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['set_rule', 'device99', '100'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['reset_rule', 'device99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['get_schedule_rules', 'device99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['add_schedule_rule', 'device99', '12:34', '100'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['remove_rule', 'device99', '12:34'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['get_attributes', 'device99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['condition_met', 'sensor99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['trigger_sensor', 'sensor99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['turn_on', 'device99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['turn_off', 'device99'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
