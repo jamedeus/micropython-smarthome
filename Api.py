@@ -407,6 +407,9 @@ def turn_on(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
+    if not str(args[0]).startswith("device"):
+        return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
+
     target = app.config.find(args[0])
 
     if not target:
@@ -425,6 +428,9 @@ def turn_on(args):
 def turn_on(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
+
+    if not str(args[0]).startswith("device"):
+        return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
     target = app.config.find(args[0])
 

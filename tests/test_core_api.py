@@ -220,7 +220,11 @@ class TestApi(unittest.TestCase):
         # PWM duty cycle should now be same as current rule
         self.assertEqual(self.device1.pwm.duty(), self.device1.current_rule)
 
-    def test_turn_on(self):
+        # Should only accept devices, not sensors
+        response = self.send_command(['turn_on', 'sensor1'])
+        self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
+
+    def test_turn_off(self):
         # Make sure device is enabled and turned on before testing
         self.device1.enable()
         self.device1.send(1)
@@ -229,6 +233,10 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'Off': 'device1'})
         # PWM duty cycle should now be 0
         self.assertEqual(self.device1.pwm.duty(), 0)
+
+        # Should only accept devices, not sensors
+        response = self.send_command(['turn_off', 'sensor1'])
+        self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
 
     def test_get_temp(self):
         response = self.send_command(['get_temp'])
