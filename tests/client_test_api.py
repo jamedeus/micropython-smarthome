@@ -381,6 +381,9 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command("192.168.1.223", ['remove_rule', 'device99', '01:00'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
+        response = parse_command("192.168.1.223", ['remove_rule', 'device1', '07:16'])
+        self.assertEqual(response, {'ERROR': 'No rule exists at that time'})
+
     def test_get_attributes_invalid(self):
         response = parse_command("192.168.1.223", ['get_attributes'])
         self.assertEqual(response, {'Example usage': './api_client.py get_attributes [device|sensor]'})

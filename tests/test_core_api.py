@@ -192,6 +192,10 @@ class TestApi(unittest.TestCase):
         # Should now be the same
         self.assertEqual(before, after)
 
+        # Confirm correct error received when deleting a rule that doesn't exist
+        response = self.send_command(['remove_rule', 'device1', '20:00'])
+        self.assertEqual(response, {'ERROR': 'No rule exists at that time'})
+
     def test_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor1'])
         self.assertIsInstance(response, dict)
