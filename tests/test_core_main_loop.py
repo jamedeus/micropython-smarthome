@@ -138,10 +138,12 @@ class TestMainLoop(unittest.TestCase):
 
         # Check si7021 condition
         conditions = check_sensor_conditions(self.config.groups["group2"]["triggers"])
-        if self.config.sensors[1].fahrenheit() > 74:
+        if self.config.sensors[1].fahrenheit() > 75:
             self.assertFalse(conditions[0])
-        else:
+        elif self.config.sensors[1].fahrenheit() < 73:
             self.assertTrue(conditions[0])
+        else:
+            self.assertNone(conditions[0])
 
     def test_determine_correct_action(self):
         action = determine_correct_action([True, False, False, False])
