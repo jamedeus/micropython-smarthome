@@ -105,8 +105,14 @@ class Api:
                 # Call handler, receive reply for client
                 reply = self.url_map[path](args)
             except KeyError:
-                # Exit with error if no match found
-                swriter.write(json.dumps({"ERROR": "Invalid command"}))
+                if http:
+                    # Send headers before reply
+                    swriter.write("HTTP/1.0 404 NA\r\nContent-Type: application/json\r\n\r\n")
+                    swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
+                else:
+                    # Exit with error if no match found
+                    swriter.write(json.dumps({"ERROR": "Invalid command"}))
+
                 await swriter.drain()
                 raise OSError
 
