@@ -439,6 +439,9 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command("192.168.1.223", ['trigger_sensor', 'sensor99'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
+        response = parse_command("192.168.1.223", ['trigger_sensor', 'sensor2'])
+        self.assertEqual(response, {'ERROR': 'Cannot trigger si7021 sensor type'})
+
     def test_turn_on_invalid(self):
         # Ensure disabled
         parse_command("192.168.1.223", ['disable', 'device1'])
