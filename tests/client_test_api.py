@@ -353,6 +353,9 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command("192.168.1.223", ['add_rule', 'device1', '05:00', '256', 'del'])
         self.assertEqual(response, {'ERROR': "Rule already exists at 05:00, add 'overwrite' arg to replace"})
 
+        response = parse_command("192.168.1.223", ['add_rule', 'device1', '99:13', '256'])
+        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+
         response = parse_command("192.168.1.223", ['add_rule', 'device99', '09:13', '256'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 

@@ -231,6 +231,9 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/08:00')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
+        response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/99:99/15')
+        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM)'})
+
         response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/05:00/256')
         self.assertEqual(response.json(), {'ERROR': "Rule already exists at 05:00, add 'overwrite' arg to replace"})
 
@@ -263,7 +266,7 @@ class TestEndpointInvalid(unittest.TestCase):
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
         response = requests.get('http://192.168.1.223:8123/remove_rule?device1/99:99')
-        self.assertEqual(response.json(), {'ERROR': 'No rule exists at that time'})
+        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM)'})
 
         response = requests.get('http://192.168.1.223:8123/remove_rule?device99/01:00')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})

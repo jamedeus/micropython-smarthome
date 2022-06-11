@@ -282,7 +282,7 @@ def add_schedule_rule(args):
 
     rules = app.config.schedule[args[0]]
 
-    if re.match("^[0-9][0-9]:[0-9][0-9]$", args[1]):
+    if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args[1]):
         timestamp = args[1]
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
@@ -312,7 +312,7 @@ def remove_rule(args):
 
     rules = app.config.schedule[args[0]]
 
-    if re.match("^[0-9][0-9]:[0-9][0-9]$", args[1]):
+    if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args[1]):
         timestamp = args[1]
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}

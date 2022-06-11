@@ -181,6 +181,10 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['add_schedule_rule', 'device1', '1234', '99'])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
+        # Confirm correct error received when timestamp exceeds 24 hours
+        response = self.send_command(['add_schedule_rule', 'device1', '42:99', '99'])
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
+
     def test_remove_rule(self):
         # Get starting rules
         before = self.send_command(['get_schedule_rules', 'device1'])
@@ -196,6 +200,10 @@ class TestApi(unittest.TestCase):
         # Confirm correct error received when deleting a rule that doesn't exist
         response = self.send_command(['remove_rule', 'device1', '20:00'])
         self.assertEqual(response, {'ERROR': 'No rule exists at that time'})
+
+        # Confirm correct error received when timestamp exceeds 24 hours
+        response = self.send_command(['remove_rule', 'device1', '42:99'])
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
     def test_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor1'])
