@@ -369,6 +369,9 @@ def condition_met(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
+    if not str(args[0]).startswith("sensor"):
+        return {"ERROR": "Must specify sensor"}
+
     target = app.config.find(args[0])
 
     if not target:
@@ -382,6 +385,9 @@ def condition_met(args):
 def trigger_sensor(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
+
+    if not str(args[0]).startswith("sensor"):
+        return {"ERROR": "Must specify sensor"}
 
     target = app.config.find(args[0])
 

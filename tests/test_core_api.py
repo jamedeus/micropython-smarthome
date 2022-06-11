@@ -197,9 +197,18 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'Condition': True})
 
     def test_trigger_sensor_invalid(self):
-        # Trigger sensor not compatible with endpoint
+        # Thermostat not compatible with endpoint
         response = self.send_command(['trigger_sensor', 'sensor1'])
         self.assertEqual(response, {"ERROR": "Cannot trigger si7021 sensor type"})
+
+        # Should return error if argument is not a sensor
+        response = self.send_command(['trigger_sensor', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Must specify sensor'})
+
+    def test_condition_met_invalid(self):
+        # Should return error if argument is not a sensor
+        response = self.send_command(['condition_met', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Must specify sensor'})
 
     def test_turn_on(self):
         # Make sure device is enabled and turned off before testing
