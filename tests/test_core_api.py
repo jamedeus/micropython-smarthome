@@ -283,9 +283,21 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['ir_key', 'tv', 'power'])
         self.assertEqual(response, {'tv': 'power'})
 
+        # Confirm correct error message
+        response = self.send_command(['ir_key', 'tv', 'on'])
+        self.assertEqual(response, {'ERROR': 'Target "tv" has no key on'})
+
+        # Confirm correct error message
+        response = self.send_command(['ir_key', 'ac', 'on'])
+        self.assertEqual(response, {'ERROR': 'No codes found for target "ac"'})
+
     def test_backlight(self):
         response = self.send_command(['backlight', 'off'])
         self.assertEqual(response, {'backlight': 'off'})
+
+        # Confirm correct error message
+        response = self.send_command(['backlight', 'low'])
+        self.assertEqual(response, {'ERROR': 'Backlight setting must be "on" or "off"'})
 
     def test_invalid_command(self):
         response = self.send_command(['notacommand'])
