@@ -242,3 +242,77 @@ class TestApi(unittest.TestCase):
     def test_backlight(self):
         response = self.send_command(['backlight', 'off'])
         self.assertEqual(response, {'backlight': 'off'})
+
+    def test_invalid_command(self):
+        response = self.send_command(['notacommand'])
+        self.assertEqual(response, {"ERROR": "Invalid command"})
+
+    def test_missing_arguments(self):
+        response = self.send_command(['enable'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['disable'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['enable_in'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['enable_in', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['disable_in'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['disable_in', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['set_rule'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['set_rule', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['reset_rule'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['get_schedule_rules'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['add_schedule_rule'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['add_schedule_rule', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['add_schedule_rule', 'device1', '01:23'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['remove_rule'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['remove_rule', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['get_attributes'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['condition_met'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['trigger_sensor'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['turn_on'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['turn_off'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['ir_key'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['ir_key', 'tv'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['backlight'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
