@@ -164,8 +164,21 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'20:00': 915, '09:00': 734, '11:00': 345})
 
     def test_add_schedule_rule(self):
+        # Add a rule at a time where no rule exists
         response = self.send_command(['add_schedule_rule', 'device1', '05:37', '64'])
         self.assertEqual(response, {'time': '05:37', 'Rule added': '64'})
+
+        # Add another rule at the same time, should refuse to overwrite
+        response = self.send_command(['add_schedule_rule', 'device1', '05:37', '42'])
+        self.assertEqual(response, {'ERROR': "Rule already exists at 05:37, add 'overwrite' arg to replace"})
+
+        # Add another rule at the same time with the 'overwrite' argument, rule should be replaced
+        response = self.send_command(['add_schedule_rule', 'device1', '05:37', '42', 'overwrite'])
+        self.assertEqual(response, {'time': '05:37', 'Rule added': '42'})
+
+        # Confirm correct error received when timestamp format is incorrect
+        response = self.send_command(['add_schedule_rule', 'device1', '1234', '99'])
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
     def test_remove_rule(self):
         # Get starting rules

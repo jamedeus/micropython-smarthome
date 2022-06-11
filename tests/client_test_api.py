@@ -171,8 +171,17 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response, {'01:00': '1', '06:00': '5'})
 
     def test_add_rule(self):
+        # Add a rule at a time where no rule exists
         response = parse_command("192.168.1.223", ['add_rule', 'device1', '08:00', '256'])
         self.assertEqual(response, {'time': '08:00', 'Rule added': '256'})
+
+        # Add another rule at the same time, should refuse to overwrite
+        response = parse_command("192.168.1.223", ['add_rule', 'device1', '08:00', '512'])
+        self.assertEqual(response, {'ERROR': "Rule already exists at 08:00, add 'overwrite' arg to replace"})
+
+        # Add another rule at the same time with the 'overwrite' argument, rule should be replaced
+        response = parse_command("192.168.1.223", ['add_rule', 'device1', '08:00', '512', 'overwrite'])
+        self.assertEqual(response, {'time': '08:00', 'Rule added': '512'})
 
     def test_remove_rule(self):
         response = parse_command("192.168.1.223", ['remove_rule', 'device1', '01:00'])
