@@ -279,6 +279,11 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['clear_log'])
         self.assertEqual(response, {'clear_log': 'success'})
 
+        # Confirm correct error if log doesn't exist
+        os.remove('app.log')
+        response = self.send_command(['clear_log'])
+        self.assertEqual(response, {'ERROR': 'no log file found'})
+
     def test_ir_key(self):
         response = self.send_command(['ir_key', 'tv', 'power'])
         self.assertEqual(response, {'tv': 'power'})
