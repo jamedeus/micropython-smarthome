@@ -157,7 +157,49 @@ def configure(category, module):
             config[i] = input()
             print()
 
-    return config
+    while True:
+        print("Would you like to add schedule rules?")
+        print(" [1] Yes")
+        print(" [2] No")
+        choice = input()
+        print()
+
+        if choice == "1":
+            break
+        elif choice == "2":
+            return config
+        else:
+            print("\nERROR: Please enter a number and press enter.\n")
+
+    import re
+
+    while True:
+        print("Rule time (HH:MM): ", end='')
+        timestamp = input()
+
+        if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", timestamp):
+            print("Enter rule: ", end='')
+            rule = input()
+            config["schedule"][timestamp] = rule
+        else:
+            print("\nInvalid timestamp format - must be HH:MM, no am/pm\n")
+            continue
+
+        while True:
+            print("\nAdd another rule?")
+            print(" [1] Yes")
+            print(" [2] No")
+            choice = input()
+            print()
+
+            if choice == "1":
+                break
+            elif choice == "2":
+                return config
+            else:
+                print("\nERROR: Please enter a number and press enter.\n")
+
+        continue
 
 
 
