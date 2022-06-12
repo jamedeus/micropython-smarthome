@@ -1,0 +1,95 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Create new config file</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <script>
+
+    </script>
+</head>
+
+<body>
+    <div>
+        <h1>Create New Config</h1>
+    <div><br>
+
+    <div>
+        <h2>Metadata</h2>
+
+        <div class="mb-3 col">
+            <label for="friendlyName"><b>Name:</b></label>
+            <input type="text" class="form-control" id="startTime" placeholder="" name="friendlyName" required>
+        </div><br>
+
+        <div class="mb-3 col">
+            <label for="location"><b>Location:</b></label>
+            <input type="text" class="form-control" id="startTime" placeholder="" name="location" required>
+        </div><br>
+
+        <div class="mb-3 col">
+            <label for="floor"><b>Floor:</b></label>
+            <input type="text" class="form-control" id="startTime" placeholder="" name="floor" required>
+        </div><br><br><br>
+    </div>
+
+    <div>
+        <h2>Wifi</h2>
+
+        <div class="mb-3 col">
+            <label for="ssid"><b>SSID:</b></label>
+            <input type="text" class="form-control" id="startTime" placeholder="" name="ssid" required>
+        </div><br>
+
+        <div class="mb-3 col">
+            <label for="password"><b>Password:</b></label>
+            <input type="password" class="form-control" id="startTime" placeholder="" name="password" required>
+        </div><br><br><br>
+    </div>
+
+    <div>
+        <h2>Add Sensor</h2>
+
+        <div class="row g-5">
+            <label class="col-2 col-form-label" for="sensorType"><b>Type:</b></label>
+            <div class="col col-10">
+                <select name="sensorType" id="sensorType" class="form-select mb-3" required>
+                <option value="pir">Motion Sensor</option>
+                <option value="switch">Switch</option>
+                <option value="dummy">Dummy</option>
+                <option value="desktop-trigger">Desktop</option>
+                <option value="si7021">Thermostat</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="addSensorOptions">
+        </div><br><br><br>
+
+
+    <script>
+
+        $(document).on('change','#sensorType',function() {
+            var selected = document.getElementById('sensorType').value
+            if (selected == "pir") {
+                $('#addSensorOptions').load("/sensorOptionsPir");
+            } else if (selected == "switch") {
+                $('#addSensorOptions').load("/sensorOptionsSwitch");
+            } else if (selected == "dummy") {
+                $('#addSensorOptions').load("/sensorOptionsDummy");
+            } else if (selected == "desktop-trigger") {
+                $('#addSensorOptions').load("/sensorOptionsDesktop");
+            } else if (selected == "si7021") {
+                $('#addSensorOptions').load("/sensorOptionsSi7021");
+            };
+        });
+
+    </script>
+
+</body>
+
+
+</html>
