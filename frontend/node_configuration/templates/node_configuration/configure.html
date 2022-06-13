@@ -9,14 +9,46 @@
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script>
 
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        };
+
         function readForm() {
             const form = document.getElementById("form");
 
             const data = new FormData(form);
 
-            const value = Object.fromEntries(data.entries());
+            var value = Object.fromEntries(data.entries());
 
             console.log({ value });
+
+            let csrftoken = getCookie('csrftoken');
+
+            fetch('generateConfigFile', {
+                method: 'POST',
+                body: JSON.stringify(value),
+                headers: { 'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json',
+                    "X-CSRFToken": csrftoken }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    alert("Invalid input");
+                } else {
+                    alert("Input accepted");
+                };
+            });
 
             return false
         };

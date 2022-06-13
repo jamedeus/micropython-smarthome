@@ -25,4 +25,6 @@ urlpatterns = [
     path('deviceOptionsPwm/<int:count>', views.deviceOptionsPwm, name='deviceOptionsPwm'),
     path('deviceOptionsMosfet/<int:count>', views.deviceOptionsMosfet, name='deviceOptionsMosfet'),
     path('deviceOptionsApi/<int:count>', views.deviceOptionsApi, name='deviceOptionsApi'),
+
+    path('generateConfigFile', views.generateConfigFile, name='generateConfigFile'),
 ]
