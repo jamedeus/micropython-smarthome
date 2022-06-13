@@ -9,6 +9,13 @@ def configure(request):
 
     return HttpResponse(template.render({}, request))
 
+
+
+def addSensor(request, count):
+    template = loader.get_template('node_configuration/add-sensor.html')
+
+    return HttpResponse(template.render({'context': count}, request))
+
 def sensorOptionsPir(request):
     template = loader.get_template('node_configuration/pir-config.html')
 
@@ -35,6 +42,11 @@ def sensorOptionsSi7021(request):
     return HttpResponse(template.render({}, request))
 
 
+
+def addDevice(request, count):
+    template = loader.get_template('node_configuration/add-device.html')
+
+    return HttpResponse(template.render({'context': count}, request))
 
 def deviceOptionsDimmer(request):
     template = loader.get_template('node_configuration/dimmer-config.html')

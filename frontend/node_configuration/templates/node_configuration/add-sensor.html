@@ -1,0 +1,48 @@
+<h3>sensor{{context}}</h3>
+
+<div class="row g-5">
+    <label class="col-2 col-form-label" for="sensorType{{context}}"><b>Type:</b></label>
+    <div class="col col-10">
+        <select name="sensorType{{context}}" id="sensorType{{context}}" class="form-select mb-3" required>
+        <option value="clear">Select sensor type</option>
+        <option value="pir">Motion Sensor</option>
+        <option value="switch">Switch</option>
+        <option value="dummy">Dummy</option>
+        <option value="desktop-trigger">Desktop</option>
+        <option value="si7021">Thermostat</option>
+        </select>
+    </div>
+</div><br>
+
+<div id="addSensorOptions{{context}}">
+</div>
+
+<button id="addSensorButton{{context}}" class="form-control btn-secondary btn">Add another</button>
+
+<div id="addSensorDiv{{context|add:1}}">
+</div>
+
+<script>
+
+    $('#addSensorButton{{context}}').click(function() {
+        $('#addSensorDiv{{context|add:1}}').load("addSensor/{{context|add:1}}");
+        $('#addSensorButton{{context}}').hide()
+    });
+
+    $(document).on('change','#sensorType{{context}}',function() {
+        var selected = document.getElementById('sensorType{{context}}').value
+        if (selected == "clear") {
+            $('#addSensorOptions{{context}}').empty()
+        } else if (selected == "pir") {
+            $('#addSensorOptions{{context}}').load("/sensorOptionsPir");
+        } else if (selected == "switch") {
+            $('#addSensorOptions{{context}}').load("/sensorOptionsSwitch");
+        } else if (selected == "dummy") {
+            $('#addSensorOptions{{context}}').load("/sensorOptionsDummy");
+        } else if (selected == "desktop-trigger") {
+            $('#addSensorOptions{{context}}').load("/sensorOptionsDesktop");
+        } else if (selected == "si7021") {
+            $('#addSensorOptions{{context}}').load("/sensorOptionsSi7021");
+        };
+    });
+</script>

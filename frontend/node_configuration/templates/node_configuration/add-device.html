@@ -1,0 +1,58 @@
+<h3>device{{context}}</h3>
+
+<div class="row g-5">
+    <label class="col-2 col-form-label" for="deviceType{{context}}"><b>Type:</b></label>
+    <div class="col col-10">
+        <select name="deviceType{{context}}" id="deviceType{{context}}" class="form-select mb-3" required>
+        <option value=" ">Select device type</option>
+        <option value="dimmer">TP-Link Dimmer</option>
+        <option value="bulb">TP-Link Bulb</option>
+        <option value="relay">Smart Relay</option>
+        <option value="dumb-relay">Relay</option>
+        <option value="desktop-target">Desktop</option>
+        <option value="pwm">LED Strip</option>
+        <option value="mosfet">Mosfet</option>
+        <option value="api-target">Api Command</option>
+        </select>
+    </div>
+</div><br>
+
+<div id="addDeviceOptions{{context}}">
+</div>
+
+<button id="addDeviceButton{{context}}" class="form-control btn-secondary btn">Add another</button>
+
+<div id="addDeviceDiv{{context|add:1}}">
+</div>
+
+<script>
+
+    $('#addDeviceButton{{context}}').click(function() {
+        $('#addDeviceDiv{{context|add:1}}').load("addDevice/{{context|add:1}}");
+        $('#addDeviceButton{{context}}').hide()
+    });
+
+    $(document).on('change','#deviceType{{context}}',function() {
+        var selected = document.getElementById('deviceType{{context}}').value
+        if (selected == "clear") {
+            $('#addDeviceOptions{{context}}').empty()
+        } else if (selected == "dimmer") {
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsDimmer");
+        } else if (selected == "bulb") {
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsBulb");
+        } else if (selected == "relay") {
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsRelay");
+        } else if (selected == "dumb-relay") {
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsDumbRelay");
+        } else if (selected == "desktop-target") {
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsDesktop");
+        } else if (selected == "pwm") {
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsPwm");
+        } else if (selected == "mosfet") {
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsMosfet");
+        } else if (selected == "api-target") {
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsApi");
+        };
+    });
+
+</script>

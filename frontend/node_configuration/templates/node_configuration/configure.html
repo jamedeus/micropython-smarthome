@@ -53,90 +53,24 @@
     <div>
         <h2>Add Sensor</h2>
 
-        <div class="row g-5">
-            <label class="col-2 col-form-label" for="sensorType"><b>Type:</b></label>
-            <div class="col col-10">
-                <select name="sensorType" id="sensorType" class="form-select mb-3" required>
-                <option value="clear">Select sensor type</option>
-                <option value="pir">Motion Sensor</option>
-                <option value="switch">Switch</option>
-                <option value="dummy">Dummy</option>
-                <option value="desktop-trigger">Desktop</option>
-                <option value="si7021">Thermostat</option>
-                </select>
-            </div>
+        <div id="addSensorDiv1">
         </div>
 
-        <div id="addSensorOptions">
-        </div><br><br><br>
-    </div>
+    </div><br><br>
 
     <div>
         <h2>Add Device</h2>
 
-        <div class="row g-5">
-            <label class="col-2 col-form-label" for="deviceType"><b>Type:</b></label>
-            <div class="col col-10">
-                <select name="deviceType" id="deviceType" class="form-select mb-3" required>
-                <option value="clear">Select device type</option>
-                <option value="dimmer">TP-Link Dimmer</option>
-                <option value="bulb">TP-Link Bulb</option>
-                <option value="relay">Smart Relay</option>
-                <option value="dumb-relay">Relay</option>
-                <option value="desktop-target">Desktop</option>
-                <option value="pwm">LED Strip</option>
-                <option value="mosfet">Mosfet</option>
-                <option value="api-target">Api Command</option>
-                </select>
-            </div>
+        <div id="addDeviceDiv1">
         </div>
 
-        <div id="addDeviceOptions">
-        </div><br><br><br>
-    </div>
+    </div><br><br>
 
 
     <script>
 
-        $(document).on('change','#sensorType',function() {
-            var selected = document.getElementById('sensorType').value
-            if (selected == "clear") {
-                $('#addSensorOptions').empty()
-            } else if (selected == "pir") {
-                $('#addSensorOptions').load("/sensorOptionsPir");
-            } else if (selected == "switch") {
-                $('#addSensorOptions').load("/sensorOptionsSwitch");
-            } else if (selected == "dummy") {
-                $('#addSensorOptions').load("/sensorOptionsDummy");
-            } else if (selected == "desktop-trigger") {
-                $('#addSensorOptions').load("/sensorOptionsDesktop");
-            } else if (selected == "si7021") {
-                $('#addSensorOptions').load("/sensorOptionsSi7021");
-            };
-        });
-
-        $(document).on('change','#deviceType',function() {
-            var selected = document.getElementById('deviceType').value
-            if (selected == "clear") {
-                $('#addDeviceOptions').empty()
-            } else if (selected == "dimmer") {
-                $('#addDeviceOptions').load("/deviceOptionsDimmer");
-            } else if (selected == "bulb") {
-                $('#addDeviceOptions').load("/deviceOptionsBulb");
-            } else if (selected == "relay") {
-                $('#addDeviceOptions').load("/deviceOptionsRelay");
-            } else if (selected == "dumb-relay") {
-                $('#addDeviceOptions').load("/deviceOptionsDumbRelay");
-            } else if (selected == "desktop-target") {
-                $('#addDeviceOptions').load("/deviceOptionsDesktop");
-            } else if (selected == "pwm") {
-                $('#addDeviceOptions').load("/deviceOptionsPwm");
-            } else if (selected == "mosfet") {
-                $('#addDeviceOptions').load("/deviceOptionsMosfet");
-            } else if (selected == "api-target") {
-                $('#addDeviceOptions').load("/deviceOptionsApi");
-            };
-        });
+        $('#addSensorDiv1').load("/addSensor/1");
+        $('#addDeviceDiv1').load("/addDevice/1");
 
     </script>
 
