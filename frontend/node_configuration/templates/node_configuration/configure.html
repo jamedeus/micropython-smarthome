@@ -9,6 +9,18 @@
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script>
 
+        function readForm() {
+            const form = document.getElementById("form");
+
+            const data = new FormData(form);
+
+            const value = Object.fromEntries(data.entries());
+
+            console.log({ value });
+
+            return false
+        };
+
     </script>
 </head>
 
@@ -17,55 +29,60 @@
         <h1>Create New Config</h1>
     <div><br>
 
-    <div>
-        <h2>Metadata</h2>
+    <form id="form">
 
-        <div class="mb-3 col">
-            <label for="friendlyName"><b>Name:</b></label>
-            <input type="text" class="form-control" id="startTime" placeholder="" name="friendlyName" required>
-        </div><br>
+        <div>
+            <h2>Metadata</h2>
 
-        <div class="mb-3 col">
-            <label for="location"><b>Location:</b></label>
-            <input type="text" class="form-control" id="startTime" placeholder="" name="location" required>
-        </div><br>
+            <div class="mb-3 col">
+                <label for="friendlyName"><b>Name:</b></label>
+                <input type="text" class="form-control" id="startTime" placeholder="" name="friendlyName" required>
+            </div><br>
 
-        <div class="mb-3 col">
-            <label for="floor"><b>Floor:</b></label>
-            <input type="text" class="form-control" id="startTime" placeholder="" name="floor" required>
-        </div><br><br><br>
-    </div>
+            <div class="mb-3 col">
+                <label for="location"><b>Location:</b></label>
+                <input type="text" class="form-control" id="startTime" placeholder="" name="location" required>
+            </div><br>
 
-    <div>
-        <h2>Wifi</h2>
-
-        <div class="mb-3 col">
-            <label for="ssid"><b>SSID:</b></label>
-            <input type="text" class="form-control" id="startTime" placeholder="" name="ssid" required>
-        </div><br>
-
-        <div class="mb-3 col">
-            <label for="password"><b>Password:</b></label>
-            <input type="password" class="form-control" id="startTime" placeholder="" name="password" required>
-        </div><br><br><br>
-    </div>
-
-    <div>
-        <h2>Add Sensor</h2>
-
-        <div id="addSensorDiv1">
+            <div class="mb-3 col">
+                <label for="floor"><b>Floor:</b></label>
+                <input type="text" class="form-control" id="startTime" placeholder="" name="floor" required>
+            </div><br><br><br>
         </div>
 
-    </div><br><br>
+        <div>
+            <h2>Wifi</h2>
 
-    <div>
-        <h2>Add Device</h2>
+            <div class="mb-3 col">
+                <label for="ssid"><b>SSID:</b></label>
+                <input type="text" class="form-control" id="startTime" placeholder="" name="ssid" required>
+            </div><br>
 
-        <div id="addDeviceDiv1">
+            <div class="mb-3 col">
+                <label for="password"><b>Password:</b></label>
+                <input type="password" class="form-control" id="startTime" placeholder="" name="password" required>
+            </div><br><br><br>
         </div>
 
-    </div><br><br>
+        <div>
+            <h2>Add Sensor</h2>
 
+            <div id="addSensorDiv1">
+            </div>
+
+        </div><br><br>
+
+        <div>
+            <h2>Add Device</h2>
+
+            <div id="addDeviceDiv1">
+            </div>
+
+        </div><br><br>
+
+        <button onclick="return readForm();" type="submit">Submit</button>
+
+    </form>
 
     <script>
 

@@ -1,9 +1,9 @@
 <h3>device{{context}}</h3>
 
 <div class="row g-5">
-    <label class="col-2 col-form-label" for="deviceType{{context}}"><b>Type:</b></label>
+    <label class="col-2 col-form-label" for="device{{context}}-type"><b>Type:</b></label>
     <div class="col col-10">
-        <select name="deviceType{{context}}" id="deviceType{{context}}" class="form-select mb-3" required>
+        <select name="device{{context}}-type" id="device{{context}}-type" class="form-select mb-3" required>
         <option value=" ">Select device type</option>
         <option value="dimmer">TP-Link Dimmer</option>
         <option value="bulb">TP-Link Bulb</option>
@@ -30,28 +30,30 @@
     $('#addDeviceButton{{context}}').click(function() {
         $('#addDeviceDiv{{context|add:1}}').load("addDevice/{{context|add:1}}");
         $('#addDeviceButton{{context}}').hide()
+
+        return false
     });
 
-    $(document).on('change','#deviceType{{context}}',function() {
-        var selected = document.getElementById('deviceType{{context}}').value
+    $(document).on('change','#device{{context}}-type',function() {
+        var selected = document.getElementById('device{{context}}-type').value
         if (selected == "clear") {
             $('#addDeviceOptions{{context}}').empty()
         } else if (selected == "dimmer") {
-            $('#addDeviceOptions{{context}}').load("/deviceOptionsDimmer");
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsDimmer/{{context}}");
         } else if (selected == "bulb") {
-            $('#addDeviceOptions{{context}}').load("/deviceOptionsBulb");
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsBulb/{{context}}");
         } else if (selected == "relay") {
-            $('#addDeviceOptions{{context}}').load("/deviceOptionsRelay");
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsRelay/{{context}}");
         } else if (selected == "dumb-relay") {
-            $('#addDeviceOptions{{context}}').load("/deviceOptionsDumbRelay");
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsDumbRelay/{{context}}");
         } else if (selected == "desktop-target") {
-            $('#addDeviceOptions{{context}}').load("/deviceOptionsDesktop");
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsDesktop/{{context}}");
         } else if (selected == "pwm") {
-            $('#addDeviceOptions{{context}}').load("/deviceOptionsPwm");
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsPwm/{{context}}");
         } else if (selected == "mosfet") {
-            $('#addDeviceOptions{{context}}').load("/deviceOptionsMosfet");
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsMosfet/{{context}}");
         } else if (selected == "api-target") {
-            $('#addDeviceOptions{{context}}').load("/deviceOptionsApi");
+            $('#addDeviceOptions{{context}}').load("/deviceOptionsApi/{{context}}");
         };
     });
 
