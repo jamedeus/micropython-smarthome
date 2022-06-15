@@ -9,6 +9,9 @@
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script>
 
+        // After first page this will contain name of config file, sent to backend to generate next page
+        var config_name = ''
+
         function getCookie(name) {
             var cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -31,21 +34,19 @@
 
             var value = Object.fromEntries(data.entries());
 
+            config_name = value.friendlyName
+
             console.log({ value });
 
             let csrftoken = getCookie('csrftoken');
 
-            const response = await fetch('generateConfigFile', {
+            await fetch('generateConfigFile', {
                 method: 'POST',
                 body: JSON.stringify(value),
                 headers: { 'Accept': 'application/json, text/plain, */*',
                     'Content-Type': 'application/json',
                     "X-CSRFToken": csrftoken }
             });
-
-            const json = await response.json();
-
-            return json;
         };
 
     </script>
@@ -118,6 +119,9 @@
     <div id="page2">
     </div>
 
+    <div id="page3">
+    </div>
+
     <script>
 
         $('#addSensorDiv1').load("/addSensor/1");
@@ -125,9 +129,9 @@
 
         document.getElementById('form1').addEventListener("submit", async function(e) {
             e.preventDefault();
-            const name = await readForm("form1");
+            await readForm("form1");
 
-            $('#page2').load("/configure_page2/" + name);
+            $('#page2').load("/configure_page2/" + config_name);
             $('#page1').hide();
         });
 

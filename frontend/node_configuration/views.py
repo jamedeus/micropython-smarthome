@@ -42,16 +42,11 @@ def configure_page3(request, name):
     with open(CONFIG_DIR + name + ".json", 'r') as file:
         data = json.load(file)
 
-    config = {
-        "devices" : {},
-        "sensors" : {}
-    }
+    config = {}
 
     for i in data:
-        if i.startswith("device"):
-            config["devices"][i] = data[i]["type"]
-        elif i.startswith("sensor"):
-            config["sensors"][i] = data[i]["type"]
+        if i.startswith("device") or i.startswith("sensor"):
+            config[i] = data[i]["type"]
 
     template = loader.get_template('node_configuration/configure-page3.html')
 
@@ -100,9 +95,7 @@ def generateConfigFile(request):
     with open(CONFIG_DIR + config["metadata"]["id"] + ".json", 'w') as file:
         json.dump(config, file)
 
-    #return configure_page2(request, config)
-
-    return JsonResponse(config["metadata"]["id"], safe=False)
+    return HttpResponse()
 
 
 

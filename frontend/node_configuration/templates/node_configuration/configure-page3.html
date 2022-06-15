@@ -1,0 +1,79 @@
+{% if context %}
+
+    <form id="form3">
+
+        <h3>Add schedule rules (optional)</h3>
+
+        {% for instance, type in context.items %}
+
+            <div class="row g-5">
+
+                <label class="col-2 col-form-label"><b>{{ instance }} ({{ type }}):</b></label>
+                <table id="{{instance}}-rules" style="width:50%">
+                    <tr>
+                        <th style="text-align: left;">Time</th>
+                        <th style="text-align: left;">Rule</th>
+                    </tr>
+                    <tr id="{{instance}}-row-1">
+                        <td><input type="text" class="form-control" id="{{instance}}-rule1-time" placeholder="HH:MM" name="{{instance}}-rule1-time"></td>
+                        <td><input type="text" class="form-control" id="{{instance}}-rule1-value" placeholder="HH:MM" name="{{instance}}-rule1-value"></td>
+                    </tr>
+                </table>
+
+                <button type="button" class="add" id="{{instance}}-add-rule">Add another</button>
+
+            </div><br>
+
+        {% endfor %}
+
+        <button type="submit">Submit</button>
+
+    </form>
+
+    <script>
+
+        document.getElementById('form3').addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const name = await readForm("form3");
+
+            $('#page3').load("/configure_page3/" + name);
+            $('#page2').hide();
+        });
+
+        function add(e) {
+            var instance = e.target.id.split("-", 1);
+
+            table = document.getElementById(instance + "-rules")
+
+            // Rows are numbered sequentially. Get number of last row and increment
+            var next_row = parseInt($('#' + instance + '-rules tr:last').attr('id').split("-").pop()) + 1;
+
+            var row = table.insertRow();
+            row.setAttribute("id", instance + "-row-" + next_row)
+
+            var cell_time = row.insertCell(0);
+            var cell_value = row.insertCell(1);
+            var cell_del = row.insertCell(2);
+
+            cell_time.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='" + next_row + "-rule" + next_row + "-time'>";
+            cell_value.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-value' placeholder='HH:MM' name='" + next_row + "-rule" + next_row + "-value'>";
+            cell_del.innerHTML = "<button type='button' class='remove' id='" + instance + "-remove" + + next_row + "' onclick='remove(this)'>X</button>";
+
+        };
+
+        function remove(e) {
+            var instance = e.id;
+            var index = e.parentElement.parentElement.rowIndex
+
+            table = document.getElementById(instance.split("-", 1) + "-rules")
+            table.deleteRow(index)
+        };
+
+        $('.add').on('click', add);
+
+
+    </script>
+
+{% else %}
+
+{% endif %}

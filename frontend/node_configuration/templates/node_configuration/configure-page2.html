@@ -31,10 +31,10 @@
 
         document.getElementById('form2').addEventListener("submit", async function(e) {
             e.preventDefault();
-//             const name = await readForm("form2");
-//
-//             $('#page3').load("/configure_page3/" + name);
-//             $('#page2').hide();
+//             await readForm("form2");
+
+            $('#page3').load("/configure_page3/" + config_name);
+            $('#page2').hide();
         });
 
     </script>
