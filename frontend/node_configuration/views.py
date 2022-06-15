@@ -2,6 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse, FileResponse
 from django.template import loader
 import json
+import os
+
+CONFIG_DIR = "/home/jamedeus/git/micropython-smarthome/config/"
 
 
 
@@ -9,6 +12,52 @@ def configure(request):
     template = loader.get_template('node_configuration/configure.html')
 
     return HttpResponse(template.render({}, request))
+
+
+
+def configure_page2(request, name):
+    with open(CONFIG_DIR + name + ".json", 'r') as file:
+        data = json.load(file)
+
+    config = {
+        "devices" : {},
+        "sensors" : {}
+    }
+
+    for i in data:
+        if i.startswith("device"):
+            config["devices"][i] = data[i]["type"]
+        elif i.startswith("sensor"):
+            config["sensors"][i] = data[i]["type"]
+
+    template = loader.get_template('node_configuration/configure-page2.html')
+
+    print(json.dumps(config, indent=4))
+
+    return HttpResponse(template.render({'context': config}, request))
+
+
+
+def configure_page3(request, name):
+    with open(CONFIG_DIR + name + ".json", 'r') as file:
+        data = json.load(file)
+
+    config = {
+        "devices" : {},
+        "sensors" : {}
+    }
+
+    for i in data:
+        if i.startswith("device"):
+            config["devices"][i] = data[i]["type"]
+        elif i.startswith("sensor"):
+            config["sensors"][i] = data[i]["type"]
+
+    template = loader.get_template('node_configuration/configure-page3.html')
+
+    print(json.dumps(config, indent=4))
+
+    return HttpResponse(template.render({'context': config}, request))
 
 
 
@@ -48,7 +97,13 @@ def generateConfigFile(request):
 
     print(json.dumps(config, indent=4))
 
-    return HttpResponse('')
+    with open(CONFIG_DIR + config["metadata"]["id"] + ".json", 'w') as file:
+        json.dump(config, file)
+
+    #return configure_page2(request, config)
+
+    return JsonResponse(config["metadata"]["id"], safe=False)
+
 
 
 def addSensor(request, count):

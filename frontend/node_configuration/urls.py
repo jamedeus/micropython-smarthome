@@ -6,6 +6,8 @@ app_name = "node_configuration"
 
 urlpatterns = [
     path('configure', views.configure, name='configure'),
+    path('configure_page2/<str:name>', views.configure_page2, name='configure_page2'),
+    path('configure_page3/<str:name>', views.configure_page3, name='configure_page3'),
 
     path('addSensor/<int:count>', views.addSensor, name='addSensor'),
 

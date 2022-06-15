@@ -1,0 +1,44 @@
+{% if context %}
+
+    <form id="form2">
+
+        <h3>Select targets for each sensor</h3>
+
+        {% for sensor, type in context.sensors.items %}
+
+            <div class="row g-5">
+                <label class="col-2 col-form-label" for="{{sensor}}-targets"><b>{{ sensor }} ({{ type }}) targets:</b></label>
+                <div class="col col-10">
+
+                    {% for device, dtype in context.devices.items %}
+
+                        <input type="checkbox" id="{{sensor}}-{{device}}" name="{{sensor}}-{{device}}" value="{{sensor}}-{{device}}">
+                        <label for="{{sensor}}-{{device}}">{{ device }} ({{ dtype }})</label><br>
+
+                    {% endfor %}
+                    </select>
+                </div>
+            </div><br>
+
+
+        {% endfor %}
+
+        <button type="submit">Submit</button>
+
+    </form>
+
+    <script>
+
+        document.getElementById('form2').addEventListener("submit", async function(e) {
+            e.preventDefault();
+//             const name = await readForm("form2");
+//
+//             $('#page3').load("/configure_page3/" + name);
+//             $('#page2').hide();
+        });
+
+    </script>
+
+{% else %}
+
+{% endif %}
