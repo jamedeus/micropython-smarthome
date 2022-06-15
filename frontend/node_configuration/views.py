@@ -15,20 +15,25 @@ def configure(request):
 
 
 
-def configure_page2(request, name):
-    with open(CONFIG_DIR + name + ".json", 'r') as file:
-        data = json.load(file)
+def configure_page2(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        raise Http404("ERROR: Must post data")
 
     config = {
         "devices" : {},
         "sensors" : {}
     }
 
-    for i in data:
-        if i.startswith("device"):
-            config["devices"][i] = data[i]["type"]
-        elif i.startswith("sensor"):
-            config["sensors"][i] = data[i]["type"]
+    for i in data.keys():
+        if i.endswith("type"):
+            name = i[0:7]
+            if name.startswith("device"):
+                config["devices"][name] = data[i]
+
+            elif name.startswith("sensor"):
+                config["sensors"][name] = data[i]
 
     template = loader.get_template('node_configuration/configure-page2.html')
 
@@ -38,15 +43,20 @@ def configure_page2(request, name):
 
 
 
-def configure_page3(request, name):
-    with open(CONFIG_DIR + name + ".json", 'r') as file:
-        data = json.load(file)
+def configure_page3(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        raise Http404("ERROR: Must post data")
+
+    print(json.dumps(data, indent=4))
 
     config = {}
 
-    for i in data:
-        if i.startswith("device") or i.startswith("sensor"):
-            config[i] = data[i]["type"]
+    for i in data.keys():
+        if i.endswith("type"):
+            name = i[0:7]
+            config[name] = data[i]
 
     template = loader.get_template('node_configuration/configure-page3.html')
 
@@ -62,6 +72,7 @@ def generateConfigFile(request):
     else:
         raise Http404("ERROR: Must post data")
 
+    # Populate metadata and credentials directly from JSON
     config = {
         "metadata": {
             "id" : data["friendlyName"],
@@ -74,19 +85,45 @@ def generateConfigFile(request):
         }
     }
 
+    # Iterate JSON and create section for each device and sensor
     for i in data.keys():
+        # Match both start and end to avoid adding duplicates
         if (i.startswith("device") and i.endswith("type")) or (i.startswith("sensor") and i.endswith("type")):
             name = i[0:7]
             config[name] = {}
 
+            # Get all parameters that start with name, add to config section
             for j in data.keys():
                 if j.startswith(name):
                     config[name][j[8:]] = data[j]
 
+            # Create empty sections, populated in loops below
             config[name]["schedule"] = {}
 
             if i.startswith("sensor"):
                 config[name]["targets"] = []
+
+    # Find targets, add to correct sensor's targets list
+    for i in data.keys():
+        if i.startswith("target"):
+            n, sensor, target = i.split("-")
+            config[sensor]["targets"].append(target)
+
+    # Schedule rules
+    for i in data.keys():
+        if i.startswith("schedule") and i.endswith("time"):
+            timestamp = data[i]
+            instance = i.split("-")[1]
+
+            # If user left timestamp blank, do not add rule and continue loop
+            if len(timestamp) == 0: continue
+
+            for j in data.keys():
+                if j.startswith(i[:-5]) and j.endswith("value"):
+                    # If user left rule blank, do not add rule and continue loop
+                    if len(data[j]) == 0: continue
+
+                    config[instance]["schedule"][timestamp] = data[j]
 
     print(json.dumps(data, indent=4))
 

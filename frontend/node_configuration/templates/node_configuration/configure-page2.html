@@ -1,7 +1,5 @@
 {% if context %}
 
-    <form id="form2">
-
         <h3>Select targets for each sensor</h3>
 
         {% for sensor, type in context.sensors.items %}
@@ -12,8 +10,8 @@
 
                     {% for device, dtype in context.devices.items %}
 
-                        <input type="checkbox" id="{{sensor}}-{{device}}" name="{{sensor}}-{{device}}" value="{{sensor}}-{{device}}">
-                        <label for="{{sensor}}-{{device}}">{{ device }} ({{ dtype }})</label><br>
+                        <input type="checkbox" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}">
+                        <label for="target-{{sensor}}-{{device}}">{{ device }} ({{ dtype }})</label><br>
 
                     {% endfor %}
                     </select>
@@ -23,17 +21,16 @@
 
         {% endfor %}
 
-        <button type="submit">Submit</button>
-
-    </form>
+        <button id="page2-button" type="button">Submit</button>
 
     <script>
 
-        document.getElementById('form2').addEventListener("submit", async function(e) {
+        document.getElementById('page2-button').addEventListener("click", async function(e) {
             e.preventDefault();
-//             await readForm("form2");
 
-            $('#page3').load("/configure_page3/" + config_name);
+            var next_page = await readForm("configure_page3");
+
+            $('#page3').html(next_page);
             $('#page2').hide();
         });
 

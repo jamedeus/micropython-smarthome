@@ -1,7 +1,5 @@
 {% if context %}
 
-    <form id="form3">
-
         <h3>Add schedule rules (optional)</h3>
 
         {% for instance, type in context.items %}
@@ -15,8 +13,8 @@
                         <th style="text-align: left;">Rule</th>
                     </tr>
                     <tr id="{{instance}}-row-1">
-                        <td><input type="text" class="form-control" id="{{instance}}-rule1-time" placeholder="HH:MM" name="{{instance}}-rule1-time"></td>
-                        <td><input type="text" class="form-control" id="{{instance}}-rule1-value" placeholder="HH:MM" name="{{instance}}-rule1-value"></td>
+                        <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time"></td>
+                        <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value"></td>
                     </tr>
                 </table>
 
@@ -28,20 +26,11 @@
 
         <button type="submit">Submit</button>
 
-    </form>
-
     <script>
 
-        document.getElementById('form3').addEventListener("submit", async function(e) {
-            e.preventDefault();
-            const name = await readForm("form3");
-
-            $('#page3').load("/configure_page3/" + name);
-            $('#page2').hide();
-        });
-
         function add(e) {
-            var instance = e.target.id.split("-", 1);
+            var instance = e.target.id.split("-", 1)[0];
+            console.log(instance);
 
             table = document.getElementById(instance + "-rules")
 
@@ -55,8 +44,8 @@
             var cell_value = row.insertCell(1);
             var cell_del = row.insertCell(2);
 
-            cell_time.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='" + next_row + "-rule" + next_row + "-time'>";
-            cell_value.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-value' placeholder='HH:MM' name='" + next_row + "-rule" + next_row + "-value'>";
+            cell_time.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='schedule-" + instance + "-rule" + next_row + "-time'>";
+            cell_value.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-value' placeholder='' name='schedule-" + instance + "-rule" + next_row + "-value'>";
             cell_del.innerHTML = "<button type='button' class='remove' id='" + instance + "-remove" + + next_row + "' onclick='remove(this)'>X</button>";
 
         };
