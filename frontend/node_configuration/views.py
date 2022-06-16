@@ -4,6 +4,8 @@ from django.template import loader
 import json
 import os
 
+from .models import Node, Config
+
 CONFIG_DIR = "/home/jamedeus/git/micropython-smarthome/config/"
 
 
@@ -131,6 +133,9 @@ def generateConfigFile(request):
 
     with open(CONFIG_DIR + config["metadata"]["id"] + ".json", 'w') as file:
         json.dump(config, file)
+
+    new = Config(config_file = CONFIG_DIR + config["metadata"]["id"] + ".json", uploaded = False)
+    new.save()
 
     return HttpResponse()
 
