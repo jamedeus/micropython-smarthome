@@ -74,6 +74,15 @@ def generateConfigFile(request):
     else:
         raise Http404("ERROR: Must post data")
 
+    try:
+        # Check if file with identical parameters exists in database
+        duplicate = Config.objects.get(config_file = CONFIG_DIR + data["friendlyName"] + ".json")
+
+        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+
+    except Config.DoesNotExist:
+        pass
+
     # Populate metadata and credentials directly from JSON
     config = {
         "metadata": {
@@ -137,7 +146,7 @@ def generateConfigFile(request):
     new = Config(config_file = CONFIG_DIR + config["metadata"]["id"] + ".json", uploaded = False)
     new.save()
 
-    return HttpResponse()
+    return JsonResponse("Config created.", safe=False, status=200)
 
 
 
