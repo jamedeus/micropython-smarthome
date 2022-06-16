@@ -5,6 +5,8 @@ from . import views
 app_name = "node_configuration"
 
 urlpatterns = [
+    path('node_configuration', views.node_configuration_index, name='node_configuration_index'),
+
     path('configure', views.configure, name='configure'),
     path('configure_page2', views.configure_page2, name='configure_page2'),
     path('configure_page3', views.configure_page3, name='configure_page3'),

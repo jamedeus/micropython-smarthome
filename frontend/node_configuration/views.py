@@ -10,6 +10,27 @@ CONFIG_DIR = "/home/jamedeus/git/micropython-smarthome/config/"
 
 
 
+def node_configuration_index(request):
+    context = {
+        "not_uploaded" : [],
+        "uploaded" : []
+    }
+
+    not_uploaded = Config.objects.filter(uploaded = False)
+
+    for i in not_uploaded:
+        context["not_uploaded"].append(str(i).split("/")[-1])
+
+    uploaded = Node.objects.all()
+    for i in uploaded:
+        context["uploaded"].append(i)
+
+    template = loader.get_template('node_configuration/index.html')
+
+    return HttpResponse(template.render({'context': context}, request))
+
+
+
 def configure(request):
     template = loader.get_template('node_configuration/configure.html')
 

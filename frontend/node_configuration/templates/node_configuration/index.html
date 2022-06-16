@@ -1,0 +1,94 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Create new config file</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <script>
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        };
+
+    </script>
+</head>
+
+<body>
+    <div>
+        <h1>Configure Nodes</h1>
+    <div><br>
+
+    {% if context %}
+
+        {% if context.not_uploaded %}
+            <div id="not_uploaded">
+                <h3>Configs ready to upload:</h3>
+
+                <table id="not_uploaded_table" style="width:50%">
+                    {% for config in context.not_uploaded %}
+                        <tr id="{{config}}">
+                            <td>{{config}}</td>
+                            <td><button type="button" class="upload" id="upload-{{config}}">Upload</button></td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div></br></br></br>
+        {% endif %}
+
+        {% if context.uploaded %}
+            <div id="existing">
+                <h3>Existing Nodes:</h3>
+
+                <table id="nodes_table" style="width:50%">
+                    <tr>
+                        <th style="text-align: left;">Name</th>
+                        <th style="text-align: left;">IP</th>
+                        <th style="text-align: left;"></th>
+                    </tr>
+
+                    {% for node in context.uploaded %}
+                        <tr id="{{node.friendly_name}}">
+                            <td>{{node.friendly_name}}</td>
+                            <td>{{node.ip}}</td>
+                            <td><button type="button" class="edit" id="edit-{{node.friendly_name}}">Edit</button></td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endif %}
+
+    {% endif %}
+
+    <script>
+
+        function upload(e) {
+            alert("Not yet implemented");
+//             alert(e.target.id);
+        };
+
+        function edit(e) {
+            alert("Not yet implemented");
+//             alert(e.target.id);
+        };
+
+        $('.upload').on('click', upload);
+        $('.edit').on('click', edit);
+
+    </script>
+
+</body>
+</html>
