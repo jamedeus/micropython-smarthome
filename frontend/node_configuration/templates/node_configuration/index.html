@@ -42,6 +42,7 @@
                     {% for config in context.not_uploaded %}
                         <tr id="{{config}}">
                             <td>{{config}}</td>
+                            <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip"></td>
                             <td><button type="button" class="upload" id="upload-{{config}}">Upload</button></td>
                         </tr>
                     {% endfor %}
