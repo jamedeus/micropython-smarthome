@@ -5,6 +5,8 @@ from . import views
 app_name = "node_configuration"
 
 urlpatterns = [
+    path('upload', views.upload, name='upload'),
+
     path('node_configuration', views.node_configuration_index, name='node_configuration_index'),
 
     path('configure', views.configure, name='configure'),

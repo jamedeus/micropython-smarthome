@@ -76,9 +76,27 @@
 
     <script>
 
-        function upload(e) {
-            alert("Not yet implemented");
-//             alert(e.target.id);
+        async function upload(e) {
+            const config = e.target.id.replace("upload-", "")
+            const ip = document.getElementById(config + "-ip").value
+
+            const data = {config: config, ip: ip};
+
+            let csrftoken = getCookie('csrftoken');
+
+            const response = await fetch("upload", {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json',
+                    "X-CSRFToken": csrftoken }
+            });
+
+            const result = await response.text();
+
+            alert(result);
+
+            location.reload();
         };
 
         function edit(e) {
