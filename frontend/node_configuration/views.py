@@ -194,8 +194,8 @@ def configure_page2(request):
     }
 
     for i in data.keys():
-        if i.endswith("type"):
-            name = i[0:7]
+        if i.startswith("deviceType") or i.startswith("sensorType"):
+            name = i.replace("Type", "")
             if name.startswith("device"):
                 config["devices"][name] = data[i]
 
@@ -221,8 +221,8 @@ def configure_page3(request):
     config = {}
 
     for i in data.keys():
-        if i.endswith("type"):
-            name = i[0:7]
+        if i.startswith("deviceType") or i.startswith("sensorType"):
+            name = i.replace("Type", "")
             config[name] = data[i]
 
     template = loader.get_template('node_configuration/configure-page3.html')
@@ -263,10 +263,10 @@ def generateConfigFile(request):
 
     # Iterate JSON and create section for each device and sensor
     for i in data.keys():
-        # Match both start and end to avoid adding duplicates
-        if (i.startswith("device") and i.endswith("type")) or (i.startswith("sensor") and i.endswith("type")):
-            name = i[0:7]
+        if i.startswith("deviceType") or i.startswith("sensorType"):
+            name = i.replace("Type", "")
             config[name] = {}
+            config[name]["type"] = data[i]
 
             # Get all parameters that start with name, add to config section
             for j in data.keys():

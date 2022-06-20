@@ -97,6 +97,29 @@
                 <h2>Add Sensor</h2>
 
                 <div id="addSensorDiv1">
+                    <h3>sensor1</h3>
+
+                    <div class="row g-5">
+                        <label class="col-2 col-form-label" for="sensorType1"><b>Type:</b></label>
+                        <div class="col col-10">
+                            <select onchange="load_sensor_section(this)" name="sensorType1" id="sensorType1" class="form-select mb-3" required>
+                            <option value="clear">Select sensor type</option>
+                            <option value="pir">Motion Sensor</option>
+                            <option value="switch">Switch</option>
+                            <option value="dummy">Dummy</option>
+                            <option value="desktop-trigger">Desktop</option>
+                            <option value="si7021">Thermostat</option>
+                            </select>
+                        </div>
+                    </div><br>
+
+                    <div id="addSensorOptions1">
+                    </div>
+
+                    <button onclick="load_next_sensor(this)" type="button" id="addSensorButton1" class="form-control btn-secondary btn">Add another</button>
+
+                    <div id="addSensorDiv2">
+                    </div>
                 </div>
 
             </div><br><br>
@@ -105,6 +128,32 @@
                 <h2>Add Device</h2>
 
                 <div id="addDeviceDiv1">
+                    <h3>device1</h3>
+
+                    <div class="row g-5">
+                        <label class="col-2 col-form-label" for="deviceType1"><b>Type:</b></label>
+                        <div class="col col-10">
+                            <select onchange="load_device_section(this)" name="deviceType1" id="deviceType1" class="form-select mb-3" required>
+                            <option value=" ">Select device type</option>
+                            <option value="dimmer">TP-Link Dimmer</option>
+                            <option value="bulb">TP-Link Bulb</option>
+                            <option value="relay">Smart Relay</option>
+                            <option value="dumb-relay">Relay</option>
+                            <option value="desktop-target">Desktop</option>
+                            <option value="pwm">LED Strip</option>
+                            <option value="mosfet">Mosfet</option>
+                            <option value="api-target">Api Command</option>
+                            </select>
+                        </div>
+                    </div><br>
+
+                    <div id="addDeviceOptions1">
+                    </div>
+
+                    <button onclick="load_next_device(this)" type="button" id="addDeviceButton1" class="form-control btn-secondary btn">Add another</button>
+
+                    <div id="addDeviceDiv2">
+                    </div>
                 </div>
 
             </div><br><br>
@@ -123,8 +172,98 @@
 
     <script>
 
-        $('#addSensorDiv1').load("/addSensor/1");
-        $('#addDeviceDiv1').load("/addDevice/1");
+        async function load_sensor_section(select) {
+            // Get index of sensor
+            const index = parseInt(select.id.replace("sensorType", ""));
+
+            // Get user selection
+            const selected = document.getElementById(select.id).value
+
+            // Load form for the selected sensor type
+            if (selected == "clear") {
+                document.getElementById("addSensorOptions" + index).innerHTML = "";
+                return
+            } else if (selected == "pir") {
+                var div_contents = await fetch("/sensorOptionsPir/" + index);
+            } else if (selected == "switch") {
+                var div_contents = await fetch("/sensorOptionsSwitch/" + index);
+            } else if (selected == "dummy") {
+                var div_contents = await fetch("/sensorOptionsDummy/" + index);
+            } else if (selected == "desktop-trigger") {
+                var div_contents = await fetch("/sensorOptionsDesktop/" + index);
+            } else if (selected == "si7021") {
+                var div_contents = await fetch("/sensorOptionsSi7021/" + index);
+            };
+
+            // Render div, scroll down until visible
+            document.getElementById("addSensorOptions" + index).innerHTML = await div_contents.text();
+            document.getElementById("addSensorOptions" + index).scrollIntoView();
+        };
+
+        async function load_device_section(select) {
+            // Get index of device
+            const index = parseInt(select.id.replace("deviceType", ""));
+
+            // Get user selection
+            const selected = document.getElementById(select.id).value
+
+            // Load form for the selected device type
+            if (selected == "clear") {
+
+            } else if (selected == "dimmer") {
+                var div_contents = await fetch("/deviceOptionsDimmer/" + index);
+            } else if (selected == "bulb") {
+                var div_contents = await fetch("/deviceOptionsBulb/" + index);
+            } else if (selected == "relay") {
+                var div_contents = await fetch("/deviceOptionsRelay/" + index);
+            } else if (selected == "dumb-relay") {
+                var div_contents = await fetch("/deviceOptionsDumbRelay/" + index);
+            } else if (selected == "desktop-target") {
+                var div_contents = await fetch("/deviceOptionsDesktop/" + index);
+            } else if (selected == "pwm") {
+                var div_contents = await fetch("/deviceOptionsPwm/" + index);
+            } else if (selected == "mosfet") {
+                var div_contents = await fetch("/deviceOptionsMosfet/" + index);
+            } else if (selected == "api-target") {
+                var div_contents = await fetch("/deviceOptionsApi/" + index);
+            };
+
+            // Render div, scroll down until visible
+            document.getElementById("addDeviceOptions" + index).innerHTML = await div_contents.text();
+            document.getElementById("addDeviceOptions" + index).scrollIntoView();
+        };
+
+        async function load_next_device(button) {
+            // Get index of clicked button
+            const index = parseInt(button.id.replace("addDeviceButton", ""));
+
+            // Hide clicked button
+            document.getElementById("addDeviceButton" + index).style.display = "none";
+
+            // Load contents for next addDevice div
+            var div_contents = await fetch("addDevice/" + (index + 1));
+            div_contents = await div_contents.text();
+
+            // Render div, scroll down until visible
+            document.getElementById("addDeviceDiv" + (index + 1)).innerHTML = div_contents;
+            document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView();
+        };
+
+        async function load_next_sensor(button) {
+            // Get index of clicked button
+            const index = parseInt(button.id.replace("addSensorButton", ""));
+
+            // Hide clicked button
+            document.getElementById("addSensorButton" + index).style.display = "none";
+
+            // Load contents for next addSensor div
+            var div_contents = await fetch("addSensor/" + (index + 1));
+            div_contents = await div_contents.text();
+
+            // Render div, scroll down until visible
+            document.getElementById("addSensorDiv" + (index + 1)).innerHTML = div_contents;
+            document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView();
+        };
 
         document.getElementById('page1-button').addEventListener("click", async function(e) {
             e.preventDefault();
