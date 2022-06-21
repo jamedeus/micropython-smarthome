@@ -66,7 +66,7 @@ class Config():
 
             elif conf[device]["type"] == "dumb-relay":
                 from DumbRelay import DumbRelay
-                instance = DumbRelay( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"] )
+                instance = DumbRelay( device, conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
 
             elif conf[device]["type"] == "desktop":
                 from Desktop_target import Desktop_target
@@ -74,11 +74,11 @@ class Config():
 
             elif conf[device]["type"] == "pwm":
                 from LedStrip import LedStrip
-                instance = LedStrip( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"], conf[device]["min"], conf[device]["max"] )
+                instance = LedStrip( device, conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]), conf[device]["min"], conf[device]["max"] )
 
             elif conf[device]["type"] == "mosfet":
                 from Mosfet import Mosfet
-                instance = Mosfet( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"] )
+                instance = Mosfet( device, conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
 
             elif conf[device]["type"] == "api-target":
                 from ApiTarget import ApiTarget
@@ -91,7 +91,7 @@ class Config():
         # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
         if "ir_blaster" in conf:
             from IrBlaster import IrBlaster
-            self.ir_blaster = IrBlaster( conf["ir_blaster"]["pin"], conf["ir_blaster"]["target"] )
+            self.ir_blaster = IrBlaster( int(conf["ir_blaster"]["pin"]), conf["ir_blaster"]["target"] )
 
         log.debug("Finished creating device instances")
 
@@ -112,7 +112,7 @@ class Config():
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
                 from MotionSensor import MotionSensor
-                instance = MotionSensor(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["pin"])
+                instance = MotionSensor(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, int(conf[sensor]["pin"]))
 
             elif conf[sensor]["type"] == "desktop":
                 from Desktop_trigger import Desktop_trigger
@@ -128,7 +128,7 @@ class Config():
 
             elif conf[sensor]["type"] == "switch":
                 from Switch import Switch
-                instance = Switch(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["pin"])
+                instance = Switch(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, int(conf[sensor]["pin"]))
 
             # Add the sensor instance to each of it's target's "triggered_by" list
             for t in targets:
