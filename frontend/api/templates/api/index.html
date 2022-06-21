@@ -169,9 +169,9 @@
             } else if (selected_command == "trigger_sensor") {
                 document.getElementById("form").innerHTML = dropdown_open + sensor_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "turn_on") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "turn_off") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + dropdown_close + additional_info + submit_button;
             };
         };
 
@@ -322,6 +322,24 @@
                 const targets = selected_node_status["sensors"][selected_target]["targets"];
 
                 document.getElementById("additional_info").innerHTML = "Sensor type: " + type + "</br>Targets: " + targets;
+
+            } else if (selected_command == "turn_on") {
+                if (selected_node_status["devices"][selected_target]["turned_on"]) {
+                    document.getElementById("additional_info").innerHTML = selected_target + " already turned on.";
+                    // Hide button
+                    document.getElementById('send').style.display = 'none';
+                } else {
+                    document.getElementById("additional_info").innerHTML = selected_target + " currently off.";
+                };
+
+            } else if (selected_command == "turn_off") {
+                if (!selected_node_status["devices"][selected_target]["turned_on"]) {
+                    document.getElementById("additional_info").innerHTML = selected_target + " already turned off.";
+                    // Hide button
+                    document.getElementById('send').style.display = 'none';
+                } else {
+                    document.getElementById("additional_info").innerHTML = selected_target + " currently on.";
+                };
             };
 
         };
