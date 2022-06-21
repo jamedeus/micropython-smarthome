@@ -178,6 +178,7 @@ class Config():
             status_dict["devices"][i.name]["type"] = i.device_type
             status_dict["devices"][i.name]["current_rule"] = i.current_rule
             status_dict["devices"][i.name]["turned_on"] = i.state
+            status_dict["devices"][i.name]["schedule"] = self.schedule[i.name]
 
         status_dict["sensors"] = {}
         for i in self.sensors:
@@ -188,6 +189,7 @@ class Config():
             status_dict["sensors"][i.name]["targets"] = []
             for t in i.targets:
                 status_dict["sensors"][i.name]["targets"].append(t.name)
+            status_dict["sensors"][i.name]["schedule"] = self.schedule[i.name]
 
         return status_dict
 
