@@ -107,6 +107,7 @@
         async function select_node(selected) {
             selected_node = selected.id;
             document.getElementById("clear").selected = true;
+            document.getElementById("form").innerHTML = "";
             document.getElementById("target_node").textContent = selected_node;
             document.getElementById("page1").style.display = "none";
             document.getElementById("page2").style.display = "inline";
@@ -217,6 +218,8 @@
         async function load_additional_info(selected) {
             try {
                 selected_target = document.getElementById(selected.id).value;
+                // Function called before user selected target (ie filled text input first), exit function
+                if (!selected_target) { return };
             }
             catch(err) {
                 // Dropdown wasn't used, no update needed
@@ -379,6 +382,7 @@
             send_command(this);
         };
 
+        // Updates additional_info div contents when number in field changes
         const delay_input_handler = function(e) {
             load_additional_info(document.getElementById("select_target"));
         };
