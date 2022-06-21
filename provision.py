@@ -184,9 +184,11 @@ class Provisioner():
         elif args[1] == "--all":
             self.passwd = "password"
             for i in self.nodes:
+                print(f"\n{i}\n")
                 self.config = self.nodes[i]["config"]
                 self.host = self.nodes[i]["ip"]
                 self.provision()
+            raise SystemExit
 
         # If user selected unit tests
         elif args[1] == "--test":
@@ -198,6 +200,10 @@ class Provisioner():
                     break
             else:
                 print("Example usage: ./provision.py --test <ip>")
+                raise SystemExit
+
+            if not self.open_connection():
+                print("Error: Test node not connected to network or not accepting webrepl connections.\n")
                 raise SystemExit
 
             # Upload all tests
@@ -224,6 +230,8 @@ class Provisioner():
 
             # Upload boot.py (unit test version automatically runs all tests on boot)
             self.upload("tests/unit_test_boot.py", "boot.py")
+
+            self.close_connection()
 
             # Exit to prevent provision from running (already provisioned)
             raise SystemExit
@@ -282,6 +290,10 @@ class Provisioner():
         with open(self.basepath + "/" + self.config, 'r') as file:
             modules, libs = self.get_modules(json.load(file))
 
+        if not self.open_connection():
+            print(f"Error: {self.host} not connected to network or not accepting webrepl connections.\n")
+            return
+
         # Upload all device/sensor modules
         for i in modules:
             src_file = i
@@ -314,6 +326,8 @@ class Provisioner():
         else:
             # Upload code to install dependencies
             self.upload("setup.py", "boot.py")
+
+        self.close_connection()
 
 
 
@@ -400,27 +414,39 @@ class Provisioner():
 
 
 
+    def open_connection(self):
+        try:
+            self.s = socket.socket()
+            self.s.settimeout(5)
+
+            ai = socket.getaddrinfo(self.host, 8266)
+            addr = ai[0][4]
+
+            self.s.connect(addr)
+            client_handshake(self.s)
+
+            self.ws = websocket(self.s)
+
+            login(self.ws, self.passwd)
+
+            # Set websocket to send data marked as "binary"
+            self.ws.ioctl(9, 2)
+
+            return True
+
+        except OSError:
+            # Target disconnected from network
+            self.s.close()
+            return False
+
+
+
     # Modified from webrepl_cli.py main() function
     def upload(self, src_file, dst_file):
         print(f"{src_file} -> {self.host}:/{dst_file}")
 
-        s = socket.socket()
-
-        ai = socket.getaddrinfo(self.host, 8266)
-        addr = ai[0][4]
-
-        s.connect(addr)
-        client_handshake(s)
-
-        ws = websocket(s)
-
-        login(ws, self.passwd)
-
-        # Set websocket to send data marked as "binary"
-        ws.ioctl(9, 2)
-
         try:
-            put_file(ws, self.basepath + "/" + src_file, dst_file)
+            put_file(self.ws, self.basepath + "/" + src_file, dst_file)
         except AssertionError:
 
             if src_file.startswith("lib/"):
@@ -443,7 +469,10 @@ class Provisioner():
                 print(Fore.RED + "ERROR"  + Fore.RESET + ": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
                 pass
 
-        s.close()
+
+
+    def close_connection(self):
+        self.s.close()
 
 
 
