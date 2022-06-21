@@ -89,7 +89,6 @@
         var selected_command = "";
         var device_options = "";
         var sensor_options = "";
-        var schedule_rules = "";
 
         const submit_button = "<button onclick='send_command(this)' type='button' id='send'>Send</button>";
 
@@ -115,6 +114,10 @@
             document.getElementById("page2").style.display = "inline";
             selected_node_status = await fetch("/get_status/" + selected_node);
             selected_node_status = await selected_node_status.json();
+
+            // Clear previous options (selected node may have changed)
+            device_options = "";
+            sensor_options = "";
 
             for (var device in selected_node_status["devices"]) {
                 device_options = device_options + "<option value='" + device + "'>" + device + "</option>";
