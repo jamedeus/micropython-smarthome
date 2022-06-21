@@ -55,9 +55,7 @@
                 <option value="status">Status</option>
                 <option value="reboot">Reboot</option>
                 <option value="disable">Disable device/sensor</option>
-                <option value="disable_in">Disable device/sensor after delay</option>
                 <option value="enable">Enable device/sensor</option>
-                <option value="enable_in">Enable device/sensor after delay</option>
                 <option value="set_rule">Set device/sensor rule</option>
                 <option value="reset_rule">Reset device/sensor rule</option>
                 <option value="get_schedule_rules">Get device/sensor schedule rules</option>
@@ -98,7 +96,7 @@
 
         const dropdown_close = "</select></br></br>";
 
-        const delay_input = "<input type='number' id='delay_input' placeholder='minutes' name='delay_input' required></br></br>"
+        const delay_input = "For (leave blank for permanent):</br><input type='number' id='delay_input' placeholder='minutes' name='delay_input'></br></br>"
 
         const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' required></br></br>"
 
@@ -147,13 +145,11 @@
             } else if (selected_command == "reboot") {
                 document.getElementById("form").innerHTML = submit_button;
             } else if (selected_command == "disable") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + submit_button;
-            } else if (selected_command == "disable_in") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + delay_input + submit_button;
+                document.getElementById("form").innerHTML = "Disable:</br>" + dropdown_open + device_options + sensor_options + dropdown_close + delay_input + additional_info + submit_button;
+                document.getElementById('delay_input').addEventListener('input', delay_input_handler);
             } else if (selected_command == "enable") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + submit_button;
-            } else if (selected_command == "enable_in") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + delay_input + submit_button;
+                document.getElementById("form").innerHTML = "Enable:</br>" + dropdown_open + device_options + sensor_options + dropdown_close + delay_input + additional_info + submit_button;
+                document.getElementById('delay_input').addEventListener('input', delay_input_handler);
             } else if (selected_command == "set_rule") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + rule_input + submit_button;
             } else if (selected_command == "reset_rule") {
@@ -231,38 +227,36 @@
                 document.getElementById("additional_info").innerHTML = "<pre>" + JSON.stringify(selected_node_status, null, 4) + "</pre>";
 
             } else if (selected_command == "enable") {
+                msg = "";
+                delay = document.getElementById("delay_input").value;
+
                 if (selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
-                    document.getElementById("additional_info").innerHTML = selected_target + " already enabled";
-                    // Hide button
-                    document.getElementById('send').style.display = 'none';
+                    msg = selected_target + " already enabled";
                 } else {
-                    // Show button in case previously hidden
-                    document.getElementById('send').style.display = 'initial';
+                    msg = selected_target + " will be enabled";
                 };
 
-            } else if (selected_command == "enable_in") {
-                if (selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
-                    document.getElementById("additional_info").innerHTML = selected_target + " already enabled";
-                } else {
-                    document.getElementById("additional_info").innerHTML = selected_target + " currently disabled";
+                if (delay) {
+                    msg = msg + "</br>" + selected_target + " will be disabled in " + delay + " minutes";
                 };
+
+                document.getElementById("additional_info").innerHTML = msg;
 
             } else if (selected_command == "disable") {
+                msg = "";
+                delay = document.getElementById("delay_input").value;
+
                 if (selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
-                    // Show button in case previously hidden
-                    document.getElementById('send').style.display = 'initial';
+                    msg = selected_target + " already disabled";
                 } else {
-                    document.getElementById("additional_info").innerHTML = selected_target + " already disabled";
-                    // Hide button
-                    document.getElementById('send').style.display = 'none';
+                    msg = selected_target + " will be disabled";
                 };
 
-            } else if (selected_command == "disable_in") {
-                if (selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
-                    document.getElementById("additional_info").innerHTML = selected_target + " currently enabled";
-                } else {
-                    document.getElementById("additional_info").innerHTML = selected_target + " already disabled";
+                if (delay) {
+                    msg = msg + "</br>" + selected_target + " will be re-enabled in " + delay + " minutes";
                 };
+
+                document.getElementById("additional_info").innerHTML = msg;
 
             } else if (selected_command == "set_rule") {
                 const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
@@ -383,6 +377,10 @@
 
             // Send command to delete rule
             send_command(this);
+        };
+
+        const delay_input_handler = function(e) {
+            load_additional_info(document.getElementById("select_target"));
         };
 
     </script>

@@ -48,15 +48,21 @@ def send_command(request):
     for i in data:
         args.append(data[i])
 
-    print()
-    print(ip)
-    print(args)
-    print()
+    print("\n" + ip + "\n" + str(args) + "\n")
 
     try:
         response = parse_command(ip, args)
     except OSError:
         return JsonResponse("Error: Unable to connect.", safe=False, status=200)
+
+    if cmd == "disable" and len(data["delay_input"]) > 0:
+        args.insert(0, "enable_in")
+        print(ip + "\n" + str(args) + "\n")
+        parse_command(ip, args)
+    elif cmd == "enable" and len(data["delay_input"]) > 0:
+        args.insert(0, "disable_in")
+        print(ip + "\n" + str(args) + "\n")
+        parse_command(ip, args)
 
     return JsonResponse(response, safe=False, status=200)
 
