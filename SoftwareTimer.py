@@ -108,13 +108,12 @@ class SoftwareTimer():
                         if self.epoch_now() >= i:
                             self.schedule[i][1]() # Run action
                             self.delete.append(i)
+                        else:
+                            # First unexpired rule found
+                            next_rule = i
+                            break
                     except KeyError:
                         pass # Prevent crash if rule was removed by self.cancel while loop running
-
-                    else:
-                        # First unexpired rule found
-                        next_rule = i
-                        break
 
                 # Delete rules that were just run
                 for i in self.delete:
@@ -129,6 +128,9 @@ class SoftwareTimer():
                 # Get time until next rule due
                 try:
                     period = int(next_rule - self.epoch_now())
+
+                    # Prevent carrying over to next loop after running last queue item, resulting in negative period
+                    del next_rule
                 except NameError:
                     # No tasks in queue - sleep for 1 hour (will be interrupted if task is added)
                     period = 3600000
