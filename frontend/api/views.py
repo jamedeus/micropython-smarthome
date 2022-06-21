@@ -67,7 +67,7 @@ async def request(ip, msg):
     try:
         writer.write('{}\n'.format(json.dumps(msg)).encode())
         await writer.drain()
-        res = await reader.read(1000)
+        res = await reader.read(4096)
     except OSError:
         return "Error: Request failed"
     try:

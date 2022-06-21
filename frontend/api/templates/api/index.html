@@ -266,6 +266,8 @@
                     document.getElementById('send').style.display = 'none';
                 } else {
                     document.getElementById("additional_info").innerHTML = "Current rule (" + current_rule + ") will revert back to scheduled rule (" + scheduled_rule + ")."
+                    // Show button in case previously hidden
+                    document.getElementById('send').style.display = 'initial';
                 };
 
             } else if (selected_command == "add_rule") {
@@ -351,6 +353,8 @@
                     document.getElementById('send').style.display = 'none';
                 } else {
                     document.getElementById("additional_info").innerHTML = selected_target + " currently off.";
+                    // Show button in case previously hidden
+                    document.getElementById('send').style.display = 'initial';
                 };
 
             } else if (selected_command == "turn_off") {
@@ -360,6 +364,8 @@
                     document.getElementById('send').style.display = 'none';
                 } else {
                     document.getElementById("additional_info").innerHTML = selected_target + " currently on.";
+                    // Show button in case previously hidden
+                    document.getElementById('send').style.display = 'initial';
                 };
             };
 
