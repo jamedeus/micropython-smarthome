@@ -44,6 +44,8 @@
 
     <div id="page2" style="display:none;">
 
+        <button onclick="page1()" type="button" id="back_button">Back</button></br>
+
         <h3 id="target_node"></h3>
 
         <label class="col-2 col-form-label" for="select_command"><b>Select Command</b></label>
@@ -121,6 +123,11 @@
             for (var sensor in selected_node_status["sensors"]) {
                 sensor_options = sensor_options + "<option value='" + sensor + "'>" + sensor + "</option>";
             };
+        };
+
+        function page1() {
+            document.getElementById("page2").style.display = "none";
+            document.getElementById("page1").style.display = "initial";
         };
 
         async function select_command(selected) {
