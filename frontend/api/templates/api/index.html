@@ -160,7 +160,9 @@
             } else if (selected_command == "add_rule") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + timestamp_input + rule_input + submit_button;
             } else if (selected_command == "remove_rule") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + timestamp_input + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + timestamp_input;
+                // Hide input box (will be filled by delete_rule() when delete button clicked)
+                document.getElementById("timestamp_input").style.display = 'none';
             } else if (selected_command == "get_attributes") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "ir") {
@@ -303,24 +305,17 @@
                 // If target has no rules, add text to div and skip rest of function
                 if (Object.keys(rules).length == 0) {
                     document.getElementById("additional_info").innerHTML = "No existing rules";
-                    // Remove input and submit button (cannot remove if no rules)
-                    document.getElementById('timestamp_input').style.display = 'none';
-                    document.getElementById('send').style.display = 'none';
                     return;
                 };
 
                 // Build table of target's existing rules, display in div
-                var rules_table = '<h3>Existing rules:</h3><table style="width:50%"><tr><th style="text-align: left;">Time</th><th style="text-align: left;">Rule</th></tr>'
+                var rules_table = '<h3>Existing rules:</h3><table style="width:50%"><tr><th style="text-align: left;">Time</th><th style="text-align: left;">Rule</th><th style="text-align: left;">Delete</th></tr>'
                 for (var rule in rules) {
-                    rules_table = rules_table + "<tr><td>" + rule + "</td><td>" + rules[rule] + "</td></tr>";
+                    rules_table = rules_table + "<tr><td>" + rule + "</td><td>" + rules[rule] + "</td><td><button onclick='delete_rule(this)' type='button' id=" + rule + ">X</button></td></tr>";
                 };
                 rules_table = rules_table + "</table>";
 
                 document.getElementById("additional_info").innerHTML = rules_table;
-
-                // Display input and submit button in case they were previously hidden
-                document.getElementById('timestamp_input').style.display = 'initial';
-                document.getElementById('send').style.display = 'initial';
 
             } else if (selected_command == "get_schedule_rules") {
                 // Get object containing target's existing rules
@@ -376,6 +371,15 @@
                 };
             };
 
+        };
+
+        // Triggered by delete button on remove_rule page
+        async function delete_rule(selected) {
+            // Set selected rule timestamp as value of hidden input
+            document.getElementById('timestamp_input').value = selected.id;
+
+            // Send command to delete rule
+            send_command(this);
         };
 
     </script>
