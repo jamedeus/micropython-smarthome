@@ -271,7 +271,11 @@ def generateConfigFile(request):
             # Get all parameters that start with name, add to config section
             for j in data.keys():
                 if j.startswith(name):
-                    config[name][j[8:]] = data[j]
+                    # Cast to int if possible (pin numbers, numeric rules, etc), otherwise keep string (enable/disable/on/off rules, IPs, etc)
+                    try:
+                        config[name][j[8:]] = int(data[j])
+                    except ValueError:
+                        config[name][j[8:]] = data[j]
 
             # Create empty sections, populated in loops below
             config[name]["schedule"] = {}
