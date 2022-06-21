@@ -1,0 +1,195 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Micropython Smarthome API</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <script>
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        };
+
+    </script>
+</head>
+
+<body>
+
+    <div id="page1">
+        <h3>Api Overview</h3>
+
+        {% if context %}
+            {% for node in context %}
+                <button onclick="select_node(this)" type="button" class="select_node" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+            {% endfor %}
+
+        {% else %}
+            <p>No nodes available</p>
+        {% endif %}
+    </div>
+
+    <div id="page2" style="display:none;">
+
+        <h3 id="target_node"></h3>
+
+        <label class="col-2 col-form-label" for="select_command"><b>Select Command</b></label>
+        <div class="col col-10">
+            <select onchange="select_command(this)" name="select_command" id="select_command" class="form-select mb-3" required>
+                <option value="clear" id="clear">Please select a command</option>
+                <option value="status">Status</option>
+                <option value="reboot">Reboot</option>
+                <option value="disable">Disable device/sensor</option>
+                <option value="disable_in">Disable device/sensor after delay</option>
+                <option value="enable">Enable device/sensor</option>
+                <option value="enable_in">Enable device/sensor after delay</option>
+                <option value="set_rule">Set device/sensor rule</option>
+                <option value="reset_rule">Reset device/sensor rule</option>
+                <option value="get_schedule_rules">Get device/sensor schedule rules</option>
+                <option value="add_rule">Add device/sensor schedule rule</option>
+                <option value="remove_rule">Remove device/sensor schedule rule</option>
+                <option value="get_attributes">Get device/sensor attributes (debug)</option>
+                <option value="ir">Send IR Command</option>
+                <option value="get_temp">Get temperature reading</option>
+                <option value="get_humid">Get humidity reading</option>
+                <option value="clear_log">Clear log</option>
+                <option value="condition_met">Check if sensor is triggered</option>
+                <option value="trigger_sensor">Trigger sensor</option>
+                <option value="turn_on">Turn device on</option>
+                <option value="turn_off">Turn device off</option>
+            </select>
+        </div></br>
+
+        <div id="options">
+            <form id="form">
+            </form>
+        </div>
+
+    </div>
+
+    <script>
+
+        var selected_node = "";
+        var selected_node_status = "";
+        var device_options = "";
+        var sensor_options = "";
+        var schedule_rules = "";
+
+        var submit_button = "<button onclick='send_command(this)' type='button' id='send'>Send</button>";
+
+        var dropdown_open = "\
+                        <select name='select_target' id='select_target' required>\
+                        <option disabled selected value> -- select an option -- </option>";
+
+        var dropdown_close = "</select></br></br>";
+
+        var delay_input = "<input type='number' id='delay_input' placeholder='minutes' name='delay_input' required></br></br>"
+
+        async function select_node(selected) {
+            selected_node = selected.id;
+            document.getElementById("clear").selected = true;
+            document.getElementById("target_node").textContent = selected_node;
+            document.getElementById("page1").style.display = "none";
+            document.getElementById("page2").style.display = "inline";
+            selected_node_status = await fetch("/get_status/" + selected_node);
+            selected_node_status = await selected_node_status.json();
+
+            for (var device in selected_node_status["devices"]) {
+                device_options = device_options + "<option value='" + device + "'>" + device + "</option>";
+            };
+
+            for (var sensor in selected_node_status["sensors"]) {
+                sensor_options = sensor_options + "<option value='" + sensor + "'>" + sensor + "</option>";
+            };
+        };
+
+        async function select_command(selected) {
+            // Get chosen command
+            const selected_command = document.getElementById(selected.id).value;
+
+            if (selected_command == "clear") {
+                document.getElementById("form").innerHTML = "";
+            } else if (selected_command == "status") {
+                document.getElementById("form").innerHTML = submit_button;
+            } else if (selected_command == "reboot") {
+                document.getElementById("form").innerHTML = submit_button;
+            } else if (selected_command == "disable") {
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+            } else if (selected_command == "disable_in") {
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + delay_input + submit_button;
+            } else if (selected_command == "enable") {
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+            } else if (selected_command == "enable_in") {
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + delay_input + submit_button;
+            } else if (selected_command == "set_rule") {
+                document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
+            } else if (selected_command == "reset_rule") {
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+            } else if (selected_command == "get_schedule_rules") {
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+            } else if (selected_command == "add_rule") {
+                document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
+            } else if (selected_command == "remove_rule") {
+                document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
+            } else if (selected_command == "get_attributes") {
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+            } else if (selected_command == "ir") {
+                document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
+            } else if (selected_command == "get_temp") {
+                document.getElementById("form").innerHTML = submit_button;
+            } else if (selected_command == "get_humid") {
+                document.getElementById("form").innerHTML = submit_button;
+            } else if (selected_command == "clear_log") {
+                document.getElementById("form").innerHTML = submit_button;
+            } else if (selected_command == "condition_met") {
+                document.getElementById("form").innerHTML = dropdown_open + sensor_options + dropdown_close + submit_button;
+            } else if (selected_command == "trigger_sensor") {
+                document.getElementById("form").innerHTML = dropdown_open + sensor_options + dropdown_close + submit_button;
+            } else if (selected_command == "turn_on") {
+                document.getElementById("form").innerHTML = dropdown_open + device_options + dropdown_close + submit_button;
+            } else if (selected_command == "turn_off") {
+                document.getElementById("form").innerHTML = dropdown_open + device_options + dropdown_close + submit_button;
+            };
+        };
+
+        async function send_command(selected) {
+            const data = new FormData(document.getElementById("form"));
+
+            var value = Object.fromEntries(data.entries());
+
+            value["target"] = selected_node
+
+            value["command"] = document.getElementById('select_command').value;
+
+            let csrftoken = getCookie('csrftoken');
+
+            const next_page = await fetch('/send_command', {
+                method: 'POST',
+                body: JSON.stringify(value),
+                headers: { 'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json',
+                    "X-CSRFToken": csrftoken }
+            });
+
+            const result = await next_page.text()
+
+            alert(result);
+        };
+
+    </script>
+
+</body>
+</html>
