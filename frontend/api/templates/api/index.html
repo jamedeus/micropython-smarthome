@@ -201,10 +201,19 @@
             // Update status after sending command
             selected_node_status = await fetch("/get_status/" + selected_node);
             selected_node_status = await selected_node_status.json();
+
+            // Update additional info section (if any)
+            load_additional_info(document.getElementById("select_target"));
         };
 
         async function load_additional_info(selected) {
-            selected_target = document.getElementById(selected.id).value;
+            try {
+                selected_target = document.getElementById(selected.id).value;
+            }
+            catch(err) {
+                // Dropdown wasn't used, no update needed
+                return
+            }
 
             if (selected_command == "status") {
                 document.getElementById("additional_info").innerHTML = "<pre>" + JSON.stringify(selected_node_status, null, 4) + "</pre>";
