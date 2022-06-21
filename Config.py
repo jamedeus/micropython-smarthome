@@ -176,6 +176,7 @@ class Config():
         for i in self.devices:
             status_dict["devices"][i.name] = {}
             status_dict["devices"][i.name]["type"] = i.device_type
+            status_dict["devices"][i.name]["enabled"] = i.enabled
             status_dict["devices"][i.name]["current_rule"] = i.current_rule
             status_dict["devices"][i.name]["turned_on"] = i.state
             status_dict["devices"][i.name]["schedule"] = self.schedule[i.name]

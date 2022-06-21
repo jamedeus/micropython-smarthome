@@ -137,13 +137,13 @@
             } else if (selected_command == "reboot") {
                 document.getElementById("form").innerHTML = submit_button;
             } else if (selected_command == "disable") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "disable_in") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + delay_input + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + delay_input + submit_button;
             } else if (selected_command == "enable") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "enable_in") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + delay_input + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + delay_input + submit_button;
             } else if (selected_command == "set_rule") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + rule_input + submit_button;
             } else if (selected_command == "reset_rule") {
@@ -208,6 +208,40 @@
 
             if (selected_command == "status") {
                 document.getElementById("additional_info").innerHTML = "<pre>" + JSON.stringify(selected_node_status, null, 4) + "</pre>";
+
+            } else if (selected_command == "enable") {
+                if (selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
+                    document.getElementById("additional_info").innerHTML = selected_target + " already enabled";
+                    // Hide button
+                    document.getElementById('send').style.display = 'none';
+                } else {
+                    // Show button in case previously hidden
+                    document.getElementById('send').style.display = 'initial';
+                };
+
+            } else if (selected_command == "enable_in") {
+                if (selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
+                    document.getElementById("additional_info").innerHTML = selected_target + " already enabled";
+                } else {
+                    document.getElementById("additional_info").innerHTML = selected_target + " currently disabled";
+                };
+
+            } else if (selected_command == "disable") {
+                if (selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
+                    // Show button in case previously hidden
+                    document.getElementById('send').style.display = 'initial';
+                } else {
+                    document.getElementById("additional_info").innerHTML = selected_target + " already disabled";
+                    // Hide button
+                    document.getElementById('send').style.display = 'none';
+                };
+
+            } else if (selected_command == "disable_in") {
+                if (selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
+                    document.getElementById("additional_info").innerHTML = selected_target + " currently enabled";
+                } else {
+                    document.getElementById("additional_info").innerHTML = selected_target + " already disabled";
+                };
 
             } else if (selected_command == "set_rule") {
                 const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
