@@ -88,15 +88,19 @@
         var sensor_options = "";
         var schedule_rules = "";
 
-        var submit_button = "<button onclick='send_command(this)' type='button' id='send'>Send</button>";
+        const submit_button = "<button onclick='send_command(this)' type='button' id='send'>Send</button>";
 
-        var dropdown_open = "\
+        const dropdown_open = "\
                         <select name='select_target' id='select_target' required>\
                         <option disabled selected value> -- select an option -- </option>";
 
-        var dropdown_close = "</select></br></br>";
+        const dropdown_close = "</select></br></br>";
 
-        var delay_input = "<input type='number' id='delay_input' placeholder='minutes' name='delay_input' required></br></br>"
+        const delay_input = "<input type='number' id='delay_input' placeholder='minutes' name='delay_input' required></br></br>"
+
+        const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' required></br></br>"
+
+        const timestamp_input = "<input type='text' id='timestamp_input' placeholder='HH:MM' name='timestamp_input' required></br></br>"
 
         async function select_node(selected) {
             selected_node = selected.id;
@@ -135,15 +139,15 @@
             } else if (selected_command == "enable_in") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + delay_input + submit_button;
             } else if (selected_command == "set_rule") {
-                document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + rule_input + submit_button;
             } else if (selected_command == "reset_rule") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "get_schedule_rules") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "add_rule") {
-                document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + timestamp_input + rule_input + submit_button;
             } else if (selected_command == "remove_rule") {
-                document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + timestamp_input + submit_button;
             } else if (selected_command == "get_attributes") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "ir") {
