@@ -167,7 +167,7 @@
             } else if (selected_command == "condition_met") {
                 document.getElementById("form").innerHTML = dropdown_open + sensor_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "trigger_sensor") {
-                document.getElementById("form").innerHTML = dropdown_open + sensor_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + sensor_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "turn_on") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + dropdown_close + submit_button;
             } else if (selected_command == "turn_off") {
@@ -312,6 +312,12 @@
                 document.getElementById("additional_info").innerHTML = rules_table;
 
             } else if (selected_command == "condition_met") {
+                const type = selected_node_status["sensors"][selected_target]["type"];
+                const targets = selected_node_status["sensors"][selected_target]["targets"];
+
+                document.getElementById("additional_info").innerHTML = "Sensor type: " + type + "</br>Targets: " + targets;
+
+            } else if (selected_command == "trigger_sensor") {
                 const type = selected_node_status["sensors"][selected_target]["type"];
                 const targets = selected_node_status["sensors"][selected_target]["targets"];
 
