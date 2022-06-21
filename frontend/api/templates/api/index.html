@@ -147,7 +147,7 @@
             } else if (selected_command == "set_rule") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + rule_input + submit_button;
             } else if (selected_command == "reset_rule") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "get_schedule_rules") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info;
             } else if (selected_command == "add_rule") {
@@ -246,6 +246,18 @@
             } else if (selected_command == "set_rule") {
                 const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
                 document.getElementById("additional_info").innerHTML = "Current rule: " + current_rule;
+
+            } else if (selected_command == "reset_rule") {
+                const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
+                const scheduled_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["scheduled_rule"];
+
+                if (current_rule == scheduled_rule) {
+                    document.getElementById("additional_info").innerHTML = "Current rule (" + current_rule + ") already matches scheduled rule (" + scheduled_rule + ")."
+                    // Hide button
+                    document.getElementById('send').style.display = 'none';
+                } else {
+                    document.getElementById("additional_info").innerHTML = "Current rule (" + current_rule + ") will revert back to scheduled rule (" + scheduled_rule + ")."
+                };
 
             } else if (selected_command == "add_rule") {
                 // Get object containing target's existing rules
