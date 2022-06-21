@@ -84,6 +84,7 @@
 
         var selected_node = "";
         var selected_node_status = "";
+        var selected_command = "";
         var device_options = "";
         var sensor_options = "";
         var schedule_rules = "";
@@ -91,7 +92,7 @@
         const submit_button = "<button onclick='send_command(this)' type='button' id='send'>Send</button>";
 
         const dropdown_open = "\
-                        <select name='select_target' id='select_target' required>\
+                        <select name='select_target' id='select_target' onchange='load_additional_info(this)' required>\
                         <option disabled selected value> -- select an option -- </option>";
 
         const dropdown_close = "</select></br></br>";
@@ -101,6 +102,8 @@
         const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' required></br></br>"
 
         const timestamp_input = "<input type='text' id='timestamp_input' placeholder='HH:MM' name='timestamp_input' required></br></br>"
+
+        const additional_info = "<div id='additional_info'></div></br>"
 
         async function select_node(selected) {
             selected_node = selected.id;
@@ -122,12 +125,15 @@
 
         async function select_command(selected) {
             // Get chosen command
-            const selected_command = document.getElementById(selected.id).value;
+            selected_command = document.getElementById(selected.id).value;
 
             if (selected_command == "clear") {
                 document.getElementById("form").innerHTML = "";
             } else if (selected_command == "status") {
-                document.getElementById("form").innerHTML = submit_button;
+                // Add div, no submit button (already have status info)
+                document.getElementById("form").innerHTML = additional_info;
+                // Pass select element to function, loads existing status info into div
+                load_additional_info(selected);
             } else if (selected_command == "reboot") {
                 document.getElementById("form").innerHTML = submit_button;
             } else if (selected_command == "disable") {
@@ -139,15 +145,15 @@
             } else if (selected_command == "enable_in") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + delay_input + submit_button;
             } else if (selected_command == "set_rule") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + rule_input + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + rule_input + submit_button;
             } else if (selected_command == "reset_rule") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "get_schedule_rules") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "add_rule") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + timestamp_input + rule_input + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + timestamp_input + rule_input + submit_button;
             } else if (selected_command == "remove_rule") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + timestamp_input + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + timestamp_input + submit_button;
             } else if (selected_command == "get_attributes") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "ir") {
@@ -191,6 +197,68 @@
             const result = await next_page.text()
 
             alert(result);
+
+            // Update status after sending command
+            selected_node_status = await fetch("/get_status/" + selected_node);
+            selected_node_status = await selected_node_status.json();
+        };
+
+        async function load_additional_info(selected) {
+            selected_target = document.getElementById(selected.id).value;
+
+            if (selected_command == "status") {
+                document.getElementById("additional_info").innerHTML = "<pre>" + JSON.stringify(selected_node_status, null, 4) + "</pre>";
+
+            } else if (selected_command == "set_rule") {
+                const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
+                document.getElementById("additional_info").innerHTML = "Current rule: " + current_rule;
+
+            } else if (selected_command == "add_rule") {
+                // Get object containing target's existing rules
+                const rules = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["schedule"];
+
+                // If target has no rules, add text to div and skip rest of function
+                if (Object.keys(rules).length == 0) {
+                    document.getElementById("additional_info").innerHTML = "No existing rules";
+                    return;
+                };
+
+                // Build table of target's existing rules, display in div
+                var rules_table = '<h3>Existing rules:</h3><table style="width:50%"><tr><th style="text-align: left;">Time</th><th style="text-align: left;">Rule</th></tr>'
+                for (var rule in rules) {
+                    rules_table = rules_table + "<tr><td>" + rule + "</td><td>" + rules[rule] + "</td></tr>";
+                };
+                rules_table = rules_table + "</table>";
+
+                document.getElementById("additional_info").innerHTML = rules_table;
+
+            } else if (selected_command == "remove_rule") {
+                // Get object containing target's existing rules
+                const rules = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["schedule"];
+
+                // If target has no rules, add text to div and skip rest of function
+                if (Object.keys(rules).length == 0) {
+                    document.getElementById("additional_info").innerHTML = "No existing rules";
+                    // Remove input and submit button (cannot remove if no rules)
+                    document.getElementById('timestamp_input').style.display = 'none';
+                    document.getElementById('send').style.display = 'none';
+                    return;
+                };
+
+                // Build table of target's existing rules, display in div
+                var rules_table = '<h3>Existing rules:</h3><table style="width:50%"><tr><th style="text-align: left;">Time</th><th style="text-align: left;">Rule</th></tr>'
+                for (var rule in rules) {
+                    rules_table = rules_table + "<tr><td>" + rule + "</td><td>" + rules[rule] + "</td></tr>";
+                };
+                rules_table = rules_table + "</table>";
+
+                document.getElementById("additional_info").innerHTML = rules_table;
+
+                // Display input and submit button in case they were previously hidden
+                document.getElementById('timestamp_input').style.display = 'initial';
+                document.getElementById('send').style.display = 'initial';
+            };
+
         };
 
     </script>
