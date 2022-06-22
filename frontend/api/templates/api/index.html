@@ -104,6 +104,8 @@
 
         const additional_info = "<div id='additional_info'></div></br>"
 
+        const result_div = "</br><div id='result'></div>"
+
         async function select_node(selected) {
             selected_node = selected.id;
             document.getElementById("clear").selected = true;
@@ -164,7 +166,7 @@
                 // Hide input box (will be filled by delete_rule() when delete button clicked)
                 document.getElementById("timestamp_input").style.display = 'none';
             } else if (selected_command == "get_attributes") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button + result_div;
             } else if (selected_command == "ir") {
                 document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
             } else if (selected_command == "get_temp") {
@@ -203,9 +205,9 @@
                     "X-CSRFToken": csrftoken }
             });
 
-            const result = await next_page.text()
+            const result = await next_page.json()
 
-            alert(result);
+            alert(JSON.stringify(result));
 
             // Update status after sending command
             selected_node_status = await fetch("/get_status/" + selected_node);
@@ -213,6 +215,11 @@
 
             // Update additional info section (if any)
             load_additional_info(document.getElementById("select_target"));
+
+            // Load result div (if any)
+            try {
+                document.getElementById("result").innerHTML = "<pre>" + JSON.stringify(result, null, 4) + "</pre>";
+            } catch(err) {};
         };
 
         async function load_additional_info(selected) {
@@ -220,11 +227,10 @@
                 selected_target = document.getElementById(selected.id).value;
                 // Function called before user selected target (ie filled text input first), exit function
                 if (!selected_target) { return };
-            }
-            catch(err) {
+            } catch(err) {
                 // Dropdown wasn't used, no update needed
                 return
-            }
+            };
 
             if (selected_command == "status") {
                 document.getElementById("additional_info").innerHTML = "<pre>" + JSON.stringify(selected_node_status, null, 4) + "</pre>";
@@ -369,6 +375,9 @@
                     // Show button in case previously hidden
                     document.getElementById('send').style.display = 'initial';
                 };
+            } else if (selected_command == "get_attributes") {
+                // Clear previous result when target changes to avoid confusion
+                document.getElementById("result").innerHTML = "";
             };
 
         };
