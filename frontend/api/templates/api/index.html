@@ -88,7 +88,7 @@
         var device_options = "";
         var sensor_options = "";
 
-        const submit_button = "<button onclick='send_command(this)' type='button' id='send'>Send</button>";
+        const submit_button = "<button onclick='send_command(this)' type='button' id='send'>Send</button></br><div id='result'></div>";
 
         const dropdown_open = "\
                         <select name='select_target' id='select_target' onchange='load_additional_info(this)' required>\
@@ -103,8 +103,6 @@
         const timestamp_input = "<input type='text' id='timestamp_input' placeholder='HH:MM' name='timestamp_input' required></br></br>"
 
         const additional_info = "<div id='additional_info'></div></br>"
-
-        const result_div = "</br><div id='result'></div>"
 
         async function select_node(selected) {
             selected_node = selected.id;
@@ -166,7 +164,7 @@
                 // Hide input box (will be filled by delete_rule() when delete button clicked)
                 document.getElementById("timestamp_input").style.display = 'none';
             } else if (selected_command == "get_attributes") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button + result_div;
+                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "ir") {
                 document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
             } else if (selected_command == "get_temp") {
@@ -206,8 +204,6 @@
             });
 
             const result = await next_page.json()
-
-            alert(JSON.stringify(result));
 
             // Update status after sending command
             selected_node_status = await fetch("/get_status/" + selected_node);
@@ -375,9 +371,6 @@
                     // Show button in case previously hidden
                     document.getElementById('send').style.display = 'initial';
                 };
-            } else if (selected_command == "get_attributes") {
-                // Clear previous result when target changes to avoid confusion
-                document.getElementById("result").innerHTML = "";
             };
 
         };
@@ -394,7 +387,15 @@
         // Updates additional_info div contents when number in field changes
         const delay_input_handler = function(e) {
             load_additional_info(document.getElementById("select_target"));
+
+            // Clear results from previous command to avoid confusion
+            try { document.getElementById("result").innerHTML = ""; } catch(err) {};
         };
+
+        // Clear results section after any part of form changes to avoid confusion
+        document.getElementById('form').addEventListener('change', function(e) {
+            try { document.getElementById("result").innerHTML = ""; } catch(err) {};
+        });
 
     </script>
 
