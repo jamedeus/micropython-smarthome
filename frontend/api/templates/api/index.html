@@ -104,6 +104,12 @@
 
         const additional_info = "<div id='additional_info'></div></br>"
 
+        const ir_target_select = "<input type='radio' id='tv' name='ir_target' value='tv' onclick='ir_handler(this)'><label for='tv'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' onclick='ir_handler(this)'><label for='ac'>Air Conditioner</label><br>"
+
+        const ac_options = "<option value='on'>on</option><option value='off'>off</option><option value='start'>start</option><option value='stop'>stop</option>"
+
+        const tv_options = "<option value='power'>power</option><option value='vol_up'>vol_up</option><option value='vol_down'>vol_down</option><option value='mute'>mute</option><option value='up'>up</option><option value='down'>down</option><option value='left'>left</option><option value='right'>right</option><option value='enter'>enter</option><option value='settings'>settings</option><option value='exit'>exit</option><option value='source'>source</option>"
+
         async function select_node(selected) {
             selected_node = selected.id;
             document.getElementById("clear").selected = true;
@@ -166,7 +172,7 @@
             } else if (selected_command == "get_attributes") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "ir") {
-                document.getElementById("form").innerHTML = "<p>Not yet supported</p>";
+                document.getElementById("form").innerHTML = ir_target_select;
             } else if (selected_command == "get_temp") {
                 document.getElementById("form").innerHTML = submit_button;
             } else if (selected_command == "get_humid") {
@@ -396,6 +402,16 @@
         document.getElementById('form').addEventListener('change', function(e) {
             try { document.getElementById("result").innerHTML = ""; } catch(err) {};
         });
+
+        function ir_handler(selected) {
+            if (selected.value == "ac") {
+                const target_selected = "<input type='radio' id='tv' name='ir_target' value='tv' onclick='ir_handler(this)'><label for='tv'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' onclick='ir_handler(this)' checked='checked'><label for='ac'>Air Conditioner</label><br>";
+                document.getElementById("form").innerHTML = target_selected + dropdown_open + ac_options + dropdown_close + submit_button;
+            } else if (selected.value == "tv") {
+                const target_selected = "<input type='radio' id='tv' name='ir_target' value='tv' onclick='ir_handler(this)' checked='checked'><label for='tv'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' onclick='ir_handler(this)'><label for='ac'>Air Conditioner</label><br>";
+                document.getElementById("form").innerHTML = target_selected + dropdown_open + tv_options + dropdown_close + submit_button;
+            };
+        };
 
     </script>
 
