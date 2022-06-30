@@ -245,6 +245,7 @@
   /* History menu */
   /* Modals */
   /* Input fields */
+  /*     $form-check-input-checked-border-color: 1px solid #0d6efd; */
   /* Dropdowns */
   /* Different color for dropdown placeholder text (selected text set to fff above) */
   /* Force bold white text on buttons (readability) */
@@ -1248,7 +1249,7 @@
 }
 .dark .form-check-input:checked {
   background-color: #31363b;
-  border-color: 1px solid #232627;
+  border-color: #0d6efd;
 }
 .dark .form-check-input:checked[type=checkbox] {
   background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3e%3cpath fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round' stroke-width='3' d='M6 10l3 3l6-6'/%3e%3c/svg%3e");

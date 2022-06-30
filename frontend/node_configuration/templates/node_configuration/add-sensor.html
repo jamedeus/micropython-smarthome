@@ -2,7 +2,7 @@
     <div class="card">
         <div class="card-body">
             <h4 class="card-title">sensor{{context}}</h4>
-            <label for="sensorType{{context}}"><b>Type:</b></label>
+            <label for="sensorType{{context}}" class="form-label"><b>Type:</b></label>
             <div>
                 <select onchange="load_sensor_section(this)" name="sensorType{{context}}" id="sensorType{{context}}" class="form-select" required>
                 <option value="clear">Select sensor type</option>
@@ -13,9 +13,8 @@
                 <option value="si7021">Thermostat</option>
                 </select>
             </div>
-        </div>
 
-        <div id="addSensorOptions{{context}}" class="card-body">
+            <div id="addSensorOptions{{context}}" class="mt-3"></div>
         </div>
     </div>
 

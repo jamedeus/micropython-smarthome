@@ -2,7 +2,7 @@
     <div class="card">
         <div class="card-body">
             <h4 class="card-title">device{{context}}</h4>
-            <label for="deviceType{{context}}"><b>Type:</b></label>
+            <label for="deviceType{{context}}" class="form-label"><b>Type:</b></label>
             <div>
                 <select onchange="load_device_section(this)" name="deviceType{{context}}" id="deviceType{{context}}" class="form-select" required>
                 <option value="clear">Select device type</option>
@@ -16,9 +16,8 @@
                 <option value="api-target">Api Command</option>
                 </select>
             </div>
-        </div>
 
-        <div id="addDeviceOptions{{context}}" class="card-body">
+            <div id="addDeviceOptions{{context}}" class="mt-3"></div>
         </div>
     </div>
 
