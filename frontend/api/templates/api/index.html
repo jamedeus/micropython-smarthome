@@ -6,6 +6,9 @@
     <title>Micropython Smarthome API</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
+    <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script>
 
@@ -28,56 +31,59 @@
 </head>
 
 <body>
+    <div class="container">
+        <div id="page1">
+            <h3 class="text-center mt-3">Api Overview</h3>
 
-    <div id="page1">
-        <h3>Api Overview</h3>
+            {% if context %}
+                <div class="text-center">
+                    {% for node in context %}
+                        <button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+                    {% endfor %}
+                </div>
 
-        {% if context %}
-            {% for node in context %}
-                <button onclick="select_node(this)" type="button" class="select_node" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
-            {% endfor %}
-
-        {% else %}
-            <p>No nodes available</p>
-        {% endif %}
-    </div>
-
-    <div id="page2" style="display:none;">
-
-        <button onclick="page1()" type="button" id="back_button">Back</button></br>
-
-        <h3 id="target_node"></h3>
-
-        <label class="col-2 col-form-label" for="select_command"><b>Select Command</b></label>
-        <div class="col col-10">
-            <select onchange="select_command(this)" name="select_command" id="select_command" class="form-select mb-3" required>
-                <option value="clear" id="clear">Please select a command</option>
-                <option value="status">Status</option>
-                <option value="reboot">Reboot</option>
-                <option value="disable">Disable device/sensor</option>
-                <option value="enable">Enable device/sensor</option>
-                <option value="set_rule">Set device/sensor rule</option>
-                <option value="reset_rule">Reset device/sensor rule</option>
-                <option value="get_schedule_rules">Get device/sensor schedule rules</option>
-                <option value="add_rule">Add device/sensor schedule rule</option>
-                <option value="remove_rule">Remove device/sensor schedule rule</option>
-                <option value="get_attributes">Get device/sensor attributes (debug)</option>
-                <option value="ir">Send IR Command</option>
-                <option value="get_temp">Get temperature reading</option>
-                <option value="get_humid">Get humidity reading</option>
-                <option value="clear_log">Clear log</option>
-                <option value="condition_met">Check if sensor is triggered</option>
-                <option value="trigger_sensor">Trigger sensor</option>
-                <option value="turn_on">Turn device on</option>
-                <option value="turn_off">Turn device off</option>
-            </select>
-        </div></br>
-
-        <div id="options">
-            <form id="form">
-            </form>
+            {% else %}
+                <p>No nodes available</p>
+            {% endif %}
         </div>
 
+        <div id="page2" style="display:none;">
+
+            <button onclick="page1()" type="button" id="back_button" class="btn btn-secondary mt-3">Back</button></br>
+
+            <h3 id="target_node" class="text-center mt-3"></h3>
+
+            <label class="form-label" for="select_command"><b>Select Command</b></label>
+            <div>
+                <select onchange="select_command(this)" name="select_command" id="select_command" class="form-select mb-3" required>
+                    <option value="clear" id="clear">Please select a command</option>
+                    <option value="status">Status</option>
+                    <option value="reboot">Reboot</option>
+                    <option value="disable">Disable device/sensor</option>
+                    <option value="enable">Enable device/sensor</option>
+                    <option value="set_rule">Set device/sensor rule</option>
+                    <option value="reset_rule">Reset device/sensor rule</option>
+                    <option value="get_schedule_rules">Get device/sensor schedule rules</option>
+                    <option value="add_rule">Add device/sensor schedule rule</option>
+                    <option value="remove_rule">Remove device/sensor schedule rule</option>
+                    <option value="get_attributes">Get device/sensor attributes (debug)</option>
+                    <option value="ir">Send IR Command</option>
+                    <option value="get_temp">Get temperature reading</option>
+                    <option value="get_humid">Get humidity reading</option>
+                    <option value="clear_log">Clear log</option>
+                    <option value="condition_met">Check if sensor is triggered</option>
+                    <option value="trigger_sensor">Trigger sensor</option>
+                    <option value="turn_on">Turn device on</option>
+                    <option value="turn_off">Turn device off</option>
+                </select>
+            </div></br>
+
+            <div id="options">
+                <form id="form">
+                </form>
+            </div>
+
+        </div>
     </div>
 
     <script>
@@ -88,23 +94,23 @@
         var device_options = "";
         var sensor_options = "";
 
-        const submit_button = "<button onclick='send_command(this)' type='button' id='send'>Send</button></br><div id='result'></div>";
+        const submit_button = "<div class='text-center'><button onclick='send_command(this)' type='button' id='send' class='btn btn-primary'>Send</button></br></div><div id='result'></div>";
 
         const dropdown_open = "\
-                        <select name='select_target' id='select_target' onchange='load_additional_info(this)' required>\
+                        <select name='select_target' id='select_target' onchange='load_additional_info(this)' class='form-control' required>\
                         <option disabled selected value> -- select an option -- </option>";
 
         const dropdown_close = "</select></br></br>";
 
-        const delay_input = "For (leave blank for permanent):</br><input type='number' id='delay_input' placeholder='minutes' name='delay_input'></br></br>"
+        const delay_input = "For (leave blank for permanent):</br><input type='number' id='delay_input' placeholder='minutes' name='delay_input' class='form-control'></br></br>"
 
-        const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' required></br></br>"
+        const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' class='form-control' required></br></br>"
 
-        const timestamp_input = "<input type='text' id='timestamp_input' placeholder='HH:MM' name='timestamp_input' required></br></br>"
+        const timestamp_input = "<input type='text' id='timestamp_input' placeholder='HH:MM' name='timestamp_input' class='form-control' required></br></br>"
 
         const additional_info = "<div id='additional_info'></div></br>"
 
-        const ir_target_select = "<input type='radio' id='tv' name='ir_target' value='tv' onclick='ir_handler(this)'><label for='tv'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' onclick='ir_handler(this)'><label for='ac'>Air Conditioner</label><br>"
+        const ir_target_select = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='ir_handler(this)'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='ir_handler(this)'><label for='ac' class='form-label-input'>Air Conditioner</label></div><br>"
 
         const ac_options = "<option value='on'>on</option><option value='off'>off</option><option value='start'>start</option><option value='stop'>stop</option>"
 
@@ -405,10 +411,10 @@
 
         function ir_handler(selected) {
             if (selected.value == "ac") {
-                const target_selected = "<input type='radio' id='tv' name='ir_target' value='tv' onclick='ir_handler(this)'><label for='tv'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' onclick='ir_handler(this)' checked='checked'><label for='ac'>Air Conditioner</label><br>";
+                const target_selected = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='ir_handler(this)'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='ir_handler(this)' checked='checked'><label for='ac' class='form-check-label'>Air Conditioner</label></div><br>";
                 document.getElementById("form").innerHTML = target_selected + dropdown_open + ac_options + dropdown_close + submit_button;
             } else if (selected.value == "tv") {
-                const target_selected = "<input type='radio' id='tv' name='ir_target' value='tv' onclick='ir_handler(this)' checked='checked'><label for='tv'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' onclick='ir_handler(this)'><label for='ac'>Air Conditioner</label><br>";
+                const target_selected = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='ir_handler(this)' checked='checked'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='ir_handler(this)'><label for='ac' class='form-check-label'>Air Conditioner</label></div><br>";
                 document.getElementById("form").innerHTML = target_selected + dropdown_open + tv_options + dropdown_close + submit_button;
             };
         };
