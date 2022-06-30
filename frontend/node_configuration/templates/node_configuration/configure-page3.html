@@ -28,7 +28,11 @@
 
         {% endfor %}
 
-        <button type="submit" class="btn btn-primary mb-3">Submit</button>
+        <div class="d-flex justify-content-between mx-3 mb-3">
+            <button id="page3-back-button" type="button" class="btn btn-primary">Back</button>
+            <button type="submit" class="btn btn-primary">Submit</button>
+            <button type="button" class="btn btn-secondary" disabled>Next</button>
+        </div>
 
     <script>
         // Check if user is in dark mode, change theme (runs once on page load)
@@ -37,6 +41,13 @@
                 el.classList.add("table-dark")
             };
         };
+
+        document.getElementById('page3-back-button').addEventListener("click", async function(e) {
+            e.preventDefault();
+
+            $('#page2').show();
+            $('#page3').hide();
+        });
 
         function add(e) {
             var instance = e.target.id.split("-", 1)[0];

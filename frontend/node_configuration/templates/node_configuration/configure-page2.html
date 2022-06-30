@@ -23,7 +23,11 @@
 
         {% endfor %}
 
-        <button id="page2-button" type="button" class="btn btn-primary mb-3">Next</button>
+        <div class="d-flex justify-content-between mx-3 mb-3">
+            <button id="page2-back-button" type="button" class="btn btn-primary">Back</button>
+            <button type="button" class="btn btn-primary" style="visibility: hidden;">Submit</button>
+            <button id="page2-button" type="button" class="btn btn-primary">Next</button>
+        </div>
 
     <script>
 
@@ -33,6 +37,14 @@
             var next_page = await readForm("configure_page3");
 
             $('#page3').html(next_page);
+            $('#page3').show();
+            $('#page2').hide();
+        });
+
+        document.getElementById('page2-back-button').addEventListener("click", async function(e) {
+            e.preventDefault();
+
+            $('#page1').show();
             $('#page2').hide();
         });
 

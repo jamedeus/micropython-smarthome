@@ -174,8 +174,13 @@
 
                 </div></br>
 
-                <button id="page1-button" type="button" class="btn btn-primary mb-3">Next</button>
 
+
+                <div class="d-flex justify-content-between mx-3 mb-3">
+                    <button type="button" class="btn btn-secondary" disabled>Back</button>
+                    <button type="button" class="btn btn-primary" style="visibility: hidden;">Submit</button>
+                    <button id="page1-button" type="button" class="btn btn-primary">Next</button>
+                </div>
             </div>
 
             <div id="page2">
@@ -294,6 +299,7 @@
             var next_page = await readForm("configure_page2");
 
             $('#page2').html(next_page);
+            $('#page2').show();
             $('#page1').hide();
         });
 
