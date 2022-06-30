@@ -1,26 +1,31 @@
-<h3 class="mt-5">device{{context}}</h3>
+<div class="mt-5">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">device{{context}}</h4>
+            <label for="deviceType{{context}}"><b>Type:</b></label>
+            <div>
+                <select onchange="load_device_section(this)" name="deviceType{{context}}" id="deviceType{{context}}" class="form-select" required>
+                <option value="clear">Select device type</option>
+                <option value="dimmer">TP-Link Dimmer</option>
+                <option value="bulb">TP-Link Bulb</option>
+                <option value="relay">Smart Relay</option>
+                <option value="dumb-relay">Relay</option>
+                <option value="desktop-target">Desktop</option>
+                <option value="pwm">LED Strip</option>
+                <option value="mosfet">Mosfet</option>
+                <option value="api-target">Api Command</option>
+                </select>
+            </div>
+        </div>
 
-<div>
-    <label for="deviceType{{context}}"><b>Type:</b></label>
-    <div>
-        <select onchange="load_device_section(this)" name="deviceType{{context}}" id="deviceType{{context}}" class="form-select" required>
-        <option value="clear">Select device type</option>
-        <option value="dimmer">TP-Link Dimmer</option>
-        <option value="bulb">TP-Link Bulb</option>
-        <option value="relay">Smart Relay</option>
-        <option value="dumb-relay">Relay</option>
-        <option value="desktop-target">Desktop</option>
-        <option value="pwm">LED Strip</option>
-        <option value="mosfet">Mosfet</option>
-        <option value="api-target">Api Command</option>
-        </select>
+        <div id="addDeviceOptions{{context}}" class="card-body">
+        </div>
     </div>
-</div></br>
 
-<div id="addDeviceOptions{{context}}">
-</div>
+    <div class="text-center">
+        <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{context}}" class="btn-secondary btn mt-3">Add another</button>
+    </div>
 
-<button onclick="load_next_device(this)" type="button" id="addDeviceButton{{context}}" class="form-control btn-secondary btn mt-3">Add another</button>
-
-<div id="addDeviceDiv{{context|add:1}}">
+    <div id="addDeviceDiv{{context|add:1}}">
+    </div>
 </div>

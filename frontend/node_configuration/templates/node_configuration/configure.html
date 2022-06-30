@@ -108,29 +108,32 @@
                 </div></br>
 
                 <div>
-                    <h2>Add Sensor</h2>
+                    <h2>Add Sensors</h2>
 
                     <div id="addSensorDiv1">
-                        <h3 class="mt-3">sensor1</h3>
-
-                        <div>
-                            <label for="sensorType1"><b>Type:</b></label>
-                            <div>
-                                <select onchange="load_sensor_section(this)" name="sensorType1" id="sensorType1" class="form-select" required>
-                                <option value="clear">Select sensor type</option>
-                                <option value="pir">Motion Sensor</option>
-                                <option value="switch">Switch</option>
-                                <option value="dummy">Dummy</option>
-                                <option value="desktop-trigger">Desktop</option>
-                                <option value="si7021">Thermostat</option>
-                                </select>
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">sensor1</h4>
+                                <label for="sensorType1"><b>Type:</b></label>
+                                <div>
+                                    <select onchange="load_sensor_section(this)" name="sensorType1" id="sensorType1" class="form-select" required>
+                                    <option value="clear">Select sensor type</option>
+                                    <option value="pir">Motion Sensor</option>
+                                    <option value="switch">Switch</option>
+                                    <option value="dummy">Dummy</option>
+                                    <option value="desktop-trigger">Desktop</option>
+                                    <option value="si7021">Thermostat</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div><br>
 
-                        <div id="addSensorOptions1">
+                            <div id="addSensorOptions1" class="card-body">
+                            </div>
                         </div>
 
-                        <button onclick="load_next_sensor(this)" type="button" id="addSensorButton1" class="form-control btn-secondary btn mt-3">Add another</button>
+                        <div class="text-center">
+                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton1" class="btn-secondary btn mt-3">Add another</button>
+                        </div>
 
                         <div id="addSensorDiv2">
                         </div>
@@ -139,32 +142,35 @@
                 </div></br>
 
                 <div>
-                    <h2>Add Device</h2>
+                    <h2>Add Devices</h2>
 
                     <div id="addDeviceDiv1">
-                        <h3 class="mt-3">device1</h3>
-
-                        <div>
-                            <label for="deviceType1"><b>Type:</b></label>
-                            <div>
-                                <select onchange="load_device_section(this)" name="deviceType1" id="deviceType1" class="form-select" required>
-                                <option value="clear">Select device type</option>
-                                <option value="dimmer">TP-Link Dimmer</option>
-                                <option value="bulb">TP-Link Bulb</option>
-                                <option value="relay">Smart Relay</option>
-                                <option value="dumb-relay">Relay</option>
-                                <option value="desktop-target">Desktop</option>
-                                <option value="pwm">LED Strip</option>
-                                <option value="mosfet">Mosfet</option>
-                                <option value="api-target">Api Command</option>
-                                </select>
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">device1</h4>
+                                <label for="deviceType1"><b>Type:</b></label>
+                                <div>
+                                    <select onchange="load_device_section(this)" name="deviceType1" id="deviceType1" class="form-select" required>
+                                    <option value="clear">Select device type</option>
+                                    <option value="dimmer">TP-Link Dimmer</option>
+                                    <option value="bulb">TP-Link Bulb</option>
+                                    <option value="relay">Smart Relay</option>
+                                    <option value="dumb-relay">Relay</option>
+                                    <option value="desktop-target">Desktop</option>
+                                    <option value="pwm">LED Strip</option>
+                                    <option value="mosfet">Mosfet</option>
+                                    <option value="api-target">Api Command</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div><br>
 
-                        <div id="addDeviceOptions1">
+                            <div id="addDeviceOptions1" class="card-body">
+                            </div>
                         </div>
 
-                        <button onclick="load_next_device(this)" type="button" id="addDeviceButton1" class="form-control btn-secondary btn mt-3">Add another</button>
+                        <div class="text-center">
+                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton1" class="btn-secondary btn mt-3">Add another</button>
+                        </div>
 
                         <div id="addDeviceDiv2">
                         </div>

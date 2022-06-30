@@ -1,23 +1,28 @@
-<h3 class="mt-5">sensor{{context}}</h3>
+<div class="mt-5">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="card-title">sensor{{context}}</h4>
+            <label for="sensorType{{context}}"><b>Type:</b></label>
+            <div>
+                <select onchange="load_sensor_section(this)" name="sensorType{{context}}" id="sensorType{{context}}" class="form-select" required>
+                <option value="clear">Select sensor type</option>
+                <option value="pir">Motion Sensor</option>
+                <option value="switch">Switch</option>
+                <option value="dummy">Dummy</option>
+                <option value="desktop-trigger">Desktop</option>
+                <option value="si7021">Thermostat</option>
+                </select>
+            </div>
+        </div>
 
-<div>
-    <label for="sensorType{{context}}"><b>Type:</b></label>
-    <div>
-        <select onchange="load_sensor_section(this)" name="sensorType{{context}}" id="sensorType{{context}}" class="form-select" required>
-        <option value="clear">Select sensor type</option>
-        <option value="pir">Motion Sensor</option>
-        <option value="switch">Switch</option>
-        <option value="dummy">Dummy</option>
-        <option value="desktop-trigger">Desktop</option>
-        <option value="si7021">Thermostat</option>
-        </select>
+        <div id="addSensorOptions{{context}}" class="card-body">
+        </div>
     </div>
-</div></br>
 
-<div id="addSensorOptions{{context}}">
-</div>
+    <div class="text-center">
+        <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{context}}" class="btn-secondary btn mt-3">Add another</button>
+    </div>
 
-<button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{context}}" class="form-control btn-secondary btn mt-3">Add another</button>
-
-<div id="addSensorDiv{{context|add:1}}">
+    <div id="addSensorDiv{{context|add:1}}">
+    </div>
 </div>
