@@ -1,0 +1,142 @@
+@import "bootstrap-5.1.3/scss/_functions";
+@import "bootstrap-5.1.3/scss/_variables";
+@import "bootstrap-5.1.3/scss/_mixins";
+
+/* Improve popover readability (episode titles often wrap 3-4 times with default) */
+$popover-max-width: 90vw;
+
+/* Prevent popover hitting screen edge on mobile */
+$popover-body-padding-x: 0;
+.popover-body {
+    padding-right: 1rem !important;
+}
+
+$pagination-color: #000000;
+$pagination-active-color: #000000;
+$pagination-hover-color: #000000;
+
+$pagination-active-bg: #6c757d4a;
+$pagination-active-border-color: #6c757d26;
+
+$pagination-focus-bg: $pagination-bg;
+$pagination-disabled-color: #bbbbbb;
+
+@import "bootstrap-5.1.3/scss/_popover";
+@import "bootstrap-5.1.3/scss/_pagination";
+
+
+
+.dark {
+    /* redefine theme colors for dark theme */
+    $primary: #0550b8; /*button color*/
+    $secondary: #4b5157;
+    $success: #177a4c;
+
+    $theme-colors: (
+        "primary": $primary,
+        "secondary": $secondary,
+        "success": $success,
+        "danger": $danger,
+        "info": $indigo,
+        "dark": $dark,
+        "light": $light,
+    );
+
+    /* redefine theme color variables */
+    @each $color, $value in $theme-colors {
+        --#{$variable-prefix}#{$color}: #{$value};
+    }
+
+    /* redefine theme color rgb vars (used for bg- colors) */
+    $theme-colors-rgb: map-loop($theme-colors, to-rgb, "$value");
+    @each $color, $value in $theme-colors-rgb {
+        --#{$variable-prefix}#{$color}-rgb: #{$value};
+    }
+
+    $body-color: #eee;
+    $body-bg: #1b1e1f;
+
+    /* History menu */
+    $offcanvas-bg-color: $dark;
+
+    $card-bg: #212529;
+
+    $popover-bg: #31363b;
+    $popover-header-bg: #31363b;
+    $popover-arrow-color: #31363b;
+    $popover-body-color: #eee;
+
+    $pagination-color: #eee;
+    $pagination-active-color: #eee;
+    $pagination-focus-color: #fff;
+    $pagination-hover-color: #fff;
+
+    $pagination-bg: #1b1e1f;
+    $pagination-active-bg: #101315;
+    $pagination-focus-bg: #1b1e1f;
+    $pagination-hover-bg: #171919;
+
+    $pagination-border-color: #232627;
+    $pagination-active-border-color: #101315;
+    $pagination-hover-border-color: #171919;
+
+    $pagination-disabled-bg: #1b1e1f;
+    $pagination-disabled-border-color: #1b1e1f;
+    $pagination-disabled-color: #454545 !important;
+
+    $pagination-focus-box-shadow: none;
+
+    /* Modals */
+    $modal-content-bg: #31363b;
+    $modal-header-border-color: #31363b;
+    $modal-footer-border-color: #31363b;
+
+    /* Input fields */
+    $input-bg: #31363b;
+    $input-color: #ffffff;
+    $input-placeholder-color: #696b6e;
+    $input-border-color: #232627;
+
+    $input-focus-bg: #31363b;
+    $input-focus-border-color: #232627;
+    $input-focus-color: #ffffff;
+
+    $form-check-input-bg: #31363b;
+    $form-check-input-focus-border: 1px solid #232627;
+    $form-check-input-checked-border-color: 1px solid #232627;
+    $form-check-input-checked-bg-color: #31363b;
+
+    /* Dropdowns */
+    $form-select-bg: #31363b;
+    $form-select-color: #ffffff;
+    $form-select-border-color: #232627;
+    $form-select-focus-border-color: #232627;
+
+    /* Different color for dropdown placeholder text (selected text set to fff above) */
+    select:invalid {
+        color: #696b6e;
+    }
+
+    /* Force bold white text on buttons (readability) */
+    .btn {
+        color: #fff !important;
+        font-weight: bold !important;
+    }
+
+    /* Fix slight annoying color difference between radio button and submit button */
+    .btn-check:active + .btn-outline-primary, .btn-check:checked + .btn-outline-primary, .btn-outline-primary.active, .btn-outline-primary.dropdown-toggle.show, .btn-outline-primary:active {
+        background-color: $primary;
+        border-color: $primary;
+    }
+
+    --#{$variable-prefix}body-color: #{$body-color};
+    --#{$variable-prefix}body-bg: #{$body-bg};
+
+    @import "bootstrap-5.1.3/scss/_popover";
+    @import "bootstrap-5.1.3/scss/_pagination";
+    @import "bootstrap-5.1.3/scss/_card";
+    @import "bootstrap-5.1.3/scss/_offcanvas";
+    @import "bootstrap-5.1.3/scss/_modal";
+    @import "bootstrap-5.1.3/scss/_forms";
+    @import "bootstrap-5.1.3/scss/_buttons";
+}

@@ -192,6 +192,11 @@
     </div>
 
     <script>
+        // Check if user is in dark mode, change theme (runs once on page load)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add("dark");
+            console.log("Dark mode");
+        };
 
         async function load_sensor_section(select) {
             // Get index of sensor
@@ -303,6 +308,20 @@
             alert(next_page)
         });
 
+        // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
+        window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+            if (e.matches) { // Returns True for dark mode, False otherwise
+                document.body.classList.add("dark");
+                for (el of document.getElementsByClassName("table")) {
+                    el.classList.add("table-dark")
+                };
+            } else {
+                document.body.classList.remove("dark");
+                for (el of document.getElementsByClassName("table")) {
+                    el.classList.remove("table-dark")
+                };
+            }
+        });
     </script>
 
 </body>

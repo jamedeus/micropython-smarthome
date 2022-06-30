@@ -7,7 +7,7 @@
             <div class="card">
                 <div class="card-body">
                     <label class="card-title"><b>{{ instance }} ({{ type }}):</b></label>
-                    <table id="{{instance}}-rules" class="table table-hover">
+                    <table id="{{instance}}-rules" class="table">
                         <tr>
                             <th style="text-align: left;">Time</th>
                             <th style="text-align: left;">Rule</th>
@@ -31,6 +31,12 @@
         <button type="submit" class="btn btn-primary mb-3">Submit</button>
 
     <script>
+        // Check if user is in dark mode, change theme (runs once on page load)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            for (el of document.getElementsByClassName("table")) {
+                el.classList.add("table-dark")
+            };
+        };
 
         function add(e) {
             var instance = e.target.id.split("-", 1)[0];

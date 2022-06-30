@@ -474,7 +474,7 @@
   flex-direction: column;
   min-width: 0;
   word-wrap: break-word;
-  background-color: #1b1e1f;
+  background-color: #212529;
   background-clip: border-box;
   border: 1px solid rgba(0, 0, 0, 0.125);
   border-radius: 0.25rem;
@@ -542,8 +542,8 @@
   border-bottom: 0;
 }
 .dark .card-header-tabs .nav-link.active {
-  background-color: #1b1e1f;
-  border-bottom-color: #1b1e1f;
+  background-color: #212529;
+  border-bottom-color: #212529;
 }
 .dark .card-header-pills {
   margin-right: -0.5rem;
