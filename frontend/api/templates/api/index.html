@@ -87,6 +87,12 @@
     </div>
 
     <script>
+        // Check if user is in dark mode, change theme (runs once on page load)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add("dark");
+            console.log("Dark mode");
+        };
+
 
         var selected_node = "";
         var selected_node_status = "";
@@ -419,6 +425,14 @@
             };
         };
 
+        // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
+        window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+            if (e.matches) { // Returns True for dark mode, False otherwise
+                document.body.classList.add("dark");
+            } else {
+                document.body.classList.remove("dark");
+            }
+        });
     </script>
 
 </body>
