@@ -28,6 +28,17 @@
         };
 
     </script>
+    <style>
+        .result {
+            background-color: #D9D9D9;
+            border-radius: 8px;
+            width: 85%;
+        }
+
+        body.dark .result {
+            background-color: #2B2E2F;
+        }
+    </style>
 </head>
 
 <body>
@@ -100,19 +111,19 @@
         var device_options = "";
         var sensor_options = "";
 
-        const submit_button = "<div class='text-center'><button onclick='send_command(this)' type='button' id='send' class='btn btn-primary'>Send</button></br></div><div id='result'></div>";
+        const submit_button = "<div class='text-center'><button onclick='send_command(this)' type='button' id='send' class='btn btn-primary'>Send</button></div></br><div id='result' class='result mx-auto'></div>";
 
         const dropdown_open = "\
                         <select name='select_target' id='select_target' onchange='load_additional_info(this)' class='form-control' required>\
                         <option disabled selected value> -- select an option -- </option>";
 
-        const dropdown_close = "</select></br></br>";
+        const dropdown_close = "</select></br>";
 
-        const delay_input = "For (leave blank for permanent):</br><input type='number' id='delay_input' placeholder='minutes' name='delay_input' class='form-control'></br></br>"
+        const delay_input = "For (leave blank for permanent):</br><input type='number' id='delay_input' placeholder='minutes' name='delay_input' class='form-control'></br>"
 
-        const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' class='form-control' required></br></br>"
+        const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' class='form-control' required></br>"
 
-        const timestamp_input = "<input type='text' id='timestamp_input' placeholder='HH:MM' name='timestamp_input' class='form-control' required></br></br>"
+        const timestamp_input = "<input type='text' id='timestamp_input' placeholder='HH:MM' name='timestamp_input' class='form-control' required></br>"
 
         const additional_info = "<div id='additional_info'></div></br>"
 
@@ -232,7 +243,7 @@
 
             // Load result div (if any)
             try {
-                document.getElementById("result").innerHTML = "<pre>" + JSON.stringify(result, null, 4) + "</pre>";
+                document.getElementById("result").innerHTML = "<pre class='p-3'>" + JSON.stringify(result, null, 4) + "</pre>";
             } catch(err) {};
         };
 
