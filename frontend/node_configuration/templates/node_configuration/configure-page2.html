@@ -4,24 +4,24 @@
 
         {% for sensor, type in context.sensors.items %}
 
-            <div class="row g-5">
-                <label class="col-2 col-form-label" for="{{sensor}}-targets"><b>{{ sensor }} ({{ type }}) targets:</b></label>
-                <div class="col col-10">
+            <div>
+                <label for="{{sensor}}-targets"><b>{{ sensor }} ({{ type }}) targets:</b></label>
+                <div class="form-check">
 
                     {% for device, dtype in context.devices.items %}
 
-                        <input type="checkbox" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}">
-                        <label for="target-{{sensor}}-{{device}}">{{ device }} ({{ dtype }})</label><br>
+                        <input type="checkbox" class="form-check-input" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}">
+                        <label for="target-{{sensor}}-{{device}}" class="form-check-label">{{ device }} ({{ dtype }})</label><br>
 
                     {% endfor %}
                     </select>
                 </div>
-            </div><br>
+            </div></br>
 
 
         {% endfor %}
 
-        <button id="page2-button" type="button">Submit</button>
+        <button id="page2-button" type="button" class="btn btn-primary mb-3">Next</button>
 
     <script>
 

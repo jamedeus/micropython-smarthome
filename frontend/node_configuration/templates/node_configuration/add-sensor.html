@@ -1,9 +1,9 @@
-<h3>sensor{{context}}</h3>
+<h3 class="mt-5">sensor{{context}}</h3>
 
-<div class="row g-5">
-    <label class="col-2 col-form-label" for="sensorType{{context}}"><b>Type:</b></label>
-    <div class="col col-10">
-        <select onchange="load_sensor_section(this)" name="sensorType{{context}}" id="sensorType{{context}}" class="form-select mb-3" required>
+<div>
+    <label for="sensorType{{context}}"><b>Type:</b></label>
+    <div>
+        <select onchange="load_sensor_section(this)" name="sensorType{{context}}" id="sensorType{{context}}" class="form-select" required>
         <option value="clear">Select sensor type</option>
         <option value="pir">Motion Sensor</option>
         <option value="switch">Switch</option>
@@ -12,12 +12,12 @@
         <option value="si7021">Thermostat</option>
         </select>
     </div>
-</div><br>
+</div></br>
 
 <div id="addSensorOptions{{context}}">
 </div>
 
-<button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{context}}" class="form-control btn-secondary btn">Add another</button>
+<button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{context}}" class="form-control btn-secondary btn mt-3">Add another</button>
 
 <div id="addSensorDiv{{context|add:1}}">
 </div>

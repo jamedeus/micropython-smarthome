@@ -4,10 +4,10 @@
 
         {% for instance, type in context.items %}
 
-            <div class="row g-5">
+            <div>
 
-                <label class="col-2 col-form-label"><b>{{ instance }} ({{ type }}):</b></label>
-                <table id="{{instance}}-rules" style="width:50%">
+                <label><b>{{ instance }} ({{ type }}):</b></label>
+                <table id="{{instance}}-rules" class="table table-hover">
                     <tr>
                         <th style="text-align: left;">Time</th>
                         <th style="text-align: left;">Rule</th>
@@ -15,16 +15,17 @@
                     <tr id="{{instance}}-row-1">
                         <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time"></td>
                         <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value"></td>
+                        <td class="min"><button type="button" class="btn btn-danger" id="placeholder_button" style="visibility: hidden;">X</button></td>
                     </tr>
                 </table>
 
-                <button type="button" class="add" id="{{instance}}-add-rule">Add another</button>
+                <button type="button" class="btn btn-secondary add" id="{{instance}}-add-rule">Add another</button>
 
-            </div><br>
+            </div></br>
 
         {% endfor %}
 
-        <button type="submit">Submit</button>
+        <button type="submit" class="btn btn-primary mb-3">Submit</button>
 
     <script>
 
@@ -46,7 +47,7 @@
 
             cell_time.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='schedule-" + instance + "-rule" + next_row + "-time'>";
             cell_value.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-value' placeholder='' name='schedule-" + instance + "-rule" + next_row + "-value'>";
-            cell_del.innerHTML = "<button type='button' class='remove' id='" + instance + "-remove" + + next_row + "' onclick='remove(this)'>X</button>";
+            cell_del.innerHTML = "<button type='button' class='remove btn btn-danger' id='" + instance + "-remove" + + next_row + "' onclick='remove(this)'>X</button>";
 
         };
 
