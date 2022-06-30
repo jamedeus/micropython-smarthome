@@ -6,6 +6,9 @@
     <title>Create new config file</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
+    <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script>
 
@@ -25,61 +28,80 @@
         };
 
     </script>
+    <style>
+        td {
+            width: auto;
+        }
+
+        td.min {
+            width: 1%;
+            white-space: nowrap;
+        }
+    </style>
 </head>
 
 <body>
-    <div>
-        <h1>Configure Nodes</h1>
-    <div><br>
+    <div class="container">
+        <div>
+            <h1 class="text-center mt-3">Configure Nodes</h1>
+        <div><br>
 
-    {% if context %}
+        {% if context %}
 
-        {% if context.not_uploaded %}
-            <div id="not_uploaded">
-                <h3>Configs ready to upload:</h3>
+            {% if context.uploaded %}
+                <div id="existing" class="mx-3">
+                    <h3 class="mb-3">Existing Nodes:</h3>
 
-                <table id="not_uploaded_table" style="width:50%">
-                    {% for config in context.not_uploaded %}
-                        <tr id="{{config}}">
-                            <td>{{config}}</td>
-                            <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip"></td>
-                            <td><button type="button" class="upload" id="upload-{{config}}">Upload</button></td>
+                    <table id="nodes_table" class="table table-striped table-bordered table-hover">
+                        <tr>
+                            <th>Name</th>
+                            <th>IP</th>
+                            <th></th>
                         </tr>
-                    {% endfor %}
-                </table>
-            </div></br></br></br>
+
+                        {% for node in context.uploaded %}
+                            <tr id="{{node.friendly_name}}">
+                                <td>{{node.friendly_name}}</td>
+                                <td>{{node.ip}}</td>
+                                <td class="min"><button type="button" class="edit btn-primary btn btn-sm" id="edit-{{node.friendly_name}}">Edit</button></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div></br></br>
+            {% endif %}
+
+            {% if context.not_uploaded %}
+                <div id="not_uploaded" class="mx-3">
+                    <h3 class="mb-3">Configs ready to upload:</h3>
+
+                    <table id="not_uploaded_table" class="table table-striped table-bordered table-hover">
+                        <tr>
+                            <th>Name</th>
+                            <th>IP</th>
+                            <th></th>
+                        </tr>
+                        {% for config in context.not_uploaded %}
+                            <tr id="{{config}}">
+                                <td class="min">{{config}}</td>
+                                <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" class="form-control"></td>
+                                <td class="min"><button type="button" class="upload btn-primary btn btn-sm" id="upload-{{config}}">Upload</button></td>
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+
+            {% endif %}
+
+            <!-- If no un-uploaded configs exist, add new config button in div (no table)-->
+            <div id="add_new_config" class="mb-3 mx-3">
+                <a href="/configure" class="btn-primary btn">Create new config</a>
+            </div>
+
         {% endif %}
 
-        {% if context.uploaded %}
-            <div id="existing">
-                <h3>Existing Nodes:</h3>
-
-                <table id="nodes_table" style="width:50%">
-                    <tr>
-                        <th style="text-align: left;">Name</th>
-                        <th style="text-align: left;">IP</th>
-                        <th style="text-align: left;"></th>
-                    </tr>
-
-                    {% for node in context.uploaded %}
-                        <tr id="{{node.friendly_name}}">
-                            <td>{{node.friendly_name}}</td>
-                            <td>{{node.ip}}</td>
-                            <td><button type="button" class="edit" id="edit-{{node.friendly_name}}">Edit</button></td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            </div></br></br></br>
-        {% endif %}
-
-    {% endif %}
-
-    <div id="add_new_config">
-        <button type="button"><a href="/configure">Create new config</a></button>
     </div>
 
     <script>
-
         async function upload(e) {
             const config = e.target.id.replace("upload-", "")
             const ip = document.getElementById(config + "-ip").value
