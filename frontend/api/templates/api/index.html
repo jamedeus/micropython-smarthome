@@ -265,7 +265,7 @@
             };
 
             if (selected_command == "status") {
-                document.getElementById("additional_info").innerHTML = "<pre>" + JSON.stringify(selected_node_status, null, 4) + "</pre>";
+                document.getElementById("additional_info").innerHTML = "<div class='d-block text-center'><pre class='d-inline-block text-start'>" + JSON.stringify(selected_node_status, null, 4) + "</pre></div>";
 
             } else if (selected_command == "enable") {
                 msg = "";
@@ -281,7 +281,7 @@
                     msg = msg + "</br>" + selected_target + " will be disabled in " + delay + " minutes";
                 };
 
-                document.getElementById("additional_info").innerHTML = msg;
+                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + msg + "</div>";
 
             } else if (selected_command == "disable") {
                 msg = "";
@@ -297,22 +297,22 @@
                     msg = msg + "</br>" + selected_target + " will be re-enabled in " + delay + " minutes";
                 };
 
-                document.getElementById("additional_info").innerHTML = msg;
+                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + msg + "</div>";
 
             } else if (selected_command == "set_rule") {
                 const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
-                document.getElementById("additional_info").innerHTML = "Current rule: " + current_rule;
+                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Current rule: " + current_rule + "</div>";
 
             } else if (selected_command == "reset_rule") {
                 const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
                 const scheduled_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["scheduled_rule"];
 
                 if (current_rule == scheduled_rule) {
-                    document.getElementById("additional_info").innerHTML = "Current rule (" + current_rule + ") already matches scheduled rule (" + scheduled_rule + ")."
+                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Current rule (" + current_rule + ") already matches scheduled rule (" + scheduled_rule + ")." + "</div>";
                     // Hide button
                     document.getElementById('send').style.display = 'none';
                 } else {
-                    document.getElementById("additional_info").innerHTML = "Current rule (" + current_rule + ") will revert back to scheduled rule (" + scheduled_rule + ")."
+                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Current rule (" + current_rule + ") will revert back to scheduled rule (" + scheduled_rule + ")." + "</div>";
                     // Show button in case previously hidden
                     document.getElementById('send').style.display = 'initial';
                 };
@@ -344,32 +344,32 @@
                 const type = selected_node_status["sensors"][selected_target]["type"];
                 const targets = selected_node_status["sensors"][selected_target]["targets"];
 
-                document.getElementById("additional_info").innerHTML = "Sensor type: " + type + "</br>Targets: " + targets;
+                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Sensor type: " + type + "</br>Targets: " + targets + "</div>";
 
             } else if (selected_command == "trigger_sensor") {
                 const type = selected_node_status["sensors"][selected_target]["type"];
                 const targets = selected_node_status["sensors"][selected_target]["targets"];
 
-                document.getElementById("additional_info").innerHTML = "Sensor type: " + type + "</br>Targets: " + targets;
+                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Sensor type: " + type + "</br>Targets: " + targets + "</div>";
 
             } else if (selected_command == "turn_on") {
                 if (selected_node_status["devices"][selected_target]["turned_on"]) {
-                    document.getElementById("additional_info").innerHTML = selected_target + " already turned on.";
+                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + selected_target + " already turned on." + "</div>";
                     // Hide button
                     document.getElementById('send').style.display = 'none';
                 } else {
-                    document.getElementById("additional_info").innerHTML = selected_target + " currently off.";
+                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + selected_target + " currently off." + "</div>";
                     // Show button in case previously hidden
                     document.getElementById('send').style.display = 'initial';
                 };
 
             } else if (selected_command == "turn_off") {
                 if (!selected_node_status["devices"][selected_target]["turned_on"]) {
-                    document.getElementById("additional_info").innerHTML = selected_target + " already turned off.";
+                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + selected_target + " already turned off." + "</div>";
                     // Hide button
                     document.getElementById('send').style.display = 'none';
                 } else {
-                    document.getElementById("additional_info").innerHTML = selected_target + " currently on.";
+                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + selected_target + " currently on." + "</div>";
                     // Show button in case previously hidden
                     document.getElementById('send').style.display = 'initial';
                 };
