@@ -101,6 +101,12 @@ class TestEndpoint(unittest.TestCase):
         self.assertEqual(len(response.json()), 1)
         self.assertIsInstance(response.json()["Humidity"], float)
 
+    def test_get_climate(self):
+        response = requests.get('http://192.168.1.223:8123/get_climate_data')
+        self.assertEqual(len(response.json()), 2)
+        self.assertIsInstance(response.json()["humid"], float)
+        self.assertIsInstance(response.json()["temp"], float)
+
     def test_clear_log(self):
         response = requests.get('http://192.168.1.223:8123/clear_log')
         self.assertEqual(response.json(), {'clear_log': 'success'})

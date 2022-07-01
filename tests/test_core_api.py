@@ -284,6 +284,12 @@ class TestApi(unittest.TestCase):
         self.assertIsInstance(response, dict)
         self.assertIsInstance(response["Humidity"], float)
 
+    def test_get_climate_data(self):
+        response = self.send_command(['get_climate_data'])
+        self.assertIsInstance(response, dict)
+        self.assertIsInstance(response["humid"], float)
+        self.assertIsInstance(response["temp"], float)
+
     def test_clear_log(self):
         response = self.send_command(['clear_log'])
         self.assertEqual(response, {'clear_log': 'success'})

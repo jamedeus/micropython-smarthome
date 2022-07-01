@@ -28,6 +28,7 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "                  Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_temp" + Style.RESET_ALL + "                          Get current reading from temp sensor in Farenheit")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_humid" + Style.RESET_ALL + "                         Get current relative humidity from temp sensor")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "get_climate" + Style.RESET_ALL + "                       Get current temp and humidity from sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "clear_log" + Style.RESET_ALL + "                         Delete node's log file\n")
     raise SystemExit
 
@@ -305,6 +306,10 @@ def get_temp(ip, params):
 @add_endpoint("get_humid")
 def get_humid(ip, params):
     return asyncio.run(request(ip, ['get_humid']))
+
+@add_endpoint("get_climate")
+def get_climate(ip, params):
+    return asyncio.run(request(ip, ['get_climate_data']))
 
 @add_endpoint("clear_log")
 def clear_log(ip, params):

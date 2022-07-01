@@ -472,6 +472,19 @@ def get_temp(args):
 
 
 
+@app.route("get_climate_data")
+def get_climate_data(args):
+    for sensor in app.config.sensors:
+        if sensor.sensor_type == "si7021":
+            data = {}
+            data["temp"] = sensor.fahrenheit()
+            data["humid"] = sensor.temp_sensor.relative_humidity
+            return data
+    else:
+        return {"ERROR": "No temperature sensor configured"}
+
+
+
 @app.route("clear_log")
 def clear_log(args):
     try:

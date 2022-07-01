@@ -221,6 +221,12 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(len(response), 1)
         self.assertIsInstance(response["Humidity"], float)
 
+    def test_get_climate(self):
+        response = parse_command("192.168.1.223", ['get_climate'])
+        self.assertEqual(len(response), 2)
+        self.assertIsInstance(response["humid"], float)
+        self.assertIsInstance(response["temp"], float)
+
     def test_clear_log(self):
         response = parse_command("192.168.1.223", ['clear_log'])
         self.assertEqual(response, {'clear_log': 'success'})
