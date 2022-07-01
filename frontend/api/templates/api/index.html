@@ -394,6 +394,8 @@
             // Remove text that may be in rule box (interpreted as add rule if both contain text)
             document.getElementById('rule_input').value = "";
 
+            selected.disabled = true;
+
             // Send command to delete rule
             send_command(this);
         };
