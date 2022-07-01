@@ -206,6 +206,12 @@
         };
 
         async function send_command(selected) {
+            // Clear results from previous command to avoid confusion
+            try { document.getElementById("result").innerHTML = ""; } catch(err) {};
+
+            // Disable send button until finished with current command
+            document.getElementById("send").disabled = true;
+
             const data = new FormData(document.getElementById("form"));
 
             var value = Object.fromEntries(data.entries());
@@ -243,6 +249,9 @@
             try {
                 document.getElementById("result").innerHTML = "<pre class='p-3'>" + JSON.stringify(result, null, 4) + "</pre>";
             } catch(err) {};
+
+            // Re-enable send button
+            document.getElementById("send").disabled = false;
         };
 
         async function load_additional_info(selected) {
