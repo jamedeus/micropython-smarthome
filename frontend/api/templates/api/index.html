@@ -102,7 +102,6 @@
             console.log("Dark mode");
         };
 
-
         var selected_node = "";
         var selected_node_status = "";
         var selected_command = "";
@@ -130,6 +129,13 @@
         const ac_options = "<option value='on'>on</option><option value='off'>off</option><option value='start'>start</option><option value='stop'>stop</option>"
 
         const tv_options = "<option value='power'>power</option><option value='vol_up'>vol_up</option><option value='vol_down'>vol_down</option><option value='mute'>mute</option><option value='up'>up</option><option value='down'>down</option><option value='left'>left</option><option value='right'>right</option><option value='enter'>enter</option><option value='settings'>settings</option><option value='exit'>exit</option><option value='source'>source</option>"
+
+        // Form submit listener (prevent querystring submit when user presses enter)
+        document.getElementById("form").addEventListener("submit", function(e) {
+            console.log("submit");
+            e.preventDefault();
+            send_command(e.target);
+        });
 
         async function select_node(selected) {
             selected_node = selected.id;
