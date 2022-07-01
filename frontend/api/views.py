@@ -54,7 +54,7 @@ def send_command(request):
     args = [cmd]
 
     for i in data:
-        args.append(data[i])
+        args.append(data[i].strip())
 
     print("\n" + ip + "\n" + str(args) + "\n")
 
