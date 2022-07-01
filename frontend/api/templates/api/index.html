@@ -321,9 +321,9 @@
                 };
 
                 // Build table of target's existing rules, display in div
-                var rules_table = '<h3>Existing rules:</h3><table style="width:50%"><tr><th style="text-align: left;">Time</th><th style="text-align: left;">Rule</th></tr>'
+                var rules_table = '<h3 class="text-center">Existing rules:</h3><table class="table table-borderless"><tr><th class="text-center w-50">Time</th><th class="text-center w-50">Rule</th></tr>'
                 for (var rule in rules) {
-                    rules_table = rules_table + "<tr><td>" + rule + "</td><td>" + rules[rule] + "</td></tr>";
+                    rules_table = rules_table + "<tr><td class='text-center'>" + rule + "</td><td class='text-center'>" + rules[rule] + "</td></tr>";
                 };
                 rules_table = rules_table + "</table>";
 
@@ -340,9 +340,9 @@
                 };
 
                 // Build table of target's existing rules, display in div
-                var rules_table = '<h3>Existing rules:</h3><table style="width:50%"><tr><th style="text-align: left;">Time</th><th style="text-align: left;">Rule</th><th style="text-align: left;">Delete</th></tr>'
+                var rules_table = '<h3 class="text-center">Existing rules:</h3><table class="table table-borderless"><tr><th class="text-center w-33">Time</th><th class="text-center w-33">Rule</th><th class="text-center w-33">Delete</th></tr>'
                 for (var rule in rules) {
-                    rules_table = rules_table + "<tr><td>" + rule + "</td><td>" + rules[rule] + "</td><td><button onclick='delete_rule(this)' type='button' id=" + rule + ">X</button></td></tr>";
+                    rules_table = rules_table + "<tr><td class='text-center'>" + rule + "</td><td class='text-center'>" + rules[rule] + "</td><td class='text-center'><button onclick='delete_rule(this)' type='button' id=" + rule + " class='btn btn-sm btn-danger'>X</button></td></tr>";
                 };
                 rules_table = rules_table + "</table>";
 
@@ -359,9 +359,9 @@
                 };
 
                 // Build table of target's existing rules, display in div
-                var rules_table = '<h3>Existing rules:</h3><table style="width:50%"><tr><th style="text-align: left;">Time</th><th style="text-align: left;">Rule</th></tr>'
+                var rules_table = '<h3 class="text-center">Existing rules:</h3><table class="table table-borderless"><tr><th  class="text-center w-50">Time</th><th class="text-center w-50">Rule</th></tr>'
                 for (var rule in rules) {
-                    rules_table = rules_table + "<tr><td>" + rule + "</td><td>" + rules[rule] + "</td></tr>";
+                    rules_table = rules_table + "<tr><td class='text-center'>" + rule + "</td><td class='text-center'>" + rules[rule] + "</td></tr>";
                 };
                 rules_table = rules_table + "</table>";
 

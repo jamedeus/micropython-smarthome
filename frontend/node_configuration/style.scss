@@ -61,6 +61,8 @@ $pagination-disabled-color: #bbbbbb;
 
     $card-bg: #212529;
 
+    $table-color: #eee;
+
     $popover-bg: #31363b;
     $popover-header-bg: #31363b;
     $popover-arrow-color: #31363b;
@@ -139,4 +141,5 @@ $pagination-disabled-color: #bbbbbb;
     @import "bootstrap-5.1.3/scss/_modal";
     @import "bootstrap-5.1.3/scss/_forms";
     @import "bootstrap-5.1.3/scss/_buttons";
+    @import "bootstrap-5.1.3/scss/_tables";
 }
