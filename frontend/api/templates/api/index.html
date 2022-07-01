@@ -74,9 +74,7 @@
                     <option value="enable">Enable device/sensor</option>
                     <option value="set_rule">Set device/sensor rule</option>
                     <option value="reset_rule">Reset device/sensor rule</option>
-                    <option value="get_schedule_rules">Get device/sensor schedule rules</option>
-                    <option value="add_rule">Add device/sensor schedule rule</option>
-                    <option value="remove_rule">Remove device/sensor schedule rule</option>
+                    <option value="schedule_rules">Modify device/sensor schedule rules</option>
                     <option value="get_attributes">Get device/sensor attributes (debug)</option>
                     <option value="ir">Send IR Command</option>
                     <option value="get_temp">Get temperature reading</option>
@@ -123,7 +121,7 @@
 
         const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' class='form-control' required></br>"
 
-        const timestamp_input = "<input type='text' id='timestamp_input' placeholder='HH:MM' name='timestamp_input' class='form-control' required></br>"
+        const add_rule_input = "<h5 class='text-center'>Add new rule</h5><div style='width: 85%' class='row mx-auto'><div class='col'><input type='text' id='add_rule_input' placeholder='HH:MM' name='add_rule_input' class='form-control' required></div><div class='col'><input type='text' id='rule_input' placeholder='new rule' name='rule_input' class='form-control' required></div></div></br>"
 
         const additional_info = "<div id='additional_info'></div></br>"
 
@@ -184,14 +182,8 @@
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + rule_input + submit_button;
             } else if (selected_command == "reset_rule") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + submit_button;
-            } else if (selected_command == "get_schedule_rules") {
+            } else if (selected_command == "schedule_rules") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info;
-            } else if (selected_command == "add_rule") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + timestamp_input + rule_input + submit_button;
-            } else if (selected_command == "remove_rule") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + timestamp_input;
-                // Hide input box (will be filled by delete_rule() when delete button clicked)
-                document.getElementById("timestamp_input").style.display = 'none';
             } else if (selected_command == "get_attributes") {
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "ir") {
@@ -240,6 +232,12 @@
 
             // Update additional info section (if any)
             load_additional_info(document.getElementById("select_target"));
+
+            // If result was an error, unhide results div (if hidden, ie schedule_rules menu)
+            if (JSON.stringify(result).startsWith('{"ERROR')) {
+                console.log("showing results div");
+                document.getElementById("result").style = "";
+            };
 
             // Load result div (if any)
             try {
@@ -310,7 +308,7 @@
                     document.getElementById('send').style.display = 'initial';
                 };
 
-            } else if (selected_command == "add_rule") {
+            } else if (selected_command == "schedule_rules") {
                 // Get object containing target's existing rules
                 const rules = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["schedule"];
 
@@ -321,51 +319,17 @@
                 };
 
                 // Build table of target's existing rules, display in div
-                var rules_table = '<h3 class="text-center">Existing rules:</h3><table class="table table-borderless"><tr><th class="text-center w-50">Time</th><th class="text-center w-50">Rule</th></tr>'
+                var rules_table = '<h3 class="text-center">Existing rules:</h3><div class="result mx-auto py-1"><table class="table table-borderless"><tr><th class="text-center w-25">Time</th><th class="text-center w-50">Rule</th><th class="text-center w-25">Delete</th></tr>'
                 for (var rule in rules) {
-                    rules_table = rules_table + "<tr><td class='text-center'>" + rule + "</td><td class='text-center'>" + rules[rule] + "</td></tr>";
+                    rules_table = rules_table + "<tr><td class='text-center'>" + rule + "</td><td class='text-center'>" + rules[rule] + "</td><td class='text-center'><button onclick='delete_rule(this)' type='button' id=" + rule + " class='btn btn-sm btn-danger py-0'>X</button></td></tr>";
                 };
-                rules_table = rules_table + "</table>";
+                rules_table = rules_table + "</table></div></br>";
 
-                document.getElementById("additional_info").innerHTML = rules_table;
+                document.getElementById("additional_info").innerHTML = rules_table + add_rule_input + submit_button;
 
-            } else if (selected_command == "remove_rule") {
-                // Get object containing target's existing rules
-                const rules = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["schedule"];
-
-                // If target has no rules, add text to div and skip rest of function
-                if (Object.keys(rules).length == 0) {
-                    document.getElementById("additional_info").innerHTML = "No existing rules";
-                    return;
-                };
-
-                // Build table of target's existing rules, display in div
-                var rules_table = '<h3 class="text-center">Existing rules:</h3><table class="table table-borderless"><tr><th class="text-center w-33">Time</th><th class="text-center w-33">Rule</th><th class="text-center w-33">Delete</th></tr>'
-                for (var rule in rules) {
-                    rules_table = rules_table + "<tr><td class='text-center'>" + rule + "</td><td class='text-center'>" + rules[rule] + "</td><td class='text-center'><button onclick='delete_rule(this)' type='button' id=" + rule + " class='btn btn-sm btn-danger'>X</button></td></tr>";
-                };
-                rules_table = rules_table + "</table>";
-
-                document.getElementById("additional_info").innerHTML = rules_table;
-
-            } else if (selected_command == "get_schedule_rules") {
-                // Get object containing target's existing rules
-                const rules = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["schedule"];
-
-                // If target has no rules, add text to div and skip rest of function
-                if (Object.keys(rules).length == 0) {
-                    document.getElementById("additional_info").innerHTML = "No existing rules";
-                    return;
-                };
-
-                // Build table of target's existing rules, display in div
-                var rules_table = '<h3 class="text-center">Existing rules:</h3><table class="table table-borderless"><tr><th  class="text-center w-50">Time</th><th class="text-center w-50">Rule</th></tr>'
-                for (var rule in rules) {
-                    rules_table = rules_table + "<tr><td class='text-center'>" + rule + "</td><td class='text-center'>" + rules[rule] + "</td></tr>";
-                };
-                rules_table = rules_table + "</table>";
-
-                document.getElementById("additional_info").innerHTML = rules_table;
+                // Hide results div (additional_info updates to show result)
+                console.log("hiding results div");
+                document.getElementById("result").style.display = "none";
 
             } else if (selected_command == "condition_met") {
                 const type = selected_node_status["sensors"][selected_target]["type"];
@@ -406,8 +370,14 @@
 
         // Triggered by delete button on remove_rule page
         async function delete_rule(selected) {
-            // Set selected rule timestamp as value of hidden input
-            document.getElementById('timestamp_input').value = selected.id;
+            // Hide results div (may be present from previous command)
+            document.getElementById("result").style.display = "none";
+
+            // Set selected rule timestamp as value of input
+            document.getElementById('add_rule_input').value = selected.id;
+
+            // Remove text that may be in rule box (interpreted as add rule if both contain text)
+            document.getElementById('rule_input').value = "";
 
             // Send command to delete rule
             send_command(this);

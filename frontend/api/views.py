@@ -43,6 +43,14 @@ def send_command(request):
     cmd = data["command"]
     del data["target"], data["command"]
 
+    # Schedule rule endpoints merged into single menu in frontend - determine desired endpoint
+    if cmd == "schedule_rules":
+        if len(data["rule_input"]) == 0:
+            cmd = "remove_rule"
+            del data["rule_input"]
+        else:
+            cmd = "add_rule"
+
     args = [cmd]
 
     for i in data:
