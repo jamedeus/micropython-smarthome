@@ -249,6 +249,9 @@
             if (JSON.stringify(result).startsWith('{"ERROR')) {
                 console.log("showing results div");
                 document.getElementById("result").style = "";
+            } else {
+                // If command succeeded, clear input fields to avoid confusion
+                try { document.getElementById('delay_input').value = ""; } catch(err) {};
             };
 
             // Load result div (if any)
@@ -293,7 +296,7 @@
                 msg = "";
                 delay = document.getElementById("delay_input").value;
 
-                if (selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
+                if (! selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["enabled"]) {
                     msg = selected_target + " already disabled";
                 } else {
                     msg = selected_target + " will be disabled";
@@ -308,6 +311,9 @@
             } else if (selected_command == "set_rule") {
                 const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
                 document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Current rule: " + current_rule + "</div>";
+
+                // Clear rule input when target changes, after submit
+                document.getElementById('rule_input').value = "";
 
             } else if (selected_command == "reset_rule") {
                 const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
