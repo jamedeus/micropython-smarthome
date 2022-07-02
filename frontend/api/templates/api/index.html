@@ -124,7 +124,11 @@
 
         const dropdown_close = "</select></br>";
 
-        const delay_input = "For (leave blank for permanent):</br><input type='number' id='delay_input' placeholder='minutes' name='delay_input' class='form-control'></br>"
+        const dropdown_label_target = "<label class='form-label' for='select_taret'>Select Target</label>";
+
+        const dropdown_label_command = "<label class='form-label' for='select_taret'>Select Command</label>";
+
+        const delay_input = "<label class='form-label' for='delay_input'>For (leave blank for permanent)</label></br><input type='number' id='delay_input' placeholder='minutes' name='delay_input' class='form-control'></br>"
 
         const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' class='form-control' required></br>"
 
@@ -217,19 +221,19 @@
             } else if (selected_command == "reboot") {
                 document.getElementById("form").innerHTML = submit_button;
             } else if (selected_command == "disable") {
-                document.getElementById("form").innerHTML = "Disable:</br>" + dropdown_open + device_options + sensor_options + dropdown_close + delay_input + additional_info + submit_button;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + delay_input + additional_info + submit_button;
                 document.getElementById('delay_input').addEventListener('input', delay_input_handler);
             } else if (selected_command == "enable") {
-                document.getElementById("form").innerHTML = "Enable:</br>" + dropdown_open + device_options + sensor_options + dropdown_close + delay_input + additional_info + submit_button;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + delay_input + additional_info + submit_button;
                 document.getElementById('delay_input').addEventListener('input', delay_input_handler);
             } else if (selected_command == "set_rule") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + rule_input + submit_button;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + additional_info + rule_input + submit_button;
             } else if (selected_command == "reset_rule") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info + submit_button;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "schedule_rules") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + additional_info;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + additional_info;
             } else if (selected_command == "get_attributes") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "ir") {
                 document.getElementById("form").innerHTML = ir_target_select;
             } else if (selected_command == "temp_sensor") {
@@ -238,13 +242,13 @@
             } else if (selected_command == "clear_log") {
                 document.getElementById("form").innerHTML = submit_button;
             } else if (selected_command == "condition_met") {
-                document.getElementById("form").innerHTML = dropdown_open + sensor_options + dropdown_close + additional_info + submit_button;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + sensor_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "trigger_sensor") {
-                document.getElementById("form").innerHTML = dropdown_open + sensor_options + dropdown_close + additional_info + submit_button;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + sensor_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "turn_on") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + dropdown_close + additional_info + submit_button;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + dropdown_close + additional_info + submit_button;
             } else if (selected_command == "turn_off") {
-                document.getElementById("form").innerHTML = dropdown_open + device_options + dropdown_close + additional_info + submit_button;
+                document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + dropdown_close + additional_info + submit_button;
             };
         };
 
@@ -459,10 +463,10 @@
         function ir_handler(selected) {
             if (selected.value == "ac") {
                 const target_selected = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='ir_handler(this)'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='ir_handler(this)' checked='checked'><label for='ac' class='form-check-label'>Air Conditioner</label></div><br>";
-                document.getElementById("form").innerHTML = target_selected + dropdown_open + ac_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = target_selected + dropdown_label_command + dropdown_open + ac_options + dropdown_close + submit_button;
             } else if (selected.value == "tv") {
                 const target_selected = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='ir_handler(this)' checked='checked'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='ir_handler(this)'><label for='ac' class='form-check-label'>Air Conditioner</label></div><br>";
-                document.getElementById("form").innerHTML = target_selected + dropdown_open + tv_options + dropdown_close + submit_button;
+                document.getElementById("form").innerHTML = target_selected + dropdown_label_command + dropdown_open + tv_options + dropdown_close + submit_button;
             };
         };
 
