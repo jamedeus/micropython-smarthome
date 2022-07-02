@@ -289,7 +289,7 @@ def edit_config(request, name):
 
 
 
-def generateConfigFile(request):
+def generateConfigFile(request, edit_existing=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
@@ -299,7 +299,9 @@ def generateConfigFile(request):
         # Check if file with identical parameters exists in database
         duplicate = Config.objects.get(config_file = CONFIG_DIR + data["friendlyName"] + ".json")
 
-        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+        # Ignore duplicate error if editing an existing config
+        if not edit_existing:
+            return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
 
     except Config.DoesNotExist:
         pass
@@ -368,8 +370,10 @@ def generateConfigFile(request):
     with open(CONFIG_DIR + config["metadata"]["id"] + ".json", 'w') as file:
         json.dump(config, file)
 
-    new = Config(config_file = CONFIG_DIR + config["metadata"]["id"] + ".json", uploaded = False)
-    new.save()
+    # If creating a new config, add to models
+    if not edit_existing:
+        new = Config(config_file = CONFIG_DIR + config["metadata"]["id"] + ".json", uploaded = False)
+        new.save()
 
     return JsonResponse("Config created.", safe=False, status=200)
 

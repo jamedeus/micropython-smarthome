@@ -37,5 +37,7 @@ urlpatterns = [
     path('deviceOptionsMosfet/<int:count>', views.deviceOptionsMosfet, name='deviceOptionsMosfet'),
     path('deviceOptionsApi/<int:count>', views.deviceOptionsApi, name='deviceOptionsApi'),
 
+    # Argument is optional
     path('generateConfigFile', views.generateConfigFile, name='generateConfigFile'),
+    path('generateConfigFile/<str:edit_existing>', views.generateConfigFile, name='generateConfigFile'),
 ]

@@ -333,7 +333,7 @@
             } else {
 
                 // If duplicate error, display modal allowing user to overwrite
-                if (result.status = 409) {
+                if (result.status == 409) {
                     // Get duplicate name, add to modal body
                     const name = document.getElementById("friendlyName").value;
                     document.getElementById("duplicate-modal-body").innerHTML = "<p>Config named <b>" + name + "</b> already exists. Would you like to overwrite it? This cannot be undone.</p>"

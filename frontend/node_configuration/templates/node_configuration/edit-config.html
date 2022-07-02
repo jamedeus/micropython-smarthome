@@ -435,7 +435,7 @@
 
                     <div class="d-flex justify-content-between mx-3 mb-3">
                         <button id="page3-back-button" type="button" class="btn btn-primary">Back</button>
-                        <button type="submit" class="btn btn-primary" disabled>Submit (not yet implemented)</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
                         <button type="button" class="btn btn-secondary" disabled>Next</button>
                     </div>
                 </div>
@@ -459,6 +459,8 @@
 
         $('#page2').hide();
         $('#page3').hide();
+
+        const base_url = window.location.href.split("edit_config")[0];
 
         async function load_sensor_section(select) {
             // Get index of sensor
@@ -626,27 +628,20 @@
         async function submit_form() {
             let csrftoken = getCookie('csrftoken');
 
-            const name = document.getElementById("friendlyName").value;
+            var value = Object.fromEntries(new FormData(document.getElementById("form")).entries());
 
-            // Delete the existing config being modified (prevent duplicate filename error)
-            const response = await fetch(window.location.href.split("edit_config")[0] + "delete_config", {
+            // Overwrite the existing config file using new form data
+            const response = await fetch(base_url + "generateConfigFile/True", {
                 method: 'POST',
-                body: JSON.stringify(name + ".json"),
+                body: JSON.stringify(value),
                 headers: { 'Accept': 'application/json, text/plain, */*',
                     'Content-Type': 'application/json',
                     "X-CSRFToken": csrftoken }
             });
 
+            // If successful, redirect back to overview (otherwise display error in alert)
             if (response.ok) {
-                // Re-create config with user's changes
-                var result = await readForm(window.location.href.split("edit_config")[0] + "generateConfigFile");
-
-                if (result.ok) {
-                    // Redirect back to overview where user can upload the newly-created config
-                    window.location.replace("/node_configuration");
-                } else {
-                    alert(await result.text());
-                };
+                window.location.replace("/node_configuration");
             } else {
                 alert(await response.text());
                 return false;
