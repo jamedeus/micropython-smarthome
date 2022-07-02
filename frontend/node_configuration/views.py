@@ -154,6 +154,20 @@ def upload(request):
 
 
 
+def delete_config(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        raise Http404("ERROR: Must post data")
+
+    target = Config.objects.get(config_file__endswith = data)
+    target.delete()
+    os.system(f'rm {target.config_file}')
+
+    return JsonResponse("Deleted {}".format(data), safe=False, status=200)
+
+
+
 def node_configuration_index(request):
     context = {
         "not_uploaded" : [],

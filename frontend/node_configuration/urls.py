@@ -6,6 +6,7 @@ app_name = "node_configuration"
 
 urlpatterns = [
     path('upload', views.upload, name='upload'),
+    path('delete_config', views.delete_config, name='delete_config'),
 
     path('node_configuration', views.node_configuration_index, name='node_configuration_index'),
 
