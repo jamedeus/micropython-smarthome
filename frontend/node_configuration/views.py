@@ -84,7 +84,7 @@ def get_modules(conf):
 
 
 
-def upload(request):
+def upload(request, reupload=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
@@ -147,8 +147,10 @@ def upload(request):
     target.uploaded = True
     target.save()
 
-    new = Node(friendly_name = config["metadata"]["id"], ip = data["ip"], config_file = CONFIG_DIR + data["config"])
-    new.save()
+    # If uploaded for the first time, add to models
+    if not reupload:
+        new = Node(friendly_name = config["metadata"]["id"], ip = data["ip"], config_file = CONFIG_DIR + data["config"])
+        new.save()
 
     return JsonResponse("Upload complete.", safe=False, status=200)
 
@@ -253,7 +255,9 @@ def edit_config(request, name):
     with open(target.config_file, 'r') as file:
         config = json.load(file)
 
-    config["NAME"] = target.config_file.split("/")[-1].split(".")[0]
+    config["NAME"] = target.friendly_name
+    config["IP"] = target.ip
+    config["FILENAME"] = target.config_file.split("/")[-1]
 
     sensors = {}
     devices = {}
@@ -367,12 +371,15 @@ def generateConfigFile(request, edit_existing=False):
 
     print(json.dumps(config, indent=4))
 
-    with open(CONFIG_DIR + config["metadata"]["id"] + ".json", 'w') as file:
+    # Get filename (all lowercase, replace spaces with hyphens)
+    filename = config["metadata"]["id"].lower().replace(" ", "-")
+
+    with open(CONFIG_DIR + filename + ".json", 'w') as file:
         json.dump(config, file)
 
     # If creating a new config, add to models
     if not edit_existing:
-        new = Config(config_file = CONFIG_DIR + config["metadata"]["id"] + ".json", uploaded = False)
+        new = Config(config_file = CONFIG_DIR + filename + ".json", uploaded = False)
         new.save()
 
     return JsonResponse("Config created.", safe=False, status=200)

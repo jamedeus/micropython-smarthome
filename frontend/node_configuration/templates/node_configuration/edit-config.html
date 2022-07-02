@@ -47,6 +47,7 @@
 
     </script>
     <style>
+        /* Set table column to minimum width with class */
         td {
             width: auto;
         }
@@ -55,6 +56,67 @@
             width: 1%;
             white-space: nowrap;
         }
+        /* ----- */
+
+        /* Upload complete checkmark animation */
+        .light {
+            --success: #198754;
+        }
+
+        .dark {
+            --success: #177a4c;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: var(--success);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #fff;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px var(--success);
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+            0%, 100% {
+                transform: none;
+            }
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px var(--success);
+            }
+        }
+        /* ----- */
     </style>
 </head>
 
@@ -442,6 +504,23 @@
 
             </form>
 
+            <!-- Loading modal displayed while waiting on upload -->
+
+            <div class="modal fade" id="upload-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered" >
+                    <div class="modal-content">
+                        <div class="modal-header" style="border-bottom: 0px;">
+                            <h3 class="mx-auto" id="upload-modal-title">Uploading...</h3>
+                        </div>
+                        <div class="modal-body d-flex justify-content-center mb-4" id="upload-modal-body">
+                            <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         {% else %}
             <p>FATAL ERROR</p>
         {% endif %}
@@ -455,12 +534,18 @@
                 el.classList.add("table-dark")
             };
             console.log("Dark mode");
+        } else {
+            document.body.classList.add("light");
         };
 
         $('#page2').hide();
         $('#page3').hide();
 
         const base_url = window.location.href.split("edit_config")[0];
+
+        // Store parameters used to re-upload config after editing
+        const target_ip = "{{ context.IP }}"
+        const target_filename = "{{ context.FILENAME }}"
 
         async function load_sensor_section(select) {
             // Get index of sensor
@@ -625,6 +710,10 @@
             submit_form();
         });
 
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
         async function submit_form() {
             let csrftoken = getCookie('csrftoken');
 
@@ -639,9 +728,32 @@
                     "X-CSRFToken": csrftoken }
             });
 
-            // If successful, redirect back to overview (otherwise display error in alert)
+            // If successful, re-upload config file to node
             if (response.ok) {
-                window.location.replace("/node_configuration");
+                // Show loading screen
+                $('#upload-modal').modal('show');
+
+                const result = await fetch(base_url + "upload/True", {
+                    method: 'POST',
+                    body: JSON.stringify({config: target_filename, ip: target_ip}),
+                    headers: { 'Accept': 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json',
+                        "X-CSRFToken": csrftoken }
+                });
+
+                // If reupload successful, redirect back to overview (otherwise display error in alert)
+                if (result.ok) {
+                    // Change title, show success animation
+                    document.getElementById("upload-modal-title").innerHTML = "Upload Complete"
+                    document.getElementById("upload-modal-body").innerHTML = '<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">\
+                                                                                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>\
+                                                                                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>\
+                                                                            </svg>'
+
+                    // Wait for animation to complete before redirect
+                    await sleep(1200);
+                    window.location.replace("/node_configuration");
+                };
             } else {
                 alert(await response.text());
                 return false;
@@ -652,11 +764,13 @@
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
             if (e.matches) { // Returns True for dark mode, False otherwise
                 document.body.classList.add("dark");
+                document.body.classList.remove("light");
                 for (el of document.getElementsByClassName("table")) {
                     el.classList.add("table-dark")
                 };
             } else {
                 document.body.classList.remove("dark");
+                document.body.classList.add("light");
                 for (el of document.getElementsByClassName("table")) {
                     el.classList.remove("table-dark")
                 };
