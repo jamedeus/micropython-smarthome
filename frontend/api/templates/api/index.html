@@ -38,6 +38,13 @@
         body.dark .result {
             background-color: #2B2E2F;
         }
+
+        /* Limit width for readability on large screen sizes */
+        @media (min-width: 1200px) {
+            .container {
+                width: 960px;
+            }
+        }
     </style>
 </head>
 
@@ -227,7 +234,7 @@
                 document.getElementById("form").innerHTML = ir_target_select;
             } else if (selected_command == "temp_sensor") {
                 document.getElementById("form").innerHTML = additional_info;
-                document.getElementById("additional_info").innerHTML = "<div class='text-center'>Temperature: " + climate_data["temp"].toFixed(2) + "</br>Humidity: " + climate_data["humid"].toFixed(2) + "</div>";
+                document.getElementById("additional_info").innerHTML = '<div class="result mx-auto py-1"><table class="table table-borderless"><tr><th class="text-center w-50">Temperature</th><th class="text-center w-50">Humidity</th><tr><td class="text-center">' + climate_data["temp"].toFixed(2) + '</td><td class="text-center">' + climate_data["humid"].toFixed(2) + '</td></tr>';
             } else if (selected_command == "clear_log") {
                 document.getElementById("form").innerHTML = submit_button;
             } else if (selected_command == "condition_met") {
@@ -467,7 +474,7 @@
                     climate_data = await climate_data.json();
 
                     if (selected_command == "temp_sensor") {
-                        document.getElementById("additional_info").innerHTML = "<div class='text-center'>Temperature: " + climate_data["temp"].toFixed(2) + "</br>Humidity: " + climate_data["humid"].toFixed(2) + "</div>";
+                        document.getElementById("additional_info").innerHTML = '<div class="result mx-auto py-1"><table class="table table-borderless"><tr><th class="text-center w-50">Temperature</th><th class="text-center w-50">Humidity</th><tr><td class="text-center">' + climate_data["temp"].toFixed(2) + '</td><td class="text-center">' + climate_data["humid"].toFixed(2) + '</td></tr>';
                     };
                 }, 5000);
             } else {
