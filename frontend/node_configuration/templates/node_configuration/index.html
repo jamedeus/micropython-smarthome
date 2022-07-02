@@ -124,8 +124,8 @@
         // Check if user is in dark mode, change theme (runs once on page load)
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.body.classList.add("dark");
-            document.getElementById("nodes_table").classList.add("table-dark");
-            document.getElementById("not_uploaded_table").classList.add("table-dark");
+            try { document.getElementById("nodes_table").classList.add("table-dark"); } catch(err) {};
+            try { document.getElementById("not_uploaded_table").classList.add("table-dark"); } catch(err) {};
             console.log("Dark mode");
         };
 
