@@ -171,7 +171,7 @@
 
 
                 <div class="d-flex justify-content-between mx-3 mb-3">
-                    <button type="button" class="btn btn-secondary" disabled>Back</button>
+                    <button id="page1-back-button" type="button" class="btn btn-secondary">Back</button>
                     <button type="button" class="btn btn-primary" style="visibility: hidden;">Submit</button>
                     <button id="page1-button" type="button" class="btn btn-primary">Next</button>
                 </div>
@@ -312,6 +312,10 @@
             $('#page2').html(next_page);
             $('#page2').show();
             $('#page1').hide();
+        });
+
+        document.getElementById('page1-back-button').addEventListener("click", function(e) {
+            window.location.replace("/node_configuration");
         });
 
         document.getElementById('form').addEventListener("submit", function(e) {

@@ -14,7 +14,10 @@ urlpatterns = [
     path('configure_page2', views.configure_page2, name='configure_page2'),
     path('configure_page3', views.configure_page3, name='configure_page3'),
 
+    path('edit_config/<str:name>', views.edit_config, name='edit_config'),
+
     path('addSensor/<int:count>', views.addSensor, name='addSensor'),
+    path('edit_config/addSensor/<int:count>', views.addSensor, name='addSensor'),
 
     path('sensorOptionsPir/<int:count>', views.sensorOptionsPir, name='sensorOptionsPir'),
     path('sensorOptionsSwitch/<int:count>', views.sensorOptionsSwitch, name='sensorOptionsSwitch'),
@@ -23,6 +26,7 @@ urlpatterns = [
     path('sensorOptionsSi7021/<int:count>', views.sensorOptionsSi7021, name='sensorOptionsSi7021'),
 
     path('addDevice/<int:count>', views.addDevice, name='addDevice'),
+    path('edit_config/addDevice/<int:count>', views.addDevice, name='addDevice'),
 
     path('deviceOptionsDimmer/<int:count>', views.deviceOptionsDimmer, name='deviceOptionsDimmer'),
     path('deviceOptionsBulb/<int:count>', views.deviceOptionsBulb, name='deviceOptionsBulb'),

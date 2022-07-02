@@ -153,8 +153,7 @@
         };
 
         function edit(e) {
-            alert("Not yet implemented");
-//             alert(e.target.id);
+            window.location.replace("/edit_config/" + e.target.id.replace("edit-", ""));
         };
 
         function del_config(e) {

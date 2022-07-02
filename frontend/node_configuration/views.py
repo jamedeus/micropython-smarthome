@@ -247,6 +247,48 @@ def configure_page3(request):
 
 
 
+def edit_config(request, name):
+    target = Node.objects.get(friendly_name = name)
+
+    with open(target.config_file, 'r') as file:
+        config = json.load(file)
+
+    config["NAME"] = target.config_file.split("/")[-1].split(".")[0]
+
+    sensors = {}
+    devices = {}
+    instances = {}
+    delete = []
+
+    for i in config:
+        if i.startswith("sensor"):
+            sensors[i] = config[i]
+            delete.append(i)
+            instances[i] = {}
+            instances[i]["type"] = config[i]["type"]
+            instances[i]["schedule"] = config[i]["schedule"]
+        elif i.startswith("device"):
+            devices[i] = config[i]
+            delete.append(i)
+            instances[i] = {}
+            instances[i]["type"] = config[i]["type"]
+            instances[i]["schedule"] = config[i]["schedule"]
+
+    for i in delete:
+        del config[i]
+
+    config["sensors"] = sensors
+    config["devices"] = devices
+    config["instances"] = instances
+
+    print(json.dumps(config, indent=4))
+
+    template = loader.get_template('node_configuration/edit-config.html')
+
+    return HttpResponse(template.render({'context': config}, request))
+
+
+
 def generateConfigFile(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
