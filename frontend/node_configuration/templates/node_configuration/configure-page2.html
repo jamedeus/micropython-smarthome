@@ -35,6 +35,7 @@
             e.preventDefault();
 
             var next_page = await readForm("configure_page3");
+            next_page = await next_page.text()
 
             $('#page3').html(next_page);
             $('#page3').show();

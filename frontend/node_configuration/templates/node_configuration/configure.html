@@ -28,25 +28,19 @@
         };
 
         async function readForm(url) {
-            const form = document.getElementById("form");
-
-            const data = new FormData(form);
-
-            var value = Object.fromEntries(data.entries());
+            var value = Object.fromEntries(new FormData(document.getElementById("form")).entries());
 
             console.log({ value });
 
             let csrftoken = getCookie('csrftoken');
 
-            const next_page = await fetch(url, {
+            const result = await fetch(url, {
                 method: 'POST',
                 body: JSON.stringify(value),
                 headers: { 'Accept': 'application/json, text/plain, */*',
                     'Content-Type': 'application/json',
                     "X-CSRFToken": csrftoken }
             });
-
-            const result = await next_page.text()
 
             return result
         };
@@ -297,6 +291,7 @@
             e.preventDefault();
 
             var next_page = await readForm("configure_page2");
+            next_page = await next_page.text()
 
             $('#page2').html(next_page);
             $('#page2').show();
@@ -306,8 +301,13 @@
         document.getElementById('form').addEventListener("submit", async function(e) {
             e.preventDefault();
 
-            var next_page = await readForm("generateConfigFile");
-            alert(next_page)
+            var result = await readForm("generateConfigFile");
+
+            if (result.ok) {
+                window.location.replace("/node_configuration");
+            } else {
+                alert(result.text());
+            };
         });
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
