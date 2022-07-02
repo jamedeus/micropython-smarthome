@@ -77,8 +77,7 @@
                     <option value="schedule_rules">Modify device/sensor schedule rules</option>
                     <option value="get_attributes">Get device/sensor attributes (debug)</option>
                     <option value="ir">Send IR Command</option>
-                    <option value="get_temp">Get temperature reading</option>
-                    <option value="get_humid">Get humidity reading</option>
+                    <option value="temp_sensor" id="temp_sensor_option">View temperature/humidity readings</option>
                     <option value="clear_log">Clear log</option>
                     <option value="condition_met">Check if sensor is triggered</option>
                     <option value="trigger_sensor">Trigger sensor</option>
@@ -107,6 +106,8 @@
         var selected_command = "";
         var device_options = "";
         var sensor_options = "";
+        var climate_data = "";
+        var timer;
 
         const submit_button = "<div class='text-center'><button onclick='send_command(this)' type='button' id='send' class='btn btn-primary'>Send</button></div></br><div id='result' class='result mx-auto'></div>";
 
@@ -147,22 +148,52 @@
             selected_node_status = await fetch("/get_status/" + selected_node);
             selected_node_status = await selected_node_status.json();
 
-            // Clear previous options (selected node may have changed)
+            // Detect presence of temp sensor in loop below
+            var temp_sensor = false;
+
+            // Clear previous options (selected node changed, options may be different)
             device_options = "";
             sensor_options = "";
 
+            // Rebuild device and sensor options for current node
             for (var device in selected_node_status["devices"]) {
                 device_options = device_options + "<option value='" + device + "'>" + device + "</option>";
             };
 
             for (var sensor in selected_node_status["sensors"]) {
                 sensor_options = sensor_options + "<option value='" + sensor + "'>" + sensor + "</option>";
+
+                // If node has temp sensor, toggle bool
+                if (selected_node_status["sensors"][sensor]["type"] == "si7021") {
+                    temp_sensor = true;
+                };
+            };
+
+            if (temp_sensor) {
+                // Show menu option
+                document.getElementById("temp_sensor_option").style.display = "initial";
+
+                // Get initial reading
+                climate_data = await fetch("/get_climate_data/" + selected_node);
+                climate_data = await climate_data.json();
+
+                // Query new reading every 5 seconds
+                queryTempSensor(true);
+            } else {
+                // If no temp sensor, hide menu option and stop querying (may be running from previous selection)
+                document.getElementById("temp_sensor_option").style.display = "none";
+
+                // Stop querying sensor every 5 seconds
+                queryTempSensor(false);
             };
         };
 
         function page1() {
             document.getElementById("page2").style.display = "none";
             document.getElementById("page1").style.display = "initial";
+
+            // Stop querying climate data (if user previously viewed node with temp sensor)
+            queryTempSensor(false);
         };
 
         async function select_command(selected) {
@@ -194,10 +225,9 @@
                 document.getElementById("form").innerHTML = dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "ir") {
                 document.getElementById("form").innerHTML = ir_target_select;
-            } else if (selected_command == "get_temp") {
-                document.getElementById("form").innerHTML = submit_button;
-            } else if (selected_command == "get_humid") {
-                document.getElementById("form").innerHTML = submit_button;
+            } else if (selected_command == "temp_sensor") {
+                document.getElementById("form").innerHTML = additional_info;
+                document.getElementById("additional_info").innerHTML = "<div class='text-center'>Temperature: " + climate_data["temp"].toFixed(2) + "</br>Humidity: " + climate_data["humid"].toFixed(2) + "</div>";
             } else if (selected_command == "clear_log") {
                 document.getElementById("form").innerHTML = submit_button;
             } else if (selected_command == "condition_met") {
@@ -426,6 +456,25 @@
             } else if (selected.value == "tv") {
                 const target_selected = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='ir_handler(this)' checked='checked'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='ir_handler(this)'><label for='ac' class='form-check-label'>Air Conditioner</label></div><br>";
                 document.getElementById("form").innerHTML = target_selected + dropdown_open + tv_options + dropdown_close + submit_button;
+            };
+        };
+
+        // Get new temp+humidity reading every 5 seconds, update div if user currently viewing sensor data
+        function queryTempSensor(start) {
+            if (start) {
+                timer = setInterval(async function() {
+                    climate_data = await fetch("/get_climate_data/" + selected_node);
+                    climate_data = await climate_data.json();
+
+                    if (selected_command == "temp_sensor") {
+                        document.getElementById("additional_info").innerHTML = "<div class='text-center'>Temperature: " + climate_data["temp"].toFixed(2) + "</br>Humidity: " + climate_data["humid"].toFixed(2) + "</div>";
+                    };
+                }, 5000);
+            } else {
+                clearInterval(timer);
+
+                // Clear old data if present
+                climate_data = ""
             };
         };
 

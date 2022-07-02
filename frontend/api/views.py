@@ -33,6 +33,18 @@ def get_status(request, node):
 
 
 
+def get_climate_data(request, node):
+    ip = Node.objects.get(friendly_name = node).ip
+
+    try:
+        data = parse_command(ip, ["get_climate"])
+    except OSError:
+        return JsonResponse("Error: Unable to connect.", safe=False, status=200)
+
+    return JsonResponse(data, safe=False, status=200)
+
+
+
 def send_command(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -299,6 +311,10 @@ def get_temp(ip, params):
 @add_endpoint("get_humid")
 def get_humid(ip, params):
     return asyncio.run(request(ip, ['get_humid']))
+
+@add_endpoint("get_climate")
+def get_climate(ip, params):
+    return asyncio.run(request(ip, ['get_climate_data']))
 
 @add_endpoint("clear_log")
 def clear_log(ip, params):
