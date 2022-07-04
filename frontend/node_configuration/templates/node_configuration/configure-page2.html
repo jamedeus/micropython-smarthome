@@ -6,8 +6,8 @@
 
             <div class="card">
                 <div class="card-body">
-                    <label for="{{sensor}}-targets" class="card-title"><b>{{ sensor }} ({{ type }}) targets:</b></label>
-                    <div class="form-check">
+                    <label for="{{sensor}}-targets" class="card-title sensor-targets-label"><b>{{ sensor }} ({{ type }}) targets:</b></label>
+                    <div id="{{sensor}}-targets" class="form-check sensor-targets">
 
                         {% for device, dtype in context.devices.items %}
 
@@ -15,7 +15,6 @@
                             <label for="target-{{sensor}}-{{device}}" class="form-check-label">{{ device }} ({{ dtype }})</label><br>
 
                         {% endfor %}
-                        </select>
                     </div>
                 </div>
             </div></br>

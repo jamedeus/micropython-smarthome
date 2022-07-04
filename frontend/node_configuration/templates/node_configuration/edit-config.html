@@ -131,7 +131,7 @@
 <body>
     <div class="container">
         <div>
-            <h1 class="text-center mt-3">Create New Config</h1>
+            <h1 class="text-center mt-3">Editing {{ context.NAME }}</h1>
         <div><br>
 
         {% if context %}
@@ -189,7 +189,7 @@
                                             <h4 class="card-title">sensor{{ forloop.counter }}</h4>
                                             <label for="sensorType{{ forloop.counter }}" class="form-label"><b>Type:</b></label>
                                             <div>
-                                                <select onchange="load_sensor_section(this)" name="sensorType{{ forloop.counter }}" id="sensorType{{ forloop.counter }}" class="form-select" required>
+                                                <select onchange="load_sensor_section(this)" name="sensorType{{ forloop.counter }}" id="sensorType{{ forloop.counter }}" class="form-select sensorType" required>
                                                 <option value="clear">Select sensor type</option>
                                                 <option value="pir" {% if params.type == "pir" %} selected {% endif %}>Motion Sensor</option>
                                                 <option value="switch" {% if params.type == "switch" %} selected {% endif %}>Switch</option>
@@ -268,7 +268,7 @@
 
                                     {% if forloop.last %}
                                         <div class="text-center">
-                                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn my-3" disabled>Add another (not yet implemented)</button>
+                                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn my-3">Add another</button>
                                         </div>
                                         <div id="addSensorDiv{{ forloop.counter|add:1 }}"></div>
                                     {% endif  %}
@@ -292,7 +292,7 @@
                                             <h4 class="card-title">device{{ forloop.counter }}</h4>
                                             <label for="deviceType{{ forloop.counter }}" class="form-label"><b>Type:</b></label>
                                             <div>
-                                                <select onchange="load_device_section(this)" name="deviceType{{ forloop.counter }}" id="deviceType{{ forloop.counter }}" class="form-select" required>
+                                                <select onchange="load_device_section(this)" name="deviceType{{ forloop.counter }}" id="deviceType{{ forloop.counter }}" class="form-select deviceType" required>
                                                 <option value="clear">Select device type</option>
                                                 <option value="dimmer" {% if params.type == "dimmer" %} selected {% endif %}>TP-Link Dimmer</option>
                                                 <option value="bulb" {% if params.type == "bulb" %} selected {% endif %}>TP-Link Bulb</option>
@@ -425,7 +425,7 @@
 
                                     {% if forloop.last %}
                                         <div class="text-center">
-                                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn my-3" disabled>Add another (not yet implemented)</button>
+                                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn my-3">Add another</button>
                                         </div>
                                         <div id="addDeviceDiv{{ forloop.counter|add:1 }}"></div>
                                     {% endif  %}
@@ -443,28 +443,28 @@
                 </div>
 
                 <div id="page2">
-                    <h3>Select targets for each sensor</h3>
+                    <div id="page2-cards">
+                        <h3>Select targets for each sensor</h3>
 
-                    {% for sensor, params in context.sensors.items %}
+                        {% for sensor, params in context.sensors.items %}
 
-                        <div class="card">
-                            <div class="card-body">
-                                <label for="{{sensor}}-targets" class="card-title"><b>{{ sensor }} ({{ params.type }}) targets:</b></label>
-                                <div class="form-check">
+                            <div class="card">
+                                <div class="card-body">
+                                    <label for="{{sensor}}-targets" class="card-title sensor-targets-label"><b>{{ sensor }} ({{ params.type }}) targets:</b></label>
+                                    <div id="{{sensor}}-targets" class="form-check sensor-targets">
 
-                                    {% for device, dparams in context.devices.items %}
+                                        {% for device, dparams in context.devices.items %}
 
-                                        <input type="checkbox" class="form-check-input" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %}>
-                                        <label for="target-{{sensor}}-{{device}}" class="form-check-label">{{ device }} ({{ dparams.type }})</label><br>
+                                            <input type="checkbox" class="form-check-input" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %}>
+                                            <label for="target-{{sensor}}-{{device}}" class="form-check-label">{{ device }} ({{ dparams.type }})</label><br>
 
-                                    {% endfor %}
-                                    </select>
+                                        {% endfor %}
+                                    </div>
                                 </div>
-                            </div>
-                        </div></br>
+                            </div></br>
 
-
-                    {% endfor %}
+                        {% endfor %}
+                    </div>
 
                     <div class="d-flex justify-content-between mx-3 mb-3">
                         <button id="page2-back-button" type="button" class="btn btn-primary">Back</button>
@@ -475,35 +475,36 @@
 
                 <div id="page3">
                     <h3>Add schedule rules (optional)</h3>
+                        <div id="page3-cards">
+                        {% for instance, params in context.instances.items %}
 
-                    {% for instance, params in context.instances.items %}
-
-                        <div class="card">
-                            <div class="card-body">
-                                <label class="card-title"><b>{{ instance }} ({{ params.type }}):</b></label>
-                                <table id="{{instance}}-rules" class="table table-borderless">
-                                    <tr>
-                                        <th style="text-align: left;">Time</th>
-                                        <th style="text-align: left;">Rule</th>
-                                    </tr>
-
-                                    {% for time, rule in params.schedule.items %}
-                                        <tr id="{{instance}}-row-{{forloop.counter}}">
-                                            <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{instance}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
-                                            <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
+                            <div class="card">
+                                <div class="card-body">
+                                    <label class="card-title schedule-rule-card"><b>{{ instance }} ({{ params.type }}):</b></label>
+                                    <table id="{{instance}}-rules" class="table table-borderless">
+                                        <tr>
+                                            <th style="text-align: left;">Time</th>
+                                            <th style="text-align: left;">Rule</th>
                                         </tr>
-                                    {% endfor %}
-                                </table>
-                            </div>
 
-                            <div class="text-left mx-3 mb-3">
-                                <button type="button" class="btn btn-secondary add" id="{{instance}}-add-rule">Add another</button>
-                            </div>
+                                        {% for time, rule in params.schedule.items %}
+                                            <tr id="{{instance}}-row-{{forloop.counter}}">
+                                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{instance}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
+                                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
+                                            </tr>
+                                        {% endfor %}
+                                    </table>
+                                </div>
 
-                        </div></br>
+                                <div class="text-left mx-3 mb-3">
+                                    <button type="button" class="btn btn-secondary add" id="{{instance}}-add-rule">Add another</button>
+                                </div>
 
-                    {% endfor %}
+                            </div></br>
+
+                        {% endfor %}
+                        </div>
 
                     <div class="d-flex justify-content-between mx-3 mb-3">
                         <button id="page3-back-button" type="button" class="btn btn-primary">Back</button>
@@ -619,6 +620,9 @@
             document.getElementById("addDeviceOptions" + index).scrollIntoView();
         };
 
+        // Store sensors added on first page, use to populate later pages
+        var new_devices = []
+
         async function load_next_device(button) {
             // Get index of clicked button
             const index = parseInt(button.id.replace("addDeviceButton", ""));
@@ -627,13 +631,44 @@
             document.getElementById("addDeviceButton" + index).style.display = "none";
 
             // Load contents for next addDevice div
-            var div_contents = await fetch("addDevice/" + (index + 1));
-            div_contents = await div_contents.text();
+            div_contents = "<div class='mt-5'>\
+                                <div class='card'>\
+                                    <div class='card-body'>\
+                                        <h4 class='card-title'>device" + (index + 1) + "</h4>\
+                                        <label for='deviceType" + (index + 1) + "' class='form-label'><b>Type:</b></label>\
+                                        <div>\
+                                            <select onchange='load_device_section(this)' name='deviceType" + (index + 1) + "' id='deviceType" + (index + 1) + "' class='form-select deviceType' required>\
+                                            <option value='clear'>Select device type</option>\
+                                            <option value='dimmer'>TP-Link Dimmer</option>\
+                                            <option value='bulb'>TP-Link Bulb</option>\
+                                            <option value='relay'>Smart Relay</option>\
+                                            <option value='dumb-relay'>Relay</option>\
+                                            <option value='desktop-target'>Desktop</option>\
+                                            <option value='pwm'>LED Strip</option>\
+                                            <option value='mosfet'>Mosfet</option>\
+                                            <option value='api-target'>Api Command</option>\
+                                            </select>\
+                                        </div>\
+                                        <div id='addDeviceOptions" + (index + 1) + "' class='card-body'></div>\
+                                    </div>\
+                                </div>\
+                                <div class='text-center'>\
+                                    <button onclick='load_next_device(this)' type='button' id='addDeviceButton" + (index + 1) + "' class='btn-secondary btn my-3'>Add another</button>\
+                                </div>\
+                                <div id='addDeviceDiv" + (index + 2) + "'>\
+                                </div>\
+                            </div>"
+
 
             // Render div, scroll down until visible
             document.getElementById("addDeviceDiv" + (index + 1)).innerHTML = div_contents;
             document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView();
+
+            new_devices.push("device" + (index + 1));
         };
+
+        // Store sensors added on first page, use to populate later pages
+        var new_sensors = []
 
         async function load_next_sensor(button) {
             // Get index of clicked button
@@ -642,17 +677,163 @@
             // Hide clicked button
             document.getElementById("addSensorButton" + index).style.display = "none";
 
-            // Load contents for next addSensor div
-            var div_contents = await fetch("addSensor/" + (index + 1));
-            div_contents = await div_contents.text();
+            // Load contents for next addDevice div
+            div_contents = "<div class='mt-5'>\
+                                <div class='card'>\
+                                    <div class='card-body'>\
+                                        <h4 class='card-title'>sensor" + (index + 1) + "</h4>\
+                                        <label for='sensorType" + (index + 1) + "' class='form-label'><b>Type:</b></label>\
+                                        <div>\
+                                            <select onchange='load_sensor_section(this)' name='sensorType" + (index + 1) + "' id='sensorType" + (index + 1) + "' class='form-select sensorType' required>\
+                                            <option value='clear'>Select sensor type</option>\
+                                            <option value='pir'>Motion Sensor</option>\
+                                            <option value='switch'>Switch</option>\
+                                            <option value='dummy'>Dummy</option>\
+                                            <option value='desktop-trigger'>Desktop</option>\
+                                            <option value='si7021'>Thermostat</option>\
+                                            </select>\
+                                        </div>\
+                                        <div id='addSensorOptions" + (index + 1) + "' class='card-body'></div>\
+                                    </div>\
+                                </div>\
+                                <div class='text-center'>\
+                                    <button onclick='load_next_sensor(this)' type='button' id='addSensorButton" + (index + 1) + "' class='btn-secondary btn my-3'>Add another</button>\
+                                </div>\
+                                <div id='addSensorDiv" + (index + 2) + "'>\
+                                </div>\
+                            </div>"
 
             // Render div, scroll down until visible
             document.getElementById("addSensorDiv" + (index + 1)).innerHTML = div_contents;
             document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView();
+
+            // Add sensor to list used to populate page 2 and 3
+            new_sensors.push("sensor" + (index + 1));
         };
 
         document.getElementById('page1-button').addEventListener("click", function(e) {
             e.preventDefault();
+
+            // If user added new sensors, create card for each on page2 (sensor target selection) and page3 (schedule rules)
+            if (new_sensors.length > 0) {
+                // Get array of all device type dropdowns
+                devices = document.getElementsByClassName("deviceType");
+
+                // Add card for each sensor that was added on first page
+                for (let i = 0; i < new_sensors.length; i++) {
+                    // Get type of sensor
+                    const type = document.getElementById(new_sensors[i].replace("sensor", "sensorType")).value;
+
+                    // Append card opening div to page2
+                    document.getElementById("page2-cards").innerHTML +=  "<div class='card'>\
+                                                                        <div class='card-body'>\
+                                                                            <label for='" + new_sensors[i] + "-targets' class='card-title sensor-targets-label'><b>" + new_sensors[i] + " (" + type + ") targets:</b></label>\
+                                                                            <div id='" + new_sensors[i] + "-targets' class='form-check sensor-targets'>"
+
+                     // Iterate devices, add checkbox for each to new sensor card
+                    for (let j = 0; j < devices.length; j++) {
+                        document.getElementById(new_sensors[i] + "-targets").innerHTML += "<input type='checkbox' class='form-check-input' id='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "' name='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "' value='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "'><label for='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "' class='form-check-label'>" + devices[j].id.replace("deviceType", "device") + " (" + devices[j].value + ")</label><br>";
+                    };
+
+                    // Close div
+                    document.getElementById("page2-cards").innerHTML += "</div></div></div></br>"
+
+                    // Add schedule rule section for the new sensor to page3
+                    document.getElementById("page3-cards").innerHTML += "<div class='card'>\
+                                                                            <div class='card-body'>\
+                                                                                <label class='card-title schedule-rule-card'><b>" + new_sensors[i] + " (" + type + "):</b></label>\
+                                                                                <table id='" + new_sensors[i] + "-rules' class='table table-borderless'>\
+                                                                                    <tr>\
+                                                                                        <th style='text-align: left;'>Time</th>\
+                                                                                        <th style='text-align: left;'>Rule</th>\
+                                                                                    </tr>\
+                                                                                        <tr id='" + new_sensors[i] + "-row-1'>\
+                                                                                            <td><input type='text' class='form-control' id='schedule-" + new_sensors[i] + "-rule1-time' placeholder='HH:MM' name='schedule-" + new_sensors[i] + "-rule1-time' value='{{ time }}'></td>\
+                                                                                            <td><input type='text' class='form-control' id='schedule-" + new_sensors[i] + "-rule1-value' placeholder='' name='schedule-" + new_sensors[i] + "-rule1-value' value='{{ rule }}'></td>\
+                                                                                            <td class='min'><button type='button' class='remove btn btn-danger' id='" + new_sensors[i] + "-remove1'  onclick='remove(this)'>X</button></td>\
+                                                                                        </tr>\
+                                                                                </table>\
+                                                                            </div>\
+                                                                            <div class='text-left mx-3 mb-3'>\
+                                                                                <button type='button' class='btn btn-secondary add' id='" + new_sensors[i] + "-add-rule'>Add another</button>\
+                                                                            </div>\
+                                                                        </div></br>"
+                };
+            };
+
+            // Clear new_sensors (prevent adding duplicates if user goes back and forth between pages without adding anything)
+            new_sensors = []
+
+            // If user changed a sensor's type, update type listed on page2 to reflect
+            sensors = document.getElementsByClassName("sensor-targets-label")
+            for (let sen = 0; sen < sensors.length; sen++) {
+                id = sensors[sen].innerHTML.split(" ")[0].split(">")[1];
+
+                old_type = sensors[sen].innerHTML.split(" ")[1].replace("(", "").replace(")", "");
+                new_type = document.getElementById(id.replace("sensor", "sensorType")).value;
+
+                if (old_type != new_type) {
+                    sensors[sen].innerHTML = sensors[sen].innerHTML.replace(old_type, new_type);
+
+                    // Uncheck all target boxes
+                    for (el of document.getElementById(id + "-targets").children) {
+                        // Children contains inputs, their labels, and line breaks - only process inputs
+                        if (el.classList.contains("form-check-input")) {
+                            el.checked = false;
+                        }
+                    }
+                };
+            };
+
+            // Get array of all device type dropdowns on page1
+            devices = document.getElementsByClassName("deviceType");
+
+            // Get array of all sensor-target cards on page2
+            sensors = document.getElementsByClassName("sensor-targets");
+
+            // Iterate device dropdowns
+            for (let dev = 0; dev < devices.length; dev++) {
+
+                const dev_id = devices[dev].id.replace("deviceType", "device");
+                const dev_type = devices[dev].value;
+
+                // Iterate sensor sections
+                for (let sen = 0; sen < sensors.length; sen++) {
+
+                    const sen_id = sensors[sen].id.replace("-targets", "");
+
+                    var found = false;
+
+                    // Iterate options within current sensor section
+                    for (let opt = 0; opt < sensors[sen].childElementCount; opt++) {
+                        // Children contains inputs, their labels, and line breaks - only process inputs (first of every 3)
+                        if (opt % 3) { continue };
+
+                        // Check if option is for device from outer loop
+                        if (sensors[sen].children[opt].id.split("-")[2] == dev_id) {
+                            found = true;
+
+                            // If so, check if type has changed
+                            if (sensors[sen].children[opt+1].innerHTML.replace(dev_id + " (", "").replace(")", "") == dev_type) {
+                                // If type hasn't changed, go to next sensor section
+                                break
+                            } else {
+                                // If type HAS changed, replace and uncheck box
+                                sensors[sen].children[opt+1].innerHTML = dev_id + " (" + dev_type + ")"
+                                sensors[sen].children[opt].checked = false;
+
+                                // Go to next sensor section
+                                break
+                            };
+                        };
+                    };
+
+                    // If no match was found, add the device as an option
+                    if (!found) {
+                        sensors[sen].innerHTML += "<input type='checkbox' class='form-check-input' id='target-" + sen_id + "-" + dev_id + "' name='target-" + sen_id + "-" + dev_id + "' value='target-" + sen_id + "-" + dev_id + "'><label for='target-" + sen_id + "-" + dev_id + "' class='form-check-label'>" + dev_id + " (" + dev_type + ")</label><br>";
+                    };
+                };
+            };
 
             $('#page2').show();
             $('#page1').hide();
@@ -660,6 +841,74 @@
 
         document.getElementById('page2-button').addEventListener("click", function(e) {
             e.preventDefault();
+
+            // If user added new devices, create card for each on page3 (schedule rules)
+            if (new_devices.length > 0) {
+                // Get array of all device type dropdowns
+                devices = document.getElementsByClassName("deviceType");
+
+                // Add card for each device that was added on first page
+                for (let i = 0; i < new_devices.length; i++) {
+                    // Get type of device
+                    const type = document.getElementById(new_devices[i].replace("device", "deviceType")).value;
+
+                    // Add schedule rule section for the new device to page3
+                    document.getElementById("page3-cards").innerHTML += "<div class='card'>\
+                                                                            <div class='card-body'>\
+                                                                                <label class='card-title schedule-rule-card'><b>" + new_devices[i] + " (" + type + "):</b></label>\
+                                                                                <table id='" + new_devices[i] + "-rules' class='table table-borderless'>\
+                                                                                    <tr>\
+                                                                                        <th style='text-align: left;'>Time</th>\
+                                                                                        <th style='text-align: left;'>Rule</th>\
+                                                                                    </tr>\
+                                                                                        <tr id='" + new_devices[i] + "-row-1'>\
+                                                                                            <td><input type='text' class='form-control' id='schedule-" + new_devices[i] + "-rule1-time' placeholder='HH:MM' name='schedule-" + new_devices[i] + "-rule1-time' value='{{ time }}'></td>\
+                                                                                            <td><input type='text' class='form-control' id='schedule-" + new_devices[i] + "-rule1-value' placeholder='' name='schedule-" + new_devices[i] + "-rule1-value' value='{{ rule }}'></td>\
+                                                                                            <td class='min'><button type='button' class='remove btn btn-danger' id='" + new_devices[i] + "-remove1'  onclick='remove(this)'>X</button></td>\
+                                                                                        </tr>\
+                                                                                </table>\
+                                                                            </div>\
+                                                                            <div class='text-left mx-3 mb-3'>\
+                                                                                <button type='button' class='btn btn-secondary add' id='" + new_devices[i] + "-add-rule'>Add another</button>\
+                                                                            </div>\
+                                                                        </div></br>"
+                };
+            };
+
+            // Clear new_devices (prevent adding duplicates if user goes back and forth between pages without adding anything)
+            new_devices = []
+
+            // If user changed a sensor or device's type, update type listed on page3 to reflect
+            instances = document.getElementsByClassName("schedule-rule-card")
+            for (let i = 0; i < instances.length; i++) {
+                id = instances[i].innerHTML.split(" ")[0].split(">")[1];
+
+                old_type = instances[i].innerHTML.split(" ")[1].replace("(", "").replace(")", "").split(":")[0];
+
+                if (id.startsWith("device")) {
+                    new_type = document.getElementById(id.replace("device", "deviceType")).value;
+                } else if (id.startsWith("sensor")) {
+                    new_type = document.getElementById(id.replace("sensor", "sensorType")).value;
+                } else {
+                    // Should not be possible, prevent error if somehow happens
+                    continue
+                };
+
+                if (old_type != new_type) {
+                    instances[i].innerHTML = instances[i].innerHTML.replace(old_type, new_type);
+
+                    // Clear all existing schedule rules (likely invalid for new type)
+                    document.getElementById(id + "-rules").innerHTML = "<tr>\
+                                                                            <th style='text-align: left;'>Time</th>\
+                                                                            <th style='text-align: left;'>Rule</th>\
+                                                                        </tr>\
+                                                                        <tr id='" + id + "-row-1'>\
+                                                                            <td><input type='text' class='form-control' id='schedule-" + id + "-rule1-time' placeholder='HH:MM' name='schedule-" + id + "-rule1-time'></td>\
+                                                                            <td><input type='text' class='form-control' id='schedule-" + id + "-rule1-value' placeholder='' name='schedule-" + id + "-rule1-value'></td>\
+                                                                            <td class='min'><button type='button' class='btn btn-danger' id='placeholder_button' style='visibility: hidden;'>X</button></td>\
+                                                                        </tr>"
+                };
+            };
 
             $('#page3').show();
             $('#page2').hide();
