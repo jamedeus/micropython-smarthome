@@ -123,7 +123,7 @@
                                         <option value="pir">Motion Sensor</option>
                                         <option value="switch">Switch</option>
                                         <option value="dummy">Dummy</option>
-                                        <option value="desktop-trigger">Desktop</option>
+                                        <option value="desktop">Desktop</option>
                                         <option value="si7021">Thermostat</option>
                                         </select>
                                     </div>
@@ -156,7 +156,7 @@
                                         <option value="bulb">TP-Link Bulb</option>
                                         <option value="relay">Smart Relay</option>
                                         <option value="dumb-relay">Relay</option>
-                                        <option value="desktop-target">Desktop</option>
+                                        <option value="desktop">Desktop</option>
                                         <option value="pwm">LED Strip</option>
                                         <option value="mosfet">Mosfet</option>
                                         <option value="api-target">Api Command</option>
@@ -233,7 +233,7 @@
                 var div_contents = await fetch("/sensorOptionsSwitch/" + index);
             } else if (selected == "dummy") {
                 var div_contents = await fetch("/sensorOptionsDummy/" + index);
-            } else if (selected == "desktop-trigger") {
+            } else if (selected == "desktop") {
                 var div_contents = await fetch("/sensorOptionsDesktop/" + index);
             } else if (selected == "si7021") {
                 var div_contents = await fetch("/sensorOptionsSi7021/" + index);
@@ -263,7 +263,7 @@
                 var div_contents = await fetch("/deviceOptionsRelay/" + index);
             } else if (selected == "dumb-relay") {
                 var div_contents = await fetch("/deviceOptionsDumbRelay/" + index);
-            } else if (selected == "desktop-target") {
+            } else if (selected == "desktop") {
                 var div_contents = await fetch("/deviceOptionsDesktop/" + index);
             } else if (selected == "pwm") {
                 var div_contents = await fetch("/deviceOptionsPwm/" + index);

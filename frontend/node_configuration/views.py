@@ -142,13 +142,12 @@ def upload(request, reupload=False):
     except OSError:
         return JsonResponse("Unable to connect - please ensure target node is plugged in and wait for the blue light to turn off, then try again.", safe=False, status=200)
 
-    # Update database
-    target = Config.objects.get(config_file = CONFIG_DIR + data["config"])
-    target.uploaded = True
-    target.save()
-
-    # If uploaded for the first time, add to models
+    # If uploaded for the first time, update models
     if not reupload:
+        target = Config.objects.get(config_file = CONFIG_DIR + data["config"])
+        target.uploaded = True
+        target.save()
+
         new = Node(friendly_name = config["metadata"]["id"], ip = data["ip"], config_file = CONFIG_DIR + data["config"])
         new.save()
 

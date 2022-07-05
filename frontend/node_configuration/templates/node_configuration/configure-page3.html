@@ -65,8 +65,8 @@
             var cell_value = row.insertCell(1);
             var cell_del = row.insertCell(2);
 
-            cell_time.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='schedule-" + instance + "-rule" + next_row + "-time'>";
-            cell_value.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-value' placeholder='' name='schedule-" + instance + "-rule" + next_row + "-value'>";
+            cell_time.innerHTML = "<input type='text' class='form-control' id='schedule-" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='schedule-" + instance + "-rule" + next_row + "-time'>";
+            cell_value.innerHTML = "<input type='text' class='form-control' id='schedule-" + instance + "-rule" + next_row + "-value' placeholder='' name='schedule-" + instance + "-rule" + next_row + "-value'>";
             cell_del.innerHTML = "<button type='button' class='remove btn btn-danger' id='" + instance + "-remove" + next_row + "' onclick='remove(this)'>X</button>";
 
         };

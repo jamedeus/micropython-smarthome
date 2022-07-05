@@ -194,7 +194,7 @@
                                                 <option value="pir" {% if params.type == "pir" %} selected {% endif %}>Motion Sensor</option>
                                                 <option value="switch" {% if params.type == "switch" %} selected {% endif %}>Switch</option>
                                                 <option value="dummy" {% if params.type == "dummy" %} selected {% endif %}>Dummy</option>
-                                                <option value="desktop-trigger" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
+                                                <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
                                                 <option value="si7021" {% if params.type == "si7021" %} selected {% endif %}>Thermostat</option>
                                                 </select>
                                             </div>
@@ -298,7 +298,7 @@
                                                 <option value="bulb" {% if params.type == "bulb" %} selected {% endif %}>TP-Link Bulb</option>
                                                 <option value="relay" {% if params.type == "relay" %} selected {% endif %}>Smart Relay</option>
                                                 <option value="dumb-relay" {% if params.type == "dumb-relay" %} selected {% endif %}>Relay</option>
-                                                <option value="desktop-target" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
+                                                <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
                                                 <option value="pwm" {% if params.type == "pwm" %} selected {% endif %}>LED Strip</option>
                                                 <option value="mosfet" {% if params.type == "mosfet" %} selected {% endif %}>Mosfet</option>
                                                 <option value="api-target" {% if params.type == "api-target" %} selected {% endif %}>Api Command</option>
@@ -487,13 +487,21 @@
                                             <th style="text-align: left;">Rule</th>
                                         </tr>
 
-                                        {% for time, rule in params.schedule.items %}
-                                            <tr id="{{instance}}-row-{{forloop.counter}}">
-                                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{instance}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
-                                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
+                                        {% if params.schedule.items|length > 0 %}
+                                            {% for time, rule in params.schedule.items %}
+                                                <tr id="{{instance}}-row-{{forloop.counter}}">
+                                                    <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{instance}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
+                                                    <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+                                                    <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr id="{{instance}}-row-1">
+                                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time"></td>
+                                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value"></td>
+                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove1"  onclick="remove(this)">X</button></td>
                                             </tr>
-                                        {% endfor %}
+                                        {% endif %}
                                     </table>
                                 </div>
 
@@ -575,7 +583,7 @@
                 var div_contents = await fetch("/sensorOptionsSwitch/" + index);
             } else if (selected == "dummy") {
                 var div_contents = await fetch("/sensorOptionsDummy/" + index);
-            } else if (selected == "desktop-trigger") {
+            } else if (selected == "desktop") {
                 var div_contents = await fetch("/sensorOptionsDesktop/" + index);
             } else if (selected == "si7021") {
                 var div_contents = await fetch("/sensorOptionsSi7021/" + index);
@@ -605,7 +613,7 @@
                 var div_contents = await fetch("/deviceOptionsRelay/" + index);
             } else if (selected == "dumb-relay") {
                 var div_contents = await fetch("/deviceOptionsDumbRelay/" + index);
-            } else if (selected == "desktop-target") {
+            } else if (selected == "desktop") {
                 var div_contents = await fetch("/deviceOptionsDesktop/" + index);
             } else if (selected == "pwm") {
                 var div_contents = await fetch("/deviceOptionsPwm/" + index);
@@ -643,7 +651,7 @@
                                             <option value='bulb'>TP-Link Bulb</option>\
                                             <option value='relay'>Smart Relay</option>\
                                             <option value='dumb-relay'>Relay</option>\
-                                            <option value='desktop-target'>Desktop</option>\
+                                            <option value='desktop'>Desktop</option>\
                                             <option value='pwm'>LED Strip</option>\
                                             <option value='mosfet'>Mosfet</option>\
                                             <option value='api-target'>Api Command</option>\
@@ -689,7 +697,7 @@
                                             <option value='pir'>Motion Sensor</option>\
                                             <option value='switch'>Switch</option>\
                                             <option value='dummy'>Dummy</option>\
-                                            <option value='desktop-trigger'>Desktop</option>\
+                                            <option value='desktop'>Desktop</option>\
                                             <option value='si7021'>Thermostat</option>\
                                             </select>\
                                         </div>\
@@ -947,8 +955,8 @@
             var cell_value = row.insertCell(1);
             var cell_del = row.insertCell(2);
 
-            cell_time.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='schedule-" + instance + "-rule" + next_row + "-time'>";
-            cell_value.innerHTML = "<input type='text' class='form-control' id='" + instance + "-rule" + next_row + "-value' placeholder='' name='schedule-" + instance + "-rule" + next_row + "-value'>";
+            cell_time.innerHTML = "<input type='text' class='form-control' id='schedule-" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='schedule-" + instance + "-rule" + next_row + "-time'>";
+            cell_value.innerHTML = "<input type='text' class='form-control' id='schedule-" + instance + "-rule" + next_row + "-value' placeholder='' name='schedule-" + instance + "-rule" + next_row + "-value'>";
             cell_del.innerHTML = "<button type='button' class='remove btn btn-danger' id='" + instance + "-remove" + next_row + "' onclick='remove(this)'>X</button>";
 
         };
