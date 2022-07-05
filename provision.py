@@ -458,11 +458,21 @@ class Provisioner():
                     print(Fore.YELLOW + "\nWARNING" + Fore.RESET + ": Skipping " + src_file + " library, node may fail to boot after upload.\n")
                     pass
                 else:
+                    # Connection was broken by error, close and re-open
+                    self.close_connection()
+                    self.open_connection()
+
+                    # Upload setup config and boot file (creates required directory structure then waits for upload_
                     self.upload('config/setup.json', 'config.json')
                     self.upload('setup.py', 'boot.py')
-                    print(Fore.CYAN + "Please reboot target node and wait 30 seconds, then press enter to resume upload." + Fore.RESET)
 
+                    # Close connection (node rebooted)
+                    self.close_connection()
+
+                    # Resume upload once user restarts node
+                    print(Fore.CYAN + "Please reboot target node and wait 30 seconds, then press enter to resume upload." + Fore.RESET)
                     x = input()
+                    self.open_connection()
                     self.upload(src_file, dst_file)
 
             else:
