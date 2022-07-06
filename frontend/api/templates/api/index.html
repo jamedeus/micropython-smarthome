@@ -206,7 +206,7 @@
 
                     // If user is viewig status, update div every time new data received
                     if (selected_command == "status") {
-                        document.getElementById("additional_info").innerHTML = "<div class='d-block text-center'><pre class='d-inline-block text-start'>" + JSON.stringify(selected_node_status, null, 4) + "</pre></div>";
+                        document.getElementById("additional_info").innerHTML = `<div class='d-block text-center'><pre class='d-inline-block text-start'>${JSON.stringify(selected_node_status, null, 4)}</pre></div>`;
                     };
 
                 }, 5000);
@@ -318,7 +318,7 @@
                 document.getElementById("form").innerHTML = ir_target_select;
             } else if (selected_command == "temp_sensor") {
                 document.getElementById("form").innerHTML = additional_info;
-                document.getElementById("additional_info").innerHTML = '<div class="result mx-auto py-1"><table class="table table-borderless"><tr><th class="text-center w-50">Temperature</th><th class="text-center w-50">Humidity</th><tr><td class="text-center">' + climate_data["temp"].toFixed(2) + '</td><td class="text-center">' + climate_data["humid"].toFixed(2) + '</td></tr>';
+                document.getElementById("additional_info").innerHTML = `<div class="result mx-auto py-1"><table class="table table-borderless"><tr><th class="text-center w-50">Temperature</th><th class="text-center w-50">Humidity</th><tr><td class="text-center">${climate_data["temp"].toFixed(2)}</td><td class="text-center">${climate_data["humid"].toFixed(2)}</td></tr>`;
             } else if (selected_command == "clear_log") {
                 document.getElementById("form").innerHTML = submit_button;
             } else if (selected_command == "condition_met") {
@@ -377,7 +377,7 @@
 
             // Load result div (if any)
             try {
-                document.getElementById("result").innerHTML = "<pre class='p-3'>" + JSON.stringify(result, null, 4) + "</pre>";
+                document.getElementById("result").innerHTML = `<pre class='p-3'>${JSON.stringify(result, null, 4)}</pre>`;
             } catch(err) {};
 
             // Re-enable send button
@@ -395,7 +395,7 @@
             };
 
             if (selected_command == "status") {
-                document.getElementById("additional_info").innerHTML = "<div class='d-block text-center'><pre class='d-inline-block text-start'>" + JSON.stringify(selected_node_status, null, 4) + "</pre></div>";
+                document.getElementById("additional_info").innerHTML = `<div class='d-block text-center'><pre class='d-inline-block text-start'>${JSON.stringify(selected_node_status, null, 4)}</pre></div>`;
 
             } else if (selected_command == "enable") {
                 msg = "";
@@ -411,7 +411,7 @@
                     msg = msg + "</br>" + selected_target + " will be disabled in " + delay + " minutes";
                 };
 
-                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + msg + "</div>";
+                document.getElementById("additional_info").innerHTML = `<div class='text-center'>${msg}</div>`;
 
             } else if (selected_command == "disable") {
                 msg = "";
@@ -427,11 +427,11 @@
                     msg = msg + "</br>" + selected_target + " will be re-enabled in " + delay + " minutes";
                 };
 
-                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + msg + "</div>";
+                document.getElementById("additional_info").innerHTML = `<div class='text-center'>${msg}</div>`;
 
             } else if (selected_command == "set_rule") {
                 const current_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["current_rule"];
-                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Current rule: " + current_rule + "</div>";
+                document.getElementById("additional_info").innerHTML = `<div class='text-center'>Current rule: ${current_rule}</div>`;
 
                 // Clear rule input when target changes, after submit
                 document.getElementById('rule_input').value = "";
@@ -441,11 +441,11 @@
                 const scheduled_rule = selected_node_status[selected_target.replace(/[0-9]/g, '') + "s"][selected_target]["scheduled_rule"];
 
                 if (current_rule == scheduled_rule) {
-                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Current rule (" + current_rule + ") already matches scheduled rule (" + scheduled_rule + ")." + "</div>";
+                    document.getElementById("additional_info").innerHTML = `<div class='text-center'>Current rule (${current_rule}) already matches scheduled rule (${scheduled_rule}).</div>`;
                     // Hide button
                     document.getElementById('send').style.display = 'none';
                 } else {
-                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Current rule (" + current_rule + ") will revert back to scheduled rule (" + scheduled_rule + ")." + "</div>";
+                    document.getElementById("additional_info").innerHTML = `<div class='text-center'>Current rule (${current_rule}) will revert back to scheduled rule (${scheduled_rule}).</div>`;
                     // Show button in case previously hidden
                     document.getElementById('send').style.display = 'initial';
                 };
@@ -477,32 +477,32 @@
                 const type = selected_node_status["sensors"][selected_target]["type"];
                 const targets = selected_node_status["sensors"][selected_target]["targets"];
 
-                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Sensor type: " + type + "</br>Targets: " + targets + "</div>";
+                document.getElementById("additional_info").innerHTML = `<div class='text-center'>Sensor type: ${type}</br>Targets: ${targets}</div>`;
 
             } else if (selected_command == "trigger_sensor") {
                 const type = selected_node_status["sensors"][selected_target]["type"];
                 const targets = selected_node_status["sensors"][selected_target]["targets"];
 
-                document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + "Sensor type: " + type + "</br>Targets: " + targets + "</div>";
+                document.getElementById("additional_info").innerHTML = `<div class='text-center'>Sensor type: ${type}</br>Targets: ${targets}</div>`;
 
             } else if (selected_command == "turn_on") {
                 if (selected_node_status["devices"][selected_target]["turned_on"]) {
-                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + selected_target + " already turned on." + "</div>";
+                    document.getElementById("additional_info").innerHTML = `<div class='text-center'>${selected_target} already turned on.</div>`;
                     // Hide button
                     document.getElementById('send').style.display = 'none';
                 } else {
-                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + selected_target + " currently off." + "</div>";
+                    document.getElementById("additional_info").innerHTML = `<div class='text-center'>${selected_target} currently off.</div>`;
                     // Show button in case previously hidden
                     document.getElementById('send').style.display = 'initial';
                 };
 
             } else if (selected_command == "turn_off") {
                 if (!selected_node_status["devices"][selected_target]["turned_on"]) {
-                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + selected_target + " already turned off." + "</div>";
+                    document.getElementById("additional_info").innerHTML = `<div class='text-center'>${selected_target} already turned off.</div>`;
                     // Hide button
                     document.getElementById('send').style.display = 'none';
                 } else {
-                    document.getElementById("additional_info").innerHTML = "<div class='text-center'>" + selected_target + " currently on." + "</div>";
+                    document.getElementById("additional_info").innerHTML = `<div class='text-center'>${selected_target} currently on.</div>`;
                     // Show button in case previously hidden
                     document.getElementById('send').style.display = 'initial';
                 };
@@ -558,7 +558,7 @@
                     climate_data = await climate_data.json();
 
                     if (selected_command == "temp_sensor") {
-                        document.getElementById("additional_info").innerHTML = '<div class="result mx-auto py-1"><table class="table table-borderless"><tr><th class="text-center w-50">Temperature</th><th class="text-center w-50">Humidity</th><tr><td class="text-center">' + climate_data["temp"].toFixed(2) + '</td><td class="text-center">' + climate_data["humid"].toFixed(2) + '</td></tr>';
+                        document.getElementById("additional_info").innerHTML = `<div class="result mx-auto py-1"><table class="table table-borderless"><tr><th class="text-center w-50">Temperature</th><th class="text-center w-50">Humidity</th><tr><td class="text-center">${climate_data["temp"].toFixed(2)}</td><td class="text-center">${climate_data["humid"].toFixed(2)}</td></tr>`;
                     };
                 }, 5000);
             } else {
