@@ -101,6 +101,29 @@
         </div>
     </div>
 
+    <!-- Error modal displayed when unable to connect to target node -->
+
+    <div class="modal fade" id="error-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                    <h3 class="mx-auto mb-0" id="error-modal-title">Connection Error</h3>
+                </div>
+                <div class="modal-body" id="error-modal-body">
+                    <p class="text-center">Attempting to reestablish connection...</p>
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="spinner-border" style="width: 1.5rem; height: 1.5rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal" onclick="page1()">Back to Overview</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Check if user is in dark mode, change theme (runs once on page load)
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -150,7 +173,7 @@
             send_command(e.target);
         });
 
-        // Get status every 15 seconds, update div if user currently viewing status
+        // Get status every 5 seconds, update div if user currently viewing status
         function monitorSelectedNodeStatus(start) {
             if (start) {
                 // Initial value, used to detect change
@@ -163,6 +186,7 @@
 
                     // If unable to connect
                     if (selected_node_unreachable == false && selected_node_status == "Error: Unable to connect.") {
+                        $("#error-modal").modal("show");
                         console.log("Unable to connect to target, will retry every 5 seconds.");
                         selected_node_unreachable = true;
 
@@ -171,6 +195,7 @@
                         select_command(document.getElementById("select_command"));
 
                     } else if (selected_node_unreachable == true && selected_node_status != "Error: Unable to connect.") {
+                        $("#error-modal").modal("hide");
                         console.log("Re-connected to target.");
                         selected_node_unreachable = false;
 
