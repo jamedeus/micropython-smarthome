@@ -110,6 +110,7 @@
 
         var selected_node = "";
         var selected_node_status = "";
+        var selected_node_unreachable = false;
         var selected_command = "";
         var device_options = "";
         var sensor_options = "";
@@ -149,19 +150,50 @@
             send_command(e.target);
         });
 
-        async function select_node(selected) {
-            selected_node = selected.id;
-            document.getElementById("clear").selected = true;
-            document.getElementById("form").innerHTML = "";
-            document.getElementById("target_node").textContent = selected_node;
-            document.getElementById("page1").style.display = "none";
-            document.getElementById("page2").style.display = "inline";
-            selected_node_status = await fetch("/get_status/" + selected_node);
-            selected_node_status = await selected_node_status.json();
+        // Get status every 15 seconds, update div if user currently viewing status
+        function monitorSelectedNodeStatus(start) {
+            if (start) {
+                // Initial value, used to detect change
+                selected_node_unreachable = false;
 
-            // Detect presence of temp sensor in loop below
-            var temp_sensor = false;
+                statusTimer = setInterval(async function() {
+                    // Get status object
+                    selected_node_status = await fetch("/get_status/" + selected_node);
+                    selected_node_status = await selected_node_status.json();
 
+                    // If unable to connect
+                    if (selected_node_unreachable == false && selected_node_status == "Error: Unable to connect.") {
+                        console.log("Unable to connect to target, will retry every 5 seconds.");
+                        selected_node_unreachable = true;
+
+                        // Clear device/sensor options (none are reachable if node isn't)
+                        rebuild_target_options();
+                        select_command(document.getElementById("select_command"));
+
+                    } else if (selected_node_unreachable == true && selected_node_status != "Error: Unable to connect.") {
+                        console.log("Re-connected to target.");
+                        selected_node_unreachable = false;
+
+                        // If node was unreachable but now reachable, re-populate device/sensor menus (blank while unreachable)
+                        rebuild_target_options();
+                        select_command(document.getElementById("select_command"));
+                    };
+
+                    // If user is viewig status, update div every time new data received
+                    if (selected_command == "status") {
+                        document.getElementById("additional_info").innerHTML = "<div class='d-block text-center'><pre class='d-inline-block text-start'>" + JSON.stringify(selected_node_status, null, 4) + "</pre></div>";
+                    };
+
+                }, 5000);
+            } else {
+                clearInterval(statusTimer);
+
+                // Clear old data if present
+                selected_node_status = ""
+            };
+        };
+
+        async function rebuild_target_options() {
             // Clear previous options (selected node changed, options may be different)
             device_options = "";
             sensor_options = "";
@@ -170,6 +202,9 @@
             for (var device in selected_node_status["devices"]) {
                 device_options = device_options + "<option value='" + device + "'>" + device + "</option>";
             };
+
+            // Detect presence of temp sensor in loop below
+            var temp_sensor = false;
 
             for (var sensor in selected_node_status["sensors"]) {
                 sensor_options = sensor_options + "<option value='" + sensor + "'>" + sensor + "</option>";
@@ -199,9 +234,29 @@
             };
         };
 
+        async function select_node(selected) {
+            selected_node = selected.id;
+            document.getElementById("clear").selected = true;
+            document.getElementById("form").innerHTML = "";
+            document.getElementById("target_node").textContent = selected_node;
+            document.getElementById("page1").style.display = "none";
+            document.getElementById("page2").style.display = "inline";
+            selected_node_status = await fetch("/get_status/" + selected_node);
+            selected_node_status = await selected_node_status.json();
+
+            // Get device/sensor dropdown options for status object
+            rebuild_target_options();
+
+            // Update status info for selected node every 15 seconds
+            monitorSelectedNodeStatus(true);
+        };
+
         function page1() {
             document.getElementById("page2").style.display = "none";
             document.getElementById("page1").style.display = "initial";
+
+            // Stop querying selected node status info
+            monitorSelectedNodeStatus(false);
 
             // Stop querying climate data (if user previously viewed node with temp sensor)
             queryTempSensor(false);
