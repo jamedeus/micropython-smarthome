@@ -156,7 +156,7 @@
 
         const rule_input = "<input type='text' id='rule_input' placeholder='new rule' name='rule_input' class='form-control' required></br>"
 
-        const add_rule_input = "<h5 class='text-center'>Add new rule</h5><div style='width: 85%' class='row mx-auto'><div class='col'><input type='text' id='add_rule_input' placeholder='HH:MM' name='add_rule_input' class='form-control' required></div><div class='col'><input type='text' id='rule_input' placeholder='new rule' name='rule_input' class='form-control' required></div></div></br>"
+        const add_rule_input = "<h5 class='text-center'>Add new rule</h5><div style='width: 85%' class='row mx-auto'><div class='col'><input type='text' id='add_rule_input' placeholder='HH:MM' name='add_rule_input' class='form-control' maxlength='5' required></div><div class='col'><input type='text' id='rule_input' placeholder='new rule' name='rule_input' class='form-control' required></div></div></br>"
 
         const additional_info = "<div id='additional_info'></div></br>"
 
@@ -225,14 +225,14 @@
 
             // Rebuild device and sensor options for current node
             for (var device in selected_node_status["devices"]) {
-                device_options = device_options + "<option value='" + device + "'>" + device + "</option>";
+                device_options = device_options + `<option value='${device}'>${device}</option>`;
             };
 
             // Detect presence of temp sensor in loop below
             var temp_sensor = false;
 
             for (var sensor in selected_node_status["sensors"]) {
-                sensor_options = sensor_options + "<option value='" + sensor + "'>" + sensor + "</option>";
+                sensor_options = sensor_options + `<option value='${sensor}'>${sensor}</option>`;
 
                 // If node has temp sensor, toggle bool
                 if (selected_node_status["sensors"][sensor]["type"] == "si7021") {
@@ -303,9 +303,23 @@
             } else if (selected_command == "disable") {
                 document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + delay_input + additional_info + submit_button;
                 document.getElementById('delay_input').addEventListener('input', delay_input_handler);
+
+                // Prevent non-numeric input in delay field (accepts int minutes)
+                document.getElementById("delay_input").addEventListener("keypress", function (evt) {
+                    if (evt.which < 48 || evt.which > 57) {
+                        evt.preventDefault();
+                    }
+                });
             } else if (selected_command == "enable") {
                 document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + delay_input + additional_info + submit_button;
                 document.getElementById('delay_input').addEventListener('input', delay_input_handler);
+
+                // Prevent non-numeric input in delay field (accepts int minutes)
+                document.getElementById("delay_input").addEventListener("keypress", function (evt) {
+                    if (evt.which < 48 || evt.which > 57) {
+                        evt.preventDefault();
+                    }
+                });
             } else if (selected_command == "set_rule") {
                 document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + additional_info + rule_input + submit_button;
             } else if (selected_command == "reset_rule") {
@@ -408,7 +422,7 @@
                 };
 
                 if (delay) {
-                    msg = msg + "</br>" + selected_target + " will be disabled in " + delay + " minutes";
+                    msg = msg + `</br>${selected_target} will be disabled in ${delay} minutes`;
                 };
 
                 document.getElementById("additional_info").innerHTML = `<div class='text-center'>${msg}</div>`;
@@ -424,7 +438,7 @@
                 };
 
                 if (delay) {
-                    msg = msg + "</br>" + selected_target + " will be re-enabled in " + delay + " minutes";
+                    msg = msg + `</br>${selected_target} will be re-enabled in ${delay} minutes`;
                 };
 
                 document.getElementById("additional_info").innerHTML = `<div class='text-center'>${msg}</div>`;
@@ -463,15 +477,21 @@
                 // Build table of target's existing rules, display in div
                 var rules_table = '<h3 class="text-center">Existing rules:</h3><div class="result mx-auto py-1"><table class="table table-borderless"><tr><th class="text-center w-25">Time</th><th class="text-center w-50">Rule</th><th class="text-center w-25">Delete</th></tr>'
                 for (var rule in rules) {
-                    rules_table = rules_table + "<tr><td class='text-center'>" + rule + "</td><td class='text-center'>" + rules[rule] + "</td><td class='text-center'><button onclick='delete_rule(this)' type='button' id=" + rule + " class='btn btn-sm btn-danger py-0'>X</button></td></tr>";
+                    rules_table = rules_table + `<tr><td class='text-center'>${rule}</td><td class='text-center'>${rules[rule]}</td><td class='text-center'><button onclick='delete_rule(this)' type='button' id="${rule}" class='btn btn-sm btn-danger py-0'>X</button></td></tr>`;
                 };
                 rules_table = rules_table + "</table></div></br>";
 
                 document.getElementById("additional_info").innerHTML = rules_table + add_rule_input + submit_button;
 
                 // Hide results div (additional_info updates to show result)
-                console.log("hiding results div");
                 document.getElementById("result").style.display = "none";
+
+                // Only allow numbers and : in timestamp field
+                document.getElementById("add_rule_input").addEventListener("keypress", function (evt) {
+                    if (evt.which < 48 || evt.which > 58) {
+                        evt.preventDefault();
+                    };
+                });
 
             } else if (selected_command == "condition_met") {
                 const type = selected_node_status["sensors"][selected_target]["type"];
