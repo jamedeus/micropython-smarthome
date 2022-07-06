@@ -30,6 +30,7 @@
 
     </script>
     <style>
+        /* Set table column to minimum width with class */
         td {
             width: auto;
         }
@@ -38,6 +39,68 @@
             width: 1%;
             white-space: nowrap;
         }
+
+        /* ----- */
+
+        /* Upload complete checkmark animation */
+        .light {
+            --success: #198754;
+        }
+
+        .dark {
+            --success: #177a4c;
+        }
+
+        .checkmark__circle {
+            stroke-dasharray: 166;
+            stroke-dashoffset: 166;
+            stroke-width: 2;
+            stroke-miterlimit: 10;
+            stroke: var(--success);
+            fill: none;
+            animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+        }
+
+        .checkmark {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #fff;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px var(--success);
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        .checkmark__check {
+            transform-origin: 50% 50%;
+            stroke-dasharray: 48;
+            stroke-dashoffset: 48;
+            animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+        }
+
+        @keyframes stroke {
+            100% {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes scale {
+            0%, 100% {
+                transform: none;
+            }
+            50% {
+                transform: scale3d(1.1, 1.1, 1);
+            }
+        }
+
+        @keyframes fill {
+            100% {
+                box-shadow: inset 0px 0px 0px 30px var(--success);
+            }
+        }
+        /* ----- */
 
         /* Limit width for readability on large screen sizes */
         @media (min-width: 1200px) {
@@ -132,6 +195,39 @@
 
     </div>
 
+    <!-- Loading modal displayed while waiting on upload -->
+
+    <div class="modal fade" id="upload-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header" style="border-bottom: 0px;">
+                    <h3 class="mx-auto" id="upload-modal-title">Uploading...</h3>
+                </div>
+                <div class="modal-body d-flex justify-content-center mb-4" id="upload-modal-body">
+                    <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error modal displayed when upload fails -->
+
+    <div class="modal fade" id="error-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header" style="border-bottom: 0px;">
+                    <h3 class="mx-auto" id="error-modal-title">Error</h3>
+                </div>
+                <div class="modal-body d-flex justify-content-center" id="error-modal-body">
+                </div>
+                <div class="modal-footer d-flex justify-content-center" id="error-modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Check if user is in dark mode, change theme (runs once on page load)
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -141,28 +237,120 @@
             console.log("Dark mode");
         };
 
+        async function send_post_request(url, body) {
+            let csrftoken = getCookie('csrftoken');
+
+            var response = await fetch(url, {
+                method: 'POST',
+                body: JSON.stringify(body),
+                headers: { 'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json',
+                    "X-CSRFToken": csrftoken }
+            });
+
+            return response
+        };
+
         async function upload(e) {
             const config = e.target.id.replace("upload-", "")
             const ip = document.getElementById(config + "-ip").value
 
             const data = {config: config, ip: ip};
 
-            let csrftoken = getCookie('csrftoken');
+            // Show loading screen
+            show_modal("upload-modal");
 
-            const response = await fetch("upload", {
-                method: 'POST',
-                body: JSON.stringify(data),
-                headers: { 'Accept': 'application/json, text/plain, */*',
-                    'Content-Type': 'application/json',
-                    "X-CSRFToken": csrftoken }
-            });
+            // Upload config
+            const response = await send_post_request("upload", data);
 
-            const result = await response.text();
+            // If upload successful, show success animation and reload page
+            if (response.ok) {
+                // Change title, show success animation
+                const title = "Upload Complete"
+                const body = `<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                                </svg>`
+                show_modal("upload-modal", title, body);
 
-            alert(result);
+                // Wait for animation to complete before reloading
+                await sleep(1200);
+                location.reload();
 
-            location.reload();
+            // If reupload failed, display error
+            } else {
+                handle_error(response, data);
+            };
         };
+
+        $('#no-button').click(function() {
+            // Remove listeners (prevent stacking)
+            $('#yes-button').off('click');
+            $('#error-modal').modal('hide');
+        });
+
+        async function handle_error(result, data) {
+            // Unable to upload because node has not run setup
+            if (result.status == 409) {
+                const error = await result.text();
+                const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button><button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
+
+                // Replace loading modal with error modal
+                $('#upload-modal').modal('hide');
+                show_modal("error-modal", "Error", `${error}`, footer);
+
+                $('#yes-button').click(async function() {
+                    // Remove listeners (prevent stacking)
+                    $('#yes-button').off('click');
+
+                    // Show loading again, upload setup file
+                    $("#error-modal").modal("hide");
+                    show_modal("upload-modal");
+                    var result = await send_post_request("upload/True", {config: "setup.json", ip: data["ip"]});
+
+                    if (result.ok) {
+                        // After uploading config, tell user to reboot node then click OK
+                        $("#upload-modal").modal("hide");
+                        const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
+                        show_modal("error-modal", "Success", "Please reboot node, then press OK to resume upload", footer);
+
+                        // When user clicks OK, resubmit form (setup has finished running, should now be able to upload)
+                        $('#ok-button').click(function() {
+                            $("#error-modal").modal("hide");
+                            $('#ok-button').off('click');
+
+                            // Click button again to finish upload
+                            document.getElementById("upload-" + data["config"]).click()
+                        });
+                    } else {
+                        alert(await result.text());
+                    };
+                });
+            } else {
+                alert(await result.text());
+            };
+        };
+
+        // Show the modal with id modal, optionally change title/body/footer
+        function show_modal(modal, title=false, body=false, footer=false) {
+            if (title) {
+                document.getElementById(modal + "-title").innerHTML = title;
+            };
+
+            if (body) {
+                document.getElementById(modal + "-body").innerHTML = body;
+            };
+
+            if (footer) {
+                document.getElementById(modal + "-footer").innerHTML = footer;
+            };
+
+            $('#' + modal).modal('show');
+        };
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
         function edit(e) {
             window.location.replace("/edit_config/" + e.target.id.replace("edit-", ""));

@@ -997,7 +997,6 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-
         async function send_post_request(url, body) {
             let csrftoken = getCookie('csrftoken');
 
@@ -1012,7 +1011,7 @@
             return response
         };
 
-        // Show the modal with id modal, optionally change title and body
+        // Show the modal with id modal, optionally change title/body/footer
         function show_modal(modal, title=false, body=false, footer=false) {
             if (title) {
                 document.getElementById(modal + "-title").innerHTML = title;
@@ -1081,6 +1080,7 @@
                 const error = await result.text();
                 const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button><button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
 
+                // Replace loading modal with error modal
                 $('#upload-modal').modal('hide');
                 show_modal("error-modal", "Error", `${error}`, footer);
 
@@ -1094,15 +1094,19 @@
                     var result = await send_post_request(base_url + "upload/True", {config: "setup.json", ip: target_ip});
 
                     if (result.ok) {
-                        $("#loading-modal").modal("hide");
+                        // After uploading config, tell user to reboot node then click OK
+                        $("#upload-modal").modal("hide");
                         const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
                         show_modal("error-modal", "Success", "Please reboot node, then press OK to resume upload", footer);
 
+                        // When user clicks OK, resubmit form (setup has finished running, should now be able to upload)
                         $('#ok-button').click(function() {
                             $("#error-modal").modal("hide");
                             $('#ok-button').off('click');
                             submit_form();
                         });
+                    } else {
+                        alert(await result.text());
                     };
                 });
             } else {
