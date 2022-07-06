@@ -127,7 +127,6 @@ def upload(request, reupload=False):
     # Open conection, detect if node connected to network
     ws, s = open_connection()
     if not ws:
-        print("Couldn't establish connection")
         return JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
 
     try:

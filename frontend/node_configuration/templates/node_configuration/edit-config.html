@@ -516,7 +516,7 @@
 
                     <div class="d-flex justify-content-between mx-3 mb-3">
                         <button id="page3-back-button" type="button" class="btn btn-primary">Back</button>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <button id="submit-button" type="submit" class="btn btn-primary">Submit</button>
                         <button type="button" class="btn btn-secondary" disabled>Next</button>
                     </div>
                 </div>
@@ -990,6 +990,9 @@
         document.getElementById('form').addEventListener("submit", function(e) {
             e.preventDefault();
 
+            // Disable submit button, prevent submitting multiple times
+            document.getElementById("submit-button").disabled = true;
+
             submit_form();
         });
 
@@ -1064,6 +1067,10 @@
                 };
             } else {
                 alert(await response.text());
+
+                // Re-enable submit button so user can try again
+                document.getElementById("submit-button").disabled = false;
+
                 return false;
             };
         };
@@ -1107,6 +1114,9 @@
                         });
                     } else {
                         alert(await result.text());
+
+                        // Re-enable submit button so user can try again
+                        document.getElementById("submit-button").disabled = false;
                     };
                 });
             } else if (result.status == 404) {
@@ -1115,8 +1125,17 @@
                 const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
                 show_modal("error-modal", "Connection Error", `Unable to connect to ${target_ip} - please make sure node is connected to wifi and try again`, footer);
 
+                // When user clicks OK, re-enable submit button so user can try again
+                $('#ok-button').click(function() {
+                    $("#error-modal").modal("hide");
+                    $('#ok-button').off('click');
+                    document.getElementById("submit-button").disabled = false;
+                });
             } else {
                 alert(await result.text());
+
+                // Re-enable submit button so user can try again
+                document.getElementById("submit-button").disabled = false;
             };
         };
 
