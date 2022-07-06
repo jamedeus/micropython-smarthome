@@ -1109,6 +1109,12 @@
                         alert(await result.text());
                     };
                 });
+            } else if (result.status == 404) {
+                $('#upload-modal').modal('hide');
+
+                const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
+                show_modal("error-modal", "Connection Error", `Unable to connect to ${target_ip} - please make sure node is connected to wifi and try again`, footer);
+
             } else {
                 alert(await result.text());
             };
