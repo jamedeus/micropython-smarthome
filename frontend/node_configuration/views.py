@@ -13,6 +13,8 @@ CONFIG_DIR = "/home/jamedeus/git/micropython-smarthome/config/"
 NODE_PASSWD = "password"
 
 def get_modules(conf):
+
+
     modules = []
     libs = []
     libs.append('lib/logging.py')
@@ -96,18 +98,38 @@ def upload(request, reupload=False):
     except FileNotFoundError:
         return JsonResponse("ERROR: Config file doesn't exist - did you delete it manually?", safe=False, status=200)
 
-    modules, libs = get_modules(config)
+    if not data["config"] == "setup.json":
+        modules, libs = get_modules(config)
+    else:
+        modules = []
+        libs = []
+
+    def open_connection():
+        try:
+            s = socket.socket()
+            ai = socket.getaddrinfo(data["ip"], 8266)
+            addr = ai[0][4]
+            s.connect(addr)
+            websocket_helper.client_handshake(s)
+            ws = websocket(s)
+            login(ws, NODE_PASSWD)
+            ws.ioctl(9, 2)
+
+            return ws, s
+
+        except OSError:
+            close_connection(s)
+            return False
+
+    def close_connection(s):
+        s.close()
+
+    # Open conection, detect if node connected to network
+    ws, s = open_connection()
+    if not ws:
+        return JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=408)
 
     try:
-        s = socket.socket()
-        ai = socket.getaddrinfo(data["ip"], 8266)
-        addr = ai[0][4]
-        s.connect(addr)
-        websocket_helper.client_handshake(s)
-        ws = websocket(s)
-        login(ws, NODE_PASSWD)
-        ws.ioctl(9, 2)
-
         # Upload all device/sensor modules
         for i in modules:
             src_file = REPO_DIR + i
@@ -134,13 +156,23 @@ def upload(request, reupload=False):
         # Upload API module
         put_file(ws, REPO_DIR + "Api.py", "Api.py")
 
-        # Upload main code last (triggers automatic reboot)
-        put_file(ws, REPO_DIR + "boot.py", "boot.py")
+        if not data["config"] == "setup.json":
+            # Upload main code last (triggers automatic reboot)
+            put_file(ws, REPO_DIR + "boot.py", "boot.py")
+        else:
+            put_file(ws, REPO_DIR + "setup.py", "boot.py")
+
+        close_connection(s)
 
     except ConnectionResetError:
         return JsonResponse("Connection error, please hold down the reset button on target node and try again after about 30 seconds.", safe=False, status=200)
     except OSError:
         return JsonResponse("Unable to connect - please ensure target node is plugged in and wait for the blue light to turn off, then try again.", safe=False, status=200)
+    except AssertionError:
+        print(f"can't upload {src_file}")
+        if src_file.split("/")[-2] == "lib":
+            print("lib")
+            return JsonResponse("ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?", safe=False, status=409)
 
     # If uploaded for the first time, update models
     if not reupload:
