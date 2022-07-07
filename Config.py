@@ -171,6 +171,10 @@ class Config():
         status_dict["metadata"]["id"] = self.identifier
         status_dict["metadata"]["floor"] = self.floor
         status_dict["metadata"]["location"] = self.location
+        if "ir_blaster" in self.__dict__:
+            status_dict["metadata"]["ir_blaster"] = True
+        else:
+            status_dict["metadata"]["ir_blaster"] = False
 
         status_dict["devices"] = {}
         for i in self.devices:
