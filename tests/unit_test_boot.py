@@ -1,4 +1,3 @@
-import unittest
 import os
 import sys
 import gc
@@ -187,6 +186,15 @@ if __name__ == "__main__":
     # Wait until connected
     while not wlan.isconnected():
         continue
+
+    try:
+        import unittest
+    except ImportError:
+        # If not found, install and reboot
+        import upip, machine
+        upip.install("unittest")
+        machine.reset()
+
 
     # Import SoftwareTimer instance, add to async loop
     from SoftwareTimer import timer
