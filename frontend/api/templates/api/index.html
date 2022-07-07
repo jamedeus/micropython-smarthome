@@ -7,6 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
@@ -140,7 +141,7 @@
         var climate_data = "";
         var timer;
 
-        const submit_button = "<div class='text-center'><button onclick='send_command(this)' type='button' id='send' class='btn btn-primary'>Send</button></div></br><div id='result' class='result mx-auto'></div>";
+        const submit_button = "<div class='text-center'><button onclick='submit_form(this)' type='button' id='send' class='btn btn-primary'>Send</button></div></br><div id='result' class='result mx-auto'></div>";
 
         const dropdown_open = "\
                         <select name='select_target' id='select_target' onchange='load_additional_info(this)' class='form-control' required>\
@@ -160,7 +161,7 @@
 
         const additional_info = "<div id='additional_info'></div></br>"
 
-        const ir_target_select = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='ir_handler(this)'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='ir_handler(this)'><label for='ac' class='form-label-input'>Air Conditioner</label></div><br>"
+        const ir_target_select = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='load_additional_info(this)'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='load_additional_info(this)'><label for='ac' class='form-label-input'>Air Conditioner</label></div><br>"
 
         const ac_options = "<option value='on'>on</option><option value='off'>off</option><option value='start'>start</option><option value='stop'>stop</option>"
 
@@ -170,7 +171,7 @@
         document.getElementById("form").addEventListener("submit", function(e) {
             console.log("submit");
             e.preventDefault();
-            send_command(e.target);
+            submit_form(e.target);
         });
 
         // Get status every 5 seconds, update div if user currently viewing status
@@ -329,7 +330,7 @@
             } else if (selected_command == "get_attributes") {
                 document.getElementById("form").innerHTML = dropdown_label_target + dropdown_open + device_options + sensor_options + dropdown_close + submit_button;
             } else if (selected_command == "ir") {
-                document.getElementById("form").innerHTML = ir_target_select;
+                document.getElementById("form").innerHTML = ir_target_select + additional_info;
             } else if (selected_command == "temp_sensor") {
                 document.getElementById("form").innerHTML = additional_info;
                 document.getElementById("additional_info").innerHTML = `<div class="result mx-auto py-1"><table class="table table-borderless"><tr><th class="text-center w-50">Temperature</th><th class="text-center w-50">Humidity</th><tr><td class="text-center">${climate_data["temp"].toFixed(2)}</td><td class="text-center">${climate_data["humid"].toFixed(2)}</td></tr>`;
@@ -346,7 +347,26 @@
             };
         };
 
-        async function send_command(selected) {
+        // Receives command parameters in value
+        async function send_command(value) {
+            // Add target and selected command to request body
+            value["target"] = selected_node
+            value["command"] = document.getElementById('select_command').value;
+
+            let csrftoken = getCookie('csrftoken');
+
+            var result = await fetch('/send_command', {
+                method: 'POST',
+                body: JSON.stringify(value),
+                headers: { 'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json',
+                    "X-CSRFToken": csrftoken }
+            });
+
+            return result
+        };
+
+        async function submit_form(selected) {
             // Clear results from previous command to avoid confusion
             try { document.getElementById("result").innerHTML = ""; } catch(err) {};
 
@@ -357,21 +377,8 @@
 
             var value = Object.fromEntries(data.entries());
 
-            value["target"] = selected_node
-
-            value["command"] = document.getElementById('select_command').value;
-
-            let csrftoken = getCookie('csrftoken');
-
-            const next_page = await fetch('/send_command', {
-                method: 'POST',
-                body: JSON.stringify(value),
-                headers: { 'Accept': 'application/json, text/plain, */*',
-                    'Content-Type': 'application/json',
-                    "X-CSRFToken": csrftoken }
-            });
-
-            const result = await next_page.json()
+            var result = await send_command(value);
+            result = await result.json();
 
             // Update status after sending command
             selected_node_status = await fetch("/get_status/" + selected_node);
@@ -526,8 +533,55 @@
                     // Show button in case previously hidden
                     document.getElementById('send').style.display = 'initial';
                 };
-            };
+            } else if (selected_command == "ir") {
+                if (selected.value == "ac") {
 
+                    buttons = `<div class="d-flex flex-column">
+                                    <div class="row mx-auto mb-3">
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'ac', key: 'stop'});"><i class="bi-wind"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'ac', key: 'off'});"><i class="bi-x-octagon-fill"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'ac', key: 'start'});"><i class="bi-snow"></i></i></button>
+                                    </div>
+                                </div>`
+
+                    document.getElementById("additional_info").innerHTML = buttons;
+                    document.getElementById("additional_info").scrollIntoView();
+
+                } else if (selected.value == "tv") {
+
+                    buttons = `<div class="d-flex flex-column">
+                                    <div class="row mx-auto mb-3">
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'power'});"><i class="bi-power"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" style="visibility: hidden;"><i class="bi-question"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'source'});"><i class="bi-upload"></i></button>
+                                    </div>
+                                    <div class="row mx-auto">
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'up'});"><i class="bi bi-arrow-up"></i></button>
+                                    </div>
+                                    <div class="row mx-auto">
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'left'});"><i class="bi bi-arrow-left"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'enter'});"><i class="bi bi-app"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'right'});"><i class="bi bi-arrow-right"></i></button>
+                                    </div>
+                                    <div class="row mx-auto mb-3">
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'down'});"><i class="bi bi-arrow-down"></i></button>
+                                    </div>
+                                    <div class="row mx-auto">
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'vol_down'});"><i class="bi-volume-down-fill"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'mute'});"><i class="bi-volume-mute-fill"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" onclick="send_command({ir_target: 'tv', key: 'vol_up'});"><i class="bi-volume-up-fill"></i></button>
+                                    </div>
+                                    <div class="row mx-auto">
+                                        <button class="col m-3 btn btn-lg btn-secondary" onclick="send_command({ir_target: 'tv', key: 'settings'});"><i class="bi-gear-fill"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-secondary" style="visibility: hidden;"><i class="bi-question"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-secondary" onclick="send_command({ir_target: 'tv', key: 'exit'});"><i class="bi-arrow-return-left"></i></button>
+                                    </div>
+                                </div>`
+
+                    document.getElementById("additional_info").innerHTML = buttons;
+                    document.getElementById("additional_info").scrollIntoView();
+                };
+            };
         };
 
         // Triggered by delete button on remove_rule page
@@ -544,7 +598,7 @@
             selected.disabled = true;
 
             // Send command to delete rule
-            send_command(this);
+            submit_form(this);
         };
 
         // Updates additional_info div contents when number in field changes
@@ -559,16 +613,6 @@
         document.getElementById('form').addEventListener('change', function(e) {
             try { document.getElementById("result").innerHTML = ""; } catch(err) {};
         });
-
-        function ir_handler(selected) {
-            if (selected.value == "ac") {
-                const target_selected = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='ir_handler(this)'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='ir_handler(this)' checked='checked'><label for='ac' class='form-check-label'>Air Conditioner</label></div><br>";
-                document.getElementById("form").innerHTML = target_selected + dropdown_label_command + dropdown_open + ac_options + dropdown_close + submit_button;
-            } else if (selected.value == "tv") {
-                const target_selected = "<div class='form-check'><input type='radio' id='tv' name='ir_target' value='tv' class='form-check-input' onclick='ir_handler(this)' checked='checked'><label for='tv' class='form-check-label'>TV</label><br><input type='radio' id='ac' name='ir_target' value='ac' class='form-check-input' onclick='ir_handler(this)'><label for='ac' class='form-check-label'>Air Conditioner</label></div><br>";
-                document.getElementById("form").innerHTML = target_selected + dropdown_label_command + dropdown_open + tv_options + dropdown_close + submit_button;
-            };
-        };
 
         // Get new temp+humidity reading every 5 seconds, update div if user currently viewing sensor data
         function queryTempSensor(start) {
