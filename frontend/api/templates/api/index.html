@@ -46,6 +46,26 @@
                 width: 960px;
             }
         }
+
+        .remote {
+            background-color: #D9D9D9;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        body.dark .remote {
+            background-color: #2B2E2F;
+        }
+
+        .remote-top {
+            border-radius: 20px 20px 0px 0px;
+            padding-top: 0.5rem;
+        }
+
+        .remote-bottom {
+            border-radius: 0px 0px 20px 20px;
+            padding-bottom: 0.5rem;
+        }
     </style>
 </head>
 
@@ -544,10 +564,10 @@
                 if (selected.value == "ac") {
 
                     buttons = `<div class="d-flex flex-column">
-                                    <div class="row mx-auto mb-3">
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'ac', key: 'stop'});"><i class="bi-wind"></i></button>
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'ac', key: 'off'});"><i class="bi-x-octagon-fill"></i></button>
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'ac', key: 'start'});"><i class="bi-snow"></i></i></button>
+                                    <div class="row mx-auto mb-3 py-2 remote" style="border-radius: 20px;">
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'ac', key: 'stop'});" title="Stop cooling"><i class="bi-wind"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'ac', key: 'off'});" title="Turn off fan"><i class="bi-x-octagon-fill"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'ac', key: 'start'});" title="Start cooling"><i class="bi-snow"></i></i></button>
                                     </div>
                                 </div>`
 
@@ -557,31 +577,35 @@
                 } else if (selected.value == "tv") {
 
                     buttons = `<div class="d-flex flex-column">
-                                    <div class="row mx-auto mb-3">
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'power'});"><i class="bi-power"></i></button>
+                                    <div class="row mx-auto pb-3 remote remote-top">
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'power'});" title="Power"><i class="bi-power"></i></button>
                                         <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'source'});"><i class="bi-upload"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'source'});" title="Source"><i class="bi-upload"></i></button>
                                     </div>
-                                    <div class="row mx-auto">
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'up'});"><i class="bi bi-arrow-up"></i></button>
+                                    <div class="row mx-auto remote">
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'up'});" title="Up"><i class="bi bi-arrow-up"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
                                     </div>
-                                    <div class="row mx-auto">
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'left'});"><i class="bi bi-arrow-left"></i></button>
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'enter'});"><i class="bi bi-app"></i></button>
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'right'});"><i class="bi bi-arrow-right"></i></button>
+                                    <div class="row mx-auto remote">
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'left'});" title="Left"><i class="bi bi-arrow-left"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'enter'});" title="Enter"><i class="bi bi-app"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'right'});" title="right"><i class="bi bi-arrow-right"></i></button>
                                     </div>
-                                    <div class="row mx-auto mb-3">
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'down'});"><i class="bi bi-arrow-down"></i></button>
+                                    <div class="row mx-auto pb-3 remote">
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'down'});" title="Down"><i class="bi bi-arrow-down"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
                                     </div>
-                                    <div class="row mx-auto">
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'vol_down'});"><i class="bi-volume-down-fill"></i></button>
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'mute'});"><i class="bi-volume-mute-fill"></i></button>
-                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'vol_up'});"><i class="bi-volume-up-fill"></i></button>
+                                    <div class="row mx-auto remote">
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'vol_down'});" title="Volume Down"><i class="bi-volume-down-fill"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'mute'});" title="Mute"><i class="bi-volume-mute-fill"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({ir_target: 'tv', key: 'vol_up'});" title="Volume Up"><i class="bi-volume-up-fill"></i></button>
                                     </div>
-                                    <div class="row mx-auto">
-                                        <button class="col m-3 btn btn-lg btn-secondary" type="button" onclick="send_command({ir_target: 'tv', key: 'settings'});"><i class="bi-gear-fill"></i></button>
+                                    <div class="row mx-auto remote remote-bottom">
+                                        <button class="col m-3 btn btn-lg btn-secondary" type="button" onclick="send_command({ir_target: 'tv', key: 'settings'});" title="Settings"><i class="bi-gear-fill"></i></button>
                                         <button class="col m-3 btn btn-lg btn-secondary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
-                                        <button class="col m-3 btn btn-lg btn-secondary" type="button" onclick="send_command({ir_target: 'tv', key: 'exit'});"><i class="bi-arrow-return-left"></i></button>
+                                        <button class="col m-3 btn btn-lg btn-secondary" type="button" onclick="send_command({ir_target: 'tv', key: 'exit'});" title="Exit"><i class="bi-arrow-return-left"></i></button>
                                     </div>
                                 </div>`
 
