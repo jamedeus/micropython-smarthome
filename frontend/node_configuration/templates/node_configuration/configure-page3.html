@@ -13,7 +13,7 @@
                             <th style="text-align: left;">Rule</th>
                         </tr>
                         <tr id="{{instance}}-row-1">
-                            <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time"></td>
+                            <td><input type="text" class="form-control timestamp" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time" maxlength="5"></td>
                             <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value"></td>
                             <td class="min"><button type="button" class="btn btn-danger" id="placeholder_button" style="visibility: hidden;">X</button></td>
                         </tr>
@@ -42,6 +42,16 @@
             };
         };
 
+        // Only allow numbers and : in timestamp fields
+        var fields = document.getElementsByClassName("timestamp");
+        for (field of fields) {
+            field.addEventListener("keypress", function (evt) {
+                if (evt.which < 48 || evt.which > 58) {
+                    evt.preventDefault();
+                };
+            });
+        };
+
         document.getElementById('page3-back-button').addEventListener("click", async function(e) {
             e.preventDefault();
 
@@ -51,7 +61,6 @@
 
         function add(e) {
             var instance = e.target.id.split("-", 1)[0];
-            console.log(instance);
 
             table = document.getElementById(instance + "-rules")
 
@@ -65,10 +74,16 @@
             var cell_value = row.insertCell(1);
             var cell_del = row.insertCell(2);
 
-            cell_time.innerHTML = "<input type='text' class='form-control' id='schedule-" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='schedule-" + instance + "-rule" + next_row + "-time'>";
-            cell_value.innerHTML = "<input type='text' class='form-control' id='schedule-" + instance + "-rule" + next_row + "-value' placeholder='' name='schedule-" + instance + "-rule" + next_row + "-value'>";
-            cell_del.innerHTML = "<button type='button' class='remove btn btn-danger' id='" + instance + "-remove" + next_row + "' onclick='remove(this)'>X</button>";
+            cell_time.innerHTML = `<input type='text' class='form-control timestamp' id='schedule-${instance}-rule${next_row}-time' placeholder='HH:MM' name='schedule-${instance}-rule${next_row}-time' maxlength="5">`;
+            cell_value.innerHTML = `<input type='text' class='form-control' id='schedule-${instance}-rule${next_row}-value' placeholder='' name='schedule-${instance}-rule${next_row}-value'>`;
+            cell_del.innerHTML = `<button type='button' class='remove btn btn-danger' id='${instance}-remove${next_row}' onclick='remove(this)'>X</button>`;
 
+            // Only allow numbers and : in timestamp field
+            document.getElementById(`schedule-${instance}-rule${next_row}-time`).addEventListener("keypress", function (evt) {
+                if (evt.which < 48 || evt.which > 58) {
+                    evt.preventDefault();
+                };
+            });
         };
 
         function remove(e) {
