@@ -131,6 +131,15 @@ $pagination-disabled-color: #bbbbbb;
         border-color: $primary;
     }
 
+    /* Lists */
+    $list-group-color: #eee;
+    $list-group-bg: #31363b;
+    $list-group-item-padding-y: 0.25rem;
+    $list-group-item-padding-x: 0.6rem;
+    /*$list-group-border-color:
+    $list-group-border-width:
+    */
+
     --#{$variable-prefix}body-color: #{$body-color};
     --#{$variable-prefix}body-bg: #{$body-bg};
 
@@ -142,4 +151,5 @@ $pagination-disabled-color: #bbbbbb;
     @import "bootstrap-5.1.3/scss/_forms";
     @import "bootstrap-5.1.3/scss/_buttons";
     @import "bootstrap-5.1.3/scss/_tables";
+    @import "bootstrap-5.1.3/scss/_list-group";
 }

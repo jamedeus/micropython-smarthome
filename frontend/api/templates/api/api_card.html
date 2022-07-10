@@ -1,0 +1,326 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Micropython Smarthome API</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
+    <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
+    <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <script>
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        };
+
+    </script>
+    <style>
+        .result {
+            background-color: #D9D9D9;
+            border-radius: 8px;
+            width: 85%;
+        }
+
+        body.dark .result {
+            background-color: #2B2E2F;
+        }
+
+        /* Limit width for readability on large screen sizes */
+        @media (min-width: 1200px) {
+            .container {
+                width: 960px;
+            }
+        }
+
+        .remote {
+            background-color: #D9D9D9;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+
+        body.dark .remote {
+            background-color: #2B2E2F;
+        }
+
+        .remote-top {
+            border-radius: 20px 20px 0px 0px;
+            padding-top: 0.5rem;
+        }
+
+        .remote-bottom {
+            border-radius: 0px 0px 20px 20px;
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        {% if context %}
+
+            <div class="row mt-3">
+
+                <div class="col-sm">
+
+                    {% for sensor, params in context.sensors.items %}
+
+                        {% if params.type == "si7021" %}
+                            <div class="card">
+                                <div class="card-body">
+                                    <h4 class="card-title">{{ sensor }} ({{ params.type }})</h4>
+                                    <table class="table table-borderless">
+                                        <tbody>
+                                            <tr>
+                                                <th class="text-center w-50">Temperature</th>
+                                                <th class="text-center w-50">Humidity</th>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-center" id="temperature">00.00</td>
+                                                <td class="text-center" id="humidity">00.00</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <script>
+                                async function updateClimateData() {
+                                    climate_data = await fetch("/get_climate_data/" + "{{ context.metadata.id }}");
+                                    climate_data = await climate_data.json();
+
+                                    document.getElementById("temperature").innerHTML = climate_data["temp"].toFixed(2)
+                                    document.getElementById("humidity").innerHTML = climate_data["humid"].toFixed(2)
+                                };
+
+                                // Get new temp+humidity reading every 5 seconds, update div if user currently viewing sensor data
+                                function queryTempSensor(start) {
+                                    if (start) {
+                                        timer = setInterval(async function() {
+                                            updateClimateData();
+
+                                        }, 5000);
+                                    } else {
+                                        clearInterval(timer);
+
+                                        // Clear old data if present
+                                        climate_data = ""
+                                    };
+                                };
+
+                                updateClimateData();
+                                queryTempSensor(true);
+                            </script>
+
+
+                        {% else %}
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">{{ sensor }} ({{ params.type }})</h4>
+                                {% if params.enabled %}
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" checked>
+                                        <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
+                                    </div></br>
+
+                                    <div>
+                                        <label class="form-label" for="rule_input">Current Rule: </label>
+                                        <div class="input-group">
+                                            <input type='text' id='rule_input' placeholder='Enter rule' name='rule_input' class='form-control' value="{{ params.current_rule }}">
+                                            <button class="btn btn-sm btn-success" id="change_rule">Change</button>
+                                            <button class="btn btn-sm btn-danger" id="change_rule">Reset</button>
+                                        </div></br>
+                                    </div>
+
+                                    <label class="form-label" for="targets">Targets:</label>
+                                    <ul id="targets" class="list-group">
+                                    {% for target in params.targets %}
+                                        <li class="list-group-item">{{ target }}</li>
+                                    {% endfor %}
+                                    </ul></br>
+
+                                    <div>
+                                        <button class="btn btn-sm btn-primary">Trigger</button>
+                                    </div></br>
+
+
+                                    <p>
+                                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
+                                            Schedule rules
+                                        </button>
+                                    </p>
+                                    <div class="collapse" id="{{sensor}}-schedule-rules">
+
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <label class="card-title schedule-rule-card"><b>{{ sensor }} ({{ params.type }}):</b></label>
+                                                <table id="{{sensor}}-rules" class="table table-borderless">
+                                                    <tr>
+                                                        <th style="text-align: left;">Time</th>
+                                                        <th style="text-align: left;">Rule</th>
+                                                    </tr>
+
+                                                    {% if params.schedule.items|length > 0 %}
+                                                        {% for time, rule in params.schedule.items %}
+                                                            <tr id="{{sensor}}-row-{{forloop.counter}}">
+                                                                <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
+                                                                <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <tr id="{{sensor}}-row-1">
+                                                            <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule1-time"></td>
+                                                            <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-value" placeholder="" name="schedule-{{sensor}}-rule1-value"></td>
+                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove1"  onclick="remove(this)">X</button></td>
+                                                        </tr>
+                                                    {% endif %}
+                                                </table>
+                                            </div>
+
+                                            <div class="text-left mx-3 mb-3">
+                                                <button type="button" class="btn btn-secondary add" id="{{sensor}}-add-rule">Add another</button>
+                                            </div>
+
+                                        </div></br>
+
+
+                                    </div>
+
+
+
+
+                                {% else %}
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+                                        <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div></br>
+
+                        {% endif %}
+
+                    {% endfor %}
+
+                </div>
+
+                <div class="col-sm">
+
+                    {% for device, params in context.devices.items %}
+
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title">{{ device }} ({{ params.type }})</h4>
+                                {% if params.enabled %}
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" checked>
+                                        <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
+                                    </div></br>
+
+                                    <div>
+                                        <label class="form-label" for="rule_input">Current Rule: </label>
+                                        <div class="input-group">
+                                            <input type='text' id='rule_input' placeholder='Enter rule' name='rule_input' class='form-control' value="{{ params.current_rule }}">
+                                            <button class="btn btn-sm btn-success" id="change_rule">Change</button>
+                                            <button class="btn btn-sm btn-danger" id="change_rule">Reset</button>
+                                        </div></br>
+                                    </div>
+
+                                    <div>
+                                        Status:
+                                        {% if params.turned_on %}
+                                            <b>On</b> <button class="btn btn-sm btn-danger">Turn Off</button>
+                                        {% else %}
+                                            <b>Off</b> <button class="btn btn-sm btn-success">Turn On</button>
+                                        {% endif %}
+                                    </div></br>
+
+
+                                    <p>
+                                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
+                                            Schedule rules
+                                        </button>
+                                    </p>
+                                    <div class="collapse" id="{{device}}-schedule-rules">
+
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <label class="card-title schedule-rule-card"><b>{{ device }} ({{ params.type }}):</b></label>
+                                                <table id="{{device}}-rules" class="table table-borderless">
+                                                    <tr>
+                                                        <th style="text-align: left;">Time</th>
+                                                        <th style="text-align: left;">Rule</th>
+                                                    </tr>
+
+                                                    {% if params.schedule.items|length > 0 %}
+                                                        {% for time, rule in params.schedule.items %}
+                                                            <tr id="{{device}}-row-{{forloop.counter}}">
+                                                                <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
+                                                                <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <tr id="{{device}}-row-1">
+                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
+                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
+                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="remove(this)">X</button></td>
+                                                        </tr>
+                                                    {% endif %}
+                                                </table>
+                                            </div>
+
+                                            <div class="text-left mx-3 mb-3">
+                                                <button type="button" class="btn btn-secondary add" id="{{device}}-add-rule">Add another</button>
+                                            </div>
+
+                                        </div></br>
+
+
+                                    </div>
+                                {% else %}
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
+                                        <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div></br>
+
+                    {% endfor %}
+
+                </div>
+
+            </div>
+
+
+
+
+        {% else %}
+            <p>FATAL ERROR</p>
+        {% endif %}
+    </div>
+    <script>
+        // Check if user is in dark mode, change theme (runs once on page load)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add("dark");
+            console.log("Dark mode");
+        };
+    </script>
+</body>
+</html>

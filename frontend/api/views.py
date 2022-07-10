@@ -33,6 +33,24 @@ def get_status(request, node):
 
 
 
+def api_card_test(request, node):
+    target = Node.objects.get(friendly_name = node)
+
+    try:
+        status = parse_command(target.ip, ["status"])
+    except OSError:
+        return JsonResponse("Error: Unable to connect.", safe=False, status=200)
+
+    template = loader.get_template('api/api_card.html')
+
+    print(json.dumps(status, indent=4))
+
+    return HttpResponse(template.render({'context': status}, request))
+
+
+
+
+
 def get_climate_data(request, node):
     ip = Node.objects.get(friendly_name = node).ip
 
