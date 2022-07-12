@@ -179,14 +179,14 @@
                                                             <tr id="{{sensor}}-row-{{forloop.counter}}">
                                                                 <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
                                                                 <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
+                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
                                                             </tr>
                                                         {% endfor %}
                                                     {% else %}
                                                         <tr id="{{sensor}}-row-1">
                                                             <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule1-time"></td>
                                                             <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-value" placeholder="" name="schedule-{{sensor}}-rule1-value"></td>
-                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove1"  onclick="remove(this)">X</button></td>
+                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove1"  onclick="delete_rule(this)">X</button></td>
                                                         </tr>
                                                     {% endif %}
                                                 </table>
@@ -272,14 +272,14 @@
                                                             <tr id="{{device}}-row-{{forloop.counter}}">
                                                                 <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
                                                                 <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
+                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
                                                             </tr>
                                                         {% endfor %}
                                                     {% else %}
                                                         <tr id="{{device}}-row-1">
                                                             <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
                                                             <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
-                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="remove(this)">X</button></td>
+                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
                                                         </tr>
                                                     {% endif %}
                                                 </table>
@@ -321,6 +321,54 @@
             document.body.classList.add("dark");
             console.log("Dark mode");
         };
+
+        const target_node = "{{ context.metadata.id }}";
+
+        // Receives command parameters in value
+        async function send_command(value) {
+            // Add target and selected command to request body
+            value["target"] = target_node
+
+            let csrftoken = getCookie('csrftoken');
+
+            var result = await fetch('/send_command', {
+                method: 'POST',
+                body: JSON.stringify(value),
+                headers: { 'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json',
+                    "X-CSRFToken": csrftoken }
+            });
+
+            return result
+        };
+
+        // Triggered by delete button in schedule rules dropdown
+        async function delete_rule(selected) {
+            // Prevent user submitting multiple times
+            selected.disabled = true;
+
+            // Get target device/sensor
+            const target = selected.id.split("-")[0];
+
+            // Get rule number
+            const rule = selected.id.split("remove")[1]
+
+            // Get timestamp
+            const timestamp = document.getElementById(`schedule-${target}-rule${rule}-time`).value;
+
+            // Send command
+            var result = await send_command({'command': 'remove_rule', 'instance': target, 'rule': timestamp});
+            result = await result.json();
+
+            if (JSON.stringify(result).startsWith('{"ERROR')) {
+                // Re-enable button if failed to delete
+                selected.disabled = false;
+            } else {
+                // Delete row if success
+                document.getElementById(selected.id).parentElement.parentElement.remove()
+            };
+        };
+
     </script>
 </body>
 </html>
