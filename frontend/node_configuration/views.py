@@ -107,6 +107,7 @@ def upload(request, reupload=False):
     def open_connection():
         try:
             s = socket.socket()
+            s.settimeout(10)
             ai = socket.getaddrinfo(data["ip"], 8266)
             addr = ai[0][4]
             s.connect(addr)
