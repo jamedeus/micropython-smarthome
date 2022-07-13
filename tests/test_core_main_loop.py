@@ -24,6 +24,8 @@ config_file = {
         },
         "pin": 15,
         "default_rule": 74,
+        "mode": "cool",
+        "tolerance": 1
     },
     "sensor2": {
         "type": "pir",
@@ -139,9 +141,9 @@ class TestMainLoop(unittest.TestCase):
         # Check si7021 condition
         conditions = check_sensor_conditions(self.config.groups["group2"]["triggers"])
         if self.config.sensors[1].fahrenheit() > 75:
-            self.assertFalse(conditions[0])
-        elif self.config.sensors[1].fahrenheit() < 73:
             self.assertTrue(conditions[0])
+        elif self.config.sensors[1].fahrenheit() < 73:
+            self.assertFalse(conditions[0])
         else:
             self.assertNone(conditions[0])
 

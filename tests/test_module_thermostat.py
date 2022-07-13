@@ -6,10 +6,10 @@ from Thermostat import Thermostat
 class TestThermostat(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_sensor", "test_condition_met", "test_trigger"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_sensor", "test_condition_met", "test_condition_met_heat", "test_condition_met_tolerance", "test_trigger"]
 
     def test_instantiation(self):
-        self.instance = Thermostat("sensor1", "si7021", True, 74, 74, [])
+        self.instance = Thermostat("sensor1", "si7021", True, 74, 74, "cool", 1, [])
         self.assertIsInstance(self.instance, Thermostat)
         self.assertTrue(self.instance.enabled)
 
@@ -57,11 +57,51 @@ class TestThermostat(unittest.TestCase):
         self.instance.set_rule(current)
         self.assertEqual(self.instance.condition_met(), None)
 
+        self.instance.set_rule(current+2)
+        self.assertFalse(self.instance.condition_met())
+
+        self.instance.set_rule(current-2)
+        self.assertTrue(self.instance.condition_met())
+
+    def test_condition_met_heat(self):
+        self.instance.mode = "heat"
+        self.instance.get_threshold()
+        current = self.instance.fahrenheit()
+
+        self.instance.set_rule(current)
+        self.assertEqual(self.instance.condition_met(), None)
+
         self.instance.set_rule(current-2)
         self.assertFalse(self.instance.condition_met())
 
         self.instance.set_rule(current+2)
         self.assertTrue(self.instance.condition_met())
+
+    def test_condition_met_tolerance(self):
+        self.instance.mode = "heat"
+        self.instance.tolerance = 5
+        current = self.instance.fahrenheit()
+
+        self.instance.set_rule(current)
+        self.assertEqual(self.instance.condition_met(), None)
+
+        # With tolerance set to 5 degrees, should not turn on OR off at +- 2 degrees
+        self.instance.set_rule(current-2)
+        self.assertEqual(self.instance.condition_met(), None)
+
+        self.instance.set_rule(current+2)
+        self.assertEqual(self.instance.condition_met(), None)
+
+        self.instance.tolerance = 0.1
+        current = self.instance.fahrenheit()
+
+        # With tolerance set to 0.1 degrees, should turn on/off with very slight temperature change
+        self.instance.set_rule(current-0.2)
+        self.assertFalse(self.instance.condition_met())
+
+        self.instance.set_rule(current+0.2)
+        self.assertTrue(self.instance.condition_met())
+
 
     def test_trigger(self):
         # Should not be able to trigger this sensor type

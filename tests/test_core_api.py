@@ -28,7 +28,9 @@ config_file = {
         },
         "pin": 15,
         "default_rule": 70,
-        "default_setting": 74
+        "default_setting": 74,
+        "mode": "cool",
+        "tolerance": 1
     },
     "sensor2": {
         "type": "pir",
