@@ -32,7 +32,10 @@ class Thermostat(Sensor):
 
 
     def get_threshold(self):
-        if self.mode == "cool":
+        if self.current_rule == "Disabled":
+            return True
+
+        elif self.mode == "cool":
             self.on_threshold = self.current_rule + self.tolerance
             self.off_threshold = self.current_rule - self.tolerance
 
