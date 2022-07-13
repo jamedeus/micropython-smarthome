@@ -120,7 +120,7 @@ class Config():
 
             elif conf[sensor]["type"] == "si7021":
                 from Thermostat import Thermostat
-                instance = Thermostat(sensor, conf[sensor]["type"], True, int(conf[sensor]["default_rule"]), conf[sensor]["default_rule"], targets)
+                instance = Thermostat(sensor, conf[sensor]["type"], True, int(conf[sensor]["default_rule"]), conf[sensor]["default_rule"], conf[sensor]["mode"], conf[sensor]["tolerance"], targets)
 
             elif conf[sensor]["type"] == "dummy":
                 from Dummy import Dummy

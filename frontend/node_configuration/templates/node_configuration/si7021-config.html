@@ -2,3 +2,16 @@
     <label for="sensor{{context}}-default_rule"><b>Default Rule:</b></label>
     <input type="default_rule" class="form-control" id="sensor{{context}}-default_rule" placeholder="" name="sensor{{context}}-default_rule" required>
 </div>
+
+<div class="mb-2">
+    <label class="form-label" for="sensor{{forloop.counter}}-mode"><b>Mode:</b></label>
+    <select name="sensor{{forloop.counter}}-mode" id="sensor{{forloop.counter}}-mode" class="form-select mb-3" required>
+        <option value="cool" id="cool">Cool</option>
+        <option value="heat" id="heat">Heat</option>
+    </select>
+</div>
+
+<div class="mb-2">
+    <label for="sensor{{forloop.counter}}-tolerance"><b>Tolerance:</b></label>
+    <input type="text" class="form-control" id="sensor{{forloop.counter}}-tolerance" placeholder="" name="sensor{{forloop.counter}}-tolerance" value="{{params.tolerance}}" required>
+</div>
