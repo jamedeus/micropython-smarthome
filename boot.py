@@ -97,6 +97,11 @@ def apply_action(group, action):
             if success:
                 device.state = action
 
+                # When thermostat turns targets on/off, clear recent readings (used to detect failed on/off command) to prevent false positives
+                for i in device.triggered_by:
+                    if i.sensor_type == "si7021":
+                        i.recent_temps = []
+
 
 
 # Main loop - monitor sensors, apply actions if conditions met

@@ -2,6 +2,7 @@ from machine import Pin, SoftI2C
 import si7021
 import logging
 from Sensor import Sensor
+import SoftwareTimer
 
 # Set name for module's log lines
 log = logging.getLogger("Thermostat")
@@ -26,6 +27,12 @@ class Thermostat(Sensor):
         self.tolerance = float(tolerance)
 
         self.get_threshold()
+
+        # Store last 3 temperature readings, used to detect failed on/off command
+        self.recent_temps = []
+
+        # Check every 30 seconds to detect when changing target state failed (ir command didn't reach ac, etc)
+        SoftwareTimer.timer.create(30000, self.audit, self.name)
 
         log.info(f"Instantiated Thermostat named {self.name}")
 
@@ -93,3 +100,45 @@ class Thermostat(Sensor):
                 return False
         except (ValueError, TypeError):
             return False
+
+
+
+    # Detects when thermostat fails to turn targets on/off (common with infrared remote)
+    # Takes reading every 30 seconds, keeps 3 most recent. Failure detected when all 3 trend in wrong direction
+    # Overrides target's state attribute, forcing main loop to re-send on/off command
+    def audit(self):
+        # Add current temperature reading
+        self.recent_temps.append(self.fahrenheit())
+
+        if len(self.recent_temps) > 3:
+            # Limit to 3 most recent
+            del self.recent_temps[0]
+
+            action = None
+
+            # If 3 most recent readings trend in incorrect direction, assume command was not successful
+            if self.recent_temps[0] < self.recent_temps[1] < self.recent_temps[2]:
+                if self.mode == "cool" and self.condition_met() == True:
+                    log.info("Failed to start cooling - turning AC on again")
+                    action = False
+
+                elif self.mode == "heat" and self.condition_met() == False:
+                    log.info("Failed to stop heating - turning heater off again")
+                    action = True
+
+            elif self.recent_temps[0] > self.recent_temps[1] > self.recent_temps[2]:
+                if self.mode == "cool" and self.condition_met() == False:
+                    log.info("Failed to stop cooling - turning AC off again")
+                    action = True
+
+                elif self.mode == "heat" and self.condition_met() == True:
+                    log.info("Failed to start heating - turning heater on again")
+                    action = False
+
+            # Override all targets' state attr, allows main loop to turn on/off again
+            if action != None:
+                for i in self.targets:
+                    i.state = action
+
+        # Run again in 30 seconds
+        SoftwareTimer.timer.create(30000, self.audit, self.name)
