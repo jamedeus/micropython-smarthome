@@ -97,7 +97,7 @@ class LedStrip(Device):
             if self.current_rule == "Disabled":
                 self.send(0)
                 self.disable()
-            # Sensor was previously disabled, enable now that rule has changed
+            # Device was previously disabled, enable now that rule has changed
             elif self.enabled == False:
                 self.enable()
             # Device is currently on, run send so new rule can take effect

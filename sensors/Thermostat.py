@@ -119,6 +119,7 @@ class Thermostat(Sensor):
             # If 3 most recent readings trend in incorrect direction, assume command was not successful
             if self.recent_temps[0] < self.recent_temps[1] < self.recent_temps[2]:
                 if self.mode == "cool" and self.condition_met() == True:
+                    print("Failed to start cooling - turning AC on again")
                     log.info("Failed to start cooling - turning AC on again")
                     action = False
 
@@ -135,10 +136,13 @@ class Thermostat(Sensor):
                     log.info("Failed to start heating - turning heater on again")
                     action = False
 
-            # Override all targets' state attr, allows main loop to turn on/off again
+            # Override all targets' state attr, allows group to turn on/off again
             if action != None:
                 for i in self.targets:
                     i.state = action
+
+            # Force group to turn targets on/off again
+            self.group.reset_state()
 
         # Run again in 30 seconds
         SoftwareTimer.timer.create(30000, self.audit, self.name)
