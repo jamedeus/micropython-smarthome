@@ -151,6 +151,9 @@ def upload(request, reupload=False):
         # Upload Config module
         put_file(ws, REPO_DIR + "Config.py", "Config.py")
 
+        # Upload Group module
+        put_file(ws, REPO_DIR + "Group.py", "Group.py")
+
         # Upload SoftwareTimer module
         put_file(ws, REPO_DIR + "SoftwareTimer.py", "SoftwareTimer.py")
 

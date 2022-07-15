@@ -34,15 +34,16 @@ class Device():
     def enable(self):
         self.enabled = True
 
-        # Enable self in sensor's targets dict
-        for sensor in self.triggered_by:
-
-            # Run loop again immediately so newly-enabled device acquires same on/off state as other devices
-            if sensor.sensor_type == "pir":
-                if sensor.motion:
-                    self.state = False
-                else:
-                    self.state = True
+        # If other devices in group are on, turn on to match state
+        if self.group.state == True:
+            success = self.send(1)
+            if success:
+                self.state = True
+            else:
+                # Forces group to turn on again, retrying until successful (send command above likely failed due to temporary network error)
+                # Only used as last resort due to side effects - if user previously turned OFF a device in this group through API, then
+                # re-enables this device, group will turn BOTH on (but user only wanted to turn this one on)
+                self.group.state = False
 
 
 

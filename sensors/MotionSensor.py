@@ -18,9 +18,6 @@ class MotionSensor(Sensor):
         # Create hardware interrupt
         self.enable()
 
-        # Remember target state, don't turn on/off if already on/off
-        self.state = None
-
         log.info(f"Instantiated MotionSensor named {self.name} on pin {pin}")
 
 

@@ -366,6 +366,9 @@ def get_attributes(args):
             for i in target.targets:
                 attributes["targets"].append(i.name)
 
+    # Replace group object with group name (JSON compatibility)
+    attributes["group"] = target.group.name
+
     return attributes
 
 

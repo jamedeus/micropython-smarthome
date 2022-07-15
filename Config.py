@@ -8,6 +8,7 @@ import uasyncio as asyncio
 import logging
 import gc
 import SoftwareTimer
+from Group import Group
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -406,48 +407,37 @@ class Config():
 
 
     def build_groups(self):
-
         # Stores relationships between sensors ("triggers") and devices ("targets"), iterated by main loop
-        self.groups = {}
+        self.groups = []
 
-        for sensor in self.sensors:
+        sensor_list = self.sensors.copy()
 
-            # First iteration
-            if not len(self.groups) > 0:
-                self.new_group(sensor)
+        while len(sensor_list) > 0:
+            # Get first sensor in sensor_list, add to group list
+            s = sensor_list.pop(0)
+            group = [s]
 
-            else:
-                match_found = False
+            # Find all sensors with identical targets, add to group list
+            for i in sensor_list:
+                if i.targets == s.targets:
+                    group.append(i)
 
-                # If another group with same targets exists, add sensor to group's triggers
-                for group in self.groups:
-                    # Check if lists contain same elements (instances aren't sortable, use set to ignore order)
-                    if set(sensor.targets) == set(self.groups[group]["targets"]):
-                        self.groups[group]["triggers"].append(sensor)
-                        match_found = True
+            # Delete all sensors in group from sensor_list
+            for i in group:
+                try:
+                    del sensor_list[sensor_list.index(i)]
+                except ValueError:
+                    pass
 
-                # If no group matches, create new group
-                if not match_found:
-                    self.new_group(sensor)
+            # Instantiate group object from list of sensors
+            instance = Group("group" + str(len(self.groups) + 1), group)
+            self.groups.append(instance)
 
+            for sensor in instance.triggers:
+                sensor.group = instance
 
-
-    def new_group(self, sensor):
-        # Generate sequential names (group1, group2 ...)
-        name = "group" + str(len(self.groups) + 1)
-        self.groups[name] = {}
-
-        # Records whether targets are turned ON or OFF
-        self.groups[name]["state"] = None
-
-        # List of sensor instances
-        self.groups[name]["triggers"] = []
-        self.groups[name]["triggers"].append(sensor)
-
-        # List of devices that are turned on by sensor's in triggers
-        self.groups[name]["targets"] = []
-        for target in sensor.targets:
-            self.groups[name]["targets"].append(target)
+            for device in instance.targets:
+                device.group = instance
 
 
 

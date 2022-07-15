@@ -54,66 +54,16 @@ async def disk_monitor():
 
 
 
-def check_sensor_conditions(group):
-    # Store return value from each sensor in group
-    conditions = []
-
-    # Check conditions for all enabled sensors
-    for sensor in group:
-        if sensor.enabled:
-            conditions.append(sensor.condition_met())
-
-    return conditions
-
-
-
-def determine_correct_action(conditions):
-    # Determine action to apply to target devices: True = turn on, False = turn off, None = do nothing
-    # Turn on: Requires only 1 sensor to return True
-    # Turn off: ALL sensors to return False
-    # Nothing: Requires 1 sensor to return None and 0 sensors returning True
-    if True in conditions:
-        action = True
-    elif None in conditions:
-        action = None
-    else:
-        action = False
-
-    return action
-
-
-
-def apply_action(group, action):
-    # TODO consider re-introducing sensor.state - could then skip iterating devices if all states match action. Can also print "Motion detected" only when first detected
-    # Issue: When device rules change, device's state is flipped to allow to take effect - this will not take effect if sensor.state blocks loop. Could change sensor.state?
-
-    for device in group:
-        # Do not turn device on/off if already on/off, or if device is disabled
-        if device.enabled and not action == device.state:
-            # int converts True to 1, False to 0
-            success = device.send(int(action))
-
-            # Only change device state if send returned True
-            if success:
-                device.state = action
-
-                # When thermostat turns targets on/off, clear recent readings (used to detect failed on/off command) to prevent false positives
-                for i in device.triggered_by:
-                    if i.sensor_type == "si7021":
-                        i.recent_temps = []
-
-
-
 # Main loop - monitor sensors, apply actions if conditions met
 async def main(config):
     while True:
         for group in config.groups:
 
-            conditions = check_sensor_conditions(config.groups[group]["triggers"])
+            conditions = group.check_sensor_conditions()
 
             await asyncio.sleep(0)
 
-            action = determine_correct_action(conditions)
+            action = group.determine_correct_action(conditions)
 
             await asyncio.sleep(0)
 
@@ -122,7 +72,7 @@ async def main(config):
                 continue
             else:
                 # Otherwise apply actions
-                apply_action(config.groups[group]["targets"], action)
+                group.apply_action(action)
 
         # Must be >0 to avoid blocking webrepl. Low values bottleneck webrepl speed, but this is acceptable since only used in maintenance
         await asyncio.sleep_ms(1)
