@@ -17,6 +17,14 @@ class Desktop_trigger(Sensor):
         # Current monitor state
         self.current = None
 
+        # Find desktop target so monitor loop (below) can update target's state attribute when screen turn on/off
+        for i in self.targets:
+            if i.device_type == "desktop" and i.ip == self.ip:
+                self.desktop_target = i
+                break
+        else:
+            self.desktop_target = None
+
         # Run monitor loop
         asyncio.create_task(self.monitor())
 
@@ -77,18 +85,26 @@ class Desktop_trigger(Sensor):
                 log.debug(f"{self.name}: Monitors changed from {self.current} to {new}")
                 self.current = new
 
-                # If monitors just turned off, turn off lights (overrides main loop)
+                # If monitors just turned off (indicates user NOT present), turn off lights
                 if self.current == "Off":
-                    for device in self.targets:
-                        if not device.state == False:
-                            success = device.send(0)
+                    # Override motion sensors, all sensors will now read False (unless dummy/switch present, cannot be overriden)
+                    for sensor in self.group.triggers:
+                        if sensor.sensor_type == "pir":
+                            sensor.motion = False
 
-                            if success:
-                                # Override motion sensors so they don't turn lights back on
-                                for i in device.triggered_by:
-                                    if i.sensor_type == "pir":
-                                        i.motion = False
-                                device.state = False
+                    # Update target's state. This enables loop to turn screen back on if needed (dummy/switch present)
+                    if self.desktop_target:
+                        self.desktop_target.state = False
+
+                    # Force group to apply actions so above overrides can take effect
+                    # If no dummy/switch is present (or if reading False), all devices will turn OFF
+                    # If dummy/switch reading True is present, lights will stay ON and screen will turn back ON to match
+                    self.group.reset_state()
+
+                # If monitors just turned on, update target's state
+                elif self.current == "On":
+                    if self.desktop_target:
+                        self.desktop_target.state = True
 
             # Poll every second
             await asyncio.sleep(1)
