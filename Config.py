@@ -433,8 +433,11 @@ class Config():
             instance = Group("group" + str(len(self.groups) + 1), group)
             self.groups.append(instance)
 
+            # Pass instance to all members' group attributes, allows group members to access group methods
             for sensor in instance.triggers:
                 sensor.group = instance
+                # Add Sensor's post-action routines (if any), will run after group turns targets on/off
+                sensor.add_routines()
 
             for device in instance.targets:
                 device.group = instance

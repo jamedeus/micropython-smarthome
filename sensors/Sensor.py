@@ -91,3 +91,10 @@ class Sensor():
 
         elif self.sensor_type == "switch":
             return False
+
+
+
+    # Called by Config after adding Sensor to Group. Appends functions to Group's post_action_routines list
+    # Placeholder function for subclasses with no post-routines, overwritten if they do
+    def add_routines(self):
+        return

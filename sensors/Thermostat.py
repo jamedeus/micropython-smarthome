@@ -28,16 +28,14 @@ class Thermostat(Sensor):
 
         self.get_threshold()
 
-        # Store last 3 temperature readings, used to detect failed on/off command
+        # Store last 3 temperature readings, used to detect failed on/off command (ir command didn't reach ac, etc)
         self.recent_temps = []
-
-        # Check every 30 seconds to detect when changing target state failed (ir command didn't reach ac, etc)
-        SoftwareTimer.timer.create(30000, self.audit, self.name)
 
         log.info(f"Instantiated Thermostat named {self.name}")
 
 
 
+    # Recalculate on/off threshold temperatures after changing set temperature (current_rule)
     def get_threshold(self):
         if self.current_rule == "Disabled":
             return True
@@ -105,7 +103,7 @@ class Thermostat(Sensor):
 
     # Detects when thermostat fails to turn targets on/off (common with infrared remote)
     # Takes reading every 30 seconds, keeps 3 most recent. Failure detected when all 3 trend in wrong direction
-    # Overrides target's state attribute, forcing main loop to re-send on/off command
+    # Overrides group's state attribute, forcing main loop to re-send on/off command
     def audit(self):
         # Add current temperature reading
         self.recent_temps.append(self.fahrenheit())
@@ -120,20 +118,20 @@ class Thermostat(Sensor):
             if self.recent_temps[0] < self.recent_temps[1] < self.recent_temps[2]:
                 if self.mode == "cool" and self.condition_met() == True:
                     print("Failed to start cooling - turning AC on again")
-                    log.info("Failed to start cooling - turning AC on again")
+                    log.info(f"Failed to start cooling (recent_temps: {self.recent_temps}). Turning AC on again")
                     action = False
 
                 elif self.mode == "heat" and self.condition_met() == False:
-                    log.info("Failed to stop heating - turning heater off again")
+                    log.info(f"Failed to stop heating (recent_temps: {self.recent_temps}). Turning heater off again")
                     action = True
 
             elif self.recent_temps[0] > self.recent_temps[1] > self.recent_temps[2]:
                 if self.mode == "cool" and self.condition_met() == False:
-                    log.info("Failed to stop cooling - turning AC off again")
+                    log.info(f"Failed to stop cooling (recent_temps: {self.recent_temps}). Turning AC off again")
                     action = True
 
                 elif self.mode == "heat" and self.condition_met() == True:
-                    log.info("Failed to start heating - turning heater on again")
+                    log.info(f"Failed to start heating (recent_temps: {self.recent_temps}). Turning heater on again")
                     action = False
 
             # Override all targets' state attr, allows group to turn on/off again
@@ -146,3 +144,18 @@ class Thermostat(Sensor):
 
         # Run again in 30 seconds
         SoftwareTimer.timer.create(30000, self.audit, self.name)
+
+
+
+    # Called by Config after adding Sensor to Group. Appends functions to Group's post_action_routines list
+    # All functions in this list will be called each time the group turns its targets on or off
+    def add_routines(self):
+        @self.group.add_post_action_routine()
+        def restart_audit():
+            # Clear recent temps, avoids false positive when cooling starts (readings may take 30-60 sec to drop)
+            self.recent_temps = []
+
+            # Cancel and re-create callback, ensures 30 seconds pass before first reading
+            # (if old callback runs 1 second after change, false positive becomes likely since only 2 readings are meaningful)
+            SoftwareTimer.timer.cancel(self.name)
+            SoftwareTimer.timer.create(30000, self.audit, self.name)

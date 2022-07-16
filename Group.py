@@ -10,18 +10,31 @@ class Group():
     def __init__(self, name, sensors):
         self.name = name
 
+        # List of instances for all sensors in group
         self.triggers = sensors
 
-        # All have same targets
+        # List of instances for all devices in group (don't need to iterate, all triggers have same targets)
         self.targets = self.triggers[0].targets
 
+        # Changes to same state as targets after successful on/off command, lets main loop skip group until change needed
         self.state = None
+
+        # Some sensor types run routines after turning their targets on/off
+        # After adding sensor to group, Config calls sensor's add_routines method to populate list with functions
+        self.post_action_routines = []
 
         log.info(f"Instantiated Group named {self.name}")
 
 
     def reset_state(self):
         self.state = None
+
+
+    # Called by decorators in some sensor's add_routines method, appends functions to self.post_action_routines
+    def add_post_action_routine(self):
+        def _add_post_action_routine(func):
+            self.post_action_routines.append(func)
+        return _add_post_action_routine
 
 
     def check_sensor_conditions(self):
@@ -78,7 +91,6 @@ class Group():
         if not failed:
             self.state = action
 
-            for i in self.triggers:
-                # When thermostat turns targets on/off, clear recent readings (used to detect failed on/off command) to prevent false positives
-                if i.sensor_type == "si7021":
-                    i.recent_temps = []
+            # Run post-action routines (if any) for all sensors in group
+            for function in self.post_action_routines:
+                function()
