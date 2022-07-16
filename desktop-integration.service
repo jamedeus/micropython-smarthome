@@ -9,7 +9,7 @@ Restart=on-failure
 User=jamedeus
 Environment="DISPLAY=:0"
 WorkingDirectory=/home/jamedeus/git/micropython-smarthome
-ExecStart=/home/jamedeus/.local/bin/gunicorn --workers 2 --bind 0.0.0.0:5000 desktop-integration:app
+ExecStart=/home/jamedeus/.local/bin/gunicorn --workers 2 --timeout 60 --bind 0.0.0.0:5000 desktop-integration:app
 
 [Install]
 WantedBy=network.target

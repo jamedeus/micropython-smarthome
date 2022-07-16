@@ -42,7 +42,7 @@ class Desktop_trigger(Sensor):
         # TODO find cause of ValueError ("syntax error in JSON")
         try:
             return urequests.get('http://' + str(self.ip) + ':5000/state').json()["state"]
-        except OSError:
+        except (OSError, IndexError):
             # Wifi interruption, return False - caller will try again in 1 second
             return False
 
