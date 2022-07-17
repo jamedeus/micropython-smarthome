@@ -137,7 +137,11 @@ class Api:
         await sreader.wait_closed()
 
         # Allow reboot (if reboot endpoint was called)
-        lock.release()
+        try:
+            lock.release()
+        except RuntimeError:
+            # Prevent crash if connection timed out before lock acquired
+            pass
 
 
 
