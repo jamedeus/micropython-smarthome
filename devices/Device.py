@@ -35,15 +35,18 @@ class Device():
         self.enabled = True
 
         # If other devices in group are on, turn on to match state
-        if self.group.state == True:
-            success = self.send(1)
-            if success:
-                self.state = True
-            else:
-                # Forces group to turn on again, retrying until successful (send command above likely failed due to temporary network error)
-                # Only used as last resort due to side effects - if user previously turned OFF a device in this group through API, then
-                # re-enables this device, group will turn BOTH on (but user only wanted to turn this one on)
-                self.group.state = False
+        try:
+            if self.group.state == True:
+                success = self.send(1)
+                if success:
+                    self.state = True
+                else:
+                    # Forces group to turn on again, retrying until successful (send command above likely failed due to temporary network error)
+                    # Only used as last resort due to side effects - if user previously turned OFF a device in this group through API, then
+                    # re-enables this device, group will turn BOTH on (but user only wanted to turn this one on)
+                    self.group.state = False
+        except AttributeError:
+            pass
 
 
 
