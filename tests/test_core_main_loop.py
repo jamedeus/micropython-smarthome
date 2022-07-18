@@ -69,19 +69,6 @@ config_file = {
 
 
 
-def check_sensor_conditions(group):
-    # Store return value from each sensor in group
-    conditions = []
-
-    # Check conditions for all enabled sensors
-    for sensor in group:
-        if sensor.enabled:
-            conditions.append(sensor.condition_met())
-
-    return conditions
-
-
-
 def determine_correct_action(conditions):
     # Determine action to apply to target devices: True = turn on, False = turn off, None = do nothing
     # Turn on: Requires only 1 sensor to return True
@@ -125,7 +112,7 @@ class TestMainLoop(unittest.TestCase):
                 i.motion = False
 
         # Confirm state is correct
-        conditions = check_sensor_conditions(self.config.groups["group1"]["triggers"])
+        conditions = self.config.groups[0].check_sensor_conditions()
         self.assertEqual(conditions, [False, False])
 
         # Trigger only 1 sensor
@@ -135,11 +122,11 @@ class TestMainLoop(unittest.TestCase):
                 break
 
         # Confirm conditions are correct
-        conditions = check_sensor_conditions(self.config.groups["group1"]["triggers"])
+        conditions = self.config.groups[0].check_sensor_conditions()
         self.assertEqual(conditions, [True, False])
 
         # Check si7021 condition
-        conditions = check_sensor_conditions(self.config.groups["group2"]["triggers"])
+        conditions = self.config.groups[1].check_sensor_conditions()
         if self.config.sensors[1].fahrenheit() > 75:
             self.assertTrue(conditions[0])
         elif self.config.sensors[1].fahrenheit() < 73:
@@ -164,22 +151,14 @@ class TestMainLoop(unittest.TestCase):
         self.assertEqual(action, None)
 
     def test_apply_action(self):
-        apply_action(self.config.groups["group1"]["targets"], False)
-        for i in self.config.devices:
-            if i.device_type == "pwm":
-                self.assertFalse(i.state)
+        self.config.groups[0].apply_action(False)
+        self.assertFalse(self.config.groups[0].targets[0].state)
 
-        apply_action(self.config.groups["group1"]["targets"], True)
-        for i in self.config.devices:
-            if i.device_type == "pwm":
-                self.assertTrue(i.state)
+        self.config.groups[0].apply_action(True)
+        self.assertTrue(self.config.groups[0].targets[0].state)
 
-        apply_action(self.config.groups["group2"]["targets"], False)
-        for i in self.config.devices:
-            if i.device_type == "dumb-relay":
-                self.assertFalse(i.state)
+        self.config.groups[1].apply_action(False)
+        self.assertFalse(self.config.groups[1].targets[0].state)
 
-        apply_action(self.config.groups["group2"]["targets"], True)
-        for i in self.config.devices:
-            if i.device_type == "dumb-relay":
-                self.assertTrue(i.state)
+        self.config.groups[1].apply_action(True)
+        self.assertTrue(self.config.groups[1].targets[0].state)

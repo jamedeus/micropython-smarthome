@@ -66,13 +66,13 @@ class TestConfig(unittest.TestCase):
     def test_group_instantiation(self):
         # Confirm group created correctly
         self.assertEqual(len(self.config.groups), 1)
-        self.assertEqual(self.config.groups["group1"]["targets"][0], self.config.devices[0])
-        self.assertEqual(self.config.groups["group1"]["triggers"][0], self.config.sensors[0])
+        self.assertEqual(self.config.groups[0].targets[0], self.config.devices[0])
+        self.assertEqual(self.config.groups[0].triggers[0], self.config.sensors[0])
 
     def test_for_unexpected_groups(self):
         # Should only be one group
-        with self.assertRaises(KeyError):
-            self.config.groups["group2"]
+        with self.assertRaises(IndexError):
+            self.config.groups[1]
 
     def test_reload_timer(self):
         # Confirm reload_config timer is running
