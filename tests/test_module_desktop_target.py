@@ -15,8 +15,9 @@ class TestDesktopTarget(unittest.TestCase):
 
     def test_rule_validation_valid(self):
         self.assertIs(self.instance.rule_validator("on"), "on")
+        self.assertIs(self.instance.rule_validator("On"), "on")
         self.assertIs(self.instance.rule_validator("off"), "off")
-        self.assertIs(self.instance.rule_validator("Disabled"), "Disabled")
+        self.assertIs(self.instance.rule_validator("Disabled"), "disabled")
 
     def test_rule_validation_invalid(self):
         self.assertFalse(self.instance.rule_validator(True))
@@ -25,8 +26,6 @@ class TestDesktopTarget(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator(42))
         self.assertFalse(self.instance.rule_validator(["on"]))
         self.assertFalse(self.instance.rule_validator({"on":"on"}))
-        self.assertFalse(self.instance.rule_validator("On"))
-        self.assertFalse(self.instance.rule_validator("ON"))
 
     def test_rule_change(self):
         self.assertTrue(self.instance.set_rule("off"))

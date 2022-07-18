@@ -21,8 +21,13 @@ class Switch(Sensor):
 
 
     def rule_validator(self, rule):
-        if rule == "Enabled" or rule == "Disabled":
-            return rule
+        try:
+            if rule.lower() == "enabled" or rule.lower() == "disabled":
+                return rule.lower()
+            else:
+                return False
+        except AttributeError:
+            return False
 
 
 

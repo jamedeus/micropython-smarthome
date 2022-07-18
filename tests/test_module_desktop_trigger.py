@@ -14,8 +14,11 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertTrue(self.instance.enabled)
 
     def test_rule_validation_valid(self):
-        self.assertIs(self.instance.rule_validator("Enabled"), "Enabled")
-        self.assertIs(self.instance.rule_validator("Disabled"), "Disabled")
+        self.assertIs(self.instance.rule_validator("enabled"), "enabled")
+        self.assertIs(self.instance.rule_validator("Enabled"), "enabled")
+        self.assertIs(self.instance.rule_validator("ENABLED"), "enabled")
+        self.assertIs(self.instance.rule_validator("disabled"), "disabled")
+        self.assertIs(self.instance.rule_validator("Disabled"), "disabled")
 
     def test_rule_validation_invalid(self):
         self.assertFalse(self.instance.rule_validator(True))
@@ -24,15 +27,14 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator(42))
         self.assertFalse(self.instance.rule_validator(["Enabled"]))
         self.assertFalse(self.instance.rule_validator({"Enabled":"Enabled"}))
-        self.assertFalse(self.instance.rule_validator("ENABLED"))
 
     def test_rule_change(self):
         self.assertTrue(self.instance.set_rule("Enabled"))
-        self.assertEqual(self.instance.current_rule, 'Enabled')
+        self.assertEqual(self.instance.current_rule, 'enabled')
         self.assertTrue(self.instance.enabled)
 
         self.assertTrue(self.instance.set_rule("Disabled"))
-        self.assertEqual(self.instance.current_rule, 'Disabled')
+        self.assertEqual(self.instance.current_rule, 'disabled')
         self.assertFalse(self.instance.enabled)
 
     def test_enable_disable(self):

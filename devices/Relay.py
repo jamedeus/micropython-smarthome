@@ -19,9 +19,12 @@ class Relay(Device):
 
 
     def rule_validator(self, rule):
-        if rule == "on" or rule == "off" or rule == "Disabled":
-            return rule
-        else:
+        try:
+            if rule.lower() == "on" or rule.lower() == "off" or rule.lower() == "disabled":
+                return rule.lower()
+            else:
+                return False
+        except AttributeError:
             return False
 
 

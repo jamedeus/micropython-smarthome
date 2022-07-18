@@ -50,8 +50,8 @@ class MotionSensor(Sensor):
 
     def rule_validator(self, rule):
         try:
-            if rule == "Disabled":
-                return rule
+            if str(rule).lower() == "disabled":
+                return str(rule).lower()
             elif rule is None:
                 return rule
             elif isinstance(rule, bool):
@@ -74,7 +74,7 @@ class MotionSensor(Sensor):
             except TypeError:
                 pass # Prevent crash when rule changed to "None" (no timeout)
             except ValueError:
-                pass # Prevent crash when rule changes to "Enabled" or "Disabled"
+                pass # Prevent crash when rule changes to "disabled"
 
 
 
@@ -88,7 +88,7 @@ class MotionSensor(Sensor):
         self.motion = True
 
         # Set reset timer
-        if not ("None" in str(self.current_rule) or "Enabled" in str(self.current_rule) or "Disabled" in str(self.current_rule)):
+        if not (self.current_rule == None or self.current_rule == "disabled"):
             try:
                 off = float(self.current_rule) * 60000
                 SoftwareTimer.timer.create(off, self.resetTimer, self.name)

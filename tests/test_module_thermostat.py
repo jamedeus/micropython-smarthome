@@ -17,7 +17,7 @@ class TestThermostat(unittest.TestCase):
         self.assertEqual(self.instance.rule_validator(65), 65)
         self.assertEqual(self.instance.rule_validator(80), 80)
         self.assertEqual(self.instance.rule_validator("72"), 72)
-        self.assertEqual(self.instance.rule_validator("Disabled"), "Disabled")
+        self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
 
     def test_rule_validation_invalid(self):
         self.assertFalse(self.instance.rule_validator(64))

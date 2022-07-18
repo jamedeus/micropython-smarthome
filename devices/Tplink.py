@@ -46,7 +46,7 @@ class Tplink(Device):
                 print(f"{self.name}: fading to {target} in {period} seconds")
                 log.info(f"{self.name}: fading to {target} in {period} seconds")
 
-                if not self.current_rule == "Disabled":
+                if not self.current_rule == "disabled":
                     # Get current brightness
                     brightness = int(self.current_rule)
                 else:
@@ -89,7 +89,7 @@ class Tplink(Device):
                 self.fading = False
 
             # Rule just changed to disabled
-            if self.current_rule == "Disabled":
+            if self.current_rule == "disabled":
                 self.send(0)
                 self.disable()
             # Device was previously disabled, enable now that rule has changed
@@ -119,8 +119,8 @@ class Tplink(Device):
                 else:
                     return False
 
-            elif rule == "Disabled":
-                return rule
+            elif str(rule).lower() == "disabled":
+                return str(rule).lower()
 
             elif isinstance(rule, bool):
                 return False

@@ -37,7 +37,7 @@ class Thermostat(Sensor):
 
     # Recalculate on/off threshold temperatures after changing set temperature (current_rule)
     def get_threshold(self):
-        if self.current_rule == "Disabled":
+        if self.current_rule == "disabled":
             return True
 
         elif self.mode == "cool":
@@ -89,8 +89,8 @@ class Thermostat(Sensor):
     # Receive rule from API, validate, set and return True if valid, otherwise return False
     def rule_validator(self, rule):
         try:
-            if rule == "Disabled":
-                return rule
+            if str(rule).lower() == "disabled":
+                return str(rule).lower()
             # Constrain to range 65-80
             elif 65 <= float(rule) <= 80:
                 return float(rule)

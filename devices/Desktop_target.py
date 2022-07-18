@@ -19,9 +19,12 @@ class Desktop_target(Device):
 
 
     def rule_validator(self, rule):
-        if rule == "on" or rule == "off" or rule == "Disabled":
-            return rule
-        else:
+        try:
+            if rule.lower() == "on" or rule.lower() == "off" or rule.lower() == "disabled":
+                return rule.lower()
+            else:
+                return False
+        except AttributeError:
             return False
 
 
@@ -60,7 +63,7 @@ class Desktop_target(Device):
                     print(f"{self.name}: Turned screen on")
                     log.debug(f"{self.name}: Turned ON")
                 except OSError:
-                    # TODO make possible for timer to accept args, then add to timer queue instead of going back to main loop
+                    # TODO make possible for timer to accept callback with args, then add to timer queue instead of going back to main loop
                     #SoftwareTimer.timer.create(5000, self.send, self.name)
                     # Wifi interruption, send failed
                     return False

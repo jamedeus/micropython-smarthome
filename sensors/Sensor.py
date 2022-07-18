@@ -47,7 +47,7 @@ class Sensor():
             print(f"{self.name}: Rule changed to {self.current_rule}")
 
             # Rule just changed to disabled
-            if self.current_rule == "Disabled":
+            if self.current_rule == "disabled":
                 # TODO there are probably scenarios where lights can get stuck on here
                 self.disable()
             # Sensor was previously disabled, enable now that rule has changed
