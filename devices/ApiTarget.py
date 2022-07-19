@@ -18,13 +18,13 @@ class ApiTarget(Device):
 
 
 
-    # TODO test enable/disable, see if methods need to be subclassed (they set device's state, could block loop from sending/send at incorrect time)
-
-
     # Takes dict containing 2 entries named "on" and "off"
     # Both entries are lists containing a full API request
     # "on" sent when self.send(1) called, "off" when self.send(0) called
     def rule_validator(self, rule):
+        if str(rule).lower() == "disabled":
+            return str(rule).lower()
+
         if not isinstance(rule, dict):
             return False
 
@@ -67,6 +67,47 @@ class ApiTarget(Device):
         else:
             # Iteration finished without a return False, rule is valid
             return rule
+
+
+
+    def enable(self):
+        # If disabled by rule change then re-enabled with this method, replace "disabled" with a usable rule before send() is called
+        if self.current_rule == "disabled":
+            self.current_rule = self.default_rule
+
+        super().enable()
+
+
+
+    def set_rule(self, rule):
+        # Check if rule is valid - may return a modified rule (ie cast str to int)
+        valid_rule = self.rule_validator(rule)
+
+        # Turn off target (using old rule) before changing rule to disabled (cannot call send after changing, requires dict not string)
+        if valid_rule == "disabled":
+            self.send(0)
+
+        if not str(valid_rule) == "False":
+            self.current_rule = valid_rule
+            log.info(f"{self.name}: Rule changed to {self.current_rule}")
+            print(f"{self.name}: Rule changed to {self.current_rule}")
+
+            # Rule just changed to disabled
+            if self.current_rule == "disabled":
+                self.disable()
+            # Sensor was previously disabled, enable now that rule has changed
+            elif self.enabled == False:
+                self.enable()
+            # Device is currently on, run send so new rule can take effect
+            elif self.state == True:
+                self.send(1)
+
+            return True
+
+        else:
+            log.error(f"{self.name}: Failed to change rule to {rule}")
+            print(f"{self.name}: Failed to change rule to {rule}")
+            return False
 
 
 
