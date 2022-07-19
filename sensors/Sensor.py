@@ -31,6 +31,10 @@ class Sensor():
     def enable(self):
         self.enabled = True
 
+        # If disabled by rule change then re-enabled with this method, replace "disabled" with a usable rule
+        if self.current_rule == "disabled":
+            self.current_rule = self.scheduled_rule
+
 
 
     def disable(self):

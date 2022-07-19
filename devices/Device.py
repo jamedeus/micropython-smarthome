@@ -34,6 +34,10 @@ class Device():
     def enable(self):
         self.enabled = True
 
+        # If disabled by rule change then re-enabled with this method, replace "disabled" with a usable rule
+        if self.current_rule == "disabled":
+            self.current_rule = self.scheduled_rule
+
         # If other devices in group are on, turn on to match state
         try:
             if self.group.state == True:

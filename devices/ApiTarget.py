@@ -70,15 +70,6 @@ class ApiTarget(Device):
 
 
 
-    def enable(self):
-        # If disabled by rule change then re-enabled with this method, replace "disabled" with a usable rule before send() is called
-        if self.current_rule == "disabled":
-            self.current_rule = self.default_rule
-
-        super().enable()
-
-
-
     def set_rule(self, rule):
         # Check if rule is valid - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)

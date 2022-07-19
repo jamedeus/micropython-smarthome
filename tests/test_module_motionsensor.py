@@ -7,7 +7,7 @@ import SoftwareTimer
 class TestMotionSensor(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_reset_timer", "test_trigger"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_reset_timer", "test_trigger", "test_enable_after_disable_by_rule_change"]
 
     def test_instantiation(self):
         self.instance = MotionSensor("sensor1", "pir", True, None, None, [], 15)
@@ -66,3 +66,10 @@ class TestMotionSensor(unittest.TestCase):
         # Trigger, condition should now be met
         self.assertTrue(self.instance.trigger())
         self.assertTrue(self.instance.condition_met())
+
+    def test_enable_after_disable_by_rule_change(self):
+        # Disable by rule change, enable with method
+        self.instance.set_rule("disabled")
+        self.instance.enable()
+        # Old rule ("disabled") should have been automatically replaced by scheduled_rule
+        self.assertEqual(self.instance.current_rule, self.instance.scheduled_rule)

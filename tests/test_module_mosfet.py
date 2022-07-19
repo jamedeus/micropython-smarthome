@@ -6,7 +6,7 @@ from Mosfet import Mosfet
 class TestMosfet(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_turn_on_while_rule_is_off"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_turn_on_while_rule_is_off", "test_enable_after_disable_by_rule_change"]
 
     def test_instantiation(self):
         self.instance = Mosfet("device1", "mosfet", True, None, "off", 4)
@@ -64,3 +64,10 @@ class TestMosfet(unittest.TestCase):
         self.assertTrue(self.instance.send(1))
         # Should have ignored send command since current_rule == "off"
         self.assertEqual(self.instance.mosfet.value(), 0)
+
+    def test_enable_after_disable_by_rule_change(self):
+        # Disable by rule change, enable with method
+        self.instance.set_rule("disabled")
+        self.instance.enable()
+        # Old rule ("disabled") should have been automatically replaced by scheduled_rule
+        self.assertEqual(self.instance.current_rule, self.instance.scheduled_rule)
