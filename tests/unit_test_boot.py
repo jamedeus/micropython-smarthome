@@ -62,7 +62,6 @@ async def run_tests():
                     detailed_results[test]["tests_run"] = result.testsRun
                     detailed_results[test]["failed"] = result.failuresNum
                     detailed_results[test]["errors"] = result.errorsNum
-                    detailed_results[test]["skipped"] = result.skippedNum
 
                     # Reduce mem fragmentation when running large number of tests
                     del suite
@@ -147,8 +146,7 @@ def print_report(results):
         print(i.split(".")[0].split("_")[2])
         print(f" - Tests:         {results[i]["tests_run"]}")
         print(f"   - Failed:      {results[i]["failed"]}")
-        print(f"   - Errored:     {results[i]["errors"]}")
-        print(f"   - Skipped:     {results[i]["skipped"]}\n")
+        print(f"   - Errored:     {results[i]["errors"]}\n")
         total_tests += results[i]["tests_run"]
         total_failed += results[i]["failed"]
 
