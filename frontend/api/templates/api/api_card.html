@@ -66,6 +66,11 @@
             border-radius: 0px 0px 20px 20px;
             padding-bottom: 0.5rem;
         }
+
+        /* Remove focus highlight */
+        .power-toggle {
+            box-shadow: none !important;
+        }
     </style>
 </head>
 
@@ -238,11 +243,11 @@
                                         <!-- Power toggle button -->
                                         <div>
                                             {% if params.turned_on %}
-                                                <input type="checkbox" class="btn-check power-toggle" id="{{device}}-power-state" autocomplete="off" onclick="power(this)" checked>
-                                                <label class="btn btn-sm btn-outline-primary" for="{{device}}-power-state" id="{{device}}-power-state-label">ON</label><br>
+                                                <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)" checked>
+                                                <label class="btn btn-sm btn-outline-primary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">ON</label><br>
                                             {% else %}
-                                                <input type="checkbox" class="btn-check power-toggle" id="{{device}}-power-state" autocomplete="off" onclick="power(this)">
-                                                <label class="btn btn-sm btn-outline-secondary" for="{{device}}-power-state" id="{{device}}-power-state-label">OFF</label><br>
+                                                <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)">
+                                                <label class="btn btn-sm btn-outline-secondary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">OFF</label><br>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -360,7 +365,7 @@
             return result
         };
 
-
+        // Add handlers to brightness sliders
         for (button of document.getElementsByClassName("brightness-slider")) {
             const id = button.id
 
@@ -425,37 +430,35 @@
         // Handler for device power on/off toggle
         async function power(el) {
             const target = el.id.split("-")[0];
+            const label = document.getElementById(target + "-power-state-label");
 
             if (el.checked) {
                 var result = await send_command({'command': 'turn_on', 'instance': target});
-            } else {
-                var result = await send_command({'command': 'turn_off', 'instance': target});
-            };
-            result = await result.json();
-        };
+                result = await result.json();
 
-        // Add handler for device on/off toggle buttons
-        for (button of document.getElementsByClassName("power-toggle")) {
-            button.addEventListener('click', function(e) {
-                const label = document.getElementById(e.target.id + "-label");
-                if (e.target.checked) {
+                if (JSON.stringify(result).startsWith('{"ERROR')) {
+                    console.log(`Failed to turn on ${target}`);
+                } else {
                     label.classList.add("btn-outline-primary");
                     label.classList.remove("btn-outline-secondary");
+                    label.innerHTML = "ON";
+                };
 
-                    // Fire API command here
+            } else {
+                var result = await send_command({'command': 'turn_off', 'instance': target});
+                result = await result.json();
+
+                if (JSON.stringify(result).startsWith('{"ERROR')) {
+                    console.log(`Failed to turn off ${target}`);
                 } else {
                     label.classList.add("btn-outline-secondary");
                     label.classList.remove("btn-outline-primary");
-
-                    // Fire API command here
+                    label.innerHTML = "OFF";
                 };
-            });
+            };
         };
 
-
-
-
-        // Triggered by delete button in schedule rules dropdown
+        // Handler for delete button in schedule rules dropdown
         async function delete_rule(selected) {
             // Prevent user submitting multiple times
             selected.disabled = true;
