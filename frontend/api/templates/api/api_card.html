@@ -334,8 +334,29 @@
         {% endif %}
     </div>
 
+    <!-- Error modal displayed when unable to connect to target node -->
+
+    <div class="modal fade" id="error-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                    <h3 class="mx-auto mb-0" id="error-modal-title">Connection Error</h3>
+                </div>
+                <div class="modal-body" id="error-modal-body">
+                    <p class="text-center">Attempting to reestablish connection...</p>
+                    <div class="d-flex justify-content-center mb-3">
+                        <div class="spinner-border" style="width: 1.5rem; height: 1.5rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Save context for later use -->
     {{ context|json_script:"context" }}
+
     <script>
         // Check if user is in dark mode, change theme (runs once on page load)
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -484,6 +505,93 @@
                 document.getElementById(selected.id).parentElement.parentElement.remove()
             };
         };
+
+        // Query status every 5 seconds, update page if anything changed
+        function monitorSelectedNodeStatus(start) {
+            if (start) {
+                // Initial value, used to detect change
+                selected_node_unreachable = false;
+
+                statusTimer = setInterval(async function() {
+                    // Get status object
+                    var new_status = await fetch("/get_status/" + target_node);
+                    new_status = await new_status.json();
+
+                    // If unable to connect
+                    if (selected_node_unreachable == false && new_status == "Error: Unable to connect.") {
+                        $("#error-modal").modal("show");
+                        console.log("Unable to connect to target, will retry every 5 seconds.");
+                        selected_node_unreachable = true;
+
+                    } else if (selected_node_unreachable == true && new_status != "Error: Unable to connect.") {
+                        $("#error-modal").modal("hide");
+                        console.log("Re-connected to target.");
+                        selected_node_unreachable = false;
+                    };
+
+                    // Find changes
+                    // TODO (after finishing sensor card layouts) adjust loop to iterate both sensors and devices
+                    for (let device in new_status["devices"]) {
+                        for (let param in new_status["devices"][device]) {
+                            if (new_status["devices"][device][param] != target_node_status["devices"][device][param]) {
+
+                                if (param == "turned_on") {
+                                    // Get element
+                                    const label = document.getElementById(device + "-power-state-label");
+
+                                    // Device turned ON since last status update
+                                    if (new_status["devices"][device][param]) {
+                                        label.classList.add("btn-outline-primary");
+                                        label.classList.remove("btn-outline-secondary");
+                                        label.innerHTML = "ON";
+                                        label.parentElement.children[0].checked = true;
+
+                                    // Device turned OFF since last status update
+                                    } else {
+                                        label.classList.add("btn-outline-secondary");
+                                        label.classList.remove("btn-outline-primary");
+                                        label.innerHTML = "OFF";
+                                        label.parentElement.children[0].checked = false;
+                                    };
+
+                                } else if (param == "current_rule" || param == "scheduled_rule") {
+                                    const slider = document.getElementById(device + "-brightness");
+                                    const label = document.getElementById(device + "-brightness-label");
+
+                                    slider.value = new_status["devices"][device]["current_rule"];
+                                    label.innerHTML = "Brightness: " + new_status["devices"][device]["current_rule"];
+
+                                    if (new_status["devices"][device]["current_rule"] != new_status["devices"][device]["scheduled_rule"]) {
+                                        // Show reset button
+                                        document.getElementById(device + "-brightness-reset").style.visibility = "visible";
+                                    } else {
+                                        // Hide reset button
+                                        document.getElementById(device + "-brightness-reset").style.visibility = "hidden";
+                                    };
+/*
+                                } else if (param == "enabled") {
+
+                                } else if (param == "schedule") {*/
+
+                                // TODO Continue adding endpoints here as they are implemented
+
+                                };
+                            };
+                        };
+                    };
+
+                    // Do not overwrite old config with error (if connection lost, will have nothing to compare against when re-connected)
+                    if (!selected_node_unreachable) {
+                        target_node_status = new_status
+                    };
+                }, 5000);
+            } else {
+                clearInterval(statusTimer);
+            };
+        };
+
+        // Start monitoring
+        monitorSelectedNodeStatus(true);
 
     </script>
 </body>
