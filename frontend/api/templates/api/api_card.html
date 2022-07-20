@@ -130,7 +130,7 @@
 
                         <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">{{ sensor }} ({{ params.type }})</h4>
+                                <h4 class="card-title text-center">{{ sensor }} ({{ params.type }})</h4>
                                 {% if params.enabled %}
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" checked>
@@ -225,80 +225,93 @@
 
                         <div class="card">
                             <div class="card-body">
-                                <h4 class="card-title">{{ device }} ({{ params.type }})</h4>
+                                <h4 class="card-title text-center">{{ device }} ({{ params.type }})</h4>
+
                                 {% if params.enabled %}
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" checked>
-                                        <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
-                                    </div></br>
+                                    <div class="d-flex flex-row">
+                                        <!-- Enable/Disable Switch -->
+                                        <div class="form-check form-switch me-auto">
+                                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" checked>
+                                            <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
+                                        </div>
 
-                                    <div>
-                                        <label class="form-label" for="rule_input">Current Rule: </label>
-                                        <div class="input-group">
-                                            <input type='text' id='rule_input' placeholder='Enter rule' name='rule_input' class='form-control' value="{{ params.current_rule }}">
-                                            <button class="btn btn-sm btn-success" id="change_rule">Change</button>
-                                            <button class="btn btn-sm btn-danger" id="change_rule">Reset</button>
-                                        </div></br>
+                                        <!-- Power toggle button -->
+                                        <div>
+                                            {% if params.turned_on %}
+                                                <input type="checkbox" class="btn-check power-toggle" id="{{device}}-power-state" autocomplete="off" onclick="power(this)" checked>
+                                                <label class="btn btn-sm btn-outline-primary" for="{{device}}-power-state" id="{{device}}-power-state-label">ON</label><br>
+                                            {% else %}
+                                                <input type="checkbox" class="btn-check power-toggle" id="{{device}}-power-state" autocomplete="off" onclick="power(this)">
+                                                <label class="btn btn-sm btn-outline-secondary" for="{{device}}-power-state" id="{{device}}-power-state-label">OFF</label><br>
+                                            {% endif %}
+                                        </div>
                                     </div>
 
-                                    <div>
-                                        Status:
-                                        {% if params.turned_on %}
-                                            <b>On</b> <button class="btn btn-sm btn-danger">Turn Off</button>
-                                        {% else %}
-                                            <b>Off</b> <button class="btn btn-sm btn-success">Turn On</button>
-                                        {% endif %}
-                                    </div></br>
+                                    <!-- Brightness slider -->
+                                    {% if params.type in "dimmer,bulb" %}
+                                        <div class="text-center">
+                                            <label for="{{device}}-brightness" id="{{device}}-brightness-label" class="form-label">Brightness: {{params.current_rule}}</label>
+                                            <input id="{{device}}-brightness" type="range" class="form-range brightness-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
+                                            <div id="{{device}}-brightness-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                        </div>
+                                    {% elif params.type == "pwm" %}
+                                        <div class="text-center">
+                                            <label for="{{device}}-brightness" id="{{device}}-brightness-label" class="form-label">Brightness: {{params.current_rule}}</label>
+                                            <input id="{{device}}-brightness" type="range" class="form-range brightness-slider" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
+                                            <div id="{{device}}-brightness-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                        </div>
+                                    {% endif %}
+                                    <!-- End brightness slider -->
 
-
-                                    <p>
-                                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
-                                            Schedule rules
-                                        </button>
-                                    </p>
-                                    <div class="collapse" id="{{device}}-schedule-rules">
-
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <label class="card-title schedule-rule-card"><b>{{ device }} ({{ params.type }}):</b></label>
-                                                <table id="{{device}}-rules" class="table table-borderless">
-                                                    <tr>
-                                                        <th style="text-align: left;">Time</th>
-                                                        <th style="text-align: left;">Rule</th>
-                                                    </tr>
-
-                                                    {% if params.schedule.items|length > 0 %}
-                                                        {% for time, rule in params.schedule.items %}
-                                                            <tr id="{{device}}-row-{{forloop.counter}}">
-                                                                <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
-                                                                <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                    {% else %}
-                                                        <tr id="{{device}}-row-1">
-                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
-                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
-                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
-                                                        </tr>
-                                                    {% endif %}
-                                                </table>
-                                            </div>
-
-                                            <div class="text-left mx-3 mb-3">
-                                                <button type="button" class="btn btn-secondary add" id="{{device}}-add-rule">Add another</button>
-                                            </div>
-
-                                        </div></br>
-
-
-                                    </div>
                                 {% else %}
+                                    <!-- Device is disabled, only show enable toggle and schedule rules button -->
                                     <div class="form-check form-switch">
                                         <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
                                         <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
                                     </div>
                                 {% endif %}
+
+                                <!-- Schedule rules section, collapsed by default -->
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
+                                        Schedule rules
+                                    </button>
+                                </p>
+                                <div class="collapse" id="{{device}}-schedule-rules">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <label class="card-title schedule-rule-card"><b>{{ device }} ({{ params.type }}):</b></label>
+                                            <table id="{{device}}-rules" class="table table-borderless">
+                                                <tr>
+                                                    <th style="text-align: left;">Time</th>
+                                                    <th style="text-align: left;">Rule</th>
+                                                </tr>
+
+                                                {% if params.schedule.items|length > 0 %}
+                                                    {% for time, rule in params.schedule.items %}
+                                                        <tr id="{{device}}-row-{{forloop.counter}}">
+                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
+                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <tr id="{{device}}-row-1">
+                                                        <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
+                                                        <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
+                                                        <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
+                                                    </tr>
+                                                {% endif %}
+                                            </table>
+                                        </div>
+
+                                        <div class="text-left mx-3 mb-3">
+                                            <button type="button" class="btn btn-secondary add" id="{{device}}-add-rule">Add another</button>
+                                        </div>
+
+                                    </div></br>
+                                </div>
+                                <!-- End schedule rules section -->
                             </div>
                         </div></br>
 
@@ -315,6 +328,9 @@
             <p>FATAL ERROR</p>
         {% endif %}
     </div>
+
+    <!-- Save context for later use -->
+    {{ context|json_script:"context" }}
     <script>
         // Check if user is in dark mode, change theme (runs once on page load)
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -323,6 +339,8 @@
         };
 
         const target_node = "{{ context.metadata.id }}";
+
+        var target_node_status = JSON.parse(document.getElementById("context").textContent);
 
         // Receives command parameters in value
         async function send_command(value) {
@@ -341,6 +359,101 @@
 
             return result
         };
+
+
+        for (button of document.getElementsByClassName("brightness-slider")) {
+            const id = button.id
+
+            // If current rule != schedule rule, show reset button
+            const brightness = document.getElementById(id).value;
+            const scheduled = target_node_status["devices"][id.split("-")[0]]["scheduled_rule"];
+
+            if (brightness != scheduled) {
+                document.getElementById(id + "-reset").style.visibility = "visible";
+            };
+
+            // Update current brightness while slider moves
+            button.addEventListener('input', function(e) {
+                var label = document.getElementById(e.target.id + "-label");
+                var new_bright = document.getElementById(e.target.id).value;
+                label.innerHTML = "Brightness: " + new_bright;
+            });
+
+            // Runs once when user releases click on slider
+            button.addEventListener('change', async function(e) {
+                const new_bright = document.getElementById(e.target.id).value;
+                const scheduled = target_node_status["devices"][e.target.id.split("-")[0]]["scheduled_rule"];
+
+                if (new_bright != scheduled) {
+                    document.getElementById(id + "-reset").style.visibility = "visible";
+                } else {
+                    document.getElementById(id + "-reset").style.visibility = "hidden";
+                };
+
+                // Fire API command here
+                var result = await send_command({'command': 'set_rule', 'instance': e.target.id.split("-")[0], 'rule': new_bright});
+                result = await result.json();
+            });
+        };
+
+        // Handler for current_rule reset button
+        async function reset(el) {
+            const target = el.parentElement.id.split("-")[0];
+
+            var result = await send_command({'command': 'reset_rule', 'instance': target});
+            result = await result.json();
+
+            if (JSON.stringify(result).startsWith('{"ERROR')) {
+                console.log(`Failed to reset ${target} rule`);
+            } else {
+                console.log(target)
+                // Update current brightness
+                const label = document.getElementById(target + "-brightness-label");
+                const scheduled = target_node_status["devices"][target]["scheduled_rule"];
+
+                label.innerHTML = "Brightness: " + scheduled;
+
+                // Update slider position
+                const slider = document.getElementById(target + "-brightness");
+                slider.value = scheduled
+
+                // Hide reset button
+                document.getElementById(target + "-brightness-reset").style.visibility = "hidden";
+            };
+        };
+
+        // Handler for device power on/off toggle
+        async function power(el) {
+            const target = el.id.split("-")[0];
+
+            if (el.checked) {
+                var result = await send_command({'command': 'turn_on', 'instance': target});
+            } else {
+                var result = await send_command({'command': 'turn_off', 'instance': target});
+            };
+            result = await result.json();
+        };
+
+        // Add handler for device on/off toggle buttons
+        for (button of document.getElementsByClassName("power-toggle")) {
+            button.addEventListener('click', function(e) {
+                const label = document.getElementById(e.target.id + "-label");
+                if (e.target.checked) {
+                    label.classList.add("btn-outline-primary");
+                    label.classList.remove("btn-outline-secondary");
+
+                    // Fire API command here
+                } else {
+                    label.classList.add("btn-outline-secondary");
+                    label.classList.remove("btn-outline-primary");
+
+                    // Fire API command here
+                };
+            });
+        };
+
+
+
 
         // Triggered by delete button in schedule rules dropdown
         async function delete_rule(selected) {

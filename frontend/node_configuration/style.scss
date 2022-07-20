@@ -140,6 +140,11 @@ $pagination-disabled-color: #bbbbbb;
     $list-group-border-width:
     */
 
+    /* Input sliders */
+    $form-range-track-bg: #1b1e1f;
+    $form-range-thumb-active-bg: #0D6EFD;
+    $form-range-thumb-focus-box-shadow: none;
+
     --#{$variable-prefix}body-color: #{$body-color};
     --#{$variable-prefix}body-bg: #{$body-bg};
 
