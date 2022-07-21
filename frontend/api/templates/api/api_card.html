@@ -555,19 +555,21 @@
                                     };
 
                                 } else if (param == "current_rule" || param == "scheduled_rule") {
-                                    const slider = document.getElementById(device + "-brightness");
-                                    const label = document.getElementById(device + "-brightness-label");
+                                    try {
+                                        const slider = document.getElementById(device + "-brightness");
+                                        const label = document.getElementById(device + "-brightness-label");
 
-                                    slider.value = new_status["devices"][device]["current_rule"];
-                                    label.innerHTML = "Brightness: " + new_status["devices"][device]["current_rule"];
+                                        slider.value = new_status["devices"][device]["current_rule"];
+                                        label.innerHTML = "Brightness: " + new_status["devices"][device]["current_rule"];
 
-                                    if (new_status["devices"][device]["current_rule"] != new_status["devices"][device]["scheduled_rule"]) {
-                                        // Show reset button
-                                        document.getElementById(device + "-brightness-reset").style.visibility = "visible";
-                                    } else {
-                                        // Hide reset button
-                                        document.getElementById(device + "-brightness-reset").style.visibility = "hidden";
-                                    };
+                                        if (new_status["devices"][device]["current_rule"] != new_status["devices"][device]["scheduled_rule"]) {
+                                            // Show reset button
+                                            document.getElementById(device + "-brightness-reset").style.visibility = "visible";
+                                        } else {
+                                            // Hide reset button
+                                            document.getElementById(device + "-brightness-reset").style.visibility = "hidden";
+                                        };
+                                    } catch(err) {};
 /*
                                 } else if (param == "enabled") {
 
