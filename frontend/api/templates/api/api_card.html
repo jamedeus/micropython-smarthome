@@ -224,37 +224,56 @@
 
                 </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
                 <div class="col-sm">
 
                     {% for device, params in context.devices.items %}
 
                         <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title text-center">{{ device }} ({{ params.type }})</h4>
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex flex-row">
+                                    <h4 class="card-title">{{ device }} ({{ params.type }})</h4>
+                                    <div class="form-check form-switch ms-auto my-auto">
+                                        {% if params.enabled %}
+                                            <input class="form-check-input" type="checkbox" id="{{device}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{device}}-body" aria-expanded="false" aria-controls="{{device}}-body" autocomplete="off" onchange="enable(this)" checked>
+                                        {% else %}
+                                            <input class="form-check-input" type="checkbox" id="{{device}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{device}}-body" aria-expanded="false" aria-controls="{{device}}-body" autocomplete="off" onchange="enable(this)">
+                                        {% endif %}
+                                    </div>
+                                </div>
 
                                 {% if params.enabled %}
-                                    <div class="d-flex flex-row">
-                                        <!-- Enable/Disable Switch -->
-                                        <div class="form-check form-switch me-auto">
-                                            <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" checked>
-                                            <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
-                                        </div>
+                                    <div class="collapse show" id="{{device}}-body">
+                                {% else %}
+                                    <div class="collapse" id="{{device}}-body">
+                                {% endif %}
 
-                                        <!-- Power toggle button -->
-                                        <div>
-                                            {% if params.turned_on %}
-                                                <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)" checked>
-                                                <label class="btn btn-sm btn-outline-primary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">ON</label><br>
-                                            {% else %}
-                                                <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)">
-                                                <label class="btn btn-sm btn-outline-secondary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">OFF</label><br>
-                                            {% endif %}
-                                        </div>
+                                    <!-- Power toggle button -->
+                                    <div>
+                                        {% if params.turned_on %}
+                                            <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)" checked>
+                                            <label class="btn btn-sm btn-outline-primary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">ON</label><br>
+                                        {% else %}
+                                            <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)">
+                                            <label class="btn btn-sm btn-outline-secondary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">OFF</label><br>
+                                        {% endif %}
                                     </div>
 
                                     <!-- Brightness slider -->
                                     {% if params.type in "dimmer,bulb" %}
-                                        <div class="text-center">
+                                        <div class="text-center mx-3">
                                             <label for="{{device}}-brightness" id="{{device}}-brightness-label" class="form-label">Brightness: {{params.current_rule}}</label>
                                             <input id="{{device}}-brightness" type="range" class="form-range brightness-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
                                             <div id="{{device}}-brightness-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
@@ -268,55 +287,50 @@
                                     {% endif %}
                                     <!-- End brightness slider -->
 
-                                {% else %}
-                                    <!-- Device is disabled, only show enable toggle and schedule rules button -->
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
-                                        <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
-                                    </div>
-                                {% endif %}
-
-                                <!-- Schedule rules section, collapsed by default -->
-                                <p class="text-center">
-                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
-                                        Schedule rules
-                                    </button>
-                                </p>
-                                <div class="collapse" id="{{device}}-schedule-rules">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <label class="card-title schedule-rule-card"><b>{{ device }} ({{ params.type }}):</b></label>
-                                            <table id="{{device}}-rules" class="table table-borderless">
-                                                <tr>
-                                                    <th style="text-align: left;">Time</th>
-                                                    <th style="text-align: left;">Rule</th>
-                                                </tr>
-
-                                                {% if params.schedule.items|length > 0 %}
-                                                    {% for time, rule in params.schedule.items %}
-                                                        <tr id="{{device}}-row-{{forloop.counter}}">
-                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
-                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                {% else %}
-                                                    <tr id="{{device}}-row-1">
-                                                        <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
-                                                        <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
-                                                        <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
+                                    <!-- Schedule rules section, collapsed by default -->
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules">
+                                            Schedule rules
+                                        </button>
+                                    </p>
+                                    <div class="collapse" id="{{device}}-schedule-rules">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <label class="card-title schedule-rule-card"><b>{{ device }} ({{ params.type }}):</b></label>
+                                                <table id="{{device}}-rules" class="table table-borderless">
+                                                    <tr>
+                                                        <th style="text-align: left;">Time</th>
+                                                        <th style="text-align: left;">Rule</th>
                                                     </tr>
-                                                {% endif %}
-                                            </table>
-                                        </div>
 
-                                        <div class="text-left mx-3 mb-3">
-                                            <button type="button" class="btn btn-secondary add" id="{{device}}-add-rule">Add another</button>
-                                        </div>
+                                                    {% if params.schedule.items|length > 0 %}
+                                                        {% for time, rule in params.schedule.items %}
+                                                            <tr id="{{device}}-row-{{forloop.counter}}">
+                                                                <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
+                                                                <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
+                                                            </tr>
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        <tr id="{{device}}-row-1">
+                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
+                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
+                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
+                                                        </tr>
+                                                    {% endif %}
+                                                </table>
+                                            </div>
 
-                                    </div></br>
+                                            <div class="text-left mx-3 mb-3">
+                                                <button type="button" class="btn btn-secondary add" id="{{device}}-add-rule">Add another</button>
+                                            </div>
+
+                                        </div></br>
+                                    </div>
+                                    <!-- End schedule rules section -->
+
                                 </div>
-                                <!-- End schedule rules section -->
+
                             </div>
                         </div></br>
 
@@ -445,6 +459,38 @@
 
                 // Hide reset button
                 document.getElementById(target + "-brightness-reset").style.visibility = "hidden";
+            };
+        };
+
+        // Handler for device enable/disable toggle
+        async function enable(el) {
+            const target = el.id.split("-")[0];
+
+            if (el.checked) {
+                console.log(`Enabling ${target}`);
+                var result = await send_command({'command': 'enable', 'instance': target, 'delay_input': ''});
+            } else {
+                console.log(`Disabling ${target}`);
+                var result = await send_command({'command': 'disable', 'instance': target, 'delay_input': ''});
+            };
+
+            result = await result.json();
+            if (JSON.stringify(result).startsWith('{"ERROR')) {
+                // Command failed
+                if (el.checked) {
+                    alert(`Failed to enable ${target}`);
+                    // Move toggle back, collapse card
+                    document.getElementById(target + "-enable-toggle").checked = false;
+                    var card = document.getElementById(target + "-body");
+                    $('#' + target + '-body').collapse('hide')
+                } else {
+                    alert(`Failed to disable ${target}`);
+                    // Move toggle back, expand card
+                    document.getElementById(target + "-enable-toggle").checked = true;
+                    // TODO figure out why collapse('show') doesn't work. Temporary workaround (no animation) below
+//                     $('#' + target + '-body').collapse('show')
+                    var card = document.getElementById(target + "-body").classList.add('show');
+                };
             };
         };
 
