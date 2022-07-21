@@ -481,7 +481,6 @@
                     alert(`Failed to enable ${target}`);
                     // Move toggle back, collapse card
                     document.getElementById(target + "-enable-toggle").checked = false;
-                    var card = document.getElementById(target + "-body");
                     $('#' + target + '-body').collapse('hide')
                 } else {
                     alert(`Failed to disable ${target}`);
@@ -616,10 +615,21 @@
                                             document.getElementById(device + "-brightness-reset").style.visibility = "hidden";
                                         };
                                     } catch(err) {};
-/*
-                                } else if (param == "enabled") {
 
-                                } else if (param == "schedule") {*/
+                                } else if (param == "enabled") {
+                                    if (new_status["devices"][device]["enabled"]) {
+                                        // Move toggle, collapse card
+                                        document.getElementById(device + "-enable-toggle").checked = true;
+                                        $('#' + device + '-body').collapse('show')
+
+                                    } else {
+                                        // Move toggle, collapse card
+                                        document.getElementById(device + "-enable-toggle").checked = false;
+                                        $('#' + device + '-body').collapse('hide')
+
+                                    };
+
+//                                 } else if (param == "schedule") {
 
                                 // TODO Continue adding endpoints here as they are implemented
 
