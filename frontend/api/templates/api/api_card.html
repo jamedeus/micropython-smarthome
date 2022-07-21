@@ -80,14 +80,49 @@
 
             <div class="row mt-3">
 
+<!--      SENSORS      -->
                 <div class="col-sm">
 
                     {% for sensor, params in context.sensors.items %}
 
-                        {% if params.type == "si7021" %}
-                            <div class="card">
-                                <div class="card-body">
+                        <div class="card">
+                            <div class="card-body d-flex flex-column">
+                                <div class="d-flex flex-row">
                                     <h4 class="card-title">{{ sensor }} ({{ params.type }})</h4>
+                                    <div class="form-check form-switch ms-auto my-auto">
+                                        {% if params.enabled %}
+                                            <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)" checked>
+                                        {% else %}
+                                            <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)">
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                {% if params.enabled %}
+                                    <div class="collapse show" id="{{sensor}}-body">
+                                {% else %}
+                                    <div class="collapse" id="{{sensor}}-body">
+                                {% endif %}
+
+                                <!-- Trigger button -->
+                                {% if params.type in "pir,desktop,dummy" %}
+                                    <div>
+                                        <!-- TODO backend report trigger state in status obj, display here (like device on/off state) -->
+                                        <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" checked>
+                                        <label class="btn btn-sm btn-primary" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label">Trigger</label><br>
+                                    </div>
+                                {% endif %}
+                                <!-- End trigger button -->
+
+                                <!-- Rule slider -->
+                                {% if params.type == "pir" %}
+                                    <div class="text-center mx-3">
+                                        <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Delay: <span id="{{sensor}}-current-rule">{{params.current_rule}}</span> minutes</label>
+                                        <input id="{{sensor}}-rule" type="range" class="form-range current-rule-slider" min="0" max="100" step="0.5" value="{{params.current_rule}}" autocomplete="off">
+                                        <div id="{{sensor}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                    </div>
+
+                                {% elif params.type == "si7021" %}
                                     <table class="table table-borderless">
                                         <tbody>
                                             <tr>
@@ -100,143 +135,92 @@
                                             </tr>
                                         </tbody>
                                     </table>
-                                </div>
-                            </div>
-                            <script>
-                                async function updateClimateData() {
-                                    climate_data = await fetch("/get_climate_data/" + "{{ context.metadata.id }}");
-                                    climate_data = await climate_data.json();
 
-                                    document.getElementById("temperature").innerHTML = climate_data["temp"].toFixed(2)
-                                    document.getElementById("humidity").innerHTML = climate_data["humid"].toFixed(2)
-                                };
+                                    <script>
+                                        async function updateClimateData() {
+                                            climate_data = await fetch("/get_climate_data/" + "{{ context.metadata.id }}");
+                                            climate_data = await climate_data.json();
 
-                                // Get new temp+humidity reading every 5 seconds, update div if user currently viewing sensor data
-                                function queryTempSensor(start) {
-                                    if (start) {
-                                        timer = setInterval(async function() {
-                                            updateClimateData();
+                                            document.getElementById("temperature").innerHTML = climate_data["temp"].toFixed(2)
+                                            document.getElementById("humidity").innerHTML = climate_data["humid"].toFixed(2)
+                                        };
 
-                                        }, 5000);
-                                    } else {
-                                        clearInterval(timer);
+                                        // Get new temp+humidity reading every 5 seconds, update div if user currently viewing sensor data
+                                        function queryTempSensor(start) {
+                                            if (start) {
+                                                timer = setInterval(async function() {
+                                                    updateClimateData();
 
-                                        // Clear old data if present
-                                        climate_data = ""
-                                    };
-                                };
+                                                }, 5000);
+                                            } else {
+                                                clearInterval(timer);
 
-                                updateClimateData();
-                                queryTempSensor(true);
-                            </script>
+                                                // Clear old data if present
+                                                climate_data = ""
+                                            };
+                                        };
 
+                                        updateClimateData();
+                                        queryTempSensor(true);
+                                    </script>
 
-                        {% else %}
-
-                        <div class="card">
-                            <div class="card-body">
-                                <h4 class="card-title text-center">{{ sensor }} ({{ params.type }})</h4>
-                                {% if params.enabled %}
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" checked>
-                                        <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
-                                    </div></br>
-
-                                    <div>
-                                        <label class="form-label" for="rule_input">Current Rule: </label>
-                                        <div class="input-group">
-                                            <input type='text' id='rule_input' placeholder='Enter rule' name='rule_input' class='form-control' value="{{ params.current_rule }}">
-                                            <button class="btn btn-sm btn-success" id="change_rule">Change</button>
-                                            <button class="btn btn-sm btn-danger" id="change_rule">Reset</button>
-                                        </div></br>
+                                    <div class="text-center">
+                                        <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Thermostat: <span id="{{sensor}}-current-rule">{{params.current_rule}}</span>° F</label>
+                                        <input id="{{sensor}}-rule" type="range" class="form-range current-rule-slider" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
+                                        <div id="{{sensor}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
 
-                                    <label class="form-label" for="targets">Targets:</label>
-                                    <ul id="targets" class="list-group">
-                                    {% for target in params.targets %}
-                                        <li class="list-group-item">{{ target }}</li>
-                                    {% endfor %}
-                                    </ul></br>
-
-                                    <div>
-                                        <button class="btn btn-sm btn-primary">Trigger</button>
-                                    </div></br>
-
-
-                                    <p>
-                                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
-                                            Schedule rules
-                                        </button>
-                                    </p>
-                                    <div class="collapse" id="{{sensor}}-schedule-rules">
-
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <label class="card-title schedule-rule-card"><b>{{ sensor }} ({{ params.type }}):</b></label>
-                                                <table id="{{sensor}}-rules" class="table table-borderless">
-                                                    <tr>
-                                                        <th style="text-align: left;">Time</th>
-                                                        <th style="text-align: left;">Rule</th>
-                                                    </tr>
-
-                                                    {% if params.schedule.items|length > 0 %}
-                                                        {% for time, rule in params.schedule.items %}
-                                                            <tr id="{{sensor}}-row-{{forloop.counter}}">
-                                                                <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
-                                                                <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                    {% else %}
-                                                        <tr id="{{sensor}}-row-1">
-                                                            <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule1-time"></td>
-                                                            <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-value" placeholder="" name="schedule-{{sensor}}-rule1-value"></td>
-                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove1"  onclick="delete_rule(this)">X</button></td>
-                                                        </tr>
-                                                    {% endif %}
-                                                </table>
-                                            </div>
-
-                                            <div class="text-left mx-3 mb-3">
-                                                <button type="button" class="btn btn-secondary add" id="{{sensor}}-add-rule">Add another</button>
-                                            </div>
-
-                                        </div></br>
-
-
-                                    </div>
-
-
-
-
-                                {% else %}
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="flexSwitchCheckDefault">
-                                        <label class="form-check-label" for="flexSwitchCheckDefault">Enabled</label>
-                                    </div>
                                 {% endif %}
+                                <!-- End rule slider -->
+
+                                <!-- Schedule rules section, collapsed by default -->
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
+                                        Schedule rules
+                                    </button>
+                                </p>
+                                <div class="collapse" id="{{sensor}}-schedule-rules">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <label class="card-title schedule-rule-card"><b>{{ sensor }} ({{ params.type }}):</b></label>
+                                            <table id="{{sensor}}-rules" class="table table-borderless">
+                                                <tr>
+                                                    <th style="text-align: left;">Time</th>
+                                                    <th style="text-align: left;">Rule</th>
+                                                </tr>
+
+                                                {% if params.schedule.items|length > 0 %}
+                                                    {% for time, rule in params.schedule.items %}
+                                                        <tr id="{{sensor}}-row-{{forloop.counter}}">
+                                                            <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
+                                                            <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <tr id="{{sensor}}-row-1">
+                                                        <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule1-time"></td>
+                                                        <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-value" placeholder="" name="schedule-{{sensor}}-rule1-value"></td>
+                                                        <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove1"  onclick="delete_rule(this)">X</button></td>
+                                                    </tr>
+                                                {% endif %}
+                                            </table>
+                                        </div>
+
+                                        <div class="text-left mx-3 mb-3">
+                                            <button type="button" class="btn btn-secondary add" id="{{sensor}}-add-rule">Add another</button>
+                                        </div>
+
+                                    </div></br>
+                                </div>
+                                <!-- End schedule rules section -->
                             </div>
+                        </div>
                         </div></br>
-
-                        {% endif %}
-
                     {% endfor %}
-
                 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+<!--      DEVICES      -->
                 <div class="col-sm">
 
                     {% for device, params in context.devices.items %}
@@ -260,74 +244,74 @@
                                     <div class="collapse" id="{{device}}-body">
                                 {% endif %}
 
-                                    <!-- Power toggle button -->
-                                    <div>
-                                        {% if params.turned_on %}
-                                            <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)" checked>
-                                            <label class="btn btn-sm btn-outline-primary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">ON</label><br>
-                                        {% else %}
-                                            <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)">
-                                            <label class="btn btn-sm btn-outline-secondary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">OFF</label><br>
-                                        {% endif %}
-                                    </div>
-
-                                    <!-- Brightness slider -->
-                                    {% if params.type in "dimmer,bulb" %}
-                                        <div class="text-center mx-3">
-                                            <label for="{{device}}-brightness" id="{{device}}-brightness-label" class="form-label">Brightness: {{params.current_rule}}</label>
-                                            <input id="{{device}}-brightness" type="range" class="form-range brightness-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
-                                            <div id="{{device}}-brightness-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
-                                        </div>
-                                    {% elif params.type == "pwm" %}
-                                        <div class="text-center">
-                                            <label for="{{device}}-brightness" id="{{device}}-brightness-label" class="form-label">Brightness: {{params.current_rule}}</label>
-                                            <input id="{{device}}-brightness" type="range" class="form-range brightness-slider" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
-                                            <div id="{{device}}-brightness-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
-                                        </div>
+                                <!-- Power toggle button -->
+                                <div>
+                                    {% if params.turned_on %}
+                                        <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)" checked>
+                                        <label class="btn btn-sm btn-outline-primary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">ON</label><br>
+                                    {% else %}
+                                        <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)">
+                                        <label class="btn btn-sm btn-outline-secondary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">OFF</label><br>
                                     {% endif %}
-                                    <!-- End brightness slider -->
+                                </div>
 
-                                    <!-- Schedule rules section, collapsed by default -->
-                                    <p class="text-center">
-                                        <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules">
-                                            Schedule rules
-                                        </button>
-                                    </p>
-                                    <div class="collapse" id="{{device}}-schedule-rules">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <label class="card-title schedule-rule-card"><b>{{ device }} ({{ params.type }}):</b></label>
-                                                <table id="{{device}}-rules" class="table table-borderless">
-                                                    <tr>
-                                                        <th style="text-align: left;">Time</th>
-                                                        <th style="text-align: left;">Rule</th>
-                                                    </tr>
-
-                                                    {% if params.schedule.items|length > 0 %}
-                                                        {% for time, rule in params.schedule.items %}
-                                                            <tr id="{{device}}-row-{{forloop.counter}}">
-                                                                <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
-                                                                <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                    {% else %}
-                                                        <tr id="{{device}}-row-1">
-                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
-                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
-                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
-                                                        </tr>
-                                                    {% endif %}
-                                                </table>
-                                            </div>
-
-                                            <div class="text-left mx-3 mb-3">
-                                                <button type="button" class="btn btn-secondary add" id="{{device}}-add-rule">Add another</button>
-                                            </div>
-
-                                        </div></br>
+                                <!-- Rule slider -->
+                                {% if params.type in "dimmer,bulb" %}
+                                    <div class="text-center mx-3">
+                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule">{{params.current_rule}}</span></label>
+                                        <input id="{{device}}-rule" type="range" class="form-range current-rule-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
+                                        <div id="{{device}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
-                                    <!-- End schedule rules section -->
+                                {% elif params.type == "pwm" %}
+                                    <div class="text-center">
+                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule">{{params.current_rule}}</span></label>
+                                        <input id="{{device}}-rule" type="range" class="form-range current-rule-slider" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
+                                        <div id="{{device}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                    </div>
+                                {% endif %}
+                                <!-- End rule slider -->
+
+                                <!-- Schedule rules section, collapsed by default -->
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules">
+                                        Schedule rules
+                                    </button>
+                                </p>
+                                <div class="collapse" id="{{device}}-schedule-rules">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <label class="card-title schedule-rule-card"><b>{{ device }} ({{ params.type }}):</b></label>
+                                            <table id="{{device}}-rules" class="table table-borderless">
+                                                <tr>
+                                                    <th style="text-align: left;">Time</th>
+                                                    <th style="text-align: left;">Rule</th>
+                                                </tr>
+
+                                                {% if params.schedule.items|length > 0 %}
+                                                    {% for time, rule in params.schedule.items %}
+                                                        <tr id="{{device}}-row-{{forloop.counter}}">
+                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
+                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <tr id="{{device}}-row-1">
+                                                        <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
+                                                        <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
+                                                        <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
+                                                    </tr>
+                                                {% endif %}
+                                            </table>
+                                        </div>
+
+                                        <div class="text-left mx-3 mb-3">
+                                            <button type="button" class="btn btn-secondary add" id="{{device}}-add-rule">Add another</button>
+                                        </div>
+
+                                    </div></br>
+                                </div>
+                                <!-- End schedule rules section -->
 
                                 </div>
 
@@ -339,9 +323,6 @@
                 </div>
 
             </div>
-
-
-
 
         {% else %}
             <p>FATAL ERROR</p>
@@ -382,6 +363,9 @@
 
         var target_node_status = JSON.parse(document.getElementById("context").textContent);
 
+        // Initial value, used to detect change (lose connection, re-establish connection)
+        selected_node_unreachable = false;
+
         // Receives command parameters in value
         async function send_command(value) {
             // Add target and selected command to request body
@@ -400,38 +384,41 @@
             return result
         };
 
-        // Add handlers to brightness sliders
-        for (button of document.getElementsByClassName("brightness-slider")) {
-            const id = button.id
+        // Add handlers to current rule sliders
+        for (button of document.getElementsByClassName("current-rule-slider")) {
+            const id = button.id.split("-")[0]
+            // Device or sensor
+            const category = id.replace(/[0-9]/g, '') + "s";
+            console.log(`${id}: ${category}`);
 
             // If current rule != schedule rule, show reset button
-            const brightness = document.getElementById(id).value;
-            const scheduled = target_node_status["devices"][id.split("-")[0]]["scheduled_rule"];
+            const rule = document.getElementById(button.id).value;
+            const scheduled = target_node_status[category][id]["scheduled_rule"];
 
-            if (brightness != scheduled) {
-                document.getElementById(id + "-reset").style.visibility = "visible";
+            if (rule != scheduled) {
+                document.getElementById(id + "-rule-reset").style.visibility = "visible";
             };
 
-            // Update current brightness while slider moves
+            // Update current rule displayed while slider moves
             button.addEventListener('input', function(e) {
-                var label = document.getElementById(e.target.id + "-label");
-                var new_bright = document.getElementById(e.target.id).value;
-                label.innerHTML = "Brightness: " + new_bright;
+                var label = document.getElementById(e.target.id.split("-")[0] + "-current-rule");
+                var new_rule = document.getElementById(e.target.id).value;
+                label.innerHTML = new_rule;
             });
 
             // Runs once when user releases click on slider
             button.addEventListener('change', async function(e) {
-                const new_bright = document.getElementById(e.target.id).value;
-                const scheduled = target_node_status["devices"][e.target.id.split("-")[0]]["scheduled_rule"];
+                const new_rule = document.getElementById(e.target.id).value;
+                const scheduled = target_node_status[category][e.target.id.split("-")[0]]["scheduled_rule"];
 
-                if (new_bright != scheduled) {
-                    document.getElementById(id + "-reset").style.visibility = "visible";
+                if (new_rule != scheduled) {
+                    document.getElementById(id + "-rule-reset").style.visibility = "visible";
                 } else {
-                    document.getElementById(id + "-reset").style.visibility = "hidden";
+                    document.getElementById(id + "-rule-reset").style.visibility = "hidden";
                 };
 
                 // Fire API command here
-                var result = await send_command({'command': 'set_rule', 'instance': e.target.id.split("-")[0], 'rule': new_bright});
+                var result = await send_command({'command': 'set_rule', 'instance': e.target.id.split("-")[0], 'rule': new_rule});
                 result = await result.json();
             });
         };
@@ -439,6 +426,8 @@
         // Handler for current_rule reset button
         async function reset(el) {
             const target = el.parentElement.id.split("-")[0];
+            // Device or sensor
+            const category = target.replace(/[0-9]/g, '') + "s";
 
             var result = await send_command({'command': 'reset_rule', 'instance': target});
             result = await result.json();
@@ -447,18 +436,18 @@
                 console.log(`Failed to reset ${target} rule`);
             } else {
                 console.log(target)
-                // Update current brightness
-                const label = document.getElementById(target + "-brightness-label");
-                const scheduled = target_node_status["devices"][target]["scheduled_rule"];
+                // Update current rule
+                const label = document.getElementById(target + "-current-rule");
+                const scheduled = target_node_status[category][target]["scheduled_rule"];
 
-                label.innerHTML = "Brightness: " + scheduled;
+                label.innerHTML = scheduled;
 
                 // Update slider position
-                const slider = document.getElementById(target + "-brightness");
+                const slider = document.getElementById(target + "-rule");
                 slider.value = scheduled
 
                 // Hide reset button
-                document.getElementById(target + "-brightness-reset").style.visibility = "hidden";
+                document.getElementById(target + "-rule-reset").style.visibility = "hidden";
             };
         };
 
@@ -524,6 +513,20 @@
             };
         };
 
+        async function trigger(el) {
+            const target = el.id.split("-")[0];
+
+            var result = await send_command({'command': 'trigger_sensor', 'instance': target});
+            result = await result.json();
+
+                if (JSON.stringify(result).startsWith('{"ERROR')) {
+                    console.log(`Failed to trigger ${target}`);
+                } else {
+                    // Update page contents immediately after triggering (sensor probably turned targets on)
+                    updateStatusObject();
+                };
+        };
+
         // Handler for delete button in schedule rules dropdown
         async function delete_rule(selected) {
             // Prevent user submitting multiple times
@@ -551,98 +554,98 @@
             };
         };
 
-        // Query status every 5 seconds, update page if anything changed
-        function monitorSelectedNodeStatus(start) {
-            if (start) {
-                // Initial value, used to detect change
+        // Request new status object, compare to old, update page contents to reflect changes (if any)
+        async function updateStatusObject() {
+            // Get status object
+            var new_status = await fetch("/get_status/" + target_node);
+            new_status = await new_status.json();
+
+            // If unable to connect
+            if (selected_node_unreachable == false && new_status == "Error: Unable to connect.") {
+                $("#error-modal").modal("show");
+                console.log("Unable to connect to target, will retry every 5 seconds.");
+                selected_node_unreachable = true;
+
+            } else if (selected_node_unreachable == true && new_status != "Error: Unable to connect.") {
+                $("#error-modal").modal("hide");
+                console.log("Re-connected to target.");
                 selected_node_unreachable = false;
+            };
 
-                statusTimer = setInterval(async function() {
-                    // Get status object
-                    var new_status = await fetch("/get_status/" + target_node);
-                    new_status = await new_status.json();
+            // Find changes
+            // TODO (after finishing sensor card layouts) adjust loop to iterate both sensors and devices
+            for (let device in new_status["devices"]) {
+                for (let param in new_status["devices"][device]) {
+                    if (new_status["devices"][device][param] != target_node_status["devices"][device][param]) {
 
-                    // If unable to connect
-                    if (selected_node_unreachable == false && new_status == "Error: Unable to connect.") {
-                        $("#error-modal").modal("show");
-                        console.log("Unable to connect to target, will retry every 5 seconds.");
-                        selected_node_unreachable = true;
+                        if (param == "turned_on") {
+                            // Get element
+                            const label = document.getElementById(device + "-power-state-label");
 
-                    } else if (selected_node_unreachable == true && new_status != "Error: Unable to connect.") {
-                        $("#error-modal").modal("hide");
-                        console.log("Re-connected to target.");
-                        selected_node_unreachable = false;
-                    };
+                            // Device turned ON since last status update
+                            if (new_status["devices"][device][param]) {
+                                label.classList.add("btn-outline-primary");
+                                label.classList.remove("btn-outline-secondary");
+                                label.innerHTML = "ON";
+                                label.parentElement.children[0].checked = true;
 
-                    // Find changes
-                    // TODO (after finishing sensor card layouts) adjust loop to iterate both sensors and devices
-                    for (let device in new_status["devices"]) {
-                        for (let param in new_status["devices"][device]) {
-                            if (new_status["devices"][device][param] != target_node_status["devices"][device][param]) {
+                            // Device turned OFF since last status update
+                            } else {
+                                label.classList.add("btn-outline-secondary");
+                                label.classList.remove("btn-outline-primary");
+                                label.innerHTML = "OFF";
+                                label.parentElement.children[0].checked = false;
+                            };
 
-                                if (param == "turned_on") {
-                                    // Get element
-                                    const label = document.getElementById(device + "-power-state-label");
+                        } else if (param == "current_rule" || param == "scheduled_rule") {
+                            try {
+                                const slider = document.getElementById(device + "-rule");
+                                const label = document.getElementById(device + "-rule-label");
 
-                                    // Device turned ON since last status update
-                                    if (new_status["devices"][device][param]) {
-                                        label.classList.add("btn-outline-primary");
-                                        label.classList.remove("btn-outline-secondary");
-                                        label.innerHTML = "ON";
-                                        label.parentElement.children[0].checked = true;
+                                slider.value = new_status["devices"][device]["current_rule"];
+                                label.innerHTML = "Brightness: " + new_status["devices"][device]["current_rule"];
 
-                                    // Device turned OFF since last status update
-                                    } else {
-                                        label.classList.add("btn-outline-secondary");
-                                        label.classList.remove("btn-outline-primary");
-                                        label.innerHTML = "OFF";
-                                        label.parentElement.children[0].checked = false;
-                                    };
+                                if (new_status["devices"][device]["current_rule"] != new_status["devices"][device]["scheduled_rule"]) {
+                                    // Show reset button
+                                    document.getElementById(device + "-rule-reset").style.visibility = "visible";
+                                } else {
+                                    // Hide reset button
+                                    document.getElementById(device + "-rule-reset").style.visibility = "hidden";
+                                };
+                            } catch(err) {};
 
-                                } else if (param == "current_rule" || param == "scheduled_rule") {
-                                    try {
-                                        const slider = document.getElementById(device + "-brightness");
-                                        const label = document.getElementById(device + "-brightness-label");
+                        } else if (param == "enabled") {
+                            if (new_status["devices"][device]["enabled"]) {
+                                // Move toggle, collapse card
+                                document.getElementById(device + "-enable-toggle").checked = true;
+                                $('#' + device + '-body').collapse('show')
 
-                                        slider.value = new_status["devices"][device]["current_rule"];
-                                        label.innerHTML = "Brightness: " + new_status["devices"][device]["current_rule"];
+                            } else {
+                                // Move toggle, collapse card
+                                document.getElementById(device + "-enable-toggle").checked = false;
+                                $('#' + device + '-body').collapse('hide')
 
-                                        if (new_status["devices"][device]["current_rule"] != new_status["devices"][device]["scheduled_rule"]) {
-                                            // Show reset button
-                                            document.getElementById(device + "-brightness-reset").style.visibility = "visible";
-                                        } else {
-                                            // Hide reset button
-                                            document.getElementById(device + "-brightness-reset").style.visibility = "hidden";
-                                        };
-                                    } catch(err) {};
-
-                                } else if (param == "enabled") {
-                                    if (new_status["devices"][device]["enabled"]) {
-                                        // Move toggle, collapse card
-                                        document.getElementById(device + "-enable-toggle").checked = true;
-                                        $('#' + device + '-body').collapse('show')
-
-                                    } else {
-                                        // Move toggle, collapse card
-                                        document.getElementById(device + "-enable-toggle").checked = false;
-                                        $('#' + device + '-body').collapse('hide')
-
-                                    };
+                            };
 
 //                                 } else if (param == "schedule") {
 
-                                // TODO Continue adding endpoints here as they are implemented
+                        // TODO Continue adding endpoints here as they are implemented
 
-                                };
-                            };
                         };
                     };
+                };
+            };
 
-                    // Do not overwrite old config with error (if connection lost, will have nothing to compare against when re-connected)
-                    if (!selected_node_unreachable) {
-                        target_node_status = new_status
-                    };
-                }, 5000);
+            // Do not overwrite old config with error (if connection lost, will have nothing to compare against when re-connected)
+            if (!selected_node_unreachable) {
+                target_node_status = new_status
+            };
+        }
+
+        // Query status every 5 seconds
+        function monitorSelectedNodeStatus(start) {
+            if (start) {
+                statusTimer = setInterval(updateStatusObject, 5000);
             } else {
                 clearInterval(statusTimer);
             };
