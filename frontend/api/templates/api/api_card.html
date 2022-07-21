@@ -88,7 +88,7 @@
                         <div class="card">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex flex-row">
-                                    <h4 class="card-title">{{ sensor }} ({{ params.type }})</h4>
+                                    <h4 class="card-title" id="{{sensor}}-title">{{ sensor }} ({{ params.type }})</h4>
                                     <div class="form-check form-switch ms-auto my-auto">
                                         {% if params.enabled %}
                                             <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)" checked>
@@ -126,12 +126,12 @@
                                     <table class="table table-borderless">
                                         <tbody>
                                             <tr>
-                                                <th class="text-center w-50">Temperature</th>
-                                                <th class="text-center w-50">Humidity</th>
+                                                <th class="text-center w-50 pb-0">Temperature</th>
+                                                <th class="text-center w-50 pb-0">Humidity</th>
                                             </tr>
                                             <tr>
-                                                <td class="text-center" id="temperature">00.00</td>
-                                                <td class="text-center" id="humidity">00.00</td>
+                                                <td class="text-center fs-5" id="temperature">00.00</td>
+                                                <td class="text-center fs-5" id="humidity">00.00</td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -163,12 +163,48 @@
                                         updateClimateData();
                                         queryTempSensor(true);
                                     </script>
+                                    <!-- Close climate data card, start new card for thermostat -->
+                                    </div></div></div></br>
 
-                                    <div class="text-center">
-                                        <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Thermostat: <span id="{{sensor}}-current-rule">{{params.current_rule}}</span>° F</label>
-                                        <input id="{{sensor}}-rule" type="range" class="form-range current-rule-slider" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
-                                        <div id="{{sensor}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
-                                    </div>
+                                    <script>
+                                        // Change previous card title to "Climate Data", old title will be reused in new card below
+                                        var title = document.getElementById("{{sensor}}-title");
+                                        title.innerHTML = "Climate Data";
+                                        // Center title
+                                        title.parentElement.classList.remove("d-flex");
+                                        title.parentElement.classList.remove("flex-row");
+                                        title.classList.add("text-center");
+
+                                        // Remove enable/disable toggle, will be replaced in new card below
+                                        var toggle = document.getElementById("{{sensor}}-enable-toggle");
+                                        toggle.parentElement.remove();
+
+                                    </script>
+
+                                    <div class="card">
+                                        <div class="card-body d-flex flex-column">
+                                            <div class="d-flex flex-row">
+                                                <h4 class="card-title">{{ sensor }} ({{ params.type }})</h4>
+                                                <div class="form-check form-switch ms-auto my-auto">
+                                                    {% if params.enabled %}
+                                                        <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)" checked>
+                                                    {% else %}
+                                                        <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)">
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+
+                                            {% if params.enabled %}
+                                                <div class="collapse show" id="{{sensor}}-body">
+                                            {% else %}
+                                                <div class="collapse" id="{{sensor}}-body">
+                                            {% endif %}
+
+                                            <div class="text-center">
+                                                <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Thermostat: <span id="{{sensor}}-current-rule">{{params.current_rule}}</span>° F</label>
+                                                <input id="{{sensor}}-rule" type="range" class="form-range current-rule-slider" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
+                                                <div id="{{sensor}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                            </div>
 
                                 {% endif %}
                                 <!-- End rule slider -->
@@ -228,7 +264,7 @@
                         <div class="card">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex flex-row">
-                                    <h4 class="card-title">{{ device }} ({{ params.type }})</h4>
+                                    <h4 class="card-title" id="{{device}}-title">{{ device }} ({{ params.type }})</h4>
                                     <div class="form-check form-switch ms-auto my-auto">
                                         {% if params.enabled %}
                                             <input class="form-check-input" type="checkbox" id="{{device}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{device}}-body" aria-expanded="false" aria-controls="{{device}}-body" autocomplete="off" onchange="enable(this)" checked>
