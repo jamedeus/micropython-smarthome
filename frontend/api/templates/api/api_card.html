@@ -78,6 +78,10 @@
     <div class="container">
         {% if context %}
 
+            <div class="text-center">
+                <h1 class="my-3">{{context.metadata.id}}</h1>
+            </div>
+
             <div class="row mt-3">
 
 <!--      SENSORS      -->
@@ -601,11 +605,15 @@
                 $("#error-modal").modal("show");
                 console.log("Unable to connect to target, will retry every 5 seconds.");
                 selected_node_unreachable = true;
+                return;
 
             } else if (selected_node_unreachable == true && new_status != "Error: Unable to connect.") {
                 $("#error-modal").modal("hide");
                 console.log("Re-connected to target.");
                 selected_node_unreachable = false;
+            } else if (selected_node_unreachable == true) {
+                // Prevent iterating error message in loop below
+                return;
             };
 
             // Find changes
