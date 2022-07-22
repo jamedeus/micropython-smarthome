@@ -208,38 +208,34 @@
                                     </button>
                                 </p>
                                 <div class="collapse" id="{{sensor}}-schedule-rules">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <label class="card-title schedule-rule-card"><b>{{ sensor }} ({{ params.type }}):</b></label>
-                                            <table id="{{sensor}}-rules" class="table table-borderless">
-                                                <tr>
-                                                    <th style="text-align: left;">Time</th>
-                                                    <th style="text-align: left;">Rule</th>
+
+                                    <table id="{{sensor}}-rules" class="table table-borderless">
+                                        <tr>
+                                            <th style="text-align: left;">Time</th>
+                                            <th style="text-align: left;">Rule</th>
+                                        </tr>
+
+                                        {% if params.schedule.items|length > 0 %}
+                                            {% for time, rule in params.schedule.items %}
+                                                <tr id="{{sensor}}-row-{{forloop.counter}}">
+                                                    <td><input type="time" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}" autocomplete="off"></td>
+                                                    <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}" autocomplete="off"></td>
+                                                    <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
                                                 </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr id="{{sensor}}-row-1">
+                                                <td><input type="time" class="form-control" id="schedule-{{sensor}}-rule1-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule1-time"></td>
+                                                <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-value" placeholder="" name="schedule-{{sensor}}-rule1-value"></td>
+                                                <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{sensor}}-remove1"  onclick="delete_rule(this)">X</button></td>
+                                            </tr>
+                                        {% endif %}
+                                    </table>
 
-                                                {% if params.schedule.items|length > 0 %}
-                                                    {% for time, rule in params.schedule.items %}
-                                                        <tr id="{{sensor}}-row-{{forloop.counter}}">
-                                                            <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
-                                                            <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                {% else %}
-                                                    <tr id="{{sensor}}-row-1">
-                                                        <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule1-time"></td>
-                                                        <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-value" placeholder="" name="schedule-{{sensor}}-rule1-value"></td>
-                                                        <td class="min"><button type="button" class="remove btn btn-danger" id="{{sensor}}-remove1"  onclick="delete_rule(this)">X</button></td>
-                                                    </tr>
-                                                {% endif %}
-                                            </table>
-                                        </div>
+                                    <div class="text-center mx-3 mb-3">
+                                        <button type="button" class="btn btn-secondary btn-sm add"><i class="bi-plus-lg"></i></button>
+                                    </div>
 
-                                        <div class="text-left mx-3 mb-3">
-                                            <button type="button" class="btn btn-secondary add" id="{{sensor}}-add-rule">Add another</button>
-                                        </div>
-
-                                    </div></br>
                                 </div>
                                 <!-- End schedule rules section -->
                             </div>
@@ -306,38 +302,34 @@
                                     </button>
                                 </p>
                                 <div class="collapse" id="{{device}}-schedule-rules">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <label class="card-title schedule-rule-card"><b>{{ device }} ({{ params.type }}):</b></label>
-                                            <table id="{{device}}-rules" class="table table-borderless">
-                                                <tr>
-                                                    <th style="text-align: left;">Time</th>
-                                                    <th style="text-align: left;">Rule</th>
+
+                                    <table id="{{device}}-rules" class="table table-borderless">
+                                        <tr>
+                                            <th style="text-align: left;">Time</th>
+                                            <th style="text-align: left;">Rule</th>
+                                        </tr>
+
+                                        {% if params.schedule.items|length > 0 %}
+                                            {% for time, rule in params.schedule.items %}
+                                                <tr id="{{device}}-row-{{forloop.counter}}">
+                                                    <td><input type="time" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}" autocomplete="off"></td>
+                                                    <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}" autocomplete="off"></td>
+                                                    <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
                                                 </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr id="{{device}}-row-1">
+                                                <td><input type="time" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
+                                                <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
+                                                <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
+                                            </tr>
+                                        {% endif %}
+                                    </table>
 
-                                                {% if params.schedule.items|length > 0 %}
-                                                    {% for time, rule in params.schedule.items %}
-                                                        <tr id="{{device}}-row-{{forloop.counter}}">
-                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
-                                                            <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                {% else %}
-                                                    <tr id="{{device}}-row-1">
-                                                        <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
-                                                        <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
-                                                        <td class="min"><button type="button" class="remove btn btn-danger" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
-                                                    </tr>
-                                                {% endif %}
-                                            </table>
-                                        </div>
+                                    <div class="text-center mx-3 mb-3">
+                                        <button type="button" class="btn btn-secondary btn-sm add"><i class="bi-plus-lg"></i></button>
+                                    </div>
 
-                                        <div class="text-left mx-3 mb-3">
-                                            <button type="button" class="btn btn-secondary add" id="{{device}}-add-rule">Add another</button>
-                                        </div>
-
-                                    </div></br>
                                 </div>
                                 <!-- End schedule rules section -->
 
