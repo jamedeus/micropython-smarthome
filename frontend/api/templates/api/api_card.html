@@ -220,21 +220,28 @@
                                                 <tr id="{{sensor}}-row-{{forloop.counter}}">
                                                     <td><input type="time" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}" autocomplete="off"></td>
                                                     <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}" autocomplete="off"></td>
-                                                    <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
+                                                    <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
                                                 </tr>
                                             {% endfor %}
                                         {% else %}
                                             <tr id="{{sensor}}-row-1">
                                                 <td><input type="time" class="form-control" id="schedule-{{sensor}}-rule1-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule1-time"></td>
                                                 <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-value" placeholder="" name="schedule-{{sensor}}-rule1-value"></td>
-                                                <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{sensor}}-remove1"  onclick="delete_rule(this)">X</button></td>
+                                                <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="{{sensor}}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
                                             </tr>
                                         {% endif %}
                                     </table>
 
                                     <div class="text-center mx-3 mb-3">
-                                        <button type="button" class="btn btn-secondary btn-sm add"><i class="bi-plus-lg"></i></button>
+                                        <button type="button" class="btn btn-secondary btn-sm add" id="{{sensor}}-add-rule" onclick="add_rule_row(this)"><i class="bi-plus-lg"></i></button>
                                     </div>
+
+                                    <!-- If no rules exist, hide add rule button (blank row above already has add button) -->
+                                    {% if params.schedule.items|length == 0 %}
+                                        <script>
+                                            document.getElementById("{{sensor}}-add-rule").style.display = "none";
+                                        </script>
+                                    {% endif %}
 
                                 </div>
                                 <!-- End schedule rules section -->
@@ -314,21 +321,28 @@
                                                 <tr id="{{device}}-row-{{forloop.counter}}">
                                                     <td><input type="time" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}" autocomplete="off"></td>
                                                     <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}" autocomplete="off"></td>
-                                                    <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)">X</button></td>
+                                                    <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
                                                 </tr>
                                             {% endfor %}
                                         {% else %}
                                             <tr id="{{device}}-row-1">
                                                 <td><input type="time" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time"></td>
                                                 <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value"></td>
-                                                <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{device}}-remove1"  onclick="delete_rule(this)">X</button></td>
+                                                <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="{{device}}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
                                             </tr>
                                         {% endif %}
                                     </table>
 
                                     <div class="text-center mx-3 mb-3">
-                                        <button type="button" class="btn btn-secondary btn-sm add"><i class="bi-plus-lg"></i></button>
+                                        <button type="button" class="btn btn-secondary btn-sm add" id="{{device}}-add-rule" onclick="add_rule_row(this)"><i class="bi-plus-lg"></i></button>
                                     </div>
+
+                                    <!-- If no rules exist, hide add rule button (blank row above already has add button) -->
+                                    {% if params.schedule.items|length == 0 %}
+                                        <script>
+                                            document.getElementById("{{device}}-add-rule").style.display = "none";
+                                        </script>
+                                    {% endif %}
 
                                 </div>
                                 <!-- End schedule rules section -->
@@ -563,7 +577,88 @@
                 selected.disabled = false;
             } else {
                 // Delete row if success
-                document.getElementById(selected.id).parentElement.parentElement.remove()
+                document.getElementById(selected.id).parentElement.parentElement.remove();
+
+                // Check if deleted rule was last rule
+                if (document.getElementById(target + "-rules").rows.length == 1) {
+                    // If no rules remain, add blank row
+                    var template = `<tr id="${target}-row-1">
+                                        <td><input type="time" class="form-control" id="schedule-${target}-rule1-time" placeholder="HH:MM" name="schedule-${target}-rule1-time"></td>
+                                        <td><input type="text" class="form-control" id="schedule-${target}-rule1-value" placeholder="" name="schedule-${target}-rule1-value"></td>
+                                        <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
+                                    </tr>`
+
+                    document.getElementById(target + "-rules").insertAdjacentHTML('beforeend', template);
+
+                    // Hide add row button
+                    document.getElementById(target + "-add-rule").style.display = "none";
+                };
+            };
+        };
+
+        async function add_rule_row(el) {
+            // Get target device/sensor
+            const target = el.id.split("-")[0];
+
+            // Get new row number
+            const table = document.getElementById(target + "-rules");
+            const row = parseInt(table.rows[table.rows.length-1].id.split("-")[2]) + 1
+
+            // Add row number + target id to empty row template
+            var template = `<tr id="${target}-row-${row}">
+                                <td><input type="time" class="form-control" id="schedule-${target}-rule${row}-time" placeholder="HH:MM" name="schedule-${target}-rule${row}-time"></td>
+                                <td><input type="text" class="form-control" id="schedule-${target}-rule${row}-value" placeholder="" name="schedule-${target}-rule${row}-value"></td>
+                                <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
+                            </tr>`
+
+            // Add new empty rows
+            document.getElementById(target + "-rules").insertAdjacentHTML('beforeend', template);
+
+            // Hide add rule button (will be un-hidden when user finishes adding this rule)
+            document.getElementById(target + "-add-rule").style.display = "none"
+        };
+
+        async function add_rule(el) {
+            // Prevent user submitting multiple times
+            el.disabled = true;
+
+            // Get target device/sensor
+            const target = el.id.split("-")[0];
+
+            // Get rule number
+            const num = el.id.split("add")[1];
+
+            // Get timestamp
+            const timestamp = document.getElementById(`schedule-${target}-rule${num}-time`).value;
+
+            // Get rule
+            const rule = document.getElementById(`schedule-${target}-rule${num}-value`).value;
+
+            // Do not add incomplete rule
+            if (timestamp.length == 0 || rule.length == 0) {
+                el.disabled = false;
+                return;
+            };
+
+            // Send command
+            var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp, 'rule': rule});
+            result = await result.json();
+
+            if (JSON.stringify(result).startsWith('{"ERROR')) {
+                // Re-enable button if failed to delete
+                el.disabled = false;
+                alert(JSON.stringify(result));
+            } else {
+                // If successfully added, change add button to delete button, re-enable
+                el.classList.remove("btn-success");
+                el.classList.add("btn-danger");
+                el.innerHTML = "<i class='bi-trash'></i>";
+                el.id = el.id.replace("add", "remove");
+                el.setAttribute( "onClick", "delete_rule(this);" );
+                el.disabled = false;
+
+                // Unhide add rule button so user can continue adding rules if needed
+                document.getElementById(target + "-add-rule").style.display = "initial"
             };
         };
 
