@@ -70,6 +70,14 @@
 </head>
 
 <body>
+    <script>
+        // Check if user is in dark mode, change theme (runs once on page load)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add("dark");
+            console.log("Dark mode");
+        };
+    </script>
+
     <div class="container">
         <div id="page1">
             <h3 class="text-center mt-3">Api Overview</h3>
@@ -146,11 +154,6 @@
     </div>
 
     <script>
-        // Check if user is in dark mode, change theme (runs once on page load)
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add("dark");
-            console.log("Dark mode");
-        };
 
         var selected_node = "";
         var selected_node_status = "";

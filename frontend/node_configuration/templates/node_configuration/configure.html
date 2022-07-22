@@ -66,6 +66,14 @@
 </head>
 
 <body>
+    <script>
+        // Check if user is in dark mode, change theme (runs once on page load)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add("dark");
+            console.log("Dark mode");
+        };
+    </script>
+
     <div class="container">
         <div>
             <h1 class="text-center mt-3">Create New Config</h1>
@@ -210,12 +218,6 @@
     </div>
 
     <script>
-        // Check if user is in dark mode, change theme (runs once on page load)
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add("dark");
-            console.log("Dark mode");
-        };
-
         async function load_sensor_section(select) {
             // Get index of sensor
             const index = parseInt(select.id.replace("sensorType", ""));

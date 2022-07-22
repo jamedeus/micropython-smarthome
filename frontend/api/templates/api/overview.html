@@ -22,29 +22,33 @@
 </head>
 
 <body>
-    <div class="container">
-        <div id="page1">
-            <h3 class="text-center mt-3">Api Overview</h3>
-
-            {% if context %}
-                <div class="text-center">
-                    {% for node in context %}
-                        <button onclick="window.location.href = '/api/' + this.id;" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
-                    {% endfor %}
-                </div>
-
-            {% else %}
-                <p>No nodes available</p>
-            {% endif %}
-        </div>
-
     <script>
         // Check if user is in dark mode, change theme (runs once on page load)
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.body.classList.add("dark");
             console.log("Dark mode");
         };
+    </script>
 
+    <div class="container d-flex flex-column vh-100">
+        <h3 class="text-center mt-3">Api Overview</h3>
+
+        {% if context %}
+            <div class="text-center">
+                {% for node in context %}
+                    <button onclick="window.location.href = '/api/' + this.id;" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+                {% endfor %}
+            </div>
+
+        {% else %}
+            <p>No nodes available</p>
+        {% endif %}
+
+        <div class="d-flex align-items-center flex-column mt-auto">
+            <button class="btn btn-secondary mt-auto mb-3" id="node_configuration_button" type="button" onclick="window.location.href = '/node_configuration'">Manage</button>
+        </div>
+
+    <script>
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
             if (e.matches) { // Returns True for dark mode, False otherwise

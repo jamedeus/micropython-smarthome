@@ -117,6 +117,7 @@
 </head>
 
 <body>
+
     <div class="container">
         <div>
             <h1 class="text-center mt-3">Configure Nodes</h1>
@@ -169,6 +170,16 @@
                 </div>
 
             {% endif %}
+
+            <script>
+                // Check if user is in dark mode, change theme (runs once on page load)
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.add("dark");
+                    try { document.getElementById("nodes_table").classList.add("table-dark"); } catch(err) {};
+                    try { document.getElementById("not_uploaded_table").classList.add("table-dark"); } catch(err) {};
+                    console.log("Dark mode");
+                };
+            </script>
 
             <!-- If no un-uploaded configs exist, add new config button in div (no table)-->
             <div id="add_new_config" class="mb-3 mx-3">
@@ -229,13 +240,6 @@
     </div>
 
     <script>
-        // Check if user is in dark mode, change theme (runs once on page load)
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add("dark");
-            try { document.getElementById("nodes_table").classList.add("table-dark"); } catch(err) {};
-            try { document.getElementById("not_uploaded_table").classList.add("table-dark"); } catch(err) {};
-            console.log("Dark mode");
-        };
 
         async function send_post_request(url, body) {
             let csrftoken = getCookie('csrftoken');
