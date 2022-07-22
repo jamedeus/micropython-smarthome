@@ -92,7 +92,7 @@
                         <div class="card">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex flex-row">
-                                    <h4 class="card-title" id="{{sensor}}-title">{{ sensor }} ({{ params.type }})</h4>
+                                    <h4 class="card-title" id="{{sensor}}-title">{{ params.nickname }}</h4>
                                     <div class="form-check form-switch ms-auto my-auto">
                                         {% if params.enabled %}
                                             <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)" checked>
@@ -188,7 +188,7 @@
                                     <div class="card">
                                         <div class="card-body d-flex flex-column">
                                             <div class="d-flex flex-row">
-                                                <h4 class="card-title">{{ sensor }} ({{ params.type }})</h4>
+                                                <h4 class="card-title">{{ params.nickname }}</h4>
                                                 <div class="form-check form-switch ms-auto my-auto">
                                                     {% if params.enabled %}
                                                         <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)" checked>
@@ -268,7 +268,7 @@
                         <div class="card">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex flex-row">
-                                    <h4 class="card-title" id="{{device}}-title">{{ device }} ({{ params.type }})</h4>
+                                    <h4 class="card-title" id="{{device}}-title">{{ params.nickname }}</h4>
                                     <div class="form-check form-switch ms-auto my-auto">
                                         {% if params.enabled %}
                                             <input class="form-check-input" type="checkbox" id="{{device}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{device}}-body" aria-expanded="false" aria-controls="{{device}}-body" autocomplete="off" onchange="enable(this)" checked>

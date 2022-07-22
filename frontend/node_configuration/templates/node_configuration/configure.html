@@ -223,24 +223,65 @@
             // Get user selection
             const selected = document.getElementById(select.id).value
 
-            // Load form for the selected sensor type
-            if (selected == "clear") {
-                document.getElementById("addSensorOptions" + index).innerHTML = "";
-                return
-            } else if (selected == "pir") {
-                var div_contents = await fetch("/sensorOptionsPir/" + index);
-            } else if (selected == "switch") {
-                var div_contents = await fetch("/sensorOptionsSwitch/" + index);
-            } else if (selected == "dummy") {
-                var div_contents = await fetch("/sensorOptionsDummy/" + index);
+            // Add nickname section to template, other sections added below as needed
+            var template = `<div class="mb-2">
+                                <label for="sensor${index}-nickname"><b>Nickname:</b></label>
+                                <input type="text" class="form-control" id="sensor${index}-nickname" placeholder="" name="sensor${index}-nickname" required>
+                            </div>`
+
+            // Get template for sensor type selected by user
+            if (selected == "pir" || selected == "switch") {
+                template += `<div class="mb-2">
+                                <label for="sensor${index}-pin"><b>Pin:</b></label>
+                                <input type="text" class="form-control" id="sensor${index}-pin" placeholder="" name="sensor${index}-pin" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="sensor${index}-default_rule"><b>Default Rule:</b></label>
+                                <input type="default_rule" class="form-control" id="sensor${index}-default_rule" placeholder="" name="sensor${index}-default_rule" required>
+                            </div>`
+
             } else if (selected == "desktop") {
-                var div_contents = await fetch("/sensorOptionsDesktop/" + index);
+                template += `<div class="mb-2">
+                                <label for="sensor${index}-ip"><b>IP:</b></label>
+                                <input type="text" class="form-control" id="sensor${index}-ip" placeholder="" name="sensor${index}-ip" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="sensor${index}-default_rule"><b>Default Rule:</b></label>
+                                <input type="text" class="form-control" id="sensor${index}-default_rule" placeholder="" name="sensor${index}-default_rule" required>
+                            </div>`
+
+            } else if (selected == "dummy") {
+                template += `<div class="mb-2">
+                                <label for="sensor${index}-default_rule"><b>Default Rule:</b></label>
+                                <input type="default_rule" class="form-control" id="sensor${index}-default_rule" placeholder="" name="sensor${index}-default_rule" required>
+                            </div>`
             } else if (selected == "si7021") {
-                var div_contents = await fetch("/sensorOptionsSi7021/" + index);
+                template += `<div class="mb-2">
+                                <label for="sensor${index}-default_rule"><b>Default Rule:</b></label>
+                                <input type="default_rule" class="form-control" id="sensor${index}-default_rule" placeholder="" name="sensor${index}-default_rule" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label class="form-label" for="sensor${index}-mode"><b>Mode:</b></label>
+                                <select name="sensor${index}-mode" id="sensor${index}-mode" class="form-select mb-3" required>
+                                    <option value="cool" id="cool">Cool</option>
+                                    <option value="heat" id="heat">Heat</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="sensor${index}-tolerance"><b>Tolerance:</b></label>
+                                <input type="text" class="form-control" id="sensor${index}-tolerance" placeholder="" name="sensor${index}-tolerance" required>
+                            </div>`
+            } else {
+                // User selected first option ("Select sensor type"), clear form
+                template = "";
             };
 
             // Render div, scroll down until visible
-            document.getElementById("addSensorOptions" + index).innerHTML = await div_contents.text();
+            document.getElementById("addSensorOptions" + index).innerHTML = template;
             document.getElementById("addSensorOptions" + index).scrollIntoView();
         };
 
@@ -251,30 +292,63 @@
             // Get user selection
             const selected = document.getElementById(select.id).value
 
-            // Load form for the selected device type
-            if (selected == "clear") {
-                document.getElementById("addDeviceOptions" + index).innerHTML = "";
-                return
-            } else if (selected == "dimmer") {
-                var div_contents = await fetch("/deviceOptionsDimmer/" + index);
-            } else if (selected == "bulb") {
-                var div_contents = await fetch("/deviceOptionsBulb/" + index);
-            } else if (selected == "relay") {
-                var div_contents = await fetch("/deviceOptionsRelay/" + index);
-            } else if (selected == "dumb-relay") {
-                var div_contents = await fetch("/deviceOptionsDumbRelay/" + index);
-            } else if (selected == "desktop") {
-                var div_contents = await fetch("/deviceOptionsDesktop/" + index);
+            // Add nickname section to template, other sections added below as needed
+            var template = `<div class="mb-2">
+                                <label for="device${index}-nickname"><b>Nickname:</b></label>
+                                <input type="text" class="form-control" id="device${index}-nickname" placeholder="" name="device${index}-nickname" required>
+                            </div>`
+
+            // Get template for device type selected by user
+            if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "api-target" || selected == "relay") {
+                template += `<div class="mb-2">
+                                <label for="device${index}-ip"><b>IP:</b></label>
+                                <input type="text" class="form-control" id="device${index}-ip" placeholder="" name="device${index}-ip" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="device${index}-default_rule"><b>Default Rule:</b></label>
+                                <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" required>
+                            </div>`
+
+            } else if (selected == "mosfet" || selected == "dumb-relay") {
+                template += `<div class="mb-2">
+                                <label for="device${index}-pin"><b>Pin:</b></label>
+                                <input type="text" class="form-control" id="device${index}-pin" placeholder="" name="device${index}-pin" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="device${index}-default_rule"><b>Default Rule:</b></label>
+                                <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" required>
+                            </div>`
+
             } else if (selected == "pwm") {
-                var div_contents = await fetch("/deviceOptionsPwm/" + index);
-            } else if (selected == "mosfet") {
-                var div_contents = await fetch("/deviceOptionsMosfet/" + index);
-            } else if (selected == "api-target") {
-                var div_contents = await fetch("/deviceOptionsApi/" + index);
+                template += `<div class="mb-2">
+                                <label for="device${index}-pin"><b>Pin:</b></label>
+                                <input type="text" class="form-control" id="device${index}-pin" placeholder="" name="device${index}-pin" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="device${index}-min"><b>Min brightness:</b></label>
+                                <input type="min" class="form-control" id="device${index}-min" placeholder="0" name="device${index}-min" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="device${index}-max"><b>Max brightness:</b></label>
+                                <input type="text" class="form-control" id="device${index}-max" placeholder="1023" name="device${index}-max" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="device${index}-default_rule"><b>Default Rule:</b></label>
+                                <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" required>
+                            </div>`
+
+            } else {
+                // User selected first option ("Select device type"), clear form
+                template = "";
             };
 
             // Render div, scroll down until visible
-            document.getElementById("addDeviceOptions" + index).innerHTML = await div_contents.text();
+            document.getElementById("addDeviceOptions" + index).innerHTML = template;
             document.getElementById("addDeviceOptions" + index).scrollIntoView();
         };
 
@@ -282,15 +356,42 @@
             // Get index of clicked button
             const index = parseInt(button.id.replace("addDeviceButton", ""));
 
+            var template = `<div class="mt-5">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title">device${index + 1}</h4>
+                                        <label for="deviceType${index + 1}" class="form-label"><b>Type:</b></label>
+                                        <div>
+                                            <select onchange="load_device_section(this)" name="deviceType${index + 1}" id="deviceType${index + 1}" class="form-select deviceType" required>
+                                            <option value="clear">Select device type</option>
+                                            <option value="dimmer">TP-Link Dimmer</option>
+                                            <option value="bulb">TP-Link Bulb</option>
+                                            <option value="relay">Smart Relay</option>
+                                            <option value="dumb-relay">Relay</option>
+                                            <option value="desktop">Desktop</option>
+                                            <option value="pwm">LED Strip</option>
+                                            <option value="mosfet">Mosfet</option>
+                                            <option value="api-target">Api Command</option>
+                                            </select>
+                                        </div>
+
+                                        <div id="addDeviceOptions${index + 1}" class="card-body"></div>
+                                    </div>
+                                </div>
+
+                                <div class="text-center">
+                                    <button onclick="load_next_device(this)" type="button" id="addDeviceButton${index + 1}" class="btn-secondary btn my-3">Add another</button>
+                                </div>
+
+                                <div id="addDeviceDiv${index + 2}">
+                                </div>
+                            </div>`
+
             // Hide clicked button
             document.getElementById("addDeviceButton" + index).style.display = "none";
 
-            // Load contents for next addDevice div
-            var div_contents = await fetch("addDevice/" + (index + 1));
-            div_contents = await div_contents.text();
-
             // Render div, scroll down until visible
-            document.getElementById("addDeviceDiv" + (index + 1)).innerHTML = div_contents;
+            document.getElementById("addDeviceDiv" + (index + 1)).innerHTML = template;
             document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView();
         };
 
@@ -298,15 +399,39 @@
             // Get index of clicked button
             const index = parseInt(button.id.replace("addSensorButton", ""));
 
+            var template = `<div class="mt-5">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title">sensor${index + 1}</h4>
+                                        <label for="sensorType${index + 1}" class="form-label"><b>Type:</b></label>
+                                        <div>
+                                            <select onchange="load_sensor_section(this)" name="sensorType${index + 1}" id="sensorType${index + 1}" class="form-select sensorType" required>
+                                            <option value="clear">Select sensor type</option>
+                                            <option value="pir">Motion Sensor</option>
+                                            <option value="switch">Switch</option>
+                                            <option value="dummy">Dummy</option>
+                                            <option value="desktop">Desktop</option>
+                                            <option value="si7021">Thermostat</option>
+                                            </select>
+                                        </div>
+
+                                        <div id="addSensorOptions${index + 1}" class="card-body"></div>
+                                    </div>
+                                </div>
+
+                                <div class="text-center">
+                                    <button onclick="load_next_sensor(this)" type="button" id="addSensorButton${index + 1}" class="btn-secondary btn my-3">Add another</button>
+                                </div>
+
+                                <div id="addSensorDiv${index + 2}">
+                                </div>
+                            </div>`
+
             // Hide clicked button
             document.getElementById("addSensorButton" + index).style.display = "none";
 
-            // Load contents for next addSensor div
-            var div_contents = await fetch("addSensor/" + (index + 1));
-            div_contents = await div_contents.text();
-
             // Render div, scroll down until visible
-            document.getElementById("addSensorDiv" + (index + 1)).innerHTML = div_contents;
+            document.getElementById("addSensorDiv" + (index + 1)).innerHTML = template;
             document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView();
         };
 
