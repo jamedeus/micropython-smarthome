@@ -201,6 +201,11 @@ class Config():
                 status_dict["sensors"][i.name]["targets"].append(t.name)
             status_dict["sensors"][i.name]["schedule"] = self.schedule[i.name]
 
+            # If node has temp sensor, add climate data
+            if i.sensor_type == "si7021":
+                status_dict["sensors"][i.name]["temp"] = i.fahrenheit()
+                status_dict["sensors"][i.name]["humid"] = i.temp_sensor.relative_humidity
+
         return status_dict
 
 

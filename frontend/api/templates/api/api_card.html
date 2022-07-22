@@ -134,39 +134,12 @@
                                                 <th class="text-center w-50 pb-0">Humidity</th>
                                             </tr>
                                             <tr>
-                                                <td class="text-center fs-5" id="temperature">00.00</td>
-                                                <td class="text-center fs-5" id="humidity">00.00</td>
+                                                <td class="text-center fs-5" id="temperature">{{params.temp|floatformat:"2"}}</td>
+                                                <td class="text-center fs-5" id="humidity">{{params.humid|floatformat:"2"}}</td>
                                             </tr>
                                         </tbody>
                                     </table>
 
-                                    <script>
-                                        async function updateClimateData() {
-                                            climate_data = await fetch("/get_climate_data/" + "{{ context.metadata.id }}");
-                                            climate_data = await climate_data.json();
-
-                                            document.getElementById("temperature").innerHTML = climate_data["temp"].toFixed(2)
-                                            document.getElementById("humidity").innerHTML = climate_data["humid"].toFixed(2)
-                                        };
-
-                                        // Get new temp+humidity reading every 5 seconds, update div if user currently viewing sensor data
-                                        function queryTempSensor(start) {
-                                            if (start) {
-                                                timer = setInterval(async function() {
-                                                    updateClimateData();
-
-                                                }, 5000);
-                                            } else {
-                                                clearInterval(timer);
-
-                                                // Clear old data if present
-                                                climate_data = ""
-                                            };
-                                        };
-
-                                        updateClimateData();
-                                        queryTempSensor(true);
-                                    </script>
                                     <!-- Close climate data card, start new card for thermostat -->
                                     </div></div></div></br>
 
@@ -429,7 +402,6 @@
             const id = button.id.split("-")[0]
             // Device or sensor
             const category = id.replace(/[0-9]/g, '') + "s";
-            console.log(`${id}: ${category}`);
 
             // If current rule != schedule rule, show reset button
             const rule = document.getElementById(button.id).value;
@@ -671,7 +643,14 @@
 
                                 };
 
-    //                                 } else if (param == "schedule") {
+                            } else if (param == "temp") {
+                                document.getElementById("temperature").innerHTML = new_status[section][instance]["temp"].toFixed(2)
+
+                            } else if (param == "humid") {
+                                document.getElementById("humidity").innerHTML = new_status[section][instance]["humid"].toFixed(2)
+
+//                             } else if (param == "schedule") {
+//                             } else if (param == "schedule") {
 
                             // TODO Continue adding endpoints here as they are implemented
 
