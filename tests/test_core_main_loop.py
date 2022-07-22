@@ -25,7 +25,8 @@ config_file = {
         "pin": 15,
         "default_rule": 74,
         "mode": "cool",
-        "tolerance": 1
+        "tolerance": 1,
+        "nickname": "sensor1"
     },
     "sensor2": {
         "type": "pir",
@@ -34,7 +35,8 @@ config_file = {
         ],
         "pin": 16,
         "default_rule": 1,
-        "schedule": {}
+        "schedule": {},
+        "nickname": "sensor2"
     },
     "sensor3": {
         "type": "pir",
@@ -43,7 +45,8 @@ config_file = {
         ],
         "pin": 17,
         "default_rule": 1,
-        "schedule": {}
+        "schedule": {},
+        "nickname": "sensor3"
     },
     "device1": {
         "pin": 4,
@@ -55,7 +58,8 @@ config_file = {
         },
         "min": 0,
         "max": 1023,
-        "default_rule": 512
+        "default_rule": 512,
+        "nickname": "device1"
     },
     "device2": {
         "pin": 18,
@@ -63,7 +67,8 @@ config_file = {
         "schedule": {
             "09:00": "on"
         },
-        "default_rule": "on"
+        "default_rule": "on",
+        "nickname": "device2"
     }
 }
 

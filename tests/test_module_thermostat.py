@@ -9,7 +9,7 @@ class TestThermostat(unittest.TestCase):
         return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_sensor", "test_condition_met", "test_condition_met_heat", "test_condition_met_tolerance", "test_trigger"]
 
     def test_instantiation(self):
-        self.instance = Thermostat("sensor1", "si7021", True, 74, 74, "cool", 1, [])
+        self.instance = Thermostat("sensor1", "sensor1", "si7021", True, 74, 74, "cool", 1, [])
         self.assertIsInstance(self.instance, Thermostat)
         self.assertTrue(self.instance.enabled)
 

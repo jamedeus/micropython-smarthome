@@ -76,10 +76,11 @@ class TestEndpoint(unittest.TestCase):
         self.assertIn('targets', keys)
         self.assertIn('name', keys)
         self.assertIn('scheduled_rule', keys)
-        self.assertIn('state', keys)
         self.assertIn('current_rule', keys)
         self.assertIn('motion', keys)
-        self.assertEqual(len(keys), 9)
+        self.assertIn('nickname', keys)
+        self.assertIn('group', keys)
+        self.assertEqual(len(keys), 10)
 
     def test_ir(self):
         response = requests.get('http://192.168.1.223:8123/ir_key?tv/power')

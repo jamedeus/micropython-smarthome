@@ -9,7 +9,7 @@ class TestRelay(unittest.TestCase):
         return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_turn_on_while_rule_is_off"]
 
     def test_instantiation(self):
-        self.instance = Relay("device1", "relay", True, "on", "on", "192.168.1.202")
+        self.instance = Relay("device1", "device1", "relay", True, "on", "on", "192.168.1.202")
         self.assertIsInstance(self.instance, Relay)
         self.assertTrue(self.instance.enabled)
 

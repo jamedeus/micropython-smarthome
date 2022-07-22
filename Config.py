@@ -59,31 +59,31 @@ class Config():
             # Instantiate each device as appropriate class
             if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
                 from Tplink import Tplink
-                instance = Tplink( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                instance = Tplink( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
             elif conf[device]["type"] == "relay":
                 from Relay import Relay
-                instance = Relay( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                instance = Relay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
             elif conf[device]["type"] == "dumb-relay":
                 from DumbRelay import DumbRelay
-                instance = DumbRelay( device, conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
+                instance = DumbRelay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
 
             elif conf[device]["type"] == "desktop":
                 from Desktop_target import Desktop_target
-                instance = Desktop_target( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                instance = Desktop_target( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
             elif conf[device]["type"] == "pwm":
                 from LedStrip import LedStrip
-                instance = LedStrip( device, conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]), conf[device]["min"], conf[device]["max"] )
+                instance = LedStrip( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]), conf[device]["min"], conf[device]["max"] )
 
             elif conf[device]["type"] == "mosfet":
                 from Mosfet import Mosfet
-                instance = Mosfet( device, conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
+                instance = Mosfet( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
 
             elif conf[device]["type"] == "api-target":
                 from ApiTarget import ApiTarget
-                instance = ApiTarget( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                instance = ApiTarget( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
             # Add instance to config.devices
             self.devices.append(instance)
@@ -113,23 +113,23 @@ class Config():
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
                 from MotionSensor import MotionSensor
-                instance = MotionSensor(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, int(conf[sensor]["pin"]))
+                instance = MotionSensor(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, int(conf[sensor]["pin"]))
 
             elif conf[sensor]["type"] == "desktop":
                 from Desktop_trigger import Desktop_trigger
-                instance = Desktop_trigger(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["ip"])
+                instance = Desktop_trigger(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["ip"])
 
             elif conf[sensor]["type"] == "si7021":
                 from Thermostat import Thermostat
-                instance = Thermostat(sensor, conf[sensor]["type"], True, int(conf[sensor]["default_rule"]), conf[sensor]["default_rule"], conf[sensor]["mode"], conf[sensor]["tolerance"], targets)
+                instance = Thermostat(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, int(conf[sensor]["default_rule"]), conf[sensor]["default_rule"], conf[sensor]["mode"], conf[sensor]["tolerance"], targets)
 
             elif conf[sensor]["type"] == "dummy":
                 from Dummy import Dummy
-                instance = Dummy(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets)
+                instance = Dummy(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[device]["default_rule"], targets)
 
             elif conf[sensor]["type"] == "switch":
                 from Switch import Switch
-                instance = Switch(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, int(conf[sensor]["pin"]))
+                instance = Switch(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, int(conf[sensor]["pin"]))
 
             # Add the sensor instance to each of it's target's "triggered_by" list
             for t in targets:
@@ -180,6 +180,7 @@ class Config():
         status_dict["devices"] = {}
         for i in self.devices:
             status_dict["devices"][i.name] = {}
+            status_dict["devices"][i.name]["nickname"] = i.nickname
             status_dict["devices"][i.name]["type"] = i.device_type
             status_dict["devices"][i.name]["enabled"] = i.enabled
             status_dict["devices"][i.name]["current_rule"] = i.current_rule
@@ -190,6 +191,7 @@ class Config():
         status_dict["sensors"] = {}
         for i in self.sensors:
             status_dict["sensors"][i.name] = {}
+            status_dict["sensors"][i.name]["nickname"] = i.nickname
             status_dict["sensors"][i.name]["type"] = i.sensor_type
             status_dict["sensors"][i.name]["enabled"] = i.enabled
             status_dict["sensors"][i.name]["current_rule"] = i.current_rule

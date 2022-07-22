@@ -9,7 +9,7 @@ class TestTplink(unittest.TestCase):
         return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_off", "test_turn_on"]
 
     def test_instantiation(self):
-        self.instance = Tplink("device1", "dimmer", True, None, None, "192.168.1.233")
+        self.instance = Tplink("device1", "device1", "dimmer", True, None, None, "192.168.1.233")
         self.assertIsInstance(self.instance, Tplink)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.fading)

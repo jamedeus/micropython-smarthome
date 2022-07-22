@@ -9,7 +9,7 @@ class TestDummySensor(unittest.TestCase):
         return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_condition_met", "test_trigger"]
 
     def test_instantiation(self):
-        self.instance = Dummy("sensor1", "dummy", True, None, None, [])
+        self.instance = Dummy("sensor1", "sensor1", "dummy", True, None, None, [])
         self.assertIsInstance(self.instance, Dummy)
         self.assertTrue(self.instance.enabled)
 

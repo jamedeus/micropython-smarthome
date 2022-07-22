@@ -6,9 +6,13 @@ log = logging.getLogger("Sensor")
 
 
 class Sensor():
-    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets):
+    def __init__(self, name, nickname, sensor_type, enabled, current_rule, scheduled_rule, targets):
 
+        # Unique, sequential name (sensor1, sensor2, ...) used in backend
         self.name = name
+
+        # User-configurable name used in frontend, not necesarily unique
+        self.nickname = nickname
 
         self.sensor_type = sensor_type
 

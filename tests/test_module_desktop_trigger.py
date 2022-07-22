@@ -9,7 +9,7 @@ class TestDesktopTrigger(unittest.TestCase):
         return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_get_idle_time", "test_get_monitor_state", "test_trigger"]
 
     def test_instantiation(self):
-        self.instance = Desktop_trigger("sensor1", "desktop", True, None, None, [], "192.168.1.216")
+        self.instance = Desktop_trigger("sensor1", "sensor1", "desktop", True, None, None, [], "192.168.1.216")
         self.assertIsInstance(self.instance, Desktop_trigger)
         self.assertTrue(self.instance.enabled)
 

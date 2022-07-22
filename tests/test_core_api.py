@@ -30,7 +30,8 @@ config_file = {
         "default_rule": 70,
         "default_setting": 74,
         "mode": "cool",
-        "tolerance": 1
+        "tolerance": 1,
+        "nickname": "sensor1"
     },
     "sensor2": {
         "type": "pir",
@@ -39,7 +40,8 @@ config_file = {
         ],
         "pin": 16,
         "default_rule": 1,
-        "schedule": {}
+        "schedule": {},
+        "nickname": "sensor2"
     },
     "device1": {
         "pin": 4,
@@ -51,7 +53,8 @@ config_file = {
         },
         "min": 0,
         "max": 1023,
-        "default_rule": 512
+        "default_rule": 512,
+        "nickname": "device1"
     },
     "ir_blaster": {
         "pin": 32,

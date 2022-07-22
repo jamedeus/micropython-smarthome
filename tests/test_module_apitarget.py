@@ -9,7 +9,7 @@ class TestApiTarget(unittest.TestCase):
         return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_enable_by_rule_change", "test_disable_by_rule_change"]
 
     def test_instantiation(self):
-        self.instance = ApiTarget("device1", "api-target", True, None, None, "192.168.1.223")
+        self.instance = ApiTarget("device1", "device1", "api-target", True, None, None, "192.168.1.223")
         self.assertIsInstance(self.instance, ApiTarget)
         self.assertTrue(self.instance.enabled)
 

@@ -6,9 +6,13 @@ log = logging.getLogger("Device")
 
 
 class Device():
-    def __init__(self, name, device_type, enabled, current_rule, scheduled_rule):
+    def __init__(self, name, nickname, device_type, enabled, current_rule, scheduled_rule):
 
+        # Unique, sequential name (device1, device2, ...) used in backend
         self.name = name
+
+        # User-configurable name used in frontend, not necesarily unique
+        self.nickname = nickname
 
         self.device_type = device_type
 

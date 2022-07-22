@@ -9,7 +9,7 @@ class TestSwitch(unittest.TestCase):
         return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_trigger"]
 
     def test_instantiation(self):
-        self.instance = Switch("sensor1", "switch", True, None, None, [], 19)
+        self.instance = Switch("sensor1", "sensor1", "switch", True, None, None, [], 19)
         self.assertIsInstance(self.instance, Switch)
         self.assertTrue(self.instance.enabled)
 

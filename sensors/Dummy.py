@@ -7,8 +7,8 @@ log = logging.getLogger("Dummy_Sensor")
 
 
 class Dummy(Sensor):
-    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets):
-        super().__init__(name, sensor_type, enabled, current_rule, scheduled_rule, targets)
+    def __init__(self, name, nickname, sensor_type, enabled, current_rule, scheduled_rule, targets):
+        super().__init__(name, nickname, sensor_type, enabled, current_rule, scheduled_rule, targets)
 
         log.info(f"Instantiated dummy sensor named {self.name}")
 

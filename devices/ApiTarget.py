@@ -10,8 +10,8 @@ log = logging.getLogger("ApiTarget")
 
 
 class ApiTarget(Device):
-    def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, ip):
-        super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
+    def __init__(self, name, nickname, device_type, enabled, current_rule, scheduled_rule, ip):
+        super().__init__(name, nickname, device_type, enabled, current_rule, scheduled_rule)
 
         # IP that API command is sent to
         self.ip = ip

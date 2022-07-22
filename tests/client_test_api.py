@@ -196,10 +196,11 @@ class TestParseCommand(unittest.TestCase):
         self.assertIn('targets', keys)
         self.assertIn('name', keys)
         self.assertIn('scheduled_rule', keys)
-        self.assertIn('state', keys)
         self.assertIn('current_rule', keys)
         self.assertIn('motion', keys)
-        self.assertEqual(len(response.keys()), 9)
+        self.assertIn('nickname', keys)
+        self.assertIn('group', keys)
+        self.assertEqual(len(response.keys()), 10)
 
     def test_ir(self):
         response = parse_command("192.168.1.223", ['ir', 'tv', 'power'])
