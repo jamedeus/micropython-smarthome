@@ -9,7 +9,7 @@ from node_configuration.models import Node
 
 
 
-def api_overview(request):
+def legacy_api(request):
     context = []
 
     for i in Node.objects.all():
@@ -33,7 +33,20 @@ def get_status(request, node):
 
 
 
-def api_card_test(request, node):
+def api_overview(request):
+    context = []
+
+    for i in Node.objects.all():
+        context.append(i)
+
+    template = loader.get_template('api/overview.html')
+
+    return HttpResponse(template.render({'context': context}, request))
+
+
+
+
+def api(request, node):
     target = Node.objects.get(friendly_name = node)
 
     try:

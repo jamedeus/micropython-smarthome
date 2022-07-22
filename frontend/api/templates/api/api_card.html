@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Micropython Smarthome API</title>
+    <title>{{ context.metadata.id }} - Micropython Smarthome API</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
@@ -77,6 +77,21 @@
 <body>
     <div class="container">
         {% if context %}
+
+            <div class="position-absolute">
+                <button type="button" class="btn" id="back_button" onclick="window.location.href = '/api'"><i class="bi-chevron-left"></i></button>
+            </div>
+
+            <!-- Check if user is in dark mode, change theme (runs here to prevent visual flash) -->
+            <script>
+                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.body.classList.add("dark");
+                    document.getElementById("back_button").classList.add("btn-dark");
+                    console.log("Dark mode");
+                } else {
+                    document.getElementById("back_button").classList.add("btn-light");
+                };
+            </script>
 
             <div class="text-center">
                 <h1 class="my-3">{{context.metadata.id}}</h1>
@@ -366,12 +381,6 @@
     {{ context|json_script:"context" }}
 
     <script>
-        // Check if user is in dark mode, change theme (runs once on page load)
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add("dark");
-            console.log("Dark mode");
-        };
-
         const target_node = "{{ context.metadata.id }}";
 
         var target_node_status = JSON.parse(document.getElementById("context").textContent);
@@ -677,6 +686,19 @@
 
         // Start monitoring
         monitorSelectedNodeStatus(true);
+
+        // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
+        window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+            if (e.matches) { // Returns True for dark mode, False otherwise
+                document.body.classList.add("dark");
+                document.getElementById("back_button").classList.remove("btn-light");
+                document.getElementById("back_button").classList.add("btn-dark");
+            } else {
+                document.body.classList.remove("dark");
+                document.getElementById("back_button").classList.remove("btn-dark");
+                document.getElementById("back_button").classList.add("btn-light");
+            }
+        });
 
     </script>
 </body>

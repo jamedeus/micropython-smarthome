@@ -1,0 +1,59 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Micropython Smarthome API</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
+    <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
+    <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <style>
+        /* Limit width for readability on large screen sizes */
+        @media (min-width: 1200px) {
+            .container {
+                width: 960px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div id="page1">
+            <h3 class="text-center mt-3">Api Overview</h3>
+
+            {% if context %}
+                <div class="text-center">
+                    {% for node in context %}
+                        <button onclick="window.location.href = '/api/' + this.id;" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+                    {% endfor %}
+                </div>
+
+            {% else %}
+                <p>No nodes available</p>
+            {% endif %}
+        </div>
+
+    <script>
+        // Check if user is in dark mode, change theme (runs once on page load)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add("dark");
+            console.log("Dark mode");
+        };
+
+        // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
+        window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+            if (e.matches) { // Returns True for dark mode, False otherwise
+                document.body.classList.add("dark");
+            } else {
+                document.body.classList.remove("dark");
+            }
+        });
+    </script>
+
+</body>
+</html>

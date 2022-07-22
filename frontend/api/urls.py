@@ -8,6 +8,10 @@ urlpatterns = [
     path('get_status/<str:node>', views.get_status, name='get_status'),
     path('get_climate_data/<str:node>', views.get_climate_data, name='get_climate_data'),
     path('send_command', views.send_command, name='send_command'),
-    path('api_overview', views.api_overview, name='api_overview'),
-    path('api_card_test/<str:node>', views.api_card_test, name='api_card_test'),
+
+    # Change view name
+    path('api', views.api_overview, name='api_overview'),
+    path('api/<str:node>', views.api, name='api'),
+
+    path('legacy_api', views.legacy_api, name='legacy_api'),
 ]
