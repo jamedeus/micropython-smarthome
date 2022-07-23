@@ -218,8 +218,8 @@
                                         {% if params.schedule.items|length > 0 %}
                                             {% for time, rule in params.schedule.items %}
                                                 <tr id="{{sensor}}-row-{{forloop.counter}}">
-                                                    <td><input type="time" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}" autocomplete="off"></td>
-                                                    <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}" autocomplete="off"></td>
+                                                    <td><input type="time" class="form-control schedule-rule" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}" data-original="{{ time }}" autocomplete="off"></td>
+                                                    <td><input type="text" class="form-control schedule-rule" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}" data-original="{{ rule }}" autocomplete="off"></td>
                                                     <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
                                                 </tr>
                                             {% endfor %}
@@ -319,8 +319,8 @@
                                         {% if params.schedule.items|length > 0 %}
                                             {% for time, rule in params.schedule.items %}
                                                 <tr id="{{device}}-row-{{forloop.counter}}">
-                                                    <td><input type="time" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}" autocomplete="off"></td>
-                                                    <td><input type="text" class="form-control" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}" autocomplete="off"></td>
+                                                    <td><input type="time" class="form-control schedule-rule" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}" data-original="{{ time }}" autocomplete="off"></td>
+                                                    <td><input type="text" class="form-control schedule-rule" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}" data-original="{{ rule }}" autocomplete="off"></td>
                                                     <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
                                                 </tr>
                                             {% endfor %}
@@ -555,7 +555,8 @@
         };
 
         // Handler for delete button in schedule rules dropdown
-        async function delete_rule(selected) {
+        // Removes row from table after deleting rule unless called with remove=false
+        async function delete_rule(selected, remove=true) {
             // Prevent user submitting multiple times
             selected.disabled = true;
 
@@ -563,10 +564,12 @@
             const target = selected.id.split("-")[0];
 
             // Get rule number
-            const rule = selected.id.split("remove")[1]
+            const rule = selected.id.split("-")[1].replace(/[a-z]/g, '')
 
             // Get timestamp
-            const timestamp = document.getElementById(`schedule-${target}-rule${rule}-time`).value;
+            // Uses dataset.original instead of .value to allow editing existing rules (old needs to be deleted before adding new, see add_rule() below)
+            // While delete button is visible to user, dataset.original and .value are always identical (changes to add button when different)
+            const timestamp = document.getElementById(`schedule-${target}-rule${rule}-time`).dataset.original;
 
             // Send command
             var result = await send_command({'command': 'remove_rule', 'instance': target, 'rule': timestamp});
@@ -574,8 +577,9 @@
 
             if (JSON.stringify(result).startsWith('{"ERROR')) {
                 // Re-enable button if failed to delete
+                alert(JSON.stringify(result));
                 selected.disabled = false;
-            } else {
+            } else if (remove) {
                 // Delete row if success
                 document.getElementById(selected.id).parentElement.parentElement.remove();
 
@@ -618,6 +622,7 @@
             document.getElementById(target + "-add-rule").style.display = "none"
         };
 
+        // Handler for add button in schedule rules dropdown, used to create new rules and edit existing
         async function add_rule(el) {
             // Prevent user submitting multiple times
             el.disabled = true;
@@ -628,21 +633,26 @@
             // Get rule number
             const num = el.id.split("add")[1];
 
-            // Get timestamp
-            const timestamp = document.getElementById(`schedule-${target}-rule${num}-time`).value;
+            // Get timestamp input
+            const timestamp = document.getElementById(`schedule-${target}-rule${num}-time`);
 
-            // Get rule
-            const rule = document.getElementById(`schedule-${target}-rule${num}-value`).value;
+            // Get rule input
+            const rule = document.getElementById(`schedule-${target}-rule${num}-value`);
 
             // Do not add incomplete rule
-            if (timestamp.length == 0 || rule.length == 0) {
+            if (timestamp.value.length == 0 || rule.value.length == 0) {
                 el.disabled = false;
                 return;
             };
 
-            // Send command
-            var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp, 'rule': rule});
-            result = await result.json();
+            // If user modified an existing rule without changing timestamp, add overwrite arg
+            if (timestamp.dataset.original == timestamp.value) {
+                var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp.value, 'rule': rule.value, 'overwrite': 'overwrite'});
+                result = await result.json();
+            } else {
+                var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp.value, 'rule': rule.value});
+                result = await result.json();
+            };
 
             if (JSON.stringify(result).startsWith('{"ERROR')) {
                 // Re-enable button if failed to delete
@@ -657,9 +667,68 @@
                 el.setAttribute( "onClick", "delete_rule(this);" );
                 el.disabled = false;
 
+                // If user modified existing rule's timestamp, delete rule with old timestamp before adding new rule
+                if (timestamp.dataset.original && timestamp.value != timestamp.dataset.original) {
+                    delete_rule(document.getElementById(target + "-remove" + num), false);
+                };
+
+                // Replace original values with new values (used to detect change after adding)
+                timestamp.dataset.original = timestamp.value;
+                rule.dataset.original = rule.value;
+
+                // Add listeners, changes delete button to add button if user modifies fields (newly added rows don't have listener until add button clicked)
+                timestamp.addEventListener("input", schedule_rule_field_handler);
+                rule.addEventListener("input", schedule_rule_field_handler);
+
                 // Unhide add rule button so user can continue adding rules if needed
                 document.getElementById(target + "-add-rule").style.display = "initial"
+
             };
+        };
+
+        // Runs when user changes schedule rule fields
+        // Existing rules: Delete button changes to add button
+        // Modified rules: If changed back to original value, add button reverts back to delete
+        function schedule_rule_field_handler(e) {
+            const id = e.target.id.split("-")[1];
+            const row = e.target.id.split("-")[2].replace("rule", "");
+            const time_field = document.getElementById(`schedule-${id}-rule${row}-time`);
+            const rule_field = document.getElementById(`schedule-${id}-rule${row}-value`);
+
+            // Function runs on each keystroke, only need to change button once on first change
+            // Subsequent changes will throw error when getting button element (ID changed first time)
+            try {
+                // If user changed an existing rule, replace Delete button with Add button
+                if (time_field.value != time_field.dataset.original || rule_field.value != rule_field.dataset.original) {
+                    var button = document.getElementById(id + "-remove" + row);
+
+                    // Change to Add button
+                    button.classList.remove("btn-danger");
+                    button.classList.add("btn-success");
+                    button.innerHTML = "<i class='bi-plus-lg'>";
+                    button.id = button.id.replace("remove", "add");
+                    button.setAttribute( "onClick", "add_rule(this);" );
+                    console.log(`${e.target.id} changed`)
+
+                // If user modified a rule and then reverted changes, replace Add button with Delete button
+                } else {
+                    var button = document.getElementById(id + "-add" + row);
+
+                    // Change back to Delete button
+                    button.classList.remove("btn-success");
+                    button.classList.add("btn-danger");
+                    button.innerHTML = "<i class='bi-trash'></i>";
+                    button.id = button.id.replace("add", "remove");
+                    button.setAttribute( "onClick", "delete_rule(this);" );
+                    console.log(`${e.target.id} changed back`)
+
+                };
+            } catch(err) {};
+        };
+
+        // Add listeners to existing schedule rule fields, if modified change delete button to upload button
+        for (field of document.getElementsByClassName("schedule-rule")) {
+            field.addEventListener("input", schedule_rule_field_handler);
         };
 
         // Request new status object, compare to old, update page contents to reflect changes (if any)
