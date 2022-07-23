@@ -291,7 +291,9 @@ def add_schedule_rule(args):
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
 
-    if not target.rule_validator(args[2]):
+    valid = target.rule_validator(args[2])
+
+    if str(valid) == "False":
         return {"ERROR": "Invalid rule"}
 
     if timestamp in rules and (not len(args) >=4 or not args[3] == "overwrite"):

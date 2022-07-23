@@ -183,6 +183,10 @@ class TestParseCommand(unittest.TestCase):
         response = parse_command("192.168.1.223", ['add_rule', 'device1', '08:00', '512', 'overwrite'])
         self.assertEqual(response, {'time': '08:00', 'Rule added': '512'})
 
+        # Add a rule (0) which is equivalent to False in conditional (regression test for bug causing incorrect rejection)
+        response = parse_command("192.168.1.223", ['add_rule', 'device1', '16:52', '0'])
+        self.assertEqual(response, {'time': '16:52', 'Rule added': '0'})
+
     def test_remove_rule(self):
         response = parse_command("192.168.1.223", ['remove_rule', 'device1', '01:00'])
         self.assertEqual(response, {'Deleted': '01:00'})
