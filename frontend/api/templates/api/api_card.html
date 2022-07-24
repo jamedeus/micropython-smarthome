@@ -645,6 +645,9 @@
                 return;
             };
 
+            // Add to current status object (prevent duplicate being created when new status object containing this rule is received)
+            target_node_status[target.replace(/[0-9]/g, '') + "s"][target]["schedule"][timestamp.value] = rule.value;
+
             // If user modified an existing rule without changing timestamp, add overwrite arg
             if (timestamp.dataset.original == timestamp.value) {
                 var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp.value, 'rule': rule.value, 'overwrite': 'overwrite'});
@@ -665,7 +668,6 @@
                 el.innerHTML = "<i class='bi-trash'></i>";
                 el.id = el.id.replace("add", "remove");
                 el.setAttribute( "onClick", "delete_rule(this);" );
-                el.disabled = false;
 
                 // If user modified existing rule's timestamp, delete rule with old timestamp before adding new rule
                 if (timestamp.dataset.original && timestamp.value != timestamp.dataset.original) {
@@ -683,6 +685,8 @@
                 // Unhide add rule button so user can continue adding rules if needed
                 document.getElementById(target + "-add-rule").style.display = "initial"
 
+                // Re-enable button
+                el.disabled = false;
             };
         };
 
@@ -757,7 +761,7 @@
             for (let section in new_status) {
                 for (let instance in new_status[section]) {
                     for (let param in new_status[section][instance]) {
-                        if (new_status[section][instance][param] != target_node_status[section][instance][param]) {
+                        if (JSON.stringify(new_status[section][instance][param]) != JSON.stringify(target_node_status[section][instance][param])) {
 
                             if (param == "turned_on") {
                                 // Get element
@@ -814,8 +818,10 @@
                             } else if (param == "humid") {
                                 document.getElementById("humidity").innerHTML = new_status[section][instance]["humid"].toFixed(2)
 
-//                             } else if (param == "schedule") {
-//                             } else if (param == "schedule") {
+                            } else if (param == "schedule") {
+                                updateScheduleRules(instance, target_node_status[section][instance]["schedule"], new_status[section][instance]["schedule"]);
+
+//                             } else if (param == "") {
 
                             // TODO Continue adding endpoints here as they are implemented
 
@@ -830,6 +836,57 @@
                 target_node_status = new_status
             };
         }
+
+        // Called by updateStatusObject, passes instance name, schedule rules from last status object, schedule rules from current status object
+        // Finds new, deleted, or modified rules and updates table to reflect
+        function updateScheduleRules(instance, old_rules, new_rules) {
+            var table = document.getElementById(`${instance}-rules`);
+            var rows = Array.from(table.rows);
+
+            // Find deleted rules
+            for (let time in old_rules) {
+                if (!new_rules[time]) {
+                    // Deleted rule found - iterate table rows, find rule, remove
+                    for (row of rows) {
+                        if (row.cells[0].children[0]?.value == time) {
+                            row.remove();
+                            break;
+                        };
+                    };
+                };
+            };
+
+            // Find new or modified rules
+            for (let time in new_rules) {
+                if (!old_rules[time]) {
+                    // New rule found (didn't exist in old). Get new row number
+                    const row = parseInt(rows[rows.length-1].id.split("-")[2]) + 1
+
+                    // Add row number + instance id + rule vlaues to template
+                    var template = `<tr id="${instance}-row-${row}">
+                                        <td><input type="time" class="form-control" id="schedule-${instance}-rule${row}-time" placeholder="HH:MM" name="schedule-${instance}-rule${row}-time" value=${time} data-original=${time}></td>
+                                        <td><input type="text" class="form-control" id="schedule-${instance}-rule${row}-value" placeholder="" name="schedule-${instance}-rule${row}-value" value=${new_rules[time]} data-original=${new_rules[time]}></td>
+                                        <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="${instance}-remove${row}" onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
+                                    </tr>`
+
+                    // Add new row
+                    table.insertAdjacentHTML('beforeend', template);
+
+                    // Add listeners, changes delete button to add button if user modifies fields (newly added rows don't have listener until add button clicked)
+                    document.getElementById(`schedule-${instance}-rule${row}-time`).addEventListener("input", schedule_rule_field_handler);
+                    document.getElementById(`schedule-${instance}-rule${row}-value`).addEventListener("input", schedule_rule_field_handler);
+
+                } else if (new_rules[time] != old_rules[time]) {
+                    // Timestamp unchanged, rule changed
+                    for (row of rows) {
+                        if (row.cells[0].children[0]?.value == time) {
+                            row.cells[1].children[0].value = new_rules[time];
+                            row.cells[1].children[0].dataset.original = new_rules[time];
+                        };
+                    };
+                };
+            };
+        };
 
         // Query status every 5 seconds
         function monitorSelectedNodeStatus(start) {
