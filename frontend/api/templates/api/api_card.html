@@ -67,9 +67,58 @@
             padding-bottom: 0.5rem;
         }
 
-        /* Remove focus highlight */
+        /* Power button on/off animations */
+
+        @keyframes fade-on {
+            0% {
+                background-position: 50% -15%;
+            }
+            100% {
+                background-position: 50% 35%;
+            }
+        }
+
+        @keyframes fade-off {
+            0% {
+                background-position: 50% 35%;
+            }
+            100% {
+                background-position: 50% -15%;
+            }
+        }
+
         .power-toggle {
+            background-image: radial-gradient(circle, #ffc107 5%, white 55%);
+            background-size: 500% 500%;
+
+            /* Add border for visibility when not filled in (device turned off) */
+            border: 1px solid #dee2e6 !important;
+            border-radius: 1rem !important;
+
+            /* Remove focus highligh */
             box-shadow: none !important;
+        }
+
+        body.dark .power-toggle {
+            background-image: radial-gradient(circle, #ffc107 5%, transparent 55%);
+            border: 2px solid #2B2E2F !important;
+        }
+
+        .toggle-on {
+            animation-name: fade-on;
+            animation-duration: 1.2s;
+            animation-timing-function: ease-in-out;
+            animation-fill-mode: forwards;
+        }
+
+        .toggle-off {
+            animation-name: fade-off;
+            animation-duration: 1.2s;
+            animation-timing-function: ease-in-out;
+        }
+
+        .bi-lightbulb {
+            font-size:1.5em
         }
     </style>
 </head>
@@ -276,27 +325,25 @@
                                 {% endif %}
 
                                 <!-- Power toggle button -->
-                                <div>
+                                <div class="text-center mb-3">
                                     {% if params.turned_on %}
-                                        <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)" checked>
-                                        <label class="btn btn-sm btn-outline-primary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">ON</label><br>
+                                        <button class="btn power-toggle toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
                                     {% else %}
-                                        <input type="checkbox" class="btn-check" id="{{device}}-power-state" autocomplete="off" onclick="power(this)">
-                                        <label class="btn btn-sm btn-outline-secondary power-toggle" for="{{device}}-power-state" id="{{device}}-power-state-label">OFF</label><br>
+                                        <button class="btn power-toggle" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
                                     {% endif %}
                                 </div>
 
                                 <!-- Rule slider -->
                                 {% if params.type in "dimmer,bulb" %}
                                     <div class="text-center mx-3">
-                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule">{{params.current_rule}}</span></label>
                                         <input id="{{device}}-rule" type="range" class="form-range current-rule-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
+                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule">{{params.current_rule}}</span></label>
                                         <div id="{{device}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
                                 {% elif params.type == "pwm" %}
                                     <div class="text-center">
-                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule">{{params.current_rule}}</span></label>
                                         <input id="{{device}}-rule" type="range" class="form-range current-rule-slider" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
+                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule">{{params.current_rule}}</span></label>
                                         <div id="{{device}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
                                 {% endif %}
@@ -429,6 +476,8 @@
             // Update current rule displayed while slider moves
             button.addEventListener('input', function(e) {
                 var label = document.getElementById(e.target.id.split("-")[0] + "-current-rule");
+                // TODO add .toFixed(1) here to prevent jumpy display (19.5 > 20 > 20.5)
+                // Should only apply to targets that take float rule (thermostat, motion sensor)
                 var new_rule = document.getElementById(e.target.id).value;
                 label.innerHTML = new_rule;
             });
@@ -512,31 +561,37 @@
         // Handler for device power on/off toggle
         async function power(el) {
             const target = el.id.split("-")[0];
-            const label = document.getElementById(target + "-power-state-label");
 
-            if (el.checked) {
-                var result = await send_command({'command': 'turn_on', 'instance': target});
-                result = await result.json();
+            if (el.classList.contains("toggle-on")) {
+                // Fade button back to on appearance
+                el.classList.remove("toggle-on");
+                el.classList.add("toggle-off");
 
-                if (JSON.stringify(result).startsWith('{"ERROR')) {
-                    console.log(`Failed to turn on ${target}`);
-                } else {
-                    label.classList.add("btn-outline-primary");
-                    label.classList.remove("btn-outline-secondary");
-                    label.innerHTML = "ON";
-                };
-
-            } else {
                 var result = await send_command({'command': 'turn_off', 'instance': target});
                 result = await result.json();
 
+                // If send failed, fade button back to off appearance
                 if (JSON.stringify(result).startsWith('{"ERROR')) {
                     console.log(`Failed to turn off ${target}`);
-                } else {
-                    label.classList.add("btn-outline-secondary");
-                    label.classList.remove("btn-outline-primary");
-                    label.innerHTML = "OFF";
+                    el.classList.remove("toggle-off");
+                    el.classList.add("toggle-on");
                 };
+
+            } else {
+                // Fade button back to off appearance
+                el.classList.remove("toggle-off");
+                el.classList.add("toggle-on");
+
+                var result = await send_command({'command': 'turn_on', 'instance': target});
+                result = await result.json();
+
+                // If send failed, fade button back to on appearance
+                if (JSON.stringify(result).startsWith('{"ERROR')) {
+                    console.log(`Failed to turn on ${target}`);
+                    el.classList.remove("toggle-on");
+                    el.classList.add("toggle-off");
+                };
+
             };
         };
 
@@ -765,25 +820,22 @@
 
                             if (param == "turned_on") {
                                 // Get element
-                                const label = document.getElementById(instance + "-power-state-label");
+                                const button = document.getElementById(instance + "-power-state");
 
                                 // Device turned ON since last status update
                                 if (new_status[section][instance][param]) {
-                                    label.classList.add("btn-outline-primary");
-                                    label.classList.remove("btn-outline-secondary");
-                                    label.innerHTML = "ON";
-                                    label.parentElement.children[0].checked = true;
+                                    button.classList.remove("toggle-off");
+                                    button.classList.add("toggle-on");
 
                                 // Device turned OFF since last status update
                                 } else {
-                                    label.classList.add("btn-outline-secondary");
-                                    label.classList.remove("btn-outline-primary");
-                                    label.innerHTML = "OFF";
-                                    label.parentElement.children[0].checked = false;
+                                    button.classList.remove("toggle-on");
+                                    button.classList.add("toggle-off");
                                 };
 
                             } else if (param == "current_rule" || param == "scheduled_rule") {
                                 try {
+                                    // TODO shouldn't move slider while user is moving it (currently jumps back to current rule every time this runs)
                                     const slider = document.getElementById(instance + "-rule");
                                     const label = document.getElementById(instance + "-current-rule");
 
