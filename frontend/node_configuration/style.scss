@@ -148,6 +148,12 @@ $pagination-disabled-color: #bbbbbb;
     --#{$variable-prefix}body-color: #{$body-color};
     --#{$variable-prefix}body-bg: #{$body-bg};
 
+    /* Prevent color change on focus (not enough contrast with body bg) */
+    .btn-dark:hover, .btn-dark:focus, .btn-dark:active {
+        background-color: #212529 !important;
+        border-color: #212529 !important;
+    }
+
     @import "bootstrap-5.1.3/scss/_popover";
     @import "bootstrap-5.1.3/scss/_pagination";
     @import "bootstrap-5.1.3/scss/_card";

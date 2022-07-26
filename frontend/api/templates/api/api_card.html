@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
+    <script src="{% static 'node_configuration/popper.min.js' %}"></script>
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script>
@@ -120,6 +121,7 @@
         .bi-lightbulb {
             font-size:1.5em
         }
+
     </style>
 </head>
 
@@ -127,8 +129,16 @@
     <div class="container">
         {% if context %}
 
-            <div class="position-absolute">
-                <button type="button" class="btn" id="back_button" onclick="window.location.href = '/api'"><i class="bi-chevron-left"></i></button>
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn my-auto" id="back_button" onclick="window.location.href = '/api'"><i class="bi-chevron-left"></i></button>
+                <h1 class="my-3">{{context.metadata.id}}</h1>
+                <div class="dropdown my-auto">
+                    <button type="button" class="btn" id="more_options_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                    <ul id="more_options_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="more_options_button">
+                        <li><a class="dropdown-item" onclick="send_command({'command': 'reboot'});">Reboot</a></li>
+                        <li><a class="dropdown-item" onclick="send_command({'command': 'clear_log'});">Clear Log</a></li>
+                    </ul>
+                </div>
             </div>
 
             <!-- Check if user is in dark mode, change theme (runs here to prevent visual flash) -->
@@ -136,17 +146,16 @@
                 if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     document.body.classList.add("dark");
                     document.getElementById("back_button").classList.add("btn-dark");
+                    document.getElementById("more_options_button").classList.add("btn-dark");
+                    document.getElementById("more_options_menu").classList.add("dropdown-menu-dark");
                     console.log("Dark mode");
                 } else {
                     document.getElementById("back_button").classList.add("btn-light");
+                    document.getElementById("more_options_button").classList.add("btn-light");
                 };
             </script>
 
-            <div class="text-center">
-                <h1 class="my-3">{{context.metadata.id}}</h1>
-            </div>
-
-            <div class="row mt-3">
+            <div class="row">
 
 <!--      SENSORS      -->
                 <div class="col-sm">
@@ -958,10 +967,16 @@
                 document.body.classList.add("dark");
                 document.getElementById("back_button").classList.remove("btn-light");
                 document.getElementById("back_button").classList.add("btn-dark");
+                document.getElementById("more_options_button").classList.remove("btn-light");
+                document.getElementById("more_options_button").classList.add("btn-dark");
+                document.getElementById("more_options_menu").classList.add("dropdown-menu-dark");
             } else {
                 document.body.classList.remove("dark");
                 document.getElementById("back_button").classList.remove("btn-dark");
                 document.getElementById("back_button").classList.add("btn-light");
+                document.getElementById("more_options_button").classList.remove("btn-dark");
+                document.getElementById("more_options_button").classList.add("btn-light");
+                document.getElementById("more_options_menu").classList.remove("dropdown-menu-dark");
             }
         });
 
