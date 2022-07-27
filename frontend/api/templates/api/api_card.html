@@ -194,8 +194,8 @@
                                 <!-- Rule slider -->
                                 {% if params.type == "pir" %}
                                     <div class="text-center mx-3">
-                                        <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Delay: <span id="{{sensor}}-current-rule">{{params.current_rule}}</span> minutes</label>
-                                        <input id="{{sensor}}-rule" type="range" class="form-range current-rule-slider" min="0" max="100" step="0.5" value="{{params.current_rule}}" autocomplete="off">
+                                        <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Delay: <span id="{{sensor}}-current-rule" data-rule_type="float">{{params.current_rule}}</span> minutes</label>
+                                        <input id="{{sensor}}-rule" type="range" class="form-range current-rule-slider" min="0" max="60" step="0.5" value="{{params.current_rule}}" autocomplete="off">
                                         <div id="{{sensor}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
 
@@ -251,7 +251,7 @@
                                             {% endif %}
 
                                             <div class="text-center">
-                                                <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Thermostat: <span id="{{sensor}}-current-rule">{{params.current_rule}}</span>° F</label>
+                                                <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Thermostat: <span id="{{sensor}}-current-rule" data-rule_type="float">{{params.current_rule}}</span>° F</label>
                                                 <input id="{{sensor}}-rule" type="range" class="form-range current-rule-slider" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
                                                 <div id="{{sensor}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                             </div>
@@ -346,13 +346,13 @@
                                 {% if params.type in "dimmer,bulb" %}
                                     <div class="text-center mx-3">
                                         <input id="{{device}}-rule" type="range" class="form-range current-rule-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
-                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule">{{params.current_rule}}</span></label>
+                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule" data-rule_type="int">{{params.current_rule}}</span></label>
                                         <div id="{{device}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
                                 {% elif params.type == "pwm" %}
                                     <div class="text-center">
                                         <input id="{{device}}-rule" type="range" class="form-range current-rule-slider" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
-                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule">{{params.current_rule}}</span></label>
+                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule" data-rule_type="int">{{params.current_rule}}</span></label>
                                         <div id="{{device}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
                                 {% endif %}
@@ -469,41 +469,47 @@
         };
 
         // Add handlers to current rule sliders
-        for (button of document.getElementsByClassName("current-rule-slider")) {
-            const id = button.id.split("-")[0]
+        for (slider of document.getElementsByClassName("current-rule-slider")) {
+            const id = slider.id.split("-")[0];
             // Device or sensor
             const category = id.replace(/[0-9]/g, '') + "s";
 
-            // If current rule != schedule rule, show reset button
-            const rule = document.getElementById(button.id).value;
+            // Used in listeners below
+            const label = document.getElementById(id + "-current-rule");
+            const rule = slider.value;
             const scheduled = target_node_status[category][id]["scheduled_rule"];
 
+            // If current rule != scheduled rule, show reset button
             if (rule != scheduled) {
                 document.getElementById(id + "-rule-reset").style.visibility = "visible";
             };
 
             // Update current rule displayed while slider moves
-            button.addEventListener('input', function(e) {
-                var label = document.getElementById(e.target.id.split("-")[0] + "-current-rule");
-                // TODO add .toFixed(1) here to prevent jumpy display (19.5 > 20 > 20.5)
-                // Should only apply to targets that take float rule (thermostat, motion sensor)
-                var new_rule = document.getElementById(e.target.id).value;
-                label.innerHTML = new_rule;
+            slider.addEventListener('input', function(e) {
+                var new_rule = e.target.value;
+
+                // Display as either float or int based on data attribute
+                if (label.dataset.rule_type == "float") {
+                    label.innerHTML = parseFloat(new_rule).toFixed(1);
+                } else if (label.dataset.rule_type == "int") {
+                    label.innerHTML = parseInt(new_rule);
+                };
             });
 
             // Runs once when user releases click on slider
-            button.addEventListener('change', async function(e) {
-                const new_rule = document.getElementById(e.target.id).value;
-                const scheduled = target_node_status[category][e.target.id.split("-")[0]]["scheduled_rule"];
+            slider.addEventListener('change', async function(e) {
+                const new_rule = e.target.value;
+                const scheduled = target_node_status[category][id]["scheduled_rule"];
 
+                // Show reset button if new rule differs from scheduled, otherwise hide reset button
                 if (new_rule != scheduled) {
                     document.getElementById(id + "-rule-reset").style.visibility = "visible";
                 } else {
                     document.getElementById(id + "-rule-reset").style.visibility = "hidden";
                 };
 
-                // Fire API command here
-                var result = await send_command({'command': 'set_rule', 'instance': e.target.id.split("-")[0], 'rule': new_rule});
+                // Fire API command
+                var result = await send_command({'command': 'set_rule', 'instance': id, 'rule': new_rule});
                 result = await result.json();
             });
         };
@@ -525,7 +531,12 @@
                 const label = document.getElementById(target + "-current-rule");
                 const scheduled = target_node_status[category][target]["scheduled_rule"];
 
-                label.innerHTML = scheduled;
+                // Display as either float or int based on data attribute
+                if (label.dataset.rule_type == "float") {
+                    label.innerHTML = parseFloat(scheduled).toFixed(1);
+                } else if (label.dataset.rule_type == "int") {
+                    label.innerHTML = parseInt(scheduled);
+                };
 
                 // Update slider position
                 const slider = document.getElementById(target + "-rule");
@@ -849,7 +860,13 @@
                                     const label = document.getElementById(instance + "-current-rule");
 
                                     slider.value = new_status[section][instance]["current_rule"];
-                                    label.innerHTML = new_status[section][instance]["current_rule"];
+
+                                    // Display as either float or int based on data attribute
+                                    if (label.dataset.rule_type == "float") {
+                                        label.innerHTML = parseFloat(new_status[section][instance]["current_rule"]).toFixed(1);
+                                    } else if (label.dataset.rule_type == "int") {
+                                        label.innerHTML = parseInt(new_status[section][instance]["current_rule"]);
+                                    };
 
                                     if (new_status[section][instance]["current_rule"] != new_status[section][instance]["scheduled_rule"]) {
                                         // Show reset button
