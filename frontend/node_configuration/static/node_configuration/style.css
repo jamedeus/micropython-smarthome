@@ -257,7 +257,7 @@
   /* Input sliders */
   --bs-body-color: #eee;
   --bs-body-bg: #1b1e1f;
-  /* Prevent background change on focus (not enough contrast with body bg) */
+  /* Prevent color change on focus (not enough contrast with body bg) */
 }
 .dark select:invalid {
   color: #696b6e;
@@ -1047,7 +1047,7 @@
   opacity: 1;
 }
 .dark .form-control:disabled, .dark .form-control[readonly] {
-  background-color: #e9ecef;
+  background-color: #272c31;
   opacity: 1;
 }
 .dark .form-control::file-selector-button {

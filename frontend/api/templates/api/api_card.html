@@ -702,14 +702,17 @@
 
         // Handler for add button in schedule rules dropdown, used to create new rules and edit existing
         async function add_rule(el) {
-            // Prevent user submitting multiple times
-            el.disabled = true;
-
             // Get target device/sensor
             const target = el.id.split("-")[0];
 
             // Get rule number
             const num = el.id.split("add")[1];
+
+            // Disable row fields + button (prevent user submitting multiple times)
+            row = document.getElementById(target + "-row-" + num);
+            for (field of row.children) {
+                field.children[0].disabled = true;
+            };
 
             // Get timestamp input
             const timestamp = document.getElementById(`schedule-${target}-rule${num}-time`);
@@ -740,8 +743,6 @@
             };
 
             if (JSON.stringify(result).startsWith('{"ERROR')) {
-                // Re-enable button if failed to delete
-                el.disabled = false;
                 alert(JSON.stringify(result));
             } else {
                 // If successfully added, change add button to delete button, re-enable
@@ -769,9 +770,12 @@
 
                 // Unhide add rule button so user can continue adding rules if needed
                 document.getElementById(target + "-add-rule").style.display = "initial"
+            };
 
-                // Re-enable button
-                el.disabled = false;
+            // Re-enable row inputs and button
+            for (field of row.children) {
+                console.log("Enable")
+                field.children[0].removeAttribute("disabled");
             };
         };
 
