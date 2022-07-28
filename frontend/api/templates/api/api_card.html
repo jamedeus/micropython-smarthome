@@ -450,6 +450,9 @@
         // Initial value, used to detect change (lose connection, re-establish connection)
         selected_node_unreachable = false;
 
+        // Prevent multiple functions modifying status object at the same time
+        var status_lock = false;
+
         // Receives command parameters in value
         async function send_command(value) {
             // Add target and selected command to request body
@@ -720,6 +723,10 @@
                 return;
             };
 
+            // Prevent other functions modifying status object until finished adding rule
+            // Otherwise if user clicked add after monitoring function got new status, but before it overwrote old, changes made below may be overwritten
+            status_lock = true;
+
             // Add to current status object (prevent duplicate being created when new status object containing this rule is received)
             target_node_status[target.replace(/[0-9]/g, '') + "s"][target]["schedule"][timestamp.value] = rule.value;
 
@@ -744,7 +751,7 @@
                 el.id = el.id.replace("add", "remove");
                 el.setAttribute( "onClick", "delete_rule(this);" );
 
-                // If user modified existing rule's timestamp, delete rule with old timestamp before adding new rule
+                // If user modified existing rule's timestamp, delete rule with old timestamp
                 if (timestamp.dataset.original && timestamp.value != timestamp.dataset.original) {
                     delete_rule(document.getElementById(target + "-remove" + num), false);
                 };
@@ -752,6 +759,9 @@
                 // Replace original values with new values (used to detect change after adding)
                 timestamp.dataset.original = timestamp.value;
                 rule.dataset.original = rule.value;
+
+                // Allow overwriting
+                status_lock = false;
 
                 // Add listeners, changes delete button to add button if user modifies fields (newly added rows don't have listener until add button clicked)
                 timestamp.addEventListener("input", schedule_rule_field_handler);
@@ -779,6 +789,7 @@
             try {
                 // If user changed an existing rule, replace Delete button with Add button
                 if (time_field.value != time_field.dataset.original || rule_field.value != rule_field.dataset.original) {
+
                     var button = document.getElementById(id + "-remove" + row);
 
                     // Change to Add button
@@ -787,10 +798,10 @@
                     button.innerHTML = "<i class='bi-plus-lg'>";
                     button.id = button.id.replace("remove", "add");
                     button.setAttribute( "onClick", "add_rule(this);" );
-                    console.log(`${e.target.id} changed`)
 
                 // If user modified a rule and then reverted changes, replace Add button with Delete button
                 } else {
+
                     var button = document.getElementById(id + "-add" + row);
 
                     // Change back to Delete button
@@ -799,7 +810,6 @@
                     button.innerHTML = "<i class='bi-trash'></i>";
                     button.id = button.id.replace("add", "remove");
                     button.setAttribute( "onClick", "delete_rule(this);" );
-                    console.log(`${e.target.id} changed back`)
 
                 };
             } catch(err) {};
@@ -910,8 +920,8 @@
             };
 
             // Do not overwrite old config with error (if connection lost, will have nothing to compare against when re-connected)
-            if (!selected_node_unreachable) {
-                target_node_status = new_status
+            if (!selected_node_unreachable && !status_lock) {
+                target_node_status = new_status;
             };
         }
 
@@ -926,7 +936,7 @@
                 if (!new_rules[time]) {
                     // Deleted rule found - iterate table rows, find rule, remove
                     for (row of rows) {
-                        if (row.cells[0].children[0]?.value == time) {
+                        if (row.cells[0].children[0]?.dataset.original == time) {
                             row.remove();
                             break;
                         };
