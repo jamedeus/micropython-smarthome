@@ -797,9 +797,6 @@
             // Otherwise if user clicked add after monitoring function got new status, but before it overwrote old, changes made below may be overwritten
             status_lock = true;
 
-            // Add to current status object (prevent duplicate being created when new status object containing this rule is received)
-            target_node_status[target.replace(/[0-9]/g, '') + "s"][target]["schedule"][timestamp.value] = rule.value;
-
             // If user modified an existing rule without changing timestamp, add overwrite arg
             if (timestamp.dataset.original == timestamp.value) {
                 var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp.value, 'rule': rule.value, 'overwrite': 'overwrite'});
@@ -812,6 +809,9 @@
             if (JSON.stringify(result).startsWith('{"ERROR')) {
                 alert(JSON.stringify(result));
             } else {
+                // Add to current status object (prevent duplicate being created when new status object containing this rule is received)
+                target_node_status[target.replace(/[0-9]/g, '') + "s"][target]["schedule"][timestamp.value] = rule.value;
+
                 // If successfully added, change add button to delete button, re-enable
                 el.classList.remove("btn-success");
                 el.classList.add("btn-danger");
@@ -1037,6 +1037,7 @@
 
                 } else if (new_rules[time] != old_rules[time]) {
                     // Timestamp unchanged, rule changed
+                    console.log("overwriting rule")
                     for (row of rows) {
                         if (row.cells[0].children[0]?.value == time) {
                             row.cells[1].children[0].value = new_rules[time];
