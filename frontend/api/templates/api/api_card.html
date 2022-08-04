@@ -538,10 +538,6 @@
             return result
         };
 
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        };
-
         // Add handlers to current rule sliders
         for (slider of document.getElementsByClassName("current-rule-slider")) {
             const id = slider.id.split("-")[0];
@@ -757,6 +753,17 @@
             schedule_rule_tooltips[tooltipTriggerList[i].id] = new bootstrap.Tooltip(tooltipTriggerList[i]);
         };
 
+        // Tooltip stays visible until user hovers or selects field
+        function hide_tooltip(e) {
+            schedule_rule_tooltips[e.target.id].hide();
+        };
+
+        // Add listeners to hide tooltip on hover/select
+        for (id in schedule_rule_tooltips) {
+            document.getElementById(id).addEventListener("mouseover", hide_tooltip);
+            document.getElementById(id).addEventListener("focus", hide_tooltip);
+        };
+
         async function add_rule_row(el) {
             // Get target device/sensor
             const target = el.id.split("-")[0];
@@ -778,6 +785,12 @@
             // Add tooltips (used for help messages when invalid rule entered)
             schedule_rule_tooltips[`schedule-${target}-rule${row}-time`] = new bootstrap.Tooltip(document.getElementById(`schedule-${target}-rule${row}-time`));
             schedule_rule_tooltips[`schedule-${target}-rule${row}-value`] = new bootstrap.Tooltip(document.getElementById(`schedule-${target}-rule${row}-value`));
+
+            // Add listener to dismiss tooltips on hover/select
+            document.getElementById(`schedule-${target}-rule${row}-time`).addEventListener("mouseover", hide_tooltip);
+            document.getElementById(`schedule-${target}-rule${row}-time`).addEventListener("focus", hide_tooltip);
+            document.getElementById(`schedule-${target}-rule${row}-value`).addEventListener("mouseover", hide_tooltip);
+            document.getElementById(`schedule-${target}-rule${row}-value`).addEventListener("focus", hide_tooltip);
 
             // Focus time field
             document.getElementById(`schedule-${target}-rule${row}-time`).focus();
@@ -842,10 +855,8 @@
                 // Focus field with invalid param
                 timestamp.focus();
 
-                // Show tooltip for 3.5 seconds
+                // Show tooltip
                 schedule_rule_tooltips[timestamp.id].show();
-                await sleep(3500);
-                schedule_rule_tooltips[timestamp.id].hide();
 
             } else if (JSON.stringify(result) == '{"ERROR":"Invalid rule"}') {
                 // Re-enable row inputs and button
@@ -854,10 +865,8 @@
                 // Focus field with invalid param
                 rule.focus();
 
-                // Show tooltip for 3.5 seconds
+                // Show tooltip
                 schedule_rule_tooltips[rule.id].show();
-                await sleep(3500);
-                schedule_rule_tooltips[rule.id].hide();
 
             } else if (JSON.stringify(result).startsWith('{"ERROR')) {
                 // All other errors (unable to connect etc.)
