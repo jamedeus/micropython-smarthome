@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <script src="{% static 'node_configuration/smoothscroll.min.js' %}"></script>
     <script>
 
         function getCookie(name) {
@@ -284,7 +285,7 @@
 
             // Render div, scroll down until visible
             document.getElementById("addSensorOptions" + index).innerHTML = template;
-            document.getElementById("addSensorOptions" + index).scrollIntoView();
+            document.getElementById("addSensorOptions" + index).scrollIntoView({behavior: "smooth"});
         };
 
         async function load_device_section(select) {
@@ -351,7 +352,7 @@
 
             // Render div, scroll down until visible
             document.getElementById("addDeviceOptions" + index).innerHTML = template;
-            document.getElementById("addDeviceOptions" + index).scrollIntoView();
+            document.getElementById("addDeviceOptions" + index).scrollIntoView({behavior: "smooth"});
         };
 
         async function load_next_device(button) {
@@ -394,7 +395,7 @@
 
             // Render div, scroll down until visible
             document.getElementById("addDeviceDiv" + (index + 1)).innerHTML = template;
-            document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView();
+            document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
         };
 
         async function load_next_sensor(button) {
@@ -434,7 +435,7 @@
 
             // Render div, scroll down until visible
             document.getElementById("addSensorDiv" + (index + 1)).innerHTML = template;
-            document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView();
+            document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
         };
 
         document.getElementById('page1-button').addEventListener("click", async function(e) {

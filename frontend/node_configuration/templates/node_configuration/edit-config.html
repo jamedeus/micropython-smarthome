@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <script src="{% static 'node_configuration/smoothscroll.min.js' %}"></script>
     <script>
 
         function getCookie(name) {
@@ -654,7 +655,7 @@
 
             // Render div, scroll down until visible
             document.getElementById("addSensorOptions" + index).innerHTML = template;
-            document.getElementById("addSensorOptions" + index).scrollIntoView();
+            document.getElementById("addSensorOptions" + index).scrollIntoView({behavior: "smooth"});
         };
 
         async function load_device_section(select) {
@@ -721,7 +722,7 @@
 
             // Render div, scroll down until visible
             document.getElementById("addDeviceOptions" + index).innerHTML = template;
-            document.getElementById("addDeviceOptions" + index).scrollIntoView();
+            document.getElementById("addDeviceOptions" + index).scrollIntoView({behavior: "smooth"});
         };
 
         // Store sensors added on first page, use to populate later pages
@@ -767,7 +768,7 @@
 
             // Render div, scroll down until visible
             document.getElementById("addDeviceDiv" + (index + 1)).innerHTML = template;
-            document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView();
+            document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
 
             new_devices.push("device" + (index + 1));
         };
@@ -812,7 +813,7 @@
 
             // Render div, scroll down until visible
             document.getElementById("addSensorDiv" + (index + 1)).innerHTML = template;
-            document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView();
+            document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
 
             // Add sensor to list used to populate page 2 and 3
             new_sensors.push("sensor" + (index + 1));
