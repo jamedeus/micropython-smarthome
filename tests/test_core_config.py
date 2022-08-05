@@ -12,7 +12,7 @@ class TestConfig(unittest.TestCase):
         return ["test_initialization", "test_wifi_connected", "test_indicator_led", "test_api_calls", "test_reboot_timer", "test_device_instantiation", "test_for_unexpected_devices", "test_sensor_instantiation", "test_for_unexpected_sensors", "test_group_instantiation", "test_for_unexpected_groups", "test_reload_timer", "test_find_method", "test_get_status_method", "test_rebuilding_queue"]
 
     def test_initialization(self):
-        loaded_json = {'device1': {'max': 1023, 'min': '0', 'nickname': 'device1', 'schedule': {'sunrise': 0, 'sunset': 32}, 'type': 'pwm', 'pin': 4, 'default_rule': 32}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'metadata': {'id': 'Upstairs bathroom', 'location': 'Under counter', 'floor': '2'}, 'sensor1': {'nickname': 'sensor1', 'schedule': {'10:00': '5', '22:00': '5'}, 'pin': 15, 'targets': ['device1'], 'type': 'pir', 'default_rule': 5}}
+        loaded_json = {'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'metadata': {'id': 'Upstairs bathroom', 'location': 'Under counter', 'floor': '2'}, 'sensor1': {'nickname': 'sensor1', 'schedule': {}, 'pin': 15, 'targets': ['device1'], 'type': 'pir', 'default_rule': 5}, 'device1': {'max': 1023, 'min': '0', 'nickname': 'device1', 'schedule': {'sunrise': 0, 'sunset': 32}, 'type': 'pwm', 'pin': 4, 'default_rule': 32}}
 
         self.config = Config(loaded_json)
         self.assertIsInstance(self.config, Config)
@@ -99,3 +99,8 @@ class TestConfig(unittest.TestCase):
         # Confirm duplicate rules were not added
         self.assertEqual(device_before, self.config.devices[0].rule_queue)
         self.assertEqual(sensor_before, self.config.sensors[0].rule_queue)
+
+    def test_default_rule(self):
+        # Regression test for sensor with no schedule rules receiving default_rule of last device/sensor in config
+        self.assertEqual(self.config.sensors[0].current_rule, 5)
+        self.assertEqual(self.config.sensors[0].scheduled_rule, 5)

@@ -113,11 +113,11 @@ class Config():
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
                 from MotionSensor import MotionSensor
-                instance = MotionSensor(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, int(conf[sensor]["pin"]))
+                instance = MotionSensor(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
 
             elif conf[sensor]["type"] == "desktop":
                 from Desktop_trigger import Desktop_trigger
-                instance = Desktop_trigger(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["ip"])
+                instance = Desktop_trigger(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, conf[sensor]["ip"])
 
             elif conf[sensor]["type"] == "si7021":
                 from Thermostat import Thermostat
@@ -125,11 +125,11 @@ class Config():
 
             elif conf[sensor]["type"] == "dummy":
                 from Dummy import Dummy
-                instance = Dummy(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[device]["default_rule"], targets)
+                instance = Dummy(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets)
 
             elif conf[sensor]["type"] == "switch":
                 from Switch import Switch
-                instance = Switch(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, int(conf[sensor]["pin"]))
+                instance = Switch(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
 
             # Add the sensor instance to each of it's target's "triggered_by" list
             for t in targets:
