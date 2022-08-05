@@ -4,21 +4,26 @@
 
         {% for sensor, type in context.sensors.items %}
 
-            <div class="card">
-                <div class="card-body">
-                    <label for="{{sensor}}-targets" class="card-title sensor-targets-label"><b>{{ sensor }} ({{ type }}) targets:</b></label>
-                    <div id="{{sensor}}-targets" class="form-check sensor-targets">
+            {% if not type == "clear" %}
 
-                        {% for device, dtype in context.devices.items %}
+                <div class="card">
+                    <div class="card-body">
+                        <label for="{{sensor}}-targets" class="card-title sensor-targets-label"><b>{{ sensor }} ({{ type }}) targets:</b></label>
+                        <div id="{{sensor}}-targets" class="form-check sensor-targets">
 
-                            <input type="checkbox" class="form-check-input" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}">
-                            <label for="target-{{sensor}}-{{device}}" class="form-check-label">{{ device }} ({{ dtype }})</label><br>
+                            {% for device, dtype in context.devices.items %}
 
-                        {% endfor %}
+                                {% if not dtype == "ir-blaster" and not dtype == "clear" %}
+                                    <input type="checkbox" class="form-check-input" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}">
+                                    <label for="target-{{sensor}}-{{device}}" class="form-check-label">{{ device }} ({{ dtype }})</label><br>
+                                {% endif %}
+
+                            {% endfor %}
+                        </div>
                     </div>
-                </div>
-            </div></br>
+                </div></br>
 
+            {% endif %}
 
         {% endfor %}
 

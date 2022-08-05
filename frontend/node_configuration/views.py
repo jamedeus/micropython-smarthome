@@ -13,8 +13,6 @@ CONFIG_DIR = "/home/jamedeus/git/micropython-smarthome/config/"
 NODE_PASSWD = "password"
 
 def get_modules(conf):
-
-
     modules = []
     libs = []
     libs.append('lib/logging.py')
@@ -360,7 +358,7 @@ def generateConfigFile(request, edit_existing=False):
 
     # Iterate JSON and create section for each device and sensor
     for i in data.keys():
-        if i.startswith("deviceType") or i.startswith("sensorType"):
+        if (i.startswith("deviceType") and not data[i] == "ir-blaster") or i.startswith("sensorType"):
             name = i.replace("Type", "")
             config[name] = {}
             config[name]["type"] = data[i]
@@ -379,6 +377,16 @@ def generateConfigFile(request, edit_existing=False):
 
             if i.startswith("sensor"):
                 config[name]["targets"] = []
+
+        # IR blaster follows different syntax
+        elif i.startswith("deviceType") and data[i] == "ir-blaster":
+            config["ir_blaster"] = {}
+            config["ir_blaster"]["pin"] = data[f"device{i.replace('deviceType', '')}-pin"]
+            config["ir_blaster"]["target"] = []
+
+            for i in data:
+                if i.startswith("irblaster"):
+                    config["ir_blaster"]["target"].append(i.replace('irblaster-', ''))
 
     # Find targets, add to correct sensor's targets list
     for i in data.keys():

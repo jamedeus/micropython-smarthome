@@ -4,27 +4,31 @@
 
         {% for instance, type in context.items %}
 
-            <div class="card">
-                <div class="card-body">
-                    <label class="card-title schedule-rule-card"><b>{{ instance }} ({{ type }}):</b></label>
-                    <table id="{{instance}}-rules" class="table table-borderless">
-                        <tr>
-                            <th style="text-align: left;">Time</th>
-                            <th style="text-align: left;">Rule</th>
-                        </tr>
-                        <tr id="{{instance}}-row-1">
-                            <td><input type="text" class="form-control timestamp" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time" maxlength="5"></td>
-                            <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value"></td>
-                            <td class="min"><button type="button" class="btn btn-danger" id="placeholder_button" style="visibility: hidden;">X</button></td>
-                        </tr>
-                    </table>
-                </div>
+            {% if not type == "clear" and not type == "ir-blaster" %}
 
-                <div class="text-left mx-3 mb-3">
-                    <button type="button" class="btn btn-secondary add" id="{{instance}}-add-rule">Add another</button>
-                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <label class="card-title schedule-rule-card"><b>{{ instance }} ({{ type }}):</b></label>
+                        <table id="{{instance}}-rules" class="table table-borderless">
+                            <tr>
+                                <th style="text-align: left;">Time</th>
+                                <th style="text-align: left;">Rule</th>
+                            </tr>
+                            <tr id="{{instance}}-row-1">
+                                <td><input type="text" class="form-control timestamp" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time" maxlength="5"></td>
+                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value"></td>
+                                <td class="min"><button type="button" class="btn btn-danger" id="placeholder_button" style="visibility: hidden;">X</button></td>
+                            </tr>
+                        </table>
+                    </div>
 
-            </div></br>
+                    <div class="text-left mx-3 mb-3">
+                        <button type="button" class="btn btn-secondary add" id="{{instance}}-add-rule">Add another</button>
+                    </div>
+
+                </div></br>
+
+            {% endif %}
 
         {% endfor %}
 
