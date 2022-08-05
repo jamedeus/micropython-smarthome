@@ -9,7 +9,7 @@ class TestIrBlaster(unittest.TestCase):
         return ["test_instantiation", "test_send_valid", "test_send_invalid"]
 
     def test_instantiation(self):
-        self.instance = IrBlaster(4, "both")
+        self.instance = IrBlaster(4, ["tv", "ac"])
         self.assertIsInstance(self.instance, IrBlaster)
         self.assertEqual(len(self.instance.codes), 2)
         self.assertEqual(len(self.instance.codes['ac']), 10)
