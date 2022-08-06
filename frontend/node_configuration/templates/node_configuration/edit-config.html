@@ -140,18 +140,16 @@
         };
     </script>
 
-    <div class="container">
-        <div>
-            <h1 class="text-center mt-3">Editing {{ context.NAME }}</h1>
-        <div><br>
+    <div class="container d-flex flex-column vh-100">
+        <h1 class="text-center pt-3 pb-4">Editing {{ context.NAME }}</h1>
 
         {% if context %}
 
-            <form id="form" onkeydown="return event.key != 'Enter';">
+            <form id="form" class="h-100" onkeydown="return event.key != 'Enter';">
 
-                <div id="page1">
+                <div id="page1" class="d-flex flex-column h-100">
 
-                    <div>
+                    <div  class="mb-4">
                         <h2>Metadata</h2>
 
                         <div class="mb-2">
@@ -168,9 +166,9 @@
                             <label for="floor"><b>Floor:</b></label>
                             <input type="text" class="form-control" id="floor" placeholder="" name="floor" value="{{context.metadata.floor}}" required>
                         </div>
-                    </div></br>
+                    </div>
 
-                    <div class="mb-3">
+                    <div class="mb-4">
                         <h2>Wifi</h2>
 
                         <div class="mb-2">
@@ -182,7 +180,7 @@
                             <label for="password"><b>Password:</b></label>
                             <input type="password" class="form-control" id="password" placeholder="" name="password" value="{{context.wifi.password}}" required>
                         </div>
-                    </div></br>
+                    </div>
 
                     <div class="row">
                         <div class="col-sm">
@@ -301,7 +299,7 @@
 
                                 </div>
                             {% endfor %}
-                        </div></br>
+                        </div>
 
                         <div class="col-sm">
                             <h2>Add Devices</h2>
@@ -449,23 +447,23 @@
 
                                 </div>
                             {% endfor %}
-                        </div></br>
+                        </div>
                     </div>
 
-                    <div class="d-flex justify-content-between mx-3 mb-3">
-                        <button id="page1-back-button" type="button" class="btn btn-secondary">Back</button>
-                        <button type="button" class="btn btn-primary" style="visibility: hidden;">Submit</button>
-                        <button id="page1-button" type="button" class="btn btn-primary">Next</button>
+                    <div class="d-flex justify-content-between mx-3 mt-auto">
+                        <button id="page1-back-button" type="button" class="btn btn-secondary mb-3">Back</button>
+                        <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
+                        <button id="page1-button" type="button" class="btn btn-primary mb-3">Next</button>
                     </div>
                 </div>
 
-                <div id="page2">
+                <div id="page2" class="flex-column h-100">
                     <div id="page2-cards">
                         <h3>Select targets for each sensor</h3>
 
                         {% for sensor, params in context.sensors.items %}
 
-                            <div class="card">
+                            <div class="card mb-4">
                                 <div class="card-body">
                                     <label for="{{sensor}}-targets" class="card-title sensor-targets-label"><b>{{ sensor }} ({{ params.type }}) targets:</b></label>
                                     <div id="{{sensor}}-targets" class="form-check sensor-targets">
@@ -478,24 +476,24 @@
                                         {% endfor %}
                                     </div>
                                 </div>
-                            </div></br>
+                            </div>
 
                         {% endfor %}
                     </div>
 
-                    <div class="d-flex justify-content-between mx-3 mb-3">
-                        <button id="page2-back-button" type="button" class="btn btn-primary">Back</button>
-                        <button type="button" class="btn btn-primary" style="visibility: hidden;">Submit</button>
-                        <button id="page2-button" type="button" class="btn btn-primary">Next</button>
+                    <div class="d-flex justify-content-between mx-3 mt-auto">
+                        <button id="page2-back-button" type="button" class="btn btn-primary mb-3">Back</button>
+                        <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
+                        <button id="page2-button" type="button" class="btn btn-primary mb-3">Next</button>
                     </div>
                 </div>
 
-                <div id="page3">
+                <div id="page3" class="flex-column h-100">
                     <h3>Add schedule rules (optional)</h3>
                         <div id="page3-cards">
                         {% for instance, params in context.instances.items %}
 
-                            <div class="card">
+                            <div class="card mb-4">
                                 <div class="card-body">
                                     <label class="card-title schedule-rule-card"><b>{{ instance }} ({{ params.type }}):</b></label>
                                     <table id="{{instance}}-rules" class="table table-borderless">
@@ -526,15 +524,15 @@
                                     <button type="button" class="btn btn-secondary add" id="{{instance}}-add-rule">Add another</button>
                                 </div>
 
-                            </div></br>
+                            </div>
 
                         {% endfor %}
                         </div>
 
-                    <div class="d-flex justify-content-between mx-3 mb-3">
-                        <button id="page3-back-button" type="button" class="btn btn-primary">Back</button>
-                        <button id="submit-button" type="submit" class="btn btn-primary">Submit</button>
-                        <button type="button" class="btn btn-secondary" disabled>Next</button>
+                    <div class="d-flex justify-content-between mx-3 mt-auto">
+                        <button id="page3-back-button" type="button" class="btn btn-primary mb-3">Back</button>
+                        <button id="submit-button" type="submit" class="btn btn-primary mb-3">Submit</button>
+                        <button type="button" class="btn btn-secondary mb-3" disabled>Next</button>
                     </div>
                 </div>
 
@@ -943,8 +941,9 @@
                 };
             };
 
-            $('#page2').show();
-            $('#page1').hide();
+            document.getElementById("page2").classList.add("d-flex");
+            document.getElementById("page1").classList.remove("d-flex");
+            document.getElementById("page1").style.display = "none";
         });
 
         document.getElementById('page2-button').addEventListener("click", function(e) {
@@ -1018,8 +1017,9 @@
                 };
             };
 
-            $('#page3').show();
-            $('#page2').hide();
+            document.getElementById("page3").classList.add("d-flex");
+            document.getElementById("page2").classList.remove("d-flex");
+            document.getElementById("page2").style.display = "none";
         });
 
         document.getElementById('page1-back-button').addEventListener("click", function(e) {
@@ -1029,15 +1029,17 @@
         document.getElementById('page2-back-button').addEventListener("click", function(e) {
             e.preventDefault();
 
-            $('#page1').show();
-            $('#page2').hide();
+            document.getElementById("page1").classList.add("d-flex");
+            document.getElementById("page2").classList.remove("d-flex");
+            document.getElementById("page2").style.display = "none";
         });
 
         document.getElementById('page3-back-button').addEventListener("click", function(e) {
             e.preventDefault();
 
-            $('#page2').show();
-            $('#page3').hide();
+            document.getElementById("page2").classList.add("d-flex");
+            document.getElementById("page3").classList.remove("d-flex");
+            document.getElementById("page3").style.display = "none";
         });
 
         function add(e) {
