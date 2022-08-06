@@ -198,7 +198,7 @@
                                             <h4 class="card-title">sensor{{ forloop.counter }}</h4>
                                             <label for="sensorType{{ forloop.counter }}" class="form-label"><b>Type:</b></label>
                                             <div>
-                                                <select onchange="load_sensor_section(this)" name="sensorType{{ forloop.counter }}" id="sensorType{{ forloop.counter }}" class="form-select sensorType" required>
+                                                <select onchange="load_sensor_section(this)" name="sensorType{{ forloop.counter }}" id="sensorType{{ forloop.counter }}" class="form-select sensorType" autocomplete="off" required>
                                                 <option value="clear">Select sensor type</option>
                                                 <option value="pir" {% if params.type == "pir" %} selected {% endif %}>Motion Sensor</option>
                                                 <option value="switch" {% if params.type == "switch" %} selected {% endif %}>Switch</option>
@@ -324,7 +324,7 @@
                                             <h4 class="card-title">device{{ forloop.counter }}</h4>
                                             <label for="deviceType{{ forloop.counter }}" class="form-label"><b>Type:</b></label>
                                             <div>
-                                                <select onchange="load_device_section(this)" name="deviceType{{ forloop.counter }}" id="deviceType{{ forloop.counter }}" class="form-select deviceType" required>
+                                                <select onchange="load_device_section(this)" name="deviceType{{ forloop.counter }}" id="deviceType{{ forloop.counter }}" class="form-select deviceType" autocomplete="off" required>
                                                 <option value="clear">Select device type</option>
                                                 <option value="dimmer" {% if params.type == "dimmer" %} selected {% endif %}>TP-Link Dimmer</option>
                                                 <option value="bulb" {% if params.type == "bulb" %} selected {% endif %}>TP-Link Bulb</option>
@@ -657,6 +657,14 @@
         const target_ip = "{{ context.IP }}"
         const target_filename = "{{ context.FILENAME }}"
 
+        // Track if an IrBlaster is configured (cannot have multiple)
+        ir_blaster_configured = false;
+        for (device of document.getElementsByClassName("deviceType")) {
+            if (device.value == "ir-blaster") {
+                ir_blaster_configured = true;
+            };
+        };
+
         async function load_sensor_section(select) {
             // Get index of sensor
             const index = parseInt(select.id.replace("sensorType", ""));
@@ -807,6 +815,40 @@
             // Render div, scroll down until visible
             document.getElementById("addDeviceOptions" + index).innerHTML = template;
             document.getElementById("addDeviceOptions" + index).scrollIntoView({behavior: "smooth"});
+
+            // Check if IrBlaster selected in any device dropdown
+            devices = document.getElementsByClassName("deviceType");
+
+            var found = false;
+            for (device of devices) {
+                if (device.value == "ir-blaster") {
+                    found = true;
+                };
+            };
+
+            // If IrBlaster selected, disable all IrBlaster options. Otherwise, re-enable all
+            if (!found) {
+                ir_blaster_configured = false;
+
+                for (device of document.getElementsByClassName("deviceType")) {
+                    for (option of device.children) {
+                        if (option.value == "ir-blaster") {
+                            option.disabled = false;
+                        };
+                    };
+                };
+            } else {
+                ir_blaster_configured = false;
+
+                for (device of document.getElementsByClassName("deviceType")) {
+                    if (device == select) { continue };
+                    for (option of device.children) {
+                        if (option.value == "ir-blaster") {
+                            option.disabled = true;
+                        };
+                    };
+                };
+            };
         };
 
         // Store sensors added on first page, use to populate later pages
@@ -832,7 +874,7 @@
                                             <option value="pwm">LED Strip</option>
                                             <option value="mosfet">Mosfet</option>
                                             <option value="api-target">Api Command</option>
-                                            <option value="ir-blaster">IR Blaster</option>
+                                            <option value="ir-blaster" ${ ir_blaster_configured ? "disabled" : ""}>IR Blaster</option>
                                             </select>
                                         </div>
 
