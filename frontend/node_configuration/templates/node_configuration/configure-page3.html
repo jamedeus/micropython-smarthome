@@ -6,7 +6,7 @@
 
             {% if not type == "clear" and not type == "ir-blaster" %}
 
-                <div class="card">
+                <div class="card mb-4">
                     <div class="card-body">
                         <label class="card-title schedule-rule-card"><b>{{ instance }} ({{ type }}):</b></label>
                         <table id="{{instance}}-rules" class="table table-borderless">
@@ -25,17 +25,16 @@
                     <div class="text-left mx-3 mb-3">
                         <button type="button" class="btn btn-secondary add" id="{{instance}}-add-rule">Add another</button>
                     </div>
-
-                </div></br>
+                </div>
 
             {% endif %}
 
         {% endfor %}
 
-        <div class="d-flex justify-content-between mx-3 mb-3">
-            <button id="page3-back-button" type="button" class="btn btn-primary">Back</button>
-            <button type="submit" class="btn btn-primary">Submit</button>
-            <button type="button" class="btn btn-secondary" disabled>Next</button>
+        <div class="d-flex justify-content-between mx-3 mt-auto">
+            <button id="page3-back-button" type="button" class="btn btn-primary mb-3">Back</button>
+            <button type="submit" class="btn btn-primary mb-3">Submit</button>
+            <button type="button" class="btn btn-secondary mb-3" disabled>Next</button>
         </div>
 
     <script>
@@ -59,8 +58,10 @@
         document.getElementById('page3-back-button').addEventListener("click", async function(e) {
             e.preventDefault();
 
-            $('#page2').show();
-            $('#page3').hide();
+            document.getElementById("page2").classList.add("d-flex");
+            document.getElementById("page3").classList.remove("d-flex");
+            document.getElementById("page3").style.display = "none";
+
         });
 
         function add(e) {

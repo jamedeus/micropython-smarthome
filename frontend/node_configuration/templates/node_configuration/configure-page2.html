@@ -6,7 +6,7 @@
 
             {% if not type == "clear" %}
 
-                <div class="card">
+                <div class="card mb-4">
                     <div class="card-body">
                         <label for="{{sensor}}-targets" class="card-title sensor-targets-label"><b>{{ sensor }} ({{ type }}) targets:</b></label>
                         <div id="{{sensor}}-targets" class="form-check sensor-targets">
@@ -21,16 +21,16 @@
                             {% endfor %}
                         </div>
                     </div>
-                </div></br>
+                </div>
 
             {% endif %}
 
         {% endfor %}
 
-        <div class="d-flex justify-content-between mx-3 mb-3">
-            <button id="page2-back-button" type="button" class="btn btn-primary">Back</button>
-            <button type="button" class="btn btn-primary" style="visibility: hidden;">Submit</button>
-            <button id="page2-button" type="button" class="btn btn-primary">Next</button>
+        <div class="d-flex justify-content-between mx-3 mt-auto">
+            <button id="page2-back-button" type="button" class="btn btn-primary mb-3">Back</button>
+            <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
+            <button id="page2-button" type="button" class="btn btn-primary mb-3">Next</button>
         </div>
 
     <script>
@@ -42,15 +42,19 @@
             next_page = await next_page.text()
 
             $('#page3').html(next_page);
-            $('#page3').show();
-            $('#page2').hide();
+
+            document.getElementById("page3").classList.add("d-flex");
+            document.getElementById("page2").classList.remove("d-flex");
+            document.getElementById("page2").style.display = "none";
+
         });
 
         document.getElementById('page2-back-button').addEventListener("click", async function(e) {
             e.preventDefault();
 
-            $('#page1').show();
-            $('#page2').hide();
+            document.getElementById("page1").classList.add("d-flex");
+            document.getElementById("page2").classList.remove("d-flex");
+            document.getElementById("page2").style.display = "none";
         });
 
     </script>
