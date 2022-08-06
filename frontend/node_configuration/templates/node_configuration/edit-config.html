@@ -326,6 +326,7 @@
                                                 <option value="pwm" {% if params.type == "pwm" %} selected {% endif %}>LED Strip</option>
                                                 <option value="mosfet" {% if params.type == "mosfet" %} selected {% endif %}>Mosfet</option>
                                                 <option value="api-target" {% if params.type == "api-target" %} selected {% endif %}>Api Command</option>
+                                                <option value="ir-blaster">IR Blaster</option>
                                                 </select>
                                             </div>
 
@@ -447,6 +448,55 @@
 
                                 </div>
                             {% endfor %}
+
+
+                            {% if context.ir_blaster %}
+
+                                <div id="addDeviceDiv{{ context.devices|length|add:1 }}" {% if context.devices|length %}class="mt-5"{% endif %}>
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h4 class="card-title">device{{ context.devices|length|add:1 }}</h4>
+                                            <label for="deviceType{{ context.devices|length|add:1 }}" class="form-label"><b>Type:</b></label>
+                                            <div>
+                                                <select onchange="load_device_section(this)" name="deviceType{{ context.devices|length|add:1 }}" id="deviceType{{ context.devices|length|add:1 }}" class="form-select deviceType" required>
+                                                <option value="clear">Select device type</option>
+                                                <option value="dimmer">TP-Link Dimmer</option>
+                                                <option value="bulb">TP-Link Bulb</option>
+                                                <option value="relay">Smart Relay</option>
+                                                <option value="dumb-relay">Relay</option>
+                                                <option value="desktop">Desktop</option>
+                                                <option value="pwm">LED Strip</option>
+                                                <option value="mosfet">Mosfet</option>
+                                                <option value="api-target">Api Command</option>
+                                                <option value="ir-blaster" selected>IR Blaster</option>
+                                                </select>
+                                            </div>
+
+                                            <div id="addDeviceOptions{{ context.devices|length|add:1 }}" class="card-body">
+                                                <div class="mb-2">
+                                                    <label for="device{{ context.devices|length|add:1 }}-pin"><b>Pin:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ context.devices|length|add:1 }}-pin" value="{{ context.ir_blaster.pin }}" name="device{{ context.devices|length|add:1 }}-pin" required>
+                                                </div>
+
+                                                <div class="mb-2">
+                                                    <label for="device{{ context.devices|length|add:1 }}-min"><b>Virtual remotes:</b></label>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" name="irblaster-tv" value="irblaster-tv" id="irblaster-tv" {% if "tv" in context.ir_blaster.target %}checked{% endif %}>
+                                                        <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
+                                                        <input class="form-check-input" type="checkbox" name="irblaster-ac" value="irblaster-ac" id="irblaster-ac" {% if "ac" in context.ir_blaster.target %}checked{% endif %}>
+                                                        <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+                            {% endif %}
+
+
+
                         </div>
                     </div>
 
@@ -713,6 +763,22 @@
                                 <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" required>
                             </div>`
 
+            } else if (selected == "ir-blaster") {
+                template += `<div class="mb-2">
+                                <label for="device${index}-pin"><b>Pin:</b></label>
+                                <input type="text" class="form-control" id="device${index}-pin" placeholder="" name="device${index}-pin" required>
+                            </div>
+
+                            <div class="mb-2">
+                                <label for="device${index}-min"><b>Virtual remotes:</b></label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="irblaster-tv" value="irblaster-tv" id="irblaster-tv">
+                                    <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
+                                    <input class="form-check-input" type="checkbox" name="irblaster-ac" value="irblaster-ac" id="irblaster-ac">
+                                    <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
+                                </div>
+                            </div>`
+
             } else {
                 // User selected first option ("Select device type"), clear form
                 template = "";
@@ -746,6 +812,7 @@
                                             <option value="pwm">LED Strip</option>
                                             <option value="mosfet">Mosfet</option>
                                             <option value="api-target">Api Command</option>
+                                            <option value="ir-blaster">IR Blaster</option>
                                             </select>
                                         </div>
 
@@ -838,6 +905,9 @@
 
                      // Iterate devices, add checkbox for each to new sensor card
                     for (let j = 0; j < devices.length; j++) {
+                        // Do not add if device is IrBlaster (cannot be targeted)
+                        if (devices[j].value == "ir-blaster") { continue };
+
                         document.getElementById(new_sensors[i] + "-targets").innerHTML += "<input type='checkbox' class='form-check-input' id='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "' name='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "' value='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "'><label for='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "' class='form-check-label'>" + devices[j].id.replace("deviceType", "device") + " (" + devices[j].value + ")</label><br>";
                     };
 
@@ -923,6 +993,11 @@
                             if (sensors[sen].children[opt+1].innerHTML.replace(dev_id + " (", "").replace(")", "") == dev_type) {
                                 // If type hasn't changed, go to next sensor section
                                 break
+                            } else if (dev_type == "ir-blaster") {
+                                // If device type changed to IrBlaster, remove checkbox (cannot be targeted, API only)
+                                sensors[sen].children[opt+2].remove();
+                                sensors[sen].children[opt+1].remove();
+                                sensors[sen].children[opt].remove();
                             } else {
                                 // If type HAS changed, replace and uncheck box
                                 sensors[sen].children[opt+1].innerHTML = dev_id + " (" + dev_type + ")"
@@ -934,8 +1009,8 @@
                         };
                     };
 
-                    // If no match was found, add the device as an option
-                    if (!found) {
+                    // If no match was found, add the device as an option (unless device is IrBlaster)
+                    if (!found && dev_type != "ir-blaster") {
                         sensors[sen].innerHTML += "<input type='checkbox' class='form-check-input' id='target-" + sen_id + "-" + dev_id + "' name='target-" + sen_id + "-" + dev_id + "' value='target-" + sen_id + "-" + dev_id + "'><label for='target-" + sen_id + "-" + dev_id + "' class='form-check-label'>" + dev_id + " (" + dev_type + ")</label><br>";
                     };
                 };
@@ -958,6 +1033,9 @@
                 for (let i = 0; i < new_devices.length; i++) {
                     // Get type of device
                     const type = document.getElementById(new_devices[i].replace("device", "deviceType")).value;
+
+                    // Do not add IrBlaster (doesn't support schedule rules)
+                    if (type == "ir-blaster") { continue };
 
                     // Add schedule rule section for the new device to page3
                     document.getElementById("page3-cards").innerHTML += "<div class='card'>\
@@ -986,7 +1064,7 @@
             new_devices = []
 
             // If user changed a sensor or device's type, update type listed on page3 to reflect
-            instances = document.getElementsByClassName("schedule-rule-card")
+            instances = document.getElementsByClassName("schedule-rule-card");
             for (let i = 0; i < instances.length; i++) {
                 id = instances[i].innerHTML.split(" ")[0].split(">")[1];
 
@@ -1002,6 +1080,12 @@
                 };
 
                 if (old_type != new_type) {
+                    // If changed to IrBlaster, remove card (doesn't support schedule rules)
+                    if (new_type == "ir-blaster") {
+                        instances[i].parentElement.parentElement.remove();
+                        continue;
+                    }
+
                     instances[i].innerHTML = instances[i].innerHTML.replace(old_type, new_type);
 
                     // Clear all existing schedule rules (likely invalid for new type)
