@@ -218,6 +218,9 @@
     </div>
 
     <script>
+        // Track if an IrBlaster is configured (cannot have multiple)
+        ir_blaster_configured = false;
+
         async function load_sensor_section(select) {
             // Get index of sensor
             const index = parseInt(select.id.replace("sensorType", ""));
@@ -368,6 +371,40 @@
             // Render div, scroll down until visible
             document.getElementById("addDeviceOptions" + index).innerHTML = template;
             document.getElementById("addDeviceOptions" + index).scrollIntoView({behavior: "smooth"});
+
+            // Check if IrBlaster selected in any device dropdown
+            devices = document.getElementsByClassName("deviceType");
+
+            var found = false;
+            for (device of devices) {
+                if (device.value == "ir-blaster") {
+                    found = true;
+                };
+            };
+
+            // If IrBlaster selected, disable all IrBlaster options. Otherwise, re-enable all
+            if (!found) {
+                ir_blaster_configured = false;
+
+                for (device of document.getElementsByClassName("deviceType")) {
+                    for (option of device.children) {
+                        if (option.value == "ir-blaster") {
+                            option.disabled = false;
+                        };
+                    };
+                };
+            } else {
+                ir_blaster_configured = true;
+
+                for (device of document.getElementsByClassName("deviceType")) {
+                    if (device == select) { continue };
+                    for (option of device.children) {
+                        if (option.value == "ir-blaster") {
+                            option.disabled = true;
+                        };
+                    };
+                };
+            };
         };
 
         async function load_next_device(button) {
@@ -390,7 +427,7 @@
                                             <option value="pwm">LED Strip</option>
                                             <option value="mosfet">Mosfet</option>
                                             <option value="api-target">Api Command</option>
-                                            <option value="ir-blaster">IR Blaster</option>
+                                            <option value="ir-blaster" ${ ir_blaster_configured ? "disabled" : ""}>IR Blaster</option>
                                             </select>
                                         </div>
 
