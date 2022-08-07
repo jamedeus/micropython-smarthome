@@ -640,7 +640,6 @@
 
         // Initialize all range sliders, add listeners
         for (slider of $('input[type="range"]')) {
-            console.log(slider.id)
             // Initialize
             $('#' + slider.id).rangeslider({
                 polyfill: false,
@@ -650,12 +649,13 @@
                 }
             });
 
-            // Add listeners
+            // Update current rule displayed while slider moves
             $('#' + slider.id).on('input', function(e) {
                 var $handle = $('.rangeslider__handle', e.target.nextSibling);
                 updateHandle($handle[0], this.value);
             });
 
+            // Runs once when user releases click on slider
             $('#' + slider.id).on('change', async function(e) {
                 const id = e.target.id.split("-")[0];
                 // Device or sensor
@@ -723,15 +723,17 @@
             if (JSON.stringify(result).startsWith('{"ERROR')) {
                 console.log(`Failed to reset ${target} rule`);
             } else {
-                console.log(target)
                 // Update current rule
                 const scheduled = target_node_status[category][target]["scheduled_rule"];
 
                 // Update slider position
                 const slider = document.getElementById(target + "-rule");
                 slider.value = scheduled
-
                 $('input[type="range"]').rangeslider('update', true);
+
+                // Update current rule shown in slider handle
+                var $handle = $('.rangeslider__handle', document.getElementById(target + '-rule').nextSibling);
+                updateHandle($handle[0], document.getElementById(target + '-rule').value);
 
                 // Hide reset button
                 document.getElementById(target + "-rule-reset").style.visibility = "hidden";
