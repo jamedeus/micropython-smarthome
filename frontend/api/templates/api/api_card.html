@@ -120,9 +120,22 @@
 
                                 <!-- Rule slider -->
                                 {% if params.type == "pir" %}
-                                    <div class="text-center mx-3 pt-3">
-                                        <input id="{{sensor}}-rule" type="range" class="current-rule-slider" min="0" max="60" step="0.5" value="{{params.current_rule}}" autocomplete="off">
-                                        <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+
+                                    <div class="d-flex flex-row align-items-center">
+                                        <div class="col-1">
+                                            <button id="{{sensor}}-rule-down" class="btn btn-sm btn-outline-secondary" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash"></i></button>
+                                        </div>
+                                        <div class="col-10">
+                                            <input id="{{sensor}}-rule" type="range" class="current-rule-slider mx-auto" min="0" max="60" step="0.5" value="{{params.current_rule}}" autocomplete="off">
+                                        </div>
+                                        <div class="col-1">
+                                            <button id="{{sensor}}-rule-up" class="btn btn-sm btn-outline-secondary ms-auto" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="text-center row">
+                                        <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden">
+                                            <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
+                                        </div>
                                     </div>
 
                                 {% elif params.type == "si7021" %}
@@ -176,9 +189,22 @@
                                                 <div class="collapse" id="{{sensor}}-body">
                                             {% endif %}
 
-                                            <div class="text-center pt-3">
-                                                <input id="{{sensor}}-rule" type="range" class="current-rule-slider" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
-                                                <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                            <!-- Range slider -->
+                                            <div class="d-flex flex-row align-items-center">
+                                                <div class="col-1">
+                                                    <button id="{{sensor}}-rule-down" class="btn btn-sm btn-outline-secondary" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash"></i></button>
+                                                </div>
+                                                <div class="col-10">
+                                                    <input id="{{sensor}}-rule" type="range" class="current-rule-slider mx-auto" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
+                                                </div>
+                                                <div class="col-1">
+                                                    <button id="{{sensor}}-rule-up" class="btn btn-sm btn-outline-secondary ms-auto" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus"></i></button>
+                                                </div>
+                                            </div>
+                                            <div class="text-center row">
+                                                <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden">
+                                                    <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
+                                                </div>
                                             </div>
 
                                 {% endif %}
@@ -269,16 +295,45 @@
 
                                 <!-- Rule slider -->
                                 {% if params.type in "dimmer,bulb" %}
-                                    <div class="text-center mx-3 pt-3">
-                                        <input id="{{device}}-rule" type="range" class="current-rule-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
-                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+
+                                    <div class="d-flex flex-row align-items-center">
+                                        <div class="col-1">
+                                            <button id="{{device}}-rule-down" class="btn btn-sm btn-outline-secondary" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash"></i></button>
+                                        </div>
+                                        <div class="col-10">
+                                            <input id="{{device}}-rule" type="range" class="current-rule-slider mx-auto" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
+                                        </div>
+                                        <div class="col-1">
+                                            <button id="{{device}}-rule-up" class="btn btn-sm btn-outline-secondary ms-auto" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus"></i></button>
+                                        </div>
                                     </div>
+                                    <div class="text-center row">
+                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden">
+                                            <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
+                                        </div>
+                                    </div>
+
                                 {% elif params.type == "pwm" %}
-                                    <div class="text-center py-3">
-                                        <input id="{{device}}-rule" type="range" class="current-rule-slider" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
-                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+
+                                    <div class="d-flex flex-row align-items-center">
+                                        <div class="col-1">
+                                            <button id="{{device}}-rule-down" class="btn btn-sm btn-outline-secondary" onclick="rule_slider_increment(this);" data-stepsize="8"><i class="bi-dash"></i></button>
+                                        </div>
+                                        <div class="col-10">
+                                            <input id="{{device}}-rule" type="range" class="current-rule-slider mx-auto" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
+                                        </div>
+                                        <div class="col-1">
+                                            <button id="{{device}}-rule-up" class="btn btn-sm btn-outline-secondary ms-auto" onclick="rule_slider_increment(this);" data-stepsize="8"><i class="bi-plus"></i></button>
+                                        </div>
                                     </div>
+                                    <div class="text-center row">
+                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden">
+                                            <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
+                                        </div>
+                                    </div>
+
                                 {% endif %}
+
                                 <!-- End rule slider -->
 
                                 <!-- Schedule rules section, collapsed by default -->
@@ -450,6 +505,8 @@
                 // Select handle element closest to slider, update displayed rule
                 $handle = $('.rangeslider__handle', this.$range);
                 $handle[0].textContent = this.value;
+
+                this.$range[0].classList.add("mx-auto")
                 }
             });
 
@@ -475,6 +532,8 @@
                 } else {
                     document.getElementById(id + "-rule-reset").style.visibility = "hidden";
                 };
+
+                console.log(`${id}: new rule = ${new_rule}, type = ${typeof(new_rule)}`)
 
                 // Fire API command
                 var result = await send_command({'command': 'set_rule', 'instance': id, 'rule': new_rule});
@@ -543,6 +602,40 @@
                 // Hide reset button
                 document.getElementById(target + "-rule-reset").style.visibility = "hidden";
             };
+        };
+
+        // Handler for rule slider plus and minus buttons
+        async function rule_slider_increment(button) {
+            const target = button.id.split("-")[0];
+            // Device or sensor
+            const category = target.replace(/[0-9]/g, '') + "s";
+
+            const current = parseFloat(document.getElementById(`${target}-rule`).value);
+            const scheduled = target_node_status[category][target]["scheduled_rule"];
+
+            if (button.id.split("-")[2] == "up") {
+                var new_rule = current + parseFloat(button.dataset.stepsize);
+            } else {
+                var new_rule = current - parseFloat(button.dataset.stepsize);
+            };
+
+            // Update slider position
+            document.getElementById(`${target}-rule`).value = new_rule;
+            $('input[type="range"]').rangeslider('update', true);
+            // Select handle element closest to slider, update current rule displayed
+            var $handle = $('.rangeslider__handle', document.getElementById(target + '-rule').nextSibling);
+            $handle[0].textContent = document.getElementById(target + '-rule').value;
+
+            // Show reset button if new rule differs from scheduled, otherwise hide reset button
+            if (new_rule != scheduled) {
+                document.getElementById(target + "-rule-reset").style.visibility = "visible";
+            } else {
+                document.getElementById(target + "-rule-reset").style.visibility = "hidden";
+            };
+
+            // Fire API command
+            var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': new_rule.toString()});
+            result = await result.json();
         };
 
         // Handler for device enable/disable toggle
@@ -932,6 +1025,11 @@
                                     const slider = document.getElementById(instance + "-rule");
 
                                     slider.value = new_status[section][instance]["current_rule"];
+                                    $('input[type="range"]').rangeslider('update', true);
+
+                                    // Select handle element closest to slider, update current rule displayed
+                                    var $handle = $('.rangeslider__handle', document.getElementById(instance + '-rule').nextSibling);
+                                    $handle[0].textContent = document.getElementById(instance + '-rule').value;
 
                                     if (new_status[section][instance]["current_rule"] != new_status[section][instance]["scheduled_rule"]) {
                                         // Show reset button
