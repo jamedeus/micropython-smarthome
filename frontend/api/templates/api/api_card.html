@@ -12,6 +12,7 @@
     <script src="{% static 'node_configuration/popper.min.js' %}"></script>
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <script src="{% static 'api/rangeslider.min.js' %}"></script>
     <script>
 
         function getCookie(name) {
@@ -171,6 +172,75 @@
                 transform: rotate(360deg);
             }
         }
+
+        /* Range sliders */
+        .current-rule-slider {
+            padding-top: 1rem;
+            padding-bottom: 1rem;
+        }
+
+        /* Slider bar size */
+        .rangeslider--horizontal {
+            height: 10px;
+            width: 100%;
+        }
+        /* Applies to entire slider background */
+        .rangeslider,
+        .rangeslider__fill {
+            display: block;
+            border-radius: 10px;
+        }
+
+        /* Slider background right of handle (values larger than current selection) */
+        .rangeslider {
+            background: #cccccc;
+            position: relative;
+        }
+
+        body.dark .rangeslider {
+            background: #1B1E1F;
+        }
+
+        /* Slider background left of handle (values smaller than current selection) */
+        .rangeslider__fill {
+            position: absolute;
+            background: #0D6EFD;
+        }
+
+        /* Controls how much of the slider bar is filled in with bg color */
+        .rangeslider--horizontal .rangeslider__fill {
+            top: 0;
+            height: 100%;
+        }
+
+        /* Circle with current value */
+        .rangeslider__handle {
+            border-radius: 22px;
+            line-height: 2.3rem;
+            text-align: center;
+            font-weight: bold;
+            background: white;
+            border: 6px solid #0D6EFD;
+            cursor: pointer;
+            display: inline-block;
+            width: 3rem;
+            height: 3rem;
+            position: absolute;
+            -moz-border-radius: 50%;
+            -webkit-border-radius: 50%;
+            border-radius: 50%;
+        }
+
+        body.dark .rangeslider__handle {
+            background: #202428;
+        }
+
+        /* Handle vertical positioning */
+        .rangeslider--horizontal .rangeslider__handle {
+            top: -1rem;
+            touch-action: pan-y;
+            -ms-touch-action: pan-y;
+        }
     </style>
 </head>
 
@@ -242,10 +312,9 @@
 
                                 <!-- Rule slider -->
                                 {% if params.type == "pir" %}
-                                    <div class="text-center mx-3">
-                                        <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Delay: <span id="{{sensor}}-current-rule" data-rule_type="float">{{params.current_rule}}</span> minutes</label>
-                                        <input id="{{sensor}}-rule" type="range" class="form-range current-rule-slider" min="0" max="60" step="0.5" value="{{params.current_rule}}" autocomplete="off">
-                                        <div id="{{sensor}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                    <div class="text-center mx-3 py-3">
+                                        <input id="{{sensor}}-rule" type="range" class="current-rule-slider" min="0" max="60" step="0.5" value="{{params.current_rule}}" autocomplete="off">
+                                        <div id="{{sensor}}-rule-reset" class="text-center mb-2 mt-5" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
 
                                 {% elif params.type == "si7021" %}
@@ -299,10 +368,9 @@
                                                 <div class="collapse" id="{{sensor}}-body">
                                             {% endif %}
 
-                                            <div class="text-center">
-                                                <label for="{{sensor}}-rule" id="{{sensor}}-rule-label" class="form-label">Thermostat: <span id="{{sensor}}-current-rule" data-rule_type="float">{{params.current_rule}}</span>° F</label>
-                                                <input id="{{sensor}}-rule" type="range" class="form-range current-rule-slider" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
-                                                <div id="{{sensor}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                            <div class="text-center py-3">
+                                                <input id="{{sensor}}-rule" type="range" class="current-rule-slider" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
+                                                <div id="{{sensor}}-rule-reset" class="text-center mb-2 mt-5" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                             </div>
 
                                 {% endif %}
@@ -393,16 +461,14 @@
 
                                 <!-- Rule slider -->
                                 {% if params.type in "dimmer,bulb" %}
-                                    <div class="text-center mx-3">
-                                        <input id="{{device}}-rule" type="range" class="form-range current-rule-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
-                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule" data-rule_type="int">{{params.current_rule}}</span></label>
-                                        <div id="{{device}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                    <div class="text-center mx-3 py-3">
+                                        <input id="{{device}}-rule" type="range" class="current-rule-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
+                                        <div id="{{device}}-rule-reset" class="text-center mb-2 mt-5" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
                                 {% elif params.type == "pwm" %}
-                                    <div class="text-center">
-                                        <input id="{{device}}-rule" type="range" class="form-range current-rule-slider" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
-                                        <label for="{{device}}-rule" class="form-label">Brightness: <span id="{{device}}-current-rule" data-rule_type="int">{{params.current_rule}}</span></label>
-                                        <div id="{{device}}-rule-reset" class="text-center my-2" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                    <div class="text-center py-3">
+                                        <input id="{{device}}-rule" type="range" class="current-rule-slider" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
+                                        <div id="{{device}}-rule-reset" class="text-center mb-2 mt-5" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
                                 {% endif %}
                                 <!-- End rule slider -->
@@ -567,6 +633,50 @@
         // Prevent multiple functions modifying status object at the same time
         var status_lock = false;
 
+        // Update the value inside the slider handle
+        function updateHandle(el, val) {
+            el.textContent = val;
+        };
+
+        // Initialize all range sliders, add listeners
+        for (slider of $('input[type="range"]')) {
+            console.log(slider.id)
+            // Initialize
+            $('#' + slider.id).rangeslider({
+                polyfill: false,
+                onInit: function() {
+                handle = $('.rangeslider__handle', this.$range);
+                updateHandle(handle[0], this.value);
+                }
+            });
+
+            // Add listeners
+            $('#' + slider.id).on('input', function(e) {
+                var $handle = $('.rangeslider__handle', e.target.nextSibling);
+                updateHandle($handle[0], this.value);
+            });
+
+            $('#' + slider.id).on('change', async function(e) {
+                const id = e.target.id.split("-")[0];
+                // Device or sensor
+                const category = id.replace(/[0-9]/g, '') + "s";
+
+                const new_rule = this.value;
+                const scheduled = target_node_status[category][id]["scheduled_rule"];
+
+                // Show reset button if new rule differs from scheduled, otherwise hide reset button
+                if (new_rule != scheduled) {
+                    document.getElementById(id + "-rule-reset").style.visibility = "visible";
+                } else {
+                    document.getElementById(id + "-rule-reset").style.visibility = "hidden";
+                };
+
+                // Fire API command
+                var result = await send_command({'command': 'set_rule', 'instance': id, 'rule': new_rule});
+                result = await result.json();
+            });
+        };
+
         // Receives command parameters in value
         async function send_command(value) {
             // Add target and selected command to request body
@@ -585,14 +695,13 @@
             return result
         };
 
-        // Add handlers to current rule sliders
+        // Show reset button if current rule differs from scheduled
         for (slider of document.getElementsByClassName("current-rule-slider")) {
             const id = slider.id.split("-")[0];
             // Device or sensor
             const category = id.replace(/[0-9]/g, '') + "s";
 
             // Used in listeners below
-            const label = document.getElementById(id + "-current-rule");
             const rule = slider.value;
             const scheduled = target_node_status[category][id]["scheduled_rule"];
 
@@ -600,35 +709,6 @@
             if (rule != scheduled) {
                 document.getElementById(id + "-rule-reset").style.visibility = "visible";
             };
-
-            // Update current rule displayed while slider moves
-            slider.addEventListener('input', function(e) {
-                var new_rule = e.target.value;
-
-                // Display as either float or int based on data attribute
-                if (label.dataset.rule_type == "float") {
-                    label.innerHTML = parseFloat(new_rule).toFixed(1);
-                } else if (label.dataset.rule_type == "int") {
-                    label.innerHTML = parseInt(new_rule);
-                };
-            });
-
-            // Runs once when user releases click on slider
-            slider.addEventListener('change', async function(e) {
-                const new_rule = e.target.value;
-                const scheduled = target_node_status[category][id]["scheduled_rule"];
-
-                // Show reset button if new rule differs from scheduled, otherwise hide reset button
-                if (new_rule != scheduled) {
-                    document.getElementById(id + "-rule-reset").style.visibility = "visible";
-                } else {
-                    document.getElementById(id + "-rule-reset").style.visibility = "hidden";
-                };
-
-                // Fire API command
-                var result = await send_command({'command': 'set_rule', 'instance': id, 'rule': new_rule});
-                result = await result.json();
-            });
         };
 
         // Handler for current_rule reset button
@@ -645,19 +725,13 @@
             } else {
                 console.log(target)
                 // Update current rule
-                const label = document.getElementById(target + "-current-rule");
                 const scheduled = target_node_status[category][target]["scheduled_rule"];
-
-                // Display as either float or int based on data attribute
-                if (label.dataset.rule_type == "float") {
-                    label.innerHTML = parseFloat(scheduled).toFixed(1);
-                } else if (label.dataset.rule_type == "int") {
-                    label.innerHTML = parseInt(scheduled);
-                };
 
                 // Update slider position
                 const slider = document.getElementById(target + "-rule");
                 slider.value = scheduled
+
+                $('input[type="range"]').rangeslider('update', true);
 
                 // Hide reset button
                 document.getElementById(target + "-rule-reset").style.visibility = "hidden";
@@ -1049,16 +1123,8 @@
                                 try {
                                     // TODO shouldn't move slider while user is moving it (currently jumps back to current rule every time this runs)
                                     const slider = document.getElementById(instance + "-rule");
-                                    const label = document.getElementById(instance + "-current-rule");
 
                                     slider.value = new_status[section][instance]["current_rule"];
-
-                                    // Display as either float or int based on data attribute
-                                    if (label.dataset.rule_type == "float") {
-                                        label.innerHTML = parseFloat(new_status[section][instance]["current_rule"]).toFixed(1);
-                                    } else if (label.dataset.rule_type == "int") {
-                                        label.innerHTML = parseInt(new_status[section][instance]["current_rule"]);
-                                    };
 
                                     if (new_status[section][instance]["current_rule"] != new_status[section][instance]["scheduled_rule"]) {
                                         // Show reset button
