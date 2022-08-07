@@ -64,6 +64,7 @@
                     <ul id="more_options_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="more_options_button">
                         <li><a class="dropdown-item" onclick="send_command({'command': 'reboot'});">Reboot</a></li>
                         <li><a class="dropdown-item" onclick="send_command({'command': 'clear_log'});">Clear Log</a></li>
+                        <li><a class="dropdown-item" onclick="reset_all_rules();">Reset all rules</a></li>
                     </ul>
                 </div>
             </div>
@@ -133,7 +134,7 @@
                                         </div>
                                     </div>
                                     <div class="text-center row">
-                                        <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden">
+                                        <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3 reset-button" style="visibility: hidden">
                                             <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
                                         </div>
                                     </div>
@@ -202,7 +203,7 @@
                                                 </div>
                                             </div>
                                             <div class="text-center row">
-                                                <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden">
+                                                <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3 reset-button" style="visibility: hidden">
                                                     <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
                                                 </div>
                                             </div>
@@ -308,7 +309,7 @@
                                         </div>
                                     </div>
                                     <div class="text-center row">
-                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden">
+                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3 reset-button" style="visibility: hidden">
                                             <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
                                         </div>
                                     </div>
@@ -327,7 +328,7 @@
                                         </div>
                                     </div>
                                     <div class="text-center row">
-                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden">
+                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3 reset-button" style="visibility: hidden">
                                             <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
                                         </div>
                                     </div>
@@ -636,6 +637,15 @@
             // Fire API command
             var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': new_rule.toString()});
             result = await result.json();
+        };
+
+        // Click all visible reset buttons
+        function reset_all_rules() {
+            for (button of document.getElementsByClassName("reset-button")) {
+                if (button.style.visibility == "visible") {
+                    button.children[0].click();
+                }
+            };
         };
 
         // Handler for device enable/disable toggle
