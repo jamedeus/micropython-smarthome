@@ -441,26 +441,23 @@
         // Prevent multiple functions modifying status object at the same time
         var status_lock = false;
 
-        // Update the value inside the slider handle
-        function updateHandle(el, val) {
-            el.textContent = val;
-        };
-
         // Initialize all range sliders, add listeners
         for (slider of $('input[type="range"]')) {
             // Initialize
             $('#' + slider.id).rangeslider({
                 polyfill: false,
                 onInit: function() {
-                handle = $('.rangeslider__handle', this.$range);
-                updateHandle(handle[0], this.value);
+                // Select handle element closest to slider, update displayed rule
+                $handle = $('.rangeslider__handle', this.$range);
+                $handle[0].textContent = this.value;
                 }
             });
 
             // Update current rule displayed while slider moves
             $('#' + slider.id).on('input', function(e) {
+                // Select handle element closest to slider, update displayed rule
                 var $handle = $('.rangeslider__handle', e.target.nextSibling);
-                updateHandle($handle[0], this.value);
+                $handle[0].textContent = this.value;
             });
 
             // Runs once when user releases click on slider
@@ -539,9 +536,9 @@
                 slider.value = scheduled
                 $('input[type="range"]').rangeslider('update', true);
 
-                // Update current rule shown in slider handle
+                // Select handle element closest to slider, update current rule displayed
                 var $handle = $('.rangeslider__handle', document.getElementById(target + '-rule').nextSibling);
-                updateHandle($handle[0], document.getElementById(target + '-rule').value);
+                $handle[0].textContent = document.getElementById(target + '-rule').value;
 
                 // Hide reset button
                 document.getElementById(target + "-rule-reset").style.visibility = "hidden";
