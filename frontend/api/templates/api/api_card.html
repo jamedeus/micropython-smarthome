@@ -120,9 +120,9 @@
 
                                 <!-- Rule slider -->
                                 {% if params.type == "pir" %}
-                                    <div class="text-center mx-3 py-3">
+                                    <div class="text-center mx-3 pt-3">
                                         <input id="{{sensor}}-rule" type="range" class="current-rule-slider" min="0" max="60" step="0.5" value="{{params.current_rule}}" autocomplete="off">
-                                        <div id="{{sensor}}-rule-reset" class="text-center mb-2 mt-5" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                        <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
 
                                 {% elif params.type == "si7021" %}
@@ -176,9 +176,9 @@
                                                 <div class="collapse" id="{{sensor}}-body">
                                             {% endif %}
 
-                                            <div class="text-center py-3">
+                                            <div class="text-center pt-3">
                                                 <input id="{{sensor}}-rule" type="range" class="current-rule-slider" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
-                                                <div id="{{sensor}}-rule-reset" class="text-center mb-2 mt-5" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                                <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                             </div>
 
                                 {% endif %}
@@ -269,14 +269,14 @@
 
                                 <!-- Rule slider -->
                                 {% if params.type in "dimmer,bulb" %}
-                                    <div class="text-center mx-3 py-3">
+                                    <div class="text-center mx-3 pt-3">
                                         <input id="{{device}}-rule" type="range" class="current-rule-slider" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
-                                        <div id="{{device}}-rule-reset" class="text-center mb-2 mt-5" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
                                 {% elif params.type == "pwm" %}
                                     <div class="text-center py-3">
                                         <input id="{{device}}-rule" type="range" class="current-rule-slider" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
-                                        <div id="{{device}}-rule-reset" class="text-center mb-2 mt-5" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
+                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3" style="visibility: hidden"><button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button></div>
                                     </div>
                                 {% endif %}
                                 <!-- End rule slider -->
