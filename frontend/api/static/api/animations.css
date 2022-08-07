@@ -1,0 +1,94 @@
+/* Power button on/off animations */
+@keyframes fade-on {
+    0% {
+        background-position: 50% -15%;
+    }
+    100% {
+        background-position: 50% 35%;
+    }
+}
+
+@keyframes fade-off {
+    0% {
+        background-position: 50% 35%;
+    }
+    100% {
+        background-position: 50% -15%;
+    }
+}
+
+.power-toggle {
+    background-image: radial-gradient(circle, #ffc107 5%, white 55%);
+    background-size: 500% 500%;
+
+    /* Add border for visibility when not filled in (device turned off) */
+    border: 1px solid #dee2e6 !important;
+    border-radius: 1rem !important;
+
+    /* Remove focus highligh */
+    box-shadow: none !important;
+}
+
+body.dark .power-toggle {
+    background-image: radial-gradient(circle, #ffc107 5%, transparent 55%);
+    border: 2px solid #2B2E2F !important;
+}
+
+.toggle-on {
+    animation-name: fade-on;
+    animation-duration: 1.2s;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+.toggle-off {
+    animation-name: fade-off;
+    animation-duration: 1.2s;
+    animation-timing-function: ease-in-out;
+}
+
+.bi-lightbulb {
+    font-size:1.5em
+}
+
+/* Loading spinner */
+.loading-animation {
+    display: inline-block;
+    position: relative;
+    width: 6rem;
+    height: 6rem;
+}
+
+.loading-animation div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 4rem;
+    height: 4rem;
+    margin: 1rem;
+    border: 8px solid #fff;
+    border-radius: 50%;
+    animation: loading-animation 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #fff transparent transparent transparent;
+}
+
+.loading-animation div:nth-child(1) {
+    animation-delay: -0.45s;
+}
+
+.loading-animation div:nth-child(2) {
+    animation-delay: -0.3s;
+}
+
+.loading-animation div:nth-child(3) {
+    animation-delay: -0.15s;
+}
+
+@keyframes loading-animation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}

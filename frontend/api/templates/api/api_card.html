@@ -9,10 +9,16 @@
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
+    <link rel="stylesheet" href="{% static 'api/sliders.css' %}">
+    <link rel="stylesheet" href="{% static 'api/animations.css' %}">
+    {% if context.metadata.ir_blaster == True %}
+    <link rel="stylesheet" href="{% static 'api/remote.css' %}">
+    {% endif %}
     <script src="{% static 'node_configuration/popper.min.js' %}"></script>
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script src="{% static 'api/rangeslider.min.js' %}"></script>
+
     <script>
 
         function getCookie(name) {
@@ -32,16 +38,6 @@
 
     </script>
     <style>
-        .result {
-            background-color: #D9D9D9;
-            border-radius: 8px;
-            width: 85%;
-        }
-
-        body.dark .result {
-            background-color: #2B2E2F;
-        }
-
         /* Limit width for readability on large screen sizes */
         @media (min-width: 1200px) {
             .container {
@@ -52,194 +48,6 @@
         /* Block double tap zoom on mobile, allows pressing buttons quickly */
         body {
             touch-action: manipulation;
-        }
-
-        .remote {
-            border-left: 1px solid rgba(0,0,0,.125);
-            border-right: 1px solid rgba(0,0,0,.125);
-            padding-left: 0.5rem;
-            padding-right: 0.5rem;
-        }
-
-        body.dark .remote {
-            background-color: #212529;
-        }
-
-        .remote-top {
-            border-radius: 20px 20px 0px 0px;
-            border-top: 1px solid rgba(0,0,0,.125);
-            padding-top: 0.5rem;
-        }
-
-        .remote-bottom {
-            border-radius: 0px 0px 20px 20px;
-            border-bottom: 1px solid rgba(0,0,0,.125);
-            padding-bottom: 0.5rem;
-        }
-
-        /* Power button on/off animations */
-
-        @keyframes fade-on {
-            0% {
-                background-position: 50% -15%;
-            }
-            100% {
-                background-position: 50% 35%;
-            }
-        }
-
-        @keyframes fade-off {
-            0% {
-                background-position: 50% 35%;
-            }
-            100% {
-                background-position: 50% -15%;
-            }
-        }
-
-        .power-toggle {
-            background-image: radial-gradient(circle, #ffc107 5%, white 55%);
-            background-size: 500% 500%;
-
-            /* Add border for visibility when not filled in (device turned off) */
-            border: 1px solid #dee2e6 !important;
-            border-radius: 1rem !important;
-
-            /* Remove focus highligh */
-            box-shadow: none !important;
-        }
-
-        body.dark .power-toggle {
-            background-image: radial-gradient(circle, #ffc107 5%, transparent 55%);
-            border: 2px solid #2B2E2F !important;
-        }
-
-        .toggle-on {
-            animation-name: fade-on;
-            animation-duration: 1.2s;
-            animation-timing-function: ease-in-out;
-            animation-fill-mode: forwards;
-        }
-
-        .toggle-off {
-            animation-name: fade-off;
-            animation-duration: 1.2s;
-            animation-timing-function: ease-in-out;
-        }
-
-        .bi-lightbulb {
-            font-size:1.5em
-        }
-
-        /* Loading spinner */
-        .loading-animation {
-            display: inline-block;
-            position: relative;
-            width: 6rem;
-            height: 6rem;
-        }
-
-        .loading-animation div {
-            box-sizing: border-box;
-            display: block;
-            position: absolute;
-            width: 4rem;
-            height: 4rem;
-            margin: 1rem;
-            border: 8px solid #fff;
-            border-radius: 50%;
-            animation: loading-animation 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-            border-color: #fff transparent transparent transparent;
-        }
-
-        .loading-animation div:nth-child(1) {
-            animation-delay: -0.45s;
-        }
-
-        .loading-animation div:nth-child(2) {
-            animation-delay: -0.3s;
-        }
-
-        .loading-animation div:nth-child(3) {
-            animation-delay: -0.15s;
-        }
-
-        @keyframes loading-animation {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
-        }
-
-        /* Range sliders */
-        .current-rule-slider {
-            padding-top: 1rem;
-            padding-bottom: 1rem;
-        }
-
-        /* Slider bar size */
-        .rangeslider--horizontal {
-            height: 10px;
-            width: 100%;
-        }
-        /* Applies to entire slider background */
-        .rangeslider,
-        .rangeslider__fill {
-            display: block;
-            border-radius: 10px;
-        }
-
-        /* Slider background right of handle (values larger than current selection) */
-        .rangeslider {
-            background: #cccccc;
-            position: relative;
-        }
-
-        body.dark .rangeslider {
-            background: #1B1E1F;
-        }
-
-        /* Slider background left of handle (values smaller than current selection) */
-        .rangeslider__fill {
-            position: absolute;
-            background: #0D6EFD;
-        }
-
-        /* Controls how much of the slider bar is filled in with bg color */
-        .rangeslider--horizontal .rangeslider__fill {
-            top: 0;
-            height: 100%;
-        }
-
-        /* Circle with current value */
-        .rangeslider__handle {
-            border-radius: 22px;
-            line-height: 2.3rem;
-            text-align: center;
-            font-weight: bold;
-            background: white;
-            border: 6px solid #0D6EFD;
-            cursor: pointer;
-            display: inline-block;
-            width: 3rem;
-            height: 3rem;
-            position: absolute;
-            -moz-border-radius: 50%;
-            -webkit-border-radius: 50%;
-            border-radius: 50%;
-        }
-
-        body.dark .rangeslider__handle {
-            background: #202428;
-        }
-
-        /* Handle vertical positioning */
-        .rangeslider--horizontal .rangeslider__handle {
-            top: -1rem;
-            touch-action: pan-y;
-            -ms-touch-action: pan-y;
         }
     </style>
 </head>
