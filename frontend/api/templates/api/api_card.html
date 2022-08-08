@@ -92,12 +92,15 @@
                         <div class="card">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between mb-3">
-                                    {% if params.type in "pir,desktop,dummy" %}
-                                    <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" checked>
-                                    <label class="btn btn-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label"><i class="bi-exclamation-lg"></i></label><br>
-                                    {% else %}
+                                    {% if not params.type in "pir,desktop,dummy" %}
                                     <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" style="visibility: hidden;" disabled>
-                                    <label class="btn btn-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label" style="visibility: hidden;"><i class="bi-exclamation-lg"></i></label><br>
+                                    <label class="btn btn-outline-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label" style="visibility: hidden;"><i class="bi-exclamation-lg"></i></label><br>
+                                    {% elif params.condition_met %}
+                                    <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" checked>
+                                    <label class="btn btn-outline-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label"><i class="bi-exclamation-lg"></i></label><br>
+                                    {% else %}
+                                    <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)">
+                                    <label class="btn btn-outline-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label"><i class="bi-exclamation-lg"></i></label><br>
                                     {% endif %}
 <!--                                     <button type="button" class="btn btn-primary my-auto"><i class="bi-exclamation-lg"></i></button> -->
                                     <h4 class="card-title mx-auto my-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
@@ -1013,6 +1016,19 @@
                                 } else {
                                     button.classList.remove("toggle-on");
                                     button.classList.add("toggle-off");
+                                };
+
+                            } else if (param == "condition_met") {
+                                // Get button
+                                const button = document.getElementById(instance + "-trigger");
+
+                                // Sensor was triggered since last status update
+                                if (new_status[section][instance][param]) {
+                                    button.checked = true;
+
+                                // Sensor no longer triggered
+                                } else {
+                                    button.checked = false;
                                 };
 
                             } else if (param == "current_rule" || param == "scheduled_rule") {

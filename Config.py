@@ -195,6 +195,7 @@ class Config():
             status_dict["sensors"][i.name]["type"] = i.sensor_type
             status_dict["sensors"][i.name]["enabled"] = i.enabled
             status_dict["sensors"][i.name]["current_rule"] = i.current_rule
+            status_dict["sensors"][i.name]["condition_met"] = i.condition_met()
             status_dict["sensors"][i.name]["scheduled_rule"] = i.scheduled_rule
             status_dict["sensors"][i.name]["targets"] = []
             for t in i.targets:
