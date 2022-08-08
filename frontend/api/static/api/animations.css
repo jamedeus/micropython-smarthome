@@ -22,8 +22,8 @@
     background-size: 500% 500%;
 
     /* Add border for visibility when not filled in (device turned off) */
-    border: 1px solid #dee2e6 !important;
-    border-radius: 1rem !important;
+/*    border: 1px solid #dee2e6 !important;
+    border-radius: 1rem !important;*/
 
     /* Remove focus highligh */
     box-shadow: none !important;
@@ -31,7 +31,7 @@
 
 body.dark .power-toggle {
     background-image: radial-gradient(circle, #ffc107 5%, transparent 55%);
-    border: 2px solid #2B2E2F !important;
+/*     border: 2px solid #2B2E2F !important; */
 }
 
 .toggle-on {
@@ -46,10 +46,10 @@ body.dark .power-toggle {
     animation-duration: 1.2s;
     animation-timing-function: ease-in-out;
 }
-
+/*
 .bi-lightbulb {
     font-size:1.5em
-}
+}*/
 
 /* Loading spinner */
 .loading-animation {

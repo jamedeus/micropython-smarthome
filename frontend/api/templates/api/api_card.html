@@ -75,7 +75,6 @@
                     document.body.classList.add("dark");
                     document.getElementById("back_button").classList.add("btn-dark");
                     document.getElementById("more_options_button").classList.add("btn-dark");
-                    document.getElementById("more_options_menu").classList.add("dropdown-menu-dark");
                     console.log("Dark mode");
                 } else {
                     document.getElementById("back_button").classList.add("btn-light");
@@ -92,14 +91,26 @@
 
                         <div class="card">
                             <div class="card-body d-flex flex-column">
-                                <div class="d-flex flex-row">
-                                    <h4 class="card-title" id="{{sensor}}-title">{{ params.nickname }}</h4>
-                                    <div class="form-check form-switch ms-auto my-auto">
-                                        {% if params.enabled %}
-                                            <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)" checked>
-                                        {% else %}
-                                            <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)">
-                                        {% endif %}
+                                <div class="d-flex justify-content-between mb-3">
+                                    {% if params.type in "pir,desktop,dummy" %}
+                                    <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" checked>
+                                    <label class="btn btn-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label"><i class="bi-exclamation-lg"></i></label><br>
+                                    {% else %}
+                                    <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" style="visibility: hidden;" disabled>
+                                    <label class="btn btn-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label" style="visibility: hidden;"><i class="bi-exclamation-lg"></i></label><br>
+                                    {% endif %}
+<!--                                     <button type="button" class="btn btn-primary my-auto"><i class="bi-exclamation-lg"></i></button> -->
+                                    <h4 class="card-title mx-auto my-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
+                                    <div class="dropdown ms-auto my-auto">
+                                        <button type="button" class="btn btn-outline-secondary" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                        <ul id="{{sensor}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{sensor}}-menu-button">
+                                            {% if params.enabled %}
+                                                <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
+                                            {% else %}
+                                                <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
+                                            {% endif %}
+                                            <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
+                                        </ul>
                                     </div>
                                 </div>
 
@@ -108,16 +119,6 @@
                                 {% else %}
                                     <div class="collapse" id="{{sensor}}-body">
                                 {% endif %}
-
-                                <!-- Trigger button -->
-                                {% if params.type in "pir,desktop,dummy" %}
-                                    <div>
-                                        <!-- TODO backend report trigger state in status obj, display here (like device on/off state) -->
-                                        <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" checked>
-                                        <label class="btn btn-sm btn-primary" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label">Trigger</label><br>
-                                    </div>
-                                {% endif %}
-                                <!-- End trigger button -->
 
                                 <!-- Rule slider -->
                                 {% if params.type == "pir" %}
@@ -131,11 +132,6 @@
                                         </div>
                                         <div class="col-1">
                                             <button id="{{sensor}}-rule-up" class="btn btn-sm btn-outline-secondary ms-auto" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus"></i></button>
-                                        </div>
-                                    </div>
-                                    <div class="text-center row">
-                                        <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3 reset-button" style="visibility: hidden">
-                                            <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
                                         </div>
                                     </div>
 
@@ -158,30 +154,22 @@
 
                                     <script>
                                         // Change previous card title to "Climate Data", old title will be reused in new card below
-                                        var title = document.getElementById("{{sensor}}-title");
-                                        title.innerHTML = "Climate Data";
-                                        // Center title
-                                        title.parentElement.classList.remove("d-flex");
-                                        title.parentElement.classList.remove("flex-row");
-                                        title.classList.add("text-center");
+                                        document.getElementById("{{sensor}}-title").innerHTML = "Climate Data";
 
                                         // Remove enable/disable toggle, will be replaced in new card below
-                                        var toggle = document.getElementById("{{sensor}}-enable-toggle");
-                                        toggle.parentElement.remove();
+                                        document.getElementById("{{sensor}}-trigger").remove();
+                                        document.getElementById("{{sensor}}-trigger-label").remove();
+                                        document.getElementById("{{sensor}}-menu").remove();
 
                                     </script>
 
                                     <div class="card">
                                         <div class="card-body d-flex flex-column">
-                                            <div class="d-flex flex-row">
-                                                <h4 class="card-title">{{ params.nickname }}</h4>
-                                                <div class="form-check form-switch ms-auto my-auto">
-                                                    {% if params.enabled %}
-                                                        <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)" checked>
-                                                    {% else %}
-                                                        <input class="form-check-input" type="checkbox" id="{{sensor}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-body" aria-expanded="false" aria-controls="{{sensor}}-body" autocomplete="off" onchange="enable(this)">
-                                                    {% endif %}
-                                                </div>
+                                            <div class="d-flex justify-content-between mb-3">
+                                                <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" style="visibility: hidden;" disabled>
+                                                <label class="btn btn-primary" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label" style="visibility: hidden;"><i class="bi-exclamation-lg"></i></label><br>
+                                                <h4 class="card-title mx-auto" id="{{sensor}}-trigger">{{ params.nickname }}</h4>
+                                                <button type="button" class="btn btn-outline-secondary" id="{{sensor}}-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                                             </div>
 
                                             {% if params.enabled %}
@@ -202,17 +190,12 @@
                                                     <button id="{{sensor}}-rule-up" class="btn btn-sm btn-outline-secondary ms-auto" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus"></i></button>
                                                 </div>
                                             </div>
-                                            <div class="text-center row">
-                                                <div id="{{sensor}}-rule-reset" class="text-center mb-3 mt-3 pt-3 reset-button" style="visibility: hidden">
-                                                    <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
-                                                </div>
-                                            </div>
 
                                 {% endif %}
                                 <!-- End rule slider -->
 
                                 <!-- Schedule rules section, collapsed by default -->
-                                <p class="text-center">
+                                <p class="text-center mt-4">
                                     <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
                                         Schedule rules
                                     </button>
@@ -268,14 +251,27 @@
 
                         <div class="card">
                             <div class="card-body d-flex flex-column">
-                                <div class="d-flex flex-row">
-                                    <h4 class="card-title" id="{{device}}-title">{{ params.nickname }}</h4>
-                                    <div class="form-check form-switch ms-auto my-auto">
-                                        {% if params.enabled %}
-                                            <input class="form-check-input" type="checkbox" id="{{device}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{device}}-body" aria-expanded="false" aria-controls="{{device}}-body" autocomplete="off" onchange="enable(this)" checked>
-                                        {% else %}
-                                            <input class="form-check-input" type="checkbox" id="{{device}}-enable-toggle" data-bs-toggle="collapse" data-bs-target="#{{device}}-body" aria-expanded="false" aria-controls="{{device}}-body" autocomplete="off" onchange="enable(this)">
-                                        {% endif %}
+
+
+                                <div class="d-flex justify-content-between mb-3">
+                                    {% if params.turned_on %}
+                                        <button class="btn btn-outline-dark power-toggle my-auto me-auto toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
+                                    {% else %}
+                                        <button class="btn power-toggle my-auto me-auto" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
+                                    {% endif %}
+<!--                                     <button type="button" class="btn btn-primary my-auto"><i class="bi-exclamation-lg"></i></button> -->
+                                    <h4 class="card-title mx-auto my-auto" id="{{device}}-title">{{ params.nickname }}</h4>
+
+                                    <div class="dropdown my-auto ms-auto">
+                                        <button type="button" class="btn btn-outline-secondary" id="{{device}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                        <ul id="{{device}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{device}}-menu-button">
+                                            {% if params.enabled %}
+                                                <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
+                                            {% else %}
+                                                <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
+                                            {% endif %}
+                                            <li><a id="{{device}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
+                                        </ul>
                                     </div>
                                 </div>
 
@@ -284,15 +280,6 @@
                                 {% else %}
                                     <div class="collapse" id="{{device}}-body">
                                 {% endif %}
-
-                                <!-- Power toggle button -->
-                                <div class="text-center mb-3">
-                                    {% if params.turned_on %}
-                                        <button class="btn power-toggle toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
-                                    {% else %}
-                                        <button class="btn power-toggle" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
-                                    {% endif %}
-                                </div>
 
                                 <!-- Rule slider -->
                                 {% if params.type in "dimmer,bulb" %}
@@ -308,12 +295,6 @@
                                             <button id="{{device}}-rule-up" class="btn btn-sm btn-outline-secondary ms-auto" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus"></i></button>
                                         </div>
                                     </div>
-                                    <div class="text-center row">
-                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3 reset-button" style="visibility: hidden">
-                                            <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
-                                        </div>
-                                    </div>
-
                                 {% elif params.type == "pwm" %}
 
                                     <div class="d-flex flex-row align-items-center">
@@ -327,18 +308,13 @@
                                             <button id="{{device}}-rule-up" class="btn btn-sm btn-outline-secondary ms-auto" onclick="rule_slider_increment(this);" data-stepsize="8"><i class="bi-plus"></i></button>
                                         </div>
                                     </div>
-                                    <div class="text-center row">
-                                        <div id="{{device}}-rule-reset" class="text-center mb-3 mt-3 pt-3 reset-button" style="visibility: hidden">
-                                            <button class="btn btn-sm btn-secondary" onclick="reset(this)">Reset</button>
-                                        </div>
-                                    </div>
 
                                 {% endif %}
 
                                 <!-- End rule slider -->
 
                                 <!-- Schedule rules section, collapsed by default -->
-                                <p class="text-center">
+                                <p class="text-center mt-4">
                                     <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules">
                                         Schedule rules
                                     </button>
@@ -497,6 +473,10 @@
         // Prevent multiple functions modifying status object at the same time
         var status_lock = false;
 
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
+        };
+
         // Initialize all range sliders, add listeners
         for (slider of $('input[type="range"]')) {
             // Initialize
@@ -527,11 +507,11 @@
                 const new_rule = this.value;
                 const scheduled = target_node_status[category][id]["scheduled_rule"];
 
-                // Show reset button if new rule differs from scheduled, otherwise hide reset button
+                // Enable reset option if new rule differs from scheduled, otherwise disable
                 if (new_rule != scheduled) {
-                    document.getElementById(id + "-rule-reset").style.visibility = "visible";
+                    document.getElementById(id + "-reset").classList.remove("disabled");
                 } else {
-                    document.getElementById(id + "-rule-reset").style.visibility = "hidden";
+                    document.getElementById(id + "-reset").classList.add("disabled");
                 };
 
                 console.log(`${id}: new rule = ${new_rule}, type = ${typeof(new_rule)}`)
@@ -570,15 +550,17 @@
             const rule = slider.value;
             const scheduled = target_node_status[category][id]["scheduled_rule"];
 
-            // If current rule != scheduled rule, show reset button
+            // If current rule != scheduled rule, enable reset option
             if (rule != scheduled) {
-                document.getElementById(id + "-rule-reset").style.visibility = "visible";
+                document.getElementById(id + "-reset").classList.remove("disabled");
+            } else {
+                document.getElementById(id + "-reset").classList.add("disabled");
             };
         };
 
         // Handler for current_rule reset button
         async function reset(el) {
-            const target = el.parentElement.id.split("-")[0];
+            const target = el.id.split("-")[0];
             // Device or sensor
             const category = target.replace(/[0-9]/g, '') + "s";
 
@@ -600,8 +582,8 @@
                 var $handle = $('.rangeslider__handle', document.getElementById(target + '-rule').nextSibling);
                 $handle[0].textContent = document.getElementById(target + '-rule').value;
 
-                // Hide reset button
-                document.getElementById(target + "-rule-reset").style.visibility = "hidden";
+                // Disable reset button
+                document.getElementById(target + "-reset").classList.add("disabled");
             };
         };
 
@@ -629,9 +611,9 @@
 
             // Show reset button if new rule differs from scheduled, otherwise hide reset button
             if (new_rule != scheduled) {
-                document.getElementById(target + "-rule-reset").style.visibility = "visible";
+                document.getElementById(target + "-reset").classList.remove("disabled");
             } else {
-                document.getElementById(target + "-rule-reset").style.visibility = "hidden";
+                document.getElementById(target + "-reset").classList.add("disabled");
             };
 
             // Fire API command
@@ -649,32 +631,36 @@
         };
 
         // Handler for device enable/disable toggle
-        async function enable(el) {
+        async function enable_disable_handler(el) {
             const target = el.id.split("-")[0];
+            // Device or sensor
+            const category = target.replace(/[0-9]/g, '') + "s";
 
-            if (el.checked) {
+            if (target_node_status[category][target]["enabled"]) {
+                console.log(`Disabling ${target}`);
+                el.innerHTML = "Enable";
+                var result = await send_command({'command': 'disable', 'instance': target, 'delay_input': ''});
+            } else {
+                el.innerHTML = "Disable";
                 console.log(`Enabling ${target}`);
                 var result = await send_command({'command': 'enable', 'instance': target, 'delay_input': ''});
-            } else {
-                console.log(`Disabling ${target}`);
-                var result = await send_command({'command': 'disable', 'instance': target, 'delay_input': ''});
             };
 
             result = await result.json();
             if (JSON.stringify(result).startsWith('{"ERROR')) {
                 // Command failed
-                if (el.checked) {
-                    alert(`Failed to enable ${target}`);
-                    // Move toggle back, collapse card
-                    document.getElementById(target + "-enable-toggle").checked = false;
-                    $('#' + target + '-body').collapse('hide')
-                } else {
+                if (target_node_status[category][target]["enabled"]) {
                     alert(`Failed to disable ${target}`);
-                    // Move toggle back, expand card
-                    document.getElementById(target + "-enable-toggle").checked = true;
+                    // Expand card
                     // TODO figure out why collapse('show') doesn't work. Temporary workaround (no animation) below
 //                     $('#' + target + '-body').collapse('show')
                     var card = document.getElementById(target + "-body").classList.add('show');
+                    el.innerHTML = "Disable";
+                } else {
+                    alert(`Failed to enable ${target}`);
+                    // Collapse card
+                    $('#' + target + '-body').collapse('hide');
+                    el.innerHTML = "Enable";
                 };
             };
         };
@@ -1042,24 +1028,24 @@
                                     $handle[0].textContent = document.getElementById(instance + '-rule').value;
 
                                     if (new_status[section][instance]["current_rule"] != new_status[section][instance]["scheduled_rule"]) {
-                                        // Show reset button
-                                        document.getElementById(instance + "-rule-reset").style.visibility = "visible";
+                                        // Enable reset option
+                                        document.getElementById(instance + "-reset").classList.remove("disabled");
                                     } else {
-                                        // Hide reset button
-                                        document.getElementById(instance + "-rule-reset").style.visibility = "hidden";
+                                        // Disable reset option
+                                        document.getElementById(instance + "-reset").classList.add("disabled");
                                     };
                                 } catch(err) {};
 
                             } else if (param == "enabled") {
                                 if (new_status[section][instance]["enabled"]) {
-                                    // Move toggle, collapse card
-                                    document.getElementById(instance + "-enable-toggle").checked = true;
+                                    // Expand card, change menu option text
                                     $('#' + instance + '-body').collapse('show')
+                                    document.getElementById(instance + "-enable").innerHTML = "Disable";
 
                                 } else {
-                                    // Move toggle, collapse card
-                                    document.getElementById(instance + "-enable-toggle").checked = false;
+                                    // Collapse card, change menu option text
                                     $('#' + instance + '-body').collapse('hide')
+                                    document.getElementById(instance + "-enable").innerHTML = "Enable";
 
                                 };
 
@@ -1160,14 +1146,14 @@
                 document.getElementById("back_button").classList.add("btn-dark");
                 document.getElementById("more_options_button").classList.remove("btn-light");
                 document.getElementById("more_options_button").classList.add("btn-dark");
-                document.getElementById("more_options_menu").classList.add("dropdown-menu-dark");
+                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
             } else {
                 document.body.classList.remove("dark");
                 document.getElementById("back_button").classList.remove("btn-dark");
                 document.getElementById("back_button").classList.add("btn-light");
                 document.getElementById("more_options_button").classList.remove("btn-dark");
                 document.getElementById("more_options_button").classList.add("btn-light");
-                document.getElementById("more_options_menu").classList.remove("dropdown-menu-dark");
+                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.remove("dropdown-menu-dark"));
             }
         });
     </script>

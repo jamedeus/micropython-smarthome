@@ -121,6 +121,9 @@ $pagination-disabled-color: #bbbbbb;
         color: #696b6e;
     }
 
+    /* Increase contrast for disabled items */
+    $dropdown-link-disabled-color: #737578 !important;
+
     /* Force bold white text on buttons (readability) */
     .btn {
         color: #fff !important;
@@ -165,4 +168,5 @@ $pagination-disabled-color: #bbbbbb;
     @import "bootstrap-5.1.3/scss/_buttons";
     @import "bootstrap-5.1.3/scss/_tables";
     @import "bootstrap-5.1.3/scss/_list-group";
+    @import "bootstrap-5.1.3/scss/_dropdown";
 }
