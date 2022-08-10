@@ -91,7 +91,7 @@
 
                         <div class="card">
                             <div class="card-body d-flex flex-column">
-                                <div class="d-flex justify-content-between mb-3">
+                                <div class="d-flex justify-content-between">
                                     {% if not params.type in "pir,desktop,dummy" %}
                                     <button class="btn btn-outline-dark trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
                                     {% elif params.condition_met %}
@@ -123,14 +123,14 @@
                                 <!-- Rule slider -->
                                 {% if params.type == "pir" %}
 
-                                    <div class="d-flex flex-row align-items-center">
+                                    <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
                                         <button id="{{sensor}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
                                         <input id="{{sensor}}-rule" type="range" class="current-rule-slider mx-auto" min="0" max="60" step="0.5" value="{{params.current_rule}}" autocomplete="off">
                                         <button id="{{sensor}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
                                     </div>
 
                                 {% elif params.type == "si7021" %}
-                                    <table class="table table-borderless">
+                                    <table class="table table-borderless mt-3">
                                         <tbody>
                                             <tr>
                                                 <th class="text-center w-50 pb-0">Temperature</th>
@@ -158,7 +158,7 @@
 
                                     <div class="card">
                                         <div class="card-body d-flex flex-column">
-                                            <div class="d-flex justify-content-between mb-3">
+                                            <div class="d-flex justify-content-between">
                                                 <button class="btn btn-outline-dark trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
                                                 <h4 class="card-title mx-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
 
@@ -182,7 +182,7 @@
                                             {% endif %}
 
                                             <!-- Range slider -->
-                                            <div class="d-flex flex-row align-items-center">
+                                            <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
                                                 <button id="{{sensor}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
                                                 <input id="{{sensor}}-rule" type="range" class="current-rule-slider mx-auto" min="65" max="80" step="0.1" value="{{params.current_rule}}" autocomplete="off">
                                                 <button id="{{sensor}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
@@ -192,7 +192,7 @@
                                 <!-- End rule slider -->
 
                                 <!-- Schedule rules section, collapsed by default -->
-                                <p class="text-center mt-4">
+                                <p class="text-center mt-3">
                                     <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
                                         Schedule rules
                                     </button>
@@ -248,9 +248,7 @@
 
                         <div class="card">
                             <div class="card-body d-flex flex-column">
-
-
-                                <div class="d-flex justify-content-between mb-3">
+                                <div class="d-flex justify-content-between">
                                     {% if params.turned_on %}
                                         <button class="btn btn-outline-dark power-button my-auto me-auto toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
                                     {% else %}
@@ -281,14 +279,14 @@
                                 <!-- Rule slider -->
                                 {% if params.type in "dimmer,bulb" %}
 
-                                    <div class="d-flex flex-row align-items-center">
+                                    <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
                                         <button id="{{device}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
                                         <input id="{{device}}-rule" type="range" class="current-rule-slider mx-auto" min="1" max="100" value="{{params.current_rule}}" autocomplete="off">
                                         <button id="{{device}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
                                     </div>
                                 {% elif params.type == "pwm" %}
 
-                                    <div class="d-flex flex-row align-items-center">
+                                    <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
                                         <button id="{{device}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="8"><i class="bi-dash-lg"></i></button>
                                         <input id="{{device}}-rule" type="range" class="current-rule-slider mx-auto" min="0" max="1023" value="{{params.current_rule}}" autocomplete="off">
                                         <button id="{{device}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="8"><i class="bi-plus-lg"></i></button>
@@ -299,7 +297,7 @@
                                 <!-- End rule slider -->
 
                                 <!-- Schedule rules section, collapsed by default -->
-                                <p class="text-center mt-4">
+                                <p class="text-center mt-3">
                                     <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules">
                                         Schedule rules
                                     </button>
