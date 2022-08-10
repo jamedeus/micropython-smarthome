@@ -47,11 +47,14 @@ async function updateStatusObject() {
 
                         // Sensor was triggered since last status update
                         if (new_status[section][instance][param]) {
-                            button.checked = true;
+                            button.classList.remove("trigger-off")
+                            button.classList.add("trigger-on")
 
                         // Sensor no longer triggered
                         } else {
                             button.checked = false;
+                            button.classList.remove("trigger-on")
+                            button.classList.add("trigger-off")
                         };
 
                     } else if (param == "current_rule" || param == "scheduled_rule") {

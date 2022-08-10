@@ -138,14 +138,21 @@ async function power(el) {
 // Handler for trigger sensor button
 async function trigger(el) {
     const target = el.id.split("-")[0];
+    el.classList.remove("trigger-off");
+    el.classList.add("trigger-on");
+
+    // Prevent getting stuck in wrong state if condition_met changes back before next status update
+    target_node_status["sensors"][target]["condition_met"] = true;
 
     var result = await send_command({'command': 'trigger_sensor', 'instance': target});
     result = await result.json();
 
-        if (JSON.stringify(result).startsWith('{"ERROR')) {
-            console.log(`Failed to trigger ${target}`);
-        } else {
-            // Update page contents immediately after triggering (sensor probably turned targets on)
-            updateStatusObject();
-        };
+    if (JSON.stringify(result).startsWith('{"ERROR')) {
+        console.log(`Failed to trigger ${target}`);
+        el.classList.remove("trigger-on");
+        el.classList.add("trigger-off");
+    } else {
+        // Update page contents immediately after triggering (sensor probably turned targets on)
+        updateStatusObject();
+    };
 };

@@ -93,19 +93,16 @@
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between mb-3">
                                     {% if not params.type in "pir,desktop,dummy" %}
-                                    <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" style="visibility: hidden;" disabled>
-                                    <label class="btn btn-outline-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label" style="visibility: hidden;"><i class="bi-exclamation-lg"></i></label><br>
+                                    <button class="btn btn-outline-dark trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
                                     {% elif params.condition_met %}
-                                    <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" checked>
-                                    <label class="btn btn-outline-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label"><i class="bi-exclamation-lg"></i></label><br>
+                                    <button class="btn btn-outline-dark trigger-button my-auto me-auto trigger-on" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
                                     {% else %}
-                                    <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)">
-                                    <label class="btn btn-outline-primary my-auto me-auto" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label"><i class="bi-exclamation-lg"></i></label><br>
+                                    <button class="btn btn-outline-dark trigger-button my-auto me-auto" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
                                     {% endif %}
 <!--                                     <button type="button" class="btn btn-primary my-auto"><i class="bi-exclamation-lg"></i></button> -->
                                     <h4 class="card-title mx-auto my-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
                                     <div class="dropdown ms-auto my-auto">
-                                        <button type="button" class="btn btn-outline-secondary" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                        <button type="button" class="btn btn-outline-dark menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                                         <ul id="{{sensor}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{sensor}}-menu-button">
                                             {% if params.enabled %}
                                                 <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
@@ -161,7 +158,6 @@
 
                                         // Remove enable/disable toggle, will be replaced in new card below
                                         document.getElementById("{{sensor}}-trigger").remove();
-                                        document.getElementById("{{sensor}}-trigger-label").remove();
                                         document.getElementById("{{sensor}}-menu-button").parentElement.remove();
 
                                     </script>
@@ -169,12 +165,11 @@
                                     <div class="card">
                                         <div class="card-body d-flex flex-column">
                                             <div class="d-flex justify-content-between mb-3">
-                                                <input type="checkbox" class="btn-check" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)" style="visibility: hidden;" disabled>
-                                                <label class="btn btn-primary" for="{{sensor}}-trigger" id="{{sensor}}-trigger-label" style="visibility: hidden;"><i class="bi-exclamation-lg"></i></label><br>
-                                                <h4 class="card-title mx-auto" id="{{sensor}}-trigger">{{ params.nickname }}</h4>
+                                                <button class="btn btn-outline-dark trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
+                                                <h4 class="card-title mx-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
 
                                                 <div class="dropdown ms-auto my-auto">
-                                                    <button type="button" class="btn btn-outline-secondary" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                                    <button type="button" class="btn btn-outline-dark menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                                                     <ul id="{{sensor}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{sensor}}-menu-button">
                                                         {% if params.enabled %}
                                                             <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
@@ -269,15 +264,15 @@
 
                                 <div class="d-flex justify-content-between mb-3">
                                     {% if params.turned_on %}
-                                        <button class="btn btn-outline-dark power-toggle my-auto me-auto toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
+                                        <button class="btn btn-outline-dark power-button my-auto me-auto toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
                                     {% else %}
-                                        <button class="btn power-toggle my-auto me-auto" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
+                                        <button class="btn btn-outline-dark power-button my-auto me-auto" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
                                     {% endif %}
 <!--                                     <button type="button" class="btn btn-primary my-auto"><i class="bi-exclamation-lg"></i></button> -->
                                     <h4 class="card-title mx-auto my-auto" id="{{device}}-title">{{ params.nickname }}</h4>
 
                                     <div class="dropdown my-auto ms-auto">
-                                        <button type="button" class="btn btn-outline-secondary" id="{{device}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                        <button type="button" class="btn btn-outline-dark menu-button" id="{{device}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                                         <ul id="{{device}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{device}}-menu-button">
                                             {% if params.enabled %}
                                                 <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>

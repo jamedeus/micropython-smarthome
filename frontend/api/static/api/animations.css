@@ -17,21 +17,38 @@
     }
 }
 
-.power-toggle {
+/* Top-right corner of all device and sensor cards */
+.menu-button {
+    border-radius: 0.5rem !important;
+}
+
+body.dark .menu-button {
+    border: 1px solid #dee2e617 !important;
+}
+
+.power-button {
     background-image: radial-gradient(circle, #ffc107 5%, white 55%);
     background-size: 500% 500%;
+    border-radius: 0.5rem !important;
 
-    /* Add border for visibility when not filled in (device turned off) */
-/*    border: 1px solid #dee2e6 !important;
-    border-radius: 1rem !important;*/
-
-    /* Remove focus highligh */
+    /* Remove focus highlight */
     box-shadow: none !important;
 }
 
-body.dark .power-toggle {
+.bi-lightbulb, .bi-exclamation-lg {
+    color: #000;
+}
+
+body.dark .bi-lightbulb, body.dark  .bi-exclamation-lg {
+    color: #fff;
+}
+
+body.dark .power-button {
     background-image: radial-gradient(circle, #ffc107 5%, transparent 55%);
 /*     border: 2px solid #2B2E2F !important; */
+
+    /* Add border for visibility when not filled in (device turned off) */
+    border: 1px solid #dee2e617 !important;
 }
 
 .toggle-on {
@@ -46,10 +63,54 @@ body.dark .power-toggle {
     animation-duration: 1.2s;
     animation-timing-function: ease-in-out;
 }
-/*
-.bi-lightbulb {
-    font-size:1.5em
-}*/
+
+/* Trigger button on/off animations */
+@keyframes trigger-on {
+    0% {
+        background-position: 50% -15%;
+    }
+    100% {
+        background-position: 50% 35%;
+    }
+}
+
+@keyframes trigger-off {
+    0% {
+        background-position: 50% 35%;
+    }
+    100% {
+        background-position: 50% -15%;
+    }
+}
+
+.trigger-button {
+    background-image: radial-gradient(circle, #0550B8 5%, white 55%);
+    background-size: 500% 500%;
+    border-radius: 0.5rem !important;
+
+    /* Remove focus highlight */
+    box-shadow: none !important;
+}
+
+body.dark .trigger-button {
+    background-image: radial-gradient(circle, #0550B8 5%, transparent 55%);
+
+    /* Add border for visibility when not filled in (device turned off) */
+    border: 1px solid #dee2e617 !important;
+}
+
+.trigger-on {
+    animation-name: trigger-on;
+    animation-duration: 1.2s;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+.trigger-off {
+    animation-name: trigger-off;
+    animation-duration: 1.2s;
+    animation-timing-function: ease-in-out;
+}
 
 /* Loading spinner */
 .loading-animation {
