@@ -7,7 +7,7 @@
 /* Slider bar size */
 .rangeslider--horizontal {
     height: 10px;
-    width: 90%;
+    width: 100%;
 }
 /* Applies to entire slider background */
 .rangeslider,
