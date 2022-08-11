@@ -42,7 +42,7 @@ async function reset(el) {
 
             // Select handle element closest to slider, update current rule displayed
             var $handle = $('.rangeslider__handle', document.getElementById(target + '-rule').nextSibling);
-            $handle[0].textContent = document.getElementById(target + '-rule').value;
+            $handle[0].textContent = get_display_value(slider);
         } catch(err) {};
 
         // Disable reset option

@@ -67,7 +67,7 @@ async function updateStatusObject() {
 
                             // Select handle element closest to slider, update current rule displayed
                             var $handle = $('.rangeslider__handle', document.getElementById(instance + '-rule').nextSibling);
-                            $handle[0].textContent = document.getElementById(instance + '-rule').value;
+                            $handle[0].textContent = get_display_value(slider);
 
                             if (new_status[section][instance]["current_rule"] != new_status[section][instance]["scheduled_rule"]) {
                                 // Enable reset option
