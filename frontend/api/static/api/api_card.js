@@ -69,12 +69,14 @@ async function enable_disable_handler(el) {
     // Device or sensor
     const category = target.replace(/[0-9]/g, '') + "s";
 
-    if (target_node_status[category][target]["enabled"]) {
+    if ($('#' + target + '-body').is( ":visible" )) {
         console.log(`Disabling ${target}`);
+        $('#' + target + '-body').collapse('hide');
         el.innerHTML = "Enable";
         var result = await send_command({'command': 'disable', 'instance': target, 'delay_input': ''});
     } else {
         el.innerHTML = "Disable";
+        $('#' + target + '-body').collapse('show');
         console.log(`Enabling ${target}`);
         var result = await send_command({'command': 'enable', 'instance': target, 'delay_input': ''});
     };
@@ -82,19 +84,12 @@ async function enable_disable_handler(el) {
     result = await result.json();
     if (JSON.stringify(result).startsWith('{"ERROR')) {
         // Command failed
-        if (target_node_status[category][target]["enabled"]) {
-            alert(`Failed to disable ${target}`);
-            // Expand card, change menu option text
-            // TODO figure out why collapse('show') doesn't work. Temporary workaround (no animation) below
-//                     $('#' + target + '-body').collapse('show')
-            var card = document.getElementById(target + "-body").classList.add('show');
-            el.innerHTML = "Disable";
-        } else {
+        if ($('#' + target + '-body').is( ":visible" )) {
             alert(`Failed to enable ${target}`);
-            // Collapse card, change menu option text
-            $('#' + target + '-body').collapse('hide');
-            el.innerHTML = "Enable";
+        } else {
+            alert(`Failed to disable ${target}`);
         };
+        $('#' + target + '-body').collapse('toggle');
     };
 };
 

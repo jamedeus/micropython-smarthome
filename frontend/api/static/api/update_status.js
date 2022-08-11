@@ -81,12 +81,12 @@ async function updateStatusObject() {
                     } else if (param == "enabled") {
                         if (new_status[section][instance]["enabled"]) {
                             // Expand card, change menu option text
-                            $('#' + instance + '-body').collapse('show')
+                            $('#' + instance + '-body').collapse('show');
                             document.getElementById(instance + "-enable").innerHTML = "Disable";
 
                         } else {
                             // Collapse card, change menu option text
-                            $('#' + instance + '-body').collapse('hide')
+                            $('#' + instance + '-body').collapse('hide');
                             document.getElementById(instance + "-enable").innerHTML = "Enable";
 
                         };
