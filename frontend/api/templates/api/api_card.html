@@ -89,7 +89,7 @@
 
                     {% for sensor, params in context.sensors.items %}
 
-                        <div class="card">
+                        <div id="{{sensor}}-card" class="card">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between">
                                     {% if not params.type in "pir,desktop,dummy" %}
@@ -110,6 +110,7 @@
                                                 <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
                                             {% endif %}
                                             <li><a id="{{sensor}}-reset" class="dropdown-item reset-rule" onclick="reset(this);">Reset rule</a></li>
+                                            <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -156,7 +157,7 @@
 
                                     </script>
 
-                                    <div class="card">
+                                    <div id="{{sensor}}-card" class="card">
                                         <div class="card-body d-flex flex-column">
                                             <div class="d-flex justify-content-between">
                                                 <button class="btn btn-outline-dark trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
@@ -171,6 +172,7 @@
                                                             <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
                                                         {% endif %}
                                                         <li><a id="{{sensor}}-reset" class="dropdown-item reset-rule" onclick="reset(this);">Reset rule</a></li>
+                                                        <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
                                                     </ul>
                                                 </div>
                                             </div>
@@ -246,7 +248,7 @@
 
                     {% for device, params in context.devices.items %}
 
-                        <div class="card">
+                        <div id="{{device}}-card" class="card">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between">
                                     {% if params.turned_on %}

@@ -93,6 +93,8 @@ async function enable_disable_handler(el) {
     };
 };
 
+
+
 // Handler for device power on/off toggle
 async function power(el) {
     const target = el.id.split("-")[0];
@@ -130,6 +132,8 @@ async function power(el) {
     };
 };
 
+
+
 // Handler for trigger sensor button
 async function trigger(el) {
     const target = el.id.split("-")[0];
@@ -150,4 +154,31 @@ async function trigger(el) {
         // Update page contents immediately after triggering (sensor probably turned targets on)
         updateStatusObject();
     };
+};
+
+
+
+// Highlight all targets of sensor when menu option clicked, dismiss highlights on next click
+function show_targets(el) {
+    // Get sensor ID, array of all targets
+    const sensor = el.id.split("-")[0];
+    const targets = target_node_status["sensors"][sensor]["targets"];
+
+    // Prevent click bubbling to listener below, close dropdown manually
+    event.stopPropagation();
+    bootstrap.Dropdown.getInstance(document.getElementById(`${sensor}-menu-button`)).toggle();
+
+    // Iterate targets, add glow effect
+    targets.forEach(function(target) {
+        document.getElementById(target + "-card").classList.remove("highlight-off");
+        document.getElementById(target + "-card").classList.add("highlight-on");
+    });
+
+    // Listener removes glow effect on next click
+    document.addEventListener("click", function() {
+        targets.forEach(function(target) {
+            document.getElementById(target + "-card").classList.remove("highlight-on");
+            document.getElementById(target + "-card").classList.add("highlight-off");
+        });
+    }, {once : true});
 };
