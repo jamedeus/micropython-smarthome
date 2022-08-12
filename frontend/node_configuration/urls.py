@@ -12,6 +12,7 @@ urlpatterns = [
     path('upload/<str:reupload>', views.upload, name='upload'),
 
     path('delete_config', views.delete_config, name='delete_config'),
+    path('delete_node', views.delete_node, name='delete_node'),
     path('edit_config/<str:name>', views.edit_config, name='edit_config'),
 
     path('configure', views.configure, name='configure'),

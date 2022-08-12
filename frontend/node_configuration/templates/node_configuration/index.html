@@ -7,6 +7,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
     <script src="{% static 'node_configuration/popper.min.js' %}"></script>
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
@@ -138,10 +139,10 @@
                         </tr>
                         {% for config in context.not_uploaded %}
                             <tr id="{{config}}">
-                                <td class="min">{{config}}</td>
+                                <td class="min align-middle">{{config}}</td>
                                 <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" class="form-control"></td>
-                                <td class="min"><button type="button" class="upload btn-primary btn btn-sm" id="upload-{{config}}">Upload</button></td>
-                                <td class="min"><button type="button" class="delete btn-danger btn btn-sm" id="delete-{{config}}">X</button></td>
+                                <td class="min align-middle"><button type="button" class="upload btn-primary btn btn-sm" id="upload-{{config}}">Upload</button></td>
+                                <td class="min align-middle"><button type="button" class="delete btn-danger btn btn-sm" id="delete-{{config}}"><i class="bi-trash"></i></button></td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -158,13 +159,19 @@
                             <th>Name</th>
                             <th>IP</th>
                             <th></th>
+                            <th></th>
                         </tr>
 
                         {% for node in context.uploaded %}
                             <tr id="{{node.friendly_name}}">
-                                <td>{{node.friendly_name}}</td>
-                                <td>{{node.ip}}</td>
-                                <td class="min"><button type="button" class="edit btn-primary btn btn-sm" id="edit-{{node.friendly_name}}">Edit</button></td>
+                                <td class="align-middle">{{node.friendly_name}}</td>
+                                <td class="align-middle">{{node.ip}}</td>
+                                <td class="min align-middle">
+                                    <button type="button" class="edit btn-primary btn btn-sm" id="edit-{{node.friendly_name}}" title="Edit"><i class="bi-pencil"></i></button>
+                                </td>
+                                <td class="min align-middle">
+                                    <button type="button" class="delete-node btn-danger btn btn-sm" data-friendlyname="{{node.friendly_name}}" title="Delete"><i class="bi-trash"></i></button>
+                                </td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -398,9 +405,40 @@
             });
         };
 
+        function del_node(e) {
+            $('#delete-modal').modal('show');
+
+            // Add listener to delete button (there is only 1 modal, so target cannot be set in template)
+            $('#confirm-delete').click(async function() {
+                // Disable listener once triggered, prevent delete button stacking multiple actions
+                $('#confirm-delete').off('click');
+
+                data = e.target.dataset.friendlyname;
+
+                let csrftoken = getCookie('csrftoken');
+
+                const response = await fetch("delete_node", {
+                    method: 'POST',
+                    body: JSON.stringify(data),
+                    headers: { 'Accept': 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json',
+                        "X-CSRFToken": csrftoken }
+                });
+
+                location.reload();
+            });
+
+            // Add listener to cancel button
+            $('#cancel-delete').click(function() {
+                // Prevent stacking listeners on delete button each time cancel pressed
+                $('#confirm-delete').off('click');
+            });
+        };
+
         $('.upload').on('click', upload);
         $('.edit').on('click', edit);
         $('.delete').on('click', del_config);
+        $('.delete-node').on('click', del_node);
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {

@@ -203,6 +203,25 @@ def delete_config(request):
 
 
 
+def delete_node(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        raise Http404("ERROR: Must post data")
+
+    # Get both model entries
+    node = Node.objects.get(friendly_name = data)
+    config = Config.objects.get(config_file = node.config_file)
+
+    # Delete from disk, delete from models
+    os.system(f'rm {node.config_file}')
+    config.delete()
+    node.delete()
+
+    return JsonResponse("Deleted {}".format(data), safe=False, status=200)
+
+
+
 def node_configuration_index(request):
     context = {
         "not_uploaded" : [],
