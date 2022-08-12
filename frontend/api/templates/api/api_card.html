@@ -152,6 +152,9 @@
                                         // Change previous card title to "Climate Data", old title will be reused in new card below
                                         document.getElementById("{{sensor}}-title").innerHTML = "Climate Data";
 
+                                        // Prevent collapsing wrong card
+                                        document.getElementById("{{sensor}}-body").id = "Climate Data";
+
                                         // Remove enable/disable toggle, will be replaced in new card below
                                         document.getElementById("{{sensor}}-trigger").remove();
                                         document.getElementById("{{sensor}}-menu-button").parentElement.remove();
