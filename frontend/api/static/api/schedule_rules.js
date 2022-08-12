@@ -30,6 +30,11 @@ for (field of document.getElementsByClassName("schedule-rule")) {
 
 
 
+// Initialize toast, allows user to write new/deleted rules to disk
+const save_rules_toast = new bootstrap.Toast(document.getElementById("save_rules_toast"));
+
+
+
 // Runs when user changes schedule rule fields
 // Existing rules: Delete button changes to add button
 // Modified rules: If changed back to original value, add button reverts back to delete
@@ -219,6 +224,9 @@ async function add_rule(el) {
 
         // Re-enable row inputs and button
         disable_row(row, false);
+
+        // Show toast message, allows user to write change to disk
+        save_rules_toast.show();
     };
 };
 
@@ -267,5 +275,8 @@ async function delete_rule(selected, remove=true) {
             // Hide add row button
             document.getElementById(target + "-add-rule").style.display = "none";
         };
+
+        // Show toast message, allows user to write change to disk
+        save_rules_toast.show();
     };
 };

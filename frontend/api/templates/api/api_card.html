@@ -444,6 +444,18 @@
         </div>
     </div>
 
+
+    <!-- Toast notification shown when schedule rules added/removed -->
+    <div class="fixed-bottom">
+        <div id="save_rules_toast" class="toast text-center mx-auto mb-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000">
+            <div class="toast-body">
+                <div id="toast-text" class="mb-2">Should this rule change persist after reboot?</div>
+                <button class="btn btn-sm btn-primary me-2" data-bs-dismiss="toast" onclick="send_command({'command': 'save_rules'});">Yes</button>
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="toast">No</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Save context for later use -->
     {{ context|json_script:"context" }}
 

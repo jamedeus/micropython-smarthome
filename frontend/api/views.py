@@ -300,6 +300,10 @@ def remove_rule(ip, params):
 
     return asyncio.run(request(ip, ['remove_rule', target, timestamp]))
 
+@add_endpoint("save_rules")
+def save_rules(ip, params):
+    return asyncio.run(request(ip, ['save_rules']))
+
 @add_endpoint("get_attributes")
 def get_attributes(ip, params):
     if len(params) == 0:

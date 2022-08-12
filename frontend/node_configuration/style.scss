@@ -159,6 +159,9 @@ $pagination-disabled-color: #bbbbbb;
         border-color: #212529 !important;
     }
 
+    /* Toasts */
+    $toast-background-color: #394047cc;
+
     @import "bootstrap-5.1.3/scss/_popover";
     @import "bootstrap-5.1.3/scss/_pagination";
     @import "bootstrap-5.1.3/scss/_card";
@@ -169,4 +172,5 @@ $pagination-disabled-color: #bbbbbb;
     @import "bootstrap-5.1.3/scss/_tables";
     @import "bootstrap-5.1.3/scss/_list-group";
     @import "bootstrap-5.1.3/scss/_dropdown";
+    @import "bootstrap-5.1.3/scss/_toasts";
 }
