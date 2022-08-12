@@ -20,6 +20,7 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_schedule_rules [target]" + Style.RESET_ALL + "       View scheduled rule changes for [target], can be device or sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "add_rule [target] [HH:MM] [rule]" + Style.RESET_ALL + "  Add scheduled rule change, will persist until next reboot")
     print("- " + Fore.YELLOW + Style.BRIGHT + "remove_rule [target] [HH:MM]" + Style.RESET_ALL + "      Delete an existing schedule (does not delete from config, will come back next reboot)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "save_rules" + Style.RESET_ALL + "                        Write current schedule rules to disk, persists after reboot")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_attributes [target]" + Style.RESET_ALL + "           View all of [target]'s attributes, can be device or sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "condition_met [sensor]" + Style.RESET_ALL + "            Check if [sensor]'s condition is met (turns on target devices)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "trigger_sensor [sensor]" + Style.RESET_ALL + "           Simulates the sensor being triggered (turns on target devices)")
@@ -263,6 +264,10 @@ def remove_rule(ip, params):
         return {"ERROR": "Must specify time (HH:MM) followed by rule"}
 
     return asyncio.run(request(ip, ['remove_rule', target, timestamp]))
+
+@add_endpoint("save_rules")
+def save_rules(ip, params):
+    return asyncio.run(request(ip, ['save_rules']))
 
 @add_endpoint("get_attributes")
 def get_attributes(ip, params):

@@ -334,6 +334,22 @@ def remove_rule(args):
 
 
 
+@app.route("save_rules")
+def save_rules(args):
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+
+    for i in config:
+        if i.startswith("sensor") or i.startswith("device"):
+            config[i]["schedule"] = app.config.schedule[i]
+
+    with open('config.json', 'w') as file:
+        json.dump(config, file)
+
+    return {"Success": "Rules written to disk"}
+
+
+
 @app.route("get_attributes")
 def get_attributes(args):
     if not len(args) == 1:
