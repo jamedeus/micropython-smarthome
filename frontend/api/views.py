@@ -15,7 +15,7 @@ def legacy_api(request):
     for i in Node.objects.all():
         context.append(i)
 
-    template = loader.get_template('api/index.html')
+    template = loader.get_template('api/legacy_api.html')
 
     return HttpResponse(template.render({'context': context}, request))
 

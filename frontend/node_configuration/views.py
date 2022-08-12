@@ -222,7 +222,7 @@ def delete_node(request):
 
 
 
-def node_configuration_index(request):
+def node_configuration(request):
     context = {
         "not_uploaded" : [],
         "uploaded" : []
@@ -237,7 +237,7 @@ def node_configuration_index(request):
     for i in uploaded:
         context["uploaded"].append(i)
 
-    template = loader.get_template('node_configuration/index.html')
+    template = loader.get_template('node_configuration/overview.html')
 
     return HttpResponse(template.render({'context': context}, request))
 

@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Create new config file</title>
+    <title>Config Overview - Micropython Smarthome</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
@@ -195,27 +195,28 @@
 
         {% endif %}
 
+        <!-- Link to API card frontend -->
         <div class="d-flex align-items-center flex-column mt-auto">
             <button class="btn btn-secondary mt-auto mb-3" id="node_configuration_button" type="button" onclick="window.location.href = '/api'">Frontend</button>
         </div>
+    </div>
 
-        <!-- Confirm delete modal -->
+    <!-- Confirm delete modal -->
 
-        <div class="modal fade" id="delete-modal" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-body">
-                        <p>Config will be deleted from disk - this cannot be undone. Continue?</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" id="cancel-delete" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="button" id="confirm-delete" class="btn btn-danger" data-bs-dismiss="modal">Delete</button>
-                    </div>
+    <div class="modal fade" id="delete-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <p>Config will be deleted from disk - this cannot be undone. Continue?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="cancel-delete" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" id="confirm-delete" class="btn btn-danger" data-bs-dismiss="modal">Delete</button>
                 </div>
             </div>
         </div>
-
     </div>
+
 
     <!-- Loading modal displayed while waiting on upload -->
 
@@ -457,6 +458,5 @@
             }
         });
     </script>
-
 </body>
 </html>
