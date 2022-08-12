@@ -18,6 +18,7 @@
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script src="{% static 'api/rangeslider.min.js' %}"></script>
+    <script src="{% static 'api/smoothscroll.min.js' %}"></script>
 
     <script>
 
@@ -195,7 +196,7 @@
 
                                 <!-- Schedule rules section, collapsed by default -->
                                 <p class="text-center mt-3">
-                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules">
+                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules" onclick="document.getElementById('{{sensor}}-card').scrollIntoView({behavior: 'smooth'});">
                                         Schedule rules
                                     </button>
                                 </p>
@@ -300,7 +301,7 @@
 
                                 <!-- Schedule rules section, collapsed by default -->
                                 <p class="text-center mt-3">
-                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules">
+                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules" onclick="document.getElementById('{{device}}-card').scrollIntoView({behavior: 'smooth'});">
                                         Schedule rules
                                     </button>
                                 </p>
