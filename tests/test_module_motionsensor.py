@@ -21,7 +21,7 @@ class TestMotionSensor(unittest.TestCase):
         self.assertEqual(self.instance.rule_validator(0.5), 0.5)
         self.assertEqual(self.instance.rule_validator("0.5"), 0.5)
         self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
-        self.assertEqual(self.instance.rule_validator(None), None)
+        self.assertEqual(self.instance.rule_validator(None), 0.0)
 
     def test_rule_validation_invalid(self):
         self.assertFalse(self.instance.rule_validator(True))
