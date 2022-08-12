@@ -119,10 +119,10 @@
 
 <body>
 
-    <div class="container d-flex flex-column">
+    <div class="container d-flex flex-column vh-100">
         <div>
             <h1 class="text-center mt-3 mb-5">Configure Nodes</h1>
-        <div>
+        </div>
 
         {% if context %}
 
@@ -194,6 +194,10 @@
             </script>
 
         {% endif %}
+
+        <div class="d-flex align-items-center flex-column mt-auto">
+            <button class="btn btn-secondary mt-auto mb-3" id="node_configuration_button" type="button" onclick="window.location.href = '/api'">Frontend</button>
+        </div>
 
         <!-- Confirm delete modal -->
 
