@@ -191,6 +191,8 @@ class Provisioner():
             raise SystemExit
 
         # If user selected unit tests
+        # TODO this fails with unhelpful errors when target dirs (/tests/) don't exist, should offer to upload setup
+        # This also doesn't upload libs (si7021)
         elif args[1] == "--test":
             # Get config file and target IP from cli arguments
             self.passwd = "password"
