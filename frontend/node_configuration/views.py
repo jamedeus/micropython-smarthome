@@ -246,7 +246,9 @@ def node_configuration(request):
 def configure(request):
     template = loader.get_template('node_configuration/configure.html')
 
-    return HttpResponse(template.render({}, request))
+    api_target_options = get_api_target_menu_options()
+
+    return HttpResponse(template.render({'context': api_target_options}, request))
 
 
 
@@ -391,6 +393,13 @@ def generateConfigFile(request, edit_existing=False):
                     except ValueError:
                         config[name][j[8:]] = data[j]
 
+            # Api Target requires additional processing
+            if config[name]["type"] == "api-target":
+                # Remove friendly name of target node (shown in frontend dropdown)
+                config[name]["ip"] = config[name]["ip"].split("-")[0]
+                # Convert stringified JSON to dict with on and off commands
+                config[name]["default_rule"] = convert_api_target_rule(config[name]["default_rule"])
+
             # Create empty sections, populated in loops below
             config[name]["schedule"] = {}
 
@@ -445,3 +454,81 @@ def generateConfigFile(request, edit_existing=False):
         new.save()
 
     return JsonResponse("Config created.", safe=False, status=200)
+
+
+
+# Return dict with all configured nodes, their devices and sensors, and API commands which target each device/sensor type
+# Used to populate cascading dropdown menu in frontent
+def get_api_target_menu_options():
+    dropdownObject = {}
+
+    for node in Node.objects.all():
+        entries = {}
+
+        with open(node.config_file, 'r') as file:
+            config = json.load(file)
+
+        for i in config:
+            if i.startswith("device"):
+                instance_string = f'{i}-{config[i]["nickname"]} ({config[i]["type"]})'
+
+                entry = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off']
+
+            elif i.startswith("sensor"):
+                instance_string = f'{i}-{config[i]["nickname"]} ({config[i]["type"]})'
+
+                entry = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot']
+
+                if not (config[i]["type"] == "si7021" or config[i]["type"] == "switch"):
+                    entry.append("trigger_sensor")
+
+            elif i == "ir_blaster":
+                instance_string = "ir_blaster-Ir Blaster"
+                entry = {'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'], 'ac': [ 'start', 'stop', 'off' ]}
+
+            else:
+                continue
+
+            entries[instance_string] = entry
+
+        dropdownObject[f"{node.ip}-{node.friendly_name}"] = entries
+
+    return dropdownObject
+
+
+
+# Convert stringified JSON received from frontend to ApiTarget rule format dict
+def convert_api_target_rule(rule):
+    rule = json.loads(rule)
+
+    # Remove values displayed in dropdown (node friendly names, instance nicknames)
+    for i in rule:
+        rule[i] = rule[i].split("-")[0]
+
+    output = {"on": [], "off": []}
+
+    if rule["instance-on"] == "ir_blaster":
+        output["on"].append("ir_key")
+        output["on"].append(rule["command-on"])
+        output["on"].append(rule["sub-command-on"])
+
+    else:
+        output["on"].append(rule["command-on"])
+        output["on"].append(rule["instance-on"])
+
+        if "command-arg-on" in rule.keys():
+            output["on"].append(rule["command-arg-on"])
+
+    if rule["instance-off"] == "ir_blaster":
+        output["off"].append("ir_key")
+        output["off"].append(rule["command-off"])
+        output["off"].append(rule["sub-command-off"])
+
+    else:
+        output["off"].append(rule["command-off"])
+        output["off"].append(rule["instance-off"])
+
+        if "command-arg-off" in rule.keys():
+            output["off"].append(rule["command-arg-off"])
+
+    return output
