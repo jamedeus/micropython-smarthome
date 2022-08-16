@@ -167,7 +167,7 @@
                                 <td class="align-middle">{{node.friendly_name}}</td>
                                 <td class="align-middle">{{node.ip}}</td>
                                 <td class="min align-middle">
-                                    <button type="button" class="edit btn-primary btn btn-sm" id="edit-{{node.friendly_name}}" title="Edit"><i class="bi-pencil"></i></button>
+                                    <button type="button" class="btn-primary btn btn-sm" title="Edit" onclick="window.location.href = '/edit_config/{{node.friendly_name}}'"><i class="bi-pencil"></i></button>
                                 </td>
                                 <td class="min align-middle">
                                     <button type="button" class="delete-node btn-danger btn btn-sm" data-friendlyname="{{node.friendly_name}}" title="Delete"><i class="bi-trash"></i></button>
@@ -376,10 +376,6 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        function edit(e) {
-            window.location.replace("/edit_config/" + e.target.id.replace("edit-", ""));
-        };
-
         function del_config(e) {
             $('#delete-modal').modal('show');
 
@@ -441,7 +437,6 @@
         };
 
         $('.upload').on('click', upload);
-        $('.edit').on('click', edit);
         $('.delete').on('click', del_config);
         $('.delete-node').on('click', del_node);
 
