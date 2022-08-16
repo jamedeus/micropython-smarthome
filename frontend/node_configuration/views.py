@@ -332,6 +332,9 @@ def edit_config(request, name):
             instances[i]["type"] = config[i]["type"]
             instances[i]["schedule"] = config[i]["schedule"]
 
+            if config[i]["type"] == "api-target":
+                devices[i]["default_rule"] = reverse_convert_api_target_rule(devices[i]["default_rule"])
+
     for i in delete:
         del config[i]
 
@@ -343,7 +346,11 @@ def edit_config(request, name):
 
     template = loader.get_template('node_configuration/edit-config.html')
 
-    return HttpResponse(template.render({'context': config}, request))
+    api_target_options = get_api_target_menu_options()
+
+    context = {"config": config, "api_target_options": api_target_options}
+
+    return HttpResponse(template.render({'context': context}, request))
 
 
 
@@ -501,10 +508,6 @@ def get_api_target_menu_options():
 def convert_api_target_rule(rule):
     rule = json.loads(rule)
 
-    # Remove values displayed in dropdown (node friendly names, instance nicknames)
-    for i in rule:
-        rule[i] = rule[i].split("-")[0]
-
     output = {"on": [], "off": []}
 
     if rule["instance-on"] == "ir_blaster":
@@ -532,3 +535,32 @@ def convert_api_target_rule(rule):
             output["off"].append(rule["command-arg-off"])
 
     return output
+
+
+
+def reverse_convert_api_target_rule(rule):
+    result = {}
+
+    if rule["on"][0] == "ir_key":
+        result["instance-on"] = "ir_blaster"
+        result["command-on"] = rule["on"][1]
+        result["sub-command-on"] = rule["on"][2]
+    else:
+        result["instance-on"] = rule["on"][1]
+        result["command-on"] = rule["on"][0]
+
+        if result["command-on"] in ("enable_in", "disable_in", "set_rule"):
+            result["command-arg-on"] = rule["on"][2]
+
+    if rule["off"][0] == "ir_key":
+        result["instance-off"] = "ir_blaster"
+        result["command-off"] = rule["off"][1]
+        result["sub-command-off"] = rule["off"][2]
+    else:
+        result["instance-off"] = rule["off"][1]
+        result["command-off"] = rule["off"][0]
+
+        if result["command-off"] in ("enable_in", "disable_in", "set_rule"):
+            result["command-arg-off"] = rule["off"][2]
+
+    return json.dumps(result)

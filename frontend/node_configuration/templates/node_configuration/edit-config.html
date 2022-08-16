@@ -126,6 +126,10 @@
             }
         }
         /* ----- */
+
+        .modal-dropdown {
+            background-color: #1b1e1f !important;
+        }
     </style>
 </head>
 
@@ -141,7 +145,7 @@
     </script>
 
     <div class="container d-flex flex-column vh-100">
-        <h1 class="text-center pt-3 pb-4">Editing {{ context.NAME }}</h1>
+        <h1 class="text-center pt-3 pb-4">Editing {{ context.config.NAME }}</h1>
 
         {% if context %}
 
@@ -154,17 +158,17 @@
 
                         <div class="mb-2">
                             <label for="friendlyName"><b>Name:</b></label>
-                            <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{context.NAME}}" required>
+                            <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{context.config.NAME}}" required>
                         </div>
 
                         <div class="mb-2">
                             <label for="location"><b>Location:</b></label>
-                            <input type="text" class="form-control" id="location" placeholder="" name="location" value="{{context.metadata.location}}" required>
+                            <input type="text" class="form-control" id="location" placeholder="" name="location" value="{{context.config.metadata.location}}" required>
                         </div>
 
                         <div class="mb-2">
                             <label for="floor"><b>Floor:</b></label>
-                            <input type="text" class="form-control" id="floor" placeholder="" name="floor" value="{{context.metadata.floor}}" required>
+                            <input type="text" class="form-control" id="floor" placeholder="" name="floor" value="{{context.config.metadata.floor}}" required>
                         </div>
                     </div>
 
@@ -173,12 +177,12 @@
 
                         <div class="mb-2">
                             <label for="ssid"><b>SSID:</b></label>
-                            <input type="text" class="form-control" id="ssid" placeholder="" name="ssid" value="{{context.wifi.ssid}}" required>
+                            <input type="text" class="form-control" id="ssid" placeholder="" name="ssid" value="{{context.config.wifi.ssid}}" required>
                         </div>
 
                         <div class="mb-2">
                             <label for="password"><b>Password:</b></label>
-                            <input type="password" class="form-control" id="password" placeholder="" name="password" value="{{context.wifi.password}}" required>
+                            <input type="password" class="form-control" id="password" placeholder="" name="password" value="{{context.config.wifi.password}}" required>
                         </div>
                     </div>
 
@@ -186,7 +190,7 @@
                         <div class="col-sm">
                             <h2>Add Sensors</h2>
 
-                            {% for sensor, params in context.sensors.items %}
+                            {% for sensor, params in context.config.sensors.items %}
 
                                 {% if forloop.first %}
                                     <div id="addSensorDiv1">
@@ -300,7 +304,7 @@
                                 </div>
                             {% endfor %}
 
-                            {% if context.sensors|length == 0 %}
+                            {% if context.config.sensors|length == 0 %}
                                 <div class="text-center">
                                     <button onclick="load_next_sensor(this)" type="button" id="addSensorButton0" class="btn-secondary btn my-3">Add another</button>
                                 </div>
@@ -312,7 +316,7 @@
                         <div class="col-sm">
                             <h2>Add Devices</h2>
 
-                            {% for device, params in context.devices.items %}
+                            {% for device, params in context.config.devices.items %}
 
                                 {% if forloop.first %}
                                     <div id="addDeviceDiv1">
@@ -432,15 +436,24 @@
                                                     </div>
 
                                             {% elif params.type == "api-target" %}
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-ip"><b>IP:</b></label>
-                                                        <input type="text" class="form-control" id="device{{ forloop.counter }}-ip" placeholder="" name="device{{ forloop.counter }}-ip" value="{{params.ip}}" required>
+                                                    <label for="device{{ forloop.counter }}-ip"><b>Target:</b></label>
+                                                    <select name="device{{ forloop.counter }}-ip" id="device{{ forloop.counter }}-ip" class="form-select mb-3" onchange="api_target_selected(this)">
+                                                        <option value="" selected="selected"></option>
+                                                        {% for node in context.api_target_options %}
+                                                            <option value="{{node}}" {% if params.ip in node %}selected{% endif %}>{{node}}</option>
+                                                        {% endfor %}
+                                                    </select>
+
+                                                    <div class="mb-2 text-center">
+                                                        <button id="device{{ forloop.counter }}-set-rule" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                                     </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
+                                                    <div class="mb-2 text-center">
+                                                        <label for="device{{ forloop.counter }}-default_rule" style="display:none;"><b>Default Rule:</b></label>
+                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" style="display:none;" value="{{params.default_rule}}" required>
                                                     </div>
+
+
 
                                             {% endif %}
                                             </div>
@@ -458,15 +471,15 @@
                             {% endfor %}
 
 
-                            {% if context.ir_blaster %}
+                            {% if context.config.ir_blaster %}
 
-                                <div id="addDeviceDiv{{ context.devices|length|add:1 }}" {% if context.devices|length %}class="mt-5"{% endif %}>
+                                <div id="addDeviceDiv{{ context.config.devices|length|add:1 }}" {% if context.config.devices|length %}class="mt-5"{% endif %}>
                                     <div class="card">
                                         <div class="card-body">
-                                            <h4 class="card-title">device{{ context.devices|length|add:1 }}</h4>
-                                            <label for="deviceType{{ context.devices|length|add:1 }}" class="form-label"><b>Type:</b></label>
+                                            <h4 class="card-title">device{{ context.config.devices|length|add:1 }}</h4>
+                                            <label for="deviceType{{ context.config.devices|length|add:1 }}" class="form-label"><b>Type:</b></label>
                                             <div>
-                                                <select onchange="load_device_section(this)" name="deviceType{{ context.devices|length|add:1 }}" id="deviceType{{ context.devices|length|add:1 }}" class="form-select deviceType" required>
+                                                <select onchange="load_device_section(this)" name="deviceType{{ context.config.devices|length|add:1 }}" id="deviceType{{ context.config.devices|length|add:1 }}" class="form-select deviceType" required>
                                                 <option value="clear">Select device type</option>
                                                 <option value="dimmer">TP-Link Dimmer</option>
                                                 <option value="bulb">TP-Link Bulb</option>
@@ -480,18 +493,18 @@
                                                 </select>
                                             </div>
 
-                                            <div id="addDeviceOptions{{ context.devices|length|add:1 }}" class="card-body">
+                                            <div id="addDeviceOptions{{ context.config.devices|length|add:1 }}" class="card-body">
                                                 <div class="mb-2">
-                                                    <label for="device{{ context.devices|length|add:1 }}-pin"><b>Pin:</b></label>
-                                                    <input type="text" class="form-control" id="device{{ context.devices|length|add:1 }}-pin" value="{{ context.ir_blaster.pin }}" name="device{{ context.devices|length|add:1 }}-pin" required>
+                                                    <label for="device{{ context.config.devices|length|add:1 }}-pin"><b>Pin:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ context.config.devices|length|add:1 }}-pin" value="{{ context.config.ir_blaster.pin }}" name="device{{ context.config.devices|length|add:1 }}-pin" required>
                                                 </div>
 
                                                 <div class="mb-2">
-                                                    <label for="device{{ context.devices|length|add:1 }}-min"><b>Virtual remotes:</b></label>
+                                                    <label for="device{{ context.config.devices|length|add:1 }}-min"><b>Virtual remotes:</b></label>
                                                     <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="irblaster-tv" value="irblaster-tv" id="irblaster-tv" {% if "tv" in context.ir_blaster.target %}checked{% endif %}>
+                                                        <input class="form-check-input" type="checkbox" name="irblaster-tv" value="irblaster-tv" id="irblaster-tv" {% if "tv" in context.config.ir_blaster.target %}checked{% endif %}>
                                                         <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
-                                                        <input class="form-check-input" type="checkbox" name="irblaster-ac" value="irblaster-ac" id="irblaster-ac" {% if "ac" in context.ir_blaster.target %}checked{% endif %}>
+                                                        <input class="form-check-input" type="checkbox" name="irblaster-ac" value="irblaster-ac" id="irblaster-ac" {% if "ac" in context.config.ir_blaster.target %}checked{% endif %}>
                                                         <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
                                                     </div>
                                                 </div>
@@ -502,8 +515,8 @@
 
                             {% endif %}
 
-                            {% if context.devices|length == 0 %}
-                                {% if context.ir_blaster %}
+                            {% if context.config.devices|length == 0 %}
+                                {% if context.config.ir_blaster %}
                                     <div class="text-center">
                                         <button onclick="load_next_device(this)" type="button" id="addDeviceButton1" class="btn-secondary btn my-3">Add another</button>
                                     </div>
@@ -531,14 +544,14 @@
                     <div id="page2-cards">
                         <h3>Select targets for each sensor</h3>
 
-                        {% for sensor, params in context.sensors.items %}
+                        {% for sensor, params in context.config.sensors.items %}
 
                             <div class="card mb-4">
                                 <div class="card-body">
                                     <label for="{{sensor}}-targets" class="card-title sensor-targets-label"><b>{{ sensor }} ({{ params.type }}) targets:</b></label>
                                     <div id="{{sensor}}-targets" class="form-check sensor-targets">
 
-                                        {% for device, dparams in context.devices.items %}
+                                        {% for device, dparams in context.config.devices.items %}
 
                                             <input type="checkbox" class="form-check-input" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %}>
                                             <label for="target-{{sensor}}-{{device}}" class="form-check-label">{{ device }} ({{ dparams.type }})</label><br>
@@ -561,7 +574,7 @@
                 <div id="page3" class="flex-column h-100">
                     <h3>Add schedule rules (optional)</h3>
                         <div id="page3-cards">
-                        {% for instance, params in context.instances.items %}
+                        {% for instance, params in context.config.instances.items %}
 
                             <div class="card mb-4">
                                 <div class="card-body">
@@ -641,12 +654,78 @@
                 </div>
             </div>
 
+            <!-- Api-target set rule modal -->
+
+            <div class="modal fade" id="api-rule-modal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">Api Target Rule</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center" id="duplicate-modal-body">
+
+                            <p>Explain what this does here</p>
+
+                            <form name="api_rule_form" id="api_rule_form">
+                                <div id="on-action">
+                                    <select name="instance-on" id="instance-on" class="form-select mb-3 modal-dropdown api-instance">
+                                        <option value="" selected="selected">Select target instance</option>
+                                    </select>
+
+                                    <select name="command-on" id="command-on" class="form-select mb-3 modal-dropdown api-command">
+                                        <option value="" selected="selected">Please select instance first</option>
+                                    </select>
+
+                                    <select name="sub-command-on" id="sub-command-on" class="form-select mb-3 modal-dropdown api-command" style="display:none" disabled>
+                                        <option value="" selected="selected">Please select command first</option>
+                                    </select>
+
+                                    <input name="command-arg-on" id="command-arg-on" class="form-control mb-3 modal-dropdown api-command-arg" style="display:none" disabled>
+                                </div>
+
+                                <div id="off-action" style="display:none;">
+                                    <select name="instance-off" id="instance-off" class="form-select mb-3 modal-dropdown api-instance">
+                                        <option value="" selected="selected">Select target instance</option>
+                                    </select>
+
+                                    <select name="command-off" id="command-off" class="form-select mb-3 modal-dropdown api-command">
+                                        <option value="" selected="selected">Please select instance first</option>
+                                    </select>
+
+                                    <select name="sub-command-off" id="sub-command-off" class="form-select mb-3 modal-dropdown api-command" style="display:none" disabled>
+                                        <option value="" selected="selected">Please select command first</option>
+                                    </select>
+
+                                    <input name="command-arg-off" id="command-arg-off" class="form-control mb-3 modal-dropdown api-command-arg" style="display:none" disabled>
+                                </div>
+                            </form>
+
+                            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                                <input type="radio" class="btn-check" name="btnradio" id="on-button" autocomplete="off" onclick="switch_page(this)" checked>
+                                <label class="btn btn-outline-dark" for="on-button">On Action</label>
+
+                                <input type="radio" class="btn-check" name="btnradio" id="off-button" autocomplete="off" onclick="switch_page(this)">
+                                <label class="btn btn-outline-dark" for="off-button">Off Action</label>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="submit-api-rule" class="btn btn-success mx-auto" data-bs-dismiss="modal" onclick="submit_api_rule(this)">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         {% else %}
             <p>FATAL ERROR</p>
         {% endif %}
     </div>
 
+    {{ context.api_target_options|json_script:"context" }}
+
     <script>
+        var ApiTargetOptions = JSON.parse(document.getElementById("context").textContent);
 
         $('#page2').hide();
         $('#page3').hide();
@@ -654,8 +733,8 @@
         const base_url = window.location.href.split("edit_config")[0];
 
         // Store parameters used to re-upload config after editing
-        const target_ip = "{{ context.IP }}"
-        const target_filename = "{{ context.FILENAME }}"
+        const target_ip = "{{ context.config.IP }}"
+        const target_filename = "{{ context.config.FILENAME }}"
 
         // Track if an IrBlaster is configured (cannot have multiple)
         ir_blaster_configured = false;
@@ -748,7 +827,7 @@
                             </div>`
 
             // Get template for device type selected by user
-            if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "api-target" || selected == "relay") {
+            if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "relay") {
                 template += `<div class="mb-2">
                                 <label for="device${index}-ip"><b>IP:</b></label>
                                 <input type="text" class="form-control" id="device${index}-ip" placeholder="" name="device${index}-ip" required>
@@ -789,6 +868,26 @@
                             <div class="mb-2">
                                 <label for="device${index}-default_rule"><b>Default Rule:</b></label>
                                 <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" required>
+                            </div>`
+
+            } else if (selected == "api-target") {
+                template += `<label for="device${index}-ip"><b>Target:</b></label>
+                            <select name="device${index}-ip" id="device${index}-ip" class="form-select mb-3" onchange="api_target_selected(this)">
+                                <option value="" selected="selected" selected></option>`
+
+                for (var x in ApiTargetOptions) {
+                    template += `<option value="${x}">${x.split("-")[1]}</option>`
+                };
+
+                template += `</select>
+
+                            <div class="mb-2 text-center">
+                                <button id="device${index}-set-rule" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" disabled>Set rule</button>
+                            </div>
+
+                            <div class="mb-2 text-center">
+                                <label for="device${index}-default_rule" style="display:none;"><b>Default Rule:</b></label>
+                                <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" style="display:none;" required>
                             </div>`
 
             } else if (selected == "ir-blaster") {
@@ -1382,6 +1481,7 @@
             }
         });
     </script>
+    <script src="{% static 'node_configuration/apiTargetOptions.js' %}"></script>
 
 </body>
 
