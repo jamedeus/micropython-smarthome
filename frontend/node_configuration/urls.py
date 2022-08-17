@@ -16,8 +16,6 @@ urlpatterns = [
     path('edit_config/<str:name>', views.edit_config, name='edit_config'),
 
     path('configure', views.configure, name='configure'),
-    path('configure_page2', views.configure_page2, name='configure_page2'),
-    path('configure_page3', views.configure_page3, name='configure_page3'),
 
     # Argument is optional
     path('generateConfigFile', views.generateConfigFile, name='generateConfigFile'),

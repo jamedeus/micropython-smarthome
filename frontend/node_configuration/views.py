@@ -252,57 +252,6 @@ def configure(request):
 
 
 
-def configure_page2(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        raise Http404("ERROR: Must post data")
-
-    config = {
-        "devices" : {},
-        "sensors" : {}
-    }
-
-    for i in data.keys():
-        if i.startswith("deviceType") or i.startswith("sensorType"):
-            name = i.replace("Type", "")
-            if name.startswith("device"):
-                config["devices"][name] = data[i]
-
-            elif name.startswith("sensor"):
-                config["sensors"][name] = data[i]
-
-    template = loader.get_template('node_configuration/configure-page2.html')
-
-    print(json.dumps(config, indent=4))
-
-    return HttpResponse(template.render({'context': config}, request))
-
-
-
-def configure_page3(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        raise Http404("ERROR: Must post data")
-
-    print(json.dumps(data, indent=4))
-
-    config = {}
-
-    for i in data.keys():
-        if i.startswith("deviceType") or i.startswith("sensorType"):
-            name = i.replace("Type", "")
-            config[name] = data[i]
-
-    template = loader.get_template('node_configuration/configure-page3.html')
-
-    print(json.dumps(config, indent=4))
-
-    return HttpResponse(template.render({'context': config}, request))
-
-
-
 def edit_config(request, name):
     target = Node.objects.get(friendly_name = name)
 
