@@ -12,42 +12,42 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             const type = document.getElementById(new_sensors[i].replace("sensor", "sensorType")).value;
 
             // Append card opening div to page2
-            document.getElementById("page2-cards").innerHTML +=  "<div class='card'>\
-                                                                <div class='card-body'>\
-                                                                    <label for='" + new_sensors[i] + "-targets' class='card-title sensor-targets-label'><b>" + new_sensors[i] + " (" + type + ") targets:</b></label>\
-                                                                    <div id='" + new_sensors[i] + "-targets' class='form-check sensor-targets'>"
+            document.getElementById("page2-cards").innerHTML +=  `<div class='card'>
+                                                                <div class='card-body'>
+                                                                    <label for='${new_sensors[i]}-targets' class='card-title sensor-targets-label'><b>${new_sensors[i]} (${type}) targets:</b></label>
+                                                                    <div id='${new_sensors[i]}-targets' class='form-check sensor-targets'>`
 
                 // Iterate devices, add checkbox for each to new sensor card
             for (let j = 0; j < devices.length; j++) {
                 // Do not add if device is IrBlaster (cannot be targeted)
                 if (devices[j].value == "ir-blaster") { continue };
 
-                document.getElementById(new_sensors[i] + "-targets").innerHTML += "<input type='checkbox' class='form-check-input' id='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "' name='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "' value='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "'><label for='target-" + new_sensors[i] + "-" + devices[j].id.replace("deviceType", "device") + "' class='form-check-label'>" + devices[j].id.replace("deviceType", "device") + " (" + devices[j].value + ")</label><br>";
+                document.getElementById(new_sensors[i] + "-targets").innerHTML += `<input type='checkbox' class='form-check-input' id='target-${new_sensors[i]}-${devices[j].id.replace("deviceType", "device")}' name='target-${new_sensors[i]}-${devices[j].id.replace("deviceType", "device")}' value='target-${new_sensors[i]}-${devices[j].id.replace("deviceType", "device")}'><label for='target-${new_sensors[i]}-${devices[j].id.replace("deviceType", "device")}' class='form-check-label'>${devices[j].id.replace("deviceType", "device")} (${devices[j].value})</label><br>`;
             };
 
             // Close div
             document.getElementById("page2-cards").innerHTML += "</div></div></div></br>"
 
             // Add schedule rule section for the new sensor to page3
-            document.getElementById("page3-cards").innerHTML += "<div class='card'>\
-                                                                    <div class='card-body'>\
-                                                                        <label class='card-title schedule-rule-card'><b>" + new_sensors[i] + " (" + type + "):</b></label>\
-                                                                        <table id='" + new_sensors[i] + "-rules' class='table table-borderless'>\
-                                                                            <tr>\
-                                                                                <th style='text-align: left;'>Time</th>\
-                                                                                <th style='text-align: left;'>Rule</th>\
-                                                                            </tr>\
-                                                                                <tr id='" + new_sensors[i] + "-row-1'>\
-                                                                                    <td><input type='text' class='form-control' id='schedule-" + new_sensors[i] + "-rule1-time' placeholder='HH:MM' name='schedule-" + new_sensors[i] + "-rule1-time'></td>\
-                                                                                    <td><input type='text' class='form-control' id='schedule-" + new_sensors[i] + "-rule1-value' placeholder='' name='schedule-" + new_sensors[i] + "-rule1-value'></td>\
-                                                                                    <td class='min'><button type='button' class='remove btn btn-danger' id='" + new_sensors[i] + "-remove1'  onclick='remove(this)'>X</button></td>\
-                                                                                </tr>\
-                                                                        </table>\
-                                                                    </div>\
-                                                                    <div class='text-left mx-3 mb-3'>\
-                                                                        <button type='button' class='btn btn-secondary add' id='" + new_sensors[i] + "-add-rule'>Add another</button>\
-                                                                    </div>\
-                                                                </div></br>"
+            document.getElementById("page3-cards").innerHTML += `<div class='card'>
+                                                                    <div class='card-body'>
+                                                                        <label class='card-title schedule-rule-card'><b>${new_sensors[i]} (${type}):</b></label>
+                                                                        <table id='${new_sensors[i]}-rules' class='table table-borderless'>
+                                                                            <tr>
+                                                                                <th style='text-align: left;'>Time</th>
+                                                                                <th style='text-align: left;'>Rule</th>
+                                                                            </tr>
+                                                                                <tr id='${new_sensors[i]}-row-1'>
+                                                                                    <td><input type='text' class='form-control' id='schedule-${new_sensors[i]}-rule1-time' placeholder='HH:MM' name='schedule-${new_sensors[i]}-rule1-time'></td>
+                                                                                    <td><input type='text' class='form-control' id='schedule-${new_sensors[i]}-rule1-value' placeholder='' name='schedule-${new_sensors[i]}-rule1-value'></td>
+                                                                                    <td class='min'><button type='button' class='remove btn btn-danger' id='${new_sensors[i]}-remove1'  onclick='remove(this)'>X</button></td>
+                                                                                </tr>
+                                                                        </table>
+                                                                    </div>
+                                                                    <div class='text-left mx-3 mb-3'>
+                                                                        <button type='button' class='btn btn-secondary add' id='${new_sensors[i]}-add-rule'>Add another</button>
+                                                                    </div>
+                                                                </div></br>`
         };
     };
 
@@ -125,7 +125,7 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 
             // If no match was found, add the device as an option (unless device is IrBlaster)
             if (!found && dev_type != "ir-blaster") {
-                sensors[sen].innerHTML += "<input type='checkbox' class='form-check-input' id='target-" + sen_id + "-" + dev_id + "' name='target-" + sen_id + "-" + dev_id + "' value='target-" + sen_id + "-" + dev_id + "'><label for='target-" + sen_id + "-" + dev_id + "' class='form-check-label'>" + dev_id + " (" + dev_type + ")</label><br>";
+                sensors[sen].innerHTML += `<input type='checkbox' class='form-check-input' id='target-${sen_id}-${dev_id}' name='target-${sen_id}-${dev_id}' value='target-${sen_id}-${dev_id}'><label for='target-${sen_id}-${dev_id}' class='form-check-label'>${dev_id} (${dev_type})</label><br>`;
             };
         };
     };
@@ -152,25 +152,25 @@ document.getElementById('page2-button').addEventListener("click", function(e) {
             if (type == "ir-blaster") { continue };
 
             // Add schedule rule section for the new device to page3
-            document.getElementById("page3-cards").innerHTML += "<div class='card'>\
-                                                                    <div class='card-body'>\
-                                                                        <label class='card-title schedule-rule-card'><b>" + new_devices[i] + " (" + type + "):</b></label>\
-                                                                        <table id='" + new_devices[i] + "-rules' class='table table-borderless'>\
-                                                                            <tr>\
-                                                                                <th style='text-align: left;'>Time</th>\
-                                                                                <th style='text-align: left;'>Rule</th>\
-                                                                            </tr>\
-                                                                                <tr id='" + new_devices[i] + "-row-1'>\
-                                                                                    <td><input type='text' class='form-control' id='schedule-" + new_devices[i] + "-rule1-time' placeholder='HH:MM' name='schedule-" + new_devices[i] + "-rule1-time'></td>\
-                                                                                    <td><input type='text' class='form-control' id='schedule-" + new_devices[i] + "-rule1-value' placeholder='' name='schedule-" + new_devices[i] + "-rule1-value'></td>\
-                                                                                    <td class='min'><button type='button' class='remove btn btn-danger' id='" + new_devices[i] + "-remove1'  onclick='remove(this)'>X</button></td>\
-                                                                                </tr>\
-                                                                        </table>\
-                                                                    </div>\
-                                                                    <div class='text-left mx-3 mb-3'>\
-                                                                        <button type='button' class='btn btn-secondary add' id='" + new_devices[i] + "-add-rule'>Add another</button>\
-                                                                    </div>\
-                                                                </div></br>"
+            document.getElementById("page3-cards").innerHTML += `<div class='card'>
+                                                                    <div class='card-body'>
+                                                                        <label class='card-title schedule-rule-card'><b>${new_devices[i]} (${type}):</b></label>
+                                                                        <table id='${new_devices[i]}-rules' class='table table-borderless'>
+                                                                            <tr>
+                                                                                <th style='text-align: left;'>Time</th>
+                                                                                <th style='text-align: left;'>Rule</th>
+                                                                            </tr>
+                                                                                <tr id='${new_devices[i]}-row-1'>
+                                                                                    <td><input type='text' class='form-control' id='schedule-${new_devices[i]}-rule1-time' placeholder='HH:MM' name='schedule-${new_devices[i]}-rule1-time'></td>
+                                                                                    <td><input type='text' class='form-control' id='schedule-${new_devices[i]}-rule1-value' placeholder='' name='schedule-${new_devices[i]}-rule1-value'></td>
+                                                                                    <td class='min'><button type='button' class='remove btn btn-danger' id='${new_devices[i]}-remove1'  onclick='remove(this)'>X</button></td>
+                                                                                </tr>
+                                                                        </table>
+                                                                    </div>
+                                                                    <div class='text-left mx-3 mb-3'>
+                                                                        <button type='button' class='btn btn-secondary add' id='${new_devices[i]}-add-rule'>Add another</button>
+                                                                    </div>
+                                                                </div></br>`;
         };
     };
 
@@ -203,15 +203,15 @@ document.getElementById('page2-button').addEventListener("click", function(e) {
             instances[i].innerHTML = instances[i].innerHTML.replace(old_type, new_type);
 
             // Clear all existing schedule rules (likely invalid for new type)
-            document.getElementById(id + "-rules").innerHTML = "<tr>\
-                                                                    <th style='text-align: left;'>Time</th>\
-                                                                    <th style='text-align: left;'>Rule</th>\
-                                                                </tr>\
-                                                                <tr id='" + id + "-row-1'>\
-                                                                    <td><input type='text' class='form-control' id='schedule-" + id + "-rule1-time' placeholder='HH:MM' name='schedule-" + id + "-rule1-time'></td>\
-                                                                    <td><input type='text' class='form-control' id='schedule-" + id + "-rule1-value' placeholder='' name='schedule-" + id + "-rule1-value'></td>\
-                                                                    <td class='min'><button type='button' class='btn btn-danger' id='placeholder_button' style='visibility: hidden;'>X</button></td>\
-                                                                </tr>"
+            document.getElementById(id + "-rules").innerHTML = `<tr>
+                                                                    <th style='text-align: left;'>Time</th>
+                                                                    <th style='text-align: left;'>Rule</th>
+                                                                </tr>
+                                                                <tr id='${id}-row-1'>
+                                                                    <td><input type='text' class='form-control' id='schedule-${id}-rule1-time' placeholder='HH:MM' name='schedule-${id}-rule1-time'></td>
+                                                                    <td><input type='text' class='form-control' id='schedule-${id}-rule1-value' placeholder='' name='schedule-${id}-rule1-value'></td>
+                                                                    <td class='min'><button type='button' class='btn btn-danger' id='placeholder_button' style='visibility: hidden;'>X</button></td>
+                                                                </tr>`;
         };
     };
 
