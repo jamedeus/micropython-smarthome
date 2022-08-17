@@ -589,14 +589,31 @@
                                             {% for time, rule in params.schedule.items %}
                                                 <tr id="{{instance}}-row-{{forloop.counter}}">
                                                     <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{instance}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
-                                                    <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+
+                                                    {% if not params.type == "api-target" %}
+                                                        <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
+                                                    {% else %}
+                                                        <td style="width: 50%">
+                                                            <button id="schedule-{{instance}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                            <input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-value" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}" style="display:none;">
+                                                        </td>
+                                                    {% endif %}
                                                     <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
                                                 </tr>
                                             {% endfor %}
                                         {% else %}
                                             <tr id="{{instance}}-row-1">
                                                 <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time"></td>
-                                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value"></td>
+
+                                                {% if not params.type == "api-target" %}
+                                                    <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="HH:MM" name="schedule-{{instance}}-rule1-value"></td>
+                                                {% else %}
+                                                    <td style="width: 50%">
+                                                        <button id="schedule-{{instance}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                        <input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" name="schedule-{{instance}}-rule1-value" style="display:none;">
+                                                    </td>
+                                                {% endif %}
+
                                                 <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove1"  onclick="remove(this)">X</button></td>
                                             </tr>
                                         {% endif %}
@@ -1303,7 +1320,15 @@
             var cell_del = row.insertCell(2);
 
             cell_time.innerHTML = "<input type='text' class='form-control' id='schedule-" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='schedule-" + instance + "-rule" + next_row + "-time'>";
-            cell_value.innerHTML = "<input type='text' class='form-control' id='schedule-" + instance + "-rule" + next_row + "-value' placeholder='' name='schedule-" + instance + "-rule" + next_row + "-value'>";
+
+            if (instance.startsWith("device") && document.getElementById(instance.replace("device", "deviceType")).value == "api-target") {
+                console.log("API")
+                cell_value.innerHTML = `<button id="schedule-${instance}-rule${next_row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                        <input type="text" class="form-control" id="schedule-${instance}-rule${next_row}-value" placeholder="" name="schedule-${instance}-rule${next_row}-value" style="display:none;">`
+            } else {
+                cell_value.innerHTML = `<input type='text' class='form-control' id='schedule-${instance}-rule${next_row}-value' placeholder='' name='schedule-${instance}-rule${next_row}-value'>`;
+            };
+
             cell_del.innerHTML = "<button type='button' class='remove btn btn-danger' id='" + instance + "-remove" + next_row + "' onclick='remove(this)'>X</button>";
 
         };

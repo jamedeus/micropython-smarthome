@@ -252,6 +252,7 @@ def configure(request):
 
 
 
+
 def configure_page2(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -334,6 +335,9 @@ def edit_config(request, name):
 
             if config[i]["type"] == "api-target":
                 devices[i]["default_rule"] = reverse_convert_api_target_rule(devices[i]["default_rule"])
+
+                for rule in instances[i]["schedule"]:
+                    instances[i]["schedule"][rule] = reverse_convert_api_target_rule(instances[i]["schedule"][rule])
 
     for i in delete:
         del config[i]
