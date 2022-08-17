@@ -1,5 +1,5 @@
-function add(e) {
-    var instance = e.target.id.split("-", 1)[0];
+function add(button) {
+    var instance = button.id.split("-", 1)[0];
 
     table = document.getElementById(instance + "-rules")
 
@@ -13,18 +13,21 @@ function add(e) {
     var cell_value = row.insertCell(1);
     var cell_del = row.insertCell(2);
 
-    cell_time.innerHTML = "<input type='text' class='form-control' id='schedule-" + instance + "-rule" + next_row + "-time' placeholder='HH:MM' name='schedule-" + instance + "-rule" + next_row + "-time'>";
+    // Add timestamp field
+    cell_time.innerHTML = `<input type='text' class='form-control' id='schedule-${instance}-rule${next_row}-time' placeholder='HH:MM' name='schedule-${instance}-rule${next_row}-time'>`;
 
+    // For ApiTarget, add button that opens rule modal + hidden input field that receives value from modal
     if (instance.startsWith("device") && document.getElementById(instance.replace("device", "deviceType")).value == "api-target") {
-        console.log("API")
         cell_value.innerHTML = `<button id="schedule-${instance}-rule${next_row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                 <input type="text" class="form-control" id="schedule-${instance}-rule${next_row}-value" placeholder="" name="schedule-${instance}-rule${next_row}-value" style="display:none;">`
+
+    // For all other instance types, add input field
     } else {
         cell_value.innerHTML = `<input type='text' class='form-control' id='schedule-${instance}-rule${next_row}-value' placeholder='' name='schedule-${instance}-rule${next_row}-value'>`;
     };
 
-    cell_del.innerHTML = "<button type='button' class='remove btn btn-danger' id='" + instance + "-remove" + next_row + "' onclick='remove(this)'>X</button>";
-
+    // Add delete button
+    cell_del.innerHTML = `<button type='button' class='remove btn btn-danger' id='${instance}-remove${next_row}' onclick='remove(this)'>X</button>`;
 };
 
 function remove(e) {
@@ -34,5 +37,3 @@ function remove(e) {
     table = document.getElementById(instance.split("-", 1) + "-rules")
     table.deleteRow(index)
 };
-
-$('.add').on('click', add);
