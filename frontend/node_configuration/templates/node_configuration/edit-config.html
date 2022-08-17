@@ -718,10 +718,10 @@
     {{ context.api_target_options|json_script:"context" }}
 
     <script>
-        var ApiTargetOptions = JSON.parse(document.getElementById("context").textContent);
-
         $('#page2').hide();
         $('#page3').hide();
+
+        var ApiTargetOptions = JSON.parse(document.getElementById("context").textContent);
 
         const base_url = window.location.href.split("edit_config")[0];
 
@@ -736,6 +736,13 @@
                 ir_blaster_configured = true;
             };
         };
+
+        {# Set var passed to submit_form function, controls whether config is re-uploaded or not #}
+        {% if context.config|length == 1 %}
+        const edit_existing = false;
+        {% else %}
+        const edit_existing = true;
+        {% endif %}
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
@@ -764,15 +771,8 @@
             // Disable submit button, prevent submitting multiple times
             document.getElementById("submit-button").disabled = true;
 
-            {% if context.config|length == 1 %}
-            // Create new config from form
-            console.log("Creating new config")
-            submit_form_new();
-            {% else %}
-            // Apply changes to existing config
-            console.log("Editing existing config")
-            submit_form_edit();
-            {% endif %}
+            // Create config from form contents
+            submit_form(edit_existing);
         });
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)

@@ -13,24 +13,6 @@ function getCookie(name) {
     return cookieValue;
 };
 
-async function readForm(url) {
-    var value = Object.fromEntries(new FormData(document.getElementById("form")).entries());
-
-    console.log({ value });
-
-    let csrftoken = getCookie('csrftoken');
-
-    const result = await fetch(url, {
-        method: 'POST',
-        body: JSON.stringify(value),
-        headers: { 'Accept': 'application/json, text/plain, */*',
-            'Content-Type': 'application/json',
-            "X-CSRFToken": csrftoken }
-    });
-
-    return result
-};
-
 async function send_post_request(url, body) {
     let csrftoken = getCookie('csrftoken');
 
@@ -45,87 +27,31 @@ async function send_post_request(url, body) {
     return response
 };
 
-async function submit_form_new() {
-    var result = await readForm("generateConfigFile");
-
-    if (result.ok) {
-        // Redirect back to overview where user can upload the newly-created config
-        window.location.replace("/node_configuration");
-    } else {
-
-        // If duplicate error, display modal allowing user to overwrite
-        if (result.status == 409) {
-            // Get duplicate name, add to modal body
-            const name = document.getElementById("friendlyName").value;
-            document.getElementById("duplicate-modal-body").innerHTML = "<p>Config named <b>" + name + "</b> already exists. Would you like to overwrite it? This cannot be undone.</p>"
-            $('#duplicate-modal').modal('show');
-
-            // Add listener to overwrite button, sends delete command for the existing config then re-submits form
-            $('#confirm-overwrite').click(async function() {
-                // Disable listener once triggered, prevent overwrite button stacking multiple actions
-                $('#confirm-overwrite').off('click');
-
-                let csrftoken = getCookie('csrftoken');
-
-                const response = await fetch("delete_config", {
-                    method: 'POST',
-                    body: JSON.stringify(name + ".json"),
-                    headers: { 'Accept': 'application/json, text/plain, */*',
-                        'Content-Type': 'application/json',
-                        "X-CSRFToken": csrftoken }
-                });
-
-                // Re-submit form
-                submit_form_new();
-            });
-
-            // Add listener to cancel button
-            $('#cancel-overwrite').click(function() {
-                // Prevent stacking listeners on overwrite button each time cancel pressed
-                $('#confirm-overwrite').off('click');
-            });
-
-        // If other error, display in alert
-        } else {
-            alert(await result.text());
-        };
-    };
-};
-
-async function submit_form_edit() {
-    let csrftoken = getCookie('csrftoken');
-
+// Takes true (edit existing config and reupload) or false (create new config)
+async function submit_form(edit) {
     const value = Object.fromEntries(new FormData(document.getElementById("form")).entries());
 
     // Generate config file from form data
-    var response = await send_post_request(base_url + "generateConfigFile/True", value);
+    if (edit) {
+        var response = await send_post_request(base_url + "generateConfigFile/True", value);
+    } else {
+        var response = await send_post_request("generateConfigFile", value);
+    };
 
-    // If successful, re-upload config file to node
-    if (response.ok) {
-        // Show loading screen
-        show_modal("upload-modal");
+    // If successfully created new config, redirect to overview
+    if (!edit && response.ok) {
+        // Redirect back to overview where user can upload the newly-created config
+        window.location.replace("/node_configuration");
 
-        // Reupload config file
-        var result = await send_post_request(base_url + "upload/True", {config: target_filename, ip: target_ip});
+    // If successfully edited existing config, re-upload to target node
+    } else if (edit && response.ok) {
+        reupload();
 
-        // If reupload successful, redirect back to overview (otherwise display error in alert)
-        if (result.ok) {
-            // Change title, show success animation
-            const title = "Upload Complete"
-            const body = `<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                                <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                                <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                            </svg>`
-            show_modal("upload-modal", title, body);
+    // If config with same name already exists, show modal allowing user to overwrite
+    } else if (!edit && response.status == 409) {
+        duplicate();
 
-            // Wait for animation to complete before redirect
-            await sleep(1200);
-            window.location.replace("/node_configuration");
-
-        // If reupload failed, display error
-        } else {
-            handle_error(result);
-        };
+    // If other error, display in alert
     } else {
         alert(await response.text());
 
@@ -136,19 +62,33 @@ async function submit_form_edit() {
     };
 };
 
-$('#no-button').click(function() {
-    // Remove listeners (prevent stacking)
-    $('#yes-button').off('click');
-    $('#error-modal').modal('hide');
-});
+async function reupload() {
+    // Show loading screen
+    show_modal("upload-modal");
 
-async function handle_error(result) {
+    // Reupload config file
+    var result = await send_post_request(base_url + "upload/True", {config: target_filename, ip: target_ip});
+
+    // If reupload successful, redirect back to overview (otherwise display error in alert)
+    if (result.ok) {
+        // Change title, show success animation
+        const title = "Upload Complete"
+        const body = `<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                            <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                            <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                        </svg>`
+        show_modal("upload-modal", title, body);
+
+        // Wait for animation to complete before redirect
+        await sleep(1200);
+        window.location.replace("/node_configuration");
+
     // Unable to upload because node has not run setup
-    if (result.status == 409) {
+    } else if (result.status == 409) {
         const error = await result.text();
         const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button><button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
 
-        // Replace loading modal with error modal
+        // Replace loading modal with error modal, ask if user wants to run setup routine
         $('#upload-modal').modal('hide');
         show_modal("error-modal", "Error", `${error}`, footer);
 
@@ -171,7 +111,7 @@ async function handle_error(result) {
                 $('#ok-button').click(function() {
                     $("#error-modal").modal("hide");
                     $('#ok-button').off('click');
-                    submit_form_edit();
+                    submit_form(true);
                 });
             } else {
                 alert(await result.text());
@@ -180,9 +120,12 @@ async function handle_error(result) {
                 document.getElementById("submit-button").disabled = false;
             };
         });
+
+    // Unable to upload because node is unreachable
     } else if (result.status == 404) {
         $('#upload-modal').modal('hide');
 
+        // Show error modal with instructions
         const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
         show_modal("error-modal", "Connection Error", `Unable to connect to ${target_ip} - please make sure node is connected to wifi and try again`, footer);
 
@@ -192,6 +135,8 @@ async function handle_error(result) {
             $('#ok-button').off('click');
             document.getElementById("submit-button").disabled = false;
         });
+
+    // Other error, show in alert
     } else {
         alert(await result.text());
 
@@ -199,3 +144,34 @@ async function handle_error(result) {
         document.getElementById("submit-button").disabled = false;
     };
 };
+
+function duplicate() {
+    // Get duplicate name, add to modal body
+    const name = document.getElementById("friendlyName").value;
+    document.getElementById("duplicate-modal-body").innerHTML = "<p>Config named <b>" + name + "</b> already exists. Would you like to overwrite it? This cannot be undone.</p>"
+    $('#duplicate-modal').modal('show');
+
+    // Add listener to overwrite button, sends delete command for the existing config then re-submits form
+    $('#confirm-overwrite').click(async function() {
+        // Disable listener once triggered, prevent overwrite button stacking multiple actions
+        $('#confirm-overwrite').off('click');
+
+        var response = await send_post_request("delete_config", name + ".json");
+
+        // Re-submit form
+        submit_form(false);
+    });
+
+    // Add listener to cancel button
+    $('#cancel-overwrite').click(function() {
+        // Prevent stacking listeners on overwrite button each time cancel pressed
+        $('#confirm-overwrite').off('click');
+        document.getElementById("submit-button").disabled = false;
+    });
+};
+
+$('#no-button').click(function() {
+    // Remove listeners (prevent stacking)
+    $('#yes-button').off('click');
+    $('#error-modal').modal('hide');
+});
