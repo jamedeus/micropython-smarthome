@@ -244,11 +244,17 @@ def node_configuration(request):
 
 
 def configure(request):
-    template = loader.get_template('node_configuration/configure.html')
+
+    template = loader.get_template('node_configuration/edit-config.html')
 
     api_target_options = get_api_target_menu_options()
 
-    return HttpResponse(template.render({'context': api_target_options}, request))
+    config = {}
+    config["TITLE"] = "Create New Config"
+
+    context = {"config": config, "api_target_options": api_target_options}
+
+    return HttpResponse(template.render({'context': context}, request))
 
 
 
@@ -311,6 +317,7 @@ def edit_config(request, name):
         config = json.load(file)
 
     config["NAME"] = target.friendly_name
+    config["TITLE"] = f"Editing {target.friendly_name}"
     config["IP"] = target.ip
     config["FILENAME"] = target.config_file.split("/")[-1]
 

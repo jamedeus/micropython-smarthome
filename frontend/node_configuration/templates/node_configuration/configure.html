@@ -605,7 +605,7 @@
             submit_form();
         });
 
-        async function submit_form() {
+        async function submit_form_new() {
             var result = await readForm("generateConfigFile");
 
             if (result.ok) {
@@ -636,7 +636,7 @@
                         });
 
                         // Re-submit form
-                        submit_form();
+                        submit_form_new();
                     });
 
                     // Add listener to cancel button

@@ -145,7 +145,7 @@
     </script>
 
     <div class="container d-flex flex-column vh-100">
-        <h1 class="text-center pt-3 pb-4">Editing {{ context.config.NAME }}</h1>
+        <h1 class="text-center pt-3 pb-4">{{ context.config.TITLE }}</h1>
 
         {% if context %}
 
@@ -529,7 +529,6 @@
                                 {% endif %}
                             {% endif %}
 
-
                         </div>
                     </div>
 
@@ -671,6 +670,21 @@
                 </div>
             </div>
 
+            <!-- Overwrite duplicate modal dialog -->
+
+            <div class="modal fade" id="duplicate-modal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-body" id="duplicate-modal-body">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" id="cancel-overwrite" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" id="confirm-overwrite" class="btn btn-danger" data-bs-dismiss="modal">Overwrite</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Api-target set rule modal -->
 
             <div class="modal fade" id="api-rule-modal" tabindex="-1">
@@ -680,7 +694,7 @@
                             <h5 class="modal-title">Api Target Rule</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body text-center" id="duplicate-modal-body">
+                        <div class="modal-body text-center">
 
                             <p>Explain what this does here</p>
 
@@ -1349,7 +1363,15 @@
             // Disable submit button, prevent submitting multiple times
             document.getElementById("submit-button").disabled = true;
 
-            submit_form();
+            {% if context.config|length == 1 %}
+            // Create new config from form
+            console.log("Creating new config")
+            submit_form_new();
+            {% else %}
+            // Apply changes to existing config
+            console.log("Editing existing config")
+            submit_form_edit();
+            {% endif %}
         });
 
         function sleep(ms) {
@@ -1387,7 +1409,54 @@
             $('#' + modal).modal('show');
         };
 
-        async function submit_form() {
+        async function submit_form_new() {
+            var result = await readForm("generateConfigFile");
+
+            if (result.ok) {
+                // Redirect back to overview where user can upload the newly-created config
+                window.location.replace("/node_configuration");
+            } else {
+
+                // If duplicate error, display modal allowing user to overwrite
+                if (result.status == 409) {
+                    // Get duplicate name, add to modal body
+                    const name = document.getElementById("friendlyName").value;
+                    document.getElementById("duplicate-modal-body").innerHTML = "<p>Config named <b>" + name + "</b> already exists. Would you like to overwrite it? This cannot be undone.</p>"
+                    $('#duplicate-modal').modal('show');
+
+                    // Add listener to overwrite button, sends delete command for the existing config then re-submits form
+                    $('#confirm-overwrite').click(async function() {
+                        // Disable listener once triggered, prevent overwrite button stacking multiple actions
+                        $('#confirm-overwrite').off('click');
+
+                        let csrftoken = getCookie('csrftoken');
+
+                        const response = await fetch("delete_config", {
+                            method: 'POST',
+                            body: JSON.stringify(name + ".json"),
+                            headers: { 'Accept': 'application/json, text/plain, */*',
+                                'Content-Type': 'application/json',
+                                "X-CSRFToken": csrftoken }
+                        });
+
+                        // Re-submit form
+                        submit_form_new();
+                    });
+
+                    // Add listener to cancel button
+                    $('#cancel-overwrite').click(function() {
+                        // Prevent stacking listeners on overwrite button each time cancel pressed
+                        $('#confirm-overwrite').off('click');
+                    });
+
+                // If other error, display in alert
+                } else {
+                    alert(await result.text());
+                };
+            };
+        };
+
+        async function submit_form_edit() {
             let csrftoken = getCookie('csrftoken');
 
             const value = Object.fromEntries(new FormData(document.getElementById("form")).entries());
@@ -1466,7 +1535,7 @@
                         $('#ok-button').click(function() {
                             $("#error-modal").modal("hide");
                             $('#ok-button').off('click');
-                            submit_form();
+                            submit_form_edit();
                         });
                     } else {
                         alert(await result.text());
