@@ -244,18 +244,11 @@ def node_configuration(request):
 
 
 def configure(request):
-
     template = loader.get_template('node_configuration/edit-config.html')
 
-    api_target_options = get_api_target_menu_options()
-
-    config = {}
-    config["TITLE"] = "Create New Config"
-
-    context = {"config": config, "api_target_options": api_target_options}
+    context = {"config": {"TITLE": "Create New Config"}, "api_target_options": get_api_target_menu_options()}
 
     return HttpResponse(template.render({'context': context}, request))
-
 
 
 
