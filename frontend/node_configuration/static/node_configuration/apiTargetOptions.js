@@ -13,7 +13,7 @@ function submit_api_rule(el) {
     // Remove friendly name, leave only instance id (device1, sensor1, etc)
     value["instance-on"] = value["instance-on"].split("-")[0]
     value["instance-off"] = value["instance-off"].split("-")[0]
-    document.getElementById(el.dataset.target + "-default_rule").value = JSON.stringify(value);
+    document.getElementById(el.dataset.target).value = JSON.stringify(value);
 };
 
 
@@ -163,10 +163,16 @@ function populate_sub_command_off(target) {
 
 function open_rule_modal(el) {
     $('#api-rule-modal').modal('show')
-    document.getElementById('submit-api-rule').dataset.target = el.id.split("-")[0];
 
-    var target = document.getElementById(el.id.split("-")[0] + "-ip").value;
-    console.log(target)
+    if (el.id.startsWith("device")) {
+        // Default rule (page 1)
+        document.getElementById('submit-api-rule').dataset.target = el.id.split("-")[0] + "-default_rule";
+        var target = document.getElementById(el.id.split("-")[0] + "-ip").value;
+    } else {
+        // Schedule rules (page 3)
+        document.getElementById('submit-api-rule').dataset.target = el.id.replace("button", "value");
+        var target = document.getElementById(el.id.split("-")[1] + "-ip").value;
+    };
 
     // Clear all options from last time menu was opened
     instance_select_on.length = 1;
@@ -208,7 +214,11 @@ function open_rule_modal(el) {
 
     // Load existing rule (if present) into dropdowns
     try {
-        var restore = JSON.parse(document.getElementById(el.id.split("-")[0] + "-default_rule").value);
+        if (el.id.startsWith("device")) {
+            var restore = JSON.parse(document.getElementById(el.id.split("-")[0] + "-default_rule").value);
+        } else {
+            var restore = JSON.parse(document.getElementById(el.id.replace("button", "value")).value);
+        }
         console.log(restore)
     } catch(err) {
         // Skip if no rule set

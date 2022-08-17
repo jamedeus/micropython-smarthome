@@ -443,7 +443,11 @@ def generateConfigFile(request, edit_existing=False):
                     # If user left rule blank, do not add rule and continue loop
                     if len(data[j]) == 0: continue
 
-                    config[instance]["schedule"][timestamp] = data[j]
+                    # Api target rule needs to be converted
+                    if config[instance]["type"] == "api-target":
+                        config[instance]["schedule"][timestamp] = convert_api_target_rule(data[j])
+                    else:
+                        config[instance]["schedule"][timestamp] = data[j]
 
     print(json.dumps(data, indent=4))
 

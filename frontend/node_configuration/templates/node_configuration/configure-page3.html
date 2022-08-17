@@ -15,8 +15,17 @@
                                 <th style="text-align: left;">Rule</th>
                             </tr>
                             <tr id="{{instance}}-row-1">
-                                <td><input type="text" class="form-control timestamp" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time" maxlength="5"></td>
-                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value"></td>
+                                <td style="width: 50%"><input type="text" class="form-control timestamp" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time" maxlength="5"></td>
+
+                                {% if not type == "api-target" %}
+                                    <td style="width: 50%"><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value"></td>
+                                {% else %}
+                                    <td style="width: 50%">
+                                        <button id="schedule-{{instance}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                        <input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="" name="schedule-{{instance}}-rule1-value" style="display:none;">
+                                    </td>
+                                {% endif %}
+
                                 <td class="min"><button type="button" class="btn btn-danger" id="placeholder_button" style="visibility: hidden;">X</button></td>
                             </tr>
                         </table>
@@ -80,7 +89,14 @@
             var cell_del = row.insertCell(2);
 
             cell_time.innerHTML = `<input type='text' class='form-control timestamp' id='schedule-${instance}-rule${next_row}-time' placeholder='HH:MM' name='schedule-${instance}-rule${next_row}-time' maxlength="5">`;
-            cell_value.innerHTML = `<input type='text' class='form-control' id='schedule-${instance}-rule${next_row}-value' placeholder='' name='schedule-${instance}-rule${next_row}-value'>`;
+
+            if (instance.startsWith("device") && document.getElementById(instance.replace("device", "deviceType")).value == "api-target") {
+                console.log("API")
+                cell_value.innerHTML = `<button id="schedule-${instance}-rule${next_row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                        <input type="text" class="form-control" id="schedule-${instance}-rule${next_row}-value" placeholder="" name="schedule-${instance}-rule${next_row}-value" style="display:none;">`
+            } else {
+                cell_value.innerHTML = `<input type='text' class='form-control' id='schedule-${instance}-rule${next_row}-value' placeholder='' name='schedule-${instance}-rule${next_row}-value'>`;
+            };
             cell_del.innerHTML = `<button type='button' class='remove btn btn-danger' id='${instance}-remove${next_row}' onclick='remove(this)'>X</button>`;
 
             // Only allow numbers and : in timestamp field
