@@ -141,8 +141,8 @@
                             <tr id="{{config}}">
                                 <td class="min align-middle">{{config}}</td>
                                 <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" class="form-control"></td>
-                                <td class="min align-middle"><button type="button" class="upload btn-primary btn btn-sm" id="upload-{{config}}">Upload</button></td>
-                                <td class="min align-middle"><button type="button" class="delete btn-danger btn btn-sm" id="delete-{{config}}"><i class="bi-trash"></i></button></td>
+                                <td class="min align-middle"><button type="button" class="btn-primary btn btn-sm" id="upload-{{config}}" onclick="upload(this);">Upload</button></td>
+                                <td class="min align-middle"><button type="button" class="btn-danger btn btn-sm" id="delete-{{config}}" onclick="del_config(this);"><i class="bi-trash"></i></button></td>
                             </tr>
                         {% endfor %}
                     </table>
@@ -170,7 +170,7 @@
                                     <button type="button" class="btn-primary btn btn-sm" title="Edit" onclick="window.location.href = '/edit_config/{{node.friendly_name}}'"><i class="bi-pencil"></i></button>
                                 </td>
                                 <td class="min align-middle">
-                                    <button type="button" class="delete-node btn-danger btn btn-sm" data-friendlyname="{{node.friendly_name}}" title="Delete"><i class="bi-trash"></i></button>
+                                    <button type="button" class="btn-danger btn btn-sm" title="Delete" onclick="del_node('{{node.friendly_name}}')"><i class="bi-trash"></i></button>
                                 </td>
                             </tr>
                         {% endfor %}
@@ -267,8 +267,8 @@
             return response
         };
 
-        async function upload(e) {
-            const config = e.target.id.replace("upload-", "")
+        async function upload(el) {
+            const config = el.id.replace("upload-", "")
             const ip = document.getElementById(config + "-ip").value
 
             const data = {config: config, ip: ip};
@@ -376,7 +376,7 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        function del_config(e) {
+        function del_config(el) {
             $('#delete-modal').modal('show');
 
             // Add listener to delete button (there is only 1 modal, so target cannot be set in template)
@@ -384,7 +384,7 @@
                 // Disable listener once triggered, prevent delete button stacking multiple actions
                 $('#confirm-delete').off('click');
 
-                data = e.target.id.replace("delete-", "");
+                data = el.id.replace("delete-", "");
 
                 let csrftoken = getCookie('csrftoken');
 
@@ -406,7 +406,7 @@
             });
         };
 
-        function del_node(e) {
+        function del_node(name) {
             $('#delete-modal').modal('show');
 
             // Add listener to delete button (there is only 1 modal, so target cannot be set in template)
@@ -414,19 +414,19 @@
                 // Disable listener once triggered, prevent delete button stacking multiple actions
                 $('#confirm-delete').off('click');
 
-                data = e.target.dataset.friendlyname;
-
                 let csrftoken = getCookie('csrftoken');
 
                 const response = await fetch("delete_node", {
                     method: 'POST',
-                    body: JSON.stringify(data),
+                    body: JSON.stringify(name),
                     headers: { 'Accept': 'application/json, text/plain, */*',
                         'Content-Type': 'application/json',
                         "X-CSRFToken": csrftoken }
                 });
 
-                location.reload();
+                if (response.ok) {
+                    location.reload();
+                };
             });
 
             // Add listener to cancel button
@@ -436,9 +436,7 @@
             });
         };
 
-        $('.upload').on('click', upload);
-        $('.delete').on('click', del_config);
-        $('.delete-node').on('click', del_node);
+//         $('.upload').on('click', upload);
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
