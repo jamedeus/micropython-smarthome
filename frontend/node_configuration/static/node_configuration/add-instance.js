@@ -1,3 +1,21 @@
+// Store class instances created when device/sensor types are selected from dropdown
+var instances = {"sensors": {}, "devices": {}}
+
+// Populate instances with existing device + sensor cards (if editing config)
+Array.from(document.getElementsByClassName("deviceType")).forEach(function(device) {
+    const id = device.id.replace("deviceType", "device");
+    instances["devices"][id] = new Device(id);
+    instances["devices"][id].new = false;
+});
+
+Array.from(document.getElementsByClassName("sensorType")).forEach(function(sensor) {
+    const id = sensor.id.replace("sensorType", "sensor");
+    instances["sensors"][id] = new Sensor(id);
+    instances["sensors"][id].new = false;
+});
+
+
+
 async function load_sensor_section(select) {
     // Get index of sensor
     const index = parseInt(select.id.replace("sensorType", ""));
@@ -65,7 +83,19 @@ async function load_sensor_section(select) {
     // Render div, scroll down until visible
     document.getElementById("addSensorOptions" + index).innerHTML = template;
     document.getElementById("addSensorOptions" + index).scrollIntoView({behavior: "smooth"});
+
+    if (instances["sensors"]["sensor" + index]) {
+        // If instance already exists, wipe params and re-populate (type changed)
+        instances["sensors"]["sensor" + index].clearParams();
+        instances["sensors"]["sensor" + index].getParams();
+        instances["sensors"]["sensor" + index].modified = true;
+    } else {
+        // If new sensor, create instance
+        instances["sensors"]["sensor" + index] = new Sensor("sensor" + index);
+    };
 };
+
+
 
 async function load_device_section(select) {
     // Get index of device
@@ -202,15 +232,25 @@ async function load_device_section(select) {
             };
         };
     };
+
+    if (instances["devices"]["device" + index]) {
+        // If instance already exists, wipe params and re-populate (type changed)
+        instances["devices"]["device" + index].clearParams();
+        instances["devices"]["device" + index].getParams();
+        instances["devices"]["device" + index].modified = true;
+    } else {
+        // If new device, create instance
+        instances["devices"]["device" + index] = new Device("device" + index);
+    };
 };
 
-// Store sensors added on first page, use to populate later pages
-var new_devices = []
+
 
 async function load_next_device(button) {
     // Get index of clicked button
     const index = parseInt(button.id.replace("addDeviceButton", ""));
 
+    // Ternary expression adds top margin to all except first card
     var template = `<div ${ index ? 'class="mt-5"' : "" }>
                         <div class="card">
                             <div class="card-body">
@@ -249,17 +289,15 @@ async function load_next_device(button) {
     // Render div, scroll down until visible
     document.getElementById("addDeviceDiv" + (index + 1)).innerHTML = template;
     document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
-
-    new_devices.push("device" + (index + 1));
 };
 
-// Store sensors added on first page, use to populate later pages
-var new_sensors = []
+
 
 async function load_next_sensor(button) {
     // Get index of clicked button
     const index = parseInt(button.id.replace("addSensorButton", ""));
 
+    // Ternary expression adds top margin to all except first card
     var template = `<div ${ index ? 'class="mt-5"' : "" }>
                         <div class="card">
                             <div class="card-body">
@@ -294,7 +332,4 @@ async function load_next_sensor(button) {
     // Render div, scroll down until visible
     document.getElementById("addSensorDiv" + (index + 1)).innerHTML = template;
     document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
-
-    // Add sensor to list used to populate page 2 and 3
-    new_sensors.push("sensor" + (index + 1));
 };

@@ -11,6 +11,7 @@
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script src="{% static 'node_configuration/smoothscroll.min.js' %}"></script>
+    <script src="{% static 'node_configuration/classes.js' %}"></script>
     <style>
         /* Set table column to minimum width with class */
         td {
@@ -508,7 +509,7 @@
 
                             <div class="card mb-4">
                                 <div class="card-body">
-                                    <label for="{{sensor}}-targets" class="card-title sensor-targets-label"><b>{{ sensor }} ({{ params.type }}) targets:</b></label>
+                                    <label id="{{sensor}}-targets-label" for="{{sensor}}-targets" class="card-title"><b>{{ sensor }} ({{ params.type }}) targets:</b></label>
                                     <div id="{{sensor}}-targets" class="form-check sensor-targets">
 
                                         {% for device, dparams in context.config.devices.items %}
@@ -538,7 +539,7 @@
 
                             <div class="card mb-4">
                                 <div class="card-body">
-                                    <label class="card-title schedule-rule-card"><b>{{ instance }} ({{ params.type }}):</b></label>
+                                    <label id="{{instance}}-rules-label" class="card-title schedule-rule-card"><b>{{ instance }} ({{ params.type }}):</b></label>
                                     <table id="{{instance}}-rules" class="table table-borderless">
                                         <tr>
                                             <th style="text-align: left;">Time</th>
