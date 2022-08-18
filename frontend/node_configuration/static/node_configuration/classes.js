@@ -24,6 +24,10 @@ class Device {
                 this[name] = input.children[1].value;
             } catch(err) {};
         };
+
+        if (this.type == "ir-blaster") {
+            this.getIrTargets();
+        };
     };
 
     // Remove all properties except id, called when user changes type dropdown
@@ -33,6 +37,36 @@ class Device {
                 delete this[key];
             };
         }, this);
+    };
+
+    // Build object containing all schedule rule time:value pairs
+    getScheduleRules() {
+        var timestamps = document.getElementsByClassName(`timestamp ${this.id}`);
+        var rules = document.getElementsByClassName(`rule ${this.id}`);
+
+        this.schedule = {};
+
+        for (let i=0; i < rules.length; i++) {
+            // Don't add if either field is empty
+            if (timestamps[i].value.length > 0 && rules[i].value.length > 0) {
+                this.schedule[timestamps[i].value] = rules[i].value;
+            };
+        };
+    };
+
+    // Get array containing all selected virtual IR remotes (first page)
+    getIrTargets() {
+        if (this.type != "ir-blaster") { return };
+
+        var checks = document.getElementsByClassName('ir-target');
+
+        this.target = [];
+
+        for (let i=0; i < checks.length; i++) {
+            if (checks[i].checked) {
+                this.target.push(checks[i].value.split("-")[1]);
+            };
+        };
     };
 };
 
@@ -71,5 +105,33 @@ class Sensor {
                 delete this[key];
             };
         }, this);
+    };
+
+    // Build object containing all schedule rule time:value pairs
+    getScheduleRules() {
+        var timestamps = document.getElementsByClassName(`timestamp ${this.id}`);
+        var rules = document.getElementsByClassName(`rule ${this.id}`);
+
+        this.schedule = {};
+
+        for (let i=0; i < rules.length; i++) {
+            // Don't add if either field is empty
+            if (timestamps[i].value.length > 0 && rules[i].value.length > 0) {
+                this.schedule[timestamps[i].value] = rules[i].value;
+            };
+        };
+    };
+
+    // Get array containing all selected target options
+    getTargets() {
+        var checks = document.getElementsByClassName(`target ${this.id}`);
+
+        this.targets = [];
+
+        for (let i=0; i < checks.length; i++) {
+            if (checks[i].checked) {
+                this.targets.push(checks[i].value.split("-")[2]);
+            };
+        };
     };
 };

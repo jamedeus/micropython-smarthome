@@ -31,6 +31,26 @@ async function send_post_request(url, body) {
 async function submit_form(edit) {
     const value = Object.fromEntries(new FormData(document.getElementById("form")).entries());
 
+    // Update all instance properties before sending to backend
+    for (sensor in instances['sensors']) {
+        instances['sensors'][sensor].clearParams();
+        instances['sensors'][sensor].getParams();
+        instances['sensors'][sensor].getTargets();
+        instances['sensors'][sensor].getScheduleRules();
+    };
+
+    for (device in instances['devices']) {
+        instances['devices'][device].clearParams();
+        instances['devices'][device].getParams();
+        instances['devices'][device].getScheduleRules();
+    };
+
+    // Add to request body
+    value['sensors'] = instances['sensors']
+    value['devices'] = instances['devices']
+
+    console.log(value)
+
     // Generate config file from form data
     if (edit) {
         var response = await send_post_request(base_url + "generateConfigFile/True", value);

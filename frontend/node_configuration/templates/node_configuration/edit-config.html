@@ -114,9 +114,9 @@
 
         {% if context %}
 
-            <form id="form" class="h-100" onkeydown="return event.key != 'Enter';">
+            <div id="page1" class="d-flex flex-column h-100">
 
-                <div id="page1" class="d-flex flex-column h-100">
+                <form id="form" class="h-100" onkeydown="return event.key != 'Enter';">
 
                     <div  class="mb-4">
                         <h2>Metadata</h2>
@@ -151,256 +151,259 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-sm">
-                            <h2>Add Sensors</h2>
+                </form>
 
-                            {% for sensor, params in context.config.sensors.items %}
+                <div class="row">
+                    <div class="col-sm">
+                        <h2>Add Sensors</h2>
 
-                                {% if forloop.first %}
-                                    <div id="addSensorDiv1">
-                                {% else %}
-                                    <div id="addSensorDiv{{ forloop.counter }}" class="mt-5">
-                                {% endif %}
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h4 class="card-title">sensor{{ forloop.counter }}</h4>
-                                            <label for="sensorType{{ forloop.counter }}" class="form-label"><b>Type:</b></label>
-                                            <div>
-                                                <select onchange="load_sensor_section(this)" name="sensorType{{ forloop.counter }}" id="sensorType{{ forloop.counter }}" class="form-select sensorType" autocomplete="off" required>
-                                                <option value="clear">Select sensor type</option>
-                                                <option value="pir" {% if params.type == "pir" %} selected {% endif %}>Motion Sensor</option>
-                                                <option value="switch" {% if params.type == "switch" %} selected {% endif %}>Switch</option>
-                                                <option value="dummy" {% if params.type == "dummy" %} selected {% endif %}>Dummy</option>
-                                                <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
-                                                <option value="si7021" {% if params.type == "si7021" %} selected {% endif %}>Thermostat</option>
-                                                </select>
+                        {% for sensor, params in context.config.sensors.items %}
+
+                            {% if forloop.first %}
+                                <div id="addSensorDiv1">
+                            {% else %}
+                                <div id="addSensorDiv{{ forloop.counter }}" class="mt-5">
+                            {% endif %}
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title">sensor{{ forloop.counter }}</h4>
+                                        <label for="sensorType{{ forloop.counter }}" class="form-label"><b>Type:</b></label>
+                                        <div>
+                                            <select onchange="load_sensor_section(this)" name="sensorType{{ forloop.counter }}" id="sensorType{{ forloop.counter }}" class="form-select sensorType" autocomplete="off" required>
+                                            <option value="clear">Select sensor type</option>
+                                            <option value="pir" {% if params.type == "pir" %} selected {% endif %}>Motion Sensor</option>
+                                            <option value="switch" {% if params.type == "switch" %} selected {% endif %}>Switch</option>
+                                            <option value="dummy" {% if params.type == "dummy" %} selected {% endif %}>Dummy</option>
+                                            <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
+                                            <option value="si7021" {% if params.type == "si7021" %} selected {% endif %}>Thermostat</option>
+                                            </select>
+                                        </div>
+
+                                        <div id="addSensorOptions{{ forloop.counter }}" class="card-body">
+                                            <div class="mb-2">
+                                                <label for="sensor{{forloop.counter}}-nickname"><b>Nickname:</b></label>
+                                                <input type="text" class="form-control" id="sensor{{forloop.counter}}-nickname" placeholder="" name="sensor{{forloop.counter}}-nickname" value="{{params.nickname}}" required>
                                             </div>
 
-                                            <div id="addSensorOptions{{ forloop.counter }}" class="card-body">
+                                        {% if params.type == "pir" %}
+
                                                 <div class="mb-2">
-                                                    <label for="sensor{{forloop.counter}}-nickname"><b>Nickname:</b></label>
-                                                    <input type="text" class="form-control" id="sensor{{forloop.counter}}-nickname" placeholder="" name="sensor{{forloop.counter}}-nickname" value="{{params.nickname}}" required>
+                                                    <label for="sensor{{forloop.counter}}-pin"><b>Pin:</b></label>
+                                                    <input type="text" class="form-control" id="sensor{{forloop.counter}}-pin" placeholder="" name="sensor{{forloop.counter}}-pin" value="{{params.pin}}" required>
                                                 </div>
 
-                                            {% if params.type == "pir" %}
+                                                <div class="mb-2">
+                                                    <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="sensor{{forloop.counter}}-pin"><b>Pin:</b></label>
-                                                        <input type="text" class="form-control" id="sensor{{forloop.counter}}-pin" placeholder="" name="sensor{{forloop.counter}}-pin" value="{{params.pin}}" required>
-                                                    </div>
+                                        {% elif params.type == "switch" %}
 
-                                                    <div class="mb-2">
-                                                        <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="sensor{{forloop.counter}}-pin"><b>Pin:</b></label>
+                                                    <input type="text" class="form-control" id="sensor{{forloop.counter}}-pin" placeholder="" name="sensor{{forloop.counter}}-pin" value="{{params.pin}}" required>
+                                                </div>
 
-                                            {% elif params.type == "switch" %}
+                                                <div class="mb-2">
+                                                    <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="sensor{{forloop.counter}}-pin"><b>Pin:</b></label>
-                                                        <input type="text" class="form-control" id="sensor{{forloop.counter}}-pin" placeholder="" name="sensor{{forloop.counter}}-pin" value="{{params.pin}}" required>
-                                                    </div>
+                                        {% elif params.type == "dummy" %}
 
-                                                    <div class="mb-2">
-                                                        <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                            {% elif params.type == "dummy" %}
+                                        {% elif params.type == "desktop" %}
 
-                                                    <div class="mb-2">
-                                                        <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="sensor{{forloop.counter}}-ip"><b>IP:</b></label>
+                                                    <input type="text" class="form-control" id="sensor{{forloop.counter}}-ip" placeholder="" name="sensor{{forloop.counter}}-ip" value="{{params.ip}}" required>
+                                                </div>
 
-                                            {% elif params.type == "desktop" %}
+                                                <div class="mb-2">
+                                                    <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="text" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="sensor{{forloop.counter}}-ip"><b>IP:</b></label>
-                                                        <input type="text" class="form-control" id="sensor{{forloop.counter}}-ip" placeholder="" name="sensor{{forloop.counter}}-ip" value="{{params.ip}}" required>
-                                                    </div>
+                                        {% elif params.type == "si7021" %}
 
-                                                    <div class="mb-2">
-                                                        <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="text" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                            {% elif params.type == "si7021" %}
+                                                <div class="mb-2">
+                                                    <label class="form-label" for="sensor{{forloop.counter}}-mode"><b>Mode:</b></label>
+                                                    <select name="sensor{{forloop.counter}}-mode" id="sensor{{forloop.counter}}-mode" class="form-select mb-3" required>
+                                                        {% if params.mode == "cool" %}
+                                                            <option value="cool" id="cool" selected>Cool</option>
+                                                            <option value="heat" id="heat">Heat</option>
+                                                        {% elif params.mode == "heat" %}
+                                                            <option value="cool" id="cool">Cool</option>
+                                                            <option value="heat" id="heat" selected>Heat</option>
+                                                        {% else %}
+                                                            <option value="cool" id="cool">Cool</option>
+                                                            <option value="heat" id="heat">Heat</option>
+                                                        {% endif %}
+                                                    </select>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="sensor{{forloop.counter}}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="sensor{{forloop.counter}}-default_rule" placeholder="" name="sensor{{forloop.counter}}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="sensor{{forloop.counter}}-tolerance"><b>Tolerance:</b></label>
+                                                    <input type="text" class="form-control" id="sensor{{forloop.counter}}-tolerance" placeholder="" name="sensor{{forloop.counter}}-tolerance" value="{{params.tolerance}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label class="form-label" for="sensor{{forloop.counter}}-mode"><b>Mode:</b></label>
-                                                        <select name="sensor{{forloop.counter}}-mode" id="sensor{{forloop.counter}}-mode" class="form-select mb-3" required>
-                                                            {% if params.mode == "cool" %}
-                                                                <option value="cool" id="cool" selected>Cool</option>
-                                                                <option value="heat" id="heat">Heat</option>
-                                                            {% elif params.mode == "heat" %}
-                                                                <option value="cool" id="cool">Cool</option>
-                                                                <option value="heat" id="heat" selected>Heat</option>
-                                                            {% else %}
-                                                                <option value="cool" id="cool">Cool</option>
-                                                                <option value="heat" id="heat">Heat</option>
-                                                            {% endif %}
-                                                        </select>
-                                                    </div>
-
-                                                    <div class="mb-2">
-                                                        <label for="sensor{{forloop.counter}}-tolerance"><b>Tolerance:</b></label>
-                                                        <input type="text" class="form-control" id="sensor{{forloop.counter}}-tolerance" placeholder="" name="sensor{{forloop.counter}}-tolerance" value="{{params.tolerance}}" required>
-                                                    </div>
-
-                                            {% endif %}
-                                            </div>
+                                        {% endif %}
                                         </div>
                                     </div>
-
-                                    {% if forloop.last %}
-                                        <div class="text-center">
-                                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn my-3">Add another</button>
-                                        </div>
-                                        <div id="addSensorDiv{{ forloop.counter|add:1 }}"></div>
-                                    {% endif  %}
-
                                 </div>
-                            {% endfor %}
 
-                            {% if context.config.sensors|length == 0 %}
-                                <div class="text-center">
-                                    <button onclick="load_next_sensor(this)" type="button" id="addSensorButton0" class="btn-secondary btn my-3">Add another</button>
-                                </div>
-                                <div id="addSensorDiv1"></div>
+                                {% if forloop.last %}
+                                    <div class="text-center">
+                                        <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn my-3">Add another</button>
+                                    </div>
+                                    <div id="addSensorDiv{{ forloop.counter|add:1 }}"></div>
+                                {% endif  %}
+
+                            </div>
+                        {% endfor %}
+
+                        {% if context.config.sensors|length == 0 %}
+                            <div class="text-center">
+                                <button onclick="load_next_sensor(this)" type="button" id="addSensorButton0" class="btn-secondary btn my-3">Add another</button>
+                            </div>
+                            <div id="addSensorDiv1"></div>
+                        {% endif %}
+
+                    </div>
+
+                    <div class="col-sm">
+                        <h2>Add Devices</h2>
+
+                        {% for device, params in context.config.devices.items %}
+
+                            {% if forloop.first %}
+                                <div id="addDeviceDiv1">
+                            {% else %}
+                                <div id="addDeviceDiv{{ forloop.counter }}" class="mt-5">
                             {% endif %}
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title">device{{ forloop.counter }}</h4>
+                                        <label for="deviceType{{ forloop.counter }}" class="form-label"><b>Type:</b></label>
+                                        <div>
+                                            <select onchange="load_device_section(this)" name="deviceType{{ forloop.counter }}" id="deviceType{{ forloop.counter }}" class="form-select deviceType" autocomplete="off" required>
+                                            <option value="clear">Select device type</option>
+                                            <option value="dimmer" {% if params.type == "dimmer" %} selected {% endif %}>TP-Link Dimmer</option>
+                                            <option value="bulb" {% if params.type == "bulb" %} selected {% endif %}>TP-Link Bulb</option>
+                                            <option value="relay" {% if params.type == "relay" %} selected {% endif %}>Smart Relay</option>
+                                            <option value="dumb-relay" {% if params.type == "dumb-relay" %} selected {% endif %}>Relay</option>
+                                            <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
+                                            <option value="pwm" {% if params.type == "pwm" %} selected {% endif %}>LED Strip</option>
+                                            <option value="mosfet" {% if params.type == "mosfet" %} selected {% endif %}>Mosfet</option>
+                                            <option value="api-target" {% if params.type == "api-target" %} selected {% endif %}>Api Command</option>
+                                            <option value="ir-blaster">IR Blaster</option>
+                                            </select>
+                                        </div>
 
-                        </div>
-
-                        <div class="col-sm">
-                            <h2>Add Devices</h2>
-
-                            {% for device, params in context.config.devices.items %}
-
-                                {% if forloop.first %}
-                                    <div id="addDeviceDiv1">
-                                {% else %}
-                                    <div id="addDeviceDiv{{ forloop.counter }}" class="mt-5">
-                                {% endif %}
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h4 class="card-title">device{{ forloop.counter }}</h4>
-                                            <label for="deviceType{{ forloop.counter }}" class="form-label"><b>Type:</b></label>
-                                            <div>
-                                                <select onchange="load_device_section(this)" name="deviceType{{ forloop.counter }}" id="deviceType{{ forloop.counter }}" class="form-select deviceType" autocomplete="off" required>
-                                                <option value="clear">Select device type</option>
-                                                <option value="dimmer" {% if params.type == "dimmer" %} selected {% endif %}>TP-Link Dimmer</option>
-                                                <option value="bulb" {% if params.type == "bulb" %} selected {% endif %}>TP-Link Bulb</option>
-                                                <option value="relay" {% if params.type == "relay" %} selected {% endif %}>Smart Relay</option>
-                                                <option value="dumb-relay" {% if params.type == "dumb-relay" %} selected {% endif %}>Relay</option>
-                                                <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
-                                                <option value="pwm" {% if params.type == "pwm" %} selected {% endif %}>LED Strip</option>
-                                                <option value="mosfet" {% if params.type == "mosfet" %} selected {% endif %}>Mosfet</option>
-                                                <option value="api-target" {% if params.type == "api-target" %} selected {% endif %}>Api Command</option>
-                                                <option value="ir-blaster">IR Blaster</option>
-                                                </select>
+                                        <div id="addDeviceOptions{{ forloop.counter }}" class="card-body">
+                                            <div class="mb-2">
+                                                <label for="device{{forloop.counter}}-nickname"><b>Nickname:</b></label>
+                                                <input type="text" class="form-control" id="device{{forloop.counter}}-nickname" placeholder="" name="device{{forloop.counter}}-nickname" value="{{params.nickname}}" required>
                                             </div>
 
-                                            <div id="addDeviceOptions{{ forloop.counter }}" class="card-body">
+                                        {% if params.type == "dimmer" %}
                                                 <div class="mb-2">
-                                                    <label for="device{{forloop.counter}}-nickname"><b>Nickname:</b></label>
-                                                    <input type="text" class="form-control" id="device{{forloop.counter}}-nickname" placeholder="" name="device{{forloop.counter}}-nickname" value="{{params.nickname}}" required>
+                                                    <label for="device{{ forloop.counter }}-ip"><b>IP:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ forloop.counter }}-ip" placeholder="" name="device{{ forloop.counter }}-ip" value="{{params.ip}}" required>
                                                 </div>
 
-                                            {% if params.type == "dimmer" %}
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-ip"><b>IP:</b></label>
-                                                        <input type="text" class="form-control" id="device{{ forloop.counter }}-ip" placeholder="" name="device{{ forloop.counter }}-ip" value="{{params.ip}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                        {% elif params.type == "bulb" %}
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-ip"><b>IP:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ forloop.counter }}-ip" placeholder="" name="device{{ forloop.counter }}-ip" value="{{params.ip}}" required>
+                                                </div>
 
-                                            {% elif params.type == "bulb" %}
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-ip"><b>IP:</b></label>
-                                                        <input type="text" class="form-control" id="device{{ forloop.counter }}-ip" placeholder="" name="device{{ forloop.counter }}-ip" value="{{params.ip}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                        {% elif params.type == "relay" %}
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-ip"><b>IP:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ forloop.counter }}-ip" placeholder="" name="device{{ forloop.counter }}-ip" value="{{params.ip}}" required>
+                                                </div>
 
-                                            {% elif params.type == "relay" %}
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-ip"><b>IP:</b></label>
-                                                        <input type="text" class="form-control" id="device{{ forloop.counter }}-ip" placeholder="" name="device{{ forloop.counter }}-ip" value="{{params.ip}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                        {% elif params.type == "dumb-relay" %}
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-pin"><b>Pin:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ forloop.counter }}-pin" placeholder="" name="device{{ forloop.counter }}-pin" value="{{params.pin}}" required>
+                                                </div>
 
-                                            {% elif params.type == "dumb-relay" %}
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-pin"><b>Pin:</b></label>
-                                                        <input type="text" class="form-control" id="device{{ forloop.counter }}-pin" placeholder="" name="device{{ forloop.counter }}-pin" value="{{params.pin}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                        {% elif params.type == "desktop" %}
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-ip"><b>IP:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ forloop.counter }}-ip" placeholder="" name="device{{ forloop.counter }}-ip" value="{{params.ip}}" required>
+                                                </div>
 
-                                            {% elif params.type == "desktop" %}
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-ip"><b>IP:</b></label>
-                                                        <input type="text" class="form-control" id="device{{ forloop.counter }}-ip" placeholder="" name="device{{ forloop.counter }}-ip" value="{{params.ip}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                        {% elif params.type == "pwm" %}
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-pin"><b>Pin:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ forloop.counter }}-pin" placeholder="" name="device{{ forloop.counter }}-pin" value="{{params.pin}}" required>
+                                                </div>
 
-                                            {% elif params.type == "pwm" %}
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-pin"><b>Pin:</b></label>
-                                                        <input type="text" class="form-control" id="device{{ forloop.counter }}-pin" placeholder="" name="device{{ forloop.counter }}-pin" value="{{params.pin}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-min"><b>Min brightness:</b></label>
+                                                    <input type="min" class="form-control" id="device{{ forloop.counter }}-min" placeholder="0" name="device{{ forloop.counter }}-min" value="{{params.min}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-min"><b>Min brightness:</b></label>
-                                                        <input type="min" class="form-control" id="device{{ forloop.counter }}-min" placeholder="0" name="device{{ forloop.counter }}-min" value="{{params.min}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-max"><b>Max brightness:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ forloop.counter }}-max" placeholder="1023" name="device{{ forloop.counter }}-max" value="{{params.max}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-max"><b>Max brightness:</b></label>
-                                                        <input type="text" class="form-control" id="device{{ forloop.counter }}-max" placeholder="1023" name="device{{ forloop.counter }}-max" value="{{params.max}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
+                                        {% elif params.type == "mosfet" %}
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-pin"><b>Pin:</b></label>
+                                                    <input type="text" class="form-control" id="device{{ forloop.counter }}-pin" placeholder="" name="device{{ forloop.counter }}-pin" value="{{params.pin}}" required>
+                                                </div>
 
-                                            {% elif params.type == "mosfet" %}
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-pin"><b>Pin:</b></label>
-                                                        <input type="text" class="form-control" id="device{{ forloop.counter }}-pin" placeholder="" name="device{{ forloop.counter }}-pin" value="{{params.pin}}" required>
-                                                    </div>
+                                                <div class="mb-2">
+                                                    <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
+                                                </div>
 
-                                                    <div class="mb-2">
-                                                        <label for="device{{ forloop.counter }}-default_rule"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" value="{{params.default_rule}}" required>
-                                                    </div>
-
-                                            {% elif params.type == "api-target" %}
+                                        {% elif params.type == "api-target" %}
+                                                <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-ip"><b>Target:</b></label>
                                                     <select name="device{{ forloop.counter }}-ip" id="device{{ forloop.counter }}-ip" class="form-select mb-3" onchange="api_target_selected(this)">
                                                         <option value="" selected="selected"></option>
@@ -408,197 +411,196 @@
                                                             <option value="{{node}}" {% if params.ip in node %}selected{% endif %}>{{node}}</option>
                                                         {% endfor %}
                                                     </select>
-
-                                                    <div class="mb-2 text-center">
-                                                        <button id="device{{ forloop.counter }}-set-rule" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                                    </div>
-
-                                                    <div class="mb-2 text-center">
-                                                        <label for="device{{ forloop.counter }}-default_rule" style="display:none;"><b>Default Rule:</b></label>
-                                                        <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" style="display:none;" value="{{params.default_rule}}" required>
-                                                    </div>
-
-                                            {% endif %}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {% if forloop.last %}
-                                        <div class="text-center">
-                                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn my-3">Add another</button>
-                                        </div>
-                                        <div id="addDeviceDiv{{ forloop.counter|add:1 }}"></div>
-                                    {% endif  %}
-
-                                </div>
-                            {% endfor %}
-
-                            {% if context.config.ir_blaster %}
-
-                                <div id="addDeviceDiv{{ context.config.devices|length|add:1 }}" {% if context.config.devices|length %}class="mt-5"{% endif %}>
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <h4 class="card-title">device{{ context.config.devices|length|add:1 }}</h4>
-                                            <label for="deviceType{{ context.config.devices|length|add:1 }}" class="form-label"><b>Type:</b></label>
-                                            <div>
-                                                <select onchange="load_device_section(this)" name="deviceType{{ context.config.devices|length|add:1 }}" id="deviceType{{ context.config.devices|length|add:1 }}" class="form-select deviceType" required>
-                                                <option value="clear">Select device type</option>
-                                                <option value="dimmer">TP-Link Dimmer</option>
-                                                <option value="bulb">TP-Link Bulb</option>
-                                                <option value="relay">Smart Relay</option>
-                                                <option value="dumb-relay">Relay</option>
-                                                <option value="desktop">Desktop</option>
-                                                <option value="pwm">LED Strip</option>
-                                                <option value="mosfet">Mosfet</option>
-                                                <option value="api-target">Api Command</option>
-                                                <option value="ir-blaster" selected>IR Blaster</option>
-                                                </select>
-                                            </div>
-
-                                            <div id="addDeviceOptions{{ context.config.devices|length|add:1 }}" class="card-body">
-                                                <div class="mb-2">
-                                                    <label for="device{{ context.config.devices|length|add:1 }}-pin"><b>Pin:</b></label>
-                                                    <input type="text" class="form-control" id="device{{ context.config.devices|length|add:1 }}-pin" value="{{ context.config.ir_blaster.pin }}" name="device{{ context.config.devices|length|add:1 }}-pin" required>
                                                 </div>
 
-                                                <div class="mb-2">
-                                                    <label for="device{{ context.config.devices|length|add:1 }}-min"><b>Virtual remotes:</b></label>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="checkbox" name="irblaster-tv" value="irblaster-tv" id="irblaster-tv" {% if "tv" in context.config.ir_blaster.target %}checked{% endif %}>
-                                                        <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
-                                                        <input class="form-check-input" type="checkbox" name="irblaster-ac" value="irblaster-ac" id="irblaster-ac" {% if "ac" in context.config.ir_blaster.target %}checked{% endif %}>
-                                                        <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
-                                                    </div>
+                                                <div class="mb-2 text-center">
+                                                    <button id="device{{ forloop.counter }}-set-rule" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                                 </div>
-                                            </div>
+
+                                                <div class="mb-2 text-center">
+                                                    <label for="device{{ forloop.counter }}-default_rule" style="display:none;"><b>Default Rule:</b></label>
+                                                    <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" name="device{{ forloop.counter }}-default_rule" style="display:none;" value="{{params.default_rule}}" required>
+                                                </div>
+
+                                        {% endif %}
                                         </div>
                                     </div>
                                 </div>
 
-                            {% endif %}
-
-                            {% if context.config.devices|length == 0 %}
-                                {% if context.config.ir_blaster %}
+                                {% if forloop.last %}
                                     <div class="text-center">
-                                        <button onclick="load_next_device(this)" type="button" id="addDeviceButton1" class="btn-secondary btn my-3">Add another</button>
+                                        <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn my-3">Add another</button>
                                     </div>
-                                    <div id="addDeviceDiv2"></div>
-                                {% else %}
-                                    <div class="text-center">
-                                        <button onclick="load_next_device(this)" type="button" id="addDeviceButton0" class="btn-secondary btn my-3">Add another</button>
-                                    </div>
-                                    <div id="addDeviceDiv1"></div>
-                                {% endif %}
-                            {% endif %}
+                                    <div id="addDeviceDiv{{ forloop.counter|add:1 }}"></div>
+                                {% endif  %}
 
-                        </div>
-                    </div>
+                            </div>
+                        {% endfor %}
 
-                    <div class="d-flex justify-content-between mx-3 mt-auto">
-                        <button id="page1-back-button" type="button" class="btn btn-secondary mb-3">Back</button>
-                        <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
-                        <button id="page1-button" type="button" class="btn btn-primary mb-3">Next</button>
-                    </div>
-                </div>
+                        {% if context.config.ir_blaster %}
 
-                <div id="page2" class="flex-column h-100">
-                    <div id="page2-cards">
-                        <h3>Select targets for each sensor</h3>
+                            <div id="addDeviceDiv{{ context.config.devices|length|add:1 }}" {% if context.config.devices|length %}class="mt-5"{% endif %}>
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title">device{{ context.config.devices|length|add:1 }}</h4>
+                                        <label for="deviceType{{ context.config.devices|length|add:1 }}" class="form-label"><b>Type:</b></label>
+                                        <div>
+                                            <select onchange="load_device_section(this)" name="deviceType{{ context.config.devices|length|add:1 }}" id="deviceType{{ context.config.devices|length|add:1 }}" class="form-select deviceType" required>
+                                            <option value="clear">Select device type</option>
+                                            <option value="dimmer">TP-Link Dimmer</option>
+                                            <option value="bulb">TP-Link Bulb</option>
+                                            <option value="relay">Smart Relay</option>
+                                            <option value="dumb-relay">Relay</option>
+                                            <option value="desktop">Desktop</option>
+                                            <option value="pwm">LED Strip</option>
+                                            <option value="mosfet">Mosfet</option>
+                                            <option value="api-target">Api Command</option>
+                                            <option value="ir-blaster" selected>IR Blaster</option>
+                                            </select>
+                                        </div>
 
-                        {% for sensor, params in context.config.sensors.items %}
+                                        <div id="addDeviceOptions{{ context.config.devices|length|add:1 }}" class="card-body">
+                                            <div class="mb-2">
+                                                <label for="device{{ context.config.devices|length|add:1 }}-pin"><b>Pin:</b></label>
+                                                <input type="text" class="form-control" id="device{{ context.config.devices|length|add:1 }}-pin" value="{{ context.config.ir_blaster.pin }}" name="device{{ context.config.devices|length|add:1 }}-pin" required>
+                                            </div>
 
-                            <div class="card mb-4">
-                                <div class="card-body">
-                                    <label id="{{sensor}}-targets-label" for="{{sensor}}-targets" class="card-title"><b>{{ sensor }} ({{ params.type }}) targets:</b></label>
-                                    <div id="{{sensor}}-targets" class="form-check sensor-targets">
-
-                                        {% for device, dparams in context.config.devices.items %}
-
-                                            <input type="checkbox" class="form-check-input" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %}>
-                                            <label for="target-{{sensor}}-{{device}}" class="form-check-label">{{ device }} ({{ dparams.type }})</label><br>
-
-                                        {% endfor %}
+                                            <div class="mb-2">
+                                                <label for="device{{ context.config.devices|length|add:1 }}-min"><b>Virtual remotes:</b></label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input ir-target" type="checkbox" name="irblaster-tv" value="irblaster-tv" id="irblaster-tv" {% if "tv" in context.config.ir_blaster.target %}checked{% endif %}>
+                                                    <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
+                                                    <input class="form-check-input ir-target" type="checkbox" name="irblaster-ac" value="irblaster-ac" id="irblaster-ac" {% if "ac" in context.config.ir_blaster.target %}checked{% endif %}>
+                                                    <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                        {% endfor %}
-                    </div>
+                        {% endif %}
 
-                    <div class="d-flex justify-content-between mx-3 mt-auto">
-                        <button id="page2-back-button" type="button" class="btn btn-primary mb-3">Back</button>
-                        <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
-                        <button id="page2-button" type="button" class="btn btn-primary mb-3">Next</button>
+                        {% if context.config.devices|length == 0 %}
+                            {% if context.config.ir_blaster %}
+                                <div class="text-center">
+                                    <button onclick="load_next_device(this)" type="button" id="addDeviceButton1" class="btn-secondary btn my-3">Add another</button>
+                                </div>
+                                <div id="addDeviceDiv2"></div>
+                            {% else %}
+                                <div class="text-center">
+                                    <button onclick="load_next_device(this)" type="button" id="addDeviceButton0" class="btn-secondary btn my-3">Add another</button>
+                                </div>
+                                <div id="addDeviceDiv1"></div>
+                            {% endif %}
+                        {% endif %}
+
                     </div>
                 </div>
 
-                <div id="page3" class="flex-column h-100">
-                    <h3>Add schedule rules (optional)</h3>
-                        <div id="page3-cards">
-                        {% for instance, params in context.config.instances.items %}
+                <div class="d-flex justify-content-between mx-3 mt-auto">
+                    <button id="page1-back-button" type="button" class="btn btn-secondary mb-3">Back</button>
+                    <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
+                    <button id="page1-button" type="button" class="btn btn-primary mb-3">Next</button>
+                </div>
+            </div>
 
-                            <div class="card mb-4">
-                                <div class="card-body">
-                                    <label id="{{instance}}-rules-label" class="card-title schedule-rule-card"><b>{{ instance }} ({{ params.type }}):</b></label>
-                                    <table id="{{instance}}-rules" class="table table-borderless">
-                                        <tr>
-                                            <th style="text-align: left;">Time</th>
-                                            <th style="text-align: left;">Rule</th>
-                                        </tr>
+            <div id="page2" class="flex-column h-100">
+                <div id="page2-cards">
+                    <h3>Select targets for each sensor</h3>
 
-                                        {% if params.schedule.items|length > 0 %}
-                                            {% for time, rule in params.schedule.items %}
-                                                <tr id="{{instance}}-row-{{forloop.counter}}">
-                                                    <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{instance}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
+                    {% for sensor, params in context.config.sensors.items %}
 
-                                                    {% if not params.type == "api-target" %}
-                                                        <td><input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
-                                                    {% else %}
-                                                        <td style="width: 50%">
-                                                            <button id="schedule-{{instance}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                                            <input type="text" class="form-control" id="schedule-{{instance}}-rule{{forloop.counter}}-value" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}" style="display:none;">
-                                                        </td>
-                                                    {% endif %}
-                                                    <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
-                                                </tr>
-                                            {% endfor %}
-                                        {% else %}
-                                            <tr id="{{instance}}-row-1">
-                                                <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time"></td>
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <label id="{{sensor}}-targets-label" for="{{sensor}}-targets" class="card-title"><b>{{ sensor }} ({{ params.type }}) targets:</b></label>
+                                <div id="{{sensor}}-targets" class="form-check sensor-targets">
+
+                                    {% for device, dparams in context.config.devices.items %}
+
+                                        <input type="checkbox" class="form-check-input {{sensor}} target" id="target-{{sensor}}-{{device}}" name="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %}>
+                                        <label for="target-{{sensor}}-{{device}}" class="form-check-label">{{ device }} ({{ dparams.type }})</label><br>
+
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex justify-content-between mx-3 mt-auto">
+                    <button id="page2-back-button" type="button" class="btn btn-primary mb-3">Back</button>
+                    <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
+                    <button id="page2-button" type="button" class="btn btn-primary mb-3">Next</button>
+                </div>
+            </div>
+
+            <div id="page3" class="flex-column h-100">
+                <h3>Add schedule rules (optional)</h3>
+                    <div id="page3-cards">
+                    {% for instance, params in context.config.instances.items %}
+
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <label id="{{instance}}-rules-label" class="card-title schedule-rule-card"><b>{{ instance }} ({{ params.type }}):</b></label>
+                                <table id="{{instance}}-rules" class="table table-borderless">
+                                    <tr>
+                                        <th style="text-align: left;">Time</th>
+                                        <th style="text-align: left;">Rule</th>
+                                    </tr>
+
+                                    {% if params.schedule.items|length > 0 %}
+                                        {% for time, rule in params.schedule.items %}
+                                            <tr id="{{instance}}-row-{{forloop.counter}}">
+                                                <td><input type="text" class="form-control timestamp {{instance}}" id="schedule-{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{instance}}-rule{{forloop.counter}}-time" value="{{ time }}"></td>
 
                                                 {% if not params.type == "api-target" %}
-                                                    <td><input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" placeholder="HH:MM" name="schedule-{{instance}}-rule1-value"></td>
+                                                    <td><input type="text" class="form-control rule {{instance}}" id="schedule-{{instance}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}"></td>
                                                 {% else %}
                                                     <td style="width: 50%">
-                                                        {# Show button that opens api rule modal containing dropdowns used to set rule. Selection from modal added to hidden text box, read by form #}
-                                                        <button id="schedule-{{instance}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                                        <input type="text" class="form-control" id="schedule-{{instance}}-rule1-value" name="schedule-{{instance}}-rule1-value" style="display:none;">
+                                                        <button id="schedule-{{instance}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                        <input type="text" class="form-control rule {{instance}}" id="schedule-{{instance}}-rule{{forloop.counter}}-value" name="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}" style="display:none;">
                                                     </td>
                                                 {% endif %}
-
-                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove1"  onclick="remove(this)">X</button></td>
+                                                <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
                                             </tr>
-                                        {% endif %}
-                                    </table>
-                                </div>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr id="{{instance}}-row-1">
+                                            <td><input type="text" class="form-control timestamp {{instance}}" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM" name="schedule-{{instance}}-rule1-time"></td>
 
-                                <div class="text-left mx-3 mb-3">
-                                    <button type="button" class="btn btn-secondary" id="{{instance}}-add-rule" onclick="add(this)">Add another</button>
-                                </div>
+                                            {% if not params.type == "api-target" %}
+                                                <td><input type="text" class="form-control rule {{instance}}" id="schedule-{{instance}}-rule1-value" placeholder="HH:MM" name="schedule-{{instance}}-rule1-value"></td>
+                                            {% else %}
+                                                <td style="width: 50%">
+                                                    {# Show button that opens api rule modal containing dropdowns used to set rule. Selection from modal added to hidden text box, read by form #}
+                                                    <button id="schedule-{{instance}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                    <input type="text" class="form-control rule {{instance}}" id="schedule-{{instance}}-rule1-value" name="schedule-{{instance}}-rule1-value" style="display:none;">
+                                                </td>
+                                            {% endif %}
 
+                                            <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove1"  onclick="remove(this)">X</button></td>
+                                        </tr>
+                                    {% endif %}
+                                </table>
                             </div>
 
-                        {% endfor %}
+                            <div class="text-left mx-3 mb-3">
+                                <button type="button" class="btn btn-secondary" id="{{instance}}-add-rule" onclick="add(this)">Add another</button>
+                            </div>
+
                         </div>
 
-                    <div class="d-flex justify-content-between mx-3 mt-auto">
-                        <button id="page3-back-button" type="button" class="btn btn-primary mb-3">Back</button>
-                        <button id="submit-button" type="submit" class="btn btn-primary mb-3">Submit</button>
-                        <button type="button" class="btn btn-secondary mb-3" disabled>Next</button>
+                    {% endfor %}
                     </div>
-                </div>
 
-            </form>
+                <div class="d-flex justify-content-between mx-3 mt-auto">
+                    <button id="page3-back-button" type="button" class="btn btn-primary mb-3">Back</button>
+                    <button id="submit-button" type="submit" class="btn btn-primary mb-3">Submit</button>
+                    <button type="button" class="btn btn-secondary mb-3" disabled>Next</button>
+                </div>
+            </div>
 
             <!-- Loading modal displayed while waiting on upload -->
 
@@ -766,7 +768,7 @@
             $('#' + modal).modal('show');
         };
 
-        document.getElementById('form').addEventListener("submit", function(e) {
+        document.getElementById("submit-button").addEventListener("click", function(e) {
             e.preventDefault();
 
             // Disable submit button, prevent submitting multiple times

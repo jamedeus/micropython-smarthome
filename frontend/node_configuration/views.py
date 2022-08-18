@@ -337,73 +337,46 @@ def generateConfigFile(request, edit_existing=False):
         }
     }
 
-    # Iterate JSON and create section for each device and sensor
-    for i in data.keys():
-        if (i.startswith("deviceType") and not data[i] == "ir-blaster") or i.startswith("sensorType"):
-            name = i.replace("Type", "")
-            config[name] = {}
-            config[name]["type"] = data[i]
+    # Add device and sensor sections from JSON
+    for i in data["devices"]:
+        config[i] = data["devices"][i]
 
-            # Get all parameters that start with name, add to config section
-            for j in data.keys():
-                if j.startswith(name):
-                    # Cast to int if possible (pin numbers, numeric rules, etc), otherwise keep string (enable/disable/on/off rules, IPs, etc)
-                    try:
-                        config[name][j[8:]] = int(data[j])
-                    except ValueError:
-                        config[name][j[8:]] = data[j]
+    for i in data["sensors"]:
+        config[i] = data["sensors"][i]
 
-            # Api Target requires additional processing
-            if config[name]["type"] == "api-target":
-                # Remove friendly name of target node (shown in frontend dropdown)
-                config[name]["ip"] = config[name]["ip"].split("-")[0]
-                # Convert stringified JSON to dict with on and off commands
-                config[name]["default_rule"] = convert_api_target_rule(config[name]["default_rule"])
+    # Remove parameters only used by frontend
+    for i in config:
+        if i.startswith("device") or i.startswith("sensor"):
+            del config[i]["id"]
+            del config[i]["new"]
+            del config[i]["modified"]
 
-            # Create empty sections, populated in loops below
-            config[name]["schedule"] = {}
+    irblaster = False
 
-            if i.startswith("sensor"):
-                config[name]["targets"] = []
+    for i in config:
+        if i.startswith("device") and config[i]["type"] == "ir-blaster":
+            irblaster = i
 
-        # IR blaster follows different syntax
-        elif i.startswith("deviceType") and data[i] == "ir-blaster":
-            config["ir_blaster"] = {}
-            config["ir_blaster"]["pin"] = data[f"device{i.replace('deviceType', '')}-pin"]
-            config["ir_blaster"]["target"] = []
+        # Convert ApiTarget rules to correct format
+        elif i.startswith("device") and config[i]["type"] == "api-target":
+            config[i]["ip"] = config[i]["ip"].split("-")[0]
 
-            for i in data:
-                if i.startswith("irblaster"):
-                    config["ir_blaster"]["target"].append(i.replace('irblaster-', ''))
+            config[i]["default_rule"] = convert_api_target_rule(config[i]["default_rule"])
 
-    # Find targets, add to correct sensor's targets list
-    for i in data.keys():
-        if i.startswith("target"):
-            n, sensor, target = i.split("-")
-            config[sensor]["targets"].append(target)
+            for rule in config[i]["schedule"]:
+                config[i]["schedule"][rule] = convert_api_target_rule(config[i]["schedule"][rule])
 
-    # Schedule rules
-    for i in data.keys():
-        if i.startswith("schedule") and i.endswith("time"):
-            timestamp = data[i]
-            instance = i.split("-")[1]
+    # If IrBlaster configured, move to seperate section with different syntax
+    if irblaster:
+        config["ir_blaster"] = config[i]
+        del config[irblaster]
+        del config["ir_blaster"]["type"]
+        del config["ir_blaster"]["schedule"]
 
-            # If user left timestamp blank, do not add rule and continue loop
-            if len(timestamp) == 0: continue
-
-            for j in data.keys():
-                if j.startswith(i[:-5]) and j.endswith("value"):
-                    # If user left rule blank, do not add rule and continue loop
-                    if len(data[j]) == 0: continue
-
-                    # Api target rule needs to be converted
-                    if config[instance]["type"] == "api-target":
-                        config[instance]["schedule"][timestamp] = convert_api_target_rule(data[j])
-                    else:
-                        config[instance]["schedule"][timestamp] = data[j]
-
+    print("Input:")
     print(json.dumps(data, indent=4))
 
+    print("\nOutput:")
     print(json.dumps(config, indent=4))
 
     # Get filename (all lowercase, replace spaces with hyphens)

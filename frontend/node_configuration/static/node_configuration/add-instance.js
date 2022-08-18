@@ -183,9 +183,9 @@ async function load_device_section(select) {
                     <div class="mb-2">
                         <label for="device${index}-min"><b>Virtual remotes:</b></label>
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="irblaster-tv" value="irblaster-tv" id="irblaster-tv">
+                            <input class="form-check-input ir-target" type="checkbox" name="irblaster-tv" value="irblaster-tv" id="irblaster-tv">
                             <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
-                            <input class="form-check-input" type="checkbox" name="irblaster-ac" value="irblaster-ac" id="irblaster-ac">
+                            <input class="form-check-input ir-target" type="checkbox" name="irblaster-ac" value="irblaster-ac" id="irblaster-ac">
                             <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
                         </div>
                     </div>`
