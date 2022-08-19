@@ -20,12 +20,15 @@ class Device {
         for (let input of params) {
             // Get name that will be used in config.json, create property
             try {
-                const name = input.children[1].name.replace(this.id + "-", "");
+                const name = input.children[1].id.split("-")[1];
                 this[name] = input.children[1].value;
             } catch(err) {};
         };
 
         if (this.type == "ir-blaster") {
+            // Remove empty property (checkbox inputs don't have value)
+            delete this.undefined;
+            // Get checkbox inputs selections
             this.getIrTargets();
         };
     };
@@ -93,7 +96,7 @@ class Sensor {
 
         for (let input of params) {
             // Get name that will be used in config.json, create property
-            const name = input.children[1].name.replace(this.id + "-", "");
+            const name = input.children[1].id.split("-")[1];
             this[name] = input.children[1].value;
         };
     };

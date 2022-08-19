@@ -106,7 +106,8 @@ async function reupload() {
     // Unable to upload because node has not run setup
     } else if (result.status == 409) {
         const error = await result.text();
-        const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button><button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
+        const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button>
+                        <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
 
         // Replace loading modal with error modal, ask if user wants to run setup routine
         $('#upload-modal').modal('hide');
@@ -168,7 +169,7 @@ async function reupload() {
 function duplicate() {
     // Get duplicate name, add to modal body
     const name = document.getElementById("friendlyName").value;
-    document.getElementById("duplicate-modal-body").innerHTML = "<p>Config named <b>" + name + "</b> already exists. Would you like to overwrite it? This cannot be undone.</p>"
+    document.getElementById("duplicate-modal-body").innerHTML = `<p>Config named <b>${name}</b> already exists. Would you like to overwrite it? This cannot be undone.</p>`
     $('#duplicate-modal').modal('show');
 
     // Add listener to overwrite button, sends delete command for the existing config then re-submits form

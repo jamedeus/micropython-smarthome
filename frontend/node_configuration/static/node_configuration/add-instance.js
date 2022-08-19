@@ -26,46 +26,46 @@ async function load_sensor_section(select) {
     // Add nickname section to template, other sections added below as needed
     var template = `<div class="mb-2">
                         <label for="sensor${index}-nickname"><b>Nickname:</b></label>
-                        <input type="text" class="form-control" id="sensor${index}-nickname" placeholder="" name="sensor${index}-nickname" required>
+                        <input type="text" class="form-control" id="sensor${index}-nickname" placeholder="" required>
                     </div>`
 
     // Get template for sensor type selected by user
     if (selected == "pir" || selected == "switch") {
         template += `<div class="mb-2">
                         <label for="sensor${index}-pin"><b>Pin:</b></label>
-                        <input type="text" class="form-control" id="sensor${index}-pin" placeholder="" name="sensor${index}-pin" required>
+                        <input type="text" class="form-control" id="sensor${index}-pin" placeholder="" required>
                     </div>
 
                     <div class="mb-2">
                         <label for="sensor${index}-default_rule"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control" id="sensor${index}-default_rule" placeholder="" name="sensor${index}-default_rule" required>
+                        <input type="default_rule" class="form-control" id="sensor${index}-default_rule" placeholder="" required>
                     </div>`
 
     } else if (selected == "desktop") {
         template += `<div class="mb-2">
                         <label for="sensor${index}-ip"><b>IP:</b></label>
-                        <input type="text" class="form-control" id="sensor${index}-ip" placeholder="" name="sensor${index}-ip" required>
+                        <input type="text" class="form-control" id="sensor${index}-ip" placeholder="" required>
                     </div>
 
                     <div class="mb-2">
                         <label for="sensor${index}-default_rule"><b>Default Rule:</b></label>
-                        <input type="text" class="form-control" id="sensor${index}-default_rule" placeholder="" name="sensor${index}-default_rule" required>
+                        <input type="text" class="form-control" id="sensor${index}-default_rule" placeholder="" required>
                     </div>`
 
     } else if (selected == "dummy") {
         template += `<div class="mb-2">
                         <label for="sensor${index}-default_rule"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control" id="sensor${index}-default_rule" placeholder="" name="sensor${index}-default_rule" required>
+                        <input type="default_rule" class="form-control" id="sensor${index}-default_rule" placeholder="" required>
                     </div>`
     } else if (selected == "si7021") {
         template += `<div class="mb-2">
                         <label for="sensor${index}-default_rule"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control" id="sensor${index}-default_rule" placeholder="" name="sensor${index}-default_rule" required>
+                        <input type="default_rule" class="form-control" id="sensor${index}-default_rule" placeholder="" required>
                     </div>
 
                     <div class="mb-2">
                         <label class="form-label" for="sensor${index}-mode"><b>Mode:</b></label>
-                        <select name="sensor${index}-mode" id="sensor${index}-mode" class="form-select mb-3" required>
+                        <select id="sensor${index}-mode" class="form-select mb-3" required>
                             <option value="cool" id="cool">Cool</option>
                             <option value="heat" id="heat">Heat</option>
                         </select>
@@ -73,7 +73,7 @@ async function load_sensor_section(select) {
 
                     <div class="mb-2">
                         <label for="sensor${index}-tolerance"><b>Tolerance:</b></label>
-                        <input type="text" class="form-control" id="sensor${index}-tolerance" placeholder="" name="sensor${index}-tolerance" required>
+                        <input type="text" class="form-control" id="sensor${index}-tolerance" placeholder="" required>
                     </div>`
     } else {
         // User selected first option ("Select sensor type"), clear form
@@ -107,63 +107,65 @@ async function load_device_section(select) {
     // Add nickname section to template, other sections added below as needed
     var template = `<div class="mb-2">
                         <label for="device${index}-nickname"><b>Nickname:</b></label>
-                        <input type="text" class="form-control" id="device${index}-nickname" placeholder="" name="device${index}-nickname" required>
+                        <input type="text" class="form-control" id="device${index}-nickname" placeholder="" required>
                     </div>`
 
     // Get template for device type selected by user
     if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "relay") {
         template += `<div class="mb-2">
                         <label for="device${index}-ip"><b>IP:</b></label>
-                        <input type="text" class="form-control" id="device${index}-ip" placeholder="" name="device${index}-ip" required>
+                        <input type="text" class="form-control" id="device${index}-ip" placeholder="" required>
                     </div>
 
                     <div class="mb-2">
                         <label for="device${index}-default_rule"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" required>
+                        <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" required>
                     </div>`
 
     } else if (selected == "mosfet" || selected == "dumb-relay") {
         template += `<div class="mb-2">
                         <label for="device${index}-pin"><b>Pin:</b></label>
-                        <input type="text" class="form-control" id="device${index}-pin" placeholder="" name="device${index}-pin" required>
+                        <input type="text" class="form-control" id="device${index}-pin" placeholder="" required>
                     </div>
 
                     <div class="mb-2">
                         <label for="device${index}-default_rule"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" required>
+                        <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" required>
                     </div>`
 
     } else if (selected == "pwm") {
         template += `<div class="mb-2">
                         <label for="device${index}-pin"><b>Pin:</b></label>
-                        <input type="text" class="form-control" id="device${index}-pin" placeholder="" name="device${index}-pin" required>
+                        <input type="text" class="form-control" id="device${index}-pin" placeholder="" required>
                     </div>
 
                     <div class="mb-2">
                         <label for="device${index}-min"><b>Min brightness:</b></label>
-                        <input type="min" class="form-control" id="device${index}-min" placeholder="0" name="device${index}-min" required>
+                        <input type="min" class="form-control" id="device${index}-min" placeholder="0" required>
                     </div>
 
                     <div class="mb-2">
                         <label for="device${index}-max"><b>Max brightness:</b></label>
-                        <input type="text" class="form-control" id="device${index}-max" placeholder="1023" name="device${index}-max" required>
+                        <input type="text" class="form-control" id="device${index}-max" placeholder="1023" required>
                     </div>
 
                     <div class="mb-2">
                         <label for="device${index}-default_rule"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" required>
+                        <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" required>
                     </div>`
 
     } else if (selected == "api-target") {
-        template += `<label for="device${index}-ip"><b>Target:</b></label>
-                    <select name="device${index}-ip" id="device${index}-ip" class="form-select mb-3" onchange="api_target_selected(this)">
-                        <option value="" selected="selected" selected></option>`
+        template += `<div class="mb-2">
+                        <label for="device${index}-ip"><b>Target:</b></label>
+                        <select id="device${index}-ip" class="form-select mb-3" onchange="api_target_selected(this)">
+                            <option value="" selected="selected" selected></option>`
 
         for (var x in ApiTargetOptions) {
-            template += `<option value="${x}">${x.split("-")[1]}</option>`
+            template +=    `<option value="${x}">${x.split("-")[1]}</option>`
         };
 
-        template += `</select>
+        template +=     `</select>
+                    </div>
 
                     <div class="mb-2 text-center">
                         <button id="device${index}-set-rule" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" disabled>Set rule</button>
@@ -171,21 +173,21 @@ async function load_device_section(select) {
 
                     <div class="mb-2 text-center">
                         <label for="device${index}-default_rule" style="display:none;"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" name="device${index}-default_rule" style="display:none;" required>
+                        <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" style="display:none;" required>
                     </div>`
 
     } else if (selected == "ir-blaster") {
         template = `<div class="mb-2">
                         <label for="device${index}-pin"><b>Pin:</b></label>
-                        <input type="text" class="form-control" id="device${index}-pin" placeholder="" name="device${index}-pin" required>
+                        <input type="text" class="form-control" id="device${index}-pin" placeholder="" required>
                     </div>
 
                     <div class="mb-2">
                         <label for="device${index}-min"><b>Virtual remotes:</b></label>
                         <div class="form-check">
-                            <input class="form-check-input ir-target" type="checkbox" name="irblaster-tv" value="irblaster-tv" id="irblaster-tv">
+                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-tv" id="checkbox-tv">
                             <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
-                            <input class="form-check-input ir-target" type="checkbox" name="irblaster-ac" value="irblaster-ac" id="irblaster-ac">
+                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-ac" id="checkbox-ac">
                             <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
                         </div>
                     </div>`
@@ -257,7 +259,7 @@ async function load_next_device(button) {
                                 <h4 class="card-title">device${index + 1}</h4>
                                 <label for="deviceType${index + 1}" class="form-label"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_device_section(this)" name="deviceType${index + 1}" id="deviceType${index + 1}" class="form-select deviceType" required>
+                                    <select onchange="load_device_section(this)" id="deviceType${index + 1}" class="form-select deviceType" required>
                                     <option value="clear">Select device type</option>
                                     <option value="dimmer">TP-Link Dimmer</option>
                                     <option value="bulb">TP-Link Bulb</option>
@@ -304,7 +306,7 @@ async function load_next_sensor(button) {
                                 <h4 class="card-title">sensor${index + 1}</h4>
                                 <label for="sensorType${index + 1}" class="form-label"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_sensor_section(this)" name="sensorType${index + 1}" id="sensorType${index + 1}" class="form-select sensorType" required>
+                                    <select onchange="load_sensor_section(this)" id="sensorType${index + 1}" class="form-select sensorType" required>
                                     <option value="clear">Select sensor type</option>
                                     <option value="pir">Motion Sensor</option>
                                     <option value="switch">Switch</option>

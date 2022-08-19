@@ -368,7 +368,7 @@ def generateConfigFile(request, edit_existing=False):
 
     # If IrBlaster configured, move to seperate section with different syntax
     if irblaster:
-        config["ir_blaster"] = config[i]
+        config["ir_blaster"] = config[irblaster]
         del config[irblaster]
         del config["ir_blaster"]["type"]
         del config["ir_blaster"]["schedule"]
