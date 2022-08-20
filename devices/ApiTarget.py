@@ -60,6 +60,14 @@ class ApiTarget(Device):
             elif rule[i][0] == 'set_rule' and len(rule[i]) == 3 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
                 continue
 
+            elif rule[i][0] == 'ir_key':
+                if len(rule[i]) == 3 and type(rule[i][1]) == str and type(rule[i][2]) == str:
+                    continue
+                elif len(rule[i]) == 1 and rule[i][0] == 'ignore':
+                    continue
+                else:
+                    return False
+
             else:
                 # Did not match any valid patterns
                 return False
@@ -71,6 +79,12 @@ class ApiTarget(Device):
 
 
     def set_rule(self, rule):
+        # Convert string rule to dict (if received from API)
+        try:
+            rule = json.loads(rule)
+        except (TypeError, ValueError):
+            pass
+
         # Check if rule is valid - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)
 

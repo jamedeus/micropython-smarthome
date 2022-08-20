@@ -17,6 +17,7 @@ class TestApiTarget(unittest.TestCase):
         self.assertEqual(self.instance.rule_validator({'on': ['trigger_sensor', 'sensor1'], 'off': ['enable', 'sensor1']}), {'on': ['trigger_sensor', 'sensor1'], 'off': ['enable', 'sensor1']})
         self.assertEqual(self.instance.rule_validator({'on': ['enable_in', 'sensor1', 5], 'off': ['ignore']}), {'on': ['enable_in', 'sensor1', 5], 'off': ['ignore']})
         self.assertEqual(self.instance.rule_validator({'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']}), {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
+        self.assertEqual(self.instance.rule_validator({'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']}), {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']})
         self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
         self.assertEqual(self.instance.rule_validator("disabled"), "disabled")
 
@@ -30,6 +31,12 @@ class TestApiTarget(unittest.TestCase):
     def test_rule_change(self):
         self.assertTrue(self.instance.set_rule({'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']}))
         self.assertEqual(self.instance.current_rule, {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
+        # String rule should be converted to dict automatically
+        self.assertTrue(self.instance.set_rule('{"on":["ir_key","tv","power"],"off":["ir_key","tv","power"]}'))
+        self.assertEqual(self.instance.current_rule, {"on":["ir_key","tv","power"],"off":["ir_key","tv","power"]})
+        # Should rule with both ir command and ignore
+        self.assertTrue(self.instance.set_rule({'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']}))
+        self.assertEqual(self.instance.current_rule, {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']})
 
     def test_enable_disable(self):
         self.instance.disable()
