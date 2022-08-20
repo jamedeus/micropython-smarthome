@@ -389,7 +389,8 @@ def get_attributes(args):
                 attributes["targets"].append(i.name)
 
     # Replace group object with group name (JSON compatibility)
-    attributes["group"] = target.group.name
+    if "group" in attributes.keys():
+        attributes["group"] = target.group.name
 
     return attributes
 
