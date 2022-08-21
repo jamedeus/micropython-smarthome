@@ -6,7 +6,7 @@ import asyncio
 import re
 
 from node_configuration.models import Node
-
+from node_configuration.views import get_api_target_menu_options
 
 
 def legacy_api(request):
@@ -53,6 +53,25 @@ def api(request, node):
         status = parse_command(target.ip, ["status"])
     except OSError:
         return JsonResponse("Error: Unable to connect.", safe=False, status=200)
+
+    # If ApiTarget configured, add all valid options for target IP so user can change rule
+    if "api-target" in str(status):
+        status["api_target_options"] = {}
+
+        # Get object containing all valid options for all nodes
+        options = get_api_target_menu_options()
+
+        # Get target IP(s) from config file, use to find correct options in object above
+        with open(target.config_file, 'r') as file:
+            config = json.load(file)
+
+        for i in config:
+            if i.startswith("device") and config[i]['type'] == 'api-target':
+                # ApiTarget found, find section in options object with matching IP
+                for node in options:
+                    if node.split("-")[0] == config[i]['ip']:
+                        status["api_target_options"][i] = options[node]
+                        break
 
     template = loader.get_template('api/api_card.html')
 

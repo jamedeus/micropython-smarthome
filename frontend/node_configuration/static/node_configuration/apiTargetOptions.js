@@ -14,6 +14,9 @@ function submit_api_rule(el) {
     value["instance-on"] = value["instance-on"].split("-")[0]
     value["instance-off"] = value["instance-off"].split("-")[0]
     document.getElementById(el.dataset.target).value = JSON.stringify(value);
+    var event = new Event('change');
+    console.log(`Triggering event on ${el.dataset.target}`);
+    document.getElementById(el.dataset.target).dispatchEvent(event);
 };
 
 
@@ -164,12 +167,16 @@ function populate_sub_command_off(target) {
 function open_rule_modal(el) {
     $('#api-rule-modal').modal('show')
 
-    if (el.id.startsWith("device")) {
-        // Default rule (page 1)
+    if (el.id.endsWith("set_rule")) {
+        // Frontend (change rule option in device dropdown)
+        document.getElementById('submit-api-rule').dataset.target = el.id.split("-")[0] + "-rule";
+        var target = el.id.split("-")[0];
+    } else if (el.id.startsWith("device")) {
+        // Default rule (configure page 1)
         document.getElementById('submit-api-rule').dataset.target = el.id.split("-")[0] + "-default_rule";
         var target = document.getElementById(el.id.split("-")[0] + "-ip").value;
     } else {
-        // Schedule rules (page 3)
+        // Schedule rules (configure page 3)
         document.getElementById('submit-api-rule').dataset.target = el.id.replace("button", "value");
         var target = document.getElementById(el.id.split("-")[1] + "-ip").value;
     };
@@ -273,5 +280,49 @@ function open_rule_modal(el) {
 
     if (restore["command-arg-off"]) {
         command_arg_off.value = restore["command-arg-off"];
+    };
+};
+
+// Handler for change rule option in Api frontend
+async function change_api_target_rule(el) {
+    console.log("Changing rule");
+
+    const target = el.id.split("-")[0];
+
+    const input = JSON.parse(document.getElementById(`${target}-rule`).value);
+    var output = {'on': [], 'off': []};
+
+    // Convert to correct format
+    if (input['instance-on'] == 'ir_blaster') {
+        output['on'].push('ir_key');
+        output['on'].push(input['command-on']);
+        output['on'].push(input['sub-command-on']);
+    } else {
+        output['on'].push(input['command-on']);
+        output['on'].push(input['instance-on']);
+
+        if (input['command-arg-on']) {
+            output['on'].push(input['command-arg-on']);
+        };
+    };
+
+    if (input['instance-off'] == 'ir_blaster') {
+        output['off'].push('ir_key');
+        output['off'].push(input['command-off']);
+        output['off'].push(input['sub-command-off']);
+    } else {
+        output['off'].push(input['command-off']);
+        output['off'].push(input['instance-off']);
+
+        if (input['command-arg-off']) {
+            output['off'].push(input['command-arg-off']);
+        };
+    };
+
+    var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': JSON.stringify(output)});
+    result = await result.json();
+
+    if (JSON.stringify(result).startsWith('{"ERROR')) {
+        console.log(JSON.stringify(result));
     };
 };

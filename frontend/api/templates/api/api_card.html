@@ -50,6 +50,11 @@
         body {
             touch-action: manipulation;
         }
+
+        /* Contrasting background for dropdowns in api rule modal */
+        .modal-dropdown {
+            background-color: #1b1e1f !important;
+        }
     </style>
 </head>
 
@@ -272,6 +277,9 @@
                                                 <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
                                             {% endif %}
                                             <li><a id="{{device}}-reset" class="dropdown-item reset-rule" onclick="reset(this);">Reset rule</a></li>
+                                            {% if params.type == "api-target" %}
+                                                <li><a id="{{device}}-set_rule" class="dropdown-item" onclick="open_rule_modal(this);">Change rule</a></li>
+                                            {% endif %}
                                         </ul>
                                     </div>
                                 </div>
@@ -301,6 +309,12 @@
                                 {% endif %}
 
                                 <!-- End rule slider -->
+
+                                {% if params.type == "api-target" %}
+                                    <div style="display:none;">
+                                        <input id="{{device}}-rule" type="text" autocomplete="off" onchange="change_api_target_rule(this);">
+                                    </div>
+                                {% endif %}
 
                                 <!-- Schedule rules section, collapsed by default -->
                                 <p class="text-center mt-3">
@@ -448,6 +462,70 @@
         </div>
     </div>
 
+    {% if context.api_target_options %}
+    <!-- Api-target set rule modal -->
+    <div class="modal fade" id="api-rule-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Api Target Rule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+
+                    <p>Explain what this does here</p>
+
+                    <form name="api_rule_form" id="api_rule_form">
+                        <div id="on-action">
+                            <select name="instance-on" id="instance-on" class="form-select mb-3 modal-dropdown api-instance">
+                                <option value="" selected="selected">Select target instance</option>
+                            </select>
+
+                            <select name="command-on" id="command-on" class="form-select mb-3 modal-dropdown api-command">
+                                <option value="" selected="selected">Please select instance first</option>
+                            </select>
+
+                            <select name="sub-command-on" id="sub-command-on" class="form-select mb-3 modal-dropdown api-command" style="display:none" disabled>
+                                <option value="" selected="selected">Please select command first</option>
+                            </select>
+
+                            <input name="command-arg-on" id="command-arg-on" class="form-control mb-3 modal-dropdown api-command-arg" style="display:none" disabled>
+                        </div>
+
+                        <div id="off-action" style="display:none;">
+                            <select name="instance-off" id="instance-off" class="form-select mb-3 modal-dropdown api-instance">
+                                <option value="" selected="selected">Select target instance</option>
+                            </select>
+
+                            <select name="command-off" id="command-off" class="form-select mb-3 modal-dropdown api-command">
+                                <option value="" selected="selected">Please select instance first</option>
+                            </select>
+
+                            <select name="sub-command-off" id="sub-command-off" class="form-select mb-3 modal-dropdown api-command" style="display:none" disabled>
+                                <option value="" selected="selected">Please select command first</option>
+                            </select>
+
+                            <input name="command-arg-off" id="command-arg-off" class="form-control mb-3 modal-dropdown api-command-arg" style="display:none" disabled>
+                        </div>
+                    </form>
+
+                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check" name="btnradio" id="on-button" autocomplete="off" onclick="switch_page(this)" checked>
+                        <label class="btn btn-outline-dark" for="on-button">On Action</label>
+
+                        <input type="radio" class="btn-check" name="btnradio" id="off-button" autocomplete="off" onclick="switch_page(this)">
+                        <label class="btn btn-outline-dark" for="off-button">Off Action</label>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="submit-api-rule" class="btn btn-success mx-auto" data-bs-dismiss="modal" onclick="submit_api_rule(this)">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'node_configuration/apiTargetOptions.js' %}"></script>
+    {% endif %}
 
     <!-- Toast notification shown when schedule rules added/removed -->
     <div class="fixed-bottom">
@@ -467,6 +545,10 @@
         const target_node = "{{ context.metadata.id }}";
 
         var target_node_status = JSON.parse(document.getElementById("context").textContent);
+
+        if (target_node_status["api_target_options"]) {
+            var ApiTargetOptions = target_node_status["api_target_options"];
+        };
 
         // Initial value, used to detect change (lose connection, re-establish connection)
         selected_node_unreachable = false;
