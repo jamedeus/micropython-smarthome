@@ -25,6 +25,13 @@ class ApiTarget(Device):
         if str(rule).lower() == "disabled":
             return str(rule).lower()
 
+        if isinstance(rule, str):
+            try:
+                # Convert string rule to dict (if received from API)
+                rule = json.loads(rule)
+            except (TypeError, ValueError):
+                return False
+
         if not isinstance(rule, dict):
             return False
 
@@ -79,12 +86,6 @@ class ApiTarget(Device):
 
 
     def set_rule(self, rule):
-        # Convert string rule to dict (if received from API)
-        try:
-            rule = json.loads(rule)
-        except (TypeError, ValueError):
-            pass
-
         # Check if rule is valid - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)
 
