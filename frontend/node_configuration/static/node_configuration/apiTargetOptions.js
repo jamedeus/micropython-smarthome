@@ -15,7 +15,6 @@ function submit_api_rule(el) {
     value["instance-off"] = value["instance-off"].split("-")[0]
     document.getElementById(el.dataset.target).value = JSON.stringify(value);
     var event = new Event('change');
-    console.log(`Triggering event on ${el.dataset.target}`);
     document.getElementById(el.dataset.target).dispatchEvent(event);
 };
 
@@ -171,12 +170,19 @@ function open_rule_modal(el) {
         // Frontend (change rule option in device dropdown)
         document.getElementById('submit-api-rule').dataset.target = el.id.split("-")[0] + "-rule";
         var target = el.id.split("-")[0];
+
+    } else if (el.id.endsWith("button")) {
+        // Frontend schedule rules section
+        document.getElementById('submit-api-rule').dataset.target = el.id.replace("button", "value");
+        var target = el.id.split("-")[1];
+
     } else if (el.id.startsWith("device")) {
-        // Default rule (configure page 1)
+        // Provisioning default rule (configure page 1)
         document.getElementById('submit-api-rule').dataset.target = el.id.split("-")[0] + "-default_rule";
         var target = document.getElementById(el.id.split("-")[0] + "-ip").value;
+
     } else {
-        // Schedule rules (configure page 3)
+        // Provisioning schedule rules (configure page 3)
         document.getElementById('submit-api-rule').dataset.target = el.id.replace("button", "value");
         var target = document.getElementById(el.id.split("-")[1] + "-ip").value;
     };
@@ -283,13 +289,7 @@ function open_rule_modal(el) {
     };
 };
 
-// Handler for change rule option in Api frontend
-async function change_api_target_rule(el) {
-    console.log("Changing rule");
-
-    const target = el.id.split("-")[0];
-
-    const input = JSON.parse(document.getElementById(`${target}-rule`).value);
+function convert_api_target_rule(input) {
     var output = {'on': [], 'off': []};
 
     // Convert to correct format
@@ -319,10 +319,47 @@ async function change_api_target_rule(el) {
         };
     };
 
-    var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': JSON.stringify(output)});
+    return JSON.stringify(output);
+};
+
+// Handler for change rule option in Api frontend
+async function change_api_target_rule(el) {
+    console.log("Changing rule");
+
+    const target = el.id.split("-")[0];
+
+    var rule = JSON.parse(document.getElementById(`${target}-rule`).value);
+    console.log("Old:");
+    console.log(rule);
+    rule = convert_api_target_rule(rule);
+    console.log("New:");
+    console.log(rule);
+
+    var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': rule});
     result = await result.json();
 
     if (JSON.stringify(result).startsWith('{"ERROR')) {
         console.log(JSON.stringify(result));
     };
+};
+
+function add_rule_api(el) {
+    // Get target device/sensor
+    const target = el.id.split("-")[0];
+
+    // Get rule number
+    const num = el.id.split("add")[1];
+
+    // Get old rule
+    var old_rule = JSON.parse(document.getElementById(`schedule-${target}-rule${num}-value`).value);
+
+    // Convert, overwrite field value
+    var new_rule = convert_api_target_rule(old_rule);
+    document.getElementById(`schedule-${target}-rule${num}-value`).value = new_rule;
+
+    // Call function to add rule (reads from field set above)
+    add_rule(el);
+
+    // Revert field value (used to re-populate dropdowns if user edits rule again)
+    document.getElementById(`schedule-${target}-rule${num}-value`).value = old_rule;
 };

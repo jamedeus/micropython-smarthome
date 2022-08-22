@@ -85,12 +85,21 @@ async function add_rule_row(el) {
     const table = document.getElementById(target + "-rules");
     const row = parseInt(table.rows[table.rows.length-1].id.split("-")[2]) + 1
 
-    // Add row number + target id to empty row template
-    var template = `<tr id="${target}-row-${row}">
-                        <td><input type="time" class="form-control" id="schedule-${target}-rule${row}-time" placeholder="HH:MM" name="schedule-${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
-                        <td><input type="text" class="form-control" id="schedule-${target}-rule${row}-value" placeholder="" name="schedule-${target}-rule${row}-value" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
-                        <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
-                    </tr>`
+    // Add row number + target id to empty row template (different template if api-target)
+    if (target.startsWith("device") && target_node_status['devices'][target]['type'] == 'api-target') {
+        var template = `<tr id="${target}-row-${row}">
+                            <td><input type="time" class="form-control" id="schedule-${target}-rule${row}-time" placeholder="HH:MM" name="schedule-${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
+                            <td><button id="schedule-${target}-rule${row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                            <input type="text" class="form-control rule ${target}" id="schedule-${target}-rule${row}-value" value="" style="display:none;"></td>
+                            <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule_api(this)"><i class="bi-plus-lg"></i></button></td>
+                        </tr>`
+    } else {
+        var template = `<tr id="${target}-row-${row}">
+                            <td><input type="time" class="form-control" id="schedule-${target}-rule${row}-time" placeholder="HH:MM" name="schedule-${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
+                            <td><input type="text" class="form-control" id="schedule-${target}-rule${row}-value" placeholder="" name="schedule-${target}-rule${row}-value" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
+                            <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
+                        </tr>`
+    };
 
     // Add new empty rows
     document.getElementById(target + "-rules").insertAdjacentHTML('beforeend', template);
