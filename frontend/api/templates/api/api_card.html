@@ -338,7 +338,7 @@
                                                     {% if not params.type == "api-target" %}
                                                         <td><input type="text" class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}" placeholder="" name="{{device}}-rule{{forloop.counter}}" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
                                                     {% else %}
-                                                        <td><button id="{{device}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">Set rule</button>
+                                                        <td style="width: 100%"><button id="{{device}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">Set rule</button>
                                                         <input type="text" class="form-control rule {{device}}" id="{{device}}-rule{{forloop.counter}}" value="{{ rule }}" data-original="{{ rule }}" style="display:none;"></td>
                                                     {% endif %}
 
@@ -352,7 +352,7 @@
                                                 {% if not params.type == "api-target" %}
                                                     <td><input type="text" class="form-control" id="{{device}}-rule1" placeholder="" name="{{device}}-rule1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
                                                 {% else %}
-                                                    <td><button id="{{device}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                    <td style="width: 100%"><button id="{{device}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                                     <input type="text" class="form-control rule {{device}}" id="{{device}}-rule1" value="" style="display:none;"></td>
                                                 {% endif %}
 
@@ -485,9 +485,40 @@
                     <h5 class="modal-title">Api Target Rule</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center">
+                <div class="modal-body d-flex flex-column">
 
-                    <p>Explain what this does here</p>
+                    <button class="btn btn-sm btn-dark mx-auto mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                        Help
+                    </button>
+
+                    <div class="collapse" id="api-rule-modal-help">
+                        <p class="text-center">Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.</p>
+
+                        <p class="text-center">Commands are sent to the target node, which is selected when creating a config file. This can only be changed by <a href="/edit_config/{{context.metadata.id}}">editing</a> the config file.</p>
+
+                        <p class="text-center">The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.</p>
+
+                        <p class="text-center">
+                            <button class="btn btn-sm btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-examples" aria-expanded="false" aria-controls="api-rule-modal-examples">
+                                Examples
+                            </button>
+                        </p>
+
+                        <div class="collapse" id="api-rule-modal-examples">
+                            <ul>
+                                <li>Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the <b>trigger_sensor</b> option.</li>
+                                <li>The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and <b>set_rule</b> command below.</li>
+                                <li>Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an <b>Ir Blaster</b>.</li>
+                            </ul>
+
+                            <p class="text-center">
+                                <button class="btn btn-sm btn-dark mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                                    Close
+                                </button>
+                            </p>
+                        </div>
+
+                    </div>
 
                     <form name="api_rule_form" id="api_rule_form">
                         <div id="on-action">
@@ -523,12 +554,12 @@
                         </div>
                     </form>
 
-                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                    <div class="btn-group mx-auto" role="group" aria-label="Basic radio toggle button group">
                         <input type="radio" class="btn-check" name="btnradio" id="on-button" autocomplete="off" onclick="switch_page(this)" checked>
-                        <label class="btn btn-outline-dark" for="on-button">On Action</label>
+                        <label class="btn btn-outline-dark ms-auto" for="on-button">On Action</label>
 
                         <input type="radio" class="btn-check" name="btnradio" id="off-button" autocomplete="off" onclick="switch_page(this)">
-                        <label class="btn btn-outline-dark" for="off-button">Off Action</label>
+                        <label class="btn btn-outline-dark me-auto" for="off-button">Off Action</label>
                     </div>
 
                 </div>

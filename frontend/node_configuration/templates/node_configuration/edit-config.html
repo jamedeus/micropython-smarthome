@@ -404,7 +404,7 @@
 
                                         {% elif params.type == "api-target" %}
                                                 <div class="mb-2">
-                                                    <label for="device{{ forloop.counter }}-ip"><b>Target:</b></label>
+                                                    <label for="device{{ forloop.counter }}-ip"><b>Target Node:</b></label>
                                                     <select id="device{{ forloop.counter }}-ip" class="form-select mb-3" onchange="api_target_selected(this)">
                                                         <option value="" selected="selected"></option>
                                                         {% for node, ip in context.api_target_options.addresses.items %}
@@ -418,7 +418,6 @@
                                                 </div>
 
                                                 <div class="mb-2 text-center">
-                                                    <label for="device{{ forloop.counter }}-default_rule" style="display:none;"><b>Default Rule:</b></label>
                                                     <input type="default_rule" class="form-control" id="device{{ forloop.counter }}-default_rule" placeholder="" style="display:none;" value="{{params.default_rule}}" required>
                                                 </div>
 
@@ -651,7 +650,6 @@
             </div>
 
             <!-- Api-target set rule modal -->
-
             <div class="modal fade" id="api-rule-modal" tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
                     <div class="modal-content">
@@ -659,9 +657,40 @@
                             <h5 class="modal-title">Api Target Rule</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-body text-center">
+                        <div class="modal-body d-flex flex-column">
 
-                            <p>Explain what this does here</p>
+                            <button class="btn btn-sm btn-dark mx-auto mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                                Help
+                            </button>
+
+                            <div class="collapse" id="api-rule-modal-help">
+                                <p class="text-center">Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.</p>
+
+                                <p class="text-center">Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the "Target Node" dropdown.</p>
+
+                                <p class="text-center">The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.</p>
+
+                                <p class="text-center">
+                                    <button class="btn btn-sm btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-examples" aria-expanded="false" aria-controls="api-rule-modal-examples">
+                                        Examples
+                                    </button>
+                                </p>
+
+                                <div class="collapse" id="api-rule-modal-examples">
+                                    <ul>
+                                        <li>Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the <b>trigger_sensor</b> option.</li>
+                                        <li>The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and <b>set_rule</b> command below.</li>
+                                        <li>Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an <b>Ir Blaster</b>.</li>
+                                    </ul>
+
+                                    <p class="text-center">
+                                        <button class="btn btn-sm btn-dark mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                                            Close
+                                        </button>
+                                    </p>
+                                </div>
+
+                            </div>
 
                             <form name="api_rule_form" id="api_rule_form">
                                 <div id="on-action">
@@ -697,12 +726,12 @@
                                 </div>
                             </form>
 
-                            <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                            <div class="btn-group mx-auto" role="group" aria-label="Basic radio toggle button group">
                                 <input type="radio" class="btn-check" name="btnradio" id="on-button" autocomplete="off" onclick="switch_page(this)" checked>
-                                <label class="btn btn-outline-dark" for="on-button">On Action</label>
+                                <label class="btn btn-outline-dark ms-auto" for="on-button">On Action</label>
 
                                 <input type="radio" class="btn-check" name="btnradio" id="off-button" autocomplete="off" onclick="switch_page(this)">
-                                <label class="btn btn-outline-dark" for="off-button">Off Action</label>
+                                <label class="btn btn-outline-dark me-auto" for="off-button">Off Action</label>
                             </div>
 
                         </div>

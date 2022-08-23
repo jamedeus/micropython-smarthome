@@ -156,7 +156,7 @@ async function load_device_section(select) {
 
     } else if (selected == "api-target") {
         template += `<div class="mb-2">
-                        <label for="device${index}-ip"><b>Target:</b></label>
+                        <label for="device${index}-ip"><b>Target Node:</b></label>
                         <select id="device${index}-ip" class="form-select mb-3" onchange="api_target_selected(this)">
                             <option value="" selected="selected" selected></option>`
 
@@ -172,7 +172,6 @@ async function load_device_section(select) {
                     </div>
 
                     <div class="mb-2 text-center">
-                        <label for="device${index}-default_rule" style="display:none;"><b>Default Rule:</b></label>
                         <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" style="display:none;" required>
                     </div>`
 
