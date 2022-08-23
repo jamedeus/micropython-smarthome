@@ -32,16 +32,16 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                         <th style='text-align: left;'>Rule</th>
                                     </tr>
                                         <tr id='${device}-row-1'>
-                                            <td style="width: 50%"><input type='text' class='form-control ${device} timestamp' id='schedule-${device}-rule1-time' placeholder='HH:MM'></td>`
+                                            <td style="width: 50%"><input type='text' class='form-control ${device} timestamp' id='${device}-rule1-time' placeholder='HH:MM'></td>`
 
             // ApiTarget: add button that opens rule modal + hidden input field that receives value from modal
             if (instances['devices'][device]['type'] == 'api-target') {
-                template +=                `<td style="width: 50%"><button id="schedule-${device}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                            <input type="text" class="form-control ${device} rule" id="schedule-${device}-rule1-value" placeholder="" style="display:none;"></td>`
+                template +=                `<td style="width: 50%"><button id="${device}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                            <input type="text" class="form-control ${device} rule" id="${device}-rule1" placeholder="" style="display:none;"></td>`
 
             // All other device types: add input field
             } else {
-                template +=                 `<td><input type='text' class='form-control ${device} rule' id='schedule-${device}-rule1-value' placeholder=''></td>`
+                template +=                 `<td><input type='text' class='form-control ${device} rule' id='${device}-rule1' placeholder=''></td>`
             };
 
             template +=                     `<td class='min'><button type='button' class='remove btn btn-danger' id='${device}-remove1'  onclick='remove(this)'>X</button></td>
@@ -97,8 +97,8 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                                                     <th style='text-align: left;'>Rule</th>
                                                                 </tr>
                                                                 <tr id='${device}-row-1'>
-                                                                    <td><input type='text' class='form-control' id='schedule-${device}-rule1-time' placeholder='HH:MM'></td>
-                                                                    <td><input type='text' class='form-control' id='schedule-${device}-rule1-value' placeholder=''></td>
+                                                                    <td><input type='text' class='form-control' id='${device}-rule1-time' placeholder='HH:MM'></td>
+                                                                    <td><input type='text' class='form-control' id='${device}-rule1' placeholder=''></td>
                                                                     <td class='min'><button type='button' class='btn btn-danger' id='placeholder_button' style='visibility: hidden;'>X</button></td>
                                                                 </tr>`;
 
@@ -143,8 +143,8 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                         <th style='text-align: left;'>Rule</th>
                                     </tr>
                                         <tr id='${sensor}-row-1'>
-                                            <td><input type='text' class='form-control ${sensor} timestamp' id='schedule-${sensor}-rule1-time' placeholder='HH:MM'></td>
-                                            <td><input type='text' class='form-control ${sensor} rule' id='schedule-${sensor}-rule1-value' placeholder=''></td>
+                                            <td><input type='text' class='form-control ${sensor} timestamp' id='${sensor}-rule1-time' placeholder='HH:MM'></td>
+                                            <td><input type='text' class='form-control ${sensor} rule' id='${sensor}-rule1' placeholder=''></td>
                                             <td class='min'><button type='button' class='remove btn btn-danger' id='${sensor}-remove1'  onclick='remove(this)'>X</button></td>
                                         </tr>
                                 </table>
@@ -180,8 +180,8 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                                                         <th style='text-align: left;'>Rule</th>
                                                                     </tr>
                                                                     <tr id='${sensor}-row-1'>
-                                                                        <td><input type='text' class='form-control' id='schedule-${sensor}-rule1-time' placeholder='HH:MM'></td>
-                                                                        <td><input type='text' class='form-control' id='schedule-${sensor}-rule1-value' placeholder=''></td>
+                                                                        <td><input type='text' class='form-control' id='${sensor}-rule1-time' placeholder='HH:MM'></td>
+                                                                        <td><input type='text' class='form-control' id='${sensor}-rule1' placeholder=''></td>
                                                                         <td class='min'><button type='button' class='btn btn-danger' id='placeholder_button' style='visibility: hidden;'>X</button></td>
                                                                     </tr>`;
 

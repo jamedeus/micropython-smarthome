@@ -41,8 +41,8 @@ const save_rules_toast = new bootstrap.Toast(document.getElementById("save_rules
 function schedule_rule_field_handler(e) {
     const id = e.target.id.split("-")[1];
     const row = e.target.id.split("-")[2].replace("rule", "");
-    const time_field = document.getElementById(`schedule-${id}-rule${row}-time`);
-    const rule_field = document.getElementById(`schedule-${id}-rule${row}-value`);
+    const time_field = document.getElementById(`${id}-rule${row}-time`);
+    const rule_field = document.getElementById(`${id}-rule${row}`);
 
     // Function runs on each keystroke, only need to change button once on first change
     // Subsequent changes will throw error when getting button element (ID changed first time)
@@ -88,15 +88,15 @@ async function add_rule_row(el) {
     // Add row number + target id to empty row template (different template if api-target)
     if (target.startsWith("device") && target_node_status['devices'][target]['type'] == 'api-target') {
         var template = `<tr id="${target}-row-${row}">
-                            <td><input type="time" class="form-control" id="schedule-${target}-rule${row}-time" placeholder="HH:MM" name="schedule-${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
-                            <td><button id="schedule-${target}-rule${row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                            <input type="text" class="form-control rule ${target}" id="schedule-${target}-rule${row}-value" value="" style="display:none;"></td>
-                            <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule_api(this)"><i class="bi-plus-lg"></i></button></td>
+                            <td><input type="time" class="form-control" id="${target}-rule${row}-time" placeholder="HH:MM" name="${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
+                            <td><button id="${target}-rule${row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                            <input type="text" class="form-control rule ${target}" id="${target}-rule${row}" value="" style="display:none;"></td>
+                            <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
                         </tr>`
     } else {
         var template = `<tr id="${target}-row-${row}">
-                            <td><input type="time" class="form-control" id="schedule-${target}-rule${row}-time" placeholder="HH:MM" name="schedule-${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
-                            <td><input type="text" class="form-control" id="schedule-${target}-rule${row}-value" placeholder="" name="schedule-${target}-rule${row}-value" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
+                            <td><input type="time" class="form-control" id="${target}-rule${row}-time" placeholder="HH:MM" name="${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
+                            <td><input type="text" class="form-control" id="${target}-rule${row}" placeholder="" name="${target}-rule${row}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
                             <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
                         </tr>`
     };
@@ -105,17 +105,17 @@ async function add_rule_row(el) {
     document.getElementById(target + "-rules").insertAdjacentHTML('beforeend', template);
 
     // Add tooltips (used for help messages when invalid rule entered)
-    schedule_rule_tooltips[`schedule-${target}-rule${row}-time`] = new bootstrap.Tooltip(document.getElementById(`schedule-${target}-rule${row}-time`));
-    schedule_rule_tooltips[`schedule-${target}-rule${row}-value`] = new bootstrap.Tooltip(document.getElementById(`schedule-${target}-rule${row}-value`));
+    schedule_rule_tooltips[`${target}-rule${row}-time`] = new bootstrap.Tooltip(document.getElementById(`${target}-rule${row}-time`));
+    schedule_rule_tooltips[`${target}-rule${row}`] = new bootstrap.Tooltip(document.getElementById(`${target}-rule${row}`));
 
     // Add listener to dismiss tooltips on hover/select
-    document.getElementById(`schedule-${target}-rule${row}-time`).addEventListener("mouseover", hide_tooltip);
-    document.getElementById(`schedule-${target}-rule${row}-time`).addEventListener("focus", hide_tooltip);
-    document.getElementById(`schedule-${target}-rule${row}-value`).addEventListener("mouseover", hide_tooltip);
-    document.getElementById(`schedule-${target}-rule${row}-value`).addEventListener("focus", hide_tooltip);
+    document.getElementById(`${target}-rule${row}-time`).addEventListener("mouseover", hide_tooltip);
+    document.getElementById(`${target}-rule${row}-time`).addEventListener("focus", hide_tooltip);
+    document.getElementById(`${target}-rule${row}`).addEventListener("mouseover", hide_tooltip);
+    document.getElementById(`${target}-rule${row}`).addEventListener("focus", hide_tooltip);
 
     // Focus time field
-    document.getElementById(`schedule-${target}-rule${row}-time`).focus();
+    document.getElementById(`${target}-rule${row}-time`).focus();
 
     // Hide add rule button (will be un-hidden when user finishes adding this rule)
     document.getElementById(target + "-add-rule").style.display = "none"
@@ -150,10 +150,10 @@ async function add_rule(el) {
     disable_row(row, true);
 
     // Get timestamp input
-    const timestamp = document.getElementById(`schedule-${target}-rule${num}-time`);
+    const timestamp = document.getElementById(`${target}-rule${num}-time`);
 
     // Get rule input
-    const rule = document.getElementById(`schedule-${target}-rule${num}-value`);
+    const rule = document.getElementById(`${target}-rule${num}`);
 
     // Do not add incomplete rule
     if (timestamp.value.length == 0 || rule.value.length == 0) {
@@ -256,7 +256,7 @@ async function delete_rule(selected, remove=true) {
     // Get timestamp
     // Uses dataset.original instead of .value to allow editing existing rules (old needs to be deleted before adding new, see add_rule() below)
     // While delete button is visible to user, dataset.original and .value are always identical (changes to add button when different)
-    const timestamp = document.getElementById(`schedule-${target}-rule${rule}-time`).dataset.original;
+    const timestamp = document.getElementById(`${target}-rule${rule}-time`).dataset.original;
 
     // Send command
     var result = await send_command({'command': 'remove_rule', 'instance': target, 'rule': timestamp});
@@ -274,8 +274,8 @@ async function delete_rule(selected, remove=true) {
         if (document.getElementById(target + "-rules").rows.length == 1) {
             // If no rules remain, add blank row
             var template = `<tr id="${target}-row-1">
-                                <td><input type="time" class="form-control" id="schedule-${target}-rule1-time" placeholder="HH:MM" name="schedule-${target}-rule1-time"></td>
-                                <td><input type="text" class="form-control" id="schedule-${target}-rule1-value" placeholder="" name="schedule-${target}-rule1-value"></td>
+                                <td><input type="time" class="form-control" id="${target}-rule1-time" placeholder="HH:MM" name="${target}-rule1-time"></td>
+                                <td><input type="text" class="form-control" id="${target}-rule1" placeholder="" name="${target}-rule1"></td>
                                 <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
                             </tr>`
 

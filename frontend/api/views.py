@@ -67,11 +67,17 @@ def api(request, node):
 
         for i in config:
             if i.startswith("device") and config[i]['type'] == 'api-target':
-                # ApiTarget found, find section in options object with matching IP
-                for node in options:
-                    if node.split("-")[0] == config[i]['ip']:
+                # ApiTarget found, find section in options object with matching IP, add to context
+                for node in options['addresses']:
+                    if options['addresses'][node] == config[i]['ip']:
                         status["api_target_options"][i] = options[node]
                         break
+
+                # JSON-encode rule dicts
+                status['devices'][i]['current_rule'] = json.dumps(status['devices'][i]['current_rule'])
+
+                for rule in status['devices'][i]['schedule']:
+                    status['devices'][i]['schedule'][rule] = json.dumps(status['devices'][i]['schedule'][rule])
 
     template = loader.get_template('api/api_card.html')
 

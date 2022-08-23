@@ -13,12 +13,14 @@ function submit_api_rule(el) {
     // Remove friendly name, leave only instance id (device1, sensor1, etc)
     value["instance-on"] = value["instance-on"].split("-")[0]
     value["instance-off"] = value["instance-off"].split("-")[0]
-    document.getElementById(el.dataset.target).value = JSON.stringify(value);
+    // Convert form object to correct format, set value of hidden rule field
+    document.getElementById(el.dataset.target).value = convert_api_target_rule(value);
     var event = new Event('change');
     document.getElementById(el.dataset.target).dispatchEvent(event);
 };
 
 
+// Called when user changes target node in dropdown
 function api_target_selected(el) {
     if (el.value) {
         document.getElementById(el.id.split("-")[0] + "-set-rule").disabled = false;
@@ -149,12 +151,6 @@ function populate_sub_command_off(target) {
     // empty sub-command dropdown
     sub_command_select_off.length = 1;
 
-    console.log()
-    console.log(target)
-    console.log(instance_select_off.value)
-    console.log(selected)
-    console.log()
-
     var z = ApiTargetOptions[target][instance_select_off.value][selected];
 
     //display correct values
@@ -166,26 +162,16 @@ function populate_sub_command_off(target) {
 function open_rule_modal(el) {
     $('#api-rule-modal').modal('show')
 
-    if (el.id.endsWith("set_rule")) {
-        // Frontend (change rule option in device dropdown)
-        document.getElementById('submit-api-rule').dataset.target = el.id.split("-")[0] + "-rule";
-        var target = el.id.split("-")[0];
+    // Get target device ID, use to get options from ApiTargetOptions object
+    var target = el.id.split("-")[0];
 
-    } else if (el.id.endsWith("button")) {
-        // Frontend schedule rules section
-        document.getElementById('submit-api-rule').dataset.target = el.id.replace("button", "value");
-        var target = el.id.split("-")[1];
-
-    } else if (el.id.startsWith("device")) {
-        // Provisioning default rule (configure page 1)
-        document.getElementById('submit-api-rule').dataset.target = el.id.split("-")[0] + "-default_rule";
-        var target = document.getElementById(el.id.split("-")[0] + "-ip").value;
-
-    } else {
-        // Provisioning schedule rules (configure page 3)
-        document.getElementById('submit-api-rule').dataset.target = el.id.replace("button", "value");
-        var target = document.getElementById(el.id.split("-")[1] + "-ip").value;
+    // Options object has different syntax on provision page, use selected dropdown item as object key instead
+    if (!ApiTargetOptions[target]) {
+        target = document.getElementById(`${target}-ip`).selectedOptions[0].innerText;
     };
+
+    // Store ID of hidden rule field in submit button data attribute. User selection is copied to this field on submit
+    document.getElementById('submit-api-rule').dataset.target = el.id.replace("-button", "");
 
     // Clear all options from last time menu was opened
     instance_select_on.length = 1;
@@ -225,67 +211,87 @@ function open_rule_modal(el) {
     command_select_on.onchange = function() {populate_sub_command_on(target)};
     command_select_off.onchange = function() {populate_sub_command_off(target)};
 
-    // Load existing rule (if present) into dropdowns
+    // Re-populate dropdowns from existing rule (if present)
     try {
-        if (el.id.startsWith("device")) {
-            var restore = JSON.parse(document.getElementById(el.id.split("-")[0] + "-default_rule").value);
-        } else {
-            var restore = JSON.parse(document.getElementById(el.id.replace("button", "value")).value);
-        }
-        console.log(restore)
+        var restore = JSON.parse(document.getElementById(el.id.replace("-button", "")).value);
+        reload_rule(target, restore);
     } catch(err) {
-        // Skip if no rule set
-        console.log("No existing rule")
-        return
+        console.log("No existing rule");
+    };
+};
+
+// Reads existing rule, selects all corresponding dropdown options
+function reload_rule(target, rule) {
+    if (rule['on'][0] == 'ir_key') {
+        // IR commands have different syntax (no target instance, extra command)
+        // Replace command (ir_key) with instance (ir_blaster) and change order so dropdowns populate correctly
+        rule['on'].shift();
+        rule['on'].splice(1, 0, "ir_blaster");
     };
 
-    // Re-populate dropdowns from existing rule
+    // Populate instance (or IrBlaster)
     Array.from(instance_select_on.options).forEach( function(option) {
-        if (option.value.split("-")[0] == restore["instance-on"]) {
+        if (option.value.split("-")[0] == rule['on'][1]) {
             option.selected = true;
             populate_command_on(target);
         }
     });
 
-    Array.from(instance_select_off.options).forEach( function(option) {
-        if (option.value.split("-")[0] == restore["instance-off"]) {
-            option.selected = true;
-            populate_command_off(target);
-        }
-    });
-
+    // Populate command (or IrBlaster virtual remote)
     Array.from(command_select_on.options).forEach( function(option) {
-        if (option.value == restore["command-on"]) {
+        if (option.value == rule['on'][0]) {
             option.selected = true;
             populate_sub_command_on(target);
         }
     });
 
+    if (!sub_command_select_on.disabled) {
+        // Populate IrBlaster key
+        Array.from(sub_command_select_on.options).forEach( function(option) {
+            if (option.value == rule['on'][2]) {
+                option.selected = true;
+            }
+        });
+
+    } else if (!command_arg_on.disabled) {
+        // Populate command argument field
+        command_arg_on.value = rule['on'][2];
+    };
+
+    if (rule['off'][0] == 'ir_key') {
+        // IR commands have different syntax (no target instance, extra command)
+        // Replace command (ir_key) with instance (ir_blaster) and change order so dropdowns populate correctly
+        rule['off'].shift();
+        rule['off'].splice(1, 0, "ir_blaster");
+    };
+
+    // Populate instance (or IrBlaster)
+    Array.from(instance_select_off.options).forEach( function(option) {
+        if (option.value.split("-")[0] == rule['off'][1]) {
+            option.selected = true;
+            populate_command_off(target);
+        }
+    });
+
+    // Populate command (or IrBlaster virtual remote)
     Array.from(command_select_off.options).forEach( function(option) {
-        if (option.value == restore["command-off"]) {
+        if (option.value == rule['off'][0]) {
             option.selected = true;
             populate_sub_command_off(target);
         }
     });
 
-    Array.from(sub_command_select_on.options).forEach( function(option) {
-        if (option.value == restore["sub-command-on"]) {
-            option.selected = true;
-        }
-    });
+    if (!sub_command_select_off.disabled) {
+        // Populate IrBlaster key
+        Array.from(sub_command_select_off.options).forEach( function(option) {
+            if (option.value == rule['off'][2]) {
+                option.selected = true;
+            }
+        });
 
-    Array.from(sub_command_select_off.options).forEach( function(option) {
-        if (option.value == restore["sub-command-off"]) {
-            option.selected = true;
-        }
-    });
-
-    if (restore["command-arg-on"]) {
-        command_arg_on.value = restore["command-arg-on"];
-    };
-
-    if (restore["command-arg-off"]) {
-        command_arg_off.value = restore["command-arg-off"];
+    } else if (!command_arg_off.disabled) {
+        // Populate command argument field
+        command_arg_off.value = rule['off'][2];
     };
 };
 
@@ -328,12 +334,7 @@ async function change_api_target_rule(el) {
 
     const target = el.id.split("-")[0];
 
-    var rule = JSON.parse(document.getElementById(`${target}-rule`).value);
-    console.log("Old:");
-    console.log(rule);
-    rule = convert_api_target_rule(rule);
-    console.log("New:");
-    console.log(rule);
+    var rule = document.getElementById(`${target}-current_rule`).value;
 
     var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': rule});
     result = await result.json();
@@ -341,25 +342,4 @@ async function change_api_target_rule(el) {
     if (JSON.stringify(result).startsWith('{"ERROR')) {
         console.log(JSON.stringify(result));
     };
-};
-
-function add_rule_api(el) {
-    // Get target device/sensor
-    const target = el.id.split("-")[0];
-
-    // Get rule number
-    const num = el.id.split("add")[1];
-
-    // Get old rule
-    var old_rule = JSON.parse(document.getElementById(`schedule-${target}-rule${num}-value`).value);
-
-    // Convert, overwrite field value
-    var new_rule = convert_api_target_rule(old_rule);
-    document.getElementById(`schedule-${target}-rule${num}-value`).value = new_rule;
-
-    // Call function to add rule (reads from field set above)
-    add_rule(el);
-
-    // Revert field value (used to re-populate dropdowns if user edits rule again)
-    document.getElementById(`schedule-${target}-rule${num}-value`).value = old_rule;
 };

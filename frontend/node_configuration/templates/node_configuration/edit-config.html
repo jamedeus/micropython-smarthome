@@ -407,14 +407,14 @@
                                                     <label for="device{{ forloop.counter }}-ip"><b>Target:</b></label>
                                                     <select id="device{{ forloop.counter }}-ip" class="form-select mb-3" onchange="api_target_selected(this)">
                                                         <option value="" selected="selected"></option>
-                                                        {% for node in context.api_target_options %}
-                                                            <option value="{{node}}" {% if params.ip in node %}selected{% endif %}>{{node}}</option>
+                                                        {% for node, ip in context.api_target_options.addresses.items %}
+                                                            <option value="{{ip}}" {% if params.ip == ip %}selected{% endif %}>{{node}}</option>
                                                         {% endfor %}
                                                     </select>
                                                 </div>
 
                                                 <div class="mb-2 text-center">
-                                                    <button id="device{{ forloop.counter }}-set-rule" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                    <button id="device{{ forloop.counter }}-default_rule-button" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                                 </div>
 
                                                 <div class="mb-2 text-center">
@@ -553,14 +553,14 @@
                                     {% if params.schedule.items|length > 0 %}
                                         {% for time, rule in params.schedule.items %}
                                             <tr id="{{instance}}-row-{{forloop.counter}}">
-                                                <td><input type="text" class="form-control timestamp {{instance}}" id="schedule-{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" value="{{ time }}"></td>
+                                                <td><input type="text" class="form-control timestamp {{instance}}" id="{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" value="{{time}}"></td>
 
                                                 {% if not params.type == "api-target" %}
-                                                    <td><input type="text" class="form-control rule {{instance}}" id="schedule-{{instance}}-rule{{forloop.counter}}-value" placeholder="" value="{{ rule }}"></td>
+                                                    <td><input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" placeholder="" value="{{rule}}"></td>
                                                 {% else %}
                                                     <td style="width: 50%">
-                                                        <button id="schedule-{{instance}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                                        <input type="text" class="form-control rule {{instance}}" id="schedule-{{instance}}-rule{{forloop.counter}}-value" value="{{ rule }}" style="display:none;">
+                                                        <button id="{{instance}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" value="{{rule}}" style="display:none;">
                                                     </td>
                                                 {% endif %}
                                                 <td class="min"><button type="button" class="remove btn btn-danger" id="{{instance}}-remove{{forloop.counter}}"  onclick="remove(this)">X</button></td>
@@ -568,15 +568,15 @@
                                         {% endfor %}
                                     {% else %}
                                         <tr id="{{instance}}-row-1">
-                                            <td><input type="text" class="form-control timestamp {{instance}}" id="schedule-{{instance}}-rule1-time" placeholder="HH:MM"></td>
+                                            <td><input type="text" class="form-control timestamp {{instance}}" id="{{instance}}-rule1-time" placeholder="HH:MM"></td>
 
                                             {% if not params.type == "api-target" %}
-                                                <td><input type="text" class="form-control rule {{instance}}" id="schedule-{{instance}}-rule1-value" placeholder="HH:MM"></td>
+                                                <td><input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule1" placeholder="HH:MM"></td>
                                             {% else %}
                                                 <td style="width: 50%">
                                                     {# Show button that opens api rule modal containing dropdowns used to set rule. Selection from modal added to hidden text box, read by form #}
-                                                    <button id="schedule-{{instance}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                                    <input type="text" class="form-control rule {{instance}}" id="schedule-{{instance}}-rule1-value" style="display:none;">
+                                                    <button id="{{instance}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                    <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule1" style="display:none;">
                                                 </td>
                                             {% endif %}
 

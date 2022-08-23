@@ -283,10 +283,10 @@ def edit_config(request, name):
             instances[i]["schedule"] = config[i]["schedule"]
 
             if config[i]["type"] == "api-target":
-                devices[i]["default_rule"] = reverse_convert_api_target_rule(devices[i]["default_rule"])
+                devices[i]["default_rule"] = json.dumps(devices[i]["default_rule"])
 
                 for rule in instances[i]["schedule"]:
-                    instances[i]["schedule"][rule] = reverse_convert_api_target_rule(instances[i]["schedule"][rule])
+                    instances[i]["schedule"][rule] = json.dumps(instances[i]["schedule"][rule])
 
     for i in delete:
         del config[i]
@@ -295,13 +295,15 @@ def edit_config(request, name):
     config["devices"] = devices
     config["instances"] = instances
 
-    print(json.dumps(config, indent=4))
+    #print(json.dumps(config, indent=4))
 
     template = loader.get_template('node_configuration/edit-config.html')
 
     api_target_options = get_api_target_menu_options()
 
     context = {"config": config, "api_target_options": api_target_options}
+
+    print(json.dumps(context, indent=4))
 
     return HttpResponse(template.render({'context': context}, request))
 
@@ -312,6 +314,9 @@ def generateConfigFile(request, edit_existing=False):
         data = json.loads(request.body.decode("utf-8"))
     else:
         raise Http404("ERROR: Must post data")
+
+    print("Input:")
+    print(json.dumps(data, indent=4))
 
     try:
         # Check if file with identical parameters exists in database
@@ -359,12 +364,10 @@ def generateConfigFile(request, edit_existing=False):
 
         # Convert ApiTarget rules to correct format
         elif i.startswith("device") and config[i]["type"] == "api-target":
-            config[i]["ip"] = config[i]["ip"].split("-")[0]
-
-            config[i]["default_rule"] = convert_api_target_rule(config[i]["default_rule"])
+            config[i]["default_rule"] = json.loads(config[i]["default_rule"])
 
             for rule in config[i]["schedule"]:
-                config[i]["schedule"][rule] = convert_api_target_rule(config[i]["schedule"][rule])
+                config[i]["schedule"][rule] = json.loads(config[i]["schedule"][rule])
 
     # If IrBlaster configured, move to seperate section with different syntax
     if irblaster:
@@ -372,9 +375,6 @@ def generateConfigFile(request, edit_existing=False):
         del config[irblaster]
         del config["ir_blaster"]["type"]
         del config["ir_blaster"]["schedule"]
-
-    print("Input:")
-    print(json.dumps(data, indent=4))
 
     print("\nOutput:")
     print(json.dumps(config, indent=4))
@@ -398,6 +398,7 @@ def generateConfigFile(request, edit_existing=False):
 # Used to populate cascading dropdown menu in frontent
 def get_api_target_menu_options():
     dropdownObject = {}
+    dropdownObject['addresses'] = {}
 
     for node in Node.objects.all():
         entries = {}
@@ -428,69 +429,7 @@ def get_api_target_menu_options():
 
             entries[instance_string] = entry
 
-        dropdownObject[f"{node.ip}-{node.friendly_name}"] = entries
+        dropdownObject[node.friendly_name] = entries
+        dropdownObject['addresses'][node.friendly_name] = node.ip
 
     return dropdownObject
-
-
-
-# Convert stringified JSON received from frontend to ApiTarget rule format dict
-def convert_api_target_rule(rule):
-    rule = json.loads(rule)
-
-    output = {"on": [], "off": []}
-
-    if rule["instance-on"] == "ir_blaster":
-        output["on"].append("ir_key")
-        output["on"].append(rule["command-on"])
-        output["on"].append(rule["sub-command-on"])
-
-    else:
-        output["on"].append(rule["command-on"])
-        output["on"].append(rule["instance-on"])
-
-        if "command-arg-on" in rule.keys():
-            output["on"].append(rule["command-arg-on"])
-
-    if rule["instance-off"] == "ir_blaster":
-        output["off"].append("ir_key")
-        output["off"].append(rule["command-off"])
-        output["off"].append(rule["sub-command-off"])
-
-    else:
-        output["off"].append(rule["command-off"])
-        output["off"].append(rule["instance-off"])
-
-        if "command-arg-off" in rule.keys():
-            output["off"].append(rule["command-arg-off"])
-
-    return output
-
-
-
-def reverse_convert_api_target_rule(rule):
-    result = {}
-
-    if rule["on"][0] == "ir_key":
-        result["instance-on"] = "ir_blaster"
-        result["command-on"] = rule["on"][1]
-        result["sub-command-on"] = rule["on"][2]
-    else:
-        result["instance-on"] = rule["on"][1]
-        result["command-on"] = rule["on"][0]
-
-        if result["command-on"] in ("enable_in", "disable_in", "set_rule"):
-            result["command-arg-on"] = rule["on"][2]
-
-    if rule["off"][0] == "ir_key":
-        result["instance-off"] = "ir_blaster"
-        result["command-off"] = rule["off"][1]
-        result["sub-command-off"] = rule["off"][2]
-    else:
-        result["instance-off"] = rule["off"][1]
-        result["command-off"] = rule["off"][0]
-
-        if result["command-off"] in ("enable_in", "disable_in", "set_rule"):
-            result["command-arg-off"] = rule["off"][2]
-
-    return json.dumps(result)

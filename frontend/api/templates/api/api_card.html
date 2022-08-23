@@ -219,15 +219,15 @@
                                         {% if params.schedule.items|length > 0 %}
                                             {% for time, rule in params.schedule.items %}
                                                 <tr id="{{sensor}}-row-{{forloop.counter}}">
-                                                    <td><input type="time" class="form-control schedule-rule" id="schedule-{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}" data-original="{{ time }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists" autocomplete="off"></td>
-                                                    <td><input type="text" class="form-control schedule-rule" id="schedule-{{sensor}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{sensor}}-rule{{forloop.counter}}-value" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
+                                                    <td><input type="time" class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}" data-original="{{ time }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists" autocomplete="off"></td>
+                                                    <td><input type="text" class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}" placeholder="" name="{{sensor}}-rule{{forloop.counter}}" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
                                                     <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
                                                 </tr>
                                             {% endfor %}
                                         {% else %}
                                             <tr id="{{sensor}}-row-1">
-                                                <td><input type="time" class="form-control" id="schedule-{{sensor}}-rule1-time" placeholder="HH:MM" name="schedule-{{sensor}}-rule1-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
-                                                <td><input type="text" class="form-control" id="schedule-{{sensor}}-rule1-value" placeholder="" name="schedule-{{sensor}}-rule1-value" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
+                                                <td><input type="time" class="form-control" id="{{sensor}}-rule1-time" placeholder="HH:MM" name="{{sensor}}-rule1-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
+                                                <td><input type="text" class="form-control" id="{{sensor}}-rule1" placeholder="" name="{{sensor}}-rule1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
                                                 <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="{{sensor}}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
                                             </tr>
                                         {% endif %}
@@ -278,7 +278,7 @@
                                             {% endif %}
                                             <li><a id="{{device}}-reset" class="dropdown-item reset-rule" onclick="reset(this);">Reset rule</a></li>
                                             {% if params.type == "api-target" %}
-                                                <li><a id="{{device}}-set_rule" class="dropdown-item" onclick="open_rule_modal(this);">Change rule</a></li>
+                                                <li><a id="{{device}}-current_rule-button" class="dropdown-item" onclick="open_rule_modal(this);">Change rule</a></li>
                                             {% endif %}
                                         </ul>
                                     </div>
@@ -312,7 +312,7 @@
 
                                 {% if params.type == "api-target" %}
                                     <div style="display:none;">
-                                        <input id="{{device}}-rule" type="text" autocomplete="off" onchange="change_api_target_rule(this);">
+                                        <input id="{{device}}-current_rule" type="text" autocomplete="off" value="{{params.current_rule}}" onchange="change_api_target_rule(this);">
                                     </div>
                                 {% endif %}
 
@@ -333,13 +333,13 @@
                                         {% if params.schedule.items|length > 0 %}
                                             {% for time, rule in params.schedule.items %}
                                                 <tr id="{{device}}-row-{{forloop.counter}}">
-                                                    <td><input type="time" class="form-control schedule-rule" id="schedule-{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="schedule-{{device}}-rule{{forloop.counter}}-time" value="{{ time }}" data-original="{{ time }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists" autocomplete="off"></td>
+                                                    <td><input type="time" class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="{{device}}-rule{{forloop.counter}}-time" value="{{ time }}" data-original="{{ time }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists" autocomplete="off"></td>
 
                                                     {% if not params.type == "api-target" %}
-                                                        <td><input type="text" class="form-control schedule-rule" id="schedule-{{device}}-rule{{forloop.counter}}-value" placeholder="" name="schedule-{{device}}-rule{{forloop.counter}}-value" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
+                                                        <td><input type="text" class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}" placeholder="" name="{{device}}-rule{{forloop.counter}}" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
                                                     {% else %}
-                                                        <td><button id="schedule-{{device}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">Set rule</button>
-                                                        <input type="text" class="form-control rule {{device}}" id="schedule-{{device}}-rule{{forloop.counter}}-value" value="" value="{{ rule }}" data-original="{{ rule }}" style="display:none;"></td>
+                                                        <td><button id="{{device}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">Set rule</button>
+                                                        <input type="text" class="form-control rule {{device}}" id="{{device}}-rule{{forloop.counter}}" value="{{ rule }}" data-original="{{ rule }}" style="display:none;"></td>
                                                     {% endif %}
 
                                                     <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
@@ -347,13 +347,13 @@
                                             {% endfor %}
                                         {% else %}
                                             <tr id="{{device}}-row-1">
-                                                <td><input type="time" class="form-control" id="schedule-{{device}}-rule1-time" placeholder="HH:MM" name="schedule-{{device}}-rule1-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
+                                                <td><input type="time" class="form-control" id="{{device}}-rule1-time" placeholder="HH:MM" name="{{device}}-rule1-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
 
                                                 {% if not params.type == "api-target" %}
-                                                    <td><input type="text" class="form-control" id="schedule-{{device}}-rule1-value" placeholder="" name="schedule-{{device}}-rule1-value" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
+                                                    <td><input type="text" class="form-control" id="{{device}}-rule1" placeholder="" name="{{device}}-rule1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
                                                 {% else %}
-                                                    <td><button id="schedule-{{device}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                                    <input type="text" class="form-control rule {{device}}" id="schedule-{{device}}-rule1-value" value="" style="display:none;"></td>
+                                                    <td><button id="{{device}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                    <input type="text" class="form-control rule {{device}}" id="{{device}}-rule1" value="" style="display:none;"></td>
                                                 {% endif %}
 
                                                 <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="{{device}}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>

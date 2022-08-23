@@ -14,16 +14,16 @@ function add(button) {
     var cell_del = row.insertCell(2);
 
     // Add timestamp field
-    cell_time.innerHTML = `<input type='text' class='form-control ${instance} timestamp' id='schedule-${instance}-rule${next_row}-time' placeholder='HH:MM'>`;
+    cell_time.innerHTML = `<input type='text' class='form-control ${instance} timestamp' id='${instance}-rule${next_row}-time' placeholder='HH:MM'>`;
 
     // For ApiTarget, add button that opens rule modal + hidden input field that receives value from modal
     if (instance.startsWith("device") && document.getElementById(instance.replace("device", "deviceType")).value == "api-target") {
-        cell_value.innerHTML = `<button id="schedule-${instance}-rule${next_row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                <input type="text" class="form-control ${instance} rule" id="schedule-${instance}-rule${next_row}-value" placeholder="" style="display:none;">`
+        cell_value.innerHTML = `<button id="${instance}-rule${next_row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                <input type="text" class="form-control ${instance} rule" id="${instance}-rule${next_row}" placeholder="" style="display:none;">`
 
     // For all other instance types, add input field
     } else {
-        cell_value.innerHTML = `<input type='text' class='form-control ${instance} rule' id='schedule-${instance}-rule${next_row}-value' placeholder=''>`;
+        cell_value.innerHTML = `<input type='text' class='form-control ${instance} rule' id='${instance}-rule${next_row}' placeholder=''>`;
     };
 
     // Add delete button

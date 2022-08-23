@@ -168,7 +168,7 @@ async function load_device_section(select) {
                     </div>
 
                     <div class="mb-2 text-center">
-                        <button id="device${index}-set-rule" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" disabled>Set rule</button>
+                        <button id="device${index}-default_rule-button" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" disabled>Set rule</button>
                     </div>
 
                     <div class="mb-2 text-center">
