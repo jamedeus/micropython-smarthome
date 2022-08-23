@@ -299,7 +299,7 @@ def edit_config(request, name):
 
     template = loader.get_template('node_configuration/edit-config.html')
 
-    api_target_options = get_api_target_menu_options()
+    api_target_options = get_api_target_menu_options(target.friendly_name)
 
     context = {"config": config, "api_target_options": api_target_options}
 
@@ -395,10 +395,15 @@ def generateConfigFile(request, edit_existing=False):
 
 
 # Return dict with all configured nodes, their devices and sensors, and API commands which target each device/sensor type
-# Used to populate cascading dropdown menu in frontent
-def get_api_target_menu_options():
+# If friendly name of existing node passed as arg, name and IP are replaced with "self-target" and "127.0.0.1" respectively
+# Used to populate cascading dropdown menu in frontend
+def get_api_target_menu_options(editing_node=False):
     dropdownObject = {}
     dropdownObject['addresses'] = {}
+
+    # Add self-target option
+    dropdownObject['self-target'] = {}
+    dropdownObject['addresses']['self-target'] = '127.0.0.1'
 
     for node in Node.objects.all():
         entries = {}
@@ -429,7 +434,10 @@ def get_api_target_menu_options():
 
             entries[instance_string] = entry
 
-        dropdownObject[node.friendly_name] = entries
-        dropdownObject['addresses'][node.friendly_name] = node.ip
+        if editing_node and node.friendly_name == editing_node:
+            dropdownObject["self-target"] = entries
+        else:
+            dropdownObject[node.friendly_name] = entries
+            dropdownObject['addresses'][node.friendly_name] = node.ip
 
     return dropdownObject

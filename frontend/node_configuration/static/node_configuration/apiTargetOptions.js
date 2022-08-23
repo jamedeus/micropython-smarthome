@@ -31,7 +31,6 @@ function api_target_selected(el) {
     };
 }
 
-
 // Modal fields
 var instance_select_on = document.getElementById("instance-on");
 var instance_select_off = document.getElementById("instance-off");
@@ -164,6 +163,13 @@ function open_rule_modal(el) {
 
     // Get target device ID, use to get options from ApiTargetOptions object
     var target = el.id.split("-")[0];
+
+    // If user selected self-target, get options based on current devices and sensors
+    try {
+        if (document.getElementById(`${target}-ip`).value == "127.0.0.1") {
+            get_self_target_options();
+        };
+    } catch(err) {};
 
     // Options object has different syntax on provision page, use selected dropdown item as object key instead
     if (!ApiTargetOptions[target]) {
@@ -341,5 +347,39 @@ async function change_api_target_rule(el) {
 
     if (JSON.stringify(result).startsWith('{"ERROR')) {
         console.log(JSON.stringify(result));
+    };
+};
+
+// Called when user opens modal with "self-target" selected. Gets all valid commands for current devices and sensors, adds to object
+function get_self_target_options() {
+    ApiTargetOptions['self-target'] = {}
+
+    // Update all instance properties
+    for (sensor in instances['sensors']) {
+        instances['sensors'][sensor].clearParams();
+        instances['sensors'][sensor].getParams();
+    };
+
+    for (device in instances['devices']) {
+        instances['devices'][device].clearParams();
+        instances['devices'][device].getParams();
+    };
+
+    // Add all device options
+    for (device in instances['devices']) {
+        const instance_string = `${device}-${instances['devices'][device]['nickname']} (${instances['devices'][device]['type'] })`
+
+        ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off']
+    };
+
+    // Add all sensor options
+    for (sensor in instances['sensors']) {
+        const instance_string = `${sensor}-${instances['sensors'][sensor]['nickname']} (${instances['sensors'][sensor]['type'] })`
+
+        if (instances['sensors'][sensor]['type'] == "si7021" || instances['sensors'][sensor]['type'] == "switch") {
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot']
+        } else {
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']
+        };
     };
 };

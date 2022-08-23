@@ -59,7 +59,7 @@ def api(request, node):
         status["api_target_options"] = {}
 
         # Get object containing all valid options for all nodes
-        options = get_api_target_menu_options()
+        options = get_api_target_menu_options(target.friendly_name)
 
         # Get target IP(s) from config file, use to find correct options in object above
         with open(target.config_file, 'r') as file:
