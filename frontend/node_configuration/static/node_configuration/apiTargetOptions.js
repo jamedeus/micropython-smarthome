@@ -23,11 +23,11 @@ function submit_api_rule(el) {
 // Called when user changes target node in dropdown
 function api_target_selected(el) {
     if (el.value) {
-        document.getElementById(el.id.split("-")[0] + "-set-rule").disabled = false;
+        document.getElementById(el.id.split("-")[0] + "-default_rule-button").disabled = false;
         // Clear old rule so menu doesn't populate when opened
         document.getElementById(el.id.split("-")[0] + "-default_rule").value = "";
     } else {
-        document.getElementById(el.id.split("-")[0] + "-set-rule").disabled = true;
+        document.getElementById(el.id.split("-")[0] + "-default_rule-button").disabled = true;
     };
 }
 

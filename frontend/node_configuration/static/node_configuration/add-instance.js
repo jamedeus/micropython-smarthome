@@ -161,7 +161,8 @@ async function load_device_section(select) {
                             <option value="" selected="selected" selected></option>`
 
         for (var x in ApiTargetOptions) {
-            template +=    `<option value="${x}">${x.split("-")[1]}</option>`
+            if (x == "addresses") { continue };
+            template +=    `<option value="${ApiTargetOptions["addresses"][x]}">${x}</option>`
         };
 
         template +=     `</select>
@@ -172,6 +173,7 @@ async function load_device_section(select) {
                     </div>
 
                     <div class="mb-2 text-center">
+                        <label for="device${index}-default_rule" style="display:none;"><b>Default Rule:</b></label>
                         <input type="default_rule" class="form-control" id="device${index}-default_rule" placeholder="" style="display:none;" required>
                     </div>`
 
