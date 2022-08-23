@@ -13,8 +13,8 @@ async function updateStatusObject() {
 
     } else if (selected_node_unreachable == true && new_status != "Error: Unable to connect.") {
         $("#error-modal").modal("hide");
-        console.log("Re-connected to target.");
-        selected_node_unreachable = false;
+        // Refresh page (node config may have changed, need to get new device/sensor cards)
+        location.reload();
     } else if (selected_node_unreachable == true) {
         // Prevent iterating error message in loop below
         return;
