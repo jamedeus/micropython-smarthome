@@ -299,10 +299,10 @@ def add_schedule_rule(args):
     if timestamp in rules and (not len(args) >=4 or not args[3] == "overwrite"):
         return {"ERROR": "Rule already exists at {}, add 'overwrite' arg to replace".format(timestamp)}
     else:
-        rules[timestamp] = args[2]
+        rules[timestamp] = valid
         app.config.schedule[args[0]] = rules
         app.config.build_queue()
-        return {"Rule added" : args[2], "time" : timestamp}
+        return {"Rule added" : valid, "time" : timestamp}
 
 
 
