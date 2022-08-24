@@ -33,11 +33,11 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                         <th style='text-align: left;'>Rule</th>
                                     </tr>
                                         <tr id='${device}-row-1' class='${device}'>
-                                            <td style="width: 50%"><input type='text' class='form-control ${device} timestamp' id='${device}-rule1-time' placeholder='HH:MM'></td>`
+                                            <td><input type='text' class='form-control ${device} timestamp' id='${device}-rule1-time' placeholder='HH:MM'></td>`
 
             // ApiTarget: add button that opens rule modal + hidden input field that receives value from modal
             if (instances['devices'][device]['type'] == 'api-target') {
-                template +=                `<td style="width: 50%"><button id="${device}-rule1-button" class="form-control ${device}" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                template +=                `<td><button id="${device}-rule1-button" class="form-control ${device}" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                             <input type="text" class="form-control ${device} rule" id="${device}-rule1" placeholder="" style="display:none;"></td>`
 
             // All other device types: add input field

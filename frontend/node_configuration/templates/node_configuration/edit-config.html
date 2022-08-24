@@ -96,6 +96,11 @@
         .modal-dropdown {
             background-color: #1b1e1f !important;
         }
+
+        /* Force equal width for schedule rule fields */
+        td {
+            width: 50%;
+        }
     </style>
 </head>
 
@@ -168,9 +173,9 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between">
-                                            <button class="btn" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
+                                            <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                             <h4 class="card-title mx-auto my-auto sensor{{forloop.counter}}">sensor{{ forloop.counter }}</h4>
-                                            <button class="btn my-auto sensor{{forloop.counter}}" id="sensor{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                            <button class="btn my-auto pe-2 sensor{{forloop.counter}}" id="sensor{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                         </div>
 
                                         <label for="sensorType{{ forloop.counter }}" class="form-label sensor{{forloop.counter}}"><b>Type:</b></label>
@@ -300,9 +305,9 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between">
-                                            <button class="btn" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
+                                            <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                             <h4 class="card-title mx-auto my-auto device{{forloop.counter}}">device{{ forloop.counter }}</h4>
-                                            <button class="btn my-auto device{{forloop.counter}}" id="device{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                            <button class="btn my-auto pe-2 device{{forloop.counter}}" id="device{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                         </div>
 
                                         <label for="deviceType{{ forloop.counter }}" class="form-label device{{forloop.counter}}"><b>Type:</b></label>
@@ -458,9 +463,9 @@
                                 <div class="card">
                                     <div class="card-body">
                                         <div class="d-flex justify-content-between">
-                                            <button class="btn" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
+                                            <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                             <h4 class="card-title mx-auto my-auto device{{context.config.devices|length|add:1}}">device{{ context.config.devices|length|add:1 }}</h4>
-                                            <button class="btn my-auto device{{context.config.devices|length|add:1}}" id="device{{ context.config.devices|length|add:1 }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                            <button class="btn my-auto pe-2 device{{context.config.devices|length|add:1}}" id="device{{ context.config.devices|length|add:1 }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                         </div>
                                         <label for="deviceType{{ context.config.devices|length|add:1 }}" class="form-label device{{context.config.devices|length|add:1}}"><b>Type:</b></label>
                                         <div>
@@ -573,7 +578,7 @@
                                                 {% if not params.type == "api-target" %}
                                                     <td><input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" placeholder="" value="{{rule}}"></td>
                                                 {% else %}
-                                                    <td style="width: 50%">
+                                                    <td>
                                                         <button id="{{instance}}-rule{{forloop.counter}}-button" class="form-control {{instance}}" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                                         <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" value="{{rule}}" style="display:none;">
                                                     </td>
@@ -586,9 +591,9 @@
                                             <td><input type="text" class="form-control timestamp {{instance}}" id="{{instance}}-rule1-time" placeholder="HH:MM"></td>
 
                                             {% if not params.type == "api-target" %}
-                                                <td><input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule1" placeholder="HH:MM"></td>
+                                                <td><input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule1" placeholder=""></td>
                                             {% else %}
-                                                <td style="width: 50%">
+                                                <td>
                                                     {# Show button that opens api rule modal containing dropdowns used to set rule. Selection from modal added to hidden text box, read by form #}
                                                     <button id="{{instance}}-rule1-button" class="form-control {{instance}}" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                                     <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule1" style="display:none;">

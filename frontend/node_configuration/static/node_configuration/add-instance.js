@@ -258,9 +258,9 @@ async function load_next_device(button) {
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
-                                    <button class="btn" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
+                                    <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                     <h4 class="card-title mx-auto my-auto device${index + 1}">device${index + 1}</h4>
-                                    <button class="btn my-auto device${index + 1}" id="device${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <button class="btn my-auto pe-2 device${index + 1}" id="device${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
                                 <label for="deviceType${index + 1}" class="form-label device${index + 1}"><b>Type:</b></label>
                                 <div>
@@ -311,9 +311,9 @@ async function load_next_sensor(button) {
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
-                                    <button class="btn" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
+                                    <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                     <h4 class="card-title mx-auto my-auto sensor${index + 1}">sensor${index + 1}</h4>
-                                    <button class="btn my-auto sensor${index + 1}" id="sensor${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <button class="btn my-auto pe-2 sensor${index + 1}" id="sensor${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
                                 <label for="sensorType${index + 1}" class="form-label sensor${index + 1}"><b>Type:</b></label>
                                 <div>
