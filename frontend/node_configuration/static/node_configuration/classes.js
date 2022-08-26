@@ -8,6 +8,9 @@ class Device {
         // Track if page2 + page3 contents need to be updated
         this.modified = false;
 
+        // Track if page2 + page3 titles need to be updated (without removing targets/rules)
+        this.name_changed = false;
+
         this.getParams();
     };
 
@@ -85,6 +88,9 @@ class Sensor {
         // Track if page2 + page3 contents need to be updated
         this.modified = false;
 
+        // Track if page2 + page3 titles need to be updated (without removing targets/rules)
+        this.name_changed = false;
+
         this.getParams();
     };
 
@@ -136,5 +142,20 @@ class Sensor {
                 this.targets.push(checks[i].value.split("-")[2]);
             };
         };
+    };
+};
+
+
+
+// Called when nickname fields change, causes name shown on pages 2-3 to update
+function update_nickname(el) {
+    const id = el.id.split("-")[0];
+
+    if (id.startsWith("device")) {
+        instances['devices'][id]['nickname'] = el.value;
+        instances['devices'][id]['name_changed'] = true;
+    } else {
+        instances['sensors'][id]['nickname'] = el.value;
+        instances['sensors'][id]['name_changed'] = true;
     };
 };

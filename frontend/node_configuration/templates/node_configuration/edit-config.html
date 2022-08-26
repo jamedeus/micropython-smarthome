@@ -193,7 +193,7 @@
                                         <div id="addSensorOptions{{ forloop.counter }}" class="card-body sensor{{forloop.counter}}">
                                             <div class="mb-2">
                                                 <label for="sensor{{forloop.counter}}-nickname" class="sensor{{forloop.counter}}"><b>Nickname:</b></label>
-                                                <input type="text" class="form-control sensor{{forloop.counter}}" id="sensor{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" required>
+                                                <input type="text" class="form-control sensor{{forloop.counter}}" id="sensor{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
                                             </div>
 
                                         {% if params.type == "pir" %}
@@ -329,7 +329,7 @@
                                         <div id="addDeviceOptions{{ forloop.counter }}" class="card-body device{{forloop.counter}}">
                                             <div class="mb-2">
                                                 <label for="device{{forloop.counter}}-nickname" class="device{{forloop.counter}}"><b>Nickname:</b></label>
-                                                <input type="text" class="form-control device{{forloop.counter}}" id="device{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" required>
+                                                <input type="text" class="form-control device{{forloop.counter}}" id="device{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
                                             </div>
 
                                         {% if params.type == "dimmer" %}
@@ -532,13 +532,13 @@
 
                         <div class="card mb-4 {{sensor}}">
                             <div class="card-body">
-                                <label id="{{sensor}}-targets-label" for="{{sensor}}-targets" class="card-title {{sensor}}"><b>{{ sensor }} ({{ params.type }}) targets:</b></label>
+                                <label id="{{sensor}}-targets-label" for="{{sensor}}-targets" class="card-title {{sensor}}"><b>{{ params.nickname }}</b> targets:</label>
                                 <div id="{{sensor}}-targets" class="form-check sensor-targets {{sensor}}">
 
                                     {% for device, dparams in context.config.devices.items %}
 
                                         <input type="checkbox" class="form-check-input {{sensor}} {{device}} target" id="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %}>
-                                        <label for="target-{{sensor}}-{{device}}" class="form-check-label {{sensor}} {{device}}">{{ device }} ({{ dparams.type }})</label>
+                                        <label for="target-{{sensor}}-{{device}}" class="form-check-label {{sensor}} {{device}} target-label">{{ dparams.nickname }}</label>
                                         <br class="{{device}}">
 
                                     {% endfor %}
@@ -563,7 +563,9 @@
 
                         <div class="card mb-4 {{instance}}">
                             <div class="card-body text-center">
-                                <label id="{{instance}}-rules-label" class="card-title schedule-rule-card {{instance}}"><b>{{ instance }} ({{ params.type }})</b></label>
+                                <label id="{{instance}}-rules-label" class="card-title schedule-rule-card {{instance}}" title="{{instance}} - {{params.type}}">
+                                    <b>{{ params.nickname }}</b>
+                                </label>
                                 <table id="{{instance}}-rules" class="table table-borderless {{instance}}">
                                     <tr>
                                         <th style="text-align: center;">Time</th>

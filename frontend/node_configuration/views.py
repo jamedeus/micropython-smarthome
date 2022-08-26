@@ -274,12 +274,14 @@ def edit_config(request, name):
             delete.append(i)
             instances[i] = {}
             instances[i]["type"] = config[i]["type"]
+            instances[i]["nickname"] = config[i]["nickname"]
             instances[i]["schedule"] = config[i]["schedule"]
         elif i.startswith("device"):
             devices[i] = config[i]
             delete.append(i)
             instances[i] = {}
             instances[i]["type"] = config[i]["type"]
+            instances[i]["nickname"] = config[i]["nickname"]
             instances[i]["schedule"] = config[i]["schedule"]
 
             if config[i]["type"] == "api-target":
