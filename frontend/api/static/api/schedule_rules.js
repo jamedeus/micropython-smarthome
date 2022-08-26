@@ -39,8 +39,8 @@ const save_rules_toast = new bootstrap.Toast(document.getElementById("save_rules
 // Existing rules: Delete button changes to add button
 // Modified rules: If changed back to original value, add button reverts back to delete
 function schedule_rule_field_handler(e) {
-    const id = e.target.id.split("-")[1];
-    const row = e.target.id.split("-")[2].replace("rule", "");
+    const id = e.target.id.split("-")[0];
+    const row = e.target.id.split("-")[1].replace("rule", "");
     const time_field = document.getElementById(`${id}-rule${row}-time`);
     const rule_field = document.getElementById(`${id}-rule${row}`);
 
