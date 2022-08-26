@@ -25,31 +25,37 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 
             // Add schedule rule section for the new device to page3
             template = `<div class='card mb-4 ${device}'>
-                            <div class='card-body'>
+                            <div class='card-body text-center'>
                                 <label id='${device}-rules-label' class='card-title schedule-rule-card ${device}'><b>${device} (${instances['devices'][device]['type']})</b></label>
                                 <table id='${device}-rules' class='table table-borderless ${device}'>
                                     <tr>
-                                        <th style='text-align: left;'>Time</th>
-                                        <th style='text-align: left;'>Rule</th>
+                                        <th style='text-align: center;'>Time</th>
+                                        <th style='text-align: center;'>Rule</th>
                                     </tr>
                                         <tr id='${device}-row-1' class='${device}'>
-                                            <td><input type='text' class='form-control ${device} timestamp' id='${device}-rule1-time' placeholder='HH:MM'></td>`
+                                            <td>
+                                                <input type='time' class='form-control ${device} timestamp' id='${device}-rule1-time' placeholder='HH:MM'>
+                                            </td>`
 
             // ApiTarget: add button that opens rule modal + hidden input field that receives value from modal
             if (instances['devices'][device]['type'] == 'api-target') {
-                template +=                `<td><button id="${device}-rule1-button" class="form-control ${device}" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                            <input type="text" class="form-control ${device} rule" id="${device}-rule1" placeholder="" style="display:none;"></td>`
+                template +=                `<td>
+                                                <button id="${device}-rule1-button" class="form-control ${device}" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                                                <input type="text" class="form-control ${device} rule" id="${device}-rule1" placeholder="" style="display:none;">
+                                            </td>`
 
             // All other device types: add input field
             } else {
-                template +=                 `<td><input type='text' class='form-control ${device} rule' id='${device}-rule1' placeholder=''></td>`
+                template +=                 `<td>
+                                                 <input type='text' class='form-control ${device} rule' id='${device}-rule1' placeholder=''>
+                                             </td>`
             };
 
-            template +=                     `<td class='min'><button type='button' class='remove btn btn-danger ${device}' id='${device}-remove1'  onclick='remove(this)'>X</button></td>
+            template +=                     `<td class='min'>
+                                                 <button type='button' class='remove btn btn-sm btn-danger mt-1 ${device}' id='${device}-remove1' onclick='remove(this)'><i class="bi-x-lg"></i></button>
+                                             </td>
                                         </tr>
                                 </table>
-                            </div>
-                            <div class='text-left mx-3 mb-3'>
                                 <button type='button' class='btn btn-secondary add ${device}' id='${device}-add-rule' onclick='add(this)'>Add another</button>
                             </div>
                         </div>`;
@@ -136,21 +142,25 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 
             // Add schedule rule section for the new sensor to page3
             template = `<div class='card mb-4 ${sensor}'>
-                            <div class='card-body'>
+                            <div class='card-body text-center'>
                                 <label id='${sensor}-rules-label' class='card-title schedule-rule-card ${sensor}'><b>${sensor} (${instances['sensors'][sensor]['type']})</b></label>
                                 <table id='${sensor}-rules' class='table table-borderless ${sensor}'>
                                     <tr>
-                                        <th style='text-align: left;'>Time</th>
-                                        <th style='text-align: left;'>Rule</th>
+                                        <th style='text-align: center;'>Time</th>
+                                        <th style='text-align: center;'>Rule</th>
                                     </tr>
                                         <tr id='${sensor}-row-1' class='${sensor}'>
-                                            <td><input type='text' class='form-control ${sensor} timestamp' id='${sensor}-rule1-time' placeholder='HH:MM'></td>
-                                            <td><input type='text' class='form-control ${sensor} rule' id='${sensor}-rule1' placeholder=''></td>
-                                            <td class='min'><button type='button' class='remove btn btn-danger ${sensor}' id='${sensor}-remove1'  onclick='remove(this)'>X</button></td>
+                                            <td>
+                                                <input type='time' class='form-control ${sensor} timestamp' id='${sensor}-rule1-time' placeholder='HH:MM'>
+                                            </td>
+                                            <td>
+                                                <input type='text' class='form-control ${sensor} rule' id='${sensor}-rule1' placeholder=''>
+                                            </td>
+                                            <td class='min'>
+                                                <button type='button' class='remove btn btn-sm btn-danger mt-1 ${sensor}' id='${sensor}-remove1'  onclick='remove(this)'><i class="bi-x-lg"></i></button>
+                                            </td>
                                         </tr>
                                 </table>
-                            </div>
-                            <div class='text-left mx-3 mb-3'>
                                 <button type='button' class='btn btn-secondary add ${sensor}' id='${sensor}-add-rule' onclick='add(this)'>Add another</button>
                             </div>
                         </div>`

@@ -14,7 +14,7 @@ function add(button) {
     var cell_del = row.insertCell(2);
 
     // Add timestamp field
-    cell_time.innerHTML = `<input type='text' class='form-control ${instance} timestamp' id='${instance}-rule${next_row}-time' placeholder='HH:MM'>`;
+    cell_time.innerHTML = `<input type='time' class='form-control ${instance} timestamp' id='${instance}-rule${next_row}-time' placeholder='HH:MM'>`;
 
     // For ApiTarget, add button that opens rule modal + hidden input field that receives value from modal
     if (instance.startsWith("device") && document.getElementById(instance.replace("device", "deviceType")).value == "api-target") {
@@ -27,7 +27,7 @@ function add(button) {
     };
 
     // Add delete button
-    cell_del.innerHTML = `<button type='button' class='remove btn btn-danger' id='${instance}-remove${next_row}' onclick='remove(this)'>X</button>`;
+    cell_del.innerHTML = `<button type='button' class='remove btn btn-sm btn-danger mt-1 ${instance}' id='${instance}-remove${next_row}' onclick='remove(this)'><i class="bi-x-lg"></i></button>`;
 };
 
 function remove(e) {
