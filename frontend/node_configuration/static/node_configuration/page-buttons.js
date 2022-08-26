@@ -1,6 +1,25 @@
 document.getElementById('page1-button').addEventListener("click", function(e) {
     e.preventDefault();
 
+    // Confirm all nickname fields are populated (prevent blank titles on page2-3)
+    var nicknames = document.getElementsByClassName('nickname');
+    var valid = true;
+
+    for (i=0; i<nicknames.length; i++) {
+        // If field is blank, add red highlight + listener to remove highlight on input
+        if (nicknames[i].value == "") {
+            nicknames[i].classList.add("is-invalid");
+            nicknames[i].scrollIntoView({behavior: "smooth"});
+            nicknames[i].addEventListener("input", (e) => {
+                e.target.classList.remove("is-invalid");
+            }, { once: true });
+            valid = false;
+        };
+    };
+
+    // If blank fields exist, don't proceed to page2
+    if (!valid) { return };
+
     // Get array of all sensor target selection divs on page2
     sensors = document.getElementsByClassName("sensor-targets");
 

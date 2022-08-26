@@ -193,7 +193,7 @@
                                         <div id="addSensorOptions{{ forloop.counter }}" class="card-body sensor{{forloop.counter}}">
                                             <div class="mb-2">
                                                 <label for="sensor{{forloop.counter}}-nickname" class="sensor{{forloop.counter}}"><b>Nickname:</b></label>
-                                                <input type="text" class="form-control sensor{{forloop.counter}}" id="sensor{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
+                                                <input type="text" class="form-control sensor{{forloop.counter}} nickname" id="sensor{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
                                             </div>
 
                                         {% if params.type == "pir" %}
@@ -329,7 +329,7 @@
                                         <div id="addDeviceOptions{{ forloop.counter }}" class="card-body device{{forloop.counter}}">
                                             <div class="mb-2">
                                                 <label for="device{{forloop.counter}}-nickname" class="device{{forloop.counter}}"><b>Nickname:</b></label>
-                                                <input type="text" class="form-control device{{forloop.counter}}" id="device{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
+                                                <input type="text" class="form-control device{{forloop.counter}} nickname" id="device{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
                                             </div>
 
                                         {% if params.type == "dimmer" %}
