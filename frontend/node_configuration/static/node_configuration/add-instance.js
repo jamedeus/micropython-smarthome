@@ -282,7 +282,7 @@ async function load_next_device(button) {
                             </div>
                         </div>
 
-                        <div class="text-center">
+                        <div class="text-center position-relative">
                             <button onclick="load_next_device(this)" type="button" id="addDeviceButton${index + 1}" class="btn-secondary btn my-3 device${index + 1}">Add another</button>
                         </div>
                     </div>`
@@ -331,7 +331,7 @@ async function load_next_sensor(button) {
                             </div>
                         </div>
 
-                        <div class="text-center">
+                        <div class="text-center position-relative">
                             <button onclick="load_next_sensor(this)" type="button" id="addSensorButton${index + 1}" class="btn-secondary btn my-3 sensor${index + 1}">Add another</button>
                         </div>
                     </div>`
@@ -352,20 +352,46 @@ async function load_next_sensor(button) {
 
 
 // Called by delete button in top right corner of device/sensor cards
-function remove_instance(el) {
+async function remove_instance(el) {
     // Instance ID string (device1, sensor2, etc)
     var target = el.id.split("-")[0];
+
+    // Get pixel value of 1rem (used in animation)
+    remPx = parseFloat(getComputedStyle(document.documentElement).fontSize)
 
     // Delete target from instances, get object with all cards of same type (device/sensor), get index of deleted card
     if (target.startsWith("device")) {
         delete instances['devices'][target];
         var cards = document.getElementById("devices").children;
         var num = target.replace("device", "");
+        // Get height of card to be deleted + 3rem (gap between cards)
+        animation_height = document.getElementById(`addDeviceDiv${num}`).clientHeight / remPx + 3;
     } else {
         delete instances['sensors'][target];
         var cards = document.getElementById("sensors").children;
         var num = target.replace("sensor", "");
+        // Get height of card to be deleted + 3rem (gap between cards)
+        animation_height = document.getElementById(`addSensorDiv${num}`).clientHeight / remPx + 3;
     };
+
+    // Set CSS var used in slide-up animation
+    document.documentElement.style.setProperty('--animation-height', `${animation_height}rem`);
+
+    // TODO disable all other delete buttons (currently possible to cause weird behavior if deleting quickly)
+    // Fade out card to be deleted
+    cards[num].classList.add('fade-out');
+    // Slide up all cards below
+    for (i=parseInt(num)+1; i<cards.length; i++) {
+        cards[i].children[0].classList.add('slide-up');
+        cards[i].children[1].classList.add('slide-up');
+    }
+    await sleep(800);
+
+    // Prevent cards jumping higher when hidden card is actually deleted
+    for (i=parseInt(num)+1; i<cards.length; i++) {
+        cards[i].children[0].classList.remove('slide-up');
+        cards[i].children[1].classList.remove('slide-up');
+    }
 
     // If removing first card, remove top margin from second (new-first) card
     if (num == 1) {

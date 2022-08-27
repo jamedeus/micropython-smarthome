@@ -101,6 +101,64 @@
         td {
             width: 50%;
         }
+
+
+
+
+
+
+
+
+        :root {
+            --animation-height: 25rem;
+        }
+
+        @keyframes slide-up {
+            0% {
+                bottom: 0rem;
+            }
+            100% {
+                bottom: var(--animation-height);
+            }
+        }
+
+        .slide-up {
+            animation-name: slide-up;
+            animation-duration: 0.8s;
+            animation-timing-function: ease;
+            animation-fill-mode: forwards;
+        }
+
+
+        @keyframes fade-out {
+            0% {
+                opacity: 100%;
+            }
+            100% {
+                opacity: 0%;
+            }
+        }
+
+        .fade-out {
+            animation-name: fade-out;
+            animation-duration: 0.4s;
+            animation-timing-function: ease;
+            animation-fill-mode: forwards;
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     </style>
 </head>
 
@@ -273,11 +331,11 @@
                                 </div>
 
                                 {% if forloop.last %}
-                                    <div class="text-center">
+                                    <div class="text-center position-relative">
                                         <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn my-3 sensor{{forloop.counter}}">Add another</button>
                                     </div>
                                 {% else %}
-                                    <div class="text-center">
+                                    <div class="text-center position-relative">
                                         <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn my-3 sensor{{forloop.counter}}" style="display:none">Add another</button>
                                     </div>
                                 {% endif  %}
@@ -445,11 +503,11 @@
                                 </div>
 
                                 {% if forloop.last and not context.config.ir_blaster %}
-                                    <div class="text-center">
+                                    <div class="text-center position-relative">
                                         <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn my-3 device{{forloop.counter}}">Add another</button>
                                     </div>
                                 {% else %}
-                                    <div class="text-center">
+                                    <div class="text-center position-relative">
                                         <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn my-3 device{{forloop.counter}}" style="display:none">Add another</button>
                                     </div>
                                 {% endif  %}
@@ -501,7 +559,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="text-center">
+                                <div class="text-center position-relative">
                                     <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ context.config.devices|length|add:1 }}" class="btn-secondary btn my-3 device{{context.config.devices|length|add:1}}">Add another</button>
                                 </div>
                             </div>
