@@ -233,7 +233,7 @@
                                         <div class="d-flex justify-content-between">
                                             <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                             <h4 class="card-title mx-auto my-auto sensor{{forloop.counter}}">sensor{{ forloop.counter }}</h4>
-                                            <button class="btn my-auto pe-2 sensor{{forloop.counter}}" id="sensor{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                            <button class="btn my-auto pe-2 sensor{{forloop.counter}} delete" id="sensor{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                         </div>
 
                                         <label for="sensorType{{ forloop.counter }}" class="form-label sensor{{forloop.counter}}"><b>Type:</b></label>
@@ -365,7 +365,7 @@
                                         <div class="d-flex justify-content-between">
                                             <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                             <h4 class="card-title mx-auto my-auto device{{forloop.counter}}">device{{ forloop.counter }}</h4>
-                                            <button class="btn my-auto pe-2 device{{forloop.counter}}" id="device{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                            <button class="btn my-auto pe-2 device{{forloop.counter}} delete" id="device{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                         </div>
 
                                         <label for="deviceType{{ forloop.counter }}" class="form-label device{{forloop.counter}}"><b>Type:</b></label>
@@ -523,7 +523,7 @@
                                         <div class="d-flex justify-content-between">
                                             <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                             <h4 class="card-title mx-auto my-auto device{{context.config.devices|length|add:1}}">device{{ context.config.devices|length|add:1 }}</h4>
-                                            <button class="btn my-auto pe-2 device{{context.config.devices|length|add:1}}" id="device{{ context.config.devices|length|add:1 }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                            <button class="btn my-auto pe-2 device{{context.config.devices|length|add:1}} delete" id="device{{ context.config.devices|length|add:1 }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                         </div>
                                         <label for="deviceType{{ context.config.devices|length|add:1 }}" class="form-label device{{context.config.devices|length|add:1}}"><b>Type:</b></label>
                                         <div>

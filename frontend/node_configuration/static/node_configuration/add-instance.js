@@ -260,7 +260,7 @@ async function load_next_device(button) {
                                 <div class="d-flex justify-content-between">
                                     <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                     <h4 class="card-title mx-auto my-auto device${index + 1}">device${index + 1}</h4>
-                                    <button class="btn my-auto pe-2 device${index + 1}" id="device${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <button class="btn my-auto pe-2 device${index + 1} delete" id="device${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
                                 <label for="deviceType${index + 1}" class="form-label device${index + 1}"><b>Type:</b></label>
                                 <div>
@@ -313,7 +313,7 @@ async function load_next_sensor(button) {
                                 <div class="d-flex justify-content-between">
                                     <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
                                     <h4 class="card-title mx-auto my-auto sensor${index + 1}">sensor${index + 1}</h4>
-                                    <button class="btn my-auto pe-2 sensor${index + 1}" id="sensor${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <button class="btn my-auto pe-2 sensor${index + 1} delete" id="sensor${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
                                 <label for="sensorType${index + 1}" class="form-label sensor${index + 1}"><b>Type:</b></label>
                                 <div>
@@ -351,6 +351,94 @@ async function load_next_sensor(button) {
 
 
 
+// Delete instance animation - takes array of divs + num, fades out the div at num, slides up all subsequent divs
+async function delete_animation(cards, num) {
+    return new Promise(async resolve => {
+        // Fade out card to be deleted
+        cards[num].classList.add('fade-out');
+
+        // Slide up all cards below, wait for animation to complete
+        for (i=parseInt(num)+1; i<cards.length; i++) {
+            cards[i].children[0].classList.add('slide-up');
+            cards[i].children[1].classList.add('slide-up');
+        };
+        await sleep(800);
+
+        // Prevent cards jumping higher when hidden card is actually deleted
+        for (i=parseInt(num)+1; i<cards.length; i++) {
+            cards[i].children[0].classList.remove('slide-up');
+            cards[i].children[1].classList.remove('slide-up');
+        };
+
+        // If removing first card, remove top margin from second (new-first) card
+        if (num == 1) {
+            try {
+                cards[2].classList.remove("mt-5");
+            } catch(err) {}; // Prevent error when deleting last card
+        };
+        resolve();
+    });
+};
+
+
+
+// Runs when card deleted, decrement references to instance ID of all subsequent cards to prevent gap in indices
+// Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc
+function update_ids(cards, num, target) {
+    return new Promise(resolve => {
+        // Iterate all cards after the deleted card
+        for (i=parseInt(num)+1; i<cards.length; i++) {
+            // Get all elements associated with current card
+            let elements = document.querySelectorAll(`.${target.replace(num, i)}`);
+
+            // Decrement all instance ID references (device1, sensor2, etc) by 1
+            for (el=0; el<elements.length; el++) {
+                if (elements[el].hasAttribute("id")) {
+                    elements[el].id = elements[el].id.replace(i, i-1);
+                };
+
+                if (elements[el].hasAttribute("for")) {
+                    elements[el].setAttribute("for", elements[el].getAttribute("for").replace(i, i-1));
+                };
+
+                if (elements[el].classList.contains("card-title") || elements[el].classList.contains("form-check-label")) {
+                    if (target.startsWith('device')) {
+                        elements[el].innerHTML = elements[el].innerHTML.replace(`device${i}`, `device${i-1}`);
+                    } else {
+                        elements[el].innerHTML = elements[el].innerHTML.replace(`sensor${i}`, `sensor${i-1}`);
+                    };
+                };
+
+                if (elements[el].classList.contains("form-check-input")) {
+                    if (target.startsWith('device')) {
+                        elements[el].value = elements[el].value.replace(`device${i}`, `device${i-1}`);
+                    } else {
+                        elements[el].value = elements[el].value.replace(`sensor${i}`, `sensor${i-1}`);
+                    };
+                };
+
+                // Decrement class
+                elements[el].classList.remove(target.replace(num, i))
+                elements[el].classList.add(target.replace(num, i-1))
+            };
+
+            // Delete class instance, re-instantiate with new ID, set new to false to prevent duplicates on page2 + page3
+            if (target.startsWith('device')) {
+                delete instances['devices'][`device${i}`];
+                instances['devices'][`device${i-1}`] = new Device(`device${i-1}`);
+                instances['devices'][`device${i-1}`].new = false;
+            } else {
+                delete instances['sensors'][`sensor${i}`];
+                instances['sensors'][`sensor${i-1}`] = new Sensor(`sensor${i-1}`);
+                instances['sensors'][`sensor${i-1}`].new = false;
+            };
+        };
+        resolve();
+    });
+};
+
+
+
 // Called by delete button in top right corner of device/sensor cards
 async function remove_instance(el) {
     // Instance ID string (device1, sensor2, etc)
@@ -362,14 +450,14 @@ async function remove_instance(el) {
     // Delete target from instances, get object with all cards of same type (device/sensor), get index of deleted card
     if (target.startsWith("device")) {
         delete instances['devices'][target];
-        var cards = document.getElementById("devices").children;
         var num = target.replace("device", "");
+        var cards = Array.from(document.getElementById("devices").children);
         // Get height of card to be deleted + 3rem (gap between cards)
         animation_height = document.getElementById(`addDeviceDiv${num}`).clientHeight / remPx + 3;
     } else {
         delete instances['sensors'][target];
-        var cards = document.getElementById("sensors").children;
         var num = target.replace("sensor", "");
+        var cards = Array.from(document.getElementById("sensors").children);
         // Get height of card to be deleted + 3rem (gap between cards)
         animation_height = document.getElementById(`addSensorDiv${num}`).clientHeight / remPx + 3;
     };
@@ -377,81 +465,20 @@ async function remove_instance(el) {
     // Set CSS var used in slide-up animation
     document.documentElement.style.setProperty('--animation-height', `${animation_height}rem`);
 
-    // TODO disable all other delete buttons (currently possible to cause weird behavior if deleting quickly)
-    // Fade out card to be deleted
-    cards[num].classList.add('fade-out');
-    // Slide up all cards below
-    for (i=parseInt(num)+1; i<cards.length; i++) {
-        cards[i].children[0].classList.add('slide-up');
-        cards[i].children[1].classList.add('slide-up');
-    }
-    await sleep(800);
-
-    // Prevent cards jumping higher when hidden card is actually deleted
-    for (i=parseInt(num)+1; i<cards.length; i++) {
-        cards[i].children[0].classList.remove('slide-up');
-        cards[i].children[1].classList.remove('slide-up');
+    // Disable all delete buttons until finished, prevent user deleting multiple at same time
+    for (button of document.getElementsByClassName("delete")) {
+        button.disabled = true;
     }
 
-    // If removing first card, remove top margin from second (new-first) card
-    if (num == 1) {
-        try {
-            cards[2].classList.remove("mt-5");
-        } catch(err) {}; // Prevent error when deleting last card
-    };
-
-    // Get all elements with deleted instance's class, delete all except card (effects indices of cards object used below)
+    // Get all elements with deleted card's class (used to delete later, must get before other card classes change)
     let elements = document.querySelectorAll(`.${target}`);
-    for (i=1; i<elements.length; i++) {
+
+    // Update all other card's IDs and classes while running animation
+    await Promise.all([delete_animation(cards, num), update_ids(cards, num, target)])
+
+    // Delete card + all options on page2-3
+    for (i=0; i<elements.length; i++) {
         elements[i].remove();
-    };
-
-    // Iterate all cards after the deleted card
-    for (i=parseInt(num)+1; i<cards.length; i++) {
-        // Get all elements associated with current card
-        let elements = document.querySelectorAll(`.${target.replace(num, i)}`);
-
-        // Decrement all instance ID references (device1, sensor2, etc) by 1
-        for (el=0; el<elements.length; el++) {
-            if (elements[el].hasAttribute("id")) {
-                elements[el].id = elements[el].id.replace(i, i-1);
-            };
-
-            if (elements[el].hasAttribute("for")) {
-                elements[el].setAttribute("for", elements[el].getAttribute("for").replace(i, i-1));
-            };
-
-            if (elements[el].classList.contains("card-title") || elements[el].classList.contains("form-check-label")) {
-                if (target.startsWith('device')) {
-                    elements[el].innerHTML = elements[el].innerHTML.replace(`device${i}`, `device${i-1}`);
-                } else {
-                    elements[el].innerHTML = elements[el].innerHTML.replace(`sensor${i}`, `sensor${i-1}`);
-                };
-            };
-
-            if (elements[el].classList.contains("form-check-input")) {
-                if (target.startsWith('device')) {
-                    elements[el].value = elements[el].value.replace(`device${i}`, `device${i-1}`);
-                } else {
-                    elements[el].value = elements[el].value.replace(`sensor${i}`, `sensor${i-1}`);
-                };
-            };
-
-            // Decrement class
-            elements[el].classList.remove(target.replace(num, i))
-            elements[el].classList.add(target.replace(num, i-1))
-        };
-
-        // Delete class instance, re-instantiate with new ID, set new to false to prevent duplicates on page2 + page3
-        if (target.startsWith('device')) {
-            delete instances['devices'][`device${i}`];
-            instances['devices'][`device${i-1}`] = new Device(`device${i-1}`);
-            instances['devices'][`device${i-1}`].new = false;
-        } else {
-            delete instances['sensors'][`sensor${i}`];
-            instances['sensors'][`sensor${i-1}`] = new Sensor(`sensor${i-1}`);
-            instances['sensors'][`sensor${i-1}`].new = false;
-        };
     };
 
     // If bottom card deleted, un-hide "Add another" button in new bottom div
@@ -479,9 +506,11 @@ async function remove_instance(el) {
         };
     };
 
-    // Delete card
-    cards[num].remove();
+    // Re-enable delete buttons
+    for (button of document.getElementsByClassName("delete")) {
+        button.disabled = false;
+    }
 
-    // Rebuild self target options with new instance IDs
+    // Rebuild self-target options with new instance IDs
     get_self_target_options();
 };
