@@ -23,3 +23,13 @@ class Config(models.Model):
     config_file = models.FilePathField(path='/home/jamedeus/git/micropython-smarthome/config')
 
     uploaded = models.BooleanField(default=False)
+
+
+
+class WifiCredentials(models.Model):
+
+    def __str__(self):
+        return self.ssid
+
+    ssid = models.TextField()
+    password = models.TextField()

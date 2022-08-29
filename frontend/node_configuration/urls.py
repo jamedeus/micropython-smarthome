@@ -20,4 +20,6 @@ urlpatterns = [
     # Argument is optional
     path('generateConfigFile', views.generateConfigFile, name='generateConfigFile'),
     path('generateConfigFile/<str:edit_existing>', views.generateConfigFile, name='generateConfigFile'),
+
+    path('set_default_credentials', views.set_default_credentials, name='set_default_credentials'),
 ]

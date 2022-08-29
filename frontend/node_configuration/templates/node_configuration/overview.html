@@ -114,14 +114,27 @@
             border-radius: 10px;
             overflow: hidden;
         }
+
+        /* Change to color that contrasts with modal background */
+        body.dark .modal-input, body.dark .modal-input:focus {
+            background-color: #1b1e1f;
+        }
     </style>
 </head>
 
 <body>
 
     <div class="container d-flex flex-column vh-100">
-        <div>
-            <h1 class="text-center mt-3 mb-5">Configure Nodes</h1>
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn my-auto" id="back_button" style="visibility:hidden"><i class="bi-chevron-left"></i></button>
+            <h1 class="mt-3 mb-5">Configure Nodes</h1>
+            <div class="dropdown mt-4">
+                <button type="button" class="btn" id="settings_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-gear-fill"></i></button>
+                <ul id="settings_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings_button">
+                    <li><a class="dropdown-item" onclick='$("#wifi-modal").modal("show")'>Set WIFI credentials</a></li>
+                    <li><a class="dropdown-item disabled">Re-upload all</a></li>
+                </ul>
+            </div>
         </div>
 
         {% if context %}
@@ -189,7 +202,11 @@
                     document.body.classList.add("dark");
                     try { document.getElementById("nodes_table").classList.add("table-dark"); } catch(err) {};
                     try { document.getElementById("not_uploaded_table").classList.add("table-dark"); } catch(err) {};
+                    document.getElementById("settings_button").classList.add("btn-dark");
+                    Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
                     console.log("Dark mode");
+                } else {
+                    document.getElementById("settings_button").classList.add("btn-light");
                 };
             </script>
 
@@ -246,6 +263,34 @@
                 <div class="modal-body d-flex justify-content-center" id="error-modal-body">
                 </div>
                 <div class="modal-footer d-flex justify-content-center" id="error-modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wifi modal, used to set default credentials -->
+
+    <div class="modal fade" id="wifi-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header justify-content-between pb-0">
+                    <button type="button" class="btn-close" style="visibility:hidden"></button>
+                    <h5 id="wifi-modal-title" class="modal-title">Default Wifi</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="wifi-modal-body">
+                    <p class="text-center">These credentials will be pre-filled every time a new config is created</p>
+
+                    <label for="ssid"><b>Network:</b></label>
+                    <input type="text" class="form-control modal-input" id="ssid" placeholder="" name="ssid" autocomplete="off" required>
+
+                    <label for="password"><b>Password:</b></label>
+                    <input type="password" class="form-control modal-input" id="password" placeholder="" name="password" autocomplete="off" required>
+
+                    <div class="modal-footer">
+                        <button type="button" id="ok-button" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" id="ok-button" class="btn btn-success me-auto" data-bs-dismiss="modal" onclick="set_default_credentials()">OK</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -436,16 +481,29 @@
             });
         };
 
+        // Handler for wifi default credentials modal
+        function set_default_credentials() {
+            const ssid = document.getElementById("ssid").value;
+            const pass = document.getElementById("password").value;
+            send_post_request("set_default_credentials", {"ssid": ssid, "password": pass});
+        };
+
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
             if (e.matches) { // Returns True for dark mode, False otherwise
                 document.body.classList.add("dark");
                 document.getElementById("nodes_table").classList.add("table-dark");
                 document.getElementById("not_uploaded_table").classList.add("table-dark");
+                document.getElementById("settings_button").classList.remove("btn-light");
+                document.getElementById("settings_button").classList.add("btn-dark");
+                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
             } else {
                 document.body.classList.remove("dark");
                 document.getElementById("nodes_table").classList.remove("table-dark");
                 document.getElementById("not_uploaded_table").classList.remove("table-dark");
+                document.getElementById("settings_button").classList.remove("btn-dark");
+                document.getElementById("settings_button").classList.add("btn-light");
+                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.remove("dropdown-menu-dark"));
             }
         });
     </script>

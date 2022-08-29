@@ -4,7 +4,7 @@ from django.template import loader
 import json
 import os
 
-from .models import Node, Config
+from .models import Node, Config, WifiCredentials
 
 from .webrepl_cli import *
 
@@ -248,6 +248,13 @@ def configure(request):
 
     context = {"config": {"TITLE": "Create New Config"}, "api_target_options": get_api_target_menu_options()}
 
+    # Add default wifi credentials if configured
+    if len(WifiCredentials.objects.all()) > 0:
+        default = WifiCredentials.objects.all()[0]
+        context["config"]["wifi"] = {}
+        context["config"]["wifi"]["ssid"] = default.ssid
+        context["config"]["wifi"]["password"] = default.password
+
     return HttpResponse(template.render({'context': context}, request))
 
 
@@ -443,3 +450,21 @@ def get_api_target_menu_options(editing_node=False):
             dropdownObject['addresses'][node.friendly_name] = node.ip
 
     return dropdownObject
+
+
+
+def set_default_credentials(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        raise Http404("ERROR: Must post data")
+
+    # If default already set, overwrite
+    if len(WifiCredentials.objects.all()) > 0:
+        for i in WifiCredentials.objects.all():
+            i.delete()
+
+    new = WifiCredentials(ssid = data["ssid"], password = data["password"])
+    new.save()
+
+    return JsonResponse("Default credentials set", safe=False, status=200)
