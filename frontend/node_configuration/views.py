@@ -102,11 +102,28 @@ def upload(request, reupload=False):
         modules = []
         libs = []
 
+    # Upload
+    response = provision(data["config"], data["ip"], modules, libs)
+
+    # If uploaded for the first time, update models
+    if response.status_code == 200 and not reupload:
+        target = Config.objects.get(config_file = CONFIG_DIR + data["config"])
+        target.uploaded = True
+        target.save()
+
+        new = Node(friendly_name = config["metadata"]["id"], ip = data["ip"], config_file = CONFIG_DIR + data["config"])
+        new.save()
+
+    return response
+
+
+
+def provision(config, ip, modules, libs):
     def open_connection():
         try:
             s = socket.socket()
             s.settimeout(10)
-            ai = socket.getaddrinfo(data["ip"], 8266)
+            ai = socket.getaddrinfo(ip, 8266)
             addr = ai[0][4]
             s.connect(addr)
             websocket_helper.client_handshake(s)
@@ -144,7 +161,7 @@ def upload(request, reupload=False):
             put_file(ws, src_file, dst_file)
 
         # Upload config file
-        put_file(ws, CONFIG_DIR + data["config"], "config.json")
+        put_file(ws, CONFIG_DIR + config, "config.json")
 
         # Upload Config module
         put_file(ws, REPO_DIR + "Config.py", "Config.py")
@@ -158,7 +175,7 @@ def upload(request, reupload=False):
         # Upload API module
         put_file(ws, REPO_DIR + "Api.py", "Api.py")
 
-        if not data["config"] == "setup.json":
+        if not config == "setup.json":
             # Upload main code last (triggers automatic reboot)
             put_file(ws, REPO_DIR + "boot.py", "boot.py")
         else:
@@ -167,25 +184,33 @@ def upload(request, reupload=False):
         close_connection(s)
 
     except ConnectionResetError:
-        return JsonResponse("Connection error, please hold down the reset button on target node and try again after about 30 seconds.", safe=False, status=200)
+        return JsonResponse("Connection error, please hold down the reset button on target node and try again after about 30 seconds.", safe=False, status=408)
     except OSError:
-        return JsonResponse("Unable to connect - please ensure target node is plugged in and wait for the blue light to turn off, then try again.", safe=False, status=200)
+        return JsonResponse("Unable to connect - please ensure target node is plugged in and wait for the blue light to turn off, then try again.", safe=False, status=408)
     except AssertionError:
         print(f"can't upload {src_file}")
         if src_file.split("/")[-2] == "lib":
             print("lib")
             return JsonResponse("ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?", safe=False, status=409)
 
-    # If uploaded for the first time, update models
-    if not reupload:
-        target = Config.objects.get(config_file = CONFIG_DIR + data["config"])
-        target.uploaded = True
-        target.save()
-
-        new = Node(friendly_name = config["metadata"]["id"], ip = data["ip"], config_file = CONFIG_DIR + data["config"])
-        new.save()
-
     return JsonResponse("Upload complete.", safe=False, status=200)
+
+
+
+def reupload_all(request):
+    print("Reuploading all configs...")
+    nodes = Node.objects.all()
+
+    for node in nodes:
+        with open(node.config_file, 'r') as file:
+            config = json.load(file)
+
+        modules, libs = get_modules(config)
+
+        print(f"\nReuploading {node.friendly_name}...")
+        provision(node.config_file.split("/")[-1], node.ip, modules, libs)
+
+    return JsonResponse("Finished reuploading", safe=False, status=200)
 
 
 

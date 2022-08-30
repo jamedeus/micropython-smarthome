@@ -132,7 +132,7 @@
                 <button type="button" class="btn" id="settings_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-gear-fill"></i></button>
                 <ul id="settings_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings_button">
                     <li><a class="dropdown-item" onclick='$("#wifi-modal").modal("show")'>Set WIFI credentials</a></li>
-                    <li><a class="dropdown-item disabled">Re-upload all</a></li>
+                    <li><a class="dropdown-item" onclick='reupload_all()'>Re-upload all</a></li>
                 </ul>
             </div>
         </div>
@@ -486,6 +486,34 @@
             const ssid = document.getElementById("ssid").value;
             const pass = document.getElementById("password").value;
             send_post_request("set_default_credentials", {"ssid": ssid, "password": pass});
+        };
+
+        // Handler for option in top-right corner menu
+        async function reupload_all() {
+            // Show loading spinner modal
+            $("#upload-modal").modal("show");
+
+            response = await fetch("/reupload_all");
+
+            if (response.ok) {
+                // Change title, show success animation
+                const title = "Upload Complete"
+                const body = `<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                                </svg>`
+                show_modal("upload-modal", title, body);
+
+                // Wait for animation to complete before hiding
+                await sleep(1200);
+                $("#upload-modal").modal("hide");
+            } else {
+                // Show received response in error modal
+                const body = await response.text();
+                const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
+                show_modal("error-modal", "Error", body, footer);
+                $("#upload-modal").modal("hide");
+            };
         };
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
