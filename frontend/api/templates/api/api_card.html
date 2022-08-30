@@ -157,10 +157,14 @@
                                         // Change previous card title to "Climate Data", old title will be reused in new card below
                                         document.getElementById("{{sensor}}-title").innerHTML = "Climate Data";
 
-                                        // Prevent collapsing wrong card
-                                        document.getElementById("{{sensor}}-body").id = "Climate Data";
+                                        // Prevent collapsed climate data card if page loaded while thermostat disabled
+                                        document.getElementById("{{sensor}}-body").classList.add("show");
 
-                                        // Remove enable/disable toggle, will be replaced in new card below
+                                        // Prevent collapsing climate data card when disabling sensor
+                                        document.getElementById("{{sensor}}-body").id = "climate-data-body";
+                                        document.getElementById("{{sensor}}-card").id = "climate-data-card";
+
+                                        // Remove enable/disable toggle, will be moved to new card below
                                         document.getElementById("{{sensor}}-trigger").remove();
                                         document.getElementById("{{sensor}}-menu-button").parentElement.remove();
 
