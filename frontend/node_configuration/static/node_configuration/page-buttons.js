@@ -127,15 +127,32 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             document.getElementById(`${device}-rules-label`).innerHTML = `<b>${instances['devices'][device]['nickname']}</b>`;
 
             // Clear existing schedule rules (likely invalid after type change)
-            document.getElementById(`${device}-rules`).innerHTML = `<tr>
-                                                                    <th style='text-align: center;'>Time</th>
-                                                                    <th style='text-align: center;'>Rule</th>
-                                                                </tr>
-                                                                <tr id='${device}-row-1' class='${device}'>
-                                                                    <td><input type='text' class='form-control ${device}' id='${device}-rule1-time' placeholder='HH:MM'></td>
-                                                                    <td><input type='text' class='form-control ${device}' id='${device}-rule1' placeholder=''></td>
-                                                                    <td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove{{forloop.counter}}" disabled><i class="bi-x-lg"></i></button></td>
-                                                                </tr>`;
+            if (instances['devices'][device]['type'] != "api-target") {
+                document.getElementById(`${device}-rules`).innerHTML = `<tr>
+                                                                            <th style='text-align: center;'>Time</th>
+                                                                            <th style='text-align: center;'>Rule</th>
+                                                                        </tr>
+                                                                        <tr id='${device}-row-1' class='${device}'>
+                                                                            <td><input type='time' class='form-control ${device}' id='${device}-rule1-time' placeholder='HH:MM'></td>
+                                                                            <td><input type='text' class='form-control ${device}' id='${device}-rule1' placeholder=''></td>
+                                                                            <td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove{{forloop.counter}}" disabled><i class="bi-x-lg"></i></button></td>
+                                                                        </tr>`;
+            } else {
+                document.getElementById(`${device}-rules`).innerHTML = `<tr>
+                                                                            <th style='text-align: center;'>Time</th>
+                                                                            <th style='text-align: center;'>Rule</th>
+                                                                        </tr>
+                                                                        <tr id='${device}-row-1' class='${device}'>
+                                                                            <td><input type='time' class='form-control ${device}' id='${device}-rule1-time' placeholder='HH:MM'></td>
+                                                                            <td>
+                                                                                <button id='${device}-rule1-button' class='form-control ${device}' onclick='open_rule_modal(this);' type='button'>Set rule</button>
+                                                                                <input type='text' class='form-control rule ${device}' id='${device}-rule1' style='display:none;'>
+                                                                            </td>
+                                                                            <td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove{{forloop.counter}}" disabled><i class="bi-x-lg"></i></button></td>
+                                                                        </tr>`;
+            };
+
+
 
             // Prevent running again (unless device type changes again)
             instances['devices'][device].modified = false;
