@@ -102,13 +102,7 @@
             width: 50%;
         }
 
-
-
-
-
-
-
-
+        /* Delete card animation */
         :root {
             --animation-height: 25rem;
         }
@@ -145,20 +139,6 @@
             animation-timing-function: ease;
             animation-fill-mode: forwards;
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     </style>
 </head>
 
@@ -870,7 +850,7 @@
         };
 
         {# Set var passed to submit_form function, controls whether config is re-uploaded or not #}
-        {% if context.config|length == 1 %}
+        {% if context.config|length == 2 %}
         const edit_existing = false;
         {% else %}
         const edit_existing = true;
