@@ -11,6 +11,8 @@ class Node(models.Model):
 
     ip = models.GenericIPAddressField(protocol='IPv4')
 
+    floor = models.IntegerField(default=1)
+
     config_file = models.FilePathField(path='/home/jamedeus/git/micropython-smarthome/config')
 
 

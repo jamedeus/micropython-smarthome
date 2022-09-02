@@ -111,7 +111,7 @@ def upload(request, reupload=False):
         target.uploaded = True
         target.save()
 
-        new = Node(friendly_name = config["metadata"]["id"], ip = data["ip"], config_file = CONFIG_DIR + data["config"])
+        new = Node(friendly_name = config["metadata"]["id"], ip = data["ip"], config_file = CONFIG_DIR + data["config"], floor = config["metadata"]["floor"])
         new.save()
 
     return response

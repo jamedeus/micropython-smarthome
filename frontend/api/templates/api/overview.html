@@ -18,6 +18,17 @@
                 width: 960px;
             }
         }
+
+        .section {
+            background-color: #eee;
+            border: 1px solid #c8c8c8;
+            border-radius: 15px;
+        }
+
+        body.dark .section {
+            border: 0px;
+            background-color: #212529;
+        }
     </style>
 </head>
 
@@ -34,9 +45,15 @@
         <h3 class="text-center mt-3">Api Overview</h3>
 
         {% if context %}
-            <div class="text-center">
-                {% for node in context %}
-                    <button onclick="window.location.href = '/api/' + this.id;" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+            <div id="container" class="text-center">
+                {% for floor, nodes in context.items %}
+                    <div id="floor{{floor}}" class="section mt-3 mb-4 p-3">
+                        <h5 class="mb-3"><b>Floor {{floor}}</b></h5>
+
+                        {% for node in nodes %}
+                            <button onclick="window.location.href = '/api/' + this.id;" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+                        {% endfor %}
+                    </div>
                 {% endfor %}
             </div>
 
@@ -49,6 +66,23 @@
         </div>
 
     <script>
+        // If only 1 floor, remove label and background
+        if ({{context|length}} == 1) {
+            let floor1 = document.getElementById('floor1');
+            floor1.children[0].remove();
+            floor1.classList.remove("section");
+
+        // If exactly 2 floors, change labels to Upstairs/Downstairs, move Upstairs to top
+        } else if ({{context|length}} == 2) {
+            let floor1 = document.getElementById('floor1');
+            let floor2 = document.getElementById('floor2');
+
+            floor1.children[0].innerHTML = "<b>Downstairs</b>";
+            floor2.children[0].innerHTML = "<b>Upstairs</b>";
+
+            floor2.after(floor1);
+        };
+
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
             if (e.matches) { // Returns True for dark mode, False otherwise

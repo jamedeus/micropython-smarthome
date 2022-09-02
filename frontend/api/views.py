@@ -34,15 +34,26 @@ def get_status(request, node):
 
 
 def api_overview(request):
-    context = []
+    rooms = {}
 
     for i in Node.objects.all():
-        context.append(i)
+        if i.floor in rooms.keys():
+            rooms[i.floor].append(i)
+        else:
+            rooms[i.floor] = [i]
+
+    context = {}
+
+    floors = list(rooms.keys())
+    floors.sort()
+
+    # Sort by floor number
+    for floor in floors:
+        context[floor] = rooms[floor]
 
     template = loader.get_template('api/overview.html')
 
     return HttpResponse(template.render({'context': context}, request))
-
 
 
 
