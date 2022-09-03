@@ -1,3 +1,21 @@
+// Set correct theme (light or dark)
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    modal = document.getElementById('api-rule-modal');
+    // Buttons in ApiTarget rule modal
+    Array.from(modal.querySelectorAll('button')).forEach(function(button) {
+        if (button.classList.contains("btn-secondary")) {
+            button.classList.remove("btn-secondary");
+            button.classList.add("btn-dark");
+        };
+    });
+    Array.from(modal.querySelectorAll('label')).forEach(function(button) {
+        if (button.classList.contains("btn-outline-secondary")) {
+            button.classList.remove("btn-outline-secondary");
+            button.classList.add("btn-outline-dark");
+        };
+    });
+};
+
 function switch_page(el) {
     if (el.id == "on-button") {
         document.getElementById("on-action").style.display = "initial";

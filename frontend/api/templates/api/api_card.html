@@ -52,7 +52,7 @@
         }
 
         /* Contrasting background for dropdowns in api rule modal */
-        .modal-dropdown {
+        body.dark .modal-dropdown {
             background-color: #1b1e1f !important;
         }
     </style>
@@ -99,16 +99,16 @@
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between">
                                     {% if not params.type in "pir,desktop,dummy" %}
-                                    <button class="btn btn-outline-dark trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
+                                    <button class="btn btn-outline-secondary trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
                                     {% elif params.condition_met %}
-                                    <button class="btn btn-outline-dark trigger-button my-auto me-auto trigger-on" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
+                                    <button class="btn btn-outline-secondary trigger-button my-auto me-auto trigger-on" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
                                     {% else %}
-                                    <button class="btn btn-outline-dark trigger-button my-auto me-auto" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
+                                    <button class="btn btn-outline-secondary trigger-button my-auto me-auto" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
                                     {% endif %}
 <!--                                     <button type="button" class="btn btn-primary my-auto"><i class="bi-exclamation-lg"></i></button> -->
                                     <h4 class="card-title mx-auto my-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
                                     <div class="dropdown ms-auto my-auto">
-                                        <button type="button" class="btn btn-outline-dark menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                        <button type="button" class="btn btn-outline-secondary menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                                         <ul id="{{sensor}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{sensor}}-menu-button">
                                             {% if params.enabled %}
                                                 <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
@@ -173,11 +173,11 @@
                                     <div id="{{sensor}}-card" class="card">
                                         <div class="card-body d-flex flex-column">
                                             <div class="d-flex justify-content-between">
-                                                <button class="btn btn-outline-dark trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
+                                                <button class="btn btn-outline-secondary trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
                                                 <h4 class="card-title mx-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
 
                                                 <div class="dropdown ms-auto my-auto">
-                                                    <button type="button" class="btn btn-outline-dark menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                                    <button type="button" class="btn btn-outline-secondary menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                                                     <ul id="{{sensor}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{sensor}}-menu-button">
                                                         {% if params.enabled %}
                                                             <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
@@ -265,15 +265,15 @@
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between">
                                     {% if params.turned_on %}
-                                        <button class="btn btn-outline-dark power-button my-auto me-auto toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
+                                        <button class="btn btn-outline-secondary power-button my-auto me-auto toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
                                     {% else %}
-                                        <button class="btn btn-outline-dark power-button my-auto me-auto" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
+                                        <button class="btn btn-outline-secondary power-button my-auto me-auto" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
                                     {% endif %}
 <!--                                     <button type="button" class="btn btn-primary my-auto"><i class="bi-exclamation-lg"></i></button> -->
                                     <h4 class="card-title mx-auto my-auto" id="{{device}}-title">{{ params.nickname }}</h4>
 
                                     <div class="dropdown my-auto ms-auto">
-                                        <button type="button" class="btn btn-outline-dark menu-button" id="{{device}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                        <button type="button" class="btn btn-outline-secondary menu-button" id="{{device}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                                         <ul id="{{device}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{device}}-menu-button">
                                             {% if params.enabled %}
                                                 <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
@@ -491,7 +491,7 @@
                 </div>
                 <div class="modal-body d-flex flex-column">
 
-                    <button class="btn btn-sm btn-dark mx-auto mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                    <button class="btn btn-sm btn-secondary mx-auto mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
                         Help
                     </button>
 
@@ -503,7 +503,7 @@
                         <p class="text-center">The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.</p>
 
                         <p class="text-center">
-                            <button class="btn btn-sm btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-examples" aria-expanded="false" aria-controls="api-rule-modal-examples">
+                            <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-examples" aria-expanded="false" aria-controls="api-rule-modal-examples">
                                 Examples
                             </button>
                         </p>
@@ -516,7 +516,7 @@
                             </ul>
 
                             <p class="text-center">
-                                <button class="btn btn-sm btn-dark mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                                <button class="btn btn-sm btn-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
                                     Close
                                 </button>
                             </p>
@@ -560,10 +560,10 @@
 
                     <div class="btn-group mx-auto" role="group" aria-label="Basic radio toggle button group">
                         <input type="radio" class="btn-check" name="btnradio" id="on-button" autocomplete="off" onclick="switch_page(this)" checked>
-                        <label class="btn btn-outline-dark ms-auto" for="on-button">On Action</label>
+                        <label class="btn btn-outline-secondary ms-auto" for="on-button">On Action</label>
 
                         <input type="radio" class="btn-check" name="btnradio" id="off-button" autocomplete="off" onclick="switch_page(this)">
-                        <label class="btn btn-outline-dark me-auto" for="off-button">Off Action</label>
+                        <label class="btn btn-outline-secondary me-auto" for="off-button">Off Action</label>
                     </div>
 
                 </div>
@@ -605,9 +605,16 @@
         // Prevent multiple functions modifying status object at the same time
         var status_lock = false;
 
-        // Darkmode dropdown menus, has to run after they are generated above
+        // Darkmode for elements generated after initial check
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            // Dropdown menus
             Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
+
+            // Top-right menu buttons
+            Array.from(document.querySelectorAll(".btn-outline-secondary")).forEach(function(button) {
+                button.classList.remove('btn-outline-secondary');
+                button.classList.add('btn-outline-dark');
+            });
         };
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
@@ -619,6 +626,24 @@
                 document.getElementById("more_options_button").classList.remove("btn-light");
                 document.getElementById("more_options_button").classList.add("btn-dark");
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
+
+                {% if context.api_target_options %}
+                // Buttons in ApiTarget rule modal
+                modal = document.getElementById('api-rule-modal');
+                Array.from(modal.querySelectorAll('button')).forEach(function(button) {
+                    if (button.classList.contains("btn-secondary")) {
+                        button.classList.remove("btn-secondary");
+                        button.classList.add("btn-dark");
+                    };
+                });
+
+                // Top-right menu buttons + ApiTarget rule modal tab buttons
+                Array.from(document.querySelectorAll(".btn-outline-secondary")).forEach(function(button) {
+                    button.classList.remove('btn-outline-secondary');
+                    button.classList.add('btn-outline-dark');
+                });
+                {% endif %}
+
             } else {
                 document.body.classList.remove("dark");
                 document.getElementById("back_button").classList.remove("btn-dark");
@@ -626,6 +651,23 @@
                 document.getElementById("more_options_button").classList.remove("btn-dark");
                 document.getElementById("more_options_button").classList.add("btn-light");
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.remove("dropdown-menu-dark"));
+
+                {% if context.api_target_options %}
+                // Buttons in ApiTarget rule modal
+                modal = document.getElementById('api-rule-modal');
+                Array.from(modal.querySelectorAll('button')).forEach(function(button) {
+                    if (button.classList.contains("btn-dark")) {
+                        button.classList.remove("btn-dark");
+                        button.classList.add("btn-secondary");
+                    };
+                });
+
+                // Top-right menu buttons + ApiTarget rule modal tab buttons
+                Array.from(document.querySelectorAll(".btn-outline-dark")).forEach(function(button) {
+                    button.classList.remove('btn-outline-dark');
+                    button.classList.add('btn-outline-secondary');
+                });
+                {% endif %}
             }
         });
     </script>

@@ -97,7 +97,7 @@
         }
         /* ----- */
 
-        .modal-dropdown {
+        body.dark .modal-dropdown {
             background-color: #1b1e1f !important;
         }
 
@@ -732,7 +732,7 @@
                         </div>
                         <div class="modal-body d-flex flex-column">
 
-                            <button class="btn btn-sm btn-dark mx-auto mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                            <button class="btn btn-sm btn-secondary mx-auto mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
                                 Help
                             </button>
 
@@ -744,7 +744,7 @@
                                 <p class="text-center">The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.</p>
 
                                 <p class="text-center">
-                                    <button class="btn btn-sm btn-dark" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-examples" aria-expanded="false" aria-controls="api-rule-modal-examples">
+                                    <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-examples" aria-expanded="false" aria-controls="api-rule-modal-examples">
                                         Examples
                                     </button>
                                 </p>
@@ -757,7 +757,7 @@
                                     </ul>
 
                                     <p class="text-center">
-                                        <button class="btn btn-sm btn-dark mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                                        <button class="btn btn-sm btn-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
                                             Close
                                         </button>
                                     </p>
@@ -801,10 +801,10 @@
 
                             <div class="btn-group mx-auto" role="group" aria-label="Basic radio toggle button group">
                                 <input type="radio" class="btn-check" name="btnradio" id="on-button" autocomplete="off" onclick="switch_page(this)" checked>
-                                <label class="btn btn-outline-dark ms-auto" for="on-button">On Action</label>
+                                <label class="btn btn-outline-secondary ms-auto" for="on-button">On Action</label>
 
                                 <input type="radio" class="btn-check" name="btnradio" id="off-button" autocomplete="off" onclick="switch_page(this)">
-                                <label class="btn btn-outline-dark me-auto" for="off-button">Off Action</label>
+                                <label class="btn btn-outline-secondary me-auto" for="off-button">Off Action</label>
                             </div>
 
                         </div>
@@ -919,9 +919,39 @@
             if (e.matches) { // Returns True for dark mode, False otherwise
                 document.body.classList.add("dark");
                 document.body.classList.remove("light");
+
+                // Buttons in ApiTarget rule modal
+                modal = document.getElementById('api-rule-modal');
+                Array.from(modal.querySelectorAll('button')).forEach(function(button) {
+                    if (button.classList.contains("btn-secondary")) {
+                        button.classList.remove("btn-secondary");
+                        button.classList.add("btn-dark");
+                    };
+                });
+                Array.from(modal.querySelectorAll('label')).forEach(function(button) {
+                    if (button.classList.contains("btn-outline-secondary")) {
+                        button.classList.remove("btn-outline-secondary");
+                        button.classList.add("btn-outline-dark");
+                    };
+                });
             } else {
                 document.body.classList.remove("dark");
                 document.body.classList.add("light");
+
+                // Buttons in ApiTarget rule modal
+                modal = document.getElementById('api-rule-modal');
+                Array.from(modal.querySelectorAll('button')).forEach(function(button) {
+                    if (button.classList.contains("btn-dark")) {
+                        button.classList.remove("btn-dark");
+                        button.classList.add("btn-secondary");
+                    };
+                });
+                Array.from(modal.querySelectorAll('label')).forEach(function(button) {
+                    if (button.classList.contains("btn-outline-dark")   ) {
+                        button.classList.remove("btn-outline-dark");
+                        button.classList.add("btn-outline-secondary");
+                    };
+                });
             }
         });
     </script>
