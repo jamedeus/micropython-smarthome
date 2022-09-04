@@ -220,7 +220,7 @@ def delete_config(request):
     else:
         raise Http404("ERROR: Must post data")
 
-    target = Config.objects.get(config_file__endswith = data)
+    target = Config.objects.get(config_file = CONFIG_DIR + data)
     target.delete()
     os.system(f'rm {target.config_file}')
 
