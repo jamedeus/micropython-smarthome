@@ -75,9 +75,11 @@ async function load_sensor_section(select) {
                         <label for="sensor${index}-tolerance" class="sensor${index}"><b>Tolerance:</b></label>
                         <input type="text" class="form-control sensor${index}" id="sensor${index}-tolerance" placeholder="" required>
                     </div>`
-    } else {
-        // User selected first option ("Select sensor type"), clear form
-        template = "";
+    };
+
+    // Disable "Select sensor type" option after selection made
+    if (selected != "clear") {
+        select.children[0].disabled = true;
     };
 
     // Render div, scroll down until visible
@@ -193,9 +195,11 @@ async function load_device_section(select) {
                         </div>
                     </div>`
 
-    } else {
-        // User selected first option ("Select device type"), clear form
-        template = "";
+    };
+
+    // Disable "Select device type" option after selection made
+    if (selected != "clear") {
+        select.children[0].disabled = true;
     };
 
     // Render div, scroll down until visible

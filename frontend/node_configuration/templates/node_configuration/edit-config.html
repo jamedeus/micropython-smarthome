@@ -223,7 +223,7 @@
                                         <label for="sensorType{{ forloop.counter }}" class="form-label sensor{{forloop.counter}}"><b>Type:</b></label>
                                         <div>
                                             <select onchange="load_sensor_section(this)" id="sensorType{{ forloop.counter }}" class="form-select sensorType sensor{{forloop.counter}}" autocomplete="off" required>
-                                            <option value="clear">Select sensor type</option>
+                                            <option value="clear" disabled>Select sensor type</option>
                                             <option value="pir" {% if params.type == "pir" %} selected {% endif %}>Motion Sensor</option>
                                             <option value="switch" {% if params.type == "switch" %} selected {% endif %}>Switch</option>
                                             <option value="dummy" {% if params.type == "dummy" %} selected {% endif %}>Dummy</option>
@@ -355,7 +355,7 @@
                                         <label for="deviceType{{ forloop.counter }}" class="form-label device{{forloop.counter}}"><b>Type:</b></label>
                                         <div>
                                             <select onchange="load_device_section(this)" id="deviceType{{ forloop.counter }}" class="form-select deviceType device{{forloop.counter}}" autocomplete="off" required>
-                                            <option value="clear">Select device type</option>
+                                            <option value="clear" disabled>Select device type</option>
                                             <option value="dimmer" {% if params.type == "dimmer" %} selected {% endif %}>TP-Link Dimmer</option>
                                             <option value="bulb" {% if params.type == "bulb" %} selected {% endif %}>TP-Link Bulb</option>
                                             <option value="relay" {% if params.type == "relay" %} selected {% endif %}>Smart Relay</option>
