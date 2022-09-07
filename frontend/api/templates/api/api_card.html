@@ -155,10 +155,12 @@
 
                                     <!-- Modal for viewing temperature history chart -->
                                     <div class="modal fade" id="chart-modal" tabindex="-1">
-                                        <div class="modal-dialog modal-dialog-centered" >
+                                        <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
                                             <div class="modal-content">
-                                                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                                                <div class='d-flex m-3'>
+                                                    <button type="button" class="btn-close" style="visibility:hidden"></button>
                                                     <h3 class="mx-auto mb-0" id="error-modal-title">Temperature History</h3>
+                                                    <button type="button" class="btn-close my-auto" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
                                                     <canvas id="chart"></canvas>
@@ -199,23 +201,42 @@
                                                     data: temp_history,
                                                     label: "Temp",
                                                     borderColor: '#eee',
+                                                    color: '#eee',
                                                     fill: true
                                                 }]
                                             },
                                             options: {
+                                                plugins: {
+                                                    legend: {
+                                                        display: false,
+//                                                         labels: {
+//                                                             color: "#eee",
+//                                                             usePointStyle: true,
+//                                                             pointStyle: "rectRounded"
+//                                                         }
+                                                    }
+                                                },
                                                 scales: {
                                                     x: {
                                                         type: 'timeseries',
                                                         time: {
                                                             unit: 'minute',
+                                                            displayFormats: {
+                                                                minute: 'H:mm:ss'
+                                                            }
                                                         },
                                                         ticks:{
-                                                            source: 'data'
+                                                            source: 'data',
+                                                            color: "#eee"
                                                         },
                                                     },
                                                     y: {
-                                                        min: 65,
-                                                        max: 80
+                                                        suggestedMin: 70,
+                                                        suggestedMax: 75,
+                                                        ticks:{
+                                                            color: "#eee",
+                                                            stepSize: 1,
+                                                        }
                                                     }
                                                 }
                                             }
@@ -515,7 +536,7 @@
     <!-- Error modal displayed when unable to connect to target node -->
 
     <div class="modal fade" id="error-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered" >
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header pb-0" style="border-bottom: 0px;">
                     <h3 class="mx-auto mb-0" id="error-modal-title">Connection Error</h3>

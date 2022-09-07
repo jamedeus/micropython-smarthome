@@ -98,7 +98,7 @@ async function updateStatusObject() {
                         document.getElementById("temperature").innerHTML = new_temp;
 
                         // Add reading to temp history chart
-                        temp_history_chart.data.labels.push(moment().unix());
+                        temp_history_chart.data.labels.push(moment());
                         temp_history_chart.data.datasets.forEach((dataset) => {
                             dataset.data.push(new_temp);
                         });
