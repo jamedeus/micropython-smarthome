@@ -92,7 +92,17 @@ async function updateStatusObject() {
                         };
 
                     } else if (param == "temp") {
-                        document.getElementById("temperature").innerHTML = new_status[section][instance]["temp"].toFixed(2)
+                        const new_temp = new_status[section][instance]["temp"].toFixed(2);
+
+                        // Update temp shown on climate data card
+                        document.getElementById("temperature").innerHTML = new_temp;
+
+                        // Add reading to temp history chart
+                        temp_history_chart.data.labels.push(moment().unix());
+                        temp_history_chart.data.datasets.forEach((dataset) => {
+                            dataset.data.push(new_temp);
+                        });
+                        temp_history_chart.update();
 
                     } else if (param == "humid") {
                         document.getElementById("humidity").innerHTML = new_status[section][instance]["humid"].toFixed(2)
