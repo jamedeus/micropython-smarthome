@@ -258,7 +258,7 @@ async function load_next_device(button) {
     const index = parseInt(button.id.replace("addDeviceButton", ""));
 
     // Ternary expression adds top margin to all except first card
-    var template = `<div id="addDeviceDiv${index + 1}" class="device${index + 1} ${ index ? "mt-5" : "" }">
+    var template = `<div id="addDeviceDiv${index + 1}" class="device${index + 1} fade-in ${ index ? "mt-5" : "" }">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -302,6 +302,10 @@ async function load_next_device(button) {
     // Render div, scroll down until visible
     document.getElementById("devices").insertAdjacentHTML('beforeend', template);
     document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
+
+    // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
+    await sleep(400);
+    document.getElementById(`addDeviceDiv${index + 1}`).classList.remove('fade-in');
 };
 
 
@@ -311,7 +315,7 @@ async function load_next_sensor(button) {
     const index = parseInt(button.id.replace("addSensorButton", ""));
 
     // Ternary expression adds top margin to all except first card
-    var template = `<div id="addSensorDiv${index + 1}" class="sensor${index + 1} ${ index ? "mt-5" : "" }">
+    var template = `<div id="addSensorDiv${index + 1}" class="sensor${index + 1} fade-in ${ index ? "mt-5" : "" }">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -351,6 +355,10 @@ async function load_next_sensor(button) {
     // Render div, scroll down until visible
     document.getElementById("sensors").insertAdjacentHTML('beforeend', template);
     document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
+
+    // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
+    await sleep(400);
+    document.getElementById(`addSensorDiv${index + 1}`).classList.remove('fade-in');
 };
 
 
@@ -489,8 +497,10 @@ async function remove_instance(el) {
     try {
         if (parseInt(num)+1 == cards.length) {
             if (target.startsWith('device')) {
+                document.getElementById(`addDeviceButton${num-1}`).classList.add('fade-in');
                 document.getElementById(`addDeviceButton${num-1}`).style.display = "initial";
             } else {
+                document.getElementById(`addSensorButton${num-1}`).classList.add('fade-in');
                 document.getElementById(`addSensorButton${num-1}`).style.display = "initial";
             };
         };
@@ -499,12 +509,12 @@ async function remove_instance(el) {
     } catch(err) {
         if (target.startsWith('device')) {
             template = `<div class="text-center">
-                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton0" class="btn-secondary btn my-3">Add another</button>
+                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton0" class="btn-secondary btn my-3 fade-in">Add</button>
                         </div>`
             document.getElementById("devices").insertAdjacentHTML('beforeend', template);
         } else {
             template = `<div class="text-center">
-                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton0" class="btn-secondary btn my-3">Add another</button>
+                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton0" class="btn-secondary btn my-3 fade-in">Add</button>
                         </div>`
             document.getElementById("sensors").insertAdjacentHTML('beforeend', template);
         };
