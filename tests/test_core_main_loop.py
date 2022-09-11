@@ -137,7 +137,7 @@ class TestMainLoop(unittest.TestCase):
         elif self.config.sensors[1].fahrenheit() < 73:
             self.assertFalse(conditions[0])
         else:
-            self.assertNone(conditions[0])
+            self.assertEqual(conditions[0], None)
 
     def test_determine_correct_action(self):
         action = determine_correct_action([True, False, False, False])

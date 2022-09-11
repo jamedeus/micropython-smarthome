@@ -53,7 +53,7 @@ class TestEndpoint(unittest.TestCase):
     def test_add_rule(self):
         # Add a rule at a time where no rule exists
         response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/08:00/256')
-        self.assertEqual(response.json(), {'time': '08:00', 'Rule added': '256'})
+        self.assertEqual(response.json(), {'time': '08:00', 'Rule added': 256})
 
         # Add another rule at the same time, should refuse to overwrite
         response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/08:00/512')
@@ -61,7 +61,7 @@ class TestEndpoint(unittest.TestCase):
 
         # Add another rule at the same time with the 'overwrite' argument, rule should be replaced
         response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/08:00/512/overwrite')
-        self.assertEqual(response.json(), {'time': '08:00', 'Rule added': '512'})
+        self.assertEqual(response.json(), {'time': '08:00', 'Rule added': 512})
 
     def test_remove_rule(self):
         response = requests.get('http://192.168.1.223:8123/remove_rule?device1/01:00')

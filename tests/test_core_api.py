@@ -172,7 +172,7 @@ class TestApi(unittest.TestCase):
     def test_add_schedule_rule(self):
         # Add a rule at a time where no rule exists
         response = self.send_command(['add_schedule_rule', 'device1', '05:37', '64'])
-        self.assertEqual(response, {'time': '05:37', 'Rule added': '64'})
+        self.assertEqual(response, {'time': '05:37', 'Rule added': 64})
 
         # Add another rule at the same time, should refuse to overwrite
         response = self.send_command(['add_schedule_rule', 'device1', '05:37', '42'])
@@ -180,7 +180,7 @@ class TestApi(unittest.TestCase):
 
         # Add another rule at the same time with the 'overwrite' argument, rule should be replaced
         response = self.send_command(['add_schedule_rule', 'device1', '05:37', '42', 'overwrite'])
-        self.assertEqual(response, {'time': '05:37', 'Rule added': '42'})
+        self.assertEqual(response, {'time': '05:37', 'Rule added': 42})
 
         # Confirm correct error received when timestamp format is incorrect
         response = self.send_command(['add_schedule_rule', 'device1', '1234', '99'])
