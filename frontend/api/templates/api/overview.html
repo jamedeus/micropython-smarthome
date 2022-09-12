@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
+    <script src="{% static 'node_configuration/popper.min.js' %}"></script>
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <style>
@@ -33,16 +34,30 @@
 </head>
 
 <body>
-    <script>
-        // Check if user is in dark mode, change theme (runs once on page load)
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add("dark");
-            console.log("Dark mode");
-        };
-    </script>
-
     <div class="container d-flex flex-column vh-100">
-        <h3 class="text-center mt-3">Api Overview</h3>
+        <div class="d-flex justify-content-between pt-3">
+            <button type="button" class="btn my-auto" id="back_button" style="visibility:hidden"><i class="bi-chevron-left"></i></button>
+            <h3 class="">Api Overview</h3>
+            <div class="dropdown">
+                <button type="button" class="btn" id="settings_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                <ul id="settings_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings_button">
+                    <li><a class="dropdown-item" onclick='fetch("/reboot_all")'>Reboot all</a></li>
+                    <li><a class="dropdown-item" onclick='fetch("/reset_all")'>Reset all rules</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            // Check if user is in dark mode, change theme (runs once on page load)
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add("dark");
+                document.getElementById("settings_button").classList.add("btn-dark");
+                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
+                console.log("Dark mode");
+            } else {
+                document.getElementById("settings_button").classList.add("btn-light");
+            };
+        </script>
 
         {% if context %}
             <div id="container" class="text-center">

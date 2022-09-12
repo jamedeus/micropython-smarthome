@@ -98,8 +98,6 @@ def api(request, node):
 
 
 
-
-
 def get_climate_data(request, node):
     ip = Node.objects.get(friendly_name = node).ip
 
@@ -109,6 +107,32 @@ def get_climate_data(request, node):
         return JsonResponse("Error: Unable to connect.", safe=False, status=200)
 
     return JsonResponse(data, safe=False, status=200)
+
+
+
+def reboot_all(request):
+    for node in Node.objects.all():
+        try:
+            response = parse_command(node.ip, ['reboot'])
+            print(f"Rebooted {node.friendly_name}")
+        except ConnectionRefusedError:
+            print(f"Unable to connect to {node.friendly_name}")
+
+    return JsonResponse("Done", safe=False, status=200)
+
+
+
+def reset_all(request):
+    for node in Node.objects.all():
+        try:
+            response = parse_command(node.ip, ['reset_all_rules'])
+            print(node.friendly_name)
+            print(json.dumps(response, indent=4))
+            print()
+        except ConnectionRefusedError:
+            print(f"Unable to connect to {node.friendly_name}\n")
+
+    return JsonResponse("Done", safe=False, status=200)
 
 
 
@@ -152,6 +176,7 @@ def send_command(request):
         parse_command(ip, args)
 
     return JsonResponse(response, safe=False, status=200)
+
 
 
 # Send JSON api request to node
