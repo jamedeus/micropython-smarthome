@@ -8,7 +8,7 @@ _api_client()
     opts=$(cat nodes.json | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
 
     # All API endpoints
-    endpoints="status reboot disable disable_in enable enable_in set_rule reset_rule get_schedule_rules add_rule remove_rule save_rules get_attributes ir get_temp get_humid get_climate clear_log condition_met trigger_sensor turn_on turn_off"
+    endpoints="status reboot disable disable_in enable enable_in set_rule reset_rule reset_all_rules get_schedule_rules add_rule remove_rule save_rules get_attributes ir get_temp get_humid get_climate clear_log condition_met trigger_sensor turn_on turn_off"
 
     # Endpoints which require a device/sensor target
     target_endpoints="disable disable_in enable enable_in set_rule reset_rule get_schedule_rules add_rule remove_rule get_attributes"

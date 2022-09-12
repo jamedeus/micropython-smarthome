@@ -70,7 +70,7 @@
                     <ul id="more_options_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="more_options_button">
                         <li><a class="dropdown-item" onclick="send_command({'command': 'reboot'});">Reboot</a></li>
                         <li><a class="dropdown-item" onclick="send_command({'command': 'clear_log'});">Clear Log</a></li>
-                        <li><a class="dropdown-item" onclick="reset_all_rules();">Reset all rules</a></li>
+                        <li><a class="dropdown-item" onclick="send_command({'command': 'reset_all_rules'});">Reset all rules</a></li>
                     </ul>
                 </div>
             </div>
@@ -115,7 +115,7 @@
                                             {% else %}
                                                 <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
                                             {% endif %}
-                                            <li><a id="{{sensor}}-reset" class="dropdown-item reset-rule" onclick="reset(this);">Reset rule</a></li>
+                                            <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
                                             <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
                                         </ul>
                                     </div>
@@ -257,7 +257,7 @@
                                                         {% else %}
                                                             <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
                                                         {% endif %}
-                                                        <li><a id="{{sensor}}-reset" class="dropdown-item reset-rule" onclick="reset(this);">Reset rule</a></li>
+                                                        <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
                                                         <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
                                                         <li><a class="dropdown-item" onclick="$('#chart-modal').modal('show');">View history</a></li>
                                                     </ul>
@@ -354,7 +354,7 @@
                                             {% else %}
                                                 <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
                                             {% endif %}
-                                            <li><a id="{{device}}-reset" class="dropdown-item reset-rule" onclick="reset(this);">Reset rule</a></li>
+                                            <li><a id="{{device}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
                                             {% if params.type == "api-target" %}
                                                 <li><a id="{{device}}-current_rule-button" class="dropdown-item" onclick="open_rule_modal(this);">Change rule</a></li>
                                             {% endif %}

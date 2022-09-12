@@ -165,6 +165,18 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'device1': 'Reverted to scheduled rule', 'current_rule': self.device1.scheduled_rule})
         self.assertEqual(self.device1.current_rule, self.device1.scheduled_rule)
 
+    def test_reset_all_rules(self):
+        # Set placeholder rules
+        self.device1.set_rule(78)
+        self.sensor1.set_rule(78)
+        self.sensor2.set_rule(78)
+        # Call API command
+        response = self.send_command(['reset_all_rules'])
+        self.assertEqual(response, {"New rules": {"device1": self.device1.scheduled_rule, "sensor1": self.sensor1.scheduled_rule, "sensor2": self.sensor2.scheduled_rule}})
+        self.assertEqual(self.device1.current_rule, self.device1.scheduled_rule)
+        self.assertEqual(self.sensor1.current_rule, self.sensor1.scheduled_rule)
+        self.assertEqual(self.sensor2.current_rule, self.sensor2.scheduled_rule)
+
     def test_get_schedule_rules(self):
         response = self.send_command(['get_schedule_rules', 'device1'])
         self.assertEqual(response, {'20:00': 915, '09:00': 734, '11:00': 345})

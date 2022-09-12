@@ -46,22 +46,26 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get('http://192.168.1.223:8123/reset_rule?sensor1')
         self.assertEqual(response.json()["sensor1"], 'Reverted to scheduled rule')
 
+    def test_reset_all_rules(self):
+        response = requests.get('http://192.168.1.223:8123/reset_all_rules')
+        self.assertEqual(response.json(), {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "off"}})
+
     def test_get_schedule_rules(self):
         response = requests.get('http://192.168.1.223:8123/get_schedule_rules?sensor1')
         self.assertEqual(response.json(), {'01:00': '1', '06:00': '5'})
 
     def test_add_rule(self):
         # Add a rule at a time where no rule exists
-        response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/08:00/256')
-        self.assertEqual(response.json(), {'time': '08:00', 'Rule added': 256})
+        response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/04:00/256')
+        self.assertEqual(response.json(), {'time': '04:00', 'Rule added': 256})
 
         # Add another rule at the same time, should refuse to overwrite
-        response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/08:00/512')
-        self.assertEqual(response.json(), {'ERROR': "Rule already exists at 08:00, add 'overwrite' arg to replace"})
+        response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/04:00/512')
+        self.assertEqual(response.json(), {'ERROR': "Rule already exists at 04:00, add 'overwrite' arg to replace"})
 
         # Add another rule at the same time with the 'overwrite' argument, rule should be replaced
-        response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/08:00/512/overwrite')
-        self.assertEqual(response.json(), {'time': '08:00', 'Rule added': 512})
+        response = requests.get('http://192.168.1.223:8123/add_schedule_rule?device1/04:00/512/overwrite')
+        self.assertEqual(response.json(), {'time': '04:00', 'Rule added': 512})
 
     def test_remove_rule(self):
         response = requests.get('http://192.168.1.223:8123/remove_rule?device1/01:00')

@@ -282,6 +282,10 @@ def reset_rule(ip, params):
     else:
         return {"ERROR": "Can only set rules for devices and sensors"}
 
+@add_endpoint("reset_all_rules")
+def reset_all_rules(ip, params):
+    return asyncio.run(request(ip, ['reset_all_rules']))
+
 @add_endpoint("get_schedule_rules")
 def get_schedule_rules(ip, params):
     if len(params) == 0:

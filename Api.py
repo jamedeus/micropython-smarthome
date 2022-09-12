@@ -260,6 +260,23 @@ def reset_rule(args):
 
 
 
+@app.route("reset_all_rules")
+def reset_all_rules(args):
+    response = {}
+    response["New rules"] = {}
+
+    for device in app.config.devices:
+        device.set_rule(device.scheduled_rule)
+        response["New rules"][device.name] = device.current_rule
+
+    for sensor in app.config.sensors:
+        sensor.set_rule(sensor.scheduled_rule)
+        response["New rules"][sensor.name] = sensor.current_rule
+
+    return response
+
+
+
 @app.route("get_schedule_rules")
 def get_schedule_rules(args):
     if not len(args) == 1:

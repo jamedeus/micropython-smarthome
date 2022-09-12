@@ -17,6 +17,7 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "enable_in [target] [minutes]" + Style.RESET_ALL + "      Create timer to enable [target] in [minutes]")
     print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [target]" + Style.RESET_ALL + "                 Change [target]'s current rule, can be device or sensor, lasts until next rule change")
     print("- " + Fore.YELLOW + Style.BRIGHT + "reset_rule [target]" + Style.RESET_ALL + "               Replace [target]'s current rule with scheduled rule, used to undo a set_rule request")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "reset_all_rules" + Style.RESET_ALL + "                   Replace current rules of all devices and sensors with their scheduled rule")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_schedule_rules [target]" + Style.RESET_ALL + "       View scheduled rule changes for [target], can be device or sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "add_rule [target] [HH:MM] [rule]" + Style.RESET_ALL + "  Add scheduled rule change, will persist until next reboot")
     print("- " + Fore.YELLOW + Style.BRIGHT + "remove_rule [target] [HH:MM]" + Style.RESET_ALL + "      Delete an existing schedule (does not delete from config, will come back next reboot)")
@@ -210,6 +211,10 @@ def reset_rule(ip, params):
         return asyncio.run(request(ip, ['reset_rule', target]))
     else:
         return {"ERROR": "Can only set rules for devices and sensors"}
+
+@add_endpoint("reset_all_rules")
+def reset_all_rules(ip, params):
+    return asyncio.run(request(ip, ['reset_all_rules']))
 
 @add_endpoint("get_schedule_rules")
 def get_schedule_rules(ip, params):

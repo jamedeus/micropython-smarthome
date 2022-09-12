@@ -166,26 +166,30 @@ class TestParseCommand(unittest.TestCase):
         response = parse_command("192.168.1.223", ['reset_rule', 'sensor1'])
         self.assertEqual(response["sensor1"], 'Reverted to scheduled rule')
 
+    def test_reset_all_rules(self):
+        response = parse_command("192.168.1.223", ['reset_all_rules'])
+        self.assertEqual(response, {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "off"}})
+
     def test_get_schedule_rules(self):
         response = parse_command("192.168.1.223", ['get_schedule_rules', 'sensor1'])
         self.assertEqual(response, {'01:00': '1', '06:00': '5'})
 
     def test_add_rule(self):
         # Add a rule at a time where no rule exists
-        response = parse_command("192.168.1.223", ['add_rule', 'device1', '08:00', '256'])
-        self.assertEqual(response, {'time': '08:00', 'Rule added': 256})
+        response = parse_command("192.168.1.223", ['add_rule', 'device1', '04:00', '256'])
+        self.assertEqual(response, {'time': '04:00', 'Rule added': 256})
 
         # Add another rule at the same time, should refuse to overwrite
-        response = parse_command("192.168.1.223", ['add_rule', 'device1', '08:00', '512'])
-        self.assertEqual(response, {'ERROR': "Rule already exists at 08:00, add 'overwrite' arg to replace"})
+        response = parse_command("192.168.1.223", ['add_rule', 'device1', '04:00', '512'])
+        self.assertEqual(response, {'ERROR': "Rule already exists at 04:00, add 'overwrite' arg to replace"})
 
         # Add another rule at the same time with the 'overwrite' argument, rule should be replaced
-        response = parse_command("192.168.1.223", ['add_rule', 'device1', '08:00', '512', 'overwrite'])
-        self.assertEqual(response, {'time': '08:00', 'Rule added': 512})
+        response = parse_command("192.168.1.223", ['add_rule', 'device1', '04:00', '512', 'overwrite'])
+        self.assertEqual(response, {'time': '04:00', 'Rule added': 512})
 
         # Add a rule (0) which is equivalent to False in conditional (regression test for bug causing incorrect rejection)
-        response = parse_command("192.168.1.223", ['add_rule', 'device1', '16:52', '0'])
-        self.assertEqual(response, {'time': '16:52', 'Rule added': 0})
+        response = parse_command("192.168.1.223", ['add_rule', 'device1', '02:52', '0'])
+        self.assertEqual(response, {'time': '02:52', 'Rule added': 0})
 
     def test_remove_rule(self):
         response = parse_command("192.168.1.223", ['remove_rule', 'device1', '01:00'])

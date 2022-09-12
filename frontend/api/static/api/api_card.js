@@ -52,17 +52,6 @@ async function reset(el) {
 
 
 
-// Handler for "Reset all rules" option in global menu
-function reset_all_rules() {
-    Array.from(document.getElementsByClassName("reset-rule")).forEach(option => {
-        if (!option.classList.contains("disabled")) {
-            option.click();
-        };
-    });
-};
-
-
-
 // Handler for device enable/disable toggle
 async function enable_disable_handler(el) {
     const target = el.id.split("-")[0];
