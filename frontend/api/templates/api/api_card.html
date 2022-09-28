@@ -665,7 +665,7 @@
     {{ context|json_script:"context" }}
 
     <script>
-        const target_node = "{{ context.metadata.id }}";
+        const target_node = "{{ context.metadata.ip }}";
 
         var target_node_status = JSON.parse(document.getElementById("context").textContent);
 

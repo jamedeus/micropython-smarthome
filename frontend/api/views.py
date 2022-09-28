@@ -92,6 +92,8 @@ def api(request, node):
 
     template = loader.get_template('api/api_card.html')
 
+    status["metadata"]["ip"] = target.ip
+
     print(json.dumps(status, indent=4))
 
     return HttpResponse(template.render({'context': status}, request))
@@ -142,7 +144,13 @@ def send_command(request):
     else:
         raise Http404("ERROR: Must post data")
 
-    ip = Node.objects.get(friendly_name = data["target"]).ip
+    if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", data["target"]):
+        # New API Card interface
+        ip = data["target"]
+    else:
+        # Legacy API
+        ip = Node.objects.get(friendly_name = data["target"]).ip
+
     cmd = data["command"]
     del data["target"], data["command"]
 

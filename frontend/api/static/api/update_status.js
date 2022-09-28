@@ -1,7 +1,7 @@
 // Request new status object, compare to old, update page contents to reflect changes (if any)
 async function updateStatusObject() {
     // Get status object
-    var new_status = await fetch("/get_status/" + target_node);
+    var new_status = await send_command({'command': 'status'});
     new_status = await new_status.json();
 
     // If unable to connect
