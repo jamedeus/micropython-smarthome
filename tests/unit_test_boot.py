@@ -25,10 +25,11 @@ async def run_tests():
     except OSError:
         # If config doesn't exist, create template
         testing_config = {}
-        testing_config["next"] = "module"
+        testing_config["next"] = "core"
         testing_config["results"] = {}
-        testing_config["results"]["module"] = {}
         testing_config["results"]["core"] = {}
+        testing_config["results"]["device"] = {}
+        testing_config["results"]["sensor"] = {}
 
     target = testing_config["next"]
 
@@ -41,7 +42,7 @@ async def run_tests():
 
     # Import all modules under /tests
     for test in os.listdir('tests'):
-        # Only run tests if they are in correct category (module or core)
+        # Only run tests if they are in correct category (core, device, sensor)
         if test.startswith("test_" + target):
             module = __import__(test.split(".")[0])
         else:
@@ -79,12 +80,15 @@ async def run_tests():
     print()
 
     # Set test to run on next boot, add results to report
-    if testing_config["next"] == "module":
-        testing_config["next"] = "core"
-        testing_config["results"]["module"] = detailed_results
-    elif testing_config["next"] == "core":
-        testing_config["next"] = "module"
+    if testing_config["next"] == "core":
+        testing_config["next"] = "device"
         testing_config["results"]["core"] = detailed_results
+    elif testing_config["next"] == "device":
+        testing_config["next"] = "sensor"
+        testing_config["results"]["device"] = detailed_results
+    elif testing_config["next"] == "sensor":
+        testing_config["next"] = "core"
+        testing_config["results"]["sensor"] = detailed_results
 
     # Write to disk
     with open('testing_config.json', 'w') as file:
@@ -96,38 +100,46 @@ async def run_tests():
 
     while True:
         print("\nWhat would you like to do next?")
-        print(" [1] Run module tests")
-        print(" [2] Run core tests")
-        print(f" [3] View results from current test ({target})")
-        print(" [4] View results from last test")
-        print(" [5] Reboot on upload")
+        print(" [1] Run core tests")
+        print(" [2] Run device tests")
+        print(" [3] Run sensor tests")
+        print(f" [4] View results from current test ({target})")
+        print(" [5] View results from all tests")
+        print(" [6] Reboot on upload")
         choice = input()
         print()
 
         if choice == "1":
-            testing_config["next"] = "module"
-            with open('testing_config.json', 'w') as file:
-                json.dump(testing_config, file)
-            import machine
-            machine.reset()
-
-        elif choice == "2":
             testing_config["next"] = "core"
             with open('testing_config.json', 'w') as file:
                 json.dump(testing_config, file)
             import machine
             machine.reset()
 
+        elif choice == "2":
+            testing_config["next"] = "device"
+            with open('testing_config.json', 'w') as file:
+                json.dump(testing_config, file)
+            import machine
+            machine.reset()
+
         elif choice == "3":
-            print_report(testing_config["results"][target])
+            testing_config["next"] = "sensor"
+            with open('testing_config.json', 'w') as file:
+                json.dump(testing_config, file)
+            import machine
+            machine.reset()
 
         elif choice == "4":
-            if target == "core":
-                print_report(testing_config["results"]["module"])
-            elif target == "module":
-                print_report(testing_config["results"]["core"])
+            print(f"---{target.upper()} TESTS---\n")
+            print_report(testing_config["results"][target])
 
         elif choice == "5":
+            for category in testing_config["results"]:
+                print(f"---{category.upper()} TESTS---\n")
+                print_report(testing_config["results"][category])
+
+        elif choice == "6":
             loop = asyncio.new_event_loop()
             loop.create_task(disk_monitor())
             loop.run_forever()
