@@ -28,6 +28,7 @@ async def run_tests():
         testing_config["next"] = "core"
         testing_config["results"] = {}
         testing_config["results"]["core"] = {}
+        testing_config["results"]["api"] = {}
         testing_config["results"]["device"] = {}
         testing_config["results"]["sensor"] = {}
 
@@ -81,8 +82,11 @@ async def run_tests():
 
     # Set test to run on next boot, add results to report
     if testing_config["next"] == "core":
-        testing_config["next"] = "device"
+        testing_config["next"] = "api"
         testing_config["results"]["core"] = detailed_results
+    if testing_config["next"] == "api":
+        testing_config["next"] = "device"
+        testing_config["results"]["api"] = detailed_results
     elif testing_config["next"] == "device":
         testing_config["next"] = "sensor"
         testing_config["results"]["device"] = detailed_results
@@ -101,11 +105,12 @@ async def run_tests():
     while True:
         print("\nWhat would you like to do next?")
         print(" [1] Run core tests")
-        print(" [2] Run device tests")
-        print(" [3] Run sensor tests")
-        print(f" [4] View results from current test ({target})")
-        print(" [5] View results from all tests")
-        print(" [6] Reboot on upload")
+        print(" [2] Run api tests")
+        print(" [3] Run device tests")
+        print(" [4] Run sensor tests")
+        print(f" [5] View results from current test ({target})")
+        print(" [6] View results from all tests")
+        print(" [7] Reboot on upload")
         choice = input()
         print()
 
@@ -116,30 +121,37 @@ async def run_tests():
             import machine
             machine.reset()
 
-        elif choice == "2":
-            testing_config["next"] = "device"
+        if choice == "2":
+            testing_config["next"] = "api"
             with open('testing_config.json', 'w') as file:
                 json.dump(testing_config, file)
             import machine
             machine.reset()
 
         elif choice == "3":
-            testing_config["next"] = "sensor"
+            testing_config["next"] = "device"
             with open('testing_config.json', 'w') as file:
                 json.dump(testing_config, file)
             import machine
             machine.reset()
 
         elif choice == "4":
+            testing_config["next"] = "sensor"
+            with open('testing_config.json', 'w') as file:
+                json.dump(testing_config, file)
+            import machine
+            machine.reset()
+
+        elif choice == "5":
             print(f"---{target.upper()} TESTS---\n")
             print_report(testing_config["results"][target])
 
-        elif choice == "5":
+        elif choice == "6":
             for category in testing_config["results"]:
                 print(f"---{category.upper()} TESTS---\n")
                 print_report(testing_config["results"][category])
 
-        elif choice == "6":
+        elif choice == "7":
             loop = asyncio.new_event_loop()
             loop.create_task(disk_monitor())
             loop.run_forever()
