@@ -168,7 +168,7 @@ class TestParseCommand(unittest.TestCase):
 
     def test_reset_all_rules(self):
         response = parse_command("192.168.1.223", ['reset_all_rules'])
-        self.assertEqual(response, {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "off"}})
+        self.assertEqual(response, {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "off", "device3": "disabled"}})
 
     def test_get_schedule_rules(self):
         response = parse_command("192.168.1.223", ['get_schedule_rules', 'sensor1'])
@@ -205,10 +205,15 @@ class TestParseCommand(unittest.TestCase):
         self.assertIn('name', keys)
         self.assertIn('scheduled_rule', keys)
         self.assertIn('current_rule', keys)
+        self.assertIn('default_rule', keys)
         self.assertIn('motion', keys)
         self.assertIn('nickname', keys)
         self.assertIn('group', keys)
-        self.assertEqual(len(response.keys()), 10)
+        self.assertEqual(len(response.keys()), 11)
+        self.assertEqual(response['sensor_type'], 'pir')
+        self.assertEqual(response['default_rule'], 5)
+        self.assertEqual(response['name'], 'sensor1')
+        self.assertEqual(response['nickname'], 'sensor1')
 
     def test_ir(self):
         response = parse_command("192.168.1.223", ['ir', 'tv', 'power'])
@@ -262,6 +267,25 @@ class TestParseCommand(unittest.TestCase):
 
         response = parse_command("192.168.1.223", ['turn_off', 'device1'])
         self.assertEqual(response, {'Off': 'device1'})
+
+    # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
+    # resulted in comparison operator between int and string, causing crash.
+    # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
+    def test_enable_regression_test(self):
+        # Confirm correct starting conditions
+        response = parse_command("192.168.1.223", ['get_attributes', 'device3'])
+        self.assertEqual(response['current_rule'], 'disabled')
+        self.assertEqual(response['scheduled_rule'], 'disabled')
+        # Enable and turn on to reproduce issue
+        response = parse_command("192.168.1.223", ['enable', 'device3'])
+        response = parse_command("192.168.1.223", ['turn_on', 'device3'])
+        # Should not crash, should replace unusable rule with default_rule (256) and fade on
+        response = parse_command("192.168.1.223", ['get_attributes', 'device3'])
+        self.assertEqual(response['current_rule'], 256)
+        self.assertEqual(response['scheduled_rule'], 'disabled')
+        self.assertEqual(response['state'], True)
+        self.assertEqual(response['enabled'], True)
+
 
 
 

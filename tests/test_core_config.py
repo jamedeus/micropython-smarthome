@@ -45,6 +45,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.devices[0].device_type, 'pwm')
         self.assertTrue(self.config.devices[0].enabled)
         self.assertEqual(self.config.devices[0].triggered_by[0], self.config.sensors[0])
+        self.assertEqual(self.config.devices[0].default_rule, 32)
 
     def test_for_unexpected_devices(self):
         # Should only be one device
@@ -57,6 +58,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.sensors[0].sensor_type, 'pir')
         self.assertTrue(self.config.sensors[0].enabled)
         self.assertEqual(self.config.sensors[0].targets[0], self.config.devices[0])
+        self.assertEqual(self.config.sensors[0].default_rule, 5)
 
     def test_for_unexpected_sensors(self):
         # Should only be one sensor

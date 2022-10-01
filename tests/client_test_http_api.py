@@ -48,7 +48,7 @@ class TestEndpoint(unittest.TestCase):
 
     def test_reset_all_rules(self):
         response = requests.get('http://192.168.1.223:8123/reset_all_rules')
-        self.assertEqual(response.json(), {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "off"}})
+        self.assertEqual(response.json(), {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "off", "device3": "disabled"}})
 
     def test_get_schedule_rules(self):
         response = requests.get('http://192.168.1.223:8123/get_schedule_rules?sensor1')
@@ -81,10 +81,15 @@ class TestEndpoint(unittest.TestCase):
         self.assertIn('name', keys)
         self.assertIn('scheduled_rule', keys)
         self.assertIn('current_rule', keys)
+        self.assertIn('default_rule', keys)
         self.assertIn('motion', keys)
         self.assertIn('nickname', keys)
         self.assertIn('group', keys)
-        self.assertEqual(len(keys), 10)
+        self.assertEqual(len(keys), 11)
+        self.assertEqual(response.json()['sensor_type'], 'pir')
+        self.assertEqual(response.json()['default_rule'], 5)
+        self.assertEqual(response.json()['name'], 'sensor1')
+        self.assertEqual(response.json()['nickname'], 'sensor1')
 
     def test_ir(self):
         response = requests.get('http://192.168.1.223:8123/ir_key?tv/power')
@@ -138,6 +143,24 @@ class TestEndpoint(unittest.TestCase):
 
         response = requests.get('http://192.168.1.223:8123/turn_off?device1')
         self.assertEqual(response.json(), {'Off': 'device1'})
+
+    # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
+    # resulted in comparison operator between int and string, causing crash.
+    # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
+    def test_enable_regression_test(self):
+        # Confirm correct starting conditions
+        response = requests.get('http://192.168.1.223:8123/get_attributes?device3')
+        self.assertEqual(response.json()['current_rule'], 'disabled')
+        self.assertEqual(response.json()['scheduled_rule'], 'disabled')
+        # Enable and turn on to reproduce issue
+        response = requests.get('http://192.168.1.223:8123/enable?device3')
+        response = requests.get('http://192.168.1.223:8123/turn_on?device3')
+        # Should not crash, should replace unusable rule with default_rule (256) and fade on
+        response = requests.get('http://192.168.1.223:8123/get_attributes?device3')
+        self.assertEqual(response.json()['current_rule'], 256)
+        self.assertEqual(response.json()['scheduled_rule'], 'disabled')
+        self.assertEqual(response.json()['state'], True)
+        self.assertEqual(response.json()['enabled'], True)
 
 
 
