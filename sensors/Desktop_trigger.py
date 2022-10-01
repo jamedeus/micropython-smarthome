@@ -9,8 +9,8 @@ log = logging.getLogger("Desktop_sensor")
 
 
 class Desktop_trigger(Sensor):
-    def __init__(self, name, nickname, sensor_type, enabled, current_rule, scheduled_rule, targets, ip):
-        super().__init__(name, nickname, sensor_type, enabled, current_rule, scheduled_rule, targets)
+    def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets, ip):
+        super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
 
         self.ip = ip
 

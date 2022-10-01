@@ -9,8 +9,8 @@ log = logging.getLogger("DumbRelay")
 
 # Used for relay breakout board
 class DumbRelay(Device):
-    def __init__(self, name, nickname, device_type, enabled, current_rule, scheduled_rule, pin):
-        super().__init__(name, nickname, device_type, enabled, current_rule, scheduled_rule)
+    def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule, pin):
+        super().__init__(name, nickname, device_type, enabled, current_rule, default_rule)
 
         self.relay = Pin(pin, Pin.OUT)
 

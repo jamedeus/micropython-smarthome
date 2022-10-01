@@ -6,7 +6,7 @@ log = logging.getLogger("Sensor")
 
 
 class Sensor():
-    def __init__(self, name, nickname, sensor_type, enabled, current_rule, scheduled_rule, targets):
+    def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets):
 
         # Unique, sequential name (sensor1, sensor2, ...) used in backend
         self.name = name
@@ -22,7 +22,11 @@ class Sensor():
         self.current_rule = current_rule
 
         # The rule that should be followed at the current time (used to undo API changes to current_rule)
-        self.scheduled_rule = scheduled_rule
+        self.scheduled_rule = current_rule
+
+        # The fallback rule used when no other valid rules are available
+        # Can happen if config file contains invalid rules, or if enabled through API while both current and schedule rule are "disabled"
+        self.default_rule = default_rule
 
         # Will hold sequential schedule rules so they can be quickly changed when interrupt runs
         self.rule_queue = []
@@ -35,9 +39,14 @@ class Sensor():
     def enable(self):
         self.enabled = True
 
-        # If disabled by rule change then re-enabled with this method, replace "disabled" with a usable rule
+        # Replace "disabled" with usable rule
         if self.current_rule == "disabled":
-            self.current_rule = self.scheduled_rule
+            # Revert to scheduled rule unless it is also "disabled"
+            if not str(self.scheduled_rule).lower() == "disabled":
+                self.current_rule = self.scheduled_rule
+            # Last resort: revert to default_rule
+            else:
+                self.current_rule = self.default_rule
 
 
 

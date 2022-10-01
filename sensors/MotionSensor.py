@@ -9,8 +9,8 @@ log = logging.getLogger("MotionSensor")
 
 
 class MotionSensor(Sensor):
-    def __init__(self, name, nickname, sensor_type, enabled, current_rule, scheduled_rule, targets, pin):
-        super().__init__(name, nickname, sensor_type, enabled, current_rule, scheduled_rule, targets)
+    def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets, pin):
+        super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
 
         # Pin setup
         self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)

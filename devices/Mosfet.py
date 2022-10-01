@@ -8,8 +8,8 @@ log = logging.getLogger("Mosfet")
 
 
 class Mosfet(Device):
-    def __init__(self, name, nickname, device_type, enabled, current_rule, scheduled_rule, pin):
-        super().__init__(name, nickname, device_type, enabled, current_rule, scheduled_rule)
+    def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule, pin):
+        super().__init__(name, nickname, device_type, enabled, current_rule, default_rule)
 
         self.mosfet = Pin(pin, Pin.OUT, Pin.PULL_DOWN)
 

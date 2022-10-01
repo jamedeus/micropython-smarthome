@@ -371,9 +371,18 @@ class Config():
             # Get target instance
             instance = self.find(i)
 
-            # If no schedule rules, set default_rule as current and skip to next
+            # If no schedule rules, use default_rule and skip to next instance
             if len(rules) == 0:
-                instance.current_rule = instance.scheduled_rule
+                # If default is valid, also set as scheduled_rule
+                if instance.set_rule(instance.default_rule):
+                    instance.scheduled_rule = instance.current_rule
+                # If default rule is invalid, disable instance to prevent unpredictable behavior
+                else:
+                    log.critical(f"{instance.name} default rule ({instance.default_rule}) failed validation, instance will be disabled")
+                    instance.current_rule = "disabled"
+                    instance.scheduled_rule = "disabled"
+                    instance.default_rule = "disabled"
+                    instance.disable()
                 continue
 
             # Get list of timestamps, sort chronologically
@@ -384,13 +393,22 @@ class Config():
 
             # Set target's current_rule (set_rule method passes to syntax validator, returns True if valid, False if not)
             if instance.set_rule(rules[queue.pop(0)]):
-                # If rule valid, overwrite scheduled_rule placeholder (default_rule)
+                # If rule valid, set as scheduled_rule
                 instance.scheduled_rule = instance.current_rule
             else:
-                # If rule not valid, use default_rule as current_rule
-                instance.current_rule = instance.scheduled_rule
+                # If rule is invalid, fall back to default rule
+                log.error(f"{instance.name} scheduled rule failed validation, falling back to default rule")
+                if instance.set_rule(instance.default_rule):
+                    instance.scheduled_rule = instance.current_rule
+                else:
+                    # If both scheduled and default rules are invalid, disable instance to prevent unpredictable behavior
+                    log.critical(f"{instance.name} default rule ({instance.default_rule}) failed validation, instance will be disabled")
+                    instance.current_rule = "disabled"
+                    instance.scheduled_rule = "disabled"
+                    instance.default_rule = "disabled"
 
-            if instance.current_rule == "Disabled":
+            # TODO rely on set_rule method to disable?
+            if str(instance.current_rule).lower() == "disabled":
                 instance.disable()
 
             # Clear target's queue
