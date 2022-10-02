@@ -9,7 +9,7 @@ import time
 class TestConfig(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_initialization", "test_wifi_connected", "test_indicator_led", "test_api_calls", "test_reboot_timer", "test_device_instantiation", "test_for_unexpected_devices", "test_sensor_instantiation", "test_for_unexpected_sensors", "test_group_instantiation", "test_for_unexpected_groups", "test_reload_timer", "test_find_method", "test_get_status_method", "test_rebuilding_queue"]
+        return ["test_initialization", "test_wifi_connected", "test_indicator_led", "test_api_calls", "test_reboot_timer", "test_device_instantiation", "test_for_unexpected_devices", "test_sensor_instantiation", "test_for_unexpected_sensors", "test_group_instantiation", "test_for_unexpected_groups", "test_reload_timer", "test_find_method", "test_get_status_method", "test_rebuilding_queue", "test_valid_scheduled_rule", "test_invalid_scheduled_rule_valid_default_rule", "test_all_invalid_rules", "test_no_schedule_rules", "test_no_schedule_rules_invalid_default_rule"]
 
     def test_initialization(self):
         loaded_json = {'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'metadata': {'id': 'Upstairs bathroom', 'location': 'Under counter', 'floor': '2'}, 'sensor1': {'nickname': 'sensor1', 'schedule': {}, 'pin': 15, 'targets': ['device1'], 'type': 'pir', 'default_rule': 5}, 'device1': {'max': 1023, 'min': '0', 'nickname': 'device1', 'schedule': {'sunrise': 0, 'sunset': 32}, 'type': 'pwm', 'pin': 4, 'default_rule': 32}}
@@ -106,3 +106,47 @@ class TestConfig(unittest.TestCase):
         # Regression test for sensor with no schedule rules receiving default_rule of last device/sensor in config
         self.assertEqual(self.config.sensors[0].current_rule, 5)
         self.assertEqual(self.config.sensors[0].scheduled_rule, 5)
+
+    ## Tests to confirm correct rule is set after instantiating device ##
+
+    def test_valid_scheduled_rule(self):
+        # Scheduled rule is valid, should be set for current_rule and scheduled_rule
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': 50, 'schedule': {'10:00': 50}}})
+
+        self.assertEqual(config.devices[0].current_rule, 50)
+        self.assertEqual(config.devices[0].scheduled_rule, 50)
+        self.assertTrue(config.devices[0].enabled)
+
+    def test_invalid_scheduled_rule_valid_default_rule(self):
+        # Scheduled rule is NOT valid, default_rule should be set for current_rule and scheduled_rule instead
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': 50, 'schedule': {'10:00': '9999'}}})
+
+        self.assertEqual(config.devices[0].current_rule, 50)
+        self.assertEqual(config.devices[0].scheduled_rule, 50)
+        self.assertTrue(config.devices[0].enabled)
+
+    def test_all_invalid_rules(self):
+        # All rules are invalid, instance should be disabled with all rules set to "disabled"
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': '9999', 'schedule': {'10:00': '9999'}}})
+
+        self.assertEqual(config.devices[0].current_rule, 'disabled')
+        self.assertEqual(config.devices[0].scheduled_rule, 'disabled')
+        self.assertEqual(config.devices[0].default_rule, 'disabled')
+        self.assertFalse(config.devices[0].enabled)
+
+    def test_no_schedule_rules(self):
+        # No schedule rules are configured, should fall back to default_rule
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': '50', 'schedule': {}}})
+
+        self.assertEqual(config.devices[0].current_rule, 50)
+        self.assertEqual(config.devices[0].scheduled_rule, 50)
+        self.assertTrue(config.devices[0].enabled)
+
+    def test_no_schedule_rules_invalid_default_rule(self):
+        # No schedule rules are configured and default_rule is invalid, instance should be disabled with all rules set to "disabled"
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': '9999', 'schedule': {}}})
+
+        self.assertEqual(config.devices[0].current_rule, 'disabled')
+        self.assertEqual(config.devices[0].scheduled_rule, 'disabled')
+        self.assertEqual(config.devices[0].default_rule, 'disabled')
+        self.assertFalse(config.devices[0].enabled)
