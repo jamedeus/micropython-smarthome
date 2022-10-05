@@ -18,17 +18,6 @@ class Desktop_target(Device):
 
 
 
-    def rule_validator(self, rule):
-        try:
-            if rule.lower() == "on" or rule.lower() == "off" or rule.lower() == "disabled":
-                return rule.lower()
-            else:
-                return False
-        except AttributeError:
-            return False
-
-
-
     def off(self):
         try:
             response = urequests.get('http://' + str(self.ip) + ':5000/idle_time')
@@ -50,31 +39,26 @@ class Desktop_target(Device):
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
 
-        # TODO disable instead? Prevents 100ms delay from log line
-        if self.current_rule == "off" and state == 1:
-            return True # Tell sensor that send succeeded so it doesn't retry forever
-
-        else:
-            if state:
-                # Make sure a previous off command (has 5 sec delay) doesn't turn screen off immediately after turning on
-                SoftwareTimer.timer.cancel(self.name)
-                try:
-                    response = urequests.get('http://' + str(self.ip) + ':5000/on')
-                    print(f"{self.name}: Turned screen on")
-                    log.debug(f"{self.name}: Turned ON")
-                except OSError:
-                    # TODO make possible for timer to accept callback with args, then add to timer queue instead of going back to main loop
-                    #SoftwareTimer.timer.create(5000, self.send, self.name)
-                    # Wifi interruption, send failed
-                    return False
-
-            elif not state:
-                # Give user 5 seconds to react before screen turns off
-                SoftwareTimer.timer.create(5000, self.off, self.name)
-
-                return True
-
-            if response.status_code == 200:
-                return True
-            else:
+        if state:
+            # Make sure a previous off command (has 5 sec delay) doesn't turn screen off immediately after turning on
+            SoftwareTimer.timer.cancel(self.name)
+            try:
+                response = urequests.get('http://' + str(self.ip) + ':5000/on')
+                print(f"{self.name}: Turned screen on")
+                log.debug(f"{self.name}: Turned ON")
+            except OSError:
+                # TODO make possible for timer to accept callback with args, then add to timer queue instead of going back to main loop
+                #SoftwareTimer.timer.create(5000, self.send, self.name)
+                # Wifi interruption, send failed
                 return False
+
+        elif not state:
+            # Give user 5 seconds to react before screen turns off
+            SoftwareTimer.timer.create(5000, self.off, self.name)
+
+            return True
+
+        if response.status_code == 200:
+            return True
+        else:
+            return False

@@ -19,6 +19,7 @@ class TestTplink(unittest.TestCase):
         self.assertEqual(self.instance.rule_validator(51), 51)
         self.assertEqual(self.instance.rule_validator("42"), 42)
         self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
+        self.assertEqual(self.instance.rule_validator("enabled"), "enabled")
         self.assertEqual(self.instance.rule_validator("fade/98/120"), "fade/98/120")
         self.assertEqual(self.instance.rule_validator("fade/0/120000"), "fade/0/120000")
 

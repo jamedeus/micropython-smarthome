@@ -20,6 +20,7 @@ class TestLedStrip(unittest.TestCase):
         self.assertEqual(self.instance.rule_validator(1023), 1023)
         self.assertEqual(self.instance.rule_validator("1023"), 1023)
         self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
+        self.assertEqual(self.instance.rule_validator("Enabled"), "enabled")
         self.assertEqual(self.instance.rule_validator("fade/345/120"), "fade/345/120")
         self.assertEqual(self.instance.rule_validator("fade/1021/120000"), "fade/1021/120000")
 

@@ -73,6 +73,21 @@ class Device():
 
 
 
+    # Base validator for universal rules, can be extended in subclass validator method
+    def rule_validator(self, rule):
+        if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
+            return str(rule).lower()
+        else:
+            return self.validator(rule)
+
+
+
+    # Placeholder function, intended to be overwritten by subclass validator method
+    def validator(self, rule):
+        return False
+
+
+
     def set_rule(self, rule):
         # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)
@@ -85,11 +100,16 @@ class Device():
             if self.current_rule == "disabled":
                 self.send(0)
                 self.disable()
-            # Sensor was previously disabled, enable now that rule has changed
+            # Rule just changed to enabled, replace with usable rule (default) and enable
+            elif self.current_rule == "enabled":
+                self.current_rule = self.default_rule
+                self.enable()
+            # Device was previously disabled, enable now that rule has changed
             elif self.enabled == False:
                 self.enable()
+
             # Device is currently on, run send so new rule can take effect
-            elif self.state == True:
+            if self.state == True:
                 self.send(1)
 
             return True

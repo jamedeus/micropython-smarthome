@@ -168,7 +168,7 @@ class TestParseCommand(unittest.TestCase):
 
     def test_reset_all_rules(self):
         response = parse_command("192.168.1.223", ['reset_all_rules'])
-        self.assertEqual(response, {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "off", "device3": "disabled"}})
+        self.assertEqual(response, {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "disabled", "device3": "disabled"}})
 
     def test_get_schedule_rules(self):
         response = parse_command("192.168.1.223", ['get_schedule_rules', 'sensor1'])

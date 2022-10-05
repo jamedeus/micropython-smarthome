@@ -18,23 +18,8 @@ class DumbRelay(Device):
 
 
 
-    def rule_validator(self, rule):
-        try:
-            if rule.lower() == "on" or rule.lower() == "off" or rule.lower() == "disabled":
-                return rule.lower()
-            else:
-                return False
-        except AttributeError:
-            return False
-
-
-
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
 
-        if self.current_rule == "off" and state == 1:
-            pass
-        else:
-            self.relay.value(state)
-
+        self.relay.value(state)
         return True

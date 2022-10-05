@@ -67,7 +67,7 @@ config_file = {
         "schedule": {
             "09:00": "on"
         },
-        "default_rule": "on",
+        "default_rule": "enabled",
         "nickname": "device2"
     }
 }

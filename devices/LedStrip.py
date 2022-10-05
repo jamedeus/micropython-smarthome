@@ -108,7 +108,7 @@ class LedStrip(Device):
 
 
 
-    def rule_validator(self, rule):
+    def validator(self, rule):
         try:
             if str(rule).startswith("fade"):
                 # Parse parameters from rule
@@ -121,9 +121,6 @@ class LedStrip(Device):
                     return rule
                 else:
                     return False
-
-            elif str(rule).lower() == "disabled":
-                return str(rule).lower()
 
             elif isinstance(rule, bool):
                 return False

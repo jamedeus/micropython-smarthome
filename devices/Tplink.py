@@ -105,7 +105,7 @@ class Tplink(Device):
 
     # TODO Maybe add a 3rd param "init=False" - will be omitted except by Config. If True, and rule is fade,
     # then check Config.schedule, see when fade was supposed to start, and calculate current position in fade
-    def rule_validator(self, rule):
+    def validator(self, rule):
         try:
             if str(rule).startswith("fade"):
                 # Parse parameters from rule
@@ -119,9 +119,7 @@ class Tplink(Device):
                 else:
                     return False
 
-            elif str(rule).lower() == "disabled":
-                return str(rule).lower()
-
+            # Reject "False" before reaching conditional below (would cast False to 0 and accept as valid rule)
             elif isinstance(rule, bool):
                 return False
 

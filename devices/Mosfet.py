@@ -17,21 +17,6 @@ class Mosfet(Device):
 
 
 
-    def rule_validator(self, rule):
-        try:
-            if rule.lower() == "on" or rule.lower() == "off" or rule.lower() == "disabled":
-                return rule.lower()
-            else:
-                return False
-        except AttributeError:
-            return False
-
-
-
     def send(self, state=1):
-        if self.current_rule == "off" and state == 1:
-            pass
-        else:
-            self.mosfet.value(state)
-
+        self.mosfet.value(state)
         return True
