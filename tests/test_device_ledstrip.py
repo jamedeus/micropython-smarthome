@@ -6,7 +6,7 @@ from LedStrip import LedStrip
 class TestLedStrip(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_enable_regression_test"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_enable_regression_test", "test_rule_change_to_enabled_regression"]
 
     def test_instantiation(self):
         self.instance = LedStrip("device1", "device1", "pwm", True, None, 512, 4, 0, 1023)
@@ -83,3 +83,16 @@ class TestLedStrip(unittest.TestCase):
         self.assertNotEqual(self.instance.current_rule, "disabled")
         self.assertEqual(self.instance.current_rule, 512)
         self.assertEqual(self.instance.pwm.duty(), 512)
+
+    # Original bug: LedStrip class overwrites parent set_rule method and did not include conditional
+    # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
+    # crash next time send method was called.
+    def test_rule_change_to_enabled_regression(self):
+        self.instance.disable()
+        self.assertFalse(self.instance.enabled)
+        self.instance.set_rule('enabled')
+        # Rule should be set to default rule, NOT 'enabled'
+        self.assertEqual(self.instance.current_rule, 512)
+        self.assertTrue(self.instance.enabled)
+        # Attempt to reproduce crash, should not crash
+        self.assertTrue(self.instance.send(1))

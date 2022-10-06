@@ -1,15 +1,17 @@
 import unittest
 from ApiTarget import ApiTarget
 
+default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
+
 
 
 class TestApiTarget(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_enable_by_rule_change", "test_disable_by_rule_change"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_enable_by_rule_change", "test_disable_by_rule_change", "test_rule_change_to_enabled_regression"]
 
     def test_instantiation(self):
-        self.instance = ApiTarget("device1", "device1", "api-target", True, None, None, "192.168.1.223")
+        self.instance = ApiTarget("device1", "device1", "api-target", True, None, default_rule, "192.168.1.223")
         self.assertIsInstance(self.instance, ApiTarget)
         self.assertTrue(self.instance.enabled)
 
@@ -55,3 +57,16 @@ class TestApiTarget(unittest.TestCase):
         self.assertTrue(self.instance.enabled)
         self.instance.set_rule("disabled")
         self.assertFalse(self.instance.enabled)
+
+    # Original bug: ApiTarget class overwrites parent set_rule method and did not include conditional
+    # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
+    # crash next time send method was called.
+    def test_rule_change_to_enabled_regression(self):
+        self.instance.disable()
+        self.assertFalse(self.instance.enabled)
+        self.instance.set_rule('enabled')
+        # Rule should be set to default rule, NOT 'enabled'
+        self.assertEqual(self.instance.current_rule, default_rule)
+        self.assertTrue(self.instance.enabled)
+        # Attempt to reproduce crash, should not crash
+        self.assertTrue(self.instance.send(1))

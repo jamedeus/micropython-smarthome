@@ -6,10 +6,10 @@ from Tplink import Tplink
 class TestTplink(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_off", "test_turn_on"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_off", "test_turn_on", "test_rule_change_to_enabled_regression"]
 
     def test_instantiation(self):
-        self.instance = Tplink("device1", "device1", "dimmer", True, None, None, "192.168.1.233")
+        self.instance = Tplink("device1", "device1", "dimmer", True, None, 42, "192.168.1.233")
         self.assertIsInstance(self.instance, Tplink)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.fading)
@@ -62,4 +62,17 @@ class TestTplink(unittest.TestCase):
         self.assertTrue(self.instance.send(0))
 
     def test_turn_on(self):
+        self.assertTrue(self.instance.send(1))
+
+    # Original bug: Tplink class overwrites parent set_rule method and did not include conditional
+    # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
+    # crash next time send method was called.
+    def test_rule_change_to_enabled_regression(self):
+        self.instance.disable()
+        self.assertFalse(self.instance.enabled)
+        self.instance.set_rule('enabled')
+        # Rule should be set to default rule, NOT 'enabled'
+        self.assertEqual(self.instance.current_rule, 42)
+        self.assertTrue(self.instance.enabled)
+        # Attempt to reproduce crash, should not crash
         self.assertTrue(self.instance.send(1))
