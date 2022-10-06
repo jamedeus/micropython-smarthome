@@ -107,9 +107,8 @@ class Device():
             # Device was previously disabled, enable now that rule has changed
             elif self.enabled == False:
                 self.enable()
-
             # Device is currently on, run send so new rule can take effect
-            if self.state == True:
+            elif self.state == True:
                 self.send(1)
 
             return True
