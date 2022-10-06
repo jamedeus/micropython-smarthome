@@ -32,17 +32,6 @@ class Desktop_trigger(Sensor):
 
 
 
-    def rule_validator(self, rule):
-        try:
-            if rule.lower() == "enabled" or rule.lower() =="disabled":
-                return rule.lower()
-            else:
-                return False
-        except AttributeError:
-            return False
-
-
-
     def get_idle_time(self):
         # TODO find cause of ValueError ("syntax error in JSON")
         return urequests.get('http://' + str(self.ip) + ':5000/idle_time').json()

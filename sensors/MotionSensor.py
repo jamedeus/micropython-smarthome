@@ -48,11 +48,9 @@ class MotionSensor(Sensor):
 
 
 
-    def rule_validator(self, rule):
+    def validator(self, rule):
         try:
-            if str(rule).lower() == "disabled":
-                return str(rule).lower()
-            elif rule is None:
+            if rule is None:
                 return 0
             elif isinstance(rule, bool):
                 return False

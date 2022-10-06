@@ -9,7 +9,7 @@ class TestDummySensor(unittest.TestCase):
         return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_condition_met", "test_trigger"]
 
     def test_instantiation(self):
-        self.instance = Dummy("sensor1", "sensor1", "dummy", True, None, None, [])
+        self.instance = Dummy("sensor1", "sensor1", "dummy", True, None, "on", [])
         self.assertIsInstance(self.instance, Dummy)
         self.assertTrue(self.instance.enabled)
 
@@ -19,6 +19,9 @@ class TestDummySensor(unittest.TestCase):
         self.assertIs(self.instance.rule_validator("ON"), "on")
         self.assertIs(self.instance.rule_validator("off"), "off")
         self.assertIs(self.instance.rule_validator("Disabled"), "disabled")
+        self.assertIs(self.instance.rule_validator("DISABLED"), "disabled")
+        self.assertIs(self.instance.rule_validator("Enabled"), "enabled")
+        self.assertIs(self.instance.rule_validator("enabled"), "enabled")
 
     def test_rule_validation_invalid(self):
         self.assertFalse(self.instance.rule_validator(True))
@@ -45,8 +48,9 @@ class TestDummySensor(unittest.TestCase):
         self.assertFalse(self.instance.enabled)
 
     def test_enable_by_rule_change(self):
-        self.instance.set_rule("on")
+        self.instance.set_rule("enabled")
         self.assertTrue(self.instance.enabled)
+        self.assertEqual(self.instance.current_rule, "on")
 
     def test_condition_met(self):
         self.instance.set_rule("on")

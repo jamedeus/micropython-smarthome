@@ -87,12 +87,10 @@ class Thermostat(Sensor):
 
 
     # Receive rule from API, validate, set and return True if valid, otherwise return False
-    def rule_validator(self, rule):
+    def validator(self, rule):
         try:
-            if str(rule).lower() == "disabled":
-                return str(rule).lower()
             # Constrain to range 65-80
-            elif 65 <= float(rule) <= 80:
+            if 65 <= float(rule) <= 80:
                 return float(rule)
             else:
                 return False

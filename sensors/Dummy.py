@@ -14,9 +14,11 @@ class Dummy(Sensor):
 
 
 
-    def rule_validator(self, rule):
+    # Accepts additional rules because they are the only factor determining if condition is met
+    # With only enabled/disabled it would never turn targets off (condition not checked while disabled)
+    def validator(self, rule):
         try:
-            if rule.lower() == "on" or rule.lower() == "off" or rule.lower() == "disabled":
+            if rule.lower() == "on" or rule.lower() == "off":
                 return rule.lower()
             else:
                 return False
