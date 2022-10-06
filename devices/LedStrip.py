@@ -97,6 +97,10 @@ class LedStrip(Device):
             if self.current_rule == "disabled":
                 self.send(0)
                 self.disable()
+            # Rule just changed to enabled, replace with usable rule (default) and enable
+            elif self.current_rule == "enabled":
+                self.current_rule = self.default_rule
+                self.enable()
             # Device was previously disabled, enable now that rule has changed
             elif self.enabled == False:
                 self.enable()

@@ -21,10 +21,7 @@ class ApiTarget(Device):
     # Takes dict containing 2 entries named "on" and "off"
     # Both entries are lists containing a full API request
     # "on" sent when self.send(1) called, "off" when self.send(0) called
-    def rule_validator(self, rule):
-        if str(rule).lower() == "disabled":
-            return str(rule).lower()
-
+    def validator(self, rule):
         if isinstance(rule, str):
             try:
                 # Convert string rule to dict (if received from API)
@@ -101,6 +98,10 @@ class ApiTarget(Device):
             # Rule just changed to disabled
             if self.current_rule == "disabled":
                 self.disable()
+            # Rule just changed to enabled, replace with usable rule (default) and enable
+            elif self.current_rule == "enabled":
+                self.current_rule = self.default_rule
+                self.enable()
             # Sensor was previously disabled, enable now that rule has changed
             elif self.enabled == False:
                 self.enable()
