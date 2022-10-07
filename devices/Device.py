@@ -68,8 +68,12 @@ class Device():
 
 
     def disable(self):
+        # Turn off before disabling
+        if self.state:
+            self.send(0)
+            self.state = False
+
         self.enabled = False
-        self.state = False
 
 
 
