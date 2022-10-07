@@ -6,7 +6,7 @@ from LedStrip import LedStrip
 class TestLedStrip(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_enable_regression_test", "test_rule_change_to_enabled_regression"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_turn_off_when_disabled", "test_enable_regression_test", "test_rule_change_to_enabled_regression"]
 
     def test_instantiation(self):
         self.instance = LedStrip("device1", "device1", "pwm", True, None, 512, 4, 0, 1023)
@@ -68,6 +68,19 @@ class TestLedStrip(unittest.TestCase):
         self.instance.enable()
         self.assertTrue(self.instance.send(0))
         self.assertEqual(self.instance.pwm.duty(), 0)
+
+    def test_turn_off_when_disabled(self):
+        # Ensure turned on and enabled
+        self.instance.enable()
+        self.instance.send(1)
+        self.assertEqual(self.instance.pwm.duty(), self.instance.current_rule)
+        # Manually set state (normally done by main loop)
+        self.instance.state = True
+
+        # Disable - should automatically turn off, state should flip
+        self.instance.disable()
+        self.assertEqual(self.instance.pwm.duty(), 0)
+        self.assertFalse(self.instance.state)
 
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
     # resulted in comparison operator between int and string, causing crash.

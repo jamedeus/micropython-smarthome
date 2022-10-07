@@ -111,7 +111,7 @@ class TestConfig(unittest.TestCase):
 
     def test_valid_scheduled_rule(self):
         # Scheduled rule is valid, should be set for current_rule and scheduled_rule
-        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': 50, 'schedule': {'10:00': 50}}})
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'pwm', 'nickname': 'test', 'pin': 4, 'default_rule': 50, 'min': 0, 'max': 1023, 'schedule': {'10:00': 50}}})
 
         self.assertEqual(config.devices[0].current_rule, 50)
         self.assertEqual(config.devices[0].scheduled_rule, 50)
@@ -119,7 +119,7 @@ class TestConfig(unittest.TestCase):
 
     def test_invalid_scheduled_rule_valid_default_rule(self):
         # Scheduled rule is NOT valid, default_rule should be set for current_rule and scheduled_rule instead
-        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': 50, 'schedule': {'10:00': '9999'}}})
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'pwm', 'nickname': 'test', 'pin': 4, 'default_rule': 50, 'min': 0, 'max': 1023, 'schedule': {'10:00': '9999'}}})
 
         self.assertEqual(config.devices[0].current_rule, 50)
         self.assertEqual(config.devices[0].scheduled_rule, 50)
@@ -127,7 +127,7 @@ class TestConfig(unittest.TestCase):
 
     def test_all_invalid_rules(self):
         # All rules are invalid, instance should be disabled with all rules set to "disabled"
-        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': '9999', 'schedule': {'10:00': '9999'}}})
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'pwm', 'nickname': 'test', 'pin': 4, 'default_rule': '9999', 'min': 0, 'max': 1023, 'schedule': {'10:00': '9999'}}})
 
         self.assertEqual(config.devices[0].current_rule, 'disabled')
         self.assertEqual(config.devices[0].scheduled_rule, 'disabled')
@@ -136,7 +136,7 @@ class TestConfig(unittest.TestCase):
 
     def test_no_schedule_rules(self):
         # No schedule rules are configured, should fall back to default_rule
-        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': '50', 'schedule': {}}})
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'pwm', 'nickname': 'test', 'pin': 4, 'default_rule': '50', 'min': 0, 'max': 1023, 'schedule': {}}})
 
         self.assertEqual(config.devices[0].current_rule, 50)
         self.assertEqual(config.devices[0].scheduled_rule, 50)
@@ -144,7 +144,7 @@ class TestConfig(unittest.TestCase):
 
     def test_no_schedule_rules_invalid_default_rule(self):
         # No schedule rules are configured and default_rule is invalid, instance should be disabled with all rules set to "disabled"
-        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'dimmer', 'nickname': 'test', 'ip': '192.168.1.123', 'default_rule': '9999', 'schedule': {}}})
+        config = Config({'metadata': {'id': 'test', 'location': 'test', 'floor': '0'}, 'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'device1': {'type': 'pwm', 'nickname': 'test', 'pin': 4, 'default_rule': '9999', 'min': 0, 'max': 1023, 'schedule': {}}})
 
         self.assertEqual(config.devices[0].current_rule, 'disabled')
         self.assertEqual(config.devices[0].scheduled_rule, 'disabled')

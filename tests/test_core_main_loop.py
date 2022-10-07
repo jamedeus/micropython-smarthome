@@ -167,3 +167,46 @@ class TestMainLoop(unittest.TestCase):
 
         self.config.groups[1].apply_action(True)
         self.assertTrue(self.config.groups[1].targets[0].state)
+
+    # Original bug: Disabling a device while turned on did not turn off, but did flip state to False
+    # This resulted in device staying on even after sensors turned other devices in group off. If
+    # device was enabled while sensor conditions not met, it still would not be turned off because
+    # state (False) matched correct action (turn off). This meant it was impossible to turn the light
+    # off without triggering + reseting sensors (or using API).
+    def test_regression_correct_state_when_re_enabled(self):
+        # Get LedStrip instance
+        led = self.config.find('device1')
+
+        # Find group containing instance
+        for g in self.config.groups:
+            if led in g.targets:
+                group = g
+                break
+
+        # Ensure enabled, simulate turning on
+        led.enable()
+        group.state = False
+        group.apply_action(True)
+
+        # Confirm LED turned on, LED state is correct, group state is correct
+        self.assertEqual(led.pwm.duty(), led.current_rule)
+        self.assertTrue(led.state)
+        self.assertTrue(group.state)
+
+        # Disable, should turn off automatically (before fix would stay on)
+        led.disable()
+        self.assertFalse(led.enabled)
+
+        # Confirm turned off
+        self.assertFalse(led.state)
+        self.assertEqual(led.pwm.duty(), 0)
+
+        # Simulate reset_timer expiring while disabled
+        group.state = False
+
+        # Re-enable to reproduce issue, before fix device would still be on
+        led.enable()
+
+        # Should be turned off
+        self.assertFalse(led.state)
+        self.assertEqual(led.pwm.duty(), 0)
