@@ -267,14 +267,24 @@
 
                                                 <div class="mb-2">
                                                     <label for="sensor{{forloop.counter}}-default_rule" class="sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control sensor{{forloop.counter}}" id="sensor{{forloop.counter}}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <select id="sensor{{forloop.counter}}-default_rule" class="form-select sensor{{forloop.counter}}" autocomplete="off" required>
+                                                        <option disabled>Select default rule</option>
+                                                        <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                        <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                    </select>
                                                 </div>
 
                                         {% elif params.type == "dummy" %}
 
                                                 <div class="mb-2">
                                                     <label for="sensor{{forloop.counter}}-default_rule" class="sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control sensor{{forloop.counter}}" id="sensor{{forloop.counter}}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <select id="sensor{{forloop.counter}}-default_rule" class="form-select sensor{{forloop.counter}}" autocomplete="off" required>
+                                                        <option disabled>Select default rule</option>
+                                                        <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                        <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                        <option value="on" {% if params.default_rule|lower == "on" %} selected {% endif %}>On</option>
+                                                        <option value="off" {% if params.default_rule|lower == "off" %} selected {% endif %}>Off</option>
+                                                    </select>
                                                 </div>
 
                                         {% elif params.type == "desktop" %}
@@ -286,7 +296,11 @@
 
                                                 <div class="mb-2">
                                                     <label for="sensor{{forloop.counter}}-default_rule" class="sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="text" class="form-control sensor{{forloop.counter}}" id="sensor{{forloop.counter}}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <select id="sensor{{forloop.counter}}-default_rule" class="form-select sensor{{forloop.counter}}" autocomplete="off" required>
+                                                        <option disabled>Select default rule</option>
+                                                        <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                        <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                    </select>
                                                 </div>
 
                                         {% elif params.type == "si7021" %}
@@ -412,7 +426,11 @@
 
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <select id="device{{ forloop.counter }}-default_rule" class="form-select device{{forloop.counter}}" autocomplete="off" required>
+                                                        <option disabled>Select default rule</option>
+                                                        <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                        <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                    </select>
                                                 </div>
 
                                         {% elif params.type == "dumb-relay" %}
@@ -423,7 +441,11 @@
 
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <select id="device{{ forloop.counter }}-default_rule" class="form-select device{{forloop.counter}}" autocomplete="off" required>
+                                                        <option disabled>Select default rule</option>
+                                                        <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                        <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                    </select>
                                                 </div>
 
                                         {% elif params.type == "desktop" %}
@@ -434,7 +456,11 @@
 
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <select id="device{{ forloop.counter }}-default_rule" class="form-select device{{forloop.counter}}" autocomplete="off" required>
+                                                        <option disabled>Select default rule</option>
+                                                        <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                        <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                    </select>
                                                 </div>
 
                                         {% elif params.type == "pwm" %}
@@ -466,7 +492,11 @@
 
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <select id="device{{ forloop.counter }}-default_rule" class="form-select device{{forloop.counter}}" autocomplete="off" required>
+                                                        <option disabled>Select default rule</option>
+                                                        <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                        <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                    </select>
                                                 </div>
 
                                         {% elif params.type == "api-target" %}
@@ -629,11 +659,32 @@
                                                     <input type="time" class="form-control timestamp {{instance}}" id="{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" value="{{time}}">
                                                 </td>
 
-                                                {% if not params.type == "api-target" %}
+                                                {% if params.type == "pir" or params.type == "si7021" or params.type == "dimmer" or params.type == "bulb" or params.type == "pwm" %}
                                                     <td>
                                                         <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" placeholder="" value="{{rule}}">
                                                     </td>
-                                                {% else %}
+
+                                                {% elif params.type == "dummy" %}
+                                                    <td>
+                                                        <select id="{{instance}}-rule{{forloop.counter}}" class="form-select rule {{instance}} autocomplete="off">
+                                                            <option disabled>Select rule</option>
+                                                            <option value='enabled' {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                            <option value='disabled' {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                            <option value='on' {% if rule|lower == "on" %} selected {% endif %}>On</option>
+                                                            <option value='off' {% if rule|lower == "off" %} selected {% endif %}>Off</option>
+                                                        </select>
+                                                    </td>
+
+                                                {% elif params.type == "switch" or params.type == "desktop" or params.type == "relay" or params.type == "dumb-relay" or params.type == "mosfet" %}
+                                                    <td>
+                                                        <select id="{{instance}}-rule{{forloop.counter}}" class="form-select rule {{instance}} autocomplete="off">
+                                                            <option disabled>Select rule</option>
+                                                            <option value='enabled' {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                            <option value='disabled' {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                        </select>
+                                                    </td>
+
+                                                {% elif params.type == "api-target" %}
                                                     <td>
                                                         <button id="{{instance}}-rule{{forloop.counter}}-button" class="form-control {{instance}}" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                                         <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" value="{{rule}}" style="display:none;">

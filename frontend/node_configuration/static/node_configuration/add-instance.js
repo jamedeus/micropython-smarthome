@@ -30,7 +30,7 @@ async function load_sensor_section(select) {
                     </div>`
 
     // Get template for sensor type selected by user
-    if (selected == "pir" || selected == "switch") {
+    if (selected == "pir") {
         template += `<div class="mb-2">
                         <label for="sensor${index}-pin" class="sensor${index}"><b>Pin:</b></label>
                         <input type="text" class="form-control sensor${index}" id="sensor${index}-pin" placeholder="" required>
@@ -41,6 +41,19 @@ async function load_sensor_section(select) {
                         <input type="default_rule" class="form-control sensor${index}" id="sensor${index}-default_rule" placeholder="" required>
                     </div>`
 
+    } else if (selected == "switch") {
+        template += `<div class="mb-2">
+                        <label for="sensor${index}-pin" class="sensor${index}"><b>Pin:</b></label>
+                        <input type="text" class="form-control sensor${index}" id="sensor${index}-pin" placeholder="" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="sensor${index}-default_rule" class="sensor${index}"><b>Default Rule:</b></label>
+                        <select id="sensor${index}-default_rule" class="form-select sensor${index}" autocomplete="off" required>
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                    </div>`
+
     } else if (selected == "desktop") {
         template += `<div class="mb-2">
                         <label for="sensor${index}-ip" class="sensor${index}"><b>IP:</b></label>
@@ -49,13 +62,21 @@ async function load_sensor_section(select) {
 
                     <div class="mb-2">
                         <label for="sensor${index}-default_rule" class="sensor${index}"><b>Default Rule:</b></label>
-                        <input type="text" class="form-control sensor${index}" id="sensor${index}-default_rule" placeholder="" required>
+                        <select id="sensor${index}-default_rule" class="form-select sensor${index}" autocomplete="off" required>
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
                     </div>`
 
     } else if (selected == "dummy") {
         template += `<div class="mb-2">
                         <label for="sensor${index}-default_rule" class="sensor${index}"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control sensor${index}" id="sensor${index}-default_rule" placeholder="" required>
+                        <select id="sensor${index}-default_rule" class="form-select sensor${index}" autocomplete="off" required>
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                            <option value="on">On</option>
+                            <option value="off">Off</option>
+                        </select>
                     </div>`
     } else if (selected == "si7021") {
         template += `<div class="mb-2">
@@ -113,7 +134,7 @@ async function load_device_section(select) {
                     </div>`
 
     // Get template for device type selected by user
-    if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "relay") {
+    if (selected == "dimmer" || selected == "bulb") {
         template += `<div class="mb-2">
                         <label for="device${index}-ip" class="device${index}"><b>IP:</b></label>
                         <input type="text" class="form-control device${index}" id="device${index}-ip" placeholder="" required>
@@ -124,6 +145,20 @@ async function load_device_section(select) {
                         <input type="default_rule" class="form-control device${index}" id="device${index}-default_rule" placeholder="" required>
                     </div>`
 
+    } else if (selected == "desktop" || selected == "relay") {
+        template += `<div class="mb-2">
+                        <label for="device${index}-ip" class="device${index}"><b>IP:</b></label>
+                        <input type="text" class="form-control device${index}" id="device${index}-ip" placeholder="" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="device${index}-default_rule" class="device${index}"><b>Default Rule:</b></label>
+                        <select id="device${index}-default_rule" class="form-select device${index}" autocomplete="off" required>
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
+                    </div>`
+
     } else if (selected == "mosfet" || selected == "dumb-relay") {
         template += `<div class="mb-2">
                         <label for="device${index}-pin" class="device${index}"><b>Pin:</b></label>
@@ -132,7 +167,10 @@ async function load_device_section(select) {
 
                     <div class="mb-2">
                         <label for="device${index}-default_rule" class="device${index}"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control device${index}" id="device${index}-default_rule" placeholder="" required>
+                        <select id="device${index}-default_rule" class="form-select device${index}" autocomplete="off" required>
+                            <option value="enabled">Enabled</option>
+                            <option value="disabled">Disabled</option>
+                        </select>
                     </div>`
 
     } else if (selected == "pwm") {

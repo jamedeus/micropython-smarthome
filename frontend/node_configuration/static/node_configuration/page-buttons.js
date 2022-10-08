@@ -65,7 +65,17 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                                 <input type="text" class="form-control ${device} rule" id="${device}-rule1" placeholder="" style="display:none;">
                                             </td>`
 
-            // All other device types: add input field
+            // Devices that only take enabled and disabled: add dropdown
+            } else if (instances['devices'][device]['type'] == 'desktop' || instances['devices'][device]['type'] == 'relay' || instances['devices'][device]['type'] == 'dumb-relay' || instances['devices'][device]['type'] == 'mosfet') {
+                template +=                `<td>
+                                                <select id="${device}-rule1" class="form-select rule ${device} autocomplete="off">
+                                                    <option>Select rule</option>
+                                                    <option value='enabled'>Enabled</option>
+                                                    <option value='disabled'>Disabled</option>
+                                                </select>
+                                            </td>`
+
+            // All other device types: add text input
             } else {
                 template +=                 `<td>
                                                  <input type='text' class='form-control ${device} rule' id='${device}-rule1' placeholder=''>
@@ -127,32 +137,39 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             document.getElementById(`${device}-rules-label`).innerHTML = `<b>${instances['devices'][device]['nickname']}</b>`;
 
             // Clear existing schedule rules (likely invalid after type change)
-            if (instances['devices'][device]['type'] != "api-target") {
-                document.getElementById(`${device}-rules`).innerHTML = `<tr>
-                                                                            <th style='text-align: center;'>Time</th>
-                                                                            <th style='text-align: center;'>Rule</th>
-                                                                        </tr>
-                                                                        <tr id='${device}-row-1' class='${device}'>
-                                                                            <td><input type='time' class='form-control ${device}' id='${device}-rule1-time' placeholder='HH:MM'></td>
-                                                                            <td><input type='text' class='form-control ${device}' id='${device}-rule1' placeholder=''></td>
-                                                                            <td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove{{forloop.counter}}" disabled><i class="bi-x-lg"></i></button></td>
-                                                                        </tr>`;
+            template = `<tr>
+                            <th style='text-align: center;'>Time</th>
+                            <th style='text-align: center;'>Rule</th>
+                        </tr>
+                        <tr id='${device}-row-1' class='${device}'>
+                            <td><input type='time' class='form-control ${device}' id='${device}-rule1-time' placeholder='HH:MM'></td>`
+
+            // ApiTarget: Add rule modal button
+            if (instances['devices'][device]['type'] == "api-target") {
+                template += `<td>
+                                <button id='${device}-rule1-button' class='form-control ${device}' onclick='open_rule_modal(this);' type='button'>Set rule</button>
+                                <input type='text' class='form-control rule ${device}' id='${device}-rule1' style='display:none;'>
+                            </td>`
+
+            // Devices that only take enabled and disabled: add dropdown
+            } else if (instances['devices'][device]['type'] == 'desktop' || instances['devices'][device]['type'] == 'relay' || instances['devices'][device]['type'] == 'dumb-relay' || instances['devices'][device]['type'] == 'mosfet') {
+                template += `<td>
+                                 <select id="${device}-rule1" class="form-select rule ${device} autocomplete="off">
+                                     <option>Select rule</option>
+                                     <option value='enabled'>Enabled</option>
+                                     <option value='disabled'>Disabled</option>
+                                 </select>
+                             </td>`
+
+            // All other device types: add text input
             } else {
-                document.getElementById(`${device}-rules`).innerHTML = `<tr>
-                                                                            <th style='text-align: center;'>Time</th>
-                                                                            <th style='text-align: center;'>Rule</th>
-                                                                        </tr>
-                                                                        <tr id='${device}-row-1' class='${device}'>
-                                                                            <td><input type='time' class='form-control ${device}' id='${device}-rule1-time' placeholder='HH:MM'></td>
-                                                                            <td>
-                                                                                <button id='${device}-rule1-button' class='form-control ${device}' onclick='open_rule_modal(this);' type='button'>Set rule</button>
-                                                                                <input type='text' class='form-control rule ${device}' id='${device}-rule1' style='display:none;'>
-                                                                            </td>
-                                                                            <td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove{{forloop.counter}}" disabled><i class="bi-x-lg"></i></button></td>
-                                                                        </tr>`;
-            };
+                template += `<td><input type='text' class='form-control ${device}' id='${device}-rule1' placeholder=''></td>`
 
+            }
 
+            template += `<td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove{{forloop.counter}}" disabled><i class="bi-x-lg"></i></button></td>
+                     </tr>`;
+            document.getElementById(`${device}-rules`).innerHTML = template
 
             // Prevent running again (unless device type changes again)
             instances['devices'][device].modified = false;
@@ -198,11 +215,39 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                         <tr id='${sensor}-row-1' class='${sensor}'>
                                             <td>
                                                 <input type='time' class='form-control ${sensor} timestamp' id='${sensor}-rule1-time' placeholder='HH:MM'>
-                                            </td>
-                                            <td>
+                                            </td>`
+
+            // Sensors that only take enabled and disabled: add dropdown
+            if (instances['sensors'][sensor]['type'] == 'switch' || instances['sensors'][sensor]['type'] == 'desktop') {
+                template +=                `<td>
+                                                <select id="${sensor}-rule1" class="form-select rule ${sensor} autocomplete="off">
+                                                    <option>Select rule</option>
+                                                    <option value='enabled'>Enabled</option>
+                                                    <option value='disabled'>Disabled</option>
+                                                </select>
+                                            </td>`
+
+            // Dummy sensor: Add dropdown with extra options (on and off)
+            } else if (instances['sensors'][sensor]['type'] == 'dummy') {
+                template += `               <td>
+                                                <select id="${sensor}-rule1" class="form-select rule ${sensor} autocomplete="off">
+                                                    <option>Select rule</option>
+                                                    <option value='enabled'>Enabled</option>
+                                                    <option value='disabled'>Disabled</option>
+                                                    <option value='on'>On</option>
+                                                    <option value='off'>Off</option>
+                                                </select>
+                                            </td>`
+
+            // All other sensors: Add text field
+            } else {
+                template +=                `<td>
                                                 <input type='text' class='form-control ${sensor} rule' id='${sensor}-rule1' placeholder=''>
-                                            </td>
-                                            <td class='min'>
+                                            </td>`
+
+            };
+
+            template +=                    `<td class='min'>
                                                 <button type='button' class='remove btn btn-sm btn-danger mt-1 ${sensor}' id='${sensor}-remove1' disabled><i class="bi-x-lg"></i></button>
                                             </td>
                                         </tr>
@@ -244,15 +289,44 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${instances['sensors'][sensor]['nickname']}</b>`;
 
             // Clear existing schedule rules (likely invalid after type change)
-            document.getElementById(`${sensor}-rules`).innerHTML = `<tr>
-                                                                        <th style='text-align: center;'>Time</th>
-                                                                        <th style='text-align: center;'>Rule</th>
-                                                                    </tr>
-                                                                    <tr id='${sensor}-row-1' class='${sensor}'>
-                                                                        <td><input type='time' class='form-control timestamp ${sensor}' id='${sensor}-rule1-time' placeholder='HH:MM'></td>
-                                                                        <td><input type='text' class='form-control rule ${sensor}' id='${sensor}-rule1' placeholder=''></td>
-                                                                        <td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${sensor}" id="${sensor}-remove1" disabled="true"><i class="bi-x-lg"></i></button></td>
-                                                                    </tr>`;
+            template = `<tr>
+                            <th style='text-align: center;'>Time</th>
+                            <th style='text-align: center;'>Rule</th>
+                        </tr>
+                        <tr id='${sensor}-row-1' class='${sensor}'>
+                            <td><input type='time' class='form-control timestamp ${sensor}' id='${sensor}-rule1-time' placeholder='HH:MM'></td>`
+
+            // Sensors that only take enabled and disabled: add dropdown
+            if (instances['sensors'][sensor]['type'] == 'switch' || instances['sensors'][sensor]['type'] == 'desktop') {
+                template +=                `<td>
+                                                <select id="${sensor}-rule1" class="form-select rule ${sensor} autocomplete="off">
+                                                    <option>Select rule</option>
+                                                    <option value='enabled'>Enabled</option>
+                                                    <option value='disabled'>Disabled</option>
+                                                </select>
+                                            </td>`
+
+            // Dummy sensor: Add dropdown with extra options (on and off)
+            } else if (instances['sensors'][sensor]['type'] == 'dummy') {
+                template += `               <td>
+                                                <select id="${sensor}-rule1" class="form-select rule ${sensor} autocomplete="off">
+                                                    <option>Select rule</option>
+                                                    <option value='enabled'>Enabled</option>
+                                                    <option value='disabled'>Disabled</option>
+                                                    <option value='on'>On</option>
+                                                    <option value='off'>Off</option>
+                                                </select>
+                                            </td>`
+
+            // All other sensors: Add text field
+            } else {
+                template += `<td><input type='text' class='form-control rule ${sensor}' id='${sensor}-rule1' placeholder=''></td>`
+            };
+
+            template += `<td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${sensor}" id="${sensor}-remove1" disabled="true"><i class="bi-x-lg"></i></button></td>
+                     </tr>`;
+
+            document.getElementById(`${sensor}-rules`).innerHTML = template;
 
             // Prevent running again (unless user changes type again)
             instances['sensors'][sensor].modified = false;
