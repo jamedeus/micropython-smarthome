@@ -7,7 +7,7 @@ import SoftwareTimer
 class TestMotionSensor(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_reset_timer", "test_trigger", "test_enable_after_disable_by_rule_change"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_reset_timer", "test_trigger", "test_enable_after_disable_by_rule_change", "test_regression_invalid_default_rule"]
 
     def test_instantiation(self):
         self.instance = MotionSensor("sensor1", "sensor1", "pir", True, None, None, [], 15)
@@ -73,3 +73,24 @@ class TestMotionSensor(unittest.TestCase):
         self.instance.enable()
         # Old rule ("disabled") should have been automatically replaced by scheduled_rule
         self.assertEqual(self.instance.current_rule, self.instance.scheduled_rule)
+
+    # Original bug: Some sensor types would crash or behave unexpectedly if default_rule was "enabled" or "disabled" in various
+    # situations. These classes now raise exception in init method to prevent this.
+    # It should no longer be possible to instantiate with invalid default_rule.
+    def test_regression_invalid_default_rule(self):
+        # assertRaises fails for some reason, this approach seems reliable
+        try:
+            test = MotionSensor("sensor1", "sensor1", "pir", True, None, "disabled", [], 15)
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except AttributeError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
+
+        try:
+            test = MotionSensor("sensor1", "sensor1", "pir", True, None, "enabled", [], 15)
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except AttributeError:
+            # Should raise exception, test passed
+            self.assertTrue(True)

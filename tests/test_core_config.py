@@ -9,7 +9,7 @@ import time
 class TestConfig(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_initialization", "test_wifi_connected", "test_indicator_led", "test_api_calls", "test_reboot_timer", "test_device_instantiation", "test_for_unexpected_devices", "test_sensor_instantiation", "test_for_unexpected_sensors", "test_group_instantiation", "test_for_unexpected_groups", "test_reload_timer", "test_find_method", "test_get_status_method", "test_rebuilding_queue", "test_valid_scheduled_rule", "test_invalid_scheduled_rule_valid_default_rule", "test_all_invalid_rules", "test_no_schedule_rules", "test_no_schedule_rules_invalid_default_rule", "test_regression_instantiate_with_invalid_default_rule"]
+        return ["test_initialization", "test_wifi_connected", "test_indicator_led", "test_api_calls", "test_reboot_timer", "test_device_instantiation", "test_for_unexpected_devices", "test_sensor_instantiation", "test_for_unexpected_sensors", "test_group_instantiation", "test_for_unexpected_groups", "test_reload_timer", "test_find_method", "test_get_status_method", "test_rebuilding_queue", "test_valid_scheduled_rule", "test_invalid_scheduled_rule_valid_default_rule", "test_all_invalid_rules", "test_no_schedule_rules", "test_no_schedule_rules_invalid_default_rule", "test_regression_instantiate_with_invalid_default_rule", "test_regression_instantiate_with_invalid_default_rule_sensor"]
 
     def test_initialization(self):
         loaded_json = {'wifi': {'ssid': 'jamnet', 'password': 'cjZY8PTa4ZQ6S83A'}, 'metadata': {'id': 'Upstairs bathroom', 'location': 'Under counter', 'floor': '2'}, 'sensor1': {'nickname': 'sensor1', 'schedule': {}, 'pin': 15, 'targets': ['device1'], 'type': 'pir', 'default_rule': 5}, 'device1': {'max': 1023, 'min': '0', 'nickname': 'device1', 'schedule': {'sunrise': 0, 'sunset': 32}, 'type': 'pwm', 'pin': 4, 'default_rule': 32}}
@@ -161,3 +161,12 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(len(config.devices), 0)
         # Sensor should have no targets
         self.assertEqual(len(config.sensors[0].targets), 0)
+
+    # Original bug: Some sensor types would crash or behave unexpectedly if default_rule was "enabled" or "disabled" in various
+    # situations. These classes now raise exception in init method to prevent this.
+    # It should no longer be possible to instantiate with invalid default_rule.
+    def test_regression_instantiate_with_invalid_default_rule_sensor(self):
+        config = Config({"metadata": {"id": "Upstairs Bathroom", "location": "Under counter", "floor": "2"}, "wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "sensor1": {"type": "pir", "nickname": "Motion Sensor", "pin": 15, "default_rule": "enabled", "schedule": {"10:00": "5", "22:00": "5"}, "targets": ["device1"]}, "device1": {"type": "pwm", "nickname": "Countertop LEDs", "pin": 19, "min": 0, "max": 1023, "default_rule": 512, "schedule": {"sunrise": "0", "sunset": "enabled"}}})
+
+        # Should have no sensor instances
+        self.assertEqual(len(config.sensors), 0)

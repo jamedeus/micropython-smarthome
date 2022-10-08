@@ -6,7 +6,7 @@ from Thermostat import Thermostat
 class TestThermostat(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_sensor", "test_condition_met", "test_condition_met_heat", "test_condition_met_tolerance", "test_trigger"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_sensor", "test_condition_met", "test_condition_met_heat", "test_condition_met_tolerance", "test_trigger", "test_regression_invalid_default_rule"]
 
     def test_instantiation(self):
         self.instance = Thermostat("sensor1", "sensor1", "si7021", True, 74, 74, "cool", 1, [])
@@ -106,3 +106,24 @@ class TestThermostat(unittest.TestCase):
     def test_trigger(self):
         # Should not be able to trigger this sensor type
         self.assertFalse(self.instance.trigger())
+
+    # Original bug: Some sensor types would crash or behave unexpectedly if default_rule was "enabled" or "disabled" in various
+    # situations. These classes now raise exception in init method to prevent this.
+    # It should no longer be possible to instantiate with invalid default_rule.
+    def test_regression_invalid_default_rule(self):
+        # assertRaises fails for some reason, this approach seems reliable
+        try:
+            test = Thermostat("sensor1", "sensor1", "si7021", True, "enabled", "enabled", "cool", 1, [])
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except AttributeError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
+
+        try:
+            test = Thermostat("sensor1", "sensor1", "si7021", True, "disabled", "disabled", "cool", 1, [])
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except AttributeError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
