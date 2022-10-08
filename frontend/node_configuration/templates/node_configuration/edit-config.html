@@ -13,8 +13,10 @@
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
+    <link rel="stylesheet" href="{% static 'api/sliders.css' %}">
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <script src="{% static 'api/rangeslider.min.js' %}"></script>
     <script src="{% static 'node_configuration/smoothscroll.min.js' %}"></script>
     <script src="{% static 'node_configuration/classes.js' %}"></script>
     <style>
@@ -254,8 +256,12 @@
                                                 </div>
 
                                                 <div class="mb-2">
-                                                    <label for="sensor{{forloop.counter}}-default_rule" class="sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control sensor{{forloop.counter}}" id="sensor{{forloop.counter}}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <label for="sensor{{forloop.counter}}-default_rule" class="mt-1 sensor{{forloop.counter}}"><b>Default Rule:</b></label>
+                                                    <div class="d-flex flex-row align-items-center my-2">
+                                                        <button id="{{sensor}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                                                        <input id="sensor{{forloop.counter}}-default_rule" type="range" class="sensor{{forloop.counter}} mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{params.default_rule}}" autocomplete="off">
+                                                        <button id="{{sensor}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+                                                    </div>
                                                 </div>
 
                                         {% elif params.type == "switch" %}
@@ -280,8 +286,6 @@
                                                     <label for="sensor{{forloop.counter}}-default_rule" class="sensor{{forloop.counter}}"><b>Default Rule:</b></label>
                                                     <select id="sensor{{forloop.counter}}-default_rule" class="form-select sensor{{forloop.counter}}" autocomplete="off" required>
                                                         <option disabled>Select default rule</option>
-                                                        <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                                        <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
                                                         <option value="on" {% if params.default_rule|lower == "on" %} selected {% endif %}>On</option>
                                                         <option value="off" {% if params.default_rule|lower == "off" %} selected {% endif %}>Off</option>
                                                     </select>
@@ -306,8 +310,12 @@
                                         {% elif params.type == "si7021" %}
 
                                                 <div class="mb-2">
-                                                    <label for="sensor{{forloop.counter}}-default_rule" class="sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control sensor{{forloop.counter}}" id="sensor{{forloop.counter}}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <label for="sensor{{forloop.counter}}-default_rule" class="mt-1 sensor{{forloop.counter}}"><b>Default Rule:</b></label>
+                                                    <div class="d-flex flex-row align-items-center my-2">
+                                                        <button id="{{sensor}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                                                        <input id="sensor{{forloop.counter}}-default_rule" type="range" class="sensor{{forloop.counter}} mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{params.default_rule}}" autocomplete="off">
+                                                        <button id="{{sensor}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+                                                    </div>
                                                 </div>
 
                                                 <div class="mb-2">
@@ -396,26 +404,19 @@
                                                 <input type="text" class="form-control device{{forloop.counter}} nickname" id="device{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
                                             </div>
 
-                                        {% if params.type == "dimmer" %}
+                                        {% if params.type == "dimmer" or params.type == "bulb"%}
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
                                                     <input type="text" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" required>
                                                 </div>
 
                                                 <div class="mb-2">
-                                                    <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-default_rule" placeholder="" value="{{params.default_rule}}" required>
-                                                </div>
-
-                                        {% elif params.type == "bulb" %}
-                                                <div class="mb-2">
-                                                    <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
-                                                    <input type="text" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" required>
-                                                </div>
-
-                                                <div class="mb-2">
-                                                    <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <label for="device{{forloop.counter}}-default_rule" class="mt-1 device{{forloop.counter}}"><b>Default Rule:</b></label>
+                                                    <div class="d-flex flex-row align-items-center my-2">
+                                                        <button id="{{device}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                                                        <input id="device{{forloop.counter}}-default_rule" type="range" class="device{{forloop.counter}} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="0.5" value="{{params.default_rule}}" autocomplete="off">
+                                                        <button id="{{device}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                                                    </div>
                                                 </div>
 
                                         {% elif params.type == "relay" %}
@@ -480,8 +481,12 @@
                                                 </div>
 
                                                 <div class="mb-2">
-                                                    <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                                    <input type="default_rule" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-default_rule" placeholder="" value="{{params.default_rule}}" required>
+                                                    <label for="device{{forloop.counter}}-default_rule" class="mt-1 device{{forloop.counter}}"><b>Default Rule:</b></label>
+                                                    <div class="d-flex flex-row align-items-center my-2">
+                                                        <button id="{{device}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-dash-lg"></i></button>
+                                                        <input id="device{{forloop.counter}}-default_rule" type="range" class="device{{forloop.counter}} mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="0.5" value="{{params.default_rule}}" autocomplete="off">
+                                                        <button id="{{device}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-plus-lg"></i></button>
+                                                    </div>
                                                 </div>
 
                                         {% elif params.type == "mosfet" %}
@@ -1014,6 +1019,7 @@
             }
         });
     </script>
+    <script src="{% static 'node_configuration/rule_sliders.js' %}"></script>
     <script src="{% static 'node_configuration/apiTargetOptions.js' %}"></script>
     <script src="{% static 'node_configuration/submit.js' %}"></script>
     <script src="{% static 'node_configuration/add-instance.js' %}"></script>

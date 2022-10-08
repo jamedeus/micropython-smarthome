@@ -37,8 +37,12 @@ async function load_sensor_section(select) {
                     </div>
 
                     <div class="mb-2">
-                        <label for="sensor${index}-default_rule" class="sensor${index}"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control sensor${index}" id="sensor${index}-default_rule" placeholder="" required>
+                        <label for="sensor${index}-default_rule" class="mt-1 sensor${index}"><b>Default Rule:</b></label>
+                        <div class="d-flex flex-row align-items-center my-2">
+                            <button id="sensor${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                            <input id="sensor${index}-default_rule" type="range" class="sensor${index} mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="" autocomplete="off">
+                            <button id="sensor${index}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+                        </div>
                     </div>`
 
     } else if (selected == "switch") {
@@ -72,16 +76,19 @@ async function load_sensor_section(select) {
         template += `<div class="mb-2">
                         <label for="sensor${index}-default_rule" class="sensor${index}"><b>Default Rule:</b></label>
                         <select id="sensor${index}-default_rule" class="form-select sensor${index}" autocomplete="off" required>
-                            <option value="enabled">Enabled</option>
-                            <option value="disabled">Disabled</option>
+                            <option>Select default rule</option>
                             <option value="on">On</option>
                             <option value="off">Off</option>
                         </select>
                     </div>`
     } else if (selected == "si7021") {
         template += `<div class="mb-2">
-                        <label for="sensor${index}-default_rule" class="sensor${index}"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control sensor${index}" id="sensor${index}-default_rule" placeholder="" required>
+                        <label for="sensor${index}-default_rule" class="mt-1 sensor${index}"><b>Default Rule:</b></label>
+                        <div class="d-flex flex-row align-items-center my-2">
+                            <button id="sensor${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                            <input id="sensor${index}-default_rule" type="range" class="sensor${index} mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="" autocomplete="off">
+                            <button id="sensor${index}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+                        </div>
                     </div>
 
                     <div class="mb-2">
@@ -106,6 +113,10 @@ async function load_sensor_section(select) {
     // Render div, scroll down until visible
     document.getElementById("addSensorOptions" + index).innerHTML = template;
     document.getElementById("addSensorOptions" + index).scrollIntoView({behavior: "smooth"});
+
+    if (selected == "pir" || selected == "si7021") {
+        add_new_slider(`sensor${index}-default_rule`);
+    };
 
     if (instances["sensors"]["sensor" + index]) {
         // If instance already exists, wipe params and re-populate (type changed)
@@ -141,8 +152,12 @@ async function load_device_section(select) {
                     </div>
 
                     <div class="mb-2">
-                        <label for="device${index}-default_rule" class="device${index}"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control device${index}" id="device${index}-default_rule" placeholder="" required>
+                        <label for="device${index}-default_rule" class="mt-1 device${index}"><b>Default Rule:</b></label>
+                        <div class="d-flex flex-row align-items-center my-2">
+                            <button id="device${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                            <input id="device${index}-default_rule" type="range" class="device${index} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="0.5" value="" autocomplete="off">
+                            <button id="device${index}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                        </div>
                     </div>`
 
     } else if (selected == "desktop" || selected == "relay") {
@@ -190,8 +205,12 @@ async function load_device_section(select) {
                     </div>
 
                     <div class="mb-2">
-                        <label for="device${index}-default_rule" class="device${index}"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control device${index}" id="device${index}-default_rule" placeholder="" required>
+                        <label for="device${index}-default_rule" class="mt-1 device${index}"><b>Default Rule:</b></label>
+                        <div class="d-flex flex-row align-items-center my-2">
+                            <button id="device${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-dash-lg"></i></button>
+                            <input id="device${index}-default_rule" type="range" class="device${index} mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="0.5" value="512" autocomplete="off">
+                            <button id="device${index}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-plus-lg"></i></button>
+                        </div>
                     </div>`
 
     } else if (selected == "api-target") {
@@ -243,6 +262,10 @@ async function load_device_section(select) {
     // Render div, scroll down until visible
     document.getElementById("addDeviceOptions" + index).innerHTML = template;
     document.getElementById("addDeviceOptions" + index).scrollIntoView({behavior: "smooth"});
+
+    if (selected == "dimmer" || selected == "bulb" || selected == "pwm") {
+        add_new_slider(`device${index}-default_rule`);
+    };
 
     // Check if IrBlaster selected in any device dropdown
     devices = document.getElementsByClassName("deviceType");

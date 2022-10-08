@@ -33,6 +33,8 @@ class Device {
             delete this.undefined;
             // Get checkbox inputs selections
             this.getIrTargets();
+        } else if (this.type == "dimmer" || this.type == "bulb" || this.type == "pwm") {
+            this['default_rule'] = parseInt(document.getElementById(this.id + "-default_rule").value);
         };
     };
 
@@ -104,6 +106,10 @@ class Sensor {
             // Get name that will be used in config.json, create property
             const name = input.children[1].id.split("-")[1];
             this[name] = input.children[1].value;
+        };
+
+        if (this.type == "pir" || this.type == "si7021") {
+            this['default_rule'] = parseFloat(document.getElementById(this.id + "-default_rule").value);
         };
     };
 
