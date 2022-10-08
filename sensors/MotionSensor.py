@@ -52,6 +52,7 @@ class MotionSensor(Sensor):
         try:
             if rule is None:
                 return 0
+            # Prevent incorrectly accepting True and False (next condition casts to 1.0, 0.0 respectively)
             elif isinstance(rule, bool):
                 return False
             else:

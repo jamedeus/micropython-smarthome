@@ -26,6 +26,8 @@ class Thermostat(Sensor):
 
         self.tolerance = float(tolerance)
 
+        # Cast initial rule to float, get initial threshold
+        self.current_rule = float(self.current_rule)
         self.get_threshold()
 
         # Store last 3 temperature readings, used to detect failed on/off command (ir command didn't reach ac, etc)

@@ -110,41 +110,46 @@ class Config():
             # Add sensor's schedule rules to dict
             self.schedule[sensor] = conf[sensor]["schedule"]
 
-            # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
-            targets = []
-            for target in conf[sensor]["targets"]:
-                t = self.find(target)
-                # Only add if instance found (instantiation may have failed due to invalid config params)
-                if t:
-                    targets.append(t)
+            try:
+                # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
+                targets = []
+                for target in conf[sensor]["targets"]:
+                    t = self.find(target)
+                    # Only add if instance found (instantiation may have failed due to invalid config params)
+                    if t:
+                        targets.append(t)
 
-            # Instantiate sensor as appropriate class
-            if conf[sensor]["type"] == "pir":
-                from MotionSensor import MotionSensor
-                instance = MotionSensor(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
+                # Instantiate sensor as appropriate class
+                if conf[sensor]["type"] == "pir":
+                    from MotionSensor import MotionSensor
+                    instance = MotionSensor(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
 
-            elif conf[sensor]["type"] == "desktop":
-                from Desktop_trigger import Desktop_trigger
-                instance = Desktop_trigger(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, conf[sensor]["ip"])
+                elif conf[sensor]["type"] == "desktop":
+                    from Desktop_trigger import Desktop_trigger
+                    instance = Desktop_trigger(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, conf[sensor]["ip"])
 
-            elif conf[sensor]["type"] == "si7021":
-                from Thermostat import Thermostat
-                instance = Thermostat(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, int(conf[sensor]["default_rule"]), conf[sensor]["default_rule"], conf[sensor]["mode"], conf[sensor]["tolerance"], targets)
+                elif conf[sensor]["type"] == "si7021":
+                    from Thermostat import Thermostat
+                    instance = Thermostat(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, conf[sensor]["default_rule"], conf[sensor]["default_rule"], conf[sensor]["mode"], conf[sensor]["tolerance"], targets)
 
-            elif conf[sensor]["type"] == "dummy":
-                from Dummy import Dummy
-                instance = Dummy(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets)
+                elif conf[sensor]["type"] == "dummy":
+                    from Dummy import Dummy
+                    instance = Dummy(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets)
 
-            elif conf[sensor]["type"] == "switch":
-                from Switch import Switch
-                instance = Switch(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
+                elif conf[sensor]["type"] == "switch":
+                    from Switch import Switch
+                    instance = Switch(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
 
-            # Add the sensor instance to each of it's target's "triggered_by" list
-            for t in targets:
-                t.triggered_by.append(instance)
+                # Add the sensor instance to each of it's target's "triggered_by" list
+                for t in targets:
+                    t.triggered_by.append(instance)
 
-            # Add instance to config.sensors
-            self.sensors.append(instance)
+                # Add instance to config.sensors
+                self.sensors.append(instance)
+            except AttributeError:
+                log.critical(f"Failed to instantiate {sensor}: type = {conf[sensor]['type']}, default_rule = {conf[sensor]['default_rule']}")
+                print(f"Failed to instantiate {sensor}: type = {conf[sensor]['type']}, default_rule = {conf[sensor]['default_rule']}")
+                pass
 
         log.debug("Finished creating sensor instances")
 
