@@ -167,7 +167,7 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 
             }
 
-            template += `<td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove{{forloop.counter}}" disabled><i class="bi-x-lg"></i></button></td>
+            template += `<td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove1" disabled><i class="bi-x-lg"></i></button></td>
                      </tr>`;
             document.getElementById(`${device}-rules`).innerHTML = template
 
@@ -239,6 +239,26 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                                 </select>
                                             </td>`
 
+            // Motion sensor: Add range slider
+            } else if (instances['sensors'][sensor]['type'] == 'pir') {
+                template +=                `<td>
+                                                <div class="d-flex flex-row align-items-center my-2">
+                                                    <button id="${sensor}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                                                    <input id="${sensor}-rule1" type="range" class="rule ${sensor} mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
+                                                    <button id="${sensor}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+                                                </div>
+                                            </td>`
+
+            // Thermostat: Add range slider
+            } else if (instances['sensors'][sensor]['type'] == 'si7021') {
+                template +=                `<td>
+                                                <div class="d-flex flex-row align-items-center my-2">
+                                                    <button id="${sensor}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                                                    <input id="${sensor}-rule1" type="range" class="rule ${sensor} mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
+                                                    <button id="${sensor}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+                                                </div>
+                                            </td>`
+
             // All other sensors: Add text field
             } else {
                 template +=                `<td>
@@ -257,6 +277,11 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                         </div>`
 
             document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
+
+            // If thermostat or motion sensor added, initialize rule slider
+            if (instances['sensors'][sensor]['type'] == 'si7021' || instances['sensors'][sensor]['type'] == 'pir') {
+                add_new_slider(`${sensor}-rule1`);
+            };
 
             // Prevent adding duplicates if user goes back to page1
             instances['sensors'][sensor].new = false;
@@ -348,6 +373,9 @@ document.getElementById('page2-button').addEventListener("click", function(e) {
     document.getElementById("page3").classList.add("d-flex");
     document.getElementById("page2").classList.remove("d-flex");
     document.getElementById("page2").style.display = "none";
+
+    // Update sliders (fix incorrect width caused by display: none)
+    $('input[type="range"]').rangeslider('update', true);
 });
 
 document.getElementById('page1-back-button').addEventListener("click", function(e) {
@@ -361,6 +389,9 @@ document.getElementById('page2-back-button').addEventListener("click", function(
     document.getElementById("page1").classList.add("d-flex");
     document.getElementById("page2").classList.remove("d-flex");
     document.getElementById("page2").style.display = "none";
+
+    // Update sliders (fix incorrect width caused by display: none)
+    $('input[type="range"]').rangeslider('update', true);
 });
 
 document.getElementById('page3-back-button').addEventListener("click", function(e) {
