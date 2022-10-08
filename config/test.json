@@ -1,1 +1,0 @@
-{"metadata": {"id": "test", "location": "fdsaf", "floor": "fdsaf"}, "wifi": {"ssid": "fdsaf", "password": "fdsafa"}, "device1": {"type": "pwm", "nickname": "led", "pin": "4", "min": "0", "max": "420", "default_rule": "69", "schedule": {}}, "sensor1": {"type": "pir", "nickname": "test", "pin": "15", "default_rule": "69", "targets": ["device1"], "schedule": {}}}
