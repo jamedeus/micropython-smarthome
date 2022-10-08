@@ -31,6 +31,11 @@ class Device():
         # Can happen if config file contains invalid rules, or if enabled through API while both current and schedule rule are "disabled"
         self.default_rule = default_rule
 
+        # Prevent instantiating with invalid default_rule
+        if self.device_type in ("dimmer", "bulb", "pwm", "api-target") and self.default_rule in ("enabled", "disabled"):
+            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            raise AttributeError
+
         # Will hold sequential schedule rules so they can be quickly changed when interrupt runs
         self.rule_queue = []
 

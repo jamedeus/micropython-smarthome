@@ -56,37 +56,42 @@ class Config():
             # Add device's schedule rules to dict
             self.schedule[device] = conf[device]["schedule"]
 
-            # Instantiate each device as appropriate class
-            if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
-                from Tplink import Tplink
-                instance = Tplink( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+            try:
+                # Instantiate each device as appropriate class
+                if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
+                    from Tplink import Tplink
+                    instance = Tplink( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
-            elif conf[device]["type"] == "relay":
-                from Relay import Relay
-                instance = Relay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                elif conf[device]["type"] == "relay":
+                    from Relay import Relay
+                    instance = Relay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
-            elif conf[device]["type"] == "dumb-relay":
-                from DumbRelay import DumbRelay
-                instance = DumbRelay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
+                elif conf[device]["type"] == "dumb-relay":
+                    from DumbRelay import DumbRelay
+                    instance = DumbRelay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
 
-            elif conf[device]["type"] == "desktop":
-                from Desktop_target import Desktop_target
-                instance = Desktop_target( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                elif conf[device]["type"] == "desktop":
+                    from Desktop_target import Desktop_target
+                    instance = Desktop_target( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
-            elif conf[device]["type"] == "pwm":
-                from LedStrip import LedStrip
-                instance = LedStrip( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]), conf[device]["min"], conf[device]["max"] )
+                elif conf[device]["type"] == "pwm":
+                    from LedStrip import LedStrip
+                    instance = LedStrip( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]), conf[device]["min"], conf[device]["max"] )
 
-            elif conf[device]["type"] == "mosfet":
-                from Mosfet import Mosfet
-                instance = Mosfet( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
+                elif conf[device]["type"] == "mosfet":
+                    from Mosfet import Mosfet
+                    instance = Mosfet( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
 
-            elif conf[device]["type"] == "api-target":
-                from ApiTarget import ApiTarget
-                instance = ApiTarget( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                elif conf[device]["type"] == "api-target":
+                    from ApiTarget import ApiTarget
+                    instance = ApiTarget( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
-            # Add instance to config.devices
-            self.devices.append(instance)
+                # Add instance to config.devices
+                self.devices.append(instance)
+            except AttributeError:
+                log.critical(f"Failed to instantiate {device}: type = {conf[device]['type']}, default_rule = {conf[device]['default_rule']}")
+                print(f"Failed to instantiate {device}: type = {conf[device]['type']}, default_rule = {conf[device]['default_rule']}")
+                pass
 
         # Can only have 1 instance (driver limitation)
         # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
@@ -108,7 +113,10 @@ class Config():
             # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
             targets = []
             for target in conf[sensor]["targets"]:
-                targets.append(self.find(target))
+                t = self.find(target)
+                # Only add if instance found (instantiation may have failed due to invalid config params)
+                if t:
+                    targets.append(t)
 
             # Instantiate sensor as appropriate class
             if conf[sensor]["type"] == "pir":
@@ -370,6 +378,8 @@ class Config():
 
             # Get target instance
             instance = self.find(i)
+            # Skip if unable to find instance
+            if not instance: continue
 
             # If no schedule rules, use default_rule and skip to next instance
             if len(rules) == 0:
