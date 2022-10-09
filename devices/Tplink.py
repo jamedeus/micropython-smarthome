@@ -165,6 +165,10 @@ class Tplink(Device):
     def send(self, state=1):
         log.info(f"{self.name}: send method called, brightness={self.current_rule}, state={state}")
 
+        # Refuse to turn on while disabled
+        if not self.enabled and state:
+            return False
+
         if self.device_type == "dimmer":
             cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.current_rule) + '}}}'
         else:

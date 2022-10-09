@@ -39,6 +39,10 @@ class Desktop_target(Device):
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
 
+        # Refuse to turn on while disabled
+        if not self.enabled and state:
+            return False
+
         if state:
             # Make sure a previous off command (has 5 sec delay) doesn't turn screen off immediately after turning on
             SoftwareTimer.timer.cancel(self.name)

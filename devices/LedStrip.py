@@ -141,7 +141,8 @@ class LedStrip(Device):
 
 
     def send(self, state=1):
-        if not self.enabled:
+        # Refuse to turn on while disabled
+        if not self.enabled and state:
             return False
 
         if state:

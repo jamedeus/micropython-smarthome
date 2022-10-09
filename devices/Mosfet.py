@@ -18,5 +18,9 @@ class Mosfet(Device):
 
 
     def send(self, state=1):
+        # Refuse to turn on while disabled
+        if not self.enabled and state:
+            return False
+
         self.mosfet.value(state)
         return True
