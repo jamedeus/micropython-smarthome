@@ -76,7 +76,8 @@ class Group():
 
         for device in self.targets:
             # Do not turn device on/off if already on/off, or if device is disabled
-            if device.enabled and not action == device.state:
+            # Refuse to turn disabled device on, but allow turning off (prevent getting stuck on)
+            if not action == device.state and not (action and not device.enabled):
                 # int converts True to 1, False to 0
                 success = device.send(int(action))
 
