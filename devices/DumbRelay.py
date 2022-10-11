@@ -21,9 +21,11 @@ class DumbRelay(Device):
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
 
-        # Refuse to turn on while disabled
+        # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
-            return False
+            # Return True causes group to flip state to True, even though device is off
+            # This allows turning off (would be skipped if state already == False)
+            return True
 
         self.relay.value(state)
         return True

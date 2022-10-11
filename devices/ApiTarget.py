@@ -132,9 +132,11 @@ class ApiTarget(Device):
 
 
     def send(self, state=1):
-        # Refuse to turn on while disabled
+        # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
-            return False
+            # Return True causes group to flip state to True, even though device is off
+            # This allows turning off (would be skipped if state already == False)
+            return True
 
         # "On" rule
         if state:
