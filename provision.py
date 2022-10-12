@@ -224,6 +224,9 @@ class Provisioner():
             # Upload Config module
             self.upload("Config.py", "Config.py")
 
+            # Upload Group module
+            self.upload("Group.py", "Group.py")
+
             # Upload SoftwareTimer module
             self.upload("SoftwareTimer.py", "SoftwareTimer.py")
 
