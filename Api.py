@@ -464,6 +464,9 @@ def turn_on(args):
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
 
+    if not target.enabled:
+        return {"ERROR": f"{target.name} is disabled, please enable before turning on"}
+
     result = target.send(1)
     if result:
         target.state = True

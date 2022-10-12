@@ -268,9 +268,14 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
 
         # Should not be able to turn on a disabled device
-        response = self.send_command(['disable', 'device1'])
+        self.device1.disable()
+        self.device1.send(0)
         response = self.send_command(['turn_on', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Unable to turn on device1'})
+        self.assertEqual(response, {'ERROR': 'device1 is disabled, please enable before turning on'})
+
+        # Device should still be off
+        self.assertFalse(self.device1.state)
+        self.assertEqual(self.device1.pwm.duty(), 0)
 
     def test_turn_off(self):
         # Make sure device is enabled and turned on before testing
@@ -286,10 +291,14 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['turn_off', 'sensor1'])
         self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
 
-        # Should not be able to turn off a disabled device
+        # Should be able to turn off a disabled device (just not on)
         response = self.send_command(['disable', 'device1'])
         response = self.send_command(['turn_off', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Unable to turn off device1'})
+        self.assertEqual(response, {'Off': 'device1'})
+
+        # Device should now be off
+        self.assertFalse(self.device1.state)
+        self.assertEqual(self.device1.pwm.duty(), 0)
 
     def test_get_temp(self):
         response = self.send_command(['get_temp'])
