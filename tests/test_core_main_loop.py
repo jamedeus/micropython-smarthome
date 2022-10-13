@@ -65,7 +65,7 @@ config_file = {
         "pin": 18,
         "type": "dumb-relay",
         "schedule": {
-            "09:00": "on"
+            "09:00": "enabled"
         },
         "default_rule": "enabled",
         "nickname": "device2"
@@ -87,22 +87,6 @@ def determine_correct_action(conditions):
         action = False
 
     return action
-
-
-
-def apply_action(group, action):
-    # TODO consider re-introducing sensor.state - could then skip iterating devices if all states match action. Can also print "Motion detected" only when first detected
-    # Issue: When device rules change, device's state is flipped to allow to take effect - this will not take effect if sensor.state blocks loop. Could change sensor.state?
-
-    for device in group:
-        # Do not turn device on/off if already on/off, or if device is disabled
-        if device.enabled and not action == device.state:
-            # int converts True to 1, False to 0
-            success = device.send(int(action))
-
-            # Only change device state if send returned True
-            if success:
-                device.state = action
 
 
 
@@ -210,3 +194,51 @@ class TestMainLoop(unittest.TestCase):
         # Should be turned off
         self.assertFalse(led.state)
         self.assertEqual(led.pwm.duty(), 0)
+
+    # Original bug: Disabled devices manually turned on by user could not be turned off by loop.
+    # This became an issue when on/off rules were removed, requiring use of enabled/disabled.
+    # After fix disabled devices may be turned off, preventing lights from getting stuck. Disabled
+    # devices do NOT respond to on commands, but do flip their state to True to stay in sync with
+    # rest of group - this is necessary to allow turning off, since a device with state == False
+    # will be skipped by loop (already off), and user flipping light switch doesn't effect state
+    def test_regression_turn_off_while_disabled(self):
+        # Get relay instance
+        relay = self.config.find('device2')
+
+        # Find group containing instance
+        for g in self.config.groups:
+            if relay in g.targets:
+                group = g
+                break
+
+        # Disable, simulate user turning on (cannot call send while disabled)
+        relay.disable()
+        relay.relay.value(1)
+        self.assertFalse(relay.enabled)
+        self.assertEqual(relay.relay.value(), 1)
+        # State is uneffected when manually turned on
+        self.assertFalse(relay.state)
+
+        # Simulate triggered sensor turning group on
+        group.state = False
+        group.apply_action(True)
+        # Relay state should change, now matches actual state (possible for loop to turn off)
+        self.assertTrue(relay.state)
+
+        # Simulate group turning off after sensor resets
+        group.state = True
+        group.apply_action(False)
+
+        # Relay should now be turned off
+        self.assertFalse(relay.state)
+        self.assertEqual(relay.relay.value(), 0)
+
+        # Simulate group turning on again - relay should NOT turn on
+        group.apply_action(True)
+        self.assertTrue(group.state)
+
+        # Should still be off
+        self.assertEqual(relay.relay.value(), 0)
+
+        # State should be True even though device is disabled and off
+        self.assertTrue(relay.state)

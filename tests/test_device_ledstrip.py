@@ -6,7 +6,7 @@ from LedStrip import LedStrip
 class TestLedStrip(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_turn_off_when_disabled", "test_enable_regression_test", "test_rule_change_to_enabled_regression", "test_regression_invalid_default_rule"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_turn_off_when_disabled", "test_enable_regression_test", "test_rule_change_to_enabled_regression", "test_regression_invalid_default_rule", "test_regression_turn_off_while_disabled"]
 
     def test_instantiation(self):
         self.instance = LedStrip("device1", "device1", "pwm", True, None, 512, 4, 0, 1023)
@@ -130,3 +130,28 @@ class TestLedStrip(unittest.TestCase):
         except AttributeError:
             # Should raise exception, test passed
             self.assertTrue(True)
+
+    # Original bug: Disabled devices manually turned on by user could not be turned off by loop.
+    # This became an issue when on/off rules were removed, requiring use of enabled/disabled.
+    # After fix disabled devices may be turned off, preventing lights from getting stuck. Disabled
+    # devices do NOT respond to on commands, but do flip their state to True to stay in sync with
+    # rest of group - this is necessary to allow turning off, since a device with state == False
+    # will be skipped by loop (already off), and user flipping light switch doesn't effect state
+    def test_regression_turn_off_while_disabled(self):
+        # Disable, confirm disabled and off
+        self.instance.send(0)
+        self.instance.disable()
+        self.assertFalse(self.instance.enabled)
+        self.assertEqual(self.instance.pwm.duty(), 0)
+
+        # Manually turn on while disabled
+        self.instance.pwm.duty(512)
+        self.instance.bright = 512
+
+        # Off command should still return True, should revert override
+        self.assertTrue(self.instance.send(0))
+        self.assertEqual(self.instance.pwm.duty(), 0)
+
+        # On command should also return True, but shouldn't cause any action
+        self.assertTrue(self.instance.send(1))
+        self.assertEqual(self.instance.pwm.duty(), 0)
