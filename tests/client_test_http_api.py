@@ -144,6 +144,12 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get('http://192.168.1.223:8123/turn_off?device1')
         self.assertEqual(response.json(), {'Off': 'device1'})
 
+        # Ensure disabled
+        requests.get('http://192.168.1.223:8123/disable?device1')
+
+        response = requests.get('http://192.168.1.223:8123/turn_off?device1')
+        self.assertEqual(response.json(), {'Off': 'device1'})
+
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
     # resulted in comparison operator between int and string, causing crash.
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
@@ -374,7 +380,7 @@ class TestEndpointInvalid(unittest.TestCase):
         requests.get('http://192.168.1.223:8123/disable?device1')
 
         response = requests.get('http://192.168.1.223:8123/turn_on?device1')
-        self.assertEqual(response.json(), {'ERROR': 'Unable to turn on device1'})
+        self.assertEqual(response.json(), {'ERROR': 'device1 is disabled, please enable before turning on'})
 
         response = requests.get('http://192.168.1.223:8123/turn_on')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
@@ -386,12 +392,6 @@ class TestEndpointInvalid(unittest.TestCase):
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
     def test_turn_off_invalid(self):
-        # Ensure disabled
-        requests.get('http://192.168.1.223:8123/disable?device1')
-
-        response = requests.get('http://192.168.1.223:8123/turn_off?device1')
-        self.assertEqual(response.json(), {'ERROR': 'Unable to turn off device1'})
-
         response = requests.get('http://192.168.1.223:8123/turn_off')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 

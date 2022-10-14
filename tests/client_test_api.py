@@ -268,6 +268,13 @@ class TestParseCommand(unittest.TestCase):
         response = parse_command("192.168.1.223", ['turn_off', 'device1'])
         self.assertEqual(response, {'Off': 'device1'})
 
+        # Ensure disabled
+        parse_command("192.168.1.223", ['disable', 'device1'])
+
+        # Should still be able to turn off (but not on)
+        response = parse_command("192.168.1.223", ['turn_off', 'device1'])
+        self.assertEqual(response, {'Off': 'device1'})
+
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
     # resulted in comparison operator between int and string, causing crash.
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
@@ -489,7 +496,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         parse_command("192.168.1.223", ['disable', 'device1'])
 
         response = parse_command("192.168.1.223", ['turn_on', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Unable to turn on device1'})
+        self.assertEqual(response, {'ERROR': 'device1 is disabled, please enable before turning on'})
 
         response = parse_command("192.168.1.223", ['turn_on'])
         self.assertEqual(response, {'ERROR': 'Can only turn on/off devices, use enable/disable for sensors'})
@@ -501,12 +508,6 @@ class TestParseCommandInvalid(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
     def test_turn_off_invalid(self):
-        # Ensure disabled
-        parse_command("192.168.1.223", ['disable', 'device1'])
-
-        response = parse_command("192.168.1.223", ['turn_off', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Unable to turn off device1'})
-
         response = parse_command("192.168.1.223", ['turn_off'])
         self.assertEqual(response, {'ERROR': 'Can only turn on/off devices, use enable/disable for sensors'})
 
