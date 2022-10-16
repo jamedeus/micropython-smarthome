@@ -43,6 +43,22 @@ config_file = {
         "schedule": {},
         "nickname": "sensor2"
     },
+    "sensor3": {
+        "type": "switch",
+        "nickname": "Test",
+        "pin": "18",
+        "default_rule": "enabled",
+        "targets": [],
+        "schedule": {}
+    },
+    "sensor4": {
+        "type": "desktop",
+        "nickname": "test",
+        "ip": "192.168.1.216",
+        "default_rule": "enabled",
+        "targets": [],
+        "schedule": {}
+    },
     "device1": {
         "pin": 4,
         "type": "pwm",
@@ -76,20 +92,21 @@ class TestApi(unittest.TestCase):
         self.device1 = config.find("device1")
         self.sensor1 = config.find("sensor1")
         self.sensor2 = config.find("sensor2")
+        self.sensor3 = config.find("sensor3")
+        self.sensor4 = config.find("sensor4")
 
     async def request(self, msg):
         reader, writer = await asyncio.open_connection("192.168.1.223", 8123)
         try:
             writer.write('{}\n'.format(json.dumps(msg)).encode())
             await writer.drain()
-            res = await reader.read(1000)
+            res = await reader.read(1100)
         except OSError:
             pass
         try:
             response = json.loads(res)
         except ValueError:
             return "Error: Unable to decode response"
-
         writer.close()
         await writer.wait_closed()
 
@@ -172,7 +189,7 @@ class TestApi(unittest.TestCase):
         self.sensor2.set_rule(78)
         # Call API command
         response = self.send_command(['reset_all_rules'])
-        self.assertEqual(response, {"New rules": {"device1": self.device1.scheduled_rule, "sensor1": self.sensor1.scheduled_rule, "sensor2": self.sensor2.scheduled_rule}})
+        self.assertEqual(response, {"New rules": {"device1": self.device1.scheduled_rule, "sensor1": self.sensor1.scheduled_rule, "sensor2": self.sensor2.scheduled_rule, "sensor3": self.sensor3.scheduled_rule, "sensor4": self.sensor4.scheduled_rule}})
         self.assertEqual(self.device1.current_rule, self.device1.scheduled_rule)
         self.assertEqual(self.sensor1.current_rule, self.sensor1.scheduled_rule)
         self.assertEqual(self.sensor2.current_rule, self.sensor2.scheduled_rule)
@@ -461,3 +478,14 @@ class TestApi(unittest.TestCase):
 
         response = self.send_command(['turn_off', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+    # Original bug: Some device and sensor classes have attributes containing class objects, which
+    # cannot be json-serialized. These are supposed to be deleted or replaced with string
+    # representations when building get_attributes response. Earlier versions of API failed to do
+    # this for some classes, breaking get_attributes and resulting in an "unable to decode" error.
+    def test_regression_get_attributes(self):
+        response = self.send_command(['get_attributes', 'sensor3'])
+        self.assertEqual(response, {'sensor_type': 'switch', 'nickname': 'Test', 'enabled': True, 'targets': [], 'group': 'group2', 'name': 'sensor3', 'rule_queue': [], 'default_rule': 'enabled', 'scheduled_rule': 'enabled', 'current_rule': 'enabled'})
+
+        response = self.send_command(['get_attributes', 'sensor4'])
+        self.assertEqual(response, {'ip': '192.168.1.216', 'nickname': 'test', 'scheduled_rule': 'enabled', 'group': 'group2', 'current': 'On', 'name': 'sensor4', 'enabled': True, 'rule_queue': [], 'default_rule': 'enabled', 'targets': [], 'current_rule': 'enabled', 'desktop_target': None, 'sensor_type': 'desktop'})

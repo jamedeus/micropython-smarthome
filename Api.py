@@ -394,6 +394,8 @@ def get_attributes(args):
             del attributes["relay"]
         if i == "sensor":
             del attributes["sensor"]
+        if i == "switch":
+            del attributes["switch"]
 
         # Replace instances with instance.name attribute
         elif i == "triggered_by":
@@ -404,6 +406,9 @@ def get_attributes(args):
             attributes["targets"] = []
             for i in target.targets:
                 attributes["targets"].append(i.name)
+        elif i == "desktop_target":
+            if not attributes["desktop_target"] == None:
+                attributes["desktop_target"] = attributes["desktop_target"].name
 
     # Replace group object with group name (JSON compatibility)
     if "group" in attributes.keys():
