@@ -20,29 +20,30 @@ for (slider of $('input[type="range"]')) {
         $handle[0].textContent = get_display_value(document.getElementById(e.target.id));
     });
 
-    // Runs once when user releases click on slider
-    $('#' + slider.id).on('change', async function(e) {
-        const id = e.target.id.split("-")[0];
-        // Device or sensor
-        const category = id.replace(/[0-9]/g, '') + "s";
+    // Attach listener to current_rule sliders, but not schedule rule sliders
+    if (!slider.classList.contains('schedule-rule')) {
+        // Runs once when user releases click on slider
+        $('#' + slider.id).on('change', async function(e) {
+            const id = e.target.id.split("-")[0];
+            // Device or sensor
+            const category = id.replace(/[0-9]/g, '') + "s";
 
-        const new_rule = this.value;
-        const scheduled = target_node_status[category][id]["scheduled_rule"];
+            const new_rule = this.value;
+            const scheduled = target_node_status[category][id]["scheduled_rule"];
 
-        // Enable reset option if new rule differs from scheduled, otherwise disable
-        if (new_rule != scheduled) {
-            document.getElementById(id + "-reset").classList.remove("disabled");
-        } else {
-            document.getElementById(id + "-reset").classList.add("disabled");
-        };
+            // Enable reset option if new rule differs from scheduled, otherwise disable
+            if (new_rule != scheduled) {
+                document.getElementById(id + "-reset").classList.remove("disabled");
+            } else {
+                document.getElementById(id + "-reset").classList.add("disabled");
+            };
 
-        // Fire API command
-        var result = await send_command({'command': 'set_rule', 'instance': id, 'rule': new_rule});
-        result = await result.json();
-    });
+            // Fire API command
+            var result = await send_command({'command': 'set_rule', 'instance': id, 'rule': new_rule});
+            result = await result.json();
+        });
+    };
 };
-
-
 
 // Read slider's data attributes, convert element's value to desired range as either float or int
 function get_display_value(slider) {

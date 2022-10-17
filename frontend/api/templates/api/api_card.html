@@ -282,7 +282,7 @@
 
                                 <!-- Schedule rules section, collapsed by default -->
                                 <p class="text-center mt-3">
-                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules" onclick="document.getElementById('{{sensor}}-card').scrollIntoView({behavior: 'smooth'});">
+                                    <button id="{{sensor}}-open-rules" class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules" onclick="open_rules(this)">
                                         Schedule rules
                                     </button>
                                 </p>
@@ -297,15 +297,75 @@
                                         {% if params.schedule.items|length > 0 %}
                                             {% for time, rule in params.schedule.items %}
                                                 <tr id="{{sensor}}-row-{{forloop.counter}}">
+                                                    {# Add time field #}
                                                     <td><input type="time" class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}" data-original="{{ time }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists" autocomplete="off"></td>
-                                                    <td><input type="text" class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}" placeholder="" name="{{sensor}}-rule{{forloop.counter}}" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
+
+                                                    {# Add correct input for each sensor type #}
+                                                    {% if params.type == "pir" %}
+                                                        <td style="width: 100%">
+                                                            <div class="d-flex flex-row align-items-center mt-2 pt-1">
+                                                                <input id="{{sensor}}-rule{{forloop.counter}}" name="{{sensor}}-rule{{forloop.counter}}" type="range" class="schedule-rule mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                            </div>
+                                                        </td>
+
+                                                    {% elif params.type == "switch" or params.type == "desktop" %}
+                                                        <td><select id="{{sensor}}-rule{{forloop.counter}}" name="{{sensor}}-rule{{forloop.counter}}" class="form-select schedule-rule" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                            <option disabled>Select rule</option>
+                                                            <option value="enabled" {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                            <option value="disabled" {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                        </select></td>
+
+                                                    {% elif params.type == "dummy" %}
+                                                        <td><select id="{{sensor}}-rule{{forloop.counter}}" name="{{sensor}}-rule{{forloop.counter}}" class="form-select schedule-rule" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                            <option disabled>Select rule</option>
+                                                            <option value="enabled" {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                            <option value="disabled" {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                            <option value="on" {% if rule|lower == "on" %} selected {% endif %}>On</option>
+                                                            <option value="off" {% if rule|lower == "off" %} selected {% endif %}>Off</option>
+                                                        </select></td>
+
+                                                    {% elif params.type == "si7021" %}
+                                                        <td><input id="{{sensor}}-rule{{forloop.counter}}" name="{{sensor}}-rule{{forloop.counter}}" type="range" class="schedule-rule mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
+                                                    {% endif %}
+
+                                                    {# Add delete button #}
                                                     <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
                                                 </tr>
                                             {% endfor %}
                                         {% else %}
                                             <tr id="{{sensor}}-row-1">
+                                                {# Add time field #}
                                                 <td><input type="time" class="form-control" id="{{sensor}}-rule1-time" placeholder="HH:MM" name="{{sensor}}-rule1-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
-                                                <td><input type="text" class="form-control" id="{{sensor}}-rule1" placeholder="" name="{{sensor}}-rule1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
+
+                                                {# Add correct input for each sensor type #}
+                                                {% if params.type == "pir" %}
+                                                    <td style="width: 100%">
+                                                        <div class="d-flex flex-row align-items-center mt-2 pt-1">
+                                                            <input id="{{sensor}}-rule1" name="{{sensor}}-rule1" type="range" class="schedule-rule mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                        </div>
+                                                    </td>
+
+                                                {% elif params.type == "switch" or params.type == "desktop" %}
+                                                    <td><select id="{{sensor}}-rule1" name="{{sensor}}-rule1" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                        <option>Select rule</option>
+                                                        <option value="enabled">Enabled</option>
+                                                        <option value="disabled">Disabled</option>
+                                                    </select></td>
+
+                                                {% elif params.type == "dummy" %}
+                                                    <td><select id="{{sensor}}-rule1" name="{{sensor}}-rule1" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                        <option>Select rule</option>
+                                                        <option value="enabled">Enabled</option>
+                                                        <option value="disabled">Disabled</option>
+                                                        <option value="on">On</option>
+                                                        <option value="off">Off</option>
+                                                    </select></td>
+
+                                                {% elif params.type == "si7021" %}
+                                                    <td><input id="{{sensor}}-rule1" name="{{sensor}}-rule1" type="range" class="schedule-rule mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
+                                                {% endif %}
+
+                                                {# Add add_rule button #}
                                                 <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="{{sensor}}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
                                             </tr>
                                         {% endif %}
@@ -396,7 +456,7 @@
 
                                 <!-- Schedule rules section, collapsed by default -->
                                 <p class="text-center mt-3">
-                                    <button class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules" onclick="document.getElementById('{{device}}-card').scrollIntoView({behavior: 'smooth'});">
+                                    <button id="{{device}}-open-rules" class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules" onclick="open_rules(this)">
                                         Schedule rules
                                     </button>
                                 </p>
@@ -411,34 +471,73 @@
                                         {% if params.schedule.items|length > 0 %}
                                             {% for time, rule in params.schedule.items %}
                                                 <tr id="{{device}}-row-{{forloop.counter}}">
+                                                    {# Add time field #}
                                                     <td><input type="time" class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="{{device}}-rule{{forloop.counter}}-time" value="{{ time }}" data-original="{{ time }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists" autocomplete="off"></td>
 
-                                                    {% if not params.type == "api-target" %}
+                                                    {# Add correct input for each device type #}
+                                                    {% if params.type == "dimmer" or params.type == "bulb" %}
                                                         <td><input type="text" class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}" placeholder="" name="{{device}}-rule{{forloop.counter}}" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
-                                                    {% else %}
+
+                                                    {% elif params.type == "relay" or params.type == "dumb-relay" or params.type == "desktop" or params.type == "mosfet" %}
+                                                        <td><select id="{{device}}-rule{{forloop.counter}}" name="{{device}}-rule{{forloop.counter}}" class="form-select schedule-rule" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                            <option disabled>Select rule</option>
+                                                            <option value="enabled" {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
+                                                            <option value="disabled" {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
+                                                        </select></td>
+
+                                                    {% elif params.type == "pwm" %}
+                                                        <td style="width: 100%">
+                                                            <div class="d-flex flex-row align-items-center mt-2 pt-1">
+                                                                <input id="{{device}}-rule{{forloop.counter}}" name="{{device}}-rule{{forloop.counter}}" type="range" class="schedule-rule mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="1" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                            </div>
+                                                        </td>
+
+                                                    {% elif params.type == "api-target" %}
                                                         <td style="width: 100%"><button id="{{device}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">Set rule</button>
                                                         <input type="text" class="form-control rule {{device}}" id="{{device}}-rule{{forloop.counter}}" value="{{ rule }}" data-original="{{ rule }}" style="display:none;"></td>
+
                                                     {% endif %}
 
+                                                    {# Add delete button #}
                                                     <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
                                                 </tr>
                                             {% endfor %}
                                         {% else %}
                                             <tr id="{{device}}-row-1">
+                                                {# Add time field #}
                                                 <td><input type="time" class="form-control" id="{{device}}-rule1-time" placeholder="HH:MM" name="{{device}}-rule1-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
 
-                                                {% if not params.type == "api-target" %}
+                                                {# Add correct input for each device type #}
+                                                {% if params.type == "dimmer" or params.type == "bulb" %}
                                                     <td><input type="text" class="form-control" id="{{device}}-rule1" placeholder="" name="{{device}}-rule1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
-                                                {% else %}
+
+                                                {% elif params.type == "relay" or params.type == "dumb-relay" or params.type == "desktop" or params.type == "mosfet" %}
+                                                    <td><select id="{{device}}-rule1" name="{{device}}-rule1" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                        <option>Select rule</option>
+                                                        <option value="enabled">Enabled</option>
+                                                        <option value="disabled">Disabled</option>
+                                                    </select></td>
+
+                                                {% elif params.type == "pwm" %}
+                                                    <td style="width: 100%">
+                                                        <div class="d-flex flex-row align-items-center mt-2 pt-1">
+                                                            <input id="{{device}}-rule1" name="{{device}}-rule1" type="range" class="schedule-rule mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                        </div>
+                                                    </td>
+
+                                                {% elif params.type == "api-target" %}
                                                     <td style="width: 100%"><button id="{{device}}-rule1-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
                                                     <input type="text" class="form-control rule {{device}}" id="{{device}}-rule1" value="" style="display:none;"></td>
+
                                                 {% endif %}
 
+                                                {# Add add_rule button #}
                                                 <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="{{device}}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
                                             </tr>
                                         {% endif %}
                                     </table>
 
+                                    {# Add add button #}
                                     <div class="text-center mx-3 mb-3">
                                         <button type="button" class="btn btn-secondary btn-sm add" id="{{device}}-add-rule" onclick="add_rule_row(this)"><i class="bi-plus-lg"></i></button>
                                     </div>

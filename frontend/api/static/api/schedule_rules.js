@@ -25,9 +25,29 @@ for (id in schedule_rule_tooltips) {
 
 // Add listeners to existing schedule rule fields, if modified change delete button to upload button
 for (field of document.getElementsByClassName("schedule-rule")) {
-    field.addEventListener("input", schedule_rule_field_handler);
+    // Slider library requires jquery listener
+    if (field.type == 'range') {
+        $('#' + field.id).on('change', async function(e) {
+            schedule_rule_field_handler(e);
+        });
+
+    // All others inputs use vanilla listener
+    } else {
+        field.addEventListener("input", schedule_rule_field_handler);
+    };
 };
 
+
+
+// Handler for schedule rules button on each card
+function open_rules(button) {
+    // Scroll opened card into view
+    const id = button.id.split("-")[0];
+    document.getElementById(`${id}-card`).scrollIntoView({behavior: 'smooth'});
+
+    // Update all range sliders (prevents overflowing card width due to incorrect rendering while hidden)
+    $('input[type="range"]').rangeslider('update', true);
+}
 
 
 // Initialize toast, allows user to write new/deleted rules to disk
@@ -85,21 +105,85 @@ async function add_rule_row(el) {
     const table = document.getElementById(target + "-rules");
     const row = parseInt(table.rows[table.rows.length-1].id.split("-")[2]) + 1
 
-    // Add row number + target id to empty row template (different template if api-target)
-    if (target.startsWith("device") && target_node_status['devices'][target]['type'] == 'api-target') {
-        var template = `<tr id="${target}-row-${row}">
-                            <td><input type="time" class="form-control" id="${target}-rule${row}-time" placeholder="HH:MM" name="${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
-                            <td><button id="${target}-rule${row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                            <input type="text" class="form-control rule ${target}" id="${target}-rule${row}" value="" style="display:none;"></td>
-                            <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
-                        </tr>`
-    } else {
-        var template = `<tr id="${target}-row-${row}">
-                            <td><input type="time" class="form-control" id="${target}-rule${row}-time" placeholder="HH:MM" name="${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
-                            <td><input type="text" class="form-control" id="${target}-rule${row}" placeholder="" name="${target}-rule${row}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>
-                            <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
-                        </tr>`
+    // Track if a slider was added (needs to be initialized)
+    var slider = false;
+
+    // Add row number + target id + time field to empty row template
+    var template = `<tr id="${target}-row-${row}">
+                        <td><input type="time" class="form-control" id="${target}-rule${row}-time" placeholder="HH:MM" name="${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>`
+
+    // Add rule field depending on target type
+    if (target.startsWith("device")) {
+        var type = target_node_status['devices'][target]['type'];
+
+        if (type == "dimmer" || type == "bulb") {
+            // Text field
+            template += `<td><input type="text" class="form-control" id="${target}-rule${row}" placeholder="" name="${target}-rule${row}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>`
+
+        } else if (type == "relay" || type == "dumb-relay" || type == "desktop" || type == "mosfet") {
+            // Dropdown
+            template += `<td><select id="${target}-rule${row}" name="${target}-rule${row}" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                             <option>Select rule</option>
+                             <option value="enabled">Enabled</option>
+                             <option value="disabled">Disabled</option>
+                         </select></td>`
+
+        } else if (type == "pwm") {
+            // Slider
+            slider = true;
+            template += `<td style="width: 100%">
+                             <div class="d-flex flex-row align-items-center mt-2 pt-1">
+                                 <input id="${target}-rule${row}" name="${target}-rule${row}" type="range" class="schedule-rule mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                             </div>
+                         </td>`
+
+        } else if (type == "api-target") {
+            // Button with hidden field, opens modal
+            template += `<td><button id="${target}-rule${row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
+                        <input type="text" class="form-control rule ${target}" id="${target}-rule${row}" value="" style="display:none;"></td>`
+
+        };
+    } else if (target.startsWith("sensor")) {
+        var type = target_node_status['sensors'][target]['type'];
+
+        if (type == "pir") {
+            // Slider
+            slider = true;
+            template += `<td style="width: 100%">
+                             <div class="d-flex flex-row align-items-center mt-2 pt-1">
+                                 <input id="${target}-rule${row}" name="${target}-rule${row}" type="range" class="schedule-rule mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                             </div>
+                         </td>`
+
+        } else if (type == "switch" || type == "desktop") {
+            // Dropdown
+            template += `<td><select id="${target}-rule${row}" name="${target}-rule${row}" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                             <option>Select rule</option>
+                             <option value="enabled">Enabled</option>
+                             <option value="disabled">Disabled</option>
+                         </select></td>`
+
+        } else if (type == "dummy") {
+            // Dropdown with additional options
+            template += `<td><select id="${target}-rule${row}" name="${target}-rule${row}" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                             <option>Select rule</option>
+                             <option value="enabled">Enabled</option>
+                             <option value="disabled">Disabled</option>
+                             <option value="on">On</option>
+                             <option value="off">Off</option>
+                         </select></td>`
+
+        } else if (type == "si7021") {
+            // Slider
+            slider = true;
+            template += `<td><input id="${target}-rule${row}" name="${target}-rule${row}" type="range" class="schedule-rule mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>`
+
+        };
     };
+
+    // Finish empty row with add rule button
+    template +=     `<td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
+                 </tr>`
 
     // Add new empty rows
     document.getElementById(target + "-rules").insertAdjacentHTML('beforeend', template);
@@ -119,6 +203,29 @@ async function add_rule_row(el) {
 
     // Hide add rule button (will be un-hidden when user finishes adding this rule)
     document.getElementById(target + "-add-rule").style.display = "none"
+
+    // If a slider was added, initialze and attach listener
+    if (slider) {
+        // Initialize
+        $('#' + `${target}-rule${row}`).rangeslider({
+            polyfill: false,
+            onInit: function() {
+            // Select handle element closest to slider, update displayed rule
+            $handle = $('.rangeslider__handle', this.$range);
+            $handle[0].textContent = get_display_value(document.getElementById(`${target}-rule${row}`));
+
+            this.$range[0].classList.add("mx-auto")
+            }
+        });
+
+        // Update current rule displayed while slider moves
+        $('#' + `${target}-rule${row}`).on('input', function(e) {
+
+            // Select handle element closest to slider, update displayed rule
+            var $handle = $('.rangeslider__handle', e.target.nextSibling);
+            $handle[0].textContent = get_display_value(document.getElementById(e.target.id));
+        });
+    };
 };
 
 
