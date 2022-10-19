@@ -29,7 +29,7 @@ class Sensor():
         self.default_rule = default_rule
 
         # Prevent instantiating with invalid default_rule
-        if self.sensor_type in ("pir", "si7021", "dummy") and self.default_rule in ("enabled", "disabled"):
+        if self.sensor_type in ("pir", "si7021", "dummy") and str(self.default_rule).lower() in ("enabled", "disabled"):
             log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
             raise AttributeError
 
