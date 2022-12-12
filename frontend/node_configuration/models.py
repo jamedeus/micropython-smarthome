@@ -1,4 +1,7 @@
 from django.db import models
+import os
+
+CONFIG_DIR = os.environ.get('CONFIG_DIR')
 
 
 
@@ -13,7 +16,7 @@ class Node(models.Model):
 
     floor = models.IntegerField(default=1)
 
-    config_file = models.FilePathField(path='/home/jamedeus/git/micropython-smarthome/config')
+    config_file = models.FilePathField(path=CONFIG_DIR)
 
 
 
@@ -22,7 +25,7 @@ class Config(models.Model):
     def __str__(self):
         return self.config_file
 
-    config_file = models.FilePathField(path='/home/jamedeus/git/micropython-smarthome/config')
+    config_file = models.FilePathField(path=CONFIG_DIR)
 
     uploaded = models.BooleanField(default=False)
 

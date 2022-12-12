@@ -8,9 +8,9 @@ from .models import Node, Config, WifiCredentials
 
 from .webrepl_cli import *
 
-REPO_DIR = "/home/jamedeus/git/micropython-smarthome/"
-CONFIG_DIR = "/home/jamedeus/git/micropython-smarthome/config/"
-NODE_PASSWD = "password"
+REPO_DIR = os.environ.get('REPO_DIR')
+CONFIG_DIR = os.environ.get('CONFIG_DIR')
+NODE_PASSWD = os.environ.get('NODE_PASSWD')
 
 def get_modules(conf):
     modules = []
