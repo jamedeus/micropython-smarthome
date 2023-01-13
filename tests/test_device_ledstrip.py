@@ -6,7 +6,7 @@ from LedStrip import LedStrip
 class TestLedStrip(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_turn_off_when_disabled", "test_enable_regression_test", "test_rule_change_to_enabled_regression", "test_regression_invalid_default_rule", "test_regression_turn_off_while_disabled"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_turn_off_when_disabled", "test_enable_regression_test", "test_regression_rule_change_to_enabled", "test_regression_invalid_default_rule", "test_regression_turn_off_while_disabled", "test_regression_rule_change_while_fading"]
 
     def test_instantiation(self):
         self.instance = LedStrip("device1", "device1", "pwm", True, None, 512, 4, 0, 1023)
@@ -100,7 +100,7 @@ class TestLedStrip(unittest.TestCase):
     # Original bug: LedStrip class overwrites parent set_rule method and did not include conditional
     # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
     # crash next time send method was called.
-    def test_rule_change_to_enabled_regression(self):
+    def test_regression_rule_change_to_enabled(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.set_rule('enabled')
@@ -155,3 +155,12 @@ class TestLedStrip(unittest.TestCase):
         # On command should also return True, but shouldn't cause any action
         self.assertTrue(self.instance.send(1))
         self.assertEqual(self.instance.pwm.duty(), 0)
+
+    def test_regression_rule_change_while_fading(self):
+        # Start fade, confirm that fade started
+        self.assertTrue(self.instance.set_rule('fade/50/1800'))
+        self.assertTrue(self.instance.fading)
+
+        # Change rule, fade should stop
+        self.instance.set_rule(98)
+        self.assertFalse(self.instance.fading)

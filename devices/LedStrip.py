@@ -93,6 +93,10 @@ class LedStrip(Device):
             print(f"{self.name}: Rule changed to {self.current_rule}")
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
 
+            # If fade in progress when rule changed, abort
+            if self.fading:
+                self.fading = False
+
             # Rule just changed to disabled
             if self.current_rule == "disabled":
                 self.send(0)

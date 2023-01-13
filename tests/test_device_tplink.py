@@ -6,7 +6,7 @@ from Tplink import Tplink
 class TestTplink(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_off", "test_turn_on", "test_rule_change_to_enabled_regression", "test_regression_invalid_default_rule"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_off", "test_turn_on", "test_regression_rule_change_to_enabled", "test_regression_invalid_default_rule", "test_regression_rule_change_while_fading"]
 
     def test_instantiation(self):
         self.instance = Tplink("device1", "device1", "dimmer", True, None, 42, "192.168.1.233")
@@ -67,7 +67,7 @@ class TestTplink(unittest.TestCase):
     # Original bug: Tplink class overwrites parent set_rule method and did not include conditional
     # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
     # crash next time send method was called.
-    def test_rule_change_to_enabled_regression(self):
+    def test_regression_rule_change_to_enabled(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.set_rule('enabled')
@@ -97,3 +97,12 @@ class TestTplink(unittest.TestCase):
         except AttributeError:
             # Should raise exception, test passed
             self.assertTrue(True)
+
+    def test_regression_rule_change_while_fading(self):
+        # Start fade, confirm that fade started
+        self.assertTrue(self.instance.set_rule('fade/50/1800'))
+        self.assertTrue(self.instance.fading)
+
+        # Change rule, fade should stop
+        self.instance.set_rule(98)
+        self.assertFalse(self.instance.fading)
