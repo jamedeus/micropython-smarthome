@@ -45,7 +45,7 @@ async def disk_monitor():
             logging.root.handlers.clear()
             logging.root.addHandler(h)
 
-            log.info("Deleted old log (exceeded 500 KB size limit)")
+            log.info("Deleted old log (exceeded 100 KB size limit)")
 
             # Allow logger to write new log file to disk before loop checks size again (crashes if doesn't exist yet)
             await asyncio.sleep(1)
