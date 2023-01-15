@@ -4,6 +4,10 @@ import SoftwareTimer
 import uasyncio as asyncio
 import json
 import os
+import network
+
+# Get IP address
+ip = network.WLAN(network.STA_IF).ifconfig()[0]
 
 
 
@@ -96,7 +100,7 @@ class TestApi(unittest.TestCase):
         self.sensor4 = config.find("sensor4")
 
     async def request(self, msg):
-        reader, writer = await asyncio.open_connection("192.168.1.223", 8123)
+        reader, writer = await asyncio.open_connection(ip, 8123)
         try:
             writer.write('{}\n'.format(json.dumps(msg)).encode())
             await writer.drain()
