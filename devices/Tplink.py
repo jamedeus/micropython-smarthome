@@ -230,6 +230,7 @@ class Tplink(Device):
                 if new_rule < self.fading["target"]:
                     new_rule = self.fading["target"]
 
+            # Set new rule without calling set_rule method (would abort fade)
             self.current_rule = int(new_rule)
             self.scheduled_rule = int(new_rule)
             if self.state == True:

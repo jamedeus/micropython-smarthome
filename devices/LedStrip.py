@@ -215,7 +215,11 @@ class LedStrip(Device):
                 if new_rule < self.fading["target"]:
                     new_rule = self.fading["target"]
 
-            self.set_rule(new_rule)
+            # Set new rule without calling set_rule method (would abort fade)
+            self.current_rule = int(new_rule)
+            self.scheduled_rule = int(new_rule)
+            if self.state == True:
+                self.send(1)
 
         # Check if fade complete after step
         if self.fading["target"] == int(self.current_rule):
