@@ -234,6 +234,10 @@ def set_rule(args):
     target = app.config.find(args[0])
     rule = args[1]
 
+    # Replace url-encoded forward slashes (fade rules)
+    if "%2F" in rule:
+        rule = rule.replace("%2F", "/")
+
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
 
