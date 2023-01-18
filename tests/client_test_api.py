@@ -312,10 +312,27 @@ class TestParseCommand(unittest.TestCase):
         # Wait for fade to complete
         time.sleep(16)
         response = parse_command(target_ip, ['get_attributes', 'device3'])
-        self.assertEqual(response['bright'], 505)
+        self.assertEqual(response['current_rule'], 505)
         self.assertEqual(response['fading'], False)
 
+    # Confirm that calling set_rule while a fade is in-progress correctly aborts
+    def test_abort_fade(self):
+        # Starting conditions
+        parse_command(target_ip, ['set_rule', 'device3', '500'])
+        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        self.assertEqual(response['fading'], False)
 
+        # Start 5 minute fade to 505 brightness, confirm started
+        parse_command(target_ip, ['set_rule', 'device3', 'fade/505/300'])
+        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        self.assertEqual(response['fading']['target'], 505)
+
+        # Wait 5 seconds, then change rule - fade should abort, new rule should be used
+        time.sleep(5)
+        parse_command(target_ip, ['set_rule', 'device3', '400'])
+        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        self.assertEqual(response['current_rule'], 400)
+        self.assertEqual(response['fading'], False)
 
 
 
