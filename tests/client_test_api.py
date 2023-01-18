@@ -295,6 +295,27 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['state'], True)
         self.assertEqual(response['enabled'], True)
 
+    # Original bug: LedStrip fade method made calls to set_rule method for each fade step.
+    # Later, set_rule was modified to abort an in-progress fade when it received a brightness
+    # rule. This caused fade to abort itself after the first step. Fixed in a29f5383.
+    def test_regression_fade_on(self):
+        # Starting conditions
+        parse_command(target_ip, ['set_rule', 'device3', '500'])
+        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        self.assertEqual(response['fading'], False)
+
+        # Start fade
+        parse_command(target_ip, ['set_rule', 'device3', 'fade/505/15'])
+        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        self.assertEqual(response['fading']['target'], 505)
+
+        # Wait for fade to complete
+        time.sleep(16)
+        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        self.assertEqual(response['bright'], 505)
+        self.assertEqual(response['fading'], False)
+
+
 
 
 
