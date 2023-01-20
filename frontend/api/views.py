@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse, FileResponse
 from django.template import loader
+from django.views.decorators.csrf import ensure_csrf_cookie
 import json
 import asyncio
 import re
@@ -33,6 +34,7 @@ def get_status(request, node):
 
 
 
+@ensure_csrf_cookie
 def api_overview(request):
     rooms = {}
 
@@ -57,6 +59,7 @@ def api_overview(request):
 
 
 
+@ensure_csrf_cookie
 def api(request, node):
     target = Node.objects.get(friendly_name = node)
 
