@@ -1,0 +1,39 @@
+version: "3.5"
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /home/pi/docker/nginx:/etc/nginx/certs
+    restart: unless-stopped
+    networks:
+      - reverse_proxy
+
+  smarthome:
+    image: micropython-smarthome:0.7
+    container_name: smarthome
+    hostname: smarthome
+    environment:
+      # Reverse proxy domain name
+      - VIRTUAL_HOST=smarthome.lan
+    volumes:
+      # Config files
+      - /home/pi/docker/smarthome/config:/repo/config
+      # Database
+      - /home/pi/docker/smarthome/db.sqlite3:/repo/frontend/db.sqlite3
+      # Settings (django key, allowed hosts, etc)
+      - /home/pi/docker/smarthome/settings.json:/repo/settings.json
+    ports:
+      - 8456:8456
+    networks:
+      - reverse_proxy
+    restart: unless-stopped
+
+networks:
+  reverse_proxy:
+    name: reverse_proxy
+    driver: bridge
