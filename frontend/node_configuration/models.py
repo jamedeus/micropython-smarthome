@@ -1,5 +1,6 @@
 from django.db import models
 import os
+import json
 
 CONFIG_DIR = os.environ.get('CONFIG_DIR')
 
@@ -16,18 +17,34 @@ class Node(models.Model):
 
     floor = models.IntegerField(default=1)
 
-    config_file = models.FilePathField(path=CONFIG_DIR)
-
 
 
 class Config(models.Model):
 
     def __str__(self):
-        return self.config_file
+        return self.filename
 
-    config_file = models.FilePathField(path=CONFIG_DIR)
+    # The actual config object
+    config = models.JSONField(null=False, blank=False)
 
-    uploaded = models.BooleanField(default=False)
+    filename = models.CharField(max_length=50, null=False, blank=False)
+
+    node = models.OneToOneField(
+        Node,
+        on_delete=models.CASCADE,
+        related_name='config',
+        null=True,
+        blank=True
+    )
+
+    def read_from_disk(self):
+        with open(CONFIG_DIR + self.filename, 'r') as file:
+            self.config = json.load(file)
+            self.save()
+
+    def write_to_disk(self):
+        with open(CONFIG_DIR + self.filename, 'w') as file:
+            json.dump(self.config, file)
 
 
 

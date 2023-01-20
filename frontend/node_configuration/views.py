@@ -91,13 +91,12 @@ def upload(request, reupload=False):
         raise Http404("ERROR: Must post data")
 
     try:
-        with open(CONFIG_DIR + data["config"], 'r') as file:
-            config = json.load(file)
-    except FileNotFoundError:
+        config = Config.objects.get(filename = data["config"])
+    except Config.DoesNotExist:
         return JsonResponse("ERROR: Config file doesn't exist - did you delete it manually?", safe=False, status=200)
 
     if not data["config"] == "setup.json":
-        modules, libs = get_modules(config)
+        modules, libs = get_modules(config.config)
     else:
         modules = []
         libs = []
@@ -107,12 +106,11 @@ def upload(request, reupload=False):
 
     # If uploaded for the first time, update models
     if response.status_code == 200 and not reupload:
-        target = Config.objects.get(config_file = CONFIG_DIR + data["config"])
-        target.uploaded = True
-        target.save()
-
-        new = Node(friendly_name = config["metadata"]["id"], ip = data["ip"], config_file = CONFIG_DIR + data["config"], floor = config["metadata"]["floor"])
+        new = Node(friendly_name = config.config["metadata"]["id"], ip = data["ip"], floor = config.config["metadata"]["floor"])
         new.save()
+
+        config.node = new
+        config.save()
 
     return response
 
@@ -202,13 +200,10 @@ def reupload_all(request):
     nodes = Node.objects.all()
 
     for node in nodes:
-        with open(node.config_file, 'r') as file:
-            config = json.load(file)
-
-        modules, libs = get_modules(config)
+        modules, libs = get_modules(node.config.config)
 
         print(f"\nReuploading {node.friendly_name}...")
-        provision(node.config_file.split("/")[-1], node.ip, modules, libs)
+        provision(node.config.filename, node.ip, modules, libs)
 
     return JsonResponse("Finished reuploading", safe=False, status=200)
 
@@ -220,9 +215,9 @@ def delete_config(request):
     else:
         raise Http404("ERROR: Must post data")
 
-    target = Config.objects.get(config_file = CONFIG_DIR + data)
+    target = Config.objects.get(filename = data)
     target.delete()
-    os.system(f'rm {target.config_file}')
+    os.system(f'rm {CONFIG_DIR}/{target.filename}')
 
     return JsonResponse("Deleted {}".format(data), safe=False, status=200)
 
@@ -234,13 +229,11 @@ def delete_node(request):
     else:
         raise Http404("ERROR: Must post data")
 
-    # Get both model entries
+    # Get model entry
     node = Node.objects.get(friendly_name = data)
-    config = Config.objects.get(config_file = node.config_file)
 
     # Delete from disk, delete from models
-    os.system(f'rm {node.config_file}')
-    config.delete()
+    os.system(f'rm {CONFIG_DIR}/{node.config.filename}')
     node.delete()
 
     return JsonResponse("Deleted {}".format(data), safe=False, status=200)
@@ -253,10 +246,10 @@ def node_configuration(request):
         "uploaded" : []
     }
 
-    not_uploaded = Config.objects.filter(uploaded = False)
+    not_uploaded = Config.objects.filter(node = None)
 
     for i in not_uploaded:
-        context["not_uploaded"].append(str(i).split("/")[-1])
+        context["not_uploaded"].append(str(i))
 
     uploaded = Node.objects.all()
     for i in uploaded:
@@ -287,13 +280,12 @@ def configure(request):
 def edit_config(request, name):
     target = Node.objects.get(friendly_name = name)
 
-    with open(target.config_file, 'r') as file:
-        config = json.load(file)
+    config = target.config.config
 
     config["NAME"] = target.friendly_name
     config["TITLE"] = f"Editing {target.friendly_name}"
     config["IP"] = target.ip
-    config["FILENAME"] = target.config_file.split("/")[-1]
+    config["FILENAME"] = target.config.filename
 
     sensors = {}
     devices = {}
@@ -354,7 +346,7 @@ def generateConfigFile(request, edit_existing=False):
 
     try:
         # Check if file with identical parameters exists in database
-        duplicate = Config.objects.get(config_file = CONFIG_DIR + data["friendlyName"] + ".json")
+        duplicate = Config.objects.get(filename = data["friendlyName"])
 
         # Ignore duplicate error if editing an existing config
         if not edit_existing:
@@ -414,15 +406,22 @@ def generateConfigFile(request, edit_existing=False):
     print(json.dumps(config, indent=4))
 
     # Get filename (all lowercase, replace spaces with hyphens)
-    filename = config["metadata"]["id"].lower().replace(" ", "-")
+    filename = config["metadata"]["id"].lower().replace(" ", "-") + ".json"
 
-    with open(CONFIG_DIR + filename + ".json", 'w') as file:
-        json.dump(config, file)
+    print(f"\n\n{filename}\n\n")
 
-    # If creating a new config, add to models
+    # If creating new config, add to models + write to disk
     if not edit_existing:
-        new = Config(config_file = CONFIG_DIR + filename + ".json", uploaded = False)
+        new = Config(config = config, filename = filename)
         new.save()
+        new.write_to_disk()
+
+    # If modifying old config, update JSON object and write to disk
+    else:
+        old = Config.objects.get(filename=filename)
+        old.config = config
+        old.save()
+        old.write_to_disk()
 
     return JsonResponse("Config created.", safe=False, status=200)
 
@@ -442,8 +441,7 @@ def get_api_target_menu_options(editing_node=False):
     for node in Node.objects.all():
         entries = {}
 
-        with open(node.config_file, 'r') as file:
-            config = json.load(file)
+        config = node.config.config
 
         for i in config:
             if i.startswith("device"):
