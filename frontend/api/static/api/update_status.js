@@ -5,13 +5,13 @@ async function updateStatusObject() {
     new_status = await new_status.json();
 
     // If unable to connect
-    if (selected_node_unreachable == false && new_status == "Error: Unable to connect.") {
+    if (selected_node_unreachable == false && String(new_status).startsWith("Error:")) {
         $("#error-modal").modal("show");
         console.log("Unable to connect to target, will retry every 5 seconds.");
         selected_node_unreachable = true;
         return;
 
-    } else if (selected_node_unreachable == true && new_status != "Error: Unable to connect.") {
+    } else if (selected_node_unreachable == true && !String(new_status).startsWith("Error:")) {
         $("#error-modal").modal("hide");
         // Refresh page (node config may have changed, need to get new device/sensor cards)
         location.reload();
