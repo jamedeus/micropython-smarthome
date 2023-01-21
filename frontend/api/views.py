@@ -76,8 +76,7 @@ def api(request, node):
         options = get_api_target_menu_options(target.friendly_name)
 
         # Get target IP(s) from config file, use to find correct options in object above
-        with open(target.config_file, 'r') as file:
-            config = json.load(file)
+        config = target.config.config
 
         for i in config:
             if i.startswith("device") and config[i]['type'] == 'api-target':
