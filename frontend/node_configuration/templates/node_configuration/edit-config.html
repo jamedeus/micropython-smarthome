@@ -959,7 +959,8 @@
         };
 
         {# Set var passed to submit_form function, controls whether config is re-uploaded or not #}
-        {% if context.config|length == 2 %}
+        {# For new configs length will be 1 if no default password set, otherwise 2. Existing configs have min length of 9 #}
+        {% if context.config|length <= 2 %}
         const edit_existing = false;
         {% else %}
         const edit_existing = true;
