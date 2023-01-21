@@ -66,7 +66,10 @@ def api(request, node):
     try:
         status = parse_command(target.ip, ["status"])
     except OSError:
-        return JsonResponse("Error: Unable to connect.", safe=False, status=200)
+        # Render connection failed page
+        context = {"ip": target.ip}
+        template = loader.get_template('api/unable_to_connect.html')
+        return HttpResponse(template.render({'context': context}, request))
 
     # If ApiTarget configured, add all valid options for target IP so user can change rule
     if "api-target" in str(status):
