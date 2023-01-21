@@ -65,8 +65,14 @@ def api(request, node):
 
     try:
         status = parse_command(target.ip, ["status"])
+    # Render connection failed page
     except OSError:
-        # Render connection failed page
+        context = {"ip": target.ip, "id": target.friendly_name}
+        template = loader.get_template('api/unable_to_connect.html')
+        return HttpResponse(template.render({'context': context}, request))
+
+    # Render connection failed page
+    if status == "Error: Request timed out":
         context = {"ip": target.ip, "id": target.friendly_name}
         template = loader.get_template('api/unable_to_connect.html')
         return HttpResponse(template.render({'context': context}, request))
@@ -198,7 +204,7 @@ async def request(ip, msg):
     try:
         reader, writer = await asyncio.wait_for(asyncio.open_connection(ip, 8123), timeout=5)
     except asyncio.TimeoutError:
-        return "Error: Request failed"
+        return "Error: Request timed out"
 
     # Send message
     try:
