@@ -194,13 +194,21 @@ def send_command(request):
 
 # Send JSON api request to node
 async def request(ip, msg):
-    reader, writer = await asyncio.open_connection(ip, 8123)
+    # Open connection (5 second timeout)
+    try:
+        reader, writer = await asyncio.wait_for(asyncio.open_connection(ip, 8123), timeout=5)
+    except asyncio.TimeoutError:
+        return "Error: Request failed"
+
+    # Send message
     try:
         writer.write('{}\n'.format(json.dumps(msg)).encode())
         await writer.drain()
         res = await reader.read()
     except OSError:
         return "Error: Request failed"
+
+    # Read response, close connection
     try:
         response = json.loads(res)
     except ValueError:
