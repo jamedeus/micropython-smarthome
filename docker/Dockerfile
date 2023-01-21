@@ -6,6 +6,7 @@ ENV REPO_DIR="/repo/"
 ENV CONFIG_DIR="/repo/config/"
 ENV NODE_PASSWD="password"
 WORKDIR /repo
+RUN mkdir /repo/config
 
 COPY docker/requirements.txt /repo/requirements.txt
 COPY frontend/manage.py /repo/frontend/manage.py
@@ -21,6 +22,10 @@ COPY Config.py /repo/Config.py
 COPY Group.py /repo/Group.py
 COPY SoftwareTimer.py /repo/SoftwareTimer.py
 COPY boot.py /repo/boot.py
+
+# Vanilla database, migrations applied, no configs/nodes
+# Persists between sessions if volume used, or can overwrite with external db
+COPY docker/default-db.sqlite3 /repo/frontend/db.sqlite3
 
 RUN pip install -r requirements.txt
 

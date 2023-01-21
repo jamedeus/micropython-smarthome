@@ -21,12 +21,12 @@ services:
       # Reverse proxy domain name
       - VIRTUAL_HOST=smarthome.lan
     volumes:
-      # Config files
-      - /home/pi/docker/smarthome/config:/repo/config
-      # Database
-      - /home/pi/docker/smarthome/db.sqlite3:/repo/frontend/db.sqlite3
+      # Persistent storage between sessions
+      - smarthome-data:/repo
       # Settings (django key, allowed hosts, etc)
       - /home/pi/docker/smarthome/settings.json:/repo/settings.json
+      # Optional: Generated config files will be written here if present
+      - /home/pi/docker/smarthome/config:/repo/config
     ports:
       - 8456:8456
     networks:
@@ -37,3 +37,6 @@ networks:
   reverse_proxy:
     name: reverse_proxy
     driver: bridge
+
+volumes:
+  smarthome-data:
