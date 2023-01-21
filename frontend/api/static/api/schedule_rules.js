@@ -333,7 +333,16 @@ async function add_rule(el) {
 
         // Add listeners, changes delete button to add button if user modifies fields (newly added rows don't have listener until add button clicked)
         timestamp.addEventListener("input", schedule_rule_field_handler);
-        rule.addEventListener("input", schedule_rule_field_handler);
+
+        // Slider input requires jquery listener to cover all scenarios
+        if (rule.type == 'range') {
+            $('#' + rule.id).on('change', async function(e) {
+                schedule_rule_field_handler(e);
+            });
+        // All others inputs use vanilla listener
+        } else {
+            rule.addEventListener("input", schedule_rule_field_handler);
+        };
 
         // Unhide add rule button so user can continue adding rules if needed
         document.getElementById(target + "-add-rule").style.display = "initial"
