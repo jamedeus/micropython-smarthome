@@ -95,19 +95,19 @@
 
     </div>
 
-    <!-- Save context for later use -->
-    {{ context|json_script:"context" }}
-
     <script>
         const target_node = "{{ context.ip }}";
 
-        var target_node_status = JSON.parse(document.getElementById("context").textContent);
+        /* Attempt to reconnect every 5 seconds, reload when available */
+        async function retryConnection() {
+            var retry = await send_command({'command': 'status'});
+            retry = await retry.json();
 
-        // Initial value, used to detect change (lose connection, re-establish connection)
-        selected_node_unreachable = false;
-
-        // Prevent multiple functions modifying status object at the same time
-        var status_lock = false;
+            if (retry != "Error: Unable to connect.") {
+                location.reload();
+            };
+        };
+        retryTimer = setInterval(retryConnection, 5000);
 
         // Darkmode for elements generated after initial check
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -175,7 +175,6 @@
             }
         });
     </script>
-    <script src="{% static 'api/update_status.js' %}"></script>
     <script src="{% static 'api/api_card.js' %}"></script>
 </body>
 </html>
