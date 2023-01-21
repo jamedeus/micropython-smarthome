@@ -109,15 +109,6 @@
         };
         retryTimer = setInterval(retryConnection, 5000);
 
-        // Darkmode for elements generated after initial check
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            // Top-right menu buttons
-            Array.from(document.querySelectorAll(".btn-outline-secondary")).forEach(function(button) {
-                button.classList.remove('btn-outline-secondary');
-                button.classList.add('btn-outline-dark');
-            });
-        };
-
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
             if (e.matches) { // Returns True for dark mode, False otherwise

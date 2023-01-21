@@ -800,6 +800,12 @@
                 document.getElementById("more_options_button").classList.add("btn-dark");
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
 
+                // Top-right menu buttons + ApiTarget rule modal tab buttons
+                Array.from(document.querySelectorAll(".btn-outline-secondary")).forEach(function(button) {
+                    button.classList.remove('btn-outline-secondary');
+                    button.classList.add('btn-outline-dark');
+                });
+
                 {% if context.api_target_options %}
                 // Buttons in ApiTarget rule modal
                 modal = document.getElementById('api-rule-modal');
@@ -808,12 +814,6 @@
                         button.classList.remove("btn-secondary");
                         button.classList.add("btn-dark");
                     };
-                });
-
-                // Top-right menu buttons + ApiTarget rule modal tab buttons
-                Array.from(document.querySelectorAll(".btn-outline-secondary")).forEach(function(button) {
-                    button.classList.remove('btn-outline-secondary');
-                    button.classList.add('btn-outline-dark');
                 });
                 {% endif %}
 
@@ -825,6 +825,12 @@
                 document.getElementById("more_options_button").classList.add("btn-light");
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.remove("dropdown-menu-dark"));
 
+                // Top-right menu buttons + ApiTarget rule modal tab buttons
+                Array.from(document.querySelectorAll(".btn-outline-dark")).forEach(function(button) {
+                    button.classList.remove('btn-outline-dark');
+                    button.classList.add('btn-outline-secondary');
+                });
+
                 {% if context.api_target_options %}
                 // Buttons in ApiTarget rule modal
                 modal = document.getElementById('api-rule-modal');
@@ -833,12 +839,6 @@
                         button.classList.remove("btn-dark");
                         button.classList.add("btn-secondary");
                     };
-                });
-
-                // Top-right menu buttons + ApiTarget rule modal tab buttons
-                Array.from(document.querySelectorAll(".btn-outline-dark")).forEach(function(button) {
-                    button.classList.remove('btn-outline-dark');
-                    button.classList.add('btn-outline-secondary');
                 });
                 {% endif %}
             }
