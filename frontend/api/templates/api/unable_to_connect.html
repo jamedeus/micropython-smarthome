@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>{{ context.metadata.id }} - Micropython Smarthome API</title>
+    <title>{{ context.id }} - Micropython Smarthome API</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
@@ -111,9 +111,6 @@
 
         // Darkmode for elements generated after initial check
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            // Dropdown menus
-            Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
-
             // Top-right menu buttons
             Array.from(document.querySelectorAll(".btn-outline-secondary")).forEach(function(button) {
                 button.classList.remove('btn-outline-secondary');
@@ -129,24 +126,6 @@
                 document.getElementById("back_button").classList.add("btn-dark");
                 document.getElementById("more_options_button").classList.remove("btn-light");
                 document.getElementById("more_options_button").classList.add("btn-dark");
-                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
-
-                {% if context.api_target_options %}
-                // Buttons in ApiTarget rule modal
-                modal = document.getElementById('api-rule-modal');
-                Array.from(modal.querySelectorAll('button')).forEach(function(button) {
-                    if (button.classList.contains("btn-secondary")) {
-                        button.classList.remove("btn-secondary");
-                        button.classList.add("btn-dark");
-                    };
-                });
-
-                // Top-right menu buttons + ApiTarget rule modal tab buttons
-                Array.from(document.querySelectorAll(".btn-outline-secondary")).forEach(function(button) {
-                    button.classList.remove('btn-outline-secondary');
-                    button.classList.add('btn-outline-dark');
-                });
-                {% endif %}
 
             } else {
                 document.body.classList.remove("dark");
@@ -154,24 +133,6 @@
                 document.getElementById("back_button").classList.add("btn-light");
                 document.getElementById("more_options_button").classList.remove("btn-dark");
                 document.getElementById("more_options_button").classList.add("btn-light");
-                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.remove("dropdown-menu-dark"));
-
-                {% if context.api_target_options %}
-                // Buttons in ApiTarget rule modal
-                modal = document.getElementById('api-rule-modal');
-                Array.from(modal.querySelectorAll('button')).forEach(function(button) {
-                    if (button.classList.contains("btn-dark")) {
-                        button.classList.remove("btn-dark");
-                        button.classList.add("btn-secondary");
-                    };
-                });
-
-                // Top-right menu buttons + ApiTarget rule modal tab buttons
-                Array.from(document.querySelectorAll(".btn-outline-dark")).forEach(function(button) {
-                    button.classList.remove('btn-outline-dark');
-                    button.classList.add('btn-outline-secondary');
-                });
-                {% endif %}
             }
         });
     </script>
