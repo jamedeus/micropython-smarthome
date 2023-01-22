@@ -35,10 +35,10 @@
 
 <body>
     <div class="container d-flex flex-column vh-100">
-        <div class="d-flex justify-content-between pt-3">
+        <div class="d-flex justify-content-between">
             <button type="button" class="btn my-auto" id="back_button" style="visibility:hidden"><i class="bi-chevron-left"></i></button>
-            <h3 class="">Api Overview</h3>
-            <div class="dropdown">
+            <h1 class="my-3">Api Overview</h1>
+            <div class="dropdown my-auto">
                 <button type="button" class="btn" id="settings_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                 <ul id="settings_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings_button">
                     <li><a class="dropdown-item" onclick='fetch("/reboot_all")'>Reboot all</a></li>
@@ -73,7 +73,13 @@
             </div>
 
         {% else %}
-            <p>No nodes available</p>
+            <div class="my-auto text-center">
+                <h2>No Nodes Configured</h2>
+                <p>Click <a href="/configure">here</a> to create</p>
+            </div>
+            <script>
+                document.getElementById('settings_button').disabled = true
+            </script>
         {% endif %}
 
         <div class="d-flex align-items-center flex-column mt-auto">
