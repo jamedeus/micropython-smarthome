@@ -11,7 +11,8 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
 from pathlib import Path
-import json
+import os
+from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,14 +21,22 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
-with open('settings.json', 'r') as file:
-    settings = json.load(file)
-    SECRET_KEY = settings['SECRET_KEY']
-    ALLOWED_HOSTS = settings['ALLOWED_HOSTS']
-    CSRF_TRUSTED_ORIGINS = []
-    for i in ALLOWED_HOSTS:
-        CSRF_TRUSTED_ORIGINS.append(f'http://{i}')
-        CSRF_TRUSTED_ORIGINS.append(f'https://{i}')
+# Read SECRET_KEY from env var, or gen new key if not present
+SECRET_KEY = os.environ.get('SECRET_KEY')
+if SECRET_KEY is None:
+    SECRET_KEY = get_random_secret_key()
+
+# Read ALLOWED_HOSTS from env var, or use wildcard if not present
+try:
+    ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(',')
+except AttributeError:
+    ALLOWED_HOSTS = ['*']
+
+# Add all allowed hosts to CSRF_TRUSTED_ORIGINS
+CSRF_TRUSTED_ORIGINS = []
+for i in ALLOWED_HOSTS:
+    CSRF_TRUSTED_ORIGINS.append(f'http://{i}')
+    CSRF_TRUSTED_ORIGINS.append(f'https://{i}')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

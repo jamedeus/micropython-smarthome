@@ -14,17 +14,24 @@ services:
       - reverse_proxy
 
   smarthome:
-    image: micropython-smarthome:0.7
+    image: micropython-smarthome:1.0
     container_name: smarthome
     hostname: smarthome
     environment:
       # Reverse proxy domain name
       - VIRTUAL_HOST=smarthome.lan
+      # Comma-seperated list, access on all others will be blocked
+      # Defaults to * if omitted (not recommended)
+      - ALLOWED_HOSTS=smarthome.lan,localhost
+      # Optional: Persistent key between sessions
+      # If blank a new key will be generated each time
+      - SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxx"
+      # Optional: set webrepl password used by nodes
+      # If blank defaults to "password"
+      - NODE_PASSWD=password
     volumes:
       # Persistent storage between sessions
       - smarthome-data:/repo
-      # Settings (django key, allowed hosts, etc)
-      - /home/pi/docker/smarthome/settings.json:/repo/settings.json
       # Optional: Generated config files will be written here if present
       - /home/pi/docker/smarthome/config:/repo/config
     ports:
