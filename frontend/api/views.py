@@ -293,6 +293,18 @@ def add_macro_action(request):
 
 
 
+def delete_macro(request, name):
+    try:
+        macro = Macro.objects.get(name = name)
+    except Macro.DoesNotExist:
+        return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
+
+    macro.delete()
+
+    return JsonResponse("Done", safe=False, status=200)
+
+
+
 # Populated with endpoint:handler pairs by decorators below
 endpoints = []
 
