@@ -195,8 +195,14 @@
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
             if (e.matches) { // Returns True for dark mode, False otherwise
                 document.body.classList.add("dark");
+                document.getElementById("settings_button").classList.remove("btn-light");
+                document.getElementById("settings_button").classList.add("btn-dark");
+                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
             } else {
                 document.body.classList.remove("dark");
+                document.getElementById("settings_button").classList.remove("btn-dark");
+                document.getElementById("settings_button").classList.add("btn-light");
+                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.remove("dropdown-menu-dark"));
             }
         });
     </script>
