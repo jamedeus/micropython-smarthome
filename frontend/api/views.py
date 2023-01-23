@@ -257,6 +257,29 @@ def run_macro(request, name):
 
 
 
+def add_macro_action(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        raise Http404("ERROR: Must post data")
+
+    try:
+        macro = Macro.objects.get(name = data['name'])
+    except Macro.DoesNotExist:
+        macro = Macro.objects.create(name = data['name'])
+        macro.save() # TODO remove? Can't remember if needed, don't think so
+
+    try:
+        macro.add_action(data['action'])
+    except SyntaxError:
+        return JsonResponse("Invalid action", safe=False, status=400)
+
+    print(f"Added action: {data['action']}")
+
+    return JsonResponse("Done", safe=False, status=200)
+
+
+
 # Populated with endpoint:handler pairs by decorators below
 endpoints = []
 

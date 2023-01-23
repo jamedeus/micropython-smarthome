@@ -12,6 +12,7 @@ urlpatterns = [
     path('reboot_all', views.reboot_all, name='reboot_all'),
     path('reset_all', views.reset_all, name='reset_all'),
     path('run_macro/<str:name>', views.run_macro, name='run_macro'),
+    path('add_macro_action', views.add_macro_action, name='add_macro_action'),
 
     # Template views
     path('api', views.api_overview, name='api_overview'),
