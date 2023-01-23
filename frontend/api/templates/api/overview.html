@@ -19,17 +19,6 @@
                 width: 960px;
             }
         }
-
-        .section {
-            background-color: #eee;
-            border: 1px solid #c8c8c8;
-            border-radius: 15px;
-        }
-
-        body.dark .section {
-            border: 0px;
-            background-color: #212529;
-        }
     </style>
 </head>
 
@@ -37,7 +26,11 @@
     <div class="container d-flex flex-column vh-100">
         <div class="d-flex justify-content-between">
             <button type="button" class="btn my-auto" id="back_button" style="visibility:hidden"><i class="bi-chevron-left"></i></button>
+            {% if context.recording %}
+            <h1 class="my-3">Recording macro {{context.recording}}</h1>
+            {% else %}
             <h1 class="my-3">Api Overview</h1>
+            {% endif %}
             <div class="dropdown my-auto">
                 <button type="button" class="btn" id="settings_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                 <ul id="settings_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings_button">
@@ -61,16 +54,50 @@
 
         {% if context %}
             <div id="container" class="text-center">
-                {% for floor, nodes in context.items %}
+                {% for floor, nodes in context.nodes.items %}
                     <div id="floor{{floor}}" class="section mt-3 mb-4 p-3">
                         <h5 class="mb-3"><b>Floor {{floor}}</b></h5>
 
                         {% for node in nodes %}
-                            <button onclick="window.location.href = '/api/' + this.id;" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+                            {% if context.recording %}
+                                <button onclick="window.location.href = '/api/' + this.id + '/{{context.recording}}';" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+                            {% else %}
+                                <button onclick="window.location.href = '/api/' + this.id;" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 {% endfor %}
             </div>
+
+            <h1 class="text-center mt-5">Macros</h1>
+            <div id="macros" class="text-center section p-3 mx-auto mb-3">
+                {% for macro in context.macros %}
+                    {% if not macro == context.recording %}
+                    <div id="{{macro}}" class="d-flex mb-3">
+                        <h3 class="mx-auto my-auto">{{macro|lower|capfirst}}</h3>
+                        <button id="run-{{macro}}" type="button" class="btn btn-primary btn-macro mx-3" onclick="runMacro('{{macro}}')">Run</button>
+                        <button id="edit-{{macro}}" type="button" class="btn-primary btn btn-macro mx-3">Edit</button>
+                        <button id="delete-{{macro}}" type="button" class="btn-danger btn btn-macro mx-3"><i class="bi-trash"></i></button>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+
+                {% if not context.recording %}
+                <button class="btn btn-secondary mt-3 mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#record-macro-menu" aria-expanded="false" aria-controls="record-macro-menu"><i class="bi-plus-lg"></i></button>
+                <div class="collapse" id="record-macro-menu">
+                    <div class="p-3">
+                        <div class="form-floating mb-3">
+                            <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
+                            <label for="new-macro-name">New macro name</label>
+                        </div>
+                        <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
+                    </div>
+                </div>
+                {% else %}
+                <button class="btn btn-success mt-3 mx-auto" type="button" onclick="window.location.href = '/api'">Finish Recording</button>
+                {% endif %}
+            </div>
+
 
         {% else %}
             <div class="my-auto text-center">
@@ -88,13 +115,13 @@
 
     <script>
         // If only 1 floor, remove label and background
-        if ({{context|length}} == 1) {
+        if ({{context.nodes|length}} == 1) {
             let floor1 = document.getElementById('floor1');
             floor1.children[0].remove();
             floor1.classList.remove("section");
 
         // If exactly 2 floors, change labels to Upstairs/Downstairs, move Upstairs to top
-        } else if ({{context|length}} == 2) {
+        } else if ({{context.nodes|length}} == 2) {
             let floor1 = document.getElementById('floor1');
             let floor2 = document.getElementById('floor2');
 
@@ -103,6 +130,48 @@
 
             floor2.after(floor1);
         };
+
+        /* Enable start recording button once new macro name entered */
+        function macroNameHandler() {
+            const name = document.getElementById('new-macro-name').value;
+            if (name.length < 1) {
+                document.getElementById('start-recording').disabled = true;
+            } else {
+                document.getElementById('start-recording').disabled = false;
+            };
+        };
+
+        /* Handler for start recording button */
+        function startRecording() {
+            const name = document.getElementById('new-macro-name').value;
+            window.location.href = '/api/recording/' + name;
+        };
+
+        /* Handler for run macro button */
+        async function runMacro(name) {
+            /* Replace run with loading spinner */
+            document.getElementById(`run-${name}`).innerHTML = `<div id="spinner" class="loading-animation loading-animation-show m-auto"><div></div><div></div><div></div><div></div></div>`
+
+            /* Start macro, await result */
+            var result = await fetch(`/run_macro/${name}`);
+            result = await result.status;
+
+            /* Checkmark animation, then fade back to original text */
+            if (result == 200) {
+                document.getElementById(`run-${name}`).innerHTML = `<svg id="checkmark" class="checkmark m-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                                                        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                                                                        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                                                                    </svg>`;
+                await sleep(2000);
+                document.getElementById(`checkmark`).classList.add('fade-out');
+                await sleep(200);
+                document.getElementById(`run-${name}`).innerHTML = "<span class='fade-in'>Run</span>";
+            };
+        };
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {

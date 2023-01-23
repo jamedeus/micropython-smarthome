@@ -36,7 +36,7 @@ def get_status(request, node):
 
 
 @ensure_csrf_cookie
-def api_overview(request):
+def api_overview(request, recording=False):
     rooms = {}
 
     for i in Node.objects.all():
@@ -46,13 +46,23 @@ def api_overview(request):
             rooms[i.floor] = [i]
 
     context = {}
+    context['nodes'] = {}
+    context['macros'] = {}
 
     floors = list(rooms.keys())
     floors.sort()
 
     # Sort by floor number
     for floor in floors:
-        context[floor] = rooms[floor]
+        context['nodes'][floor] = rooms[floor]
+
+    for macro in Macro.objects.all():
+        context['macros'][macro.name] = json.loads(macro.actions)
+
+    print(json.dumps(context['macros']))
+
+    if recording:
+        context['recording'] = recording
 
     template = loader.get_template('api/overview.html')
 
@@ -61,7 +71,7 @@ def api_overview(request):
 
 
 @ensure_csrf_cookie
-def api(request, node):
+def api(request, node, recording=False):
     target = Node.objects.get(friendly_name = node)
 
     try:
@@ -105,6 +115,9 @@ def api(request, node):
     template = loader.get_template('api/api_card.html')
 
     status["metadata"]["ip"] = target.ip
+
+    if recording:
+        status["metadata"]["recording"] = recording
 
     print(json.dumps(status, indent=4))
 

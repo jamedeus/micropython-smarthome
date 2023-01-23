@@ -282,7 +282,7 @@
 
                                 <!-- Schedule rules section, collapsed by default -->
                                 <p class="text-center mt-3">
-                                    <button id="{{sensor}}-open-rules" class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules" onclick="open_rules(this)">
+                                    <button id="{{sensor}}-open-rules" class="btn btn-sm btn-primary open-rules" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules" onclick="open_rules(this)">
                                         Schedule rules
                                     </button>
                                 </p>
@@ -456,7 +456,7 @@
 
                                 <!-- Schedule rules section, collapsed by default -->
                                 <p class="text-center mt-3">
-                                    <button id="{{device}}-open-rules" class="btn btn-sm btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules" onclick="open_rules(this)">
+                                    <button id="{{device}}-open-rules" class="btn btn-sm btn-primary open-rules" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules" onclick="open_rules(this)">
                                         Schedule rules
                                     </button>
                                 </p>
@@ -764,6 +764,14 @@
     {{ context|json_script:"context" }}
 
     <script>
+        {% if context.metadata.recording %}
+        const recording = '{{context.metadata.recording}}';
+        document.getElementById('back_button').onclick = function() {
+            window.location.href = `/api/recording/${recording}`;
+        };
+        Array.from(document.getElementsByClassName('open-rules')).forEach(btn => btn.disabled = true)
+        {% endif %}
+
         const target_node = "{{ context.metadata.ip }}";
 
         var target_node_status = JSON.parse(document.getElementById("context").textContent);
@@ -846,7 +854,11 @@
     </script>
     <script src="{% static 'api/rule_sliders.js' %}"></script>
     <script src="{% static 'api/schedule_rules.js' %}"></script>
-    <script src="{% static 'api/update_status.js' %}"></script>
     <script src="{% static 'api/api_card.js' %}"></script>
+    {% if context.metadata.recording %}
+    <script src="{% static 'api/record_macro.js' %}"></script>
+    {% else %}
+    <script src="{% static 'api/update_status.js' %}"></script>
+    {% endif %}
 </body>
 </html>

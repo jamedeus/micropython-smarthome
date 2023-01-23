@@ -16,6 +16,8 @@ urlpatterns = [
 
     # Template views
     path('api', views.api_overview, name='api_overview'),
+    path('api/recording/<str:recording>', views.api_overview, name='api_overview'),
     path('api/<str:node>', views.api, name='api'),
+    path('api/<str:node>/<str:recording>', views.api, name='api'),
     path('legacy_api', views.legacy_api, name='legacy_api'),
 ]
