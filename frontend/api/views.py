@@ -140,8 +140,9 @@ def get_climate_data(request, node):
 def reboot_all(request):
     for node in Node.objects.all():
         try:
+            print(f"Rebooting {node.friendly_name}...")
             response = parse_command(node.ip, ['reboot'])
-            print(f"Rebooted {node.friendly_name}")
+            print("Done")
         except ConnectionRefusedError:
             print(f"Unable to connect to {node.friendly_name}")
 
@@ -157,6 +158,8 @@ def reset_all(request):
             print(json.dumps(response, indent=4))
             print()
         except ConnectionRefusedError:
+            print(f"Unable to connect to {node.friendly_name}\n")
+        except OSError:
             print(f"Unable to connect to {node.friendly_name}\n")
 
     return JsonResponse("Done", safe=False, status=200)
@@ -293,6 +296,20 @@ def add_macro_action(request):
 
 
 
+def edit_macro(request, name):
+    try:
+        macro = Macro.objects.get(name = name)
+    except Macro.DoesNotExist:
+        return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
+
+    template = loader.get_template('api/edit_modal.html')
+
+    context = {'name': name, 'actions': json.loads(macro.actions)}
+
+    return HttpResponse(template.render({'context': context}, request))
+
+
+
 def delete_macro(request, name):
     try:
         macro = Macro.objects.get(name = name)
@@ -300,6 +317,18 @@ def delete_macro(request, name):
         return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
 
     macro.delete()
+
+    return JsonResponse("Done", safe=False, status=200)
+
+
+
+def delete_macro_action(request, name, index):
+    try:
+        macro = Macro.objects.get(name = name)
+    except Macro.DoesNotExist:
+        return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
+
+    macro.del_action(index)
 
     return JsonResponse("Done", safe=False, status=200)
 

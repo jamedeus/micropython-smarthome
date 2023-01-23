@@ -1,0 +1,26 @@
+<div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+        <div class="modal-header pb-0" style="border-bottom: 0px;">
+            <h3 class="mx-auto mb-0" id="edit-macro-modal-title">Edit {{context.name|capfirst}} Macro</h3>
+        </div>
+        <div class="modal-body" id="edit-macro-modal-body">
+            <h5 class="text-center mt-3">Actions</h5>
+            <table id="macro-actions" class="table table-borderless section mb-3">
+                <tr>
+                    <th class="text-center">Node</th>
+                    <th class="text-center">Target</th>
+                    <th class="text-center">Action</th>
+                    <th class="text-center">Delete</th>
+                </tr>
+                {% for action in context.actions %}
+                    <tr id='action{{forloop.counter0}}'>
+                        <td class="min align-middle">{{action.node_name}}</td>
+                        <td class="min align-middle">{{action.target_name}}</td>
+                        <td class="min align-middle">{{action.args.0}}</td>
+                        <td class="min align-middle text-center"><button type="button" class="btn-danger btn btn-sm" onclick="deleteMacroAction('{{context.name}}', '{{forloop.counter0}}')"><i class="bi-trash"></i></button></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>

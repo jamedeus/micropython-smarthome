@@ -14,6 +14,8 @@ urlpatterns = [
     path('run_macro/<str:name>', views.run_macro, name='run_macro'),
     path('add_macro_action', views.add_macro_action, name='add_macro_action'),
     path('delete_macro/<str:name>', views.delete_macro, name='delete_macro'),
+    path('delete_macro_action/<str:name>/<int:index>', views.delete_macro_action, name='delete_macro_action'),
+    path('edit_macro/<str:name>', views.edit_macro, name='edit_macro'),
 
     # Template views
     path('api', views.api_overview, name='api_overview'),

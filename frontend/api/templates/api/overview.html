@@ -77,7 +77,7 @@
                     <div id="{{macro}}" class="d-flex mb-3">
                         <h3 class="mx-auto my-auto">{{macro|lower|capfirst}}</h3>
                         <button id="run-{{macro}}" type="button" class="btn btn-primary btn-macro mx-3" onclick="runMacro('{{macro}}')">Run</button>
-                        <button id="edit-{{macro}}" type="button" class="btn-primary btn btn-macro mx-3">Edit</button>
+                        <button id="edit-{{macro}}" type="button" class="btn-primary btn btn-macro mx-3" onclick="editMacro('{{macro}}')">Edit</button>
                         <button id="delete-{{macro}}" type="button" class="btn-danger btn btn-macro mx-3" onclick="deleteMacro('{{macro}}')"><i class="bi-trash"></i></button>
                     </div>
                     {% endif %}
@@ -113,6 +113,11 @@
         <div class="d-flex align-items-center flex-column mt-auto">
             <button class="btn btn-secondary mt-auto mb-3" id="node_configuration_button" type="button" onclick="window.location.href = '/node_configuration'">Manage</button>
         </div>
+    </div>
+
+    <!-- Contents loaded from edit_modal template, loaded by editMacro() -->
+    <div class="modal fade" id="edit-macro-modal" tabindex="-1">
+    </div>
 
     <script>
         // If only 1 floor, remove label and background
@@ -170,6 +175,42 @@
             };
         };
 
+        /* Open modal with table of existing actions within macro */
+        async function editMacro(name) {
+            var template = await fetch(`/edit_macro/${name}`);
+            template = await template.text();
+
+            document.getElementById('edit-macro-modal').innerHTML = template;
+            $("#edit-macro-modal").modal("show");
+        };
+
+        /* Delete an individual action from a macro, called from edit macro modal */
+        async function deleteMacroAction(name, index) {
+            /* Delete, await result */
+            var result = await fetch(`/delete_macro_action/${name}/${index}`);
+            result = await result.status;
+
+            /* Fade out macro row, then remove */
+            if (result == 200) {
+                /* Fade out row */
+                const row = document.getElementById(`action${index}`);
+                row.classList.add('fade-out');
+                await sleep(200);
+
+                /* Reload whole menu (indices of subsequent actions now changed) */
+                var template = await fetch(`/edit_macro/${name}`);
+                document.getElementById('edit-macro-modal').innerHTML = await template.text();
+
+                /* If last action removed, delete entire macro and reload */
+                if (document.getElementById('macro-actions').children[0].childElementCount == 1) {
+                    $("#edit-macro-modal").modal("hide");
+                    await deleteMacro(name);
+                    location.reload();
+                };
+            };
+        };
+
+        /* Delete an entire macro, called by delete button in macro section */
         async function deleteMacro(name) {
             /* Replace trash icon with loading spinner */
             document.getElementById(`delete-${name}`).innerHTML = `<div id="spinner" class="loading-animation loading-animation-show m-auto"><div></div><div></div><div></div><div></div></div>`

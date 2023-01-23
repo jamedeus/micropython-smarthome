@@ -38,7 +38,7 @@ class Macro(models.Model):
         self.save()
 
     def del_action(self, index):
-        if not isinstance(action, int):
+        if not isinstance(index, int):
             raise SyntaxError
 
         actions = json.loads(self.actions)
