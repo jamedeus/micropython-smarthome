@@ -8,6 +8,7 @@ import re
 
 from node_configuration.models import Node
 from node_configuration.views import get_api_target_menu_options
+from api.models import Macro
 
 
 def legacy_api(request):
@@ -239,6 +240,20 @@ def parse_command(ip, args):
 
     else:
         return "Error: Command not found"
+
+
+
+def run_macro(request, name):
+    try:
+        macro = Macro.objects.get(name = name)
+    except Macro.DoesNotExist:
+        return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
+
+    actions = json.loads(macro.actions)
+    for action in actions:
+        parse_command(action['ip'], action['args'])
+
+    return JsonResponse("Done", safe=False, status=200)
 
 
 
