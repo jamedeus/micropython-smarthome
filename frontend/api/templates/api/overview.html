@@ -28,7 +28,7 @@
         <div class="d-flex justify-content-between">
             <button type="button" class="btn my-auto" id="back_button" style="visibility:hidden"><i class="bi-chevron-left"></i></button>
             {% if context.recording %}
-            <h1 class="my-3">Recording macro {{context.recording}}</h1>
+            <h1 class="my-3">Recording <b>{{context.recording|lower|capfirst}}</b> Macro</h1>
             {% else %}
             <h1 class="my-3">Api Overview</h1>
             {% endif %}
@@ -53,7 +53,7 @@
             };
         </script>
 
-        {% if context %}
+        {% if context.nodes %}
             <div id="container" class="text-center">
                 {% for floor, nodes in context.nodes.items %}
                     <div id="floor{{floor}}" class="section mt-3 mb-4 p-3">
@@ -71,35 +71,49 @@
             </div>
 
             <h1 class="text-center mt-5">Macros</h1>
-            <div id="macros" class="text-center section p-3 mx-auto mb-3">
-                {% for macro in context.macros %}
-                    {% if not macro == context.recording %}
-                    <div id="{{macro}}" class="d-flex mb-3">
-                        <h3 class="mx-auto my-auto">{{macro|lower|capfirst}}</h3>
-                        <button id="run-{{macro}}" type="button" class="btn btn-primary btn-macro mx-3" onclick="runMacro('{{macro}}')">Run</button>
-                        <button id="edit-{{macro}}" type="button" class="btn-primary btn btn-macro mx-3" onclick="editMacro('{{macro}}')">Edit</button>
-                        <button id="delete-{{macro}}" type="button" class="btn-danger btn btn-macro mx-3" onclick="deleteMacro('{{macro}}')"><i class="bi-trash"></i></button>
-                    </div>
-                    {% endif %}
-                {% endfor %}
 
-                {% if not context.recording %}
-                <button class="btn btn-secondary mt-3 mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#record-macro-menu" aria-expanded="false" aria-controls="record-macro-menu"><i class="bi-plus-lg"></i></button>
-                <div class="collapse" id="record-macro-menu">
-                    <div class="p-3">
-                        <div class="form-floating mb-3">
-                            <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
-                            <label for="new-macro-name">New macro name</label>
+            {% if not context.recording %}
+                {% if not context.macros %}
+                    <div id="macros" class="text-center section p-3 mx-auto mb-3">
+                        <div class="p-3">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
+                                <label for="new-macro-name">New macro name</label>
+                            </div>
+                            <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
                         </div>
-                        <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
                     </div>
-                </div>
                 {% else %}
-                <button class="btn btn-success mt-3 mx-auto" type="button" onclick="window.location.href = '/api'">Finish Recording</button>
+                    <div id="macros" class="text-center section p-3 mx-auto mb-3">
+                        {% for macro in context.macros %}
+                            {% if not macro == context.recording %}
+                            <div id="{{macro}}" class="d-flex mb-3">
+                                <h3 class="mx-auto my-auto">{{macro|lower|capfirst}}</h3>
+<!--                                 <div class="mx-auto my-auto"><h3 class="mx-3">{{macro|lower|capfirst}}</h3></div> -->
+                                <button id="run-{{macro}}" type="button" class="btn btn-primary btn-macro mx-3" onclick="runMacro('{{macro}}')">Run</button>
+                                <button id="edit-{{macro}}" type="button" class="btn-primary btn btn-macro mx-3" onclick="editMacro('{{macro}}')">Edit</button>
+                                <button id="delete-{{macro}}" type="button" class="btn-danger btn btn-macro mx-3" onclick="deleteMacro('{{macro}}')"><i class="bi-trash"></i></button>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <button class="btn btn-secondary mt-3 mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#record-macro-menu" aria-expanded="false" aria-controls="record-macro-menu"><i class="bi-plus-lg"></i></button>
+                        <div class="collapse" id="record-macro-menu">
+                            <div class="p-3">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
+                                    <label for="new-macro-name">New macro name</label>
+                                </div>
+                                <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
+                            </div>
+                        </div>
+                    </div>
                 {% endif %}
-            </div>
+            {% else %}
+                <button class="btn btn-danger mt-3 mx-auto" type="button" onclick="window.location.href = '/api'">Finish Recording</button>
+            {% endif %}
 
-
+        {# No nodes configured #}
         {% else %}
             <div class="my-auto text-center">
                 <h2>No Nodes Configured</h2>
@@ -229,6 +243,17 @@
                 row.classList.add('fade-out');
                 await sleep(200);
                 row.remove();
+            };
+
+            /* Last macro deleted, replace section */
+            if (document.getElementById('macros').childElementCount == 2) {
+                document.getElementById('macros').innerHTML = `<div class="p-3">
+                                                                   <div class="form-floating mb-3">
+                                                                       <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
+                                                                       <label for="new-macro-name">New macro name</label>
+                                                                   </div>
+                                                                   <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
+                                                               </div>`
             };
         };
 
