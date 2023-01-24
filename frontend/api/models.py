@@ -64,6 +64,20 @@ class Macro(models.Model):
         else:
             target_name = node.config.config[args[1]]['nickname']
 
+        # Prevent conflicting actions applied to the same target
+        for i in actions:
+            # Find actions for same node + target instance
+            if i['node_name'] == node_name and i['target_name'] == target_name:
+                # Prevent multiple set_rule actions
+                if i['action_name'].startswith('Set Rule') and command.startswith('set_rule'):
+                    del actions[actions.index(i)]
+                # Prevent both enable and disable
+                elif i['action_name'] in ["Enable", "Disable"] and command in ['enable', 'disable']:
+                    del actions[actions.index(i)]
+                # Prevent both turn_on and turn_off
+                elif i['action_name'] in ["Turn On", "Turn Off"] and command in ['turn_on', 'turn_off']:
+                    del actions[actions.index(i)]
+
         actions.append({'ip': ip, 'args': args, 'node_name': node_name, 'target_name': target_name, 'action_name': command.replace('_', ' ').title()})
 
         self.actions = json.dumps(actions)
