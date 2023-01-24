@@ -10,6 +10,20 @@ body.dark .section {
     background-color: #212529;
 }
 
+/* Default + min class (overrides to make narrowest-possible cell) */
+td {
+    width: auto;
+}
+
+td.min {
+    width: 1%;
+}
+
+/* Vertically center contents of table row */
+tr {
+    vertical-align: middle;
+}
+
 /* Macro buttons */
 .btn-macro {
     height: 3rem;

@@ -37,7 +37,7 @@ class Macro(models.Model):
         command = args[0]
         if command == "set_rule":
             target_name = node.config.config[args[1]]['nickname']
-            command = f'{command}({args[2]})'
+            command = f'{command} {args[2]}'
         elif command == "turn_on" or command == "turn_off" or command == "trigger_sensor":
             target_name = node.config.config[args[1]]['nickname']
         elif command == "ir":
@@ -46,7 +46,7 @@ class Macro(models.Model):
         else:
             target_name = node.config.config[args[1]]['nickname']
 
-        actions.append({'ip': ip, 'args': args, 'node_name': node_name, 'target_name': target_name, 'action_name': command})
+        actions.append({'ip': ip, 'args': args, 'node_name': node_name, 'target_name': target_name, 'action_name': command.replace('_', ' ').title()})
 
         self.actions = json.dumps(actions)
         self.save()

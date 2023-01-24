@@ -182,6 +182,10 @@
 
             document.getElementById('edit-macro-modal').innerHTML = template;
             $("#edit-macro-modal").modal("show");
+
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.getElementById('edit-close').classList.add('btn-close-white');
+            };
         };
 
         /* Delete an individual action from a macro, called from edit macro modal */
@@ -230,7 +234,7 @@
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
-        }
+        };
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
@@ -239,12 +243,14 @@
                 document.getElementById("settings_button").classList.remove("btn-light");
                 document.getElementById("settings_button").classList.add("btn-dark");
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
+                try{document.getElementById('edit-close').classList.add('btn-close-white');}catch(e){};
             } else {
                 document.body.classList.remove("dark");
                 document.getElementById("settings_button").classList.remove("btn-dark");
                 document.getElementById("settings_button").classList.add("btn-light");
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.remove("dropdown-menu-dark"));
-            }
+                try{document.getElementById('edit-close').classList.remove('btn-close-white');}catch(e){};
+            };
         });
     </script>
 
