@@ -74,17 +74,18 @@
 
             {% if not context.recording %}
                 {% if not context.macros %}
-                    <div id="macros" class="text-center section p-3 mx-auto mb-3">
+                    <div id="macros" class="text-center section p-3 mx-auto mb-5">
                         <div class="p-3">
                             <div class="form-floating mb-3">
                                 <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
                                 <label for="new-macro-name">New macro name</label>
+                                <div id="invalid-name" class="invalid-feedback">Name already in use</div>
                             </div>
                             <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
                         </div>
                     </div>
                 {% else %}
-                    <div id="macros" class="text-center section p-3 mx-auto mb-3">
+                    <div id="macros" class="text-center section p-3 mx-auto mb-5">
                         {% for macro in context.macros %}
                             {% if not macro == context.recording %}
                             <div id="{{macro}}" class="d-flex mb-3">
@@ -103,14 +104,31 @@
                                 <div class="form-floating mb-3">
                                     <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
                                     <label for="new-macro-name">New macro name</label>
+                                    <div id="invalid-name" class="invalid-feedback">Name already in use</div>
                                 </div>
                                 <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
                             </div>
                         </div>
                     </div>
+<!--                    <script>
+                        async function openNewMacro() {
+                            document.getElementById('new-macro-name').focus();
+                            await sleep(350);
+                            window.scrollTo(0, document.body.scrollHeight);
+                        };
+                    </script>-->
                 {% endif %}
+                <script>
+                    /* Start recording by pressing enter in input */
+                    document.getElementById("new-macro-name").addEventListener("keypress", function(event) {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            document.getElementById("start-recording").click();
+                        };
+                    });
+                </script>
             {% else %}
-                <button class="btn btn-danger mt-3 mx-auto" type="button" onclick="window.location.href = '/api'">Finish Recording</button>
+                <button class="btn btn-danger mb-5 mx-auto" type="button" onclick="window.location.href = '/api'">Finish Recording</button>
             {% endif %}
 
         {# No nodes configured #}
@@ -153,6 +171,10 @@
 
         /* Enable start recording button once new macro name entered */
         function macroNameHandler() {
+            /* Remove invalid highlight if present */
+            document.getElementById('new-macro-name').classList.remove('is-invalid');
+            document.getElementById('invalid-name').classList.remove('d-flex');
+
             const name = document.getElementById('new-macro-name').value;
             if (name.length < 1) {
                 document.getElementById('start-recording').disabled = true;
@@ -162,9 +184,21 @@
         };
 
         /* Handler for start recording button */
-        function startRecording() {
+        async function startRecording() {
             const name = document.getElementById('new-macro-name').value;
-            window.location.href = '/api/recording/' + name;
+
+            /* Check if name is available */
+            var result = await fetch(`/macro_name_available/${name}`);
+            result = await result.status;
+
+            /* If available start recording */
+            if (result == 200) {
+                window.location.href = '/api/recording/' + name;
+            /* If not show invalid field highlight */
+            } else {
+                document.getElementById('new-macro-name').classList.add('is-invalid');
+                document.getElementById('invalid-name').classList.add('d-flex');
+            };
         };
 
         /* Handler for run macro button */

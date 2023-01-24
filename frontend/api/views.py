@@ -334,6 +334,15 @@ def delete_macro_action(request, name, index):
 
 
 
+def macro_name_available(request, name):
+    try:
+        macro = Macro.objects.get(name = name)
+    except Macro.DoesNotExist:
+        return JsonResponse(f"Name {name} available.", safe=False, status=200)
+
+    return JsonResponse(f"Name {name} already in use", safe=False, status=409)
+
+
 # Populated with endpoint:handler pairs by decorators below
 endpoints = []
 

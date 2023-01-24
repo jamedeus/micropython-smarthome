@@ -11,11 +11,14 @@ urlpatterns = [
     path('send_command', views.send_command, name='send_command'),
     path('reboot_all', views.reboot_all, name='reboot_all'),
     path('reset_all', views.reset_all, name='reset_all'),
+
+    # Macro views
     path('run_macro/<str:name>', views.run_macro, name='run_macro'),
     path('add_macro_action', views.add_macro_action, name='add_macro_action'),
     path('delete_macro/<str:name>', views.delete_macro, name='delete_macro'),
     path('delete_macro_action/<str:name>/<int:index>', views.delete_macro_action, name='delete_macro_action'),
     path('edit_macro/<str:name>', views.edit_macro, name='edit_macro'),
+    path('macro_name_available/<str:name>', views.macro_name_available, name='macro_name_available'),
 
     # Template views
     path('api', views.api_overview, name='api_overview'),

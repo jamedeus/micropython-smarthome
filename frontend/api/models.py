@@ -7,13 +7,31 @@ from node_configuration.models import Node
 def default_actions():
     return json.dumps([])
 
+# Override method to automatically convert to lowercase, replace -/_ with spaces, remove special chars
+# Also allows case-insensitive lookups with Macro.objects.get()
+class NameField(models.CharField):
+    def to_python(self, value):
+        if isinstance(value, str):
+            value = re.sub('[-_]', ' ', value.lower())
+        else:
+            value = re.sub('[-_]', ' ', str(value).lower())
+
+        return re.sub('[^0-9a-z ]+', '', value)
+
 
 
 class Macro(models.Model):
     def __str__(self):
-        return self.name
+        # Each word capitalized
+        return self.name.title()
 
-    name = models.CharField(max_length=50, unique=True)
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=~models.Q(name=""), name="non_empty_title")
+        ]
+
+    # Lowercase alphanumeric characters only (case will be converted automatically)
+    name = NameField(max_length=50, unique=True)
 
     # JSON-encoded list, contains dicts with 2 parameters:
     # - ip: IP of the target node
