@@ -13,6 +13,7 @@
     <script src="{% static 'node_configuration/popper.min.js' %}"></script>
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
+    <script src="{% static 'api/smoothscroll.min.js' %}"></script>
     <style>
         /* Limit width for readability on large screen sizes */
         @media (min-width: 1200px) {
@@ -98,7 +99,7 @@
                             {% endif %}
                         {% endfor %}
 
-                        <button class="btn btn-secondary mt-3 mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#record-macro-menu" aria-expanded="false" aria-controls="record-macro-menu"><i class="bi-plus-lg"></i></button>
+                        <button class="btn btn-secondary mt-3 mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#record-macro-menu" aria-expanded="false" aria-controls="record-macro-menu" onclick="openNewMacro(this)"><i class="bi-plus-lg"></i></button>
                         <div class="collapse" id="record-macro-menu">
                             <div class="p-3">
                                 <div class="form-floating mb-3">
@@ -110,13 +111,22 @@
                             </div>
                         </div>
                     </div>
-<!--                    <script>
-                        async function openNewMacro() {
-                            document.getElementById('new-macro-name').focus();
-                            await sleep(350);
-                            window.scrollTo(0, document.body.scrollHeight);
+                    <script>
+                        // Track collapse open/close state, determine when to focus input
+                        let collapseOpen = false;
+                        const collapse = document.getElementById('record-macro-menu');
+                        collapse.addEventListener('show.bs.collapse', () => { collapseOpen = true });
+                        collapse.addEventListener('hide.bs.collapse', () => { collapseOpen = false });
+
+                        // Focus input + scrollIntoView when opening collapse, but not when closing
+                        // Mobile keyboard only opens for click event, must call .focus() here (not show.bs.collapse)
+                        function openNewMacro(button) {
+                            if (collapseOpen) {
+                                document.getElementById('new-macro-name').focus();
+                                button.scrollIntoView({behavior: 'smooth'});
+                            };
                         };
-                    </script>-->
+                    </script>
                 {% endif %}
                 <script>
                     /* Start recording by pressing enter in input */
