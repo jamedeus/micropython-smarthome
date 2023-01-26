@@ -64,7 +64,11 @@
 
             <div class="d-flex justify-content-between">
                 <button type="button" class="btn my-auto" id="back_button" onclick="window.location.href = '/api'"><i class="bi-chevron-left"></i></button>
+                {% if context.metadata.recording %}
+                <h1 class="my-3 glow">{{context.metadata.id}}</h1>
+                {% else %}
                 <h1 class="my-3">{{context.metadata.id}}</h1>
+                {% endif %}
                 <div class="dropdown my-auto">
                     <button type="button" class="btn" id="more_options_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
                     <ul id="more_options_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="more_options_button">

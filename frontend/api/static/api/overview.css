@@ -151,3 +151,20 @@ tr {
         opacity: 100%
     }
 }
+
+/* Text glow animation */
+.glow {
+    animation: text-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes text-glow {
+    0% {
+        text-shadow: 0 0 0.2em #dc3545;
+    }
+    50% {
+        text-shadow: 0 0 0.2em #dc3545, 0 0 0.5em #dc3545, 0 0 1em #dc3545;
+    }
+    100% {
+        text-shadow: 0 0 0.2em #dc3545;
+    }
+}
