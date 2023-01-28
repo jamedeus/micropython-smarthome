@@ -2,27 +2,84 @@
 @import "bootstrap-5.1.3/scss/_variables";
 @import "bootstrap-5.1.3/scss/_mixins";
 
-/* Improve popover readability (episode titles often wrap 3-4 times with default) */
-$popover-max-width: 90vw;
 
-/* Prevent popover hitting screen edge on mobile */
-$popover-body-padding-x: 0;
-.popover-body {
-    padding-right: 1rem !important;
+
+/* Limit width for readability on large screen sizes */
+@media (min-width: 1200px) {
+    .container {
+        width: 960px;
+    }
 }
 
-$pagination-color: #000000;
-$pagination-active-color: #000000;
-$pagination-hover-color: #000000;
+/* Set table column to minimum width with class */
+td {
+    width: auto;
+}
 
-$pagination-active-bg: #6c757d4a;
-$pagination-active-border-color: #6c757d26;
+td.min {
+    width: 1%;
+    white-space: nowrap;
+}
 
-$pagination-focus-bg: $pagination-bg;
-$pagination-disabled-color: #bbbbbb;
 
-@import "bootstrap-5.1.3/scss/_popover";
-@import "bootstrap-5.1.3/scss/_pagination";
+/* Upload complete checkmark animation */
+.light {
+    --success: #198754;
+}
+
+.dark {
+    --success: #177a4c;
+}
+
+.checkmark__circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 2;
+    stroke-miterlimit: 10;
+    stroke: var(--success);
+    fill: none;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 2;
+    stroke: #fff;
+    stroke-miterlimit: 10;
+    box-shadow: inset 0px 0px 0px var(--success);
+    animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+}
+
+.checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+@keyframes scale {
+    0%, 100% {
+        transform: none;
+    }
+    50% {
+        transform: scale3d(1.1, 1.1, 1);
+    }
+}
+
+@keyframes fill {
+    100% {
+        box-shadow: inset 0px 0px 0px 30px var(--success);
+    }
+}
 
 
 
@@ -55,38 +112,8 @@ $pagination-disabled-color: #bbbbbb;
 
     $body-color: #eee;
     $body-bg: #1b1e1f;
-
-    /* History menu */
-    $offcanvas-bg-color: $dark;
-
     $card-bg: #212529;
-
     $table-color: #eee;
-
-    $popover-bg: #31363b;
-    $popover-header-bg: #31363b;
-    $popover-arrow-color: #31363b;
-    $popover-body-color: #eee;
-
-    $pagination-color: #eee;
-    $pagination-active-color: #eee;
-    $pagination-focus-color: #fff;
-    $pagination-hover-color: #fff;
-
-    $pagination-bg: #1b1e1f;
-    $pagination-active-bg: #101315;
-    $pagination-focus-bg: #1b1e1f;
-    $pagination-hover-bg: #171919;
-
-    $pagination-border-color: #232627;
-    $pagination-active-border-color: #101315;
-    $pagination-hover-border-color: #171919;
-
-    $pagination-disabled-bg: #1b1e1f;
-    $pagination-disabled-border-color: #1b1e1f;
-    $pagination-disabled-color: #454545 !important;
-
-    $pagination-focus-box-shadow: none;
 
     /* Modals */
     $modal-content-bg: #31363b;
@@ -107,7 +134,6 @@ $pagination-disabled-color: #bbbbbb;
 
     $form-check-input-bg: #31363b;
     $form-check-input-focus-border: 1px solid #232627;
-/*     $form-check-input-checked-border-color: 1px solid #0d6efd; */
     $form-check-input-checked-bg-color: #31363b;
 
     /* Dropdowns */
@@ -118,6 +144,16 @@ $pagination-disabled-color: #bbbbbb;
     $form-select-disabled-bg: #272c31;
     $form-select-disabled-color: #ffffff;
     $form-select-disabled-border-color: #232627;
+
+    /* Contrasting background for dropdowns inside modal */
+    .modal-dropdown {
+        background-color: #1b1e1f !important;
+    }
+
+    /* Contrasting background for inputs inside modal */
+    .modal-input, .modal-input:focus {
+        background-color: #1b1e1f !important;
+    }
 
     /* Different color for dropdown placeholder text (selected text set to fff above) */
     select:invalid {
@@ -139,20 +175,6 @@ $pagination-disabled-color: #bbbbbb;
         border-color: $primary;
     }
 
-    /* Lists */
-    $list-group-color: #eee;
-    $list-group-bg: #31363b;
-    $list-group-item-padding-y: 0.25rem;
-    $list-group-item-padding-x: 0.6rem;
-    /*$list-group-border-color:
-    $list-group-border-width:
-    */
-
-    /* Input sliders */
-    $form-range-track-bg: #1b1e1f;
-    $form-range-thumb-active-bg: #0D6EFD;
-    $form-range-thumb-focus-box-shadow: none;
-
     --#{$variable-prefix}body-color: #{$body-color};
     --#{$variable-prefix}body-bg: #{$body-bg};
 
@@ -165,15 +187,11 @@ $pagination-disabled-color: #bbbbbb;
     /* Toasts */
     $toast-background-color: #394047cc;
 
-    @import "bootstrap-5.1.3/scss/_popover";
-    @import "bootstrap-5.1.3/scss/_pagination";
     @import "bootstrap-5.1.3/scss/_card";
-    @import "bootstrap-5.1.3/scss/_offcanvas";
     @import "bootstrap-5.1.3/scss/_modal";
     @import "bootstrap-5.1.3/scss/_forms";
     @import "bootstrap-5.1.3/scss/_buttons";
     @import "bootstrap-5.1.3/scss/_tables";
-    @import "bootstrap-5.1.3/scss/_list-group";
     @import "bootstrap-5.1.3/scss/_dropdown";
     @import "bootstrap-5.1.3/scss/_toasts";
 }

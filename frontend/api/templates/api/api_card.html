@@ -19,9 +19,7 @@
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script src="{% static 'api/rangeslider.min.js' %}"></script>
     <script src="{% static 'api/smoothscroll.min.js' %}"></script>
-
     <script>
-
         function getCookie(name) {
             var cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -36,26 +34,7 @@
             }
             return cookieValue;
         };
-
     </script>
-    <style>
-        /* Limit width for readability on large screen sizes */
-        @media (min-width: 1200px) {
-            .container {
-                width: 960px;
-            }
-        }
-
-        /* Block double tap zoom on mobile, allows pressing buttons quickly */
-        body {
-            touch-action: manipulation;
-        }
-
-        /* Contrasting background for dropdowns in api rule modal */
-        body.dark .modal-dropdown {
-            background-color: #1b1e1f !important;
-        }
-    </style>
 </head>
 
 <body>
