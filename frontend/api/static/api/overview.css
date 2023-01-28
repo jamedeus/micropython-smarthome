@@ -5,10 +5,6 @@
     margin: auto !important;
 }
 
-.dark .form-check-input {
-    background-color: #212529;
-}
-
 /* Section backgrounds (floors, macros) */
 .section {
     background-color: #eee;
@@ -160,22 +156,5 @@ tr {
     }
     100% {
         opacity: 100%
-    }
-}
-
-/* Text glow animation */
-.glow {
-    animation: text-glow 1.6s ease-in-out infinite;
-}
-
-@keyframes text-glow {
-    0% {
-        text-shadow: 0 0 0.2em #dc3545;
-    }
-    50% {
-        text-shadow: 0 0 0.2em #dc3545, 0 0 0.5em #dc3545, 0 0 1em #dc3545;
-    }
-    100% {
-        text-shadow: 0 0 0.2em #dc3545;
     }
 }
