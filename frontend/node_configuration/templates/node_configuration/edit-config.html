@@ -872,15 +872,15 @@
 
                             <form name="api_rule_form" id="api_rule_form">
                                 <div id="on-action">
-                                    <select name="instance-on" id="instance-on" class="form-select mb-3 modal-dropdown api-instance">
+                                    <select name="instance-on" id="instance-on" class="form-select mb-3 modal-dropdown api-instance" required>
                                         <option value="" selected="selected">Select target instance</option>
                                     </select>
 
-                                    <select name="command-on" id="command-on" class="form-select mb-3 modal-dropdown api-command">
+                                    <select name="command-on" id="command-on" class="form-select mb-3 modal-dropdown api-command" required>
                                         <option value="" selected="selected">Please select instance first</option>
                                     </select>
 
-                                    <select name="sub-command-on" id="sub-command-on" class="form-select mb-3 modal-dropdown api-command" style="display:none" disabled>
+                                    <select name="sub-command-on" id="sub-command-on" class="form-select mb-3 modal-dropdown api-command" style="display:none" required disabled>
                                         <option value="" selected="selected">Please select command first</option>
                                     </select>
 
@@ -888,15 +888,15 @@
                                 </div>
 
                                 <div id="off-action" style="display:none;">
-                                    <select name="instance-off" id="instance-off" class="form-select mb-3 modal-dropdown api-instance">
+                                    <select name="instance-off" id="instance-off" class="form-select mb-3 modal-dropdown api-instance" required>
                                         <option value="" selected="selected">Select target instance</option>
                                     </select>
 
-                                    <select name="command-off" id="command-off" class="form-select mb-3 modal-dropdown api-command">
+                                    <select name="command-off" id="command-off" class="form-select mb-3 modal-dropdown api-command" required>
                                         <option value="" selected="selected">Please select instance first</option>
                                     </select>
 
-                                    <select name="sub-command-off" id="sub-command-off" class="form-select mb-3 modal-dropdown api-command" style="display:none" disabled>
+                                    <select name="sub-command-off" id="sub-command-off" class="form-select mb-3 modal-dropdown api-command" style="display:none" required disabled>
                                         <option value="" selected="selected">Please select command first</option>
                                     </select>
 
