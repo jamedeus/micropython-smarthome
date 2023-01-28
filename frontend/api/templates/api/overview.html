@@ -157,6 +157,50 @@
         </div>
     </div>
 
+    {% if context.start_recording and not context.skip_instructions %}
+    <!-- Recording macro instructions modal -->
+    <div class="modal fade" id="instructions-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-fit-contents">
+            <div class="modal-content">
+                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                    <h3 class="mx-auto mb-0" id="error-modal-title">Macro Instructions</h3>
+                </div>
+                <div class="modal-body mx-auto" id="instructions-modal-body">
+                    <div class="section p-3">
+                        <p class="text-center">Use the interface as you normally would</br>to record actions.</p>
+                        <ul>
+                            <li>Change rules, turn devices on/off,</br>and enable/disable things</li>
+                            <li>Don't worry about conflicts, only</br>the last change will be saved</li>
+                            <li>Example: If a light is turned off, then</br>turned on, only on is saved</li>
+                        </ul>
+                        <p class="text-center">When you're done, return to the</br>overview and click "Finish Recording".</p>
+                        <p class="text-center">You can always click the edit button</br>later to delete actions or record more.</p>
+                    </div>
+                    <div class="d-flex flex-column pt-3 pb-2">
+                        <div class="form-check mx-auto pb-2">
+                            <input class="form-check-input" type="checkbox" value="" id="dontShowAgain" autocomplete="off">
+                            <label class="form-check-label" for="dontShowAgain">Don't show again</label>
+                        </div>
+                        <button type="button" id="ok-button" class="btn btn-success mx-auto" data-bs-dismiss="modal" onclick="closeModal();">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Show modal on page load
+        var modal = new bootstrap.Modal(document.getElementById('instructions-modal'))
+        modal.show()
+
+        async function closeModal() {
+            // Get cookie if box checked
+            if (document.getElementById('dontShowAgain').checked) {
+                var result = await fetch('/skip_instructions');
+            };
+        };
+    </script>
+    {% endif %}
+
     <!-- Contents loaded from edit_modal template, loaded by editMacro() -->
     <div class="modal fade" id="edit-macro-modal" tabindex="-1">
     </div>
@@ -203,7 +247,7 @@
 
             /* If available start recording */
             if (result == 200) {
-                window.location.href = '/api/recording/' + name;
+                window.location.href = `/api/recording/${name}/start`;
             /* If not show invalid field highlight */
             } else {
                 document.getElementById('new-macro-name').classList.add('is-invalid');

@@ -19,10 +19,12 @@ urlpatterns = [
     path('delete_macro_action/<str:name>/<int:index>', views.delete_macro_action, name='delete_macro_action'),
     path('edit_macro/<str:name>', views.edit_macro, name='edit_macro'),
     path('macro_name_available/<str:name>', views.macro_name_available, name='macro_name_available'),
+    path('skip_instructions', views.skip_instructions, name='skip_instructions'),
 
     # Template views
     path('api', views.api_overview, name='api_overview'),
     path('api/recording/<str:recording>', views.api_overview, name='api_overview'),
+    path('api/recording/<str:recording>/<str:start>', views.api_overview, name='api_overview'),
     path('api/<str:node>', views.api, name='api'),
     path('api/<str:node>/<str:recording>', views.api, name='api'),
     path('legacy_api', views.legacy_api, name='legacy_api'),

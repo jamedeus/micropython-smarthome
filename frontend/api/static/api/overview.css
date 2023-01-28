@@ -1,3 +1,14 @@
+/* Prevent horizontal margins on modal */
+/* Margin keeps centerd on mobile */
+.modal-fit-contents {
+    max-width: fit-content !important;
+    margin: auto !important;
+}
+
+.dark .form-check-input {
+    background-color: #212529;
+}
+
 /* Section backgrounds (floors, macros) */
 .section {
     background-color: #eee;

@@ -36,7 +36,7 @@ def get_status(request, node):
 
 
 @ensure_csrf_cookie
-def api_overview(request, recording=False):
+def api_overview(request, recording=False, start=False):
     rooms = {}
 
     for i in Node.objects.all():
@@ -59,14 +59,18 @@ def api_overview(request, recording=False):
     for macro in Macro.objects.all():
         context['macros'][macro.name] = json.loads(macro.actions)
 
-    print(json.dumps(context['macros']))
-
     if recording:
         context['recording'] = recording
 
-    template = loader.get_template('api/overview.html')
+        # Block instructions popup if cookie set
+        if request.COOKIES.get('skip_instructions'):
+            context['skip_instructions'] = True
 
-    return HttpResponse(template.render({'context': context}, request))
+    if start:
+        # Show instructions popup (unless cookie set)
+        context['start_recording'] = True
+
+    return render(request, 'api/overview.html', {'context': context})
 
 
 
@@ -341,6 +345,15 @@ def macro_name_available(request, name):
         return JsonResponse(f"Name {name} available.", safe=False, status=200)
 
     return JsonResponse(f"Name {name} already in use", safe=False, status=409)
+
+
+
+# Returns cookie to skip record macro instructions popup
+def skip_instructions(request):
+    response = HttpResponse()
+    response.set_cookie('skip_instructions', 'true')
+    return response
+
 
 
 # Populated with endpoint:handler pairs by decorators below
