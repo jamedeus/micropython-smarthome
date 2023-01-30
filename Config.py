@@ -86,6 +86,10 @@ class Config():
                     from ApiTarget import ApiTarget
                     instance = ApiTarget( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
+                elif conf[device]["type"] == "wled":
+                    from Wled import Wled
+                    instance = Wled( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+
                 # Add instance to config.devices
                 self.devices.append(instance)
             except AttributeError:

@@ -33,7 +33,7 @@ class Device {
             delete this.undefined;
             // Get checkbox inputs selections
             this.getIrTargets();
-        } else if (this.type == "dimmer" || this.type == "bulb" || this.type == "pwm") {
+        } else if (this.type == "dimmer" || this.type == "bulb" || this.type == "pwm" || this.type == "wled") {
             this['default_rule'] = parseInt(document.getElementById(this.id + "-default_rule").value);
         };
     };

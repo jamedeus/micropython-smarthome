@@ -309,6 +309,7 @@
                                             <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
                                             <option value="pwm" {% if params.type == "pwm" %} selected {% endif %}>LED Strip</option>
                                             <option value="mosfet" {% if params.type == "mosfet" %} selected {% endif %}>Mosfet</option>
+                                            <option value="wled" {% if params.type == "wled" %} selected {% endif %}>WLED</option>
                                             <option value="api-target" {% if params.type == "api-target" %} selected {% endif %}>Api Command</option>
                                             <option value="ir-blaster">IR Blaster</option>
                                             </select>
@@ -320,7 +321,7 @@
                                                 <input type="text" class="form-control device{{forloop.counter}} nickname" id="device{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
                                             </div>
 
-                                        {% if params.type == "dimmer" or params.type == "bulb"%}
+                                        {% if params.type == "dimmer" or params.type == "bulb" or params.type == "wled" %}
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
                                                     <input type="text" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" required>
@@ -330,7 +331,11 @@
                                                     <label for="device{{forloop.counter}}-default_rule" class="mt-1 device{{forloop.counter}}"><b>Default Rule:</b></label>
                                                     <div class="d-flex flex-row align-items-center my-2">
                                                         <button id="{{device}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                                                        <input id="device{{forloop.counter}}-default_rule" type="range" class="device{{forloop.counter}} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="0.5" value="{{params.default_rule}}" autocomplete="off">
+                                                        {% if params.type == "wled" %}
+                                                        <input id="device{{forloop.counter}}-default_rule" type="range" class="device{{forloop.counter}} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" autocomplete="off">
+                                                        {% else %}
+                                                        <input id="device{{forloop.counter}}-default_rule" type="range" class="device{{forloop.counter}} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" autocomplete="off">
+                                                        {% endif %}
                                                         <button id="{{device}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
                                                     </div>
                                                 </div>

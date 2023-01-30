@@ -155,7 +155,22 @@ async function load_device_section(select) {
                         <label for="device${index}-default_rule" class="mt-1 device${index}"><b>Default Rule:</b></label>
                         <div class="d-flex flex-row align-items-center my-2">
                             <button id="device${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                            <input id="device${index}-default_rule" type="range" class="device${index} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="0.5" value="" autocomplete="off">
+                            <input id="device${index}-default_rule" type="range" class="device${index} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="" autocomplete="off">
+                            <button id="device${index}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                        </div>
+                    </div>`
+
+    } else if (selected == "wled") {
+        template += `<div class="mb-2">
+                        <label for="device${index}-ip" class="device${index}"><b>IP:</b></label>
+                        <input type="text" class="form-control device${index}" id="device${index}-ip" placeholder="" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="device${index}-default_rule" class="mt-1 device${index}"><b>Default Rule:</b></label>
+                        <div class="d-flex flex-row align-items-center my-2">
+                            <button id="device${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                            <input id="device${index}-default_rule" type="range" class="device${index} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="" autocomplete="off">
                             <button id="device${index}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
                         </div>
                     </div>`
@@ -263,7 +278,7 @@ async function load_device_section(select) {
     document.getElementById("addDeviceOptions" + index).innerHTML = template;
     document.getElementById("addDeviceOptions" + index).scrollIntoView({behavior: "smooth"});
 
-    if (selected == "dimmer" || selected == "bulb" || selected == "pwm") {
+    if (selected == "dimmer" || selected == "bulb" || selected == "pwm" || selected == "wled") {
         add_new_slider(`device${index}-default_rule`);
     };
 
@@ -338,6 +353,7 @@ async function load_next_device(button) {
                                     <option value="desktop">Desktop</option>
                                     <option value="pwm">LED Strip</option>
                                     <option value="mosfet">Mosfet</option>
+                                    <option value="wled">WLED</option>
                                     <option value="api-target">Api Command</option>
                                     <option value="ir-blaster" ${ ir_blaster_configured ? "disabled" : ""}>IR Blaster</option>
                                     </select>

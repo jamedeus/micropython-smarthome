@@ -77,6 +77,10 @@ def get_modules(conf):
             modules.append("sensors/Switch.py")
             modules.append("sensors/Sensor.py")
 
+        elif conf[i]["type"] == "wled":
+            modules.append("devices/Wled.py")
+            modules.append("devices/Device.py")
+
     # Remove duplicates
     modules = set(modules)
 
