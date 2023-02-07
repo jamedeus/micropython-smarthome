@@ -171,3 +171,22 @@ function show_targets(el) {
         });
     }, {once : true});
 };
+
+
+
+// Handler for debug menu option
+async function debug(el) {
+    const target = el.id.split("-")[0];
+    console.log(`Getting ${target} attributes`);
+
+    var result = await send_command({'command': 'get_attributes', 'instance': target});
+    result = await result.json();
+
+    if (JSON.stringify(result).startsWith('{"ERROR')) {
+        console.log(`Failed to get ${target} attributes`);
+    } else {
+        // Dump json reply to modal body, show modal
+        document.getElementById('debug-json').innerHTML = JSON.stringify(result, null, 4);
+        $('#debug-modal').modal("show");
+    };
+};

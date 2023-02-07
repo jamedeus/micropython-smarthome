@@ -100,6 +100,7 @@
                                             {% endif %}
                                             <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
                                             <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
+                                            <li><a id="{{sensor}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -243,6 +244,7 @@
                                                         <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
                                                         <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
                                                         <li><a class="dropdown-item" onclick="$('#chart-modal').modal('show');">View history</a></li>
+                                                        <li><a id="{{sensor}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
                                                     </ul>
                                                 </div>
                                             </div>
@@ -401,6 +403,7 @@
                                             {% if params.type == "api-target" %}
                                                 <li><a id="{{device}}-current_rule-button" class="dropdown-item" onclick="open_rule_modal(this);">Change rule</a></li>
                                             {% endif %}
+                                            <li><a id="{{device}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -624,6 +627,22 @@
         {% endif %}
     </div>
 
+    <!-- Debug modal, opened from menu on each card -->
+
+    <div class="modal fade" id="debug-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                    <h3 class="mx-auto mb-0" id="debug-modal-title">Debug</h3>
+                    <button type="button" class="btn-close position-absolute my-auto" id="debug-close" data-bs-dismiss="modal" aria-label="Close" style="right:5%;"></button>
+                </div>
+                <div class="modal-body text-center" id="debug-modal-body">
+                    <pre class='d-inline-block text-start section p-3' id="debug-json"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Error modal displayed when unable to connect to target node -->
 
     <div class="modal fade" id="error-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
@@ -788,6 +807,9 @@
                 button.classList.remove('btn-outline-secondary');
                 button.classList.add('btn-outline-dark');
             });
+
+            // Debug modal close button
+            document.getElementById('debug-close').classList.add('btn-close-white');
         };
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
@@ -805,6 +827,9 @@
                     button.classList.remove('btn-outline-secondary');
                     button.classList.add('btn-outline-dark');
                 });
+
+                // Debug modal close button
+                document.getElementById('debug-close').classList.add('btn-close-white');
 
                 {% if context.api_target_options %}
                 // Buttons in ApiTarget rule modal
@@ -830,6 +855,9 @@
                     button.classList.remove('btn-outline-dark');
                     button.classList.add('btn-outline-secondary');
                 });
+
+                // Debug modal close button
+                document.getElementById('debug-close').classList.remove('btn-close-white');
 
                 {% if context.api_target_options %}
                 // Buttons in ApiTarget rule modal

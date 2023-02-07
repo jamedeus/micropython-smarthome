@@ -25,6 +25,13 @@ body {
     text-shadow: 0 0 0.2em #dc3545;
   }
 }
+/* Section backgrounds (floors, macros, debug json dumps) */
+.section {
+  background-color: #eee;
+  border: 1px solid #c8c8c8;
+  border-radius: 15px;
+}
+
 .dark {
   /* redefine theme colors for dark theme */
   /*button color*/
@@ -55,6 +62,7 @@ body {
   --bs-body-bg: #1b1e1f;
   /* Prevent color change on focus (not enough contrast with body bg) */
   /* Toasts */
+  /* Section background color override */
 }
 .dark select:invalid {
   color: #696b6e;
@@ -70,6 +78,10 @@ body {
 .dark .btn-dark:hover, .dark .btn-dark:focus, .dark .btn-dark:active {
   background-color: #212529 !important;
   border-color: #212529 !important;
+}
+.dark .section {
+  border: 0px;
+  background-color: #212529;
 }
 .dark .card {
   position: relative;
