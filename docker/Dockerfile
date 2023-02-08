@@ -30,6 +30,7 @@ COPY frontend/manage.py /repo/frontend/manage.py
 COPY frontend/api /repo/frontend/api
 COPY frontend/node_configuration /repo/frontend/node_configuration
 COPY frontend/frontend /repo/frontend/frontend
+COPY frontend/webapp /repo/frontend/webapp
 
 # Vanilla database, migrations applied, no configs/nodes
 # Persists between sessions if volume used, or can mount in external db

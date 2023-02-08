@@ -1,4 +1,5 @@
 {% load static %}
+{% load pwa %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -6,6 +7,7 @@
     <title>Micropython Smarthome API</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% progressive_web_app_meta %}
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'api/style.css' %}">

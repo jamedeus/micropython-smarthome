@@ -22,6 +22,7 @@ urlpatterns = [
     path('skip_instructions', views.skip_instructions, name='skip_instructions'),
 
     # Template views
+    path('', views.api_overview, name='api_overview'),
     path('api', views.api_overview, name='api_overview'),
     path('api/recording/<str:recording>', views.api_overview, name='api_overview'),
     path('api/recording/<str:recording>/<str:start>', views.api_overview, name='api_overview'),
