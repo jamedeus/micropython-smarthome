@@ -12,13 +12,25 @@
     <link rel="stylesheet" href="{% static 'node_configuration/bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'api/style.css' %}">
     <link rel="stylesheet" href="{% static 'api/overview.css' %}">
+    <link rel="stylesheet" href="{% static 'api/loading.css' %}">
     <script src="{% static 'node_configuration/popper.min.js' %}"></script>
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
     <script src="{% static 'api/smoothscroll.min.js' %}"></script>
+    <script>
+        function openNode(node) {
+            // Show loading animation, redirect to selected node
+            document.getElementById('loading_overlay').classList.add('d-flex');
+            {% if context.recording %}
+            window.location.href = '/api/' + node + '/{{context.recording}}';
+            {% else %}
+            window.location.href = '/api/' + node;
+            {% endif %}
+        };
+    </script>
 </head>
 <body>
-    <div class="container d-flex flex-column vh-100">
+    <div id="container" class="container d-flex flex-column vh-100">
         <div class="d-flex justify-content-between">
             <button type="button" class="btn my-auto" id="back_button" style="visibility:hidden"><i class="bi-chevron-left"></i></button>
             {% if context.recording %}
@@ -54,11 +66,7 @@
                         <h5 class="mb-3"><b>Floor {{floor}}</b></h5>
 
                         {% for node in nodes %}
-                            {% if context.recording %}
-                                <button onclick="window.location.href = '/api/' + this.id + '/{{context.recording}}';" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
-                            {% else %}
-                                <button onclick="window.location.href = '/api/' + this.id;" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
-                            {% endif %}
+                            <button onclick="openNode(this.id);" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
                         {% endfor %}
                     </div>
                 {% endfor %}
@@ -196,6 +204,11 @@
 
     <!-- Contents loaded from edit_modal template, loaded by editMacro() -->
     <div class="modal fade" id="edit-macro-modal" tabindex="-1">
+    </div>
+
+    <!-- Page load animation-->
+    <div id="loading_overlay">
+        <div id="loading_spinner" class="spinner"><div></div><div></div><div></div><div></div></div>
     </div>
 
     <script>
@@ -358,7 +371,13 @@
                 try{document.getElementById('edit-close').classList.remove('btn-close-white');}catch(e){};
             };
         });
-    </script>
 
+        // Remove loading overlay when navigated to with browser back button
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                document.getElementById('loading_overlay').classList.remove('d-flex');
+            };
+        };
+    </script>
 </body>
 </html>

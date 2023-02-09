@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{% static 'api/style.css' %}">
     <link rel="stylesheet" href="{% static 'api/sliders.css' %}">
     <link rel="stylesheet" href="{% static 'api/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'api/loading.css' %}">
     {% if context.metadata.ir_blaster == True %}
     <link rel="stylesheet" href="{% static 'api/remote.css' %}">
     {% endif %}
@@ -40,11 +41,11 @@
 </head>
 
 <body>
-    <div class="container">
+    <div id="container" class="container fade-in">
         {% if context %}
 
             <div class="d-flex justify-content-between">
-                <button type="button" class="btn my-auto" id="back_button" onclick="window.location.href = '/api'"><i class="bi-chevron-left"></i></button>
+                <button type="button" class="btn my-auto" id="back_button" onclick="back();"><i class="bi-chevron-left"></i></button>
                 {% if context.metadata.recording %}
                 <h1 class="my-3 glow">{{context.metadata.id}}</h1>
                 {% else %}
@@ -773,15 +774,17 @@
         </div>
     </div>
 
+    <!-- Page load animation-->
+    <div id="loading_overlay">
+        <div id="loading_spinner" class="spinner"><div></div><div></div><div></div><div></div></div>
+    </div>
+
     <!-- Save context for later use -->
     {{ context|json_script:"context" }}
 
     <script>
         {% if context.metadata.recording %}
         const recording = '{{context.metadata.recording}}';
-        document.getElementById('back_button').onclick = function() {
-            window.location.href = `/api/recording/${recording}`;
-        };
         Array.from(document.getElementsByClassName('open-rules')).forEach(btn => btn.disabled = true)
         {% endif %}
 
@@ -873,6 +876,14 @@
                 {% endif %}
             }
         });
+
+        // Undo animation when navigated to with browser back button
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                document.getElementById('container').classList.add('fade-in');
+                document.getElementById('container').classList.remove('fade-out');
+            };
+        };
     </script>
     <script src="{% static 'api/rule_sliders.js' %}"></script>
     <script src="{% static 'api/schedule_rules.js' %}"></script>

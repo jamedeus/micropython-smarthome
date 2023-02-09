@@ -18,6 +18,22 @@ async function send_command(value) {
 
 
 
+// Handler for back button (top-left)
+function back(node) {
+    // Show loading animation
+    document.getElementById('container').classList.remove('fade-in');
+    document.getElementById('container').classList.add('fade-out');
+
+    // Redirect to overview
+    if (typeof recording == 'undefined') {
+        window.location.href = '/api';
+    } else {
+        window.location.href = `/api/recording/${recording}`;
+    };
+};
+
+
+
 // Handler for current_rule reset menu option
 async function reset(el) {
     const target = el.id.split("-")[0];
