@@ -155,11 +155,15 @@ async function reupload() {
 
         // Show error modal with instructions
         const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-        show_modal("error-modal", "Connection Error", `Unable to connect to ${target_ip} - please make sure node is connected to wifi and try again`, footer);
+        show_modal("error-modal", "Connection Error", `<p class="text-center">Unable to connect to ${target_ip}<br/>Possible causes:</p><ul><li>Node is not connected to wifi</li><li>Node IP has changed</li><li>Node has not run webrepl_setup</li></ul>`, footer);
+
+
+
 
         // When user clicks OK, re-enable submit button so user can try again
         $('#ok-button').click(function() {
             $("#error-modal").modal("hide");
+            $("#upload-modal").modal("hide");
             $('#ok-button').off('click');
             document.getElementById("submit-button").disabled = false;
         });
