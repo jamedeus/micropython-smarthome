@@ -142,6 +142,13 @@ async function reupload() {
             };
         });
 
+        $('#no-button').click(function() {
+            // Remove listeners (prevent stacking)
+            $('#yes-button').off('click');
+            $('#error-modal').modal('hide');
+            document.getElementById("submit-button").disabled = false;
+        });
+
     // Unable to upload because node is unreachable
     } else if (result.status == 404) {
         $('#upload-modal').modal('hide');
@@ -190,9 +197,3 @@ function duplicate() {
         document.getElementById("submit-button").disabled = false;
     });
 };
-
-$('#no-button').click(function() {
-    // Remove listeners (prevent stacking)
-    $('#yes-button').off('click');
-    $('#error-modal').modal('hide');
-});
