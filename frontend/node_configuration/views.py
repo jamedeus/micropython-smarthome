@@ -88,6 +88,19 @@ def get_modules(conf):
 
 
 
+def setup(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+        print(json.dumps(data, indent=4))
+    else:
+        raise Http404("ERROR: Must post data")
+
+    # Upload
+    response = provision("setup.json", data["ip"], [], [])
+    return response
+
+
+
 def upload(request, reupload=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))

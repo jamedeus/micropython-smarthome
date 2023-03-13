@@ -11,6 +11,7 @@ urlpatterns = [
     path('upload', views.upload, name='upload'),
     path('upload/<str:reupload>', views.upload, name='upload'),
     path('reupload_all', views.reupload_all, name='reupload_all'),
+    path('setup', views.setup, name='setup'),
 
     path('delete_config', views.delete_config, name='delete_config'),
     path('delete_node', views.delete_node, name='delete_node'),

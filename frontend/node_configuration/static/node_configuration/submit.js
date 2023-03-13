@@ -120,7 +120,7 @@ async function reupload() {
             // Show loading again, upload setup file
             $("#error-modal").modal("hide");
             show_modal("upload-modal");
-            var result = await send_post_request(base_url + "upload/True", {config: "setup.json", ip: target_ip});
+            var result = await send_post_request(base_url + "setup", {ip: target_ip});
 
             if (result.ok) {
                 // After uploading config, tell user to reboot node then click OK
