@@ -33,6 +33,11 @@ class Desktop_target(Device):
         except OSError:
             # Wifi interruption, put back in timer queue for 5 seconds and try again
             SoftwareTimer.timer.create(5000, self.off, self.name)
+        except ValueError:
+            # Response doesn't contain JSON (different service running on port 5000), disable
+            print(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+            log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+            self.disable()
 
 
 
@@ -57,6 +62,11 @@ class Desktop_target(Device):
                 #SoftwareTimer.timer.create(5000, self.send, self.name)
                 # Wifi interruption, send failed
                 return False
+            except ValueError:
+                # Response doesn't contain JSON (different service running on port 5000), disable
+                print(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+                log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+                self.disable()
 
         elif not state:
             # Give user 5 seconds to react before screen turns off

@@ -33,18 +33,23 @@ class Desktop_trigger(Sensor):
 
 
     def get_idle_time(self):
-        # TODO find cause of ValueError ("syntax error in JSON")
-        return urequests.get('http://' + str(self.ip) + ':5000/idle_time').json()
+        response = urequests.get('http://' + str(self.ip) + ':5000/idle_time')
+        if response.status_code == 200:
+            return response.json()
 
 
 
     def get_monitor_state(self):
-        # TODO find cause of ValueError ("syntax error in JSON")
         try:
             return urequests.get('http://' + str(self.ip) + ':5000/state').json()["state"]
         except (OSError, IndexError):
             # Wifi interruption, return False - caller will try again in 1 second
             return False
+        except ValueError:
+            # Response doesn't contain JSON (different service running on port 5000), disable
+            print(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+            log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+            self.disable()
 
 
 
