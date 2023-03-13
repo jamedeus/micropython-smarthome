@@ -32,10 +32,23 @@ class Desktop_trigger(Sensor):
 
 
 
+    def enable(self):
+        # Restart loop if stopped
+        if not self.enabled: asyncio.create_task(self.monitor())
+        super().enable()
+
+
+
     def get_idle_time(self):
         response = urequests.get('http://' + str(self.ip) + ':5000/idle_time')
         if response.status_code == 200:
             return response.json()
+        else:
+            # Response doesn't contain JSON (different service running on port 5000), disable
+            print(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+            log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+            self.disable()
+            return False
 
 
 
@@ -50,6 +63,7 @@ class Desktop_trigger(Sensor):
             print(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
             log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
             self.disable()
+            return False
 
 
 
@@ -68,6 +82,10 @@ class Desktop_trigger(Sensor):
         self.current = self.get_monitor_state()
 
         while True:
+            # Exit loop if disabled
+            if not self.enabled:
+                return False
+
             new = self.get_monitor_state()
 
             if new != self.current:

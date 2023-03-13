@@ -55,6 +55,8 @@ class Desktop_target(Device):
             SoftwareTimer.timer.cancel(self.name)
             try:
                 response = urequests.get('http://' + str(self.ip) + ':5000/on')
+                if response.status_code != 200:
+                    raise ValueError
                 print(f"{self.name}: Turned screen on")
                 log.debug(f"{self.name}: Turned ON")
             except OSError:
