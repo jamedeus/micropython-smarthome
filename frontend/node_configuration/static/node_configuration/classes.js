@@ -14,6 +14,13 @@ class Device {
         this.getParams();
     };
 
+    // Update all parameters, called before sending to backend
+    update() {
+        this.clearParams();
+        this.getParams();
+        this.getScheduleRules();
+    };
+
     // Create property for each field in addDevice section
     getParams() {
         this.type = document.getElementById(`${this.id.replace("device", "deviceType")}`).value;
@@ -94,6 +101,14 @@ class Sensor {
         this.name_changed = false;
 
         this.getParams();
+    };
+
+    // Update all parameters, called before sending to backend
+    update() {
+        this.clearParams();
+        this.getParams();
+        this.getTargets();
+        this.getScheduleRules();
     };
 
     // Create property for each field in addDevice section

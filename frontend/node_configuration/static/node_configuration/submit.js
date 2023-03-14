@@ -33,16 +33,11 @@ async function submit_form(edit) {
 
     // Update all instance properties before sending to backend
     for (sensor in instances['sensors']) {
-        instances['sensors'][sensor].clearParams();
-        instances['sensors'][sensor].getParams();
-        instances['sensors'][sensor].getTargets();
-        instances['sensors'][sensor].getScheduleRules();
+        instances['sensors'][sensor].update();
     };
 
     for (device in instances['devices']) {
-        instances['devices'][device].clearParams();
-        instances['devices'][device].getParams();
-        instances['devices'][device].getScheduleRules();
+        instances['devices'][device].update();
     };
 
     // Add to request body
@@ -69,7 +64,7 @@ async function submit_form(edit) {
 
     // If config with same name already exists, show modal allowing user to overwrite
     } else if (!edit && response.status == 409) {
-        duplicate();
+        handle_duplicate_prompt();
 
     // If other error, display in alert
     } else {
@@ -106,67 +101,11 @@ async function reupload() {
     // Unable to upload because node has not run setup
     } else if (result.status == 409) {
         const error = await result.text();
-        const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button>
-                        <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
-
-        // Replace loading modal with error modal, ask if user wants to run setup routine
-        $('#upload-modal').modal('hide');
-        show_modal("error-modal", "Error", `${error}`, footer);
-
-        $('#yes-button').click(async function() {
-            // Remove listeners (prevent stacking)
-            $('#yes-button').off('click');
-
-            // Show loading again, upload setup file
-            $("#error-modal").modal("hide");
-            show_modal("upload-modal");
-            var result = await send_post_request(base_url + "setup", {ip: target_ip});
-
-            if (result.ok) {
-                // After uploading config, tell user to reboot node then click OK
-                $("#upload-modal").modal("hide");
-                const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-                show_modal("error-modal", "Success", "Please reboot node, then press OK to resume upload", footer);
-
-                // When user clicks OK, resubmit form (setup has finished running, should now be able to upload)
-                $('#ok-button').click(function() {
-                    $("#error-modal").modal("hide");
-                    $('#ok-button').off('click');
-                    submit_form(true);
-                });
-            } else {
-                alert(await result.text());
-
-                // Re-enable submit button so user can try again
-                document.getElementById("submit-button").disabled = false;
-            };
-        });
-
-        $('#no-button').click(function() {
-            // Remove listeners (prevent stacking)
-            $('#yes-button').off('click');
-            $('#error-modal').modal('hide');
-            document.getElementById("submit-button").disabled = false;
-        });
+        run_setup_prompt(error);
 
     // Unable to upload because node is unreachable
     } else if (result.status == 404) {
-        $('#upload-modal').modal('hide');
-
-        // Show error modal with instructions
-        const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-        show_modal("error-modal", "Connection Error", `<p class="text-center">Unable to connect to ${target_ip}<br/>Possible causes:</p><ul><li>Node is not connected to wifi</li><li>Node IP has changed</li><li>Node has not run webrepl_setup</li></ul>`, footer);
-
-
-
-
-        // When user clicks OK, re-enable submit button so user can try again
-        $('#ok-button').click(function() {
-            $("#error-modal").modal("hide");
-            $("#upload-modal").modal("hide");
-            $('#ok-button').off('click');
-            document.getElementById("submit-button").disabled = false;
-        });
+        target_unreachable_prompt();
 
     // Other error, show in alert
     } else {
@@ -177,7 +116,8 @@ async function reupload() {
     };
 };
 
-function duplicate() {
+// Shown when config with the same name already exists
+function handle_duplicate_prompt() {
     // Get duplicate name, add to modal body
     const name = document.getElementById("friendlyName").value;
     document.getElementById("duplicate-modal-body").innerHTML = `<p>Config named <b>${name}</b> already exists. Would you like to overwrite it? This cannot be undone.</p>`
@@ -198,6 +138,69 @@ function duplicate() {
     $('#cancel-overwrite').click(function() {
         // Prevent stacking listeners on overwrite button each time cancel pressed
         $('#confirm-overwrite').off('click');
+        document.getElementById("submit-button").disabled = false;
+    });
+};
+
+// Shown when unable to upload because target node has not run setup yet
+async function run_setup_prompt(error) {
+    const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button>
+                    <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
+
+    // Replace loading modal with error modal, ask if user wants to run setup routine
+    $('#upload-modal').modal('hide');
+    show_modal("error-modal", "Error", `${error}`, footer);
+
+    $('#yes-button').click(async function() {
+        // Remove listeners (prevent stacking)
+        $('#yes-button').off('click');
+
+        // Show loading again, upload setup file
+        $("#error-modal").modal("hide");
+        show_modal("upload-modal");
+        var result = await send_post_request(base_url + "setup", {ip: target_ip});
+
+        if (result.ok) {
+            // After uploading config, tell user to reboot node then click OK
+            $("#upload-modal").modal("hide");
+            const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
+            show_modal("error-modal", "Success", "Please reboot node, then press OK to resume upload", footer);
+
+            // When user clicks OK, resubmit form (setup has finished running, should now be able to upload)
+            $('#ok-button').click(function() {
+                $("#error-modal").modal("hide");
+                $('#ok-button').off('click');
+                submit_form(true);
+            });
+        } else {
+            alert(await result.text());
+
+            // Re-enable submit button so user can try again
+            document.getElementById("submit-button").disabled = false;
+        };
+    });
+
+    $('#no-button').click(function() {
+        // Remove listeners (prevent stacking)
+        $('#yes-button').off('click');
+        $('#error-modal').modal('hide');
+        document.getElementById("submit-button").disabled = false;
+    });
+};
+
+// Shown when unable to upload because target node unreachable
+async function target_unreachable_prompt() {
+    $('#upload-modal').modal('hide');
+
+    // Show error modal with instructions
+    const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
+    show_modal("error-modal", "Connection Error", `<p class="text-center">Unable to connect to ${target_ip}<br/>Possible causes:</p><ul><li>Node is not connected to wifi</li><li>Node IP has changed</li><li>Node has not run webrepl_setup</li></ul>`, footer);
+
+    // When user clicks OK, re-enable submit button so user can try again
+    $('#ok-button').click(function() {
+        $("#error-modal").modal("hide");
+        $("#upload-modal").modal("hide");
+        $('#ok-button').off('click');
         document.getElementById("submit-button").disabled = false;
     });
 };
