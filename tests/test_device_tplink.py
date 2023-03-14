@@ -6,7 +6,7 @@ from Tplink import Tplink
 class TestTplink(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_off", "test_turn_on", "test_regression_rule_change_to_enabled", "test_regression_invalid_default_rule", "test_regression_rule_change_while_fading"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_off", "test_turn_on", "test_regression_rule_change_to_enabled", "test_regression_invalid_default_rule", "test_rule_change_while_fading"]
 
     def test_instantiation(self):
         self.instance = Tplink("device1", "device1", "dimmer", True, None, 42, "192.168.1.233")
@@ -98,11 +98,31 @@ class TestTplink(unittest.TestCase):
             # Should raise exception, test passed
             self.assertTrue(True)
 
-    def test_regression_rule_change_while_fading(self):
-        # Start fade, confirm that fade started
-        self.assertTrue(self.instance.set_rule('fade/50/1800'))
+    def test_rule_change_while_fading(self):
+        # Set starting brightness
+        self.instance.set_rule(50)
+        self.assertEqual(self.instance.current_rule, 50)
+
+        # Start fading DOWN, confirm started
+        self.instance.set_rule('fade/30/1800')
         self.assertTrue(self.instance.fading)
 
-        # Change rule, fade should stop
+        # Set brightness between starting and target, should continue fade
+        self.instance.set_rule(40)
+        self.assertTrue(self.instance.fading)
+
+        # Set brightness below target, should abort fade
+        self.instance.set_rule(25)
+        self.assertFalse(self.instance.fading)
+
+        # Start fading UP, confirm started
+        self.instance.set_rule('fade/75/1800')
+        self.assertTrue(self.instance.fading)
+
+        # Set brightness between starting and target, should continue fade
+        self.instance.set_rule(50)
+        self.assertTrue(self.instance.fading)
+
+        # Set brightness above target, should abort fade
         self.instance.set_rule(98)
         self.assertFalse(self.instance.fading)
