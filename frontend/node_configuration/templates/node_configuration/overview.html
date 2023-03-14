@@ -14,22 +14,6 @@
     <script src="{% static 'node_configuration/popper.min.js' %}"></script>
     <script src="{% static 'node_configuration/bootstrap.min.js' %}"></script>
     <script src="{% static 'node_configuration/jquery.min.js' %}"></script>
-    <script>
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        };
-    </script>
     <style>
         .table {
             border-radius: 10px;
@@ -212,24 +196,13 @@
     </div>
 
     <script>
-
-        async function send_post_request(url, body) {
-            let csrftoken = getCookie('csrftoken');
-
-            var response = await fetch(url, {
-                method: 'POST',
-                body: JSON.stringify(body),
-                headers: { 'Accept': 'application/json, text/plain, */*',
-                    'Content-Type': 'application/json',
-                    "X-CSRFToken": csrftoken }
-            });
-
-            return response
-        };
+        const base_url = window.location.href.split("node_configuration")[0];
+        let target_ip = ""
 
         async function upload(el) {
-            const config = el.id.replace("upload-", "")
-            const ip = document.getElementById(config + "-ip").value
+            const config = el.id.replace("upload-", "");
+            const ip = document.getElementById(config + "-ip").value;
+            target_ip = ip;
 
             const data = {config: config, ip: ip};
 
@@ -242,94 +215,28 @@
             // If upload successful, show success animation and reload page
             if (response.ok) {
                 // Change title, show success animation
-                const title = "Upload Complete"
-                const body = `<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                                    <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                                    <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                                </svg>`
-                show_modal("upload-modal", title, body);
+                show_modal("upload-modal", "Upload Complete", upload_complete);
 
                 // Wait for animation to complete before reloading
                 await sleep(1200);
                 location.reload();
 
-            // If reupload failed, display error
-            } else {
-                handle_error(response, data);
-            };
-        };
-
-        $('#no-button').click(function() {
-            // Remove listeners (prevent stacking)
-            $('#yes-button').off('click');
-            $('#error-modal').modal('hide');
-        });
-
-        async function handle_error(result, data) {
             // Unable to upload because node has not run setup
-            if (result.status == 409) {
-                const error = await result.text();
-                const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button><button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
+            } else if (response.status == 409) {
+                const error = await response.text();
+                run_setup_prompt(error);
 
-                // Replace loading modal with error modal
-                $('#upload-modal').modal('hide');
-                show_modal("error-modal", "Error", `${error}`, footer);
+            // Unable to upload because node is unreachable
+            } else if (response.status == 404) {
+                target_unreachable_prompt();
 
-                $('#yes-button').click(async function() {
-                    // Remove listeners (prevent stacking)
-                    $('#yes-button').off('click');
-
-                    // Show loading again, upload setup file
-                    $("#error-modal").modal("hide");
-                    show_modal("upload-modal");
-                    var result = await send_post_request("upload/True", {config: "setup.json", ip: data["ip"]});
-
-                    if (result.ok) {
-                        // After uploading config, tell user to reboot node then click OK
-                        $("#upload-modal").modal("hide");
-                        const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-                        show_modal("error-modal", "Success", "Please reboot node, then press OK to resume upload", footer);
-
-                        // When user clicks OK, resubmit form (setup has finished running, should now be able to upload)
-                        $('#ok-button').click(function() {
-                            $("#error-modal").modal("hide");
-                            $('#ok-button').off('click');
-
-                            // Click button again to finish upload
-                            document.getElementById("upload-" + data["config"]).click()
-                        });
-                    } else {
-                        alert(await result.text());
-                    };
-                });
-            } else if (result.status == 404) {
-                $('#upload-modal').modal('hide');
-
-                const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-                show_modal("error-modal", "Connection Error", `Unable to connect to ${data["ip"]} - please make sure node is connected to wifi and try again`, footer);
+            // Other error, show in alert
             } else {
-                alert(await result.text());
+                alert(await response.text());
 
                 // Hide modal allowing user to access page again
                 $('#upload-modal').modal('hide');
             };
-        };
-
-        // Show the modal with id modal, optionally change title/body/footer
-        function show_modal(modal, title=false, body=false, footer=false) {
-            if (title) {
-                document.getElementById(modal + "-title").innerHTML = title;
-            };
-
-            if (body) {
-                document.getElementById(modal + "-body").innerHTML = body;
-            };
-
-            if (footer) {
-                document.getElementById(modal + "-footer").innerHTML = footer;
-            };
-
-            $('#' + modal).modal('show');
         };
 
         function sleep(ms) {
@@ -450,5 +357,6 @@
             }
         });
     </script>
+    <script src="{% static 'node_configuration/upload.js' %}"></script>
 </body>
 </html>

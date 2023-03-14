@@ -1,0 +1,117 @@
+// Checkmark animation shown when upload complete
+const upload_complete = `<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                             <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                             <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                         </svg>`
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+};
+
+async function send_post_request(url, body) {
+    let csrftoken = getCookie('csrftoken');
+
+    var response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: { 'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+            "X-CSRFToken": csrftoken }
+    });
+
+    return response
+};
+
+// Show the modal with id modal, optionally change title/body/footer
+function show_modal(modal, title=false, body=false, footer=false) {
+    if (title) {
+        document.getElementById(modal + "-title").innerHTML = title;
+    };
+
+    if (body) {
+        document.getElementById(modal + "-body").innerHTML = body;
+    };
+
+    if (footer) {
+        document.getElementById(modal + "-footer").innerHTML = footer;
+    };
+
+    $('#' + modal).modal('show');
+};
+
+// Shown when unable to upload because target node has not run setup yet
+async function run_setup_prompt(error) {
+    const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button>
+                    <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
+
+    // Replace loading modal with error modal, ask if user wants to run setup routine
+    $('#upload-modal').modal('hide');
+    show_modal("error-modal", "Error", `${error}`, footer);
+
+    $('#yes-button').click(async function() {
+        // Remove listeners (prevent stacking)
+        $('#yes-button').off('click');
+
+        // Show loading again, upload setup file
+        $("#error-modal").modal("hide");
+        show_modal("upload-modal");
+        var result = await send_post_request(base_url + "setup", {ip: target_ip});
+
+        if (result.ok) {
+            // After uploading config, tell user to reboot node then click OK
+            $("#upload-modal").modal("hide");
+            const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
+            show_modal("error-modal", "Success", "Please reboot node, then press OK to resume upload", footer);
+
+            // When user clicks OK, resubmit form (setup has finished running, should now be able to upload)
+            $('#ok-button').click(function() {
+                $("#error-modal").modal("hide");
+                $('#ok-button').off('click');
+                submit_form(true);
+            });
+        } else {
+            alert(await result.text());
+
+            // Re-enable submit button so user can try again
+            // TODO supress error on overview
+            document.getElementById("submit-button").disabled = false;
+        };
+    });
+
+    $('#no-button').click(function() {
+        // Remove listeners (prevent stacking)
+        $('#yes-button').off('click');
+        $('#error-modal').modal('hide');
+        // TODO supress error on overview
+        document.getElementById("submit-button").disabled = false;
+    });
+};
+
+// Shown when unable to upload because target node unreachable
+async function target_unreachable_prompt() {
+    $('#upload-modal').modal('hide');
+
+    // Show error modal with instructions
+    const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
+    show_modal("error-modal", "Connection Error", `<p class="text-center">Unable to connect to ${target_ip}<br/>Possible causes:</p><ul><li>Node is not connected to wifi</li><li>Node IP has changed</li><li>Node has not run webrepl_setup</li></ul>`, footer);
+
+    // When user clicks OK, re-enable submit button so user can try again
+    $('#ok-button').click(function() {
+        $("#error-modal").modal("hide");
+        $("#upload-modal").modal("hide");
+        $('#ok-button').off('click');
+        // TODO supress error on overview
+        document.getElementById("submit-button").disabled = false;
+    });
+};

@@ -893,23 +893,6 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        // Show the modal with id modal, optionally change title/body/footer
-        function show_modal(modal, title=false, body=false, footer=false) {
-            if (title) {
-                document.getElementById(modal + "-title").innerHTML = title;
-            };
-
-            if (body) {
-                document.getElementById(modal + "-body").innerHTML = body;
-            };
-
-            if (footer) {
-                document.getElementById(modal + "-footer").innerHTML = footer;
-            };
-
-            $('#' + modal).modal('show');
-        };
-
         document.getElementById("submit-button").addEventListener("click", function(e) {
             e.preventDefault();
 
@@ -987,6 +970,7 @@
     <script src="{% static 'node_configuration/rule_sliders.js' %}"></script>
     <script src="{% static 'node_configuration/apiTargetOptions.js' %}"></script>
     <script src="{% static 'node_configuration/submit.js' %}"></script>
+    <script src="{% static 'node_configuration/upload.js' %}"></script>
     <script src="{% static 'node_configuration/add-instance.js' %}"></script>
     <script src="{% static 'node_configuration/page-buttons.js' %}"></script>
     <script src="{% static 'node_configuration/schedule-rules.js' %}"></script>
