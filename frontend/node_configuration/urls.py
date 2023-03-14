@@ -7,6 +7,13 @@ app_name = "node_configuration"
 urlpatterns = [
     path('node_configuration', views.node_configuration, name='node_configuration'),
 
+    # Allow accessing with relative path
+    path('configure/setup', views.setup, name='setup'),
+    path('edit_config/setup', views.setup, name='setup'),
+    path('edit_config/upload', views.upload, name='upload'),
+    path('edit_config/upload/<str:reupload>', views.upload, name='upload'),
+    path('edit_config/generateConfigFile/<str:edit_existing>', views.generateConfigFile, name='generateConfigFile'),
+
     # Argument is optional
     path('upload', views.upload, name='upload'),
     path('upload/<str:reupload>', views.upload, name='upload'),

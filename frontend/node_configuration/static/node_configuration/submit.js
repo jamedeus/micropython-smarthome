@@ -19,7 +19,7 @@ async function submit_form(edit) {
 
     // Generate config file from form data
     if (edit) {
-        var response = await send_post_request(base_url + "generateConfigFile/True", value);
+        var response = await send_post_request("generateConfigFile/True", value);
     } else {
         var response = await send_post_request("generateConfigFile", value);
     };
@@ -31,7 +31,7 @@ async function submit_form(edit) {
 
     // If successfully edited existing config, re-upload to target node
     } else if (edit && response.ok) {
-        reupload();
+        upload();
 
     // If config with same name already exists, show modal allowing user to overwrite
     } else if (!edit && response.status == 409) {
@@ -45,44 +45,6 @@ async function submit_form(edit) {
         document.getElementById("submit-button").disabled = false;
 
         return false;
-    };
-};
-
-async function reupload() {
-    // Show loading screen
-    show_modal("upload-modal");
-
-    // Reupload config file
-    var result = await send_post_request(base_url + "upload/True", {config: target_filename, ip: target_ip});
-
-    // If reupload successful, redirect back to overview (otherwise display error in alert)
-    if (result.ok) {
-        // Change title, show success animation
-        show_modal("upload-modal", "Upload Complete", upload_complete);
-
-        // Wait for animation to complete before redirect
-        await sleep(1200);
-        window.location.replace("/node_configuration");
-
-    // Unable to upload because node has not run setup
-    } else if (result.status == 409) {
-        const error = await result.text();
-        run_setup_prompt(error);
-
-    // Unable to upload because node is unreachable
-    } else if (result.status == 404) {
-        target_unreachable_prompt();
-
-    // Other error, show in alert
-    } else {
-        alert(await result.text());
-
-        // Hide modal allowing user to access page again
-        $('#upload-modal').modal('hide');
-
-        // Re-enable submit button so user can try again
-        // TODO would this be global if moved outside conditional??
-        document.getElementById("submit-button").disabled = false;
     };
 };
 

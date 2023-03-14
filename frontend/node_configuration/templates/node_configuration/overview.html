@@ -53,7 +53,7 @@
                             <tr id="{{config}}">
                                 <td class="min align-middle">{{config}}</td>
                                 <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" class="form-control"></td>
-                                <td class="min align-middle"><button type="button" class="btn-primary btn btn-sm" id="upload-{{config}}" onclick="upload(this);">Upload</button></td>
+                                <td class="min align-middle"><button type="button" class="btn-primary btn btn-sm" id="upload-{{config}}" onclick="set_upload_target(this);">Upload</button></td>
                                 <td class="min align-middle"><button type="button" class="btn-danger btn btn-sm" id="delete-{{config}}" onclick="del_config(this);"><i class="bi-trash"></i></button></td>
                             </tr>
                         {% endfor %}
@@ -196,47 +196,14 @@
     </div>
 
     <script>
-        const base_url = window.location.href.split("node_configuration")[0];
+        const edit_existing = false;
         let target_ip = ""
+        let target_filename = ""
 
-        async function upload(el) {
-            const config = el.id.replace("upload-", "");
-            const ip = document.getElementById(config + "-ip").value;
-            target_ip = ip;
-
-            const data = {config: config, ip: ip};
-
-            // Show loading screen
-            show_modal("upload-modal");
-
-            // Upload config
-            const response = await send_post_request("upload", data);
-
-            // If upload successful, show success animation and reload page
-            if (response.ok) {
-                // Change title, show success animation
-                show_modal("upload-modal", "Upload Complete", upload_complete);
-
-                // Wait for animation to complete before reloading
-                await sleep(1200);
-                location.reload();
-
-            // Unable to upload because node has not run setup
-            } else if (response.status == 409) {
-                const error = await response.text();
-                run_setup_prompt(error);
-
-            // Unable to upload because node is unreachable
-            } else if (response.status == 404) {
-                target_unreachable_prompt();
-
-            // Other error, show in alert
-            } else {
-                alert(await response.text());
-
-                // Hide modal allowing user to access page again
-                $('#upload-modal').modal('hide');
-            };
+        function set_upload_target(el) {
+            target_filename = el.id.replace("upload-", "");
+            target_ip = document.getElementById(target_filename + "-ip").value;
+            upload();
         };
 
         function sleep(ms) {

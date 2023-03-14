@@ -50,6 +50,46 @@ function show_modal(modal, title=false, body=false, footer=false) {
     $('#' + modal).modal('show');
 };
 
+// Used by both pages to upload config files to nodes
+async function upload() {
+    // Show loading screen
+    show_modal("upload-modal");
+
+    if (edit_existing) {
+        // Re-upload existing config
+        var response = await send_post_request("upload/True", {config: target_filename, ip: target_ip});
+    } else {
+        // Upload config
+        var response = await send_post_request("upload", {config: target_filename, ip: target_ip});
+    };
+
+    // If upload successful, show success animation and reload page
+    if (response.ok) {
+        // Change title, show success animation
+        show_modal("upload-modal", "Upload Complete", upload_complete);
+
+        // Wait for animation to complete before reloading
+        await sleep(1200);
+        window.location.replace("/node_configuration");
+
+    // Unable to upload because node has not run setup
+    } else if (response.status == 409) {
+        const error = await response.text();
+        run_setup_prompt(error);
+
+    // Unable to upload because node is unreachable
+    } else if (response.status == 404) {
+        target_unreachable_prompt();
+
+    // Other error, show in alert
+    } else {
+        alert(await response.text());
+
+        // Hide modal allowing user to access page again
+        $('#upload-modal').modal('hide');
+    };
+};
+
 // Shown when unable to upload because target node has not run setup yet
 async function run_setup_prompt(error) {
     const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button>
@@ -66,7 +106,7 @@ async function run_setup_prompt(error) {
         // Show loading again, upload setup file
         $("#error-modal").modal("hide");
         show_modal("upload-modal");
-        var result = await send_post_request(base_url + "setup", {ip: target_ip});
+        var result = await send_post_request("setup", {ip: target_ip});
 
         if (result.ok) {
             // After uploading config, tell user to reboot node then click OK
@@ -78,7 +118,7 @@ async function run_setup_prompt(error) {
             $('#ok-button').click(function() {
                 $("#error-modal").modal("hide");
                 $('#ok-button').off('click');
-                submit_form(true);
+                upload();
             });
         } else {
             alert(await result.text());
@@ -94,7 +134,7 @@ async function run_setup_prompt(error) {
         $('#yes-button').off('click');
         $('#error-modal').modal('hide');
         // TODO supress error on overview
-        document.getElementById("submit-button").disabled = false;
+        try{ document.getElementById("submit-button").disabled = false; }catch(err){};
     });
 };
 
@@ -112,6 +152,6 @@ async function target_unreachable_prompt() {
         $("#upload-modal").modal("hide");
         $('#ok-button').off('click');
         // TODO supress error on overview
-        document.getElementById("submit-button").disabled = false;
+        try{ document.getElementById("submit-button").disabled = false; }catch(err){};
     });
 };

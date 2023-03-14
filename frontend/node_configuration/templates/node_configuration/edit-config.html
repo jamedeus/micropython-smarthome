@@ -867,8 +867,6 @@
 
         var ApiTargetOptions = JSON.parse(document.getElementById("context").textContent);
 
-        const base_url = window.location.href.split("edit_config")[0];
-
         // Store parameters used to re-upload config after editing
         const target_ip = "{{ context.config.IP }}"
         const target_filename = "{{ context.config.FILENAME }}"
