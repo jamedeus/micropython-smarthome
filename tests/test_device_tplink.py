@@ -6,7 +6,7 @@ from Tplink import Tplink
 class TestTplink(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_off", "test_turn_on", "test_regression_rule_change_to_enabled", "test_regression_invalid_default_rule", "test_rule_change_while_fading"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_off", "test_turn_on", "test_regression_rule_change_to_enabled", "test_regression_invalid_default_rule", "test_rule_change_while_fading", "test_regression_rule_change_while_fading"]
 
     def test_instantiation(self):
         self.instance = Tplink("device1", "device1", "dimmer", True, None, 42, "192.168.1.233")
@@ -64,6 +64,35 @@ class TestTplink(unittest.TestCase):
     def test_turn_on(self):
         self.assertTrue(self.instance.send(1))
 
+    def test_rule_change_while_fading(self):
+        # Set starting brightness
+        self.instance.set_rule(50)
+        self.assertEqual(self.instance.current_rule, 50)
+
+        # Start fading DOWN, confirm started
+        self.instance.set_rule('fade/30/1800')
+        self.assertTrue(self.instance.fading)
+
+        # Set brightness between starting and target, should continue fade
+        self.instance.set_rule(40)
+        self.assertTrue(self.instance.fading)
+
+        # Set brightness below target, should abort fade
+        self.instance.set_rule(25)
+        self.assertFalse(self.instance.fading)
+
+        # Start fading UP, confirm started
+        self.instance.set_rule('fade/75/1800')
+        self.assertTrue(self.instance.fading)
+
+        # Set brightness between starting and target, should continue fade
+        self.instance.set_rule(50)
+        self.assertTrue(self.instance.fading)
+
+        # Set brightness above target, should abort fade
+        self.instance.set_rule(98)
+        self.assertFalse(self.instance.fading)
+
     # Original bug: Tplink class overwrites parent set_rule method and did not include conditional
     # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
     # crash next time send method was called.
@@ -98,31 +127,34 @@ class TestTplink(unittest.TestCase):
             # Should raise exception, test passed
             self.assertTrue(True)
 
-    def test_rule_change_while_fading(self):
+    # Original issue: Possible to change brightness while fading since 3dc1854a. If new rule between
+    # start and target, fade does not change brightness until caught up to rule change (prevent undoing
+    # user's change). However, if brightness changed in opposite direction, fade would continue and user
+    # change undone on next fade step.
+    # Should now abort any time rule changed in opposite direction, even if still between start and target
+    def test_regression_rule_change_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)
 
-        # Start fading DOWN, confirm started
+        # Start fading DOWN, confirm started, skip a few steps, confirm still fading
         self.instance.set_rule('fade/30/1800')
         self.assertTrue(self.instance.fading)
-
-        # Set brightness between starting and target, should continue fade
         self.instance.set_rule(40)
+        self.assertEqual(self.instance.current_rule, 40)
         self.assertTrue(self.instance.fading)
 
-        # Set brightness below target, should abort fade
-        self.instance.set_rule(25)
+        # Increase brightness - fade should abort despite being between start and target
+        self.instance.set_rule(45)
         self.assertFalse(self.instance.fading)
 
-        # Start fading UP, confirm started
-        self.instance.set_rule('fade/75/1800')
+        # Start fading UP, confirm started, skip a few steps, confirm still fading
+        self.instance.set_rule('fade/90/1800')
+        self.assertTrue(self.instance.fading)
+        self.instance.set_rule(75)
+        self.assertEqual(self.instance.current_rule, 75)
         self.assertTrue(self.instance.fading)
 
-        # Set brightness between starting and target, should continue fade
-        self.instance.set_rule(50)
-        self.assertTrue(self.instance.fading)
-
-        # Set brightness above target, should abort fade
-        self.instance.set_rule(98)
+        # Decrease brightness - fade should abort despite being between start and target
+        self.instance.set_rule(70)
         self.assertFalse(self.instance.fading)

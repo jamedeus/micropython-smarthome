@@ -86,6 +86,13 @@ class Tplink(Device):
                 return True
 
         else:
+            # Abort fade if user changed brightness in opposite direction
+            if self.fading:
+                if self.fading["down"] and valid_rule > self.current_rule:
+                    self.fading = False
+                elif not self.fading["down"] and valid_rule < self.current_rule:
+                    self.fading = False
+
             self.current_rule = valid_rule
             print(f"{self.name}: Rule changed to {self.current_rule}")
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
