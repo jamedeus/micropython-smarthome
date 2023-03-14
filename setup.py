@@ -9,8 +9,11 @@ wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
 while not wlan.isconnected():
     continue
 
-os.mkdir('lib')
-os.mkdir('lib/ir_tx')
+try:
+    os.mkdir('lib')
+    os.mkdir('lib/ir_tx')
+except OSError:
+    pass
 
 import webrepl
 webrepl.start()
