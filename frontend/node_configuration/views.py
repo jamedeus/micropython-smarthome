@@ -361,16 +361,20 @@ def generateConfigFile(request, edit_existing=False):
     print("Input:")
     print(json.dumps(data, indent=4))
 
-    try:
-        # Check if file with identical parameters exists in database
-        duplicate = Config.objects.get(filename = data["friendlyName"])
-
-        # Ignore duplicate error if editing an existing config
-        if not edit_existing:
+    # Prevent overwriting existing config, unless editing existing
+    if not edit_existing:
+        # Check if filename will conflict with existing configs
+        try:
+            duplicate = Config.objects.get(filename = data["friendlyName"].lower().replace(" ", "-") + ".json")
             return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+        except Config.DoesNotExist: pass
 
-    except Config.DoesNotExist:
-        pass
+        # Check if friendly name is a duplicate, must be unique for frontend
+        try:
+
+            duplicate = Node.objects.get(friendly_name = data["friendlyName"])
+            return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+        except Node.DoesNotExist: pass
 
     # Populate metadata and credentials directly from JSON
     config = {
