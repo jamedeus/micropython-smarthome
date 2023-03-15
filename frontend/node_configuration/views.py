@@ -331,6 +331,24 @@ def edit_config(request, name):
 
 
 
+# Return True if filename or friendly_name would conflict with an existing config or node
+def is_duplicate(filename, friendly_name):
+    # Check if filename will conflict with existing configs
+    try:
+        duplicate = Config.objects.get(filename = filename)
+        return True
+    except Config.DoesNotExist:
+        pass
+
+    # Check if friendly name is a duplicate, must be unique for frontend
+    try:
+        duplicate = Node.objects.get(friendly_name = friendly_name)
+        return True
+    except Node.DoesNotExist:
+        return False
+
+
+
 def generateConfigFile(request, edit_existing=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -340,20 +358,15 @@ def generateConfigFile(request, edit_existing=False):
     print("Input:")
     print(json.dumps(data, indent=4))
 
+    # Get filename (all lowercase, replace spaces with hyphens)
+    filename = data["friendlyName"].lower().replace(" ", "-") + ".json"
+
+    print(f"\n\n{filename}\n\n")
+
     # Prevent overwriting existing config, unless editing existing
     if not edit_existing:
-        # Check if filename will conflict with existing configs
-        try:
-            duplicate = Config.objects.get(filename = data["friendlyName"].lower().replace(" ", "-") + ".json")
+        if is_duplicate(filename, data["friendlyName"]):
             return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
-        except Config.DoesNotExist: pass
-
-        # Check if friendly name is a duplicate, must be unique for frontend
-        try:
-
-            duplicate = Node.objects.get(friendly_name = data["friendlyName"])
-            return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
-        except Node.DoesNotExist: pass
 
     # Populate metadata and credentials directly from JSON
     config = {
@@ -404,11 +417,6 @@ def generateConfigFile(request, edit_existing=False):
 
     print("\nOutput:")
     print(json.dumps(config, indent=4))
-
-    # Get filename (all lowercase, replace spaces with hyphens)
-    filename = config["metadata"]["id"].lower().replace(" ", "-") + ".json"
-
-    print(f"\n\n{filename}\n\n")
 
     # If creating new config, add to models + write to disk
     if not edit_existing:
@@ -513,17 +521,9 @@ def restore_config(request):
     # Get filename (all lowercase, replace spaces with hyphens)
     filename = config["metadata"]["id"].lower().replace(" ", "-") + ".json"
 
-    # Check if filename will conflict with existing configs
-    try:
-        duplicate = Config.objects.get(filename = filename)
+    # Prevent overwriting existing config
+    if is_duplicate(filename, config['metadata']['id']):
         return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
-    except Config.DoesNotExist: pass
-
-    # Check if friendly name is a duplicate, must be unique for frontend
-    try:
-        duplicate = Node.objects.get(friendly_name = config['metadata']['id'])
-        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
-    except Node.DoesNotExist: pass
 
     # Write file to disk
     with open(CONFIG_DIR + filename, 'w') as file:
