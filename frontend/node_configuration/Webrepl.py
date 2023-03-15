@@ -5,6 +5,7 @@ import struct
 import socket
 import binascii
 import hashlib
+import io
 
 # TODO Attribute? Arg?
 SANDBOX = ""
@@ -165,6 +166,40 @@ class Webrepl():
                     sys.stdout.flush()
         print()
         assert self.read_resp() == 0
+
+
+    def get_file_mem(self, remote_file):
+        if self.ws is None:
+            if not self.open_connection():
+                raise OSError
+
+        src_fname = (SANDBOX + remote_file).encode("utf-8")
+        rec = struct.pack("<2sBBQLH64s", b"WA", 2, 0, 0, 0, len(src_fname), src_fname)
+        self.ws.write(rec)
+        assert self.read_resp() == 0
+
+        output = io.BytesIO()
+
+        cnt = 0
+        while True:
+            self.ws.write(b"\0")
+            (sz,) = struct.unpack("<H", self.ws.read(2))
+            if sz == 0:
+                break
+            while sz:
+                buf = self.ws.read(sz)
+                if not buf:
+                    raise OSError()
+                cnt += len(buf)
+                output.write(buf)
+                sz -= len(buf)
+                sys.stdout.write("Received %d bytes\r" % cnt)
+                sys.stdout.flush()
+
+        print()
+        assert self.read_resp() == 0
+
+        return output.getvalue()
 
     def put_file(self, local_file, remote_file):
         if self.ws is None:

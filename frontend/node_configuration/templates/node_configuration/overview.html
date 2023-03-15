@@ -32,6 +32,7 @@
                 <ul id="settings_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings_button">
                     <li><a class="dropdown-item" onclick='$("#wifi-modal").modal("show")'>Set WIFI credentials</a></li>
                     <li><a class="dropdown-item" onclick='reupload_all()'>Re-upload all</a></li>
+                    <li><a class="dropdown-item" onclick='$("#restore-modal").modal("show")'>Restore config</a></li>
                 </ul>
             </div>
         </div>
@@ -195,6 +196,37 @@
         </div>
     </div>
 
+    <!-- Restore modal, used to populate models from existing nodes after database lost -->
+
+    <div class="modal fade" id="restore-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header justify-content-between pb-0">
+                    <button type="button" class="btn-close" style="visibility:hidden"></button>
+                    <h5 id="restore-modal-title" class="modal-title">Restore Config</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center" id="restore-modal-body">
+                    <p class="text-center">This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
+
+                    <div id="prompt">
+                        <label for="ip"><b>IP Address:</b></label>
+                        <input type="text" class="form-control modal-input" id="ip" placeholder="" name="ip" autocomplete="off" required>
+                    </div>
+                    <div id="loading" class="d-none mx-auto">
+                        <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" id="restore" class="btn btn-success mx-auto" onclick="restore_config()">Restore</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const edit_existing = false;
         let target_ip = ""
@@ -303,6 +335,43 @@
                 show_modal("error-modal", "Error", body, footer);
                 $("#upload-modal").modal("hide");
             };
+        };
+
+        async function restore_config() {
+            // Disable submit, hide field, show loading animation
+            document.getElementById('restore').disabled = true;
+            document.getElementById('prompt').classList.add('d-none')
+            document.getElementById('loading').classList.remove('d-none')
+
+            // Send request
+            body = {'ip' : document.getElementById('ip').value };
+            response = await send_post_request("restore_config", body);
+
+            // If successfully restore, show animation + reload
+            if (response.ok) {
+                document.getElementById('loading').innerHTML = upload_complete;
+
+                // Wait for animation to complete before reloading
+                await sleep(1200);
+                location.reload();
+
+            // Unreachable
+            } else if (response.status == 404) {
+                target_unreachable_prompt();
+
+            // Duplicate
+            } else if (response.status == 409) {
+                show_modal("error-modal", "Duplicate", "A node with the same name or filename already exists", `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>`);
+
+            // Other error, show in alert
+            } else {
+                alert(await response.text());
+            };
+
+            $("#restore-modal").modal("hide")
+            document.getElementById('restore').disabled = false;
+            document.getElementById('loading').classList.add('d-none')
+            document.getElementById('prompt').classList.remove('d-none')
         };
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)

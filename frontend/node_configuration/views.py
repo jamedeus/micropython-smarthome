@@ -491,3 +491,53 @@ def set_default_credentials(request):
     new.save()
 
     return JsonResponse("Default credentials set", safe=False, status=200)
+
+
+
+# Downloads config file from an existing node and saves to database + disk
+def restore_config(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        raise Http404("ERROR: Must post data")
+
+    # Open conection, detect if node connected to network
+    node = Webrepl(data["ip"], NODE_PASSWD)
+    if not node.open_connection():
+        return JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
+
+    # Download config file from node, parse json
+    config = node.get_file_mem("config.json")
+    config = json.loads(config)
+
+    # Get filename (all lowercase, replace spaces with hyphens)
+    filename = config["metadata"]["id"].lower().replace(" ", "-") + ".json"
+
+    # Check if filename will conflict with existing configs
+    try:
+        duplicate = Config.objects.get(filename = filename)
+        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+    except Config.DoesNotExist: pass
+
+    # Check if friendly name is a duplicate, must be unique for frontend
+    try:
+        duplicate = Node.objects.get(friendly_name = config['metadata']['id'])
+        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+    except Node.DoesNotExist: pass
+
+    # Write file to disk
+    with open(CONFIG_DIR + filename, 'w') as file:
+        json.dump(config, file)
+
+    # Create Config model entry
+    config = Config(config = config, filename = filename)
+
+    # Create Node model entry
+    node = Node(friendly_name = config.config["metadata"]["id"], ip = data["ip"], floor = config.config["metadata"]["floor"])
+    node.save()
+
+    # Add reverse relation
+    config.node = node
+    config.save()
+
+    return JsonResponse("Config restored", safe=False, status=200)

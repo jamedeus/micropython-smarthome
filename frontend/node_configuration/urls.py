@@ -31,4 +31,6 @@ urlpatterns = [
     path('generateConfigFile/<str:edit_existing>', views.generateConfigFile, name='generateConfigFile'),
 
     path('set_default_credentials', views.set_default_credentials, name='set_default_credentials'),
+
+    path('restore_config', views.restore_config, name='restore_config'),
 ]
