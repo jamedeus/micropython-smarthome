@@ -120,6 +120,12 @@ def api(request, node, recording=False):
 
     status["metadata"]["ip"] = target.ip
 
+    # Add temp history chart to frontend if temp sensor present
+    for i in status["sensors"]:
+        if status["sensors"][i]['type'] == 'si7021':
+            status["metadata"]["thermostat"] = True
+            break
+
     if recording:
         status["metadata"]["recording"] = recording
 

@@ -140,26 +140,6 @@
                                     <!-- Close climate data card, start new card for thermostat -->
                                     </div></div></div></br>
 
-                                    <!-- Modal for viewing temperature history chart -->
-                                    <div class="modal fade" id="chart-modal" tabindex="-1">
-                                        <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
-                                            <div class="modal-content">
-                                                <div class='d-flex m-3'>
-                                                    <button type="button" class="btn-close" style="visibility:hidden"></button>
-                                                    <h3 class="mx-auto mb-0" id="error-modal-title">Temperature History</h3>
-                                                    <button type="button" class="btn-close my-auto" id="chart-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    <canvas id="chart"></canvas>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-                                    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                                    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
-
                                     <script>
                                         // Change previous card title to "Climate Data", old title will be reused in new card below
                                         document.getElementById("{{sensor}}-title").innerHTML = "Climate Data";
@@ -174,60 +154,6 @@
                                         // Remove enable/disable toggle, will be moved to new card below
                                         document.getElementById("{{sensor}}-trigger").remove();
                                         document.getElementById("{{sensor}}-menu-button").parentElement.remove();
-
-                                        // Create arrays to store temp readings, timestamps
-                                        var temp_history = [];
-                                        var temp_history_labels = [];
-
-                                        // Create chart, displayed in modal created above
-                                        const temp_history_chart = new Chart(document.getElementById('chart'), {
-                                            type: 'line',
-                                            data: {
-                                                labels: temp_history_labels,
-                                                datasets: [{
-                                                    data: temp_history,
-                                                    label: "Temp",
-                                                    borderColor: '#eee',
-                                                    color: '#eee',
-                                                    fill: true
-                                                }]
-                                            },
-                                            options: {
-                                                plugins: {
-                                                    legend: {
-                                                        display: false,
-//                                                         labels: {
-//                                                             color: "#eee",
-//                                                             usePointStyle: true,
-//                                                             pointStyle: "rectRounded"
-//                                                         }
-                                                    }
-                                                },
-                                                scales: {
-                                                    x: {
-                                                        type: 'timeseries',
-                                                        time: {
-                                                            unit: 'minute',
-                                                            displayFormats: {
-                                                                minute: 'H:mm:ss'
-                                                            }
-                                                        },
-                                                        ticks:{
-                                                            source: 'data',
-                                                            color: "#eee"
-                                                        },
-                                                    },
-                                                    y: {
-                                                        suggestedMin: 70,
-                                                        suggestedMax: 75,
-                                                        ticks:{
-                                                            color: "#eee",
-                                                            stepSize: 1,
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        });
                                     </script>
 
                                     <div id="{{sensor}}-card" class="card">
@@ -629,6 +555,82 @@
             <p>FATAL ERROR</p>
         {% endif %}
     </div>
+
+    {% if context.metadata.thermostat %}
+        <!-- Modal for viewing temperature history chart -->
+        <div class="modal fade" id="chart-modal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+                <div class="modal-content">
+                    <div class='d-flex m-3'>
+                        <button type="button" class="btn-close" style="visibility:hidden"></button>
+                        <h3 class="mx-auto mb-0" id="error-modal-title">Temperature History</h3>
+                        <button type="button" class="btn-close my-auto" id="chart-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <canvas id="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+        <script>
+            // Create arrays to store temp readings, timestamps
+            var temp_history = [];
+            var temp_history_labels = [];
+
+            // Create chart, displayed in modal created above
+            const temp_history_chart = new Chart(document.getElementById('chart'), {
+                type: 'line',
+                data: {
+                    labels: temp_history_labels,
+                    datasets: [{
+                        data: temp_history,
+                        label: "Temp",
+                        borderColor: '#eee',
+                        color: '#eee',
+                        fill: true
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false,
+    //                                                         labels: {
+    //                                                             color: "#eee",
+    //                                                             usePointStyle: true,
+    //                                                             pointStyle: "rectRounded"
+    //                                                         }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'timeseries',
+                            time: {
+                                unit: 'minute',
+                                displayFormats: {
+                                    minute: 'H:mm:ss'
+                                }
+                            },
+                            ticks:{
+                                source: 'data',
+                                color: "#eee"
+                            },
+                        },
+                        y: {
+                            suggestedMin: 70,
+                            suggestedMax: 75,
+                            ticks:{
+                                color: "#eee",
+                                stepSize: 1,
+                            }
+                        }
+                    }
+                }
+            });
+        </script>
+    {% endif %}
 
     <!-- Debug modal, opened from menu on each card -->
 
