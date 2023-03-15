@@ -6,7 +6,7 @@ import os
 
 from .models import Node, Config, WifiCredentials
 
-from .webrepl_cli import *
+from .Webrepl import *
 
 REPO_DIR = os.environ.get('REPO_DIR')
 CONFIG_DIR = os.environ.get('CONFIG_DIR')
@@ -134,30 +134,9 @@ def upload(request, reupload=False):
 
 
 def provision(config, ip, modules, libs):
-    def open_connection():
-        try:
-            s = socket.socket()
-            s.settimeout(10)
-            ai = socket.getaddrinfo(ip, 8266)
-            addr = ai[0][4]
-            s.connect(addr)
-            websocket_helper.client_handshake(s)
-            ws = websocket(s)
-            login(ws, NODE_PASSWD)
-            ws.ioctl(9, 2)
-
-            return ws, s
-
-        except OSError:
-            close_connection(s)
-            return False, False
-
-    def close_connection(s):
-        s.close()
-
     # Open conection, detect if node connected to network
-    ws, s = open_connection()
-    if not ws:
+    node = Webrepl(ip, NODE_PASSWD)
+    if not node.open_connection():
         return JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
 
     try:
@@ -166,37 +145,37 @@ def provision(config, ip, modules, libs):
             src_file = REPO_DIR + i
             dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
 
-            put_file(ws, src_file, dst_file)
+            node.put_file(src_file, dst_file)
 
         # Upload all libraries
         for i in libs:
             src_file = REPO_DIR + i
             dst_file = i
 
-            put_file(ws, src_file, dst_file)
+            node.put_file(src_file, dst_file)
 
         # Upload config file
-        put_file(ws, CONFIG_DIR + config, "config.json")
+        node.put_file(CONFIG_DIR + config, "config.json")
 
         # Upload Config module
-        put_file(ws, REPO_DIR + "Config.py", "Config.py")
+        node.put_file(REPO_DIR + "Config.py", "Config.py")
 
         # Upload Group module
-        put_file(ws, REPO_DIR + "Group.py", "Group.py")
+        node.put_file(REPO_DIR + "Group.py", "Group.py")
 
         # Upload SoftwareTimer module
-        put_file(ws, REPO_DIR + "SoftwareTimer.py", "SoftwareTimer.py")
+        node.put_file(REPO_DIR + "SoftwareTimer.py", "SoftwareTimer.py")
 
         # Upload API module
-        put_file(ws, REPO_DIR + "Api.py", "Api.py")
+        node.put_file(REPO_DIR + "Api.py", "Api.py")
 
         if not config == "setup.json":
             # Upload main code last (triggers automatic reboot)
-            put_file(ws, REPO_DIR + "boot.py", "boot.py")
+            node.put_file(REPO_DIR + "boot.py", "boot.py")
         else:
-            put_file(ws, REPO_DIR + "setup.py", "boot.py")
+            node.put_file(REPO_DIR + "setup.py", "boot.py")
 
-        close_connection(s)
+        node.close_connection()
 
     except ConnectionResetError:
         return JsonResponse("Connection error, please hold down the reset button on target node and try again after about 30 seconds.", safe=False, status=408)
