@@ -756,7 +756,7 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Api Target Rule</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            <button id="api-modal-close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body d-flex flex-column">
 
@@ -944,6 +944,9 @@
                         button.classList.add("btn-outline-dark");
                     };
                 });
+
+                // Api modal close button
+                document.getElementById('api-modal-close').classList.add('btn-close-white');
             } else {
                 document.body.classList.remove("dark");
                 document.body.classList.add("light");
@@ -962,8 +965,16 @@
                         button.classList.add("btn-outline-secondary");
                     };
                 });
+
+                // Api modal close button
+                document.getElementById('api-modal-close').classList.remove('btn-close-white');
             }
         });
+
+        // Set modal close button color (runs once on load)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.getElementById('api-modal-close').classList.add('btn-close-white');
+        };
     </script>
     <script src="{% static 'node_configuration/rule_sliders.js' %}"></script>
     <script src="{% static 'node_configuration/apiTargetOptions.js' %}"></script>

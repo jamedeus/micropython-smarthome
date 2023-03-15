@@ -134,7 +134,6 @@
         </div>
     </div>
 
-
     <!-- Loading modal displayed while waiting on upload -->
 
     <div class="modal fade" id="upload-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
@@ -176,7 +175,7 @@
                 <div class="modal-header justify-content-between pb-0">
                     <button type="button" class="btn-close" style="visibility:hidden"></button>
                     <h5 id="wifi-modal-title" class="modal-title">Default Wifi</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button id="wifi-modal-close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" id="wifi-modal-body">
                     <p class="text-center">These credentials will be pre-filled every time a new config is created</p>
@@ -204,7 +203,7 @@
                 <div class="modal-header justify-content-between pb-0">
                     <button type="button" class="btn-close" style="visibility:hidden"></button>
                     <h5 id="restore-modal-title" class="modal-title">Restore Config</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button id="restore-modal-close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body text-center" id="restore-modal-body">
                     <p class="text-center">This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
@@ -383,6 +382,8 @@
                 document.getElementById("settings_button").classList.remove("btn-light");
                 document.getElementById("settings_button").classList.add("btn-dark");
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
+                document.getElementById('wifi-modal-close').classList.add('btn-close-white');
+                document.getElementById('restore-modal-close').classList.add('btn-close-white');
             } else {
                 document.body.classList.remove("dark");
                 document.getElementById("nodes_table").classList.remove("table-dark");
@@ -390,8 +391,16 @@
                 document.getElementById("settings_button").classList.remove("btn-dark");
                 document.getElementById("settings_button").classList.add("btn-light");
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.remove("dropdown-menu-dark"));
+                document.getElementById('wifi-modal-close').classList.remove('btn-close-white');
+                document.getElementById('restore-modal-close').classList.remove('btn-close-white');
             }
         });
+
+        // Set modal close button color (runs once on load)
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.getElementById('wifi-modal-close').classList.add('btn-close-white');
+            document.getElementById('restore-modal-close').classList.add('btn-close-white');
+        };
     </script>
     <script src="{% static 'node_configuration/upload.js' %}"></script>
 </body>

@@ -147,7 +147,7 @@
                                                 <div class='d-flex m-3'>
                                                     <button type="button" class="btn-close" style="visibility:hidden"></button>
                                                     <h3 class="mx-auto mb-0" id="error-modal-title">Temperature History</h3>
-                                                    <button type="button" class="btn-close my-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    <button type="button" class="btn-close my-auto" id="chart-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
                                                     <canvas id="chart"></canvas>
@@ -674,7 +674,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Api Target Rule</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" id="api-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body d-flex flex-column">
 
@@ -813,8 +813,10 @@
                 button.classList.add('btn-outline-dark');
             });
 
-            // Debug modal close button
+            // Modal close buttons
             document.getElementById('debug-close').classList.add('btn-close-white');
+            try{ document.getElementById('api-close').classList.add('btn-close-white') }catch(err){};
+            try{ document.getElementById('chart-close').classList.add('btn-close-white') }catch(err){};
         };
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
@@ -833,8 +835,10 @@
                     button.classList.add('btn-outline-dark');
                 });
 
-                // Debug modal close button
+                // Modal close buttons
                 document.getElementById('debug-close').classList.add('btn-close-white');
+                try{ document.getElementById('api-close').classList.add('btn-close-white') }catch(err){};
+                try{ document.getElementById('chart-close').classList.add('btn-close-white') }catch(err){};
 
                 {% if context.api_target_options %}
                 // Buttons in ApiTarget rule modal
@@ -861,8 +865,10 @@
                     button.classList.add('btn-outline-secondary');
                 });
 
-                // Debug modal close button
+                // Modal close buttons
                 document.getElementById('debug-close').classList.remove('btn-close-white');
+                try{ document.getElementById('api-close').classList.remove('btn-close-white') }catch(err){};
+                try{ document.getElementById('chart-close').classList.remove('btn-close-white') }catch(err){};
 
                 {% if context.api_target_options %}
                 // Buttons in ApiTarget rule modal
