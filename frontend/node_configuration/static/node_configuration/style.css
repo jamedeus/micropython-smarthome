@@ -91,6 +91,7 @@ td.min {
   --bs-light-rgb: 248, 249, 250;
   /* Modals */
   /* Input fields */
+  /* Fix form validation messages in dark mode */
   /* Dropdowns */
   /* Contrasting background for dropdowns inside modal */
   /* Contrasting background for inputs inside modal */
@@ -102,6 +103,9 @@ td.min {
   --bs-body-bg: #1b1e1f;
   /* Prevent color change on focus (not enough contrast with body bg) */
   /* Toasts */
+}
+.dark .is-invalid ~ .invalid-feedback, .dark .is-invalid ~ .invalid-tooltip, .dark .was-validated :invalid ~ .invalid-feedback, .dark .was-validated :invalid ~ .invalid-tooltip {
+  display: block;
 }
 .dark .modal-dropdown {
   background-color: #1b1e1f !important;

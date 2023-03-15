@@ -33,4 +33,6 @@ urlpatterns = [
     path('set_default_credentials', views.set_default_credentials, name='set_default_credentials'),
 
     path('restore_config', views.restore_config, name='restore_config'),
+
+    path('check_duplicate', views.check_duplicate, name='check_duplicate'),
 ]

@@ -99,7 +99,10 @@
 
                         <div class="mb-2">
                             <label for="friendlyName"><b>Name:</b></label>
-                            <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{context.config.NAME}}" required>
+                            <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{context.config.NAME}}" oninput="check_duplicate(this)" aria-describedby="friendlyName-feedback" required>
+                            <div id="friendlyName-feedback" class="invalid-feedback">
+                                Name must be unique
+                            </div>
                         </div>
 
                         <div class="mb-2">
@@ -885,11 +888,29 @@
         const edit_existing = false;
         {% else %}
         const edit_existing = true;
+        const orig_name = "{{context.config.NAME}}".toLowerCase();
         {% endif %}
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
+
+        // Listens on name input, warns when duplicate name entered
+        async function check_duplicate(el) {
+            // Skip check if editing and name is original name
+            if (!edit_existing || el.value.toLowerCase() != orig_name) {
+                // Send input value to backend
+                response = await send_post_request('/check_duplicate', {'name': el.value})
+
+                // If name is duplicate, add invalid highlight + listener to remove highlight
+                if (!response.ok) {
+                    el.classList.add('is-invalid');
+                    el.addEventListener("input", (e) => {
+                        e.target.classList.remove("is-invalid");
+                    }, { once: true });
+                };
+            };
+        };
 
         document.getElementById("submit-button").addEventListener("click", function(e) {
             e.preventDefault();

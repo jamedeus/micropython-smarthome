@@ -136,6 +136,11 @@ td.min {
     $form-check-input-focus-border: 1px solid #232627;
     $form-check-input-checked-bg-color: #31363b;
 
+    /* Fix form validation messages in dark mode */
+    .is-invalid~.invalid-feedback, .is-invalid~.invalid-tooltip, .was-validated :invalid~.invalid-feedback, .was-validated :invalid~.invalid-tooltip {
+        display:block
+    };
+
     /* Dropdowns */
     $form-select-bg: #31363b;
     $form-select-color: #ffffff;

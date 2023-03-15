@@ -349,6 +349,23 @@ def is_duplicate(filename, friendly_name):
 
 
 
+# Used to warn when duplicate name entered in config generator
+def check_duplicate(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        raise Http404("ERROR: Must post data")
+
+    friendly_name = data['name']
+    filename = friendly_name.lower().replace(" ", "-") + ".json"
+
+    if is_duplicate(filename, friendly_name):
+        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+    else:
+        return JsonResponse("Name OK.", safe=False, status=200)
+
+
+
 def generateConfigFile(request, edit_existing=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
