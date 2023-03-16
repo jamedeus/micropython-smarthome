@@ -169,9 +169,11 @@ async function load_sensor_section(select) {
         preventDuplicatePins();
     };
 
-    // Add listener to format IP field while typing
+    // Add listeners to format IP field while typing, validate when focus leaves
     if (selected == "desktop") {
-        document.getElementById(`sensor${index}-ip`).addEventListener('input', formatIp);
+        ip = document.getElementById(`sensor${index}-ip`);
+        ip.addEventListener('input', formatIp);
+        ip.addEventListener('blur', validateIp);
     };
 
     if (instances["sensors"]["sensor" + index]) {
@@ -375,9 +377,11 @@ async function load_device_section(select) {
         preventDuplicatePins();
     };
 
-    // Add listener to format IP field while typing
+    // Add listeners to format IP field while typing, validate when focus leaves
     if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "relay" || selected == "wled") {
-        document.getElementById(`device${index}-ip`).addEventListener('input', formatIp);
+        ip = document.getElementById(`device${index}-ip`);
+        ip.addEventListener('input', formatIp);
+        ip.addEventListener('blur', validateIp);
     };
 
     // Check if IrBlaster selected in any device dropdown

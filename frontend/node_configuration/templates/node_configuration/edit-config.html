@@ -1089,6 +1089,19 @@
         // Add listener to all IP fields
         document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('input', formatIp));
 
+        // Highlight IP fields that fail regex
+        function validateIp(event) {
+            if (!event.target.validity.valid) {
+                event.target.classList.add('is-invalid');
+                event.target.addEventListener("input", (e) => {
+                    e.target.classList.remove("is-invalid");
+                }, { once: true });
+            };
+        };
+        // Validate IP fields when focus leaves
+        document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('blur', validateIp));
+
+
         document.getElementById("submit-button").addEventListener("click", function(e) {
             e.preventDefault();
 
