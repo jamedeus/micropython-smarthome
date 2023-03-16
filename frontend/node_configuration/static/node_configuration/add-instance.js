@@ -344,7 +344,23 @@ async function load_device_section(select) {
     } else if (selected == "ir-blaster") {
         template = `<div class="mb-2">
                         <label for="device${index}-pin" class="device${index}"><b>Pin:</b></label>
-                        <input type="text" class="form-control device${index}" id="device${index}-pin" placeholder="" required>
+                        <select id="device${index}-pin" class="form-select device${index} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
+                            <option selected disabled>Select pin</option>
+                            <option value="4">4</option>
+                            <option value="13">13</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="23">23</option>
+                            <option value="25">25</option>
+                            <option value="26">26</option>
+                            <option value="27">27</option>
+                            <option value="32">32</option>
+                            <option value="33">33</option>
+                        </select>
                     </div>
 
                     <div class="mb-2">
@@ -373,7 +389,7 @@ async function load_device_section(select) {
     };
 
     // Disable already-used pins in the new pin dropdown
-    if (selected == "mosfet" || selected == "dumb-relay" || selected == "pwm") {
+    if (selected == "mosfet" || selected == "dumb-relay" || selected == "pwm" || selected == "ir-blaster") {
         preventDuplicatePins();
     };
 

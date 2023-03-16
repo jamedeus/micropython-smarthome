@@ -592,7 +592,23 @@
                                         <div id="addDeviceOptions{{ context.config.devices|length|add:1 }}" class="card-body device{{context.config.devices|length|add:1}}">
                                             <div class="mb-2">
                                                 <label for="device{{ context.config.devices|length|add:1 }}-pin" class="device{{context.config.devices|length|add:1}}"><b>Pin:</b></label>
-                                                <input type="text" class="form-control device{{context.config.devices|length|add:1}}" id="device{{ context.config.devices|length|add:1 }}-pin" value="{{ context.config.ir_blaster.pin }}" required>
+                                                <select id="device{{ context.config.devices|length|add:1 }}-pin" class="form-select device{{context.config.devices|length|add:1}} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
+                                                    <option disabled>Select pin</option>
+                                                    <option value="4" {% if context.config.ir_blaster.pin == "4"  %} selected {% endif %}>4</option>
+                                                    <option value="13" {% if context.config.ir_blaster.pin == "13"  %} selected {% endif %}>13</option>
+                                                    <option value="16" {% if context.config.ir_blaster.pin == "16"  %} selected {% endif %}>16</option>
+                                                    <option value="17" {% if context.config.ir_blaster.pin == "17"  %} selected {% endif %}>17</option>
+                                                    <option value="18" {% if context.config.ir_blaster.pin == "18"  %} selected {% endif %}>18</option>
+                                                    <option value="19" {% if context.config.ir_blaster.pin == "19"  %} selected {% endif %}>19</option>
+                                                    <option value="21" {% if context.config.ir_blaster.pin == "21"  %} selected {% endif %}>21</option>
+                                                    <option value="22" {% if context.config.ir_blaster.pin == "22"  %} selected {% endif %}>22</option>
+                                                    <option value="23" {% if context.config.ir_blaster.pin == "23"  %} selected {% endif %}>23</option>
+                                                    <option value="25" {% if context.config.ir_blaster.pin == "25"  %} selected {% endif %}>25</option>
+                                                    <option value="26" {% if context.config.ir_blaster.pin == "26"  %} selected {% endif %}>26</option>
+                                                    <option value="27" {% if context.config.ir_blaster.pin == "27"  %} selected {% endif %}>27</option>
+                                                    <option value="32" {% if context.config.ir_blaster.pin == "32"  %} selected {% endif %}>32</option>
+                                                    <option value="33" {% if context.config.ir_blaster.pin == "33"  %} selected {% endif %}>33</option>
+                                                </select>
                                             </div>
 
                                             <div class="mb-2">
