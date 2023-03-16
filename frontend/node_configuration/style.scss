@@ -150,6 +150,10 @@ td.min {
     $form-select-disabled-color: #ffffff;
     $form-select-disabled-border-color: #232627;
 
+    /* Dropdown down arrow icon */
+    $form-select-indicator-color: #ffffff;
+    $form-select-indicator: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='#{$form-select-indicator-color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/></svg>");
+
     /* Contrasting background for dropdowns inside modal */
     .modal-dropdown {
         background-color: #1b1e1f !important;

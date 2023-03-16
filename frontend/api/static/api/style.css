@@ -54,6 +54,7 @@ body {
   /* Modals */
   /* Input fields */
   /* Dropdowns */
+  /* Dropdown down arrow icon */
   /* Different color for dropdown placeholder text (selected text set to fff above) */
   /* Increase contrast for disabled items */
   /* Force bold white text on buttons (readability) */
@@ -692,7 +693,7 @@ body {
   line-height: 1.5;
   color: #ffffff;
   background-color: #1b1e1f;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 16px 12px;
