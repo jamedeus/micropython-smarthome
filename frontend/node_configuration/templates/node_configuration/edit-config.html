@@ -261,8 +261,7 @@
                                         {% elif params.type == "desktop" %}
 
                                                 <div class="mb-2">
-                                                    <label for="sensor{{forloop.counter}}-ip" class="sensor{{forloop.counter}}"><b>IP:</b></label>
-                                                    <input type="text" class="form-control sensor{{forloop.counter}}" id="sensor{{forloop.counter}}-ip" placeholder="" value="{{params.ip}}" required>
+                                                    <label for="sensor{{forloop.counter}}-ip" class="sensor{{forloop.counter}}"><b>IP:</b></label>                                                    <input type="text" class="form-control sensor{{forloop.counter}} ip-input" id="sensor{{forloop.counter}}-ip" placeholder="" value="{{params.ip}}" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                                                 </div>
 
                                                 <div class="mb-2">
@@ -375,7 +374,7 @@
                                         {% if params.type == "dimmer" or params.type == "bulb" or params.type == "wled" %}
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
-                                                    <input type="text" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" required>
+                                                    <input type="text" class="form-control device{{forloop.counter}} ip-input" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                                                 </div>
 
                                                 <div class="mb-2">
@@ -394,7 +393,7 @@
                                         {% elif params.type == "relay" %}
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
-                                                    <input type="text" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" required>
+                                                    <input type="text" class="form-control device{{forloop.counter}} ip-input" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                                                 </div>
 
                                                 <div class="mb-2">
@@ -440,7 +439,7 @@
                                         {% elif params.type == "desktop" %}
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
-                                                    <input type="text" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" required>
+                                                    <input type="text" class="form-control device{{forloop.counter}} ip-input" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                                                 </div>
 
                                                 <div class="mb-2">
@@ -1043,6 +1042,52 @@
         };
         // Run on load if editing
         if (edit_existing) { preventDuplicatePins() };
+
+        // Format IP address as user types in field
+        function formatIp(event) {
+            // Backspace and delete bypass formatting
+            if (event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward') { return };
+
+            // Remove everything except digits and period, 15 char max
+            const input = event.target.value.replace(/[^\d.]/g, '').substring(0,15);;
+            let output = '';
+            let block = '';
+
+            // Iterate input and format character by character
+            for (let i = 0; i < input.length; i++) {
+                const char = input[i];
+
+                // Delimiter character handling
+                if (char === '.') {
+                    // Drop if first char is delim, otherwise add to end of current block + start new block
+                    if (block.length > 0) {
+                        output += block + '.';
+                        block = '';
+                    };
+
+                // Numeric character handling
+                } else {
+                    // Add to current block
+                    block += char;
+                    // If current block reached limit, add to output + start new block
+                    if (block.length === 3) {
+                        output += block + '.';
+                        block = '';
+                    };
+                };
+            };
+
+            // Add final block
+            output += block;
+
+            // Prevent >4 blocks (char limit may not be reached if single-digit blocks present)
+            output = output.split('.').slice(0, 4).join('.');
+
+            // Replace field contents with formatted string
+            event.target.value = output;
+        };
+        // Add listener to all IP fields
+        document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('input', formatIp));
 
         document.getElementById("submit-button").addEventListener("click", function(e) {
             e.preventDefault();

@@ -107,7 +107,7 @@ async function load_sensor_section(select) {
     } else if (selected == "desktop") {
         template += `<div class="mb-2">
                         <label for="sensor${index}-ip" class="sensor${index}"><b>IP:</b></label>
-                        <input type="text" class="form-control sensor${index}" id="sensor${index}-ip" placeholder="" required>
+                        <input type="text" class="form-control sensor${index} ip-input" id="sensor${index}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                     </div>
 
                     <div class="mb-2">
@@ -169,6 +169,11 @@ async function load_sensor_section(select) {
         preventDuplicatePins();
     };
 
+    // Add listener to format IP field while typing
+    if (selected == "desktop") {
+        document.getElementById(`sensor${index}-ip`).addEventListener('input', formatIp);
+    };
+
     if (instances["sensors"]["sensor" + index]) {
         // If instance already exists, wipe params and re-populate (type changed)
         instances["sensors"]["sensor" + index].clearParams();
@@ -199,7 +204,7 @@ async function load_device_section(select) {
     if (selected == "dimmer" || selected == "bulb") {
         template += `<div class="mb-2">
                         <label for="device${index}-ip" class="device${index}"><b>IP:</b></label>
-                        <input type="text" class="form-control device${index}" id="device${index}-ip" placeholder="" required>
+                        <input type="text" class="form-control device${index} ip-input" id="device${index}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                     </div>
 
                     <div class="mb-2">
@@ -214,7 +219,7 @@ async function load_device_section(select) {
     } else if (selected == "wled") {
         template += `<div class="mb-2">
                         <label for="device${index}-ip" class="device${index}"><b>IP:</b></label>
-                        <input type="text" class="form-control device${index}" id="device${index}-ip" placeholder="" required>
+                        <input type="text" class="form-control device${index} ip-input" id="device${index}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                     </div>
 
                     <div class="mb-2">
@@ -229,7 +234,7 @@ async function load_device_section(select) {
     } else if (selected == "desktop" || selected == "relay") {
         template += `<div class="mb-2">
                         <label for="device${index}-ip" class="device${index}"><b>IP:</b></label>
-                        <input type="text" class="form-control device${index}" id="device${index}-ip" placeholder="" required>
+                        <input type="text" class="form-control device${index} ip-input" id="device${index}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                     </div>
 
                     <div class="mb-2">
@@ -368,6 +373,11 @@ async function load_device_section(select) {
     // Disable already-used pins in the new pin dropdown
     if (selected == "mosfet" || selected == "dumb-relay" || selected == "pwm") {
         preventDuplicatePins();
+    };
+
+    // Add listener to format IP field while typing
+    if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "relay" || selected == "wled") {
+        document.getElementById(`device${index}-ip`).addEventListener('input', formatIp);
     };
 
     // Check if IrBlaster selected in any device dropdown
