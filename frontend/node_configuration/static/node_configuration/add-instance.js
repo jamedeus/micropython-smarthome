@@ -26,7 +26,7 @@ async function load_sensor_section(select) {
     // Add nickname section to template, other sections added below as needed
     var template = `<div class="mb-2">
                         <label for="sensor${index}-nickname" class="sensor${index}"><b>Nickname:</b></label>
-                        <input type="text" class="form-control sensor${index} nickname" id="sensor${index}-nickname" placeholder="" onchange="update_nickname(this)" required>
+                        <input type="text" class="form-control sensor${index} nickname" id="sensor${index}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
                     </div>`
 
     // Get template for sensor type selected by user
@@ -199,7 +199,7 @@ async function load_device_section(select) {
     // Add nickname section to template, other sections added below as needed
     var template = `<div class="mb-2">
                         <label for="device${index}-nickname" class="device${index}"><b>Nickname:</b></label>
-                        <input type="text" class="form-control device${index} nickname" id="device${index}-nickname" placeholder="" onchange="update_nickname(this)" required>
+                        <input type="text" class="form-control device${index} nickname" id="device${index}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
                     </div>`
 
     // Get template for device type selected by user

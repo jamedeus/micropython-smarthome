@@ -166,7 +166,8 @@
                                         <div id="addSensorOptions{{ forloop.counter }}" class="card-body sensor{{forloop.counter}}">
                                             <div class="mb-2">
                                                 <label for="sensor{{forloop.counter}}-nickname" class="sensor{{forloop.counter}}"><b>Nickname:</b></label>
-                                                <input type="text" class="form-control sensor{{forloop.counter}} nickname" id="sensor{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
+                                                <input type="text" class="form-control sensor{{forloop.counter}} nickname" id="sensor{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
+                                                <div id="sensor-nickname-feedback" class="invalid-feedback">Name already in use</div>
                                             </div>
 
                                         {% if params.type == "pir" %}
@@ -368,7 +369,8 @@
                                         <div id="addDeviceOptions{{ forloop.counter }}" class="card-body device{{forloop.counter}}">
                                             <div class="mb-2">
                                                 <label for="device{{forloop.counter}}-nickname" class="device{{forloop.counter}}"><b>Nickname:</b></label>
-                                                <input type="text" class="form-control device{{forloop.counter}} nickname" id="device{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" required>
+                                                <input type="text" class="form-control device{{forloop.counter}} nickname" id="device{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
+                                                <div id="sensor-nickname-feedback" class="invalid-feedback">Name already in use</div>
                                             </div>
 
                                         {% if params.type == "dimmer" or params.type == "bulb" or params.type == "wled" %}
@@ -1001,6 +1003,25 @@
                     el.addEventListener("input", (e) => {
                         e.target.classList.remove("is-invalid");
                     }, { once: true });
+                };
+            };
+        };
+
+        // Called on input for all nickname fields, highlight red if same as existing nickname
+        function prevent_duplicate_nickname(event) {
+            // Get ID of modified input (prevent comparing against self)
+            const id = event.target.id.split("-")[0];
+
+            // Iterate all other devices/sensors, check if identical name exists
+            for (const category in instances) {
+                for (const item in instances[category]) {
+                    // If not same instance and same nickname, add highlight + listener to remove
+                    if (item != id && instances[category][item].nickname.toLowerCase() == event.target.value.toLowerCase()) {
+                        event.target.classList.add('is-invalid');
+                        event.target.addEventListener("input", (e) => {
+                            e.target.classList.remove("is-invalid");
+                        }, { once: true });
+                    };
                 };
             };
         };
