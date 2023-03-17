@@ -147,7 +147,7 @@ async function load_sensor_section(select) {
 
                     <div class="mb-2">
                         <label for="sensor${index}-tolerance" class="sensor${index}"><b>Tolerance:</b></label>
-                        <input type="text" class="form-control sensor${index}" id="sensor${index}-tolerance" placeholder="" required>
+                        <input type="text" class="form-control sensor${index} thermostat" id="sensor${index}-tolerance" placeholder="" required>
                     </div>`
     };
 
@@ -174,6 +174,11 @@ async function load_sensor_section(select) {
         ip = document.getElementById(`sensor${index}-ip`);
         ip.addEventListener('input', formatIp);
         ip.addEventListener('blur', validateIp);
+    };
+
+    // Add listener to constrain tolerance field
+    if (selected == "si7021") {
+        document.getElementById(`sensor${index}-tolerance`).addEventListener('input', thermostatToleranceLimit);
     };
 
     if (instances["sensors"]["sensor" + index]) {

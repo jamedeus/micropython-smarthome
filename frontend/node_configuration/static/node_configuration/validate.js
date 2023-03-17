@@ -136,7 +136,7 @@ function pwmLimits(event) {
     if (input > 1023) {
         input = 1023;
     } else if (input < 0) {
-        input = 0
+        input = 0;
     } else if (isNaN(input)) {
         input = "";
     };
@@ -144,3 +144,22 @@ function pwmLimits(event) {
     event.target.value = input;
 };
 document.querySelectorAll('.pwm-limits').forEach(input => input.addEventListener('input', pwmLimits));
+
+// Constrain Thermostat tolerance field to 0.1 - 10.0 degrees
+function thermostatToleranceLimit(event) {
+    // Skip if key was backsace, delete, or period
+    if (event.inputType === 'deleteContentBackward' || event.inputType === 'deleteContentForward' || event.data == ".") { return };
+
+    // Remove everything except digits and period, 4 digit max
+    let input = parseFloat(event.target.value.replace(/[^\d.]/g, '').substring(0,4));
+    if (input > 10) {
+        input = 10;
+    } else if (input < 0.1) {
+        input = 0.1
+    } else if (isNaN(input)) {
+        input = "";
+    };
+
+    event.target.value = input;
+};
+document.querySelectorAll('.thermostat').forEach(input => input.addEventListener('input', thermostatToleranceLimit));
