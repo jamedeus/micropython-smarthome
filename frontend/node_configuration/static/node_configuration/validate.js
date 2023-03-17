@@ -129,3 +129,19 @@ function validateIp(event) {
 };
 // Validate IP fields when focus leaves
 document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('blur', validateIp));
+
+// Constrain PWM max/min fields to valid integer range
+function pwmLimits(event) {
+    // Remove everything except digits, 4 digit max
+    let input = parseInt(event.target.value.replace(/[^\d]/g, '').substring(0,4));
+    if (input > 1023) {
+        input = 1023;
+    } else if (input < 0) {
+        input = 0
+    } else if (isNaN(input)) {
+        input = "";
+    };
+
+    event.target.value = input;
+};
+document.querySelectorAll('.pwm-limits').forEach(input => input.addEventListener('input', pwmLimits));

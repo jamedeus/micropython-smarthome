@@ -477,12 +477,12 @@
 
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-min" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
-                                                    <input type="min" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-min" placeholder="0" value="{{params.min}}" required>
+                                                    <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-min" placeholder="0" value="{{params.min}}" required>
                                                 </div>
 
                                                 <div class="mb-2">
                                                     <label for="device{{ forloop.counter }}-max" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
-                                                    <input type="text" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-max" placeholder="1023" value="{{params.max}}" required>
+                                                    <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-max" placeholder="1023" value="{{params.max}}" required>
                                                 </div>
 
                                                 <div class="mb-2">

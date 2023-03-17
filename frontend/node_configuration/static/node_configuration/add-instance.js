@@ -301,12 +301,12 @@ async function load_device_section(select) {
 
                     <div class="mb-2">
                         <label for="device${index}-min" class="device${index}"><b>Min brightness:</b></label>
-                        <input type="min" class="form-control device${index}" id="device${index}-min" placeholder="0" required>
+                        <input type="min" class="form-control device${index} pwm-limits" id="device${index}-min" placeholder="0" required>
                     </div>
 
                     <div class="mb-2">
                         <label for="device${index}-max" class="device${index}"><b>Max brightness:</b></label>
-                        <input type="text" class="form-control device${index}" id="device${index}-max" placeholder="1023" required>
+                        <input type="text" class="form-control device${index} pwm-limits" id="device${index}-max" placeholder="1023" required>
                     </div>
 
                     <div class="mb-2">
@@ -398,6 +398,12 @@ async function load_device_section(select) {
         ip = document.getElementById(`device${index}-ip`);
         ip.addEventListener('input', formatIp);
         ip.addEventListener('blur', validateIp);
+    };
+
+    // Add listener for PWM max/min fields
+    if (selected == "pwm") {
+        document.getElementById(`device${index}-max`).addEventListener('input', pwmLimits);
+        document.getElementById(`device${index}-min`).addEventListener('input', pwmLimits);
     };
 
     // Check if IrBlaster selected in any device dropdown
