@@ -23,8 +23,11 @@ function prevent_duplicate_nickname(event) {
     // Iterate all other devices/sensors, check if identical name exists
     for (const category in instances) {
         for (const item in instances[category]) {
-            // If not same instance and same nickname, add highlight + listener to remove
-            if (item != id && instances[category][item].nickname.toLowerCase() == event.target.value.toLowerCase()) {
+            // Skip if same instance, or if nickname field blank
+            if (item == id || instances[category][item].nickname.length == 0) {
+                continue;
+            // If duplicate nickname, add highlight + listener to remove
+            } else if (instances[category][item].nickname.toLowerCase() == event.target.value.toLowerCase()) {
                 event.target.classList.add('is-invalid');
                 event.target.addEventListener("input", (e) => {
                     e.target.classList.remove("is-invalid");
