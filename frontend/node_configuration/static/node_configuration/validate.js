@@ -23,11 +23,8 @@ function prevent_duplicate_nickname(event) {
     // Iterate all other devices/sensors, check if identical name exists
     for (const category in instances) {
         for (const item in instances[category]) {
-            // Skip if same instance, or if nickname field blank
-            if (item == id || instances[category][item].nickname.length == 0) {
-                continue;
-            // If duplicate nickname, add highlight + listener to remove
-            } else if (instances[category][item].nickname.toLowerCase() == event.target.value.toLowerCase()) {
+            // If not same instance and same nickname, add highlight + listener to remove
+            if (item != id && instances[category][item].nickname.toLowerCase() == event.target.value.toLowerCase()) {
                 event.target.classList.add('is-invalid');
                 event.target.addEventListener("input", (e) => {
                     e.target.classList.remove("is-invalid");
@@ -66,7 +63,6 @@ function pinSelected(element) {
 
 // Iterate all pin dropdowns and disable already-used pins
 function preventDuplicatePins() {
-console.log('disabling')
     dropdowns = document.querySelectorAll('.pin-select');
     dropdowns.forEach(dropdown => {
         pinSelected(dropdown);

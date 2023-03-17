@@ -11,6 +11,8 @@ class Device {
         // Track if page2 + page3 titles need to be updated (without removing targets/rules)
         this.name_changed = false;
 
+        this.nickname = "";
+
         this.getParams();
     };
 
