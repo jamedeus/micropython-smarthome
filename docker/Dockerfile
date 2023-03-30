@@ -14,6 +14,7 @@ RUN mkdir /repo/config
 
 # Smarthome core modules
 COPY boot.py /repo/boot.py
+COPY setup.py /repo/setup.py
 COPY Api.py /repo/Api.py
 COPY Config.py /repo/Config.py
 COPY Group.py /repo/Group.py
