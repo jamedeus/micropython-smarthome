@@ -416,6 +416,13 @@
                                                             </div>
                                                         </td>
 
+                                                    {% elif params.type == "wled" %}
+                                                        <td style="width: 100%">
+                                                            <div class="d-flex flex-row align-items-center mt-2 pt-1">
+                                                                <input id="{{device}}-rule{{forloop.counter}}" name="{{device}}-rule{{forloop.counter}}" type="range" class="schedule-rule mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                            </div>
+                                                        </td>
+
                                                     {% elif params.type == "api-target" %}
                                                         <td style="width: 100%"><button id="{{device}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">Set rule</button>
                                                         <input type="text" class="form-control rule {{device}}" id="{{device}}-rule{{forloop.counter}}" value="{{ rule }}" data-original="{{ rule }}" style="display:none;"></td>
@@ -446,6 +453,13 @@
                                                     <td style="width: 100%">
                                                         <div class="d-flex flex-row align-items-center mt-2 pt-1">
                                                             <input id="{{device}}-rule1" name="{{device}}-rule1" type="range" class="schedule-rule mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                                                        </div>
+                                                    </td>
+
+                                                {% elif params.type == "wled" %}
+                                                    <td style="width: 100%">
+                                                        <div class="d-flex flex-row align-items-center mt-2 pt-1">
+                                                            <input id="{{device}}-rule1" name="{{device}}-rule1" type="range" class="schedule-rule mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
                                                         </div>
                                                     </td>
 
@@ -563,7 +577,7 @@
                 <div class="modal-content">
                     <div class='d-flex m-3'>
                         <button type="button" class="btn-close" style="visibility:hidden"></button>
-                        <h3 class="mx-auto mb-0" id="error-modal-title">Temperature History</h3>
+                        <h3 class="mx-auto mb-0" id="chart-modal-title">Temperature History</h3>
                         <button type="button" class="btn-close my-auto" id="chart-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
