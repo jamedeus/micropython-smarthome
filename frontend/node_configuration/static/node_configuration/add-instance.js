@@ -181,6 +181,41 @@ async function load_sensor_section(select) {
         document.getElementById(`sensor${index}-tolerance`).addEventListener('input', thermostatToleranceLimit);
     };
 
+    // Check if Thermostat selected in any sensor dropdown
+    sensors = document.getElementsByClassName("sensorType");
+
+    var found = false;
+    for (sensor of sensors) {
+        if (sensor.value == "si7021") {
+            console.log('found')
+            found = true;
+        };
+    };
+
+    // If IrBlaster selected, disable all IrBlaster options. Otherwise, re-enable all
+    if (!found) {
+        thermostat_configured = false;
+
+        for (sensor of document.getElementsByClassName("sensorType")) {
+            for (option of sensor.children) {
+                if (option.value == "si7021") {
+                    option.disabled = false;
+                };
+            };
+        };
+    } else {
+        thermostat_configured = true;
+
+        for (sensor of document.getElementsByClassName("sensorType")) {
+            if (sensor == select) { continue };
+            for (option of sensor.children) {
+                if (option.value == "si7021") {
+                    option.disabled = true;
+                };
+            };
+        };
+    };
+
     if (instances["sensors"]["sensor" + index]) {
         // If instance already exists, wipe params and re-populate (type changed)
         instances["sensors"]["sensor" + index].clearParams();
@@ -537,7 +572,7 @@ async function load_next_sensor(button) {
                                     <option value="switch">Switch</option>
                                     <option value="dummy">Dummy</option>
                                     <option value="desktop">Desktop</option>
-                                    <option value="si7021">Thermostat</option>
+                                    <option value="si7021" ${ thermostat_configured ? "disabled" : ""}>Thermostat</option>
                                     </select>
                                 </div>
 
