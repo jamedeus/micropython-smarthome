@@ -33,6 +33,7 @@
                     <li><a class="dropdown-item" onclick='$("#wifi-modal").modal("show")'>Set WIFI credentials</a></li>
                     <li><a class="dropdown-item" onclick='reupload_all()'>Re-upload all</a></li>
                     <li><a class="dropdown-item" onclick='$("#restore-modal").modal("show")'>Restore config</a></li>
+                    <li><a class="dropdown-item" onclick='$("#integration-modal").modal("show")'>Desktop integration</a></li>
                 </ul>
             </div>
         </div>
@@ -226,6 +227,33 @@
         </div>
     </div>
 
+    <!-- Desktop integration installer modal -->
+
+    <div class="modal fade" id="integration-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header justify-content-between pb-0">
+                    <button type="button" class="btn-close" style="visibility:hidden"></button>
+                    <h5 id="integration-modal-title" class="modal-title">Install Desktop Integration</h5>
+                    <button id="integration-modal-close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-center mt-3">This software integrates your computer into your smarthome:</p>
+                    <ul>
+                        <li>Allow sensors to turn your computer screen on and off</li>
+                        <li>Turn other devices on when your screen is on</li>
+                        <li>Turn other devices off when your screen goes to sleep</li>
+                    </ul>
+                    <p class="text-center">You can enable some or all of these functions by configuring <b>desktop</b> type devices and/or sensors on any node.</p>
+                    <p class="text-center mt-5">To install, click the download button, unzip the file, and run <b>setup.sh</b></p>
+                </div>
+                <div class="modal-footer">
+                    <a href="{% static 'node_configuration/micropython-smarthome-integration.zip' %}" download class="btn btn-success mx-auto">Download</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const edit_existing = false;
         let target_ip = ""
@@ -384,6 +412,7 @@
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
                 document.getElementById('wifi-modal-close').classList.add('btn-close-white');
                 document.getElementById('restore-modal-close').classList.add('btn-close-white');
+                document.getElementById('integration-modal-close').classList.add('btn-close-white');
             } else {
                 document.body.classList.remove("dark");
                 document.getElementById("nodes_table").classList.remove("table-dark");
@@ -393,6 +422,7 @@
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.remove("dropdown-menu-dark"));
                 document.getElementById('wifi-modal-close').classList.remove('btn-close-white');
                 document.getElementById('restore-modal-close').classList.remove('btn-close-white');
+                document.getElementById('integration-modal-close').classList.remove('btn-close-white');
             }
         });
 
@@ -400,6 +430,7 @@
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             document.getElementById('wifi-modal-close').classList.add('btn-close-white');
             document.getElementById('restore-modal-close').classList.add('btn-close-white');
+            document.getElementById('integration-modal-close').classList.add('btn-close-white');
         };
     </script>
     <script src="{% static 'node_configuration/upload.js' %}"></script>
