@@ -3,7 +3,7 @@
 # Node dependencies build stage
 FROM node:19-buster-slim as node_build
 
-COPY package.json .
+COPY frontend/package.json .
 RUN npm install
 
 # Python dependencies build stage
@@ -48,15 +48,15 @@ COPY frontend/frontend /repo/frontend/frontend
 COPY frontend/webapp /repo/frontend/webapp
 
 # Copy node + python dependencies to final build stage
-COPY --from=node_build node_modules/bootstrap/dist/css/bootstrap.min.css /repo/node_modules/bootstrap/dist/css/bootstrap.min.css
-COPY --from=node_build node_modules/bootstrap/dist/js/bootstrap.bundle.min.js /repo/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js
-COPY --from=node_build node_modules/bootstrap-icons/font/bootstrap-icons.css /repo/node_modules/bootstrap-icons/font/bootstrap-icons.css
-COPY --from=node_build node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff /repo/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff
-COPY --from=node_build node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2 /repo/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2
-COPY --from=node_build node_modules/jquery/dist/jquery.min.js /repo/node_modules/jquery/dist/jquery.min.js
-COPY --from=node_build node_modules/spinkit/spinkit.min.css /repo/node_modules/spinkit/spinkit.min.css
-COPY --from=node_build node_modules/smoothscroll-polyfill/dist/smoothscroll.min.js /repo/node_modules/smoothscroll-polyfill/dist/smoothscroll.min.js
-COPY --from=node_build node_modules/rangeslider.js/dist/rangeslider.min.js /repo/node_modules/rangeslider.js/dist/rangeslider.min.js
+COPY --from=node_build node_modules/bootstrap/dist/css/bootstrap.min.css /repo/frontend/node_modules/bootstrap/dist/css/bootstrap.min.css
+COPY --from=node_build node_modules/bootstrap/dist/js/bootstrap.bundle.min.js /repo/frontend/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js
+COPY --from=node_build node_modules/bootstrap-icons/font/bootstrap-icons.css /repo/frontend/node_modules/bootstrap-icons/font/bootstrap-icons.css
+COPY --from=node_build node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff /repo/frontend/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff
+COPY --from=node_build node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2 /repo/frontend/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2
+COPY --from=node_build node_modules/jquery/dist/jquery.min.js /repo/frontend/node_modules/jquery/dist/jquery.min.js
+COPY --from=node_build node_modules/spinkit/spinkit.min.css /repo/frontend/node_modules/spinkit/spinkit.min.css
+COPY --from=node_build node_modules/smoothscroll-polyfill/dist/smoothscroll.min.js /repo/frontend/node_modules/smoothscroll-polyfill/dist/smoothscroll.min.js
+COPY --from=node_build node_modules/rangeslider.js/dist/rangeslider.min.js /repo/frontend/node_modules/rangeslider.js/dist/rangeslider.min.js
 COPY --from=py_build /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
 
 # Vanilla database, migrations applied, no configs/nodes

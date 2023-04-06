@@ -135,14 +135,13 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-    os.path.join('.', 'node_modules', 'bootstrap', 'dist', 'css'),
-    os.path.join('.', 'node_modules', 'bootstrap', 'dist', 'js'),
-    os.path.join('.', 'node_modules', 'bootstrap-icons', 'font'),
-    os.path.join('.', 'node_modules', 'spinkit'),
-    os.path.join('.', 'node_modules', 'jquery', 'dist'),
-    os.path.join('.', 'node_modules', 'smoothscroll-polyfill', 'dist'),
-    os.path.join('.', 'node_modules', 'rangeslider.js', 'dist'),
+    os.path.join(BASE_DIR, 'node_modules', 'bootstrap', 'dist', 'css'),
+    os.path.join(BASE_DIR, 'node_modules', 'bootstrap', 'dist', 'js'),
+    os.path.join(BASE_DIR, 'node_modules', 'bootstrap-icons', 'font'),
+    os.path.join(BASE_DIR, 'node_modules', 'spinkit'),
+    os.path.join(BASE_DIR, 'node_modules', 'jquery', 'dist'),
+    os.path.join(BASE_DIR, 'node_modules', 'smoothscroll-polyfill', 'dist'),
+    os.path.join(BASE_DIR, 'node_modules', 'rangeslider.js', 'dist'),
 ]
 
 # Default primary key field type
