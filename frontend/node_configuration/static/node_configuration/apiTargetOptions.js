@@ -176,6 +176,9 @@ function populate_sub_command_off(target) {
     }
 }
 
+// Initialize rule modal
+const apiRuleModal = new bootstrap.Modal(document.getElementById('api-rule-modal'));
+
 function open_rule_modal(el) {
     apiRuleModal.show();
 

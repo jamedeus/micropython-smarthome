@@ -854,11 +854,14 @@
             <div class="modal fade" id="duplicate-modal" tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content">
-                        <div class="modal-body" id="duplicate-modal-body">
+                        <div class="modal-header" style="border-bottom: 0px;">
+                            <h5 class="mx-auto" id="error-modal-title">Duplicate Warning</h5>
+                        </div>
+                        <div class="modal-body text-center" id="duplicate-modal-body">
                         </div>
                         <div class="modal-footer">
-                            <button type="button" id="cancel-overwrite" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="button" id="confirm-overwrite" class="btn btn-danger" data-bs-dismiss="modal">Overwrite</button>
+                            <button type="button" id="cancel-overwrite" class="btn btn-secondary ms-auto" data-bs-dismiss="modal">Cancel</button>
+                            <button type="button" id="confirm-overwrite" class="btn btn-danger me-auto" data-bs-dismiss="modal">Overwrite</button>
                         </div>
                     </div>
                 </div>
@@ -868,7 +871,8 @@
             <div class="modal fade" id="api-rule-modal" tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
                     <div class="modal-content">
-                        <div class="modal-header">
+                        <div class="modal-header justify-content-between">
+                            <button type="button" class="btn-close" style="visibility:hidden;"></button>
                             <h5 class="modal-title">Api Target Rule</h5>
                             <button id="api-modal-close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -1016,7 +1020,6 @@
         const uploadModal = new bootstrap.Modal(document.getElementById('upload-modal'));
         const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
         const duplicateModal = new bootstrap.Modal(document.getElementById('duplicate-modal'));
-        const apiRuleModal = new bootstrap.Modal(document.getElementById('api-rule-modal'));
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
