@@ -36,24 +36,24 @@ async function send_post_request(url, body) {
 // Show the modal with id modal, optionally change title/body/footer
 function show_modal(modal, title=false, body=false, footer=false) {
     if (title) {
-        document.getElementById(modal + "-title").innerHTML = title;
+        document.getElementById(modal._element.id + "-title").innerHTML = title;
     };
 
     if (body) {
-        document.getElementById(modal + "-body").innerHTML = body;
+        document.getElementById(modal._element.id + "-body").innerHTML = body;
     };
 
     if (footer) {
-        document.getElementById(modal + "-footer").innerHTML = footer;
+        document.getElementById(modal._element.id + "-footer").innerHTML = footer;
     };
 
-    $('#' + modal).modal('show');
+    modal.show();
 };
 
 // Used by both pages to upload config files to nodes
 async function upload() {
     // Show loading screen
-    show_modal("upload-modal");
+    show_modal(uploadModal);
 
     if (edit_existing) {
         // Re-upload existing config
@@ -66,7 +66,7 @@ async function upload() {
     // If upload successful, show success animation and reload page
     if (response.ok) {
         // Change title, show success animation
-        show_modal("upload-modal", "Upload Complete", upload_complete);
+        show_modal(uploadModal, "Upload Complete", upload_complete);
 
         // Wait for animation to complete before reloading
         await sleep(1200);
@@ -86,7 +86,7 @@ async function upload() {
         alert(await response.text());
 
         // Hide modal allowing user to access page again
-        $('#upload-modal').modal('hide');
+        uploadModal.hide();
     };
 };
 
@@ -96,62 +96,53 @@ async function run_setup_prompt(error) {
                     <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
 
     // Replace loading modal with error modal, ask if user wants to run setup routine
-    $('#upload-modal').modal('hide');
-    show_modal("error-modal", "Error", `${error}`, footer);
+    uploadModal.hide();
+    show_modal(errorModal, "Error", `${error}`, footer);
 
-    $('#yes-button').click(async function() {
-        // Remove listeners (prevent stacking)
-        $('#yes-button').off('click');
-
+    document.getElementById('yes-button').addEventListener('click', async function() {
         // Show loading again, upload setup file
-        $("#error-modal").modal("hide");
-        show_modal("upload-modal");
+        errorModal.hide();
+        show_modal(uploadModal);
         var result = await send_post_request("setup", {ip: target_ip});
 
         if (result.ok) {
             // After uploading config, tell user to reboot node then click OK
-            $("#upload-modal").modal("hide");
+            uploadModal.hide();
             const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-            show_modal("error-modal", "Success", "Please reboot node, then press OK to resume upload", footer);
+            show_modal(errorModal, "Success", "Please reboot node, then press OK to resume upload", footer);
 
             // When user clicks OK, resubmit form (setup has finished running, should now be able to upload)
-            $('#ok-button').click(function() {
-                $("#error-modal").modal("hide");
-                $('#ok-button').off('click');
+            document.getElementById('ok-button').addEventListener('click', function() {
+                errorModal.hide();
                 upload();
-            });
+            }, { once: true });
         } else {
             alert(await result.text());
 
             // Re-enable submit button so user can try again
-            // TODO supress error on overview
-            document.getElementById("submit-button").disabled = false;
+            try{ document.getElementById("submit-button").disabled = false; }catch(err){};
         };
-    });
+    }, { once: true });
 
-    $('#no-button').click(function() {
-        // Remove listeners (prevent stacking)
-        $('#yes-button').off('click');
-        $('#error-modal').modal('hide');
-        // TODO supress error on overview
+    document.getElementById('no-button').addEventListener('click', function() {
+        errorModal.hide();
+        uploadModal.hide();
         try{ document.getElementById("submit-button").disabled = false; }catch(err){};
-    });
+    }, { once: true });
 };
 
 // Shown when unable to upload because target node unreachable
 async function target_unreachable_prompt() {
-    $('#upload-modal').modal('hide');
+    uploadModal.hide();
 
     // Show error modal with instructions
     const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-    show_modal("error-modal", "Connection Error", `<p class="text-center">Unable to connect to ${target_ip}<br/>Possible causes:</p><ul><li>Node is not connected to wifi</li><li>Node IP has changed</li><li>Node has not run webrepl_setup</li></ul>`, footer);
+    show_modal(errorModal, "Connection Error", `<p class="text-center">Unable to connect to ${target_ip}<br/>Possible causes:</p><ul><li>Node is not connected to wifi</li><li>Node IP has changed</li><li>Node has not run webrepl_setup</li></ul>`, footer);
 
     // When user clicks OK, re-enable submit button so user can try again
-    $('#ok-button').click(function() {
-        $("#error-modal").modal("hide");
-        $("#upload-modal").modal("hide");
-        $('#ok-button').off('click');
-        // TODO supress error on overview
+    document.getElementById('ok-button').addEventListener('click', function() {
+        errorModal.hide();
+        uploadModal.hide();
         try{ document.getElementById("submit-button").disabled = false; }catch(err){};
-    });
+    }, { once: true });
 };

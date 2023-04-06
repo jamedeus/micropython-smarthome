@@ -48,28 +48,19 @@ async function submit_form(edit) {
     };
 };
 
-// Shown when config with the same name already exists
+// Show warning when config with same name already exists
 function handle_duplicate_prompt() {
-    // Get duplicate name, add to modal body
     const name = document.getElementById("friendlyName").value;
-    document.getElementById("duplicate-modal-body").innerHTML = `<p>Config named <b>${name}</b> already exists. Would you like to overwrite it? This cannot be undone.</p>`
-    $('#duplicate-modal').modal('show');
+    show_modal(duplicateModal, false, `<p>Config named <b>${name}</b> already exists. Would you like to overwrite it? This cannot be undone.</p>`);
 
-    // Add listener to overwrite button, sends delete command for the existing config then re-submits form
-    $('#confirm-overwrite').click(async function() {
-        // Disable listener once triggered, prevent overwrite button stacking multiple actions
-        $('#confirm-overwrite').off('click');
-
-        var response = await send_post_request("delete_config", name + ".json");
-
-        // Re-submit form
+    // If overwrite confirmed delete existing config and resubmit form
+    document.getElementById('confirm-overwrite').addEventListener('click', async function() {
+        var response = await send_post_request("delete_config", `${name}.json`);
         submit_form(false);
-    });
+    }, { once: true });
 
-    // Add listener to cancel button
-    $('#cancel-overwrite').click(function() {
-        // Prevent stacking listeners on overwrite button each time cancel pressed
-        $('#confirm-overwrite').off('click');
+    // Re-enable submit button if overwrite canceled
+    document.getElementById('cancel-overwrite').addEventListener('click', function() {
         document.getElementById("submit-button").disabled = false;
-    });
+    }, { once: true });
 };

@@ -976,10 +976,12 @@
     {{ context.api_target_options|json_script:"context" }}
 
     <script>
-        $('#page2').hide();
-        $('#page3').hide();
+        // Hide everything except first page
+        document.getElementById('page2').style.display = 'none';
+        document.getElementById('page3').style.display = 'none';
 
-        var ApiTargetOptions = JSON.parse(document.getElementById("context").textContent);
+        // Get object used to populate api-target options from context
+        const ApiTargetOptions = JSON.parse(document.getElementById("context").textContent);
 
         // Store parameters used to re-upload config after editing
         const target_ip = "{{ context.config.IP }}";
@@ -1009,6 +1011,12 @@
         const edit_existing = true;
         const orig_name = "{{context.config.NAME}}".toLowerCase();
         {% endif %}
+
+        // Create modal objects
+        const uploadModal = new bootstrap.Modal(document.getElementById('upload-modal'));
+        const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
+        const duplicateModal = new bootstrap.Modal(document.getElementById('duplicate-modal'));
+        const apiRuleModal = new bootstrap.Modal(document.getElementById('api-rule-modal'));
 
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));

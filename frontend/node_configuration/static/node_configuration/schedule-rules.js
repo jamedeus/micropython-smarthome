@@ -1,13 +1,13 @@
 function add(button) {
     var instance = button.id.split("-", 1)[0];
 
-    table = document.getElementById(instance + "-rules")
+    table = document.getElementById(instance + "-rules");
 
     // Rows are numbered sequentially. Get number of last row and increment
-    var next_row = parseInt($('#' + instance + '-rules tr:last').attr('id').split("-").pop()) + 1;
+    var next_row = parseInt(table.rows[table.rows.length - 1].id.split('-').pop()) + 1;
 
     var row = table.insertRow();
-    row.setAttribute("id", instance + "-row-" + next_row)
+    row.setAttribute("id", instance + "-row-" + next_row);
 
     var cell_time = row.insertCell(0);
     var cell_value = row.insertCell(1);
@@ -74,10 +74,10 @@ function add(button) {
     cell_del.innerHTML = `<button type='button' class='remove btn btn-sm btn-danger mt-1 ${instance}' id='${instance}-remove${next_row}' onclick='remove(this)'><i class="bi-x-lg"></i></button>`;
 };
 
-function remove(e) {
-    var instance = e.id;
-    var index = e.parentElement.parentElement.rowIndex
+function remove(el) {
+    // Get row of clicked button
+    const row = el.parentElement.parentElement.rowIndex;
 
-    table = document.getElementById(instance.split("-", 1) + "-rules")
-    table.deleteRow(index)
+    // Get table containing clicked button, delete row
+    document.getElementById(el.id.split("-", 1) + "-rules").deleteRow(row);
 };

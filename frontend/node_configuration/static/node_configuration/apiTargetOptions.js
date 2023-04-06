@@ -177,7 +177,7 @@ function populate_sub_command_off(target) {
 }
 
 function open_rule_modal(el) {
-    $('#api-rule-modal').modal('show')
+    apiRuleModal.show();
 
     // Get target device ID, use to get options from ApiTargetOptions object
     var target = el.id.split("-")[0];
