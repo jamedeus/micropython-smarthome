@@ -136,6 +136,13 @@ STATIC_URL = 'static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
+    os.path.join('.', 'node_modules', 'bootstrap', 'dist', 'css'),
+    os.path.join('.', 'node_modules', 'bootstrap', 'dist', 'js'),
+    os.path.join('.', 'node_modules', 'bootstrap-icons', 'font'),
+    os.path.join('.', 'node_modules', 'spinkit'),
+    os.path.join('.', 'node_modules', 'jquery', 'dist'),
+    os.path.join('.', 'node_modules', 'smoothscroll-polyfill', 'dist'),
+    os.path.join('.', 'node_modules', 'rangeslider.js', 'dist'),
 ]
 
 # Default primary key field type
@@ -174,4 +181,6 @@ PWA_APP_SPLASH_SCREEN = [
 ]
 PWA_APP_DIR = 'ltr'
 PWA_APP_LANG = 'en-US'
+
+# Custom service worker
 PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'webapp', 'serviceworker.js')
