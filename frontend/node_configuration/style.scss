@@ -1,6 +1,6 @@
-@import "bootstrap-5.1.3/scss/_functions";
-@import "bootstrap-5.1.3/scss/_variables";
-@import "bootstrap-5.1.3/scss/_mixins";
+@import "../node_modules/bootstrap/scss/_functions";
+@import "../node_modules/bootstrap/scss/_variables";
+@import "../node_modules/bootstrap/scss/_mixins";
 
 
 
@@ -196,11 +196,11 @@ td.min {
     /* Toasts */
     $toast-background-color: #394047cc;
 
-    @import "bootstrap-5.1.3/scss/_card";
-    @import "bootstrap-5.1.3/scss/_modal";
-    @import "bootstrap-5.1.3/scss/_forms";
-    @import "bootstrap-5.1.3/scss/_buttons";
-    @import "bootstrap-5.1.3/scss/_tables";
-    @import "bootstrap-5.1.3/scss/_dropdown";
-    @import "bootstrap-5.1.3/scss/_toasts";
+    @import "../node_modules/bootstrap/scss/_card";
+    @import "../node_modules/bootstrap/scss/_modal";
+    @import "../node_modules/bootstrap/scss/_forms";
+    @import "../node_modules/bootstrap/scss/_buttons";
+    @import "../node_modules/bootstrap/scss/_tables";
+    @import "../node_modules/bootstrap/scss/_dropdown";
+    @import "../node_modules/bootstrap/scss/_toasts";
 }
