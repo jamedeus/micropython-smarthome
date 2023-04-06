@@ -10,7 +10,6 @@
     <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
     <script src="{% static 'bootstrap.min.js' %}"></script>
-    <script src="{% static 'jquery.min.js' %}"></script>
     <script>
 
         function getCookie(name) {
@@ -194,7 +193,6 @@
     </div>
 
     <script>
-
         var selected_node = "";
         var selected_node_status = "";
         var selected_node_unreachable = false;
@@ -237,6 +235,9 @@
             submit_form(e.target);
         });
 
+        // Create modal object
+        const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
+
         // Get status every 5 seconds, update div if user currently viewing status
         function monitorSelectedNodeStatus(start) {
             if (start) {
@@ -250,7 +251,7 @@
 
                     // If unable to connect
                     if (selected_node_unreachable == false && selected_node_status == "Error: Unable to connect.") {
-                        $("#error-modal").modal("show");
+                        errorModal.show();
                         console.log("Unable to connect to target, will retry every 5 seconds.");
                         selected_node_unreachable = true;
 
@@ -259,7 +260,7 @@
                         select_command(document.getElementById("select_command"));
 
                     } else if (selected_node_unreachable == true && selected_node_status != "Error: Unable to connect.") {
-                        $("#error-modal").modal("hide");
+                        errorModal.hide();
                         console.log("Re-connected to target.");
                         selected_node_unreachable = false;
 
@@ -716,6 +717,5 @@
             }
         });
     </script>
-
 </body>
 </html>

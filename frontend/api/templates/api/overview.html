@@ -14,7 +14,6 @@
     <link rel="stylesheet" href="{% static 'api/overview.css' %}">
     <link rel="stylesheet" href="{% static 'api/loading.css' %}">
     <script src="{% static 'bootstrap.bundle.min.js' %}"></script>
-    <script src="{% static 'jquery.min.js' %}"></script>
     <script src="{% static 'smoothscroll.min.js' %}"></script>
     <script>
         function openNode(node) {
@@ -284,11 +283,16 @@
 
         /* Open modal with table of existing actions within macro */
         async function editMacro(name) {
-            var template = await fetch(`/edit_macro/${name}`);
-            template = await template.text();
+            const editMacroModal = document.getElementById('edit-macro-modal');
 
-            document.getElementById('edit-macro-modal').innerHTML = template;
-            $("#edit-macro-modal").modal("show");
+            // Fetch template containing modal body
+            var template = await fetch(`/edit_macro/${name}`);
+            editMacroModal.innerHTML = await template.text();
+
+            // Get existing modal instance or create, show modal
+            let macroModal = bootstrap.Modal.getInstance(editMacroModal);
+            if (!macroModal) {macroModal = new bootstrap.Modal(editMacroModal)};
+            macroModal.show();
 
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 document.getElementById('edit-close').classList.add('btn-close-white');
@@ -304,17 +308,22 @@
             /* Fade out macro row, then remove */
             if (result == 200) {
                 /* Fade out row */
+                const editMacroModal = document.getElementById('edit-macro-modal');
                 const row = document.getElementById(`action${index}`);
                 row.classList.add('fade-out');
                 await sleep(200);
 
                 /* Reload whole menu (indices of subsequent actions now changed) */
                 var template = await fetch(`/edit_macro/${name}`);
-                document.getElementById('edit-macro-modal').innerHTML = await template.text();
+                editMacroModal.innerHTML = await template.text();
 
                 /* If last action removed, delete entire macro and reload */
                 if (document.getElementById('macro-actions').children[0].childElementCount == 1) {
-                    $("#edit-macro-modal").modal("hide");
+                    // Get existing modal instance or create, hide modal
+                    let macroModal = bootstrap.Modal.getInstance(editMacroModal);
+                    if (!macroModal) {macroModal = new bootstrap.Modal(editMacroModal)};
+                    macroModal.hide();
+
                     await deleteMacro(name);
                     location.reload();
                 };
