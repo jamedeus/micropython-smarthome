@@ -1,5 +1,5 @@
 
-var staticCacheName = "django-pwa-v" + new Date().getTime();
+var staticCacheName = "django-pwa-v";
 var filesToCache = [
     '/offline/',
     '/static/css/django-pwa-app.css',
@@ -22,8 +22,34 @@ var filesToCache = [
     '/static/images/icons/splash-1668x2388.png',
     '/static/images/icons/splash-2048x2732.png',
     '/static/node_configuration/style.css',
-    '/static/node_configuration/bootstrap.min.css',
-    '/static/api/animations.css'
+    '/static/bootstrap.min.css',
+    '/static/bootstrap-icons.css',
+    '/static/bootstrap.bundle.min.js',
+    '/static/bootstrap.min.js',
+    '/static/jquery.min.js',
+    '/static/smoothscroll.min.js',
+    '/static/rangeslider.min.js',
+    '/static/api/animations.css',
+    '/static/api/loading.css',
+    '/static/api/overview.css',
+    '/static/api/remote.css',
+    '/static/api/sliders.css',
+    '/static/api/style.css',
+    '/static/api/api_card.js',
+    '/static/api/record_macro.js',
+    '/static/api/rule_sliders.js',
+    '/static/api/schedule_rules.js',
+    '/static/api/update_status.js',
+    '/static/node_configuration/style.css',
+    '/static/node_configuration/add-instance.js',
+    '/static/node_configuration/apiTargetOptions.js',
+    '/static/node_configuration/classes.js',
+    '/static/node_configuration/page-buttons.js',
+    '/static/node_configuration/rule_sliders.js',
+    '/static/node_configuration/schedule-rules.js',
+    '/static/node_configuration/submit.js',
+    '/static/node_configuration/upload.js',
+    '/static/node_configuration/validate.js',
 ];
 
 // Cache on install

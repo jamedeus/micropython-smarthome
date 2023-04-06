@@ -1,0 +1,19 @@
+#!/bin/sh
+
+# Pre-commit hook that checks if static files are part of the commit
+# and automatically updates static cache version.
+# This forces clients to refresh cache and download the new version.
+
+# Check if static files are includes in commit
+STATIC_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E "^(frontend/api/static/api/|frontend/node_configuration/static/node_configuration/)")
+
+if [ ! -z "$STATIC_FILES" ]; then
+    # Get short hash of last commit
+    COMMIT_HASH=$(git rev-parse --short HEAD)
+
+    # Overwrite old staticCacheName to force client cache refresh
+    sed -i -E "s/^var staticCacheName = \"django-pwa-v.*$/var staticCacheName = \"django-pwa-v${COMMIT_HASH}\";/" frontend/webapp/serviceworker.js
+
+    # Commit new static cache version
+    git add frontend/webapp/serviceworker.js
+fi
