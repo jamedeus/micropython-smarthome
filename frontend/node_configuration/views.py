@@ -1,8 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse, FileResponse
 from django.template import loader
-import json
-import os
+import json, os, re
 
 from .models import Node, Config, WifiCredentials
 
@@ -11,6 +10,13 @@ from .Webrepl import *
 REPO_DIR = os.environ.get('REPO_DIR')
 CONFIG_DIR = os.environ.get('CONFIG_DIR')
 NODE_PASSWD = os.environ.get('NODE_PASSWD')
+
+# Config validation constants
+valid_device_pins = (4, 13, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33)
+valid_sensor_pins = (4, 5, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39)
+valid_device_types = ('dimmer', 'bulb', 'relay', 'dumb-relay', 'desktop', 'pwm', 'mosfet', 'api-target', 'wled')
+valid_sensor_types = ('pir', 'desktop', 'si7021', 'dummy', 'switch')
+ip_regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
 
 def get_modules(conf):
     modules = []
@@ -177,6 +183,7 @@ def provision(config, ip, modules, libs):
 
         node.close_connection()
 
+    # TODO retest this, not sure if all errors still happen
     except ConnectionResetError:
         return JsonResponse("Connection error, please hold down the reset button on target node and try again after about 30 seconds.", safe=False, status=408)
     except OSError:
@@ -211,6 +218,7 @@ def delete_config(request):
     else:
         raise Http404("ERROR: Must post data")
 
+    # TODO catch error, could post invalid name to view
     target = Config.objects.get(filename = data)
     target.delete()
     os.system(f'rm {CONFIG_DIR}/{target.filename}')
@@ -226,6 +234,7 @@ def delete_node(request):
         raise Http404("ERROR: Must post data")
 
     # Get model entry
+    # TODO catch error, could post invalid name to view
     node = Node.objects.get(friendly_name = data)
 
     # Delete from disk, delete from models
@@ -366,6 +375,101 @@ def check_duplicate(request):
 
 
 
+# Accepts completed config, return True if valid, error string if invalid
+def validateConfig(config):
+    # Floor must be integer
+    try:
+        int(config['metadata']['floor'])
+    except ValueError:
+        return 'Invalid floor, must be integer'
+
+    # No duplicate nicknames
+    nicknames = [value['nickname'] for key, value in config.items() if 'nickname' in value]
+    if len(nicknames) != len(set(nicknames)):
+        return 'Contains duplicate nicknames'
+
+    # No duplicate pins
+    pins = [value['pin'] for key, value in config.items() if 'pin' in value]
+    if len(pins) != len(set(pins)):
+        return 'Contains duplicate pins'
+
+    # Get device and sensor IDs
+    devices = [key for key in config.keys() if key.startswith('device')]
+    sensors = [key for key in config.keys() if key.startswith('sensor')]
+
+    # Get device and sensor types
+    device_types = [config[device]['type'] for device in devices]
+    sensor_types = [config[sensor]['type'] for sensor in sensors]
+
+    # Get device and sensor pins
+    try:
+        device_pins = [int(value['pin']) for key, value in config.items() if key.startswith('device') and 'pin' in value]
+        sensor_pins = [int(value['pin']) for key, value in config.items() if key.startswith('sensor') and 'pin' in value]
+    except ValueError:
+        return 'Invalid pin (non-integer)'
+
+    # Check for invalid device/sensor types
+    for dtype in device_types:
+        if dtype not in valid_device_types:
+            return f'Invalid device type {dtype} used'
+
+    for stype in sensor_types:
+        if stype not in valid_sensor_types:
+            return f'Invalid sensor type {stype} used'
+
+    # Check for invalid pins (reserved, input-only, etc)
+    for pin in device_pins:
+        if pin not in valid_device_pins:
+            return f'Invalid device pin {pin} used'
+
+    for pin in sensor_pins:
+        if pin not in valid_sensor_pins:
+            return f'Invalid sensor pin {pin} used'
+
+    # Validate IP addresses
+    ips = [value['ip'] for key, value in config.items() if 'ip' in value]
+    for ip in ips:
+        if not re.match(ip_regex, ip):
+            return f'Invalid IP {ip}'
+
+    # Validate Thermostat tolerance
+    for sensor in sensors:
+        if config[sensor]['type'] == 'si7021':
+            tolerance = config[sensor]['tolerance']
+            try:
+                if not 0.1 <= float(tolerance) <= 10.0:
+                    return f'Thermostat tolerance out of range (0.1 - 10.0)'
+            except ValueError:
+                return f'Invalid thermostat tolerance {config[sensor]["tolerance"]}'
+
+    # Validate PWM limits and rules
+    for device in devices:
+        if config[device]['type'] == 'pwm':
+            minimum = config[device]['min']
+            maximum = config[device]['max']
+            default = config[device]['default_rule']
+
+            try:
+                if int(minimum) > int(maximum):
+                    return 'PWM min cannot be greater than max'
+                elif int(minimum) < 0 or int(maximum) < 0:
+                    return 'PWM limits cannot be less than 0'
+                elif int(minimum) > 1023 or int(maximum) > 1023:
+                    return 'PWM limits cannot be greater than 1023'
+                elif not int(minimum) <= int(default) <= int(maximum):
+                    return 'PWM default rule invalid, must be between max and min'
+
+                for rule in config[device]['schedule'].values():
+                    if not int(minimum) <= int(rule) <= int(maximum):
+                        return f'PWM invalid schedule rule {rule}, must be between max and min'
+
+            except ValueError:
+                return 'Invalid PWM limits or rules, must be int between 0 and 1023'
+
+    return True
+
+
+
 def generateConfigFile(request, edit_existing=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -378,7 +482,7 @@ def generateConfigFile(request, edit_existing=False):
     # Get filename (all lowercase, replace spaces with hyphens)
     filename = data["friendlyName"].lower().replace(" ", "-") + ".json"
 
-    print(f"\n\n{filename}\n\n")
+    print(f"\nFilename: {filename}\n")
 
     # Prevent overwriting existing config, unless editing existing
     if not edit_existing:
@@ -432,8 +536,14 @@ def generateConfigFile(request, edit_existing=False):
         del config["ir_blaster"]["type"]
         del config["ir_blaster"]["schedule"]
 
-    print("\nOutput:")
+    print("Output:")
     print(json.dumps(config, indent=4))
+
+    # Validate completed config, return error if invalid
+    valid = validateConfig(config)
+    if valid is not True:
+        print(f"\nERROR: {valid}\n")
+        return JsonResponse({'Error': valid}, safe=False, status=400)
 
     # If creating new config, add to models + write to disk
     if not edit_existing:
