@@ -20,7 +20,6 @@
     </style>
 </head>
 <body>
-
     <div class="container d-flex flex-column vh-100">
         <div class="d-flex justify-content-between">
             <button type="button" class="btn my-auto" id="back_button" style="visibility:hidden"><i class="bi-chevron-left"></i></button>
@@ -52,8 +51,8 @@
                         {% for config in context.not_uploaded %}
                             <tr id="{{config}}">
                                 <td class="min align-middle">{{config}}</td>
-                                <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" class="form-control"></td>
-                                <td class="min align-middle"><button type="button" class="btn-primary btn btn-sm" id="upload-{{config}}" onclick="set_upload_target(this);">Upload</button></td>
+                                <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" class="form-control ip-input" required></td>
+                                <td class="min align-middle"><button type="button" class="btn-primary btn btn-sm" id="upload-{{config}}" onclick="set_upload_target(this);" disabled>Upload</button></td>
                                 <td class="min align-middle"><button type="button" class="btn-danger btn btn-sm" onclick="del_config('{{config}}');"><i class="bi-trash"></i></button></td>
                             </tr>
                         {% endfor %}
@@ -415,5 +414,32 @@
         };
     </script>
     <script src="{% static 'node_configuration/upload.js' %}"></script>
+    {% if context.not_uploaded %}
+    {# Must import validate.js first so formatIp runs before listeners below #}
+    {# Otherwise upload button can be disabled by an invalid key which is then removed #}
+    <script src="{% static 'node_configuration/validate.js' %}"></script>
+    <script>
+        // Disable upload buttons if input contains invalid IP
+        document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('input', function(e) {
+            const id = event.target.id.split('-')[0];
+
+            if (!event.target.validity.valid) {
+                document.getElementById(`upload-${id}`).disabled = true;
+            } else {
+                document.getElementById(`upload-${id}`).disabled = false;
+            };
+        }));
+
+        // Click upload button if enter pressed in field with valid IP
+        document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter' || e.keyCode === 13) {
+                const id = e.target.id.split('-')[0];
+                const uploadButton = document.getElementById(`upload-${id}`);
+
+                if (!uploadButton.disabled) {uploadButton.click()};
+            };
+        }));
+    </script>
+    {% endif %}
 </body>
 </html>
