@@ -71,30 +71,32 @@ async function reset(el) {
 // Handler for device enable/disable toggle
 async function enable_disable_handler(el) {
     const target = el.id.split("-")[0];
-    // Device or sensor
-    const category = target.replace(/[0-9]/g, '') + "s";
+    const card = document.getElementById(`${target}-body`);
+    const cardCollapse = bootstrap.Collapse.getOrCreateInstance(card, { toggle: false });
 
-    if ($('#' + target + '-body').is( ":visible" )) {
-        console.log(`Disabling ${target}`);
-        $('#' + target + '-body').collapse('hide');
-        el.innerHTML = "Enable";
-        var result = await send_command({'command': 'disable', 'instance': target, 'delay_input': ''});
-    } else {
-        el.innerHTML = "Disable";
-        $('#' + target + '-body').collapse('show');
-        console.log(`Enabling ${target}`);
+    if (window.getComputedStyle(card).display == 'none') {
         var result = await send_command({'command': 'enable', 'instance': target, 'delay_input': ''});
+        console.log(`Enabling ${target}`);
+        cardCollapse.show();
+        el.innerHTML = "Disable";
+    } else {
+        var result = await send_command({'command': 'disable', 'instance': target, 'delay_input': ''});
+        console.log(`Disabling ${target}`);
+        cardCollapse.hide();
+        el.innerHTML = "Enable";
     };
 
     result = await result.json();
-    if (JSON.stringify(result).startsWith('{"ERROR')) {
-        // Command failed
-        if ($('#' + target + '-body').is( ":visible" )) {
+    if (JSON.stringify(result).startsWith('"Error')) {
+        // Command failed, flip state back
+        if (window.getComputedStyle(card).display == 'none') {
+            el.innerHTML = "Enable";
             alert(`Failed to enable ${target}`);
         } else {
+            el.innerHTML = "Disable";
             alert(`Failed to disable ${target}`);
         };
-        $('#' + target + '-body').collapse('toggle');
+        cardCollapse.toggle();
     };
 };
 
@@ -203,6 +205,6 @@ async function debug(el) {
     } else {
         // Dump json reply to modal body, show modal
         document.getElementById('debug-json').innerHTML = JSON.stringify(result, null, 4);
-        $('#debug-modal').modal("show");
+        debugModal.show();
     };
 };

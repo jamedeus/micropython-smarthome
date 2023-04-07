@@ -6,13 +6,13 @@ async function updateStatusObject() {
 
     // If unable to connect
     if (selected_node_unreachable == false && String(new_status).startsWith("Error:")) {
-        $("#error-modal").modal("show");
+        errorModal.show();
         console.log("Unable to connect to target, will retry every 5 seconds.");
         selected_node_unreachable = true;
         return;
 
     } else if (selected_node_unreachable == true && !String(new_status).startsWith("Error:")) {
-        $("#error-modal").modal("hide");
+        errorModal.hide();
         // Refresh page (node config may have changed, need to get new device/sensor cards)
         location.reload();
     } else if (selected_node_unreachable == true) {
@@ -79,14 +79,18 @@ async function updateStatusObject() {
                         } catch(err) {};
 
                     } else if (param == "enabled") {
+                        // Get card collapse instance
+                        const card = document.getElementById(`${instance}-body`);
+                        const cardCollapse = bootstrap.Collapse.getOrCreateInstance(card, { toggle: false });
+
                         if (new_status[section][instance]["enabled"]) {
                             // Expand card, change menu option text
-                            $('#' + instance + '-body').collapse('show');
+                            cardCollapse.show();
                             document.getElementById(instance + "-enable").innerHTML = "Disable";
 
                         } else {
                             // Collapse card, change menu option text
-                            $('#' + instance + '-body').collapse('hide');
+                            cardCollapse.hide();
                             document.getElementById(instance + "-enable").innerHTML = "Enable";
 
                         };

@@ -803,6 +803,10 @@
     {{ context|json_script:"context" }}
 
     <script>
+        // Create modal objects
+        const debugModal = new bootstrap.Modal(document.getElementById('debug-modal'));
+        const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
+
         {% if context.metadata.recording %}
         const recording = '{{context.metadata.recording}}';
         Array.from(document.getElementsByClassName('open-rules')).forEach(btn => btn.disabled = true)

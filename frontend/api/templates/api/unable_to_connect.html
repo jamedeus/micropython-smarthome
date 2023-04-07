@@ -13,9 +13,7 @@
     <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
     <link rel="stylesheet" href="{% static 'api/animations.css' %}">
     <script src="{% static 'bootstrap.min.js' %}"></script>
-    <script src="{% static 'jquery.min.js' %}"></script>
     <script>
-
         function getCookie(name) {
             var cookieValue = null;
             if (document.cookie && document.cookie !== '') {
@@ -30,7 +28,6 @@
             }
             return cookieValue;
         };
-
     </script>
     <style>
         /* Limit width for readability on large screen sizes */
@@ -46,7 +43,6 @@
         }
     </style>
 </head>
-
 <body>
     <div class="container d-flex flex-column vh-100">
 
@@ -96,7 +92,6 @@
                 <button type="button" class="btn btn-success" onclick="window.location.href = '/api'">Back to Overview</button>
             </div>
         </div>
-
     </div>
 
     <script>
@@ -104,7 +99,15 @@
 
         /* Attempt to reconnect every 5 seconds, reload when available */
         async function retryConnection() {
-            var retry = await send_command({'command': 'status'});
+            const data = {'command': 'status', 'target': target_node}
+
+            var retry = await fetch('/send_command', {
+                method: 'POST',
+                body: JSON.stringify(data),
+                headers: { 'Accept': 'application/json, text/plain, */*',
+                    'Content-Type': 'application/json',
+                    "X-CSRFToken": getCookie('csrftoken') }
+            });
             retry = await retry.json();
 
             if (retry != "Error: Unable to connect.") {
@@ -131,6 +134,5 @@
             }
         });
     </script>
-    <script src="{% static 'api/api_card.js' %}"></script>
 </body>
 </html>
