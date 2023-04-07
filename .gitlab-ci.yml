@@ -2,8 +2,21 @@ before_script:
   - docker info
 
 stages:
+  - test
   - build
   - deploy
+
+# Run unit tests
+test:
+  stage: test
+  tags:
+    - arm64
+  script:
+    - pipenv install
+    - pipenv run python3 manage.py test
+  only:
+    - master
+    - frontend
 
 # Build new container, increment most-recent tag
 build:
