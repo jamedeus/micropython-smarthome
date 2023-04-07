@@ -50,6 +50,7 @@ COPY frontend/webapp /repo/frontend/webapp
 # Copy node + python dependencies to final build stage
 COPY --from=node_build node_modules/bootstrap/dist/css/bootstrap.min.css /repo/frontend/node_modules/bootstrap/dist/css/bootstrap.min.css
 COPY --from=node_build node_modules/bootstrap/dist/js/bootstrap.bundle.min.js /repo/frontend/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js
+COPY --from=node_build node_modules/bootstrap/dist/js/bootstrap.min.js /repo/frontend/node_modules/bootstrap/dist/js/bootstrap.min.js
 COPY --from=node_build node_modules/bootstrap-icons/font/bootstrap-icons.css /repo/frontend/node_modules/bootstrap-icons/font/bootstrap-icons.css
 COPY --from=node_build node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff /repo/frontend/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff
 COPY --from=node_build node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2 /repo/frontend/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2
