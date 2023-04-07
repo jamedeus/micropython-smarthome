@@ -1,8 +1,6 @@
 from django.db import models
-import os
-import json
-
-CONFIG_DIR = os.environ.get('CONFIG_DIR')
+from django.conf import settings
+import os, json
 
 
 
@@ -38,12 +36,12 @@ class Config(models.Model):
     )
 
     def read_from_disk(self):
-        with open(CONFIG_DIR + self.filename, 'r') as file:
+        with open(settings.CONFIG_DIR + self.filename, 'r') as file:
             self.config = json.load(file)
             self.save()
 
     def write_to_disk(self):
-        with open(CONFIG_DIR + self.filename, 'w') as file:
+        with open(settings.CONFIG_DIR + self.filename, 'w') as file:
             json.dump(self.config, file)
 
 

@@ -38,6 +38,19 @@ for i in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append(f'http://{i}')
     CSRF_TRUSTED_ORIGINS.append(f'https://{i}')
 
+# Read dirs + node password from env vars
+REPO_DIR = os.environ.get('REPO_DIR')
+CONFIG_DIR = os.environ.get('CONFIG_DIR')
+NODE_PASSWD = os.environ.get('NODE_PASSWD')
+
+# Use defaults if env vars not set
+if not REPO_DIR:
+    REPO_DIR = '../'
+if not CONFIG_DIR:
+    CONFIG_DIR = '../config/'
+if not NODE_PASSWD:
+    NODE_PASSWD = 'password'
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

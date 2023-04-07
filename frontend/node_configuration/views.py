@@ -1,15 +1,16 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse, FileResponse
 from django.template import loader
+from django.conf import settings
 import json, os, re
 
 from .models import Node, Config, WifiCredentials
 
 from .Webrepl import *
 
-REPO_DIR = os.environ.get('REPO_DIR')
-CONFIG_DIR = os.environ.get('CONFIG_DIR')
-NODE_PASSWD = os.environ.get('NODE_PASSWD')
+REPO_DIR = settings.REPO_DIR
+CONFIG_DIR = settings.CONFIG_DIR
+NODE_PASSWD = settings.NODE_PASSWD
 
 # Config validation constants
 valid_device_pins = (4, 13, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33)
