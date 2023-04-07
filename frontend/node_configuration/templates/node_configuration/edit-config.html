@@ -1021,6 +1021,11 @@
         const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
         const duplicateModal = new bootstrap.Modal(document.getElementById('duplicate-modal'));
 
+        // Prevent all keys except digits in floor input, 3 character max
+        document.getElementById('floor').addEventListener('input', function(event) {
+            event.target.value = event.target.value.replace(/[^\d]/g, '').substring(0,3);;
+        });
+
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         };
