@@ -12,7 +12,10 @@ test:
   tags:
     - arm64
   script:
+    - pip3 install pipenv
+    - export PATH=$PATH:/home/gitlab-runner/.local/bin
     - pipenv install
+    - cd frontend/
     - pipenv run python3 manage.py test
   only:
     - master
