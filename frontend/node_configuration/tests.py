@@ -1,10 +1,55 @@
 from django.test import TestCase, Client
 import json
-from .views import validateConfig
+from .views import validateConfig, get_modules
 from .models import Config
 
 # Simulated input from user creating config with frontend
 request_payload = {"friendlyName":"Unit Test Config","location":"build pipeline","floor":"0","ssid":"jamnet","password":"cjZY8PTa4ZQ6S83A","sensors":{"sensor1":{"id":"sensor1","new":False,"modified":False,"type":"pir","nickname":"Motion","pin":"4","default_rule":5,"targets":["device1","device2","device5","device6"],"schedule":{"08:00":"5","22:00":"1"}},"sensor2":{"id":"sensor2","new":False,"modified":False,"type":"switch","nickname":"Switch","pin":"5","default_rule":"enabled","targets":["device4","device7"],"schedule":{}},"sensor3":{"id":"sensor3","new":False,"modified":False,"type":"dummy","nickname":"Override","default_rule":"on","targets":["device3"],"schedule":{"06:00":"on","18:00":"off"}},"sensor4":{"id":"sensor4","new":False,"modified":False,"type":"desktop","nickname":"Activity","ip":"192.168.1.150","default_rule":"enabled","targets":["device1","device2","device5","device6"],"schedule":{"08:00":"enabled","22:00":"disabled"}},"sensor5":{"id":"sensor5","new":False,"modified":False,"type":"si7021","nickname":"Temperature","mode":"cool","tolerance":"3","default_rule":71,"targets":["device4","device7"],"schedule":{"08:00":"73","22:00":"69"}}},"devices":{"device1":{"id":"device1","new":False,"modified":False,"type":"dimmer","nickname":"Overhead","ip":"192.168.1.105","default_rule":100,"schedule":{"08:00":"100","22:00":"35"}},"device2":{"id":"device2","new":False,"modified":False,"type":"bulb","nickname":"Lamp","ip":"192.168.1.106","default_rule":75,"schedule":{"08:00":"100","22:00":"35"}},"device3":{"id":"device3","new":False,"modified":False,"type":"relay","nickname":"Porch Light","ip":"192.168.1.107","default_rule":"enabled","schedule":{"06:00":"disabled","18:00":"enabled"}},"device4":{"id":"device4","new":False,"modified":False,"type":"dumb-relay","nickname":"Fan","pin":"18","default_rule":"disabled","schedule":{}},"device5":{"id":"device5","new":False,"modified":False,"type":"desktop","nickname":"Screen","ip":"192.168.1.150","default_rule":"enabled","schedule":{"08:00":"enabled","22:00":"disabled"}},"device6":{"id":"device6","new":False,"modified":False,"type":"pwm","nickname":"Cabinet Lights","pin":"26","min":"0","max":"1023","default_rule":721,"schedule":{}},"device7":{"id":"device7","new":False,"modified":False,"type":"mosfet","nickname":"Humidifier","pin":"19","default_rule":"disabled","schedule":{}},"device8":{"id":"device8","new":False,"modified":False,"type":"wled","nickname":"TV Bias Lights","ip":"192.168.1.110","default_rule":128,"schedule":{"08:00":"100"}},"device9":{"id":"device9","new":True,"modified":False,"type":"ir-blaster","pin":"23","target":["tv"],"schedule":{}}}}
+
+
+
+# Test function that takes config file, returns list of dependencies for upload
+class GetModulesTests(TestCase):
+    def setUp(self):
+        with open('node_configuration/unit-test-config.json') as file:
+            self.config = json.load(file)
+
+    def test_get_modules_full_config(self):
+        modules, libs = get_modules(self.config)
+        self.assertEqual(modules, {'devices/LedStrip.py', 'ir-remote/samsung-codes.json', 'ir-remote/whynter-codes.json', 'devices/Device.py', 'devices/Tplink.py', 'sensors/Sensor.py', 'sensors/Dummy.py', 'devices/Wled.py', 'devices/Mosfet.py', 'sensors/Thermostat.py', 'devices/IrBlaster.py', 'sensors/Switch.py', 'devices/Desktop_target.py', 'sensors/Desktop_trigger.py', 'devices/DumbRelay.py', 'sensors/MotionSensor.py', 'devices/Relay.py'})
+        self.assertEqual(libs, ['lib/logging.py', 'lib/si7021.py', 'lib/ir_tx/__init__.py', 'lib/ir_tx/nec.py'])
+
+    def test_get_modules_empty_config(self):
+        modules, libs = get_modules({})
+        self.assertEqual(modules, set())
+        self.assertEqual(libs, ['lib/logging.py'])
+
+    def test_get_modules_no_ir_blaster(self):
+        config = self.config.copy()
+        del config['ir_blaster']
+        modules, libs = get_modules(config)
+        self.assertEqual(modules, {'devices/LedStrip.py', 'devices/Device.py', 'devices/Tplink.py', 'sensors/Sensor.py', 'sensors/Dummy.py', 'devices/Wled.py', 'devices/Mosfet.py', 'sensors/Thermostat.py', 'sensors/Switch.py', 'devices/Desktop_target.py', 'sensors/Desktop_trigger.py', 'devices/DumbRelay.py', 'sensors/MotionSensor.py', 'devices/Relay.py'})
+        self.assertEqual(libs, ['lib/logging.py', 'lib/si7021.py'])
+
+    def test_get_modules_no_thermostat(self):
+        config = self.config.copy()
+        del config['sensor5']
+        modules, libs = get_modules(config)
+        self.assertEqual(modules, {'devices/LedStrip.py', 'ir-remote/samsung-codes.json', 'ir-remote/whynter-codes.json', 'devices/Device.py', 'devices/Tplink.py', 'sensors/Sensor.py', 'sensors/Dummy.py', 'devices/Wled.py', 'devices/Mosfet.py', 'devices/IrBlaster.py', 'sensors/Switch.py', 'devices/Desktop_target.py', 'sensors/Desktop_trigger.py', 'devices/DumbRelay.py', 'sensors/MotionSensor.py', 'devices/Relay.py'})
+        self.assertEqual(libs, ['lib/logging.py', 'lib/ir_tx/__init__.py', 'lib/ir_tx/nec.py'])
+
+    def test_get_modules_realistic(self):
+        config = self.config.copy()
+        del config['ir_blaster']
+        del config['sensor3']
+        del config['sensor4']
+        del config['sensor5']
+        del config['device4']
+        del config['device5']
+        del config['device7']
+        modules, libs = get_modules(config)
+        self.assertEqual(modules, {'devices/LedStrip.py', 'devices/Device.py', 'devices/Tplink.py', 'sensors/Sensor.py', 'devices/Wled.py', 'sensors/Switch.py', 'sensors/MotionSensor.py', 'devices/Relay.py'})
+        self.assertEqual(libs, ['lib/logging.py'])
 
 
 

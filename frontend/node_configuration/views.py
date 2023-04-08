@@ -19,74 +19,53 @@ valid_device_types = ('dimmer', 'bulb', 'relay', 'dumb-relay', 'desktop', 'pwm',
 valid_sensor_types = ('pir', 'desktop', 'si7021', 'dummy', 'switch')
 ip_regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
 
-def get_modules(conf):
+# Dependency relative paths for all device and sensor types, used by get_modules
+dependencies = {
+    'devices': {
+        'dimmer': ["devices/Tplink.py", "devices/Device.py"],
+        'bulb': ["devices/Tplink.py", "devices/Device.py"],
+        'relay': ["devices/Relay.py", "devices/Device.py"],
+        'dumb-relay': ["devices/DumbRelay.py", "devices/Device.py"],
+        'desktop': ["devices/Desktop_target.py", "devices/Device.py"],
+        'pwm': ["devices/LedStrip.py", "devices/Device.py"],
+        'mosfet': ["devices/Mosfet.py", "devices/Device.py"],
+        'api-target': ["devices/ApiTarget.py", "devices/Device.py"],
+        'wled': ["devices/Wled.py", "devices/Device.py"]
+    },
+    'sensors': {
+        'pir': ["sensors/MotionSensor.py", "sensors/Sensor.py"],
+        'si7021': ["sensors/Thermostat.py", "sensors/Sensor.py"],
+        'dummy': ["sensors/Dummy.py", "sensors/Sensor.py"],
+        'switch': ["sensors/Switch.py", "sensors/Sensor.py"],
+        'desktop': ["sensors/Desktop_trigger.py", "sensors/Sensor.py"],
+    }
+}
+
+
+
+# Takes full config file, returns all dependencies in 2 lists:
+# - modules: classes for all configured devices and sensors
+# - libs: libraries required by configured devices and sensors
+def get_modules(config):
     modules = []
-    libs = []
-    libs.append('lib/logging.py')
+    libs = ['lib/logging.py']
 
-    for i in conf:
-        if i == "ir_blaster":
-            modules.append("devices/IrBlaster.py")
-            modules.append("ir-remote/samsung-codes.json")
-            modules.append("ir-remote/whynter-codes.json")
-            libs.append("lib/ir_tx/__init__.py")
-            libs.append("lib/ir_tx/nec.py")
-            continue
+    # Get lists of device and sensor types
+    device_types = [config[device]['type'] for device in config.keys() if device.startswith('device')]
+    sensor_types = [config[sensor]['type'] for sensor in config.keys() if sensor.startswith('sensor')]
 
-        if not i.startswith("device") and not i.startswith("sensor"): continue
+    # Get dependencies for all device and sensor types
+    for dtype in device_types:
+        modules.extend(dependencies['devices'][dtype])
+    for stype in sensor_types:
+        modules.extend(dependencies['sensors'][stype])
 
-        if conf[i]["type"] == "dimmer" or conf[i]["type"] == "bulb":
-            modules.append("devices/Tplink.py")
-            modules.append("devices/Device.py")
-
-        elif conf[i]["type"] == "relay":
-            modules.append("devices/Relay.py")
-            modules.append("devices/Device.py")
-
-        elif conf[i]["type"] == "dumb-relay":
-            modules.append("devices/DumbRelay.py")
-            modules.append("devices/Device.py")
-
-        elif conf[i]["type"] == "desktop":
-            if i.startswith("device"):
-                modules.append("devices/Desktop_target.py")
-                modules.append("devices/Device.py")
-            elif i.startswith("sensor"):
-                modules.append("sensors/Desktop_trigger.py")
-                modules.append("sensors/Sensor.py")
-
-        elif conf[i]["type"] == "pwm":
-            modules.append("devices/LedStrip.py")
-            modules.append("devices/Device.py")
-
-        elif conf[i]["type"] == "mosfet":
-            modules.append("devices/Mosfet.py")
-            modules.append("devices/Device.py")
-
-        elif conf[i]["type"] == "api-target":
-            modules.append("devices/ApiTarget.py")
-            modules.append("devices/Device.py")
-
-        elif conf[i]["type"] == "pir":
-            modules.append("sensors/MotionSensor.py")
-            modules.append("sensors/Sensor.py")
-
-        elif conf[i]["type"] == "si7021":
-            modules.append("sensors/Thermostat.py")
-            modules.append("sensors/Sensor.py")
-            libs.append("lib/si7021.py")
-
-        elif conf[i]["type"] == "dummy":
-            modules.append("sensors/Dummy.py")
-            modules.append("sensors/Sensor.py")
-
-        elif conf[i]["type"] == "switch":
-            modules.append("sensors/Switch.py")
-            modules.append("sensors/Sensor.py")
-
-        elif conf[i]["type"] == "wled":
-            modules.append("devices/Wled.py")
-            modules.append("devices/Device.py")
+    # Add libs if thermostat or ir_blaster configured
+    if 'si7021' in sensor_types:
+        libs.append("lib/si7021.py")
+    if 'ir_blaster' in config.keys():
+        modules.extend(["devices/IrBlaster.py", "ir-remote/samsung-codes.json", "ir-remote/whynter-codes.json"])
+        libs.extend(["lib/ir_tx/__init__.py", "lib/ir_tx/nec.py"])
 
     # Remove duplicates
     modules = set(modules)
