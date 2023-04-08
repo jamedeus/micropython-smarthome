@@ -198,12 +198,17 @@ def delete_config(request):
     else:
         raise Http404("ERROR: Must post data")
 
-    # TODO catch error, could post invalid name to view
-    target = Config.objects.get(filename = data)
-    target.delete()
-    os.system(f'rm {CONFIG_DIR}/{target.filename}')
+    try:
+        # Get model entry, delete from disk + database
+        target = Config.objects.get(filename = data)
+        os.remove(f'{CONFIG_DIR}/{target.filename}')
+        target.delete()
+        return JsonResponse(f"Deleted {data}", safe=False, status=200)
 
-    return JsonResponse("Deleted {}".format(data), safe=False, status=200)
+    except Config.DoesNotExist:
+        return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
+    except PermissionError:
+        return JsonResponse(f"Failed to delete, permission denied. This will break other features, check your filesystem permissions.", safe=False, status=500)
 
 
 
@@ -213,15 +218,17 @@ def delete_node(request):
     else:
         raise Http404("ERROR: Must post data")
 
-    # Get model entry
-    # TODO catch error, could post invalid name to view
-    node = Node.objects.get(friendly_name = data)
+    try:
+        # Get model entry, delete from disk + database
+        node = Node.objects.get(friendly_name = data)
+        os.remove(f'{CONFIG_DIR}/{node.config.filename}')
+        node.delete()
+        return JsonResponse(f"Deleted {data}", safe=False, status=200)
 
-    # Delete from disk, delete from models
-    os.system(f'rm {CONFIG_DIR}/{node.config.filename}')
-    node.delete()
-
-    return JsonResponse("Deleted {}".format(data), safe=False, status=200)
+    except Node.DoesNotExist:
+        return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
+    except PermissionError:
+        return JsonResponse(f"Failed to delete, permission denied. This will break other features, check your filesystem permissions.", safe=False, status=500)
 
 
 

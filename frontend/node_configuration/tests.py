@@ -1,10 +1,134 @@
 from django.test import TestCase, Client
-import json
+from django.conf import settings
+import json, os
 from .views import validateConfig, get_modules
-from .models import Config
+from .models import Config, Node
 
 # Simulated input from user creating config with frontend
 request_payload = {"friendlyName":"Unit Test Config","location":"build pipeline","floor":"0","ssid":"jamnet","password":"cjZY8PTa4ZQ6S83A","sensors":{"sensor1":{"id":"sensor1","new":False,"modified":False,"type":"pir","nickname":"Motion","pin":"4","default_rule":5,"targets":["device1","device2","device5","device6"],"schedule":{"08:00":"5","22:00":"1"}},"sensor2":{"id":"sensor2","new":False,"modified":False,"type":"switch","nickname":"Switch","pin":"5","default_rule":"enabled","targets":["device4","device7"],"schedule":{}},"sensor3":{"id":"sensor3","new":False,"modified":False,"type":"dummy","nickname":"Override","default_rule":"on","targets":["device3"],"schedule":{"06:00":"on","18:00":"off"}},"sensor4":{"id":"sensor4","new":False,"modified":False,"type":"desktop","nickname":"Activity","ip":"192.168.1.150","default_rule":"enabled","targets":["device1","device2","device5","device6"],"schedule":{"08:00":"enabled","22:00":"disabled"}},"sensor5":{"id":"sensor5","new":False,"modified":False,"type":"si7021","nickname":"Temperature","mode":"cool","tolerance":"3","default_rule":71,"targets":["device4","device7"],"schedule":{"08:00":"73","22:00":"69"}}},"devices":{"device1":{"id":"device1","new":False,"modified":False,"type":"dimmer","nickname":"Overhead","ip":"192.168.1.105","default_rule":100,"schedule":{"08:00":"100","22:00":"35"}},"device2":{"id":"device2","new":False,"modified":False,"type":"bulb","nickname":"Lamp","ip":"192.168.1.106","default_rule":75,"schedule":{"08:00":"100","22:00":"35"}},"device3":{"id":"device3","new":False,"modified":False,"type":"relay","nickname":"Porch Light","ip":"192.168.1.107","default_rule":"enabled","schedule":{"06:00":"disabled","18:00":"enabled"}},"device4":{"id":"device4","new":False,"modified":False,"type":"dumb-relay","nickname":"Fan","pin":"18","default_rule":"disabled","schedule":{}},"device5":{"id":"device5","new":False,"modified":False,"type":"desktop","nickname":"Screen","ip":"192.168.1.150","default_rule":"enabled","schedule":{"08:00":"enabled","22:00":"disabled"}},"device6":{"id":"device6","new":False,"modified":False,"type":"pwm","nickname":"Cabinet Lights","pin":"26","min":"0","max":"1023","default_rule":721,"schedule":{}},"device7":{"id":"device7","new":False,"modified":False,"type":"mosfet","nickname":"Humidifier","pin":"19","default_rule":"disabled","schedule":{}},"device8":{"id":"device8","new":False,"modified":False,"type":"wled","nickname":"TV Bias Lights","ip":"192.168.1.110","default_rule":128,"schedule":{"08:00":"100"}},"device9":{"id":"device9","new":True,"modified":False,"type":"ir-blaster","pin":"23","target":["tv"],"schedule":{}}}}
+
+
+
+# Test delete config
+class DeleteConfigTests(TestCase):
+    def setUp(self):
+        # Generate Config, will be deleted below
+        self.client = Client()
+        response = self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
+    def test_delete_existing_config(self):
+        # Confirm starting condition
+        self.assertEqual(len(Config.objects.all()), 1)
+
+        # Delete the Config created in setUp, confirm response message, confirm removed from database + disk
+        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'Deleted unit-test-config.json')
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
+    def test_delete_non_existing_config(self):
+        # Confirm starting condition
+        self.assertEqual(len(Config.objects.all()), 1)
+
+        # Attempt to delete non-existing Config, confirm fails with correct message
+        response = self.client.post('/delete_config', json.dumps('does-not-exist.json'), content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), 'Failed to delete does-not-exist.json, does not exist')
+
+        # Confirm Config still exists
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
+    def test_delete_invalid_permission(self):
+        # Confirm starting condition
+        self.assertEqual(len(Config.objects.all()), 1)
+
+        # Make read-only
+        os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o444)
+        os.chmod(settings.CONFIG_DIR, 0o554)
+
+        # Attempt to delete, confirm fails with permission denied error
+        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'), content_type='application/json')
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.json(), 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.')
+
+        # Confirm Config still exists
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
+        # Undo permissions
+        os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o664)
+        os.chmod(settings.CONFIG_DIR, 0o775)
+
+
+
+class DeleteNodeTests(TestCase):
+    def setUp(self):
+        # Generate Config for test Node
+        self.client = Client()
+        response = self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
+        # Create Node, add Config reverse relation
+        self.node = Node.objects.create(friendly_name="Test Node", ip="192.168.1.123", floor="5")
+        self.config = Config.objects.all()[0]
+        self.config.node = self.node
+        self.config.save()
+
+    def test_delete_existing_node(self):
+        # Confirm starting conditions
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+
+        # Delete the Node created in setUp, confirm response message, confirm removed from database + disk
+        response = self.client.post('/delete_node', json.dumps('Test Node'), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'Deleted Test Node')
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
+        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
+    def test_delete_non_existing_node(self):
+        # Confirm starting conditions
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+
+        # Attempt to delete non-existing Node, confirm fails with correct message
+        response = self.client.post('/delete_node', json.dumps('Wrong Node'), content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), 'Failed to delete Wrong Node, does not exist')
+
+        # Confirm Node and Config still exist
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
+    def test_delete_invalid_permission(self):
+        # Confirm starting conditions
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+
+        # Make read-only
+        os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o444)
+        os.chmod(settings.CONFIG_DIR, 0o554)
+
+        # Attempt to delete, confirm fails with permission denied error
+        response = self.client.post('/delete_node', json.dumps('Test Node'), content_type='application/json')
+        self.assertEqual(response.status_code, 500)
+        self.assertEqual(response.json(), 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.')
+
+        # Confirm Node and Config still exist
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
+        # Undo permissions
+        os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o664)
+        os.chmod(settings.CONFIG_DIR, 0o775)
 
 
 

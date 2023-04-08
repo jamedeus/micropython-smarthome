@@ -289,7 +289,8 @@
                 location.reload();
             } else {
                 const error = await result.json();
-                show_modal(errorModal, "Error", error);
+                const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`;
+                show_modal(errorModal, "Error", `<p class="text-center">${error}</p>`, footer);
             };
         };
 
