@@ -232,6 +232,8 @@ async def request(ip, msg):
         reader, writer = await asyncio.wait_for(asyncio.open_connection(ip, 8123), timeout=5)
     except asyncio.TimeoutError:
         return "Error: Request timed out"
+    except OSError:
+        return "Error: Failed to connect"
 
     # Send message
     try:
