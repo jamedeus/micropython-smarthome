@@ -331,7 +331,7 @@
                                     <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
                                     <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
                                 </svg>`
-                show_modal("upload-modal", title, body);
+                show_modal(uploadModal, title, body);
 
                 // Wait for animation to complete before hiding
                 await sleep(1200);
@@ -340,7 +340,7 @@
                 // Show received response in error modal
                 const body = await response.text();
                 const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-                show_modal("error-modal", "Error", body, footer);
+                show_modal(errorModal, "Error", body, footer);
                 uploadModal.hide();
             };
         };
@@ -369,7 +369,7 @@
 
             // Duplicate
             } else if (response.status == 409) {
-                show_modal("error-modal", "Duplicate", "A node with the same name or filename already exists", `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>`);
+                show_modal(errorModal, "Duplicate", "A node with the same name or filename already exists", `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>`);
 
             // Other error, show in alert
             } else {
