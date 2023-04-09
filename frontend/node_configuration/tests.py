@@ -1,11 +1,47 @@
 from django.test import TestCase, Client
 from django.conf import settings
 import json, os
-from .views import validateConfig, get_modules, is_duplicate
+from .views import validateConfig, get_modules, get_api_target_menu_options
 from .models import Config, Node, WifiCredentials
 
-# Simulated input from user creating config with frontend
-request_payload = {"friendlyName":"Unit Test Config","location":"build pipeline","floor":"0","ssid":"jamnet","password":"cjZY8PTa4ZQ6S83A","sensors":{"sensor1":{"id":"sensor1","new":False,"modified":False,"type":"pir","nickname":"Motion","pin":"4","default_rule":5,"targets":["device1","device2","device5","device6"],"schedule":{"08:00":"5","22:00":"1"}},"sensor2":{"id":"sensor2","new":False,"modified":False,"type":"switch","nickname":"Switch","pin":"5","default_rule":"enabled","targets":["device4","device7"],"schedule":{}},"sensor3":{"id":"sensor3","new":False,"modified":False,"type":"dummy","nickname":"Override","default_rule":"on","targets":["device3"],"schedule":{"06:00":"on","18:00":"off"}},"sensor4":{"id":"sensor4","new":False,"modified":False,"type":"desktop","nickname":"Activity","ip":"192.168.1.150","default_rule":"enabled","targets":["device1","device2","device5","device6"],"schedule":{"08:00":"enabled","22:00":"disabled"}},"sensor5":{"id":"sensor5","new":False,"modified":False,"type":"si7021","nickname":"Temperature","mode":"cool","tolerance":"3","default_rule":71,"targets":["device4","device7"],"schedule":{"08:00":"73","22:00":"69"}}},"devices":{"device1":{"id":"device1","new":False,"modified":False,"type":"dimmer","nickname":"Overhead","ip":"192.168.1.105","default_rule":100,"schedule":{"08:00":"100","22:00":"35"}},"device2":{"id":"device2","new":False,"modified":False,"type":"bulb","nickname":"Lamp","ip":"192.168.1.106","default_rule":75,"schedule":{"08:00":"100","22:00":"35"}},"device3":{"id":"device3","new":False,"modified":False,"type":"relay","nickname":"Porch Light","ip":"192.168.1.107","default_rule":"enabled","schedule":{"06:00":"disabled","18:00":"enabled"}},"device4":{"id":"device4","new":False,"modified":False,"type":"dumb-relay","nickname":"Fan","pin":"18","default_rule":"disabled","schedule":{}},"device5":{"id":"device5","new":False,"modified":False,"type":"desktop","nickname":"Screen","ip":"192.168.1.150","default_rule":"enabled","schedule":{"08:00":"enabled","22:00":"disabled"}},"device6":{"id":"device6","new":False,"modified":False,"type":"pwm","nickname":"Cabinet Lights","pin":"26","min":"0","max":"1023","default_rule":721,"schedule":{}},"device7":{"id":"device7","new":False,"modified":False,"type":"mosfet","nickname":"Humidifier","pin":"19","default_rule":"disabled","schedule":{}},"device8":{"id":"device8","new":False,"modified":False,"type":"wled","nickname":"TV Bias Lights","ip":"192.168.1.110","default_rule":128,"schedule":{"08:00":"100"}},"device9":{"id":"device9","new":True,"modified":False,"type":"ir-blaster","pin":"23","target":["tv"],"schedule":{}}}}
+# Large JSON objects, helper functions
+from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes
+
+
+
+# Test function that generates JSON used to populate API target set_rule menu
+class ApiTargetMenuOptionsTest(TestCase):
+    def test_empty_database(self):
+        # Should return empty template when no Nodes exist
+        options = get_api_target_menu_options()
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1'}, 'self-target': {}})
+
+    def test_from_api_frontend(self):
+        # Create nodes
+        create_test_nodes()
+
+        # Request options with no argument (used by Api frontend)
+        options = get_api_target_menu_options()
+
+        # Should return valid options for each device and sensor of all existing nodes
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'test1': '192.168.1.123', 'test2': '192.168.1.124', 'test3': '192.168.1.125'}, 'self-target': {}, 'test1': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}, 'test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot']}, 'test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}})
+
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
+    def test_from_edit_config(self):
+        # Create nodes
+        create_test_nodes()
+
+        # Request options with friendly name as argument (used by edit_config)
+        options = get_api_target_menu_options('test1')
+
+        # Should return valid options for each device and sensor of all existing nodes, except test1
+        # Should include test1's options in self-target section, should not be in main section
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'test2': '192.168.1.124', 'test3': '192.168.1.125'}, 'self-target': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}, 'test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot']}, 'test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}})
+
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
 
 
