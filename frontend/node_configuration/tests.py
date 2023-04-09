@@ -1,11 +1,53 @@
 from django.test import TestCase, Client
 from django.conf import settings
 import json, os
-from .views import validateConfig, get_modules
-from .models import Config, Node
+from .views import validateConfig, get_modules, is_duplicate
+from .models import Config, Node, WifiCredentials
 
 # Simulated input from user creating config with frontend
 request_payload = {"friendlyName":"Unit Test Config","location":"build pipeline","floor":"0","ssid":"jamnet","password":"cjZY8PTa4ZQ6S83A","sensors":{"sensor1":{"id":"sensor1","new":False,"modified":False,"type":"pir","nickname":"Motion","pin":"4","default_rule":5,"targets":["device1","device2","device5","device6"],"schedule":{"08:00":"5","22:00":"1"}},"sensor2":{"id":"sensor2","new":False,"modified":False,"type":"switch","nickname":"Switch","pin":"5","default_rule":"enabled","targets":["device4","device7"],"schedule":{}},"sensor3":{"id":"sensor3","new":False,"modified":False,"type":"dummy","nickname":"Override","default_rule":"on","targets":["device3"],"schedule":{"06:00":"on","18:00":"off"}},"sensor4":{"id":"sensor4","new":False,"modified":False,"type":"desktop","nickname":"Activity","ip":"192.168.1.150","default_rule":"enabled","targets":["device1","device2","device5","device6"],"schedule":{"08:00":"enabled","22:00":"disabled"}},"sensor5":{"id":"sensor5","new":False,"modified":False,"type":"si7021","nickname":"Temperature","mode":"cool","tolerance":"3","default_rule":71,"targets":["device4","device7"],"schedule":{"08:00":"73","22:00":"69"}}},"devices":{"device1":{"id":"device1","new":False,"modified":False,"type":"dimmer","nickname":"Overhead","ip":"192.168.1.105","default_rule":100,"schedule":{"08:00":"100","22:00":"35"}},"device2":{"id":"device2","new":False,"modified":False,"type":"bulb","nickname":"Lamp","ip":"192.168.1.106","default_rule":75,"schedule":{"08:00":"100","22:00":"35"}},"device3":{"id":"device3","new":False,"modified":False,"type":"relay","nickname":"Porch Light","ip":"192.168.1.107","default_rule":"enabled","schedule":{"06:00":"disabled","18:00":"enabled"}},"device4":{"id":"device4","new":False,"modified":False,"type":"dumb-relay","nickname":"Fan","pin":"18","default_rule":"disabled","schedule":{}},"device5":{"id":"device5","new":False,"modified":False,"type":"desktop","nickname":"Screen","ip":"192.168.1.150","default_rule":"enabled","schedule":{"08:00":"enabled","22:00":"disabled"}},"device6":{"id":"device6","new":False,"modified":False,"type":"pwm","nickname":"Cabinet Lights","pin":"26","min":"0","max":"1023","default_rule":721,"schedule":{}},"device7":{"id":"device7","new":False,"modified":False,"type":"mosfet","nickname":"Humidifier","pin":"19","default_rule":"disabled","schedule":{}},"device8":{"id":"device8","new":False,"modified":False,"type":"wled","nickname":"TV Bias Lights","ip":"192.168.1.110","default_rule":128,"schedule":{"08:00":"100"}},"device9":{"id":"device9","new":True,"modified":False,"type":"ir-blaster","pin":"23","target":["tv"],"schedule":{}}}}
+
+
+
+# Test setting default wifi credentials
+class WifiCredentialsTests(TestCase):
+    def test_setting_credentials(self):
+        # Database should be empty
+        self.assertEqual(len(WifiCredentials.objects.all()), 0)
+
+        # Set default credentials, verify response + database
+        response = self.client.post('/set_default_credentials', json.dumps({'ssid': 'AzureDiamond', 'password': 'hunter2'}), content_type='application/json')
+        self.assertEqual(response.json(), 'Default credentials set')
+        self.assertEqual(len(WifiCredentials.objects.all()), 1)
+
+        # Overwrite credentials, verify model only contains 1 entry
+        response = self.client.post('/set_default_credentials', json.dumps({'ssid': 'NewWifi', 'password': 'hunter2'}), content_type='application/json')
+        self.assertEqual(response.json(), 'Default credentials set')
+        self.assertEqual(len(WifiCredentials.objects.all()), 1)
+
+
+
+# Test duplicate detection
+class DuplicateDetectionTests(TestCase):
+    def test_check_duplicate(self):
+        # Should accept new name
+        response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test Config'}), content_type='application/json')
+        self.assertEqual(response.json(), 'Name OK.')
+
+        # Create config with same name
+        Client().post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+
+        # Should now reject (identical name)
+        response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test Config'}), content_type='application/json')
+        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+
+        # Should reject regardless of capitalization
+        response = self.client.post('/check_duplicate', json.dumps({'name': 'unit test config'}), content_type='application/json')
+        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+
+        # Should accept different name
+        response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test'}), content_type='application/json')
+        self.assertEqual(response.json(), 'Name OK.')
 
 
 
