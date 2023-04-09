@@ -3,9 +3,80 @@ from django.conf import settings
 import json, os
 from .views import validateConfig, get_modules, get_api_target_menu_options
 from .models import Config, Node, WifiCredentials
+from unittest.mock import patch
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes
+from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1
+from .Webrepl import *
+
+# TODO
+# - edit_config
+# - configure
+# - node_configuration
+# - reupload_all
+# - provision
+# - upload
+# - setup
+
+
+
+# Test view that connects to existing node, downloads config file, writes to database
+class RestoreConfigViewTest(TestCase):
+    def test_restore_config(self):
+        # Database should be empty
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Mock Webrepl to return byte-encoded test_config_1 (see unit_test_helpers.py)
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'get_file_mem', return_value=json.dumps(test_config_1).encode('utf-8')):
+
+            # Post fake IP to endpoint, confirm output
+            response = self.client.post('/restore_config', {'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), 'Config restored')
+
+        # Config and Node should now exist, should be able to find with test_config_1
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+        self.assertTrue(Config.objects.get(config=test_config_1))
+        self.assertTrue(Node.objects.get(friendly_name='Test1'))
+
+    def test_target_offline(self):
+        # Database should be empty
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Mock Webrepl to fail to connect
+        with patch.object(Webrepl, 'open_connection', return_value=False):
+
+            # Post fake IP to endpoint, confirm weeoe
+            response = self.client.post('/restore_config', {'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.json(), 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.')
+
+        # Database should still be empty
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+    def test_duplicate_config_name(self):
+        # Create 3 test nodes
+        create_test_nodes()
+        self.assertEqual(len(Config.objects.all()), 3)
+        self.assertEqual(len(Node.objects.all()), 3)
+
+        # Mock Webrepl to return byte-encoded test_config_1 (duplicate, already used by create_test_nodes)
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'get_file_mem', return_value=json.dumps(test_config_1).encode('utf-8')):
+
+            # Post fake IP to endpoint, confirm error
+            response = self.client.post('/restore_config', {'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 409)
+            self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+
+        # Should still have 3
+        self.assertEqual(len(Config.objects.all()), 3)
+        self.assertEqual(len(Node.objects.all()), 3)
 
 
 
