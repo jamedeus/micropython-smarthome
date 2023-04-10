@@ -82,8 +82,7 @@ def setup(request):
         raise Http404("ERROR: Must post data")
 
     # Upload
-    response = provision("setup.json", data["ip"], [], [])
-    return response
+    return provision("setup.json", data["ip"], [], [])
 
 
 
