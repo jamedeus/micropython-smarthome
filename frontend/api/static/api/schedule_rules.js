@@ -137,6 +137,15 @@ async function add_rule_row(el) {
                              </div>
                          </td>`
 
+        } else if (type == "wled") {
+            // Slider
+            slider = true;
+            template += `<td style="width: 100%">
+                             <div class="d-flex flex-row align-items-center mt-2 pt-1">
+                                 <input id="${target}-rule${row}" name="${target}-rule${row}" type="range" class="schedule-rule mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
+                             </div>
+                         </td>`
+
         } else if (type == "api-target") {
             // Button with hidden field, opens modal
             template += `<td><button id="${target}-rule${row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
