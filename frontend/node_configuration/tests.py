@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.conf import settings
 from django.http import JsonResponse
 import json, os
-from .views import validateConfig, get_modules, get_api_target_menu_options, provision
+from .views import validateConfig, get_modules, get_api_target_menu_options, provision, get_api_target_menu_options
 from .models import Config, Node, WifiCredentials
 from unittest.mock import patch
 
@@ -12,8 +12,38 @@ from .Webrepl import *
 
 # TODO
 # - edit_config
-# - configure
 
+
+# Test config generation page
+class ConfigGeneratorTests(TestCase):
+    def test_new_config(self):
+        # Request page, confirm correct template used
+        response = self.client.get('/new_config')
+        self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
+
+        # Confirm correct context (empty) + api target menu options
+        self.assertEqual(response.context['config'], {"TITLE": "Create New Config"})
+        self.assertEqual(response.context['api_target_options'], get_api_target_menu_options())
+
+        # Confirm wifi fields empty
+        self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Create New Config</h1>')
+        self.assertContains(response, 'name="ssid" value="" onchange="open_toast()" required>')
+        self.assertContains(response, 'name="password" value="" onchange="open_toast()" required>')
+
+    def test_with_default_wifi(self):
+        # Set default wifi credentials
+        WifiCredentials.objects.create(ssid='AzureDiamond', password='hunter2')
+
+        # Request page, confirm correct template used
+        response = self.client.get('/new_config')
+        self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
+
+        # Confirm context contains credentials
+        self.assertEqual(response.context['config'], {"TITLE": "Create New Config", 'wifi': {'password': 'hunter2', 'ssid': 'AzureDiamond'}})
+
+        # Confirm wifi fields pre-filled
+        self.assertContains(response, 'name="ssid" value="AzureDiamond" onchange="open_toast()" required>')
+        self.assertContains(response, 'name="password" value="hunter2" onchange="open_toast()" required>')
 
 # Test main overview page
 class OverviewPageTests(TestCase):
