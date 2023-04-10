@@ -322,10 +322,13 @@
             // Show loading spinner modal
             uploadModal.show();
 
+            // Send request, receive report on which uploads succeeded/failed
             response = await fetch("/reupload_all");
+            response = await response.json();
+            console.log(response)
 
-            if (response.ok) {
-                // Change title, show success animation
+            // If all succeeded: change title, show success animation
+            if (Object.keys(response.failed).length == 0) {
                 const title = "Upload Complete"
                 const body = `<svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                                     <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
@@ -336,12 +339,17 @@
                 // Wait for animation to complete before hiding
                 await sleep(1200);
                 uploadModal.hide();
+
+            // If any failed, show list of names and failure reasons
             } else {
-                // Show received response in error modal
-                const body = await response.text();
-                const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-                show_modal(errorModal, "Error", body, footer);
-                uploadModal.hide();
+                let failed = "";
+                for (const node in response['failed']) {
+                    failed += `<li>${node}: ${response['failed'][node]}</li>`
+                };
+
+                const body = `<div><h5 class="text-center">Failed:</h5><ul>${failed}</ul></div>`
+                const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`;
+                show_modal(uploadModal, "Upload Complete", body, footer);
             };
         };
 

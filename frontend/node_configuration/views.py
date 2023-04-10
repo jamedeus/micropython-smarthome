@@ -177,13 +177,29 @@ def reupload_all(request):
     print("Reuploading all configs...")
     nodes = Node.objects.all()
 
+    # Track success/failure of each upload
+    report = {'success': [], 'failed': {}}
+
     for node in nodes:
         modules, libs = get_modules(node.config.config)
 
         print(f"\nReuploading {node.friendly_name}...")
-        provision(node.config.filename, node.ip, modules, libs)
+        response = provision(node.config.filename, node.ip, modules, libs)
 
-    return JsonResponse("Finished reuploading", safe=False, status=200)
+        # Add result to report
+        if response.status_code == 200:
+            report['success'].append(node.friendly_name)
+        elif response.status_code == 404:
+            report['failed'][node.friendly_name] = 'Offline'
+        elif response.status_code == 408:
+            report['failed'][node.friendly_name] = 'Connection timed out'
+        elif response.status_code == 409:
+            report['failed'][node.friendly_name] = 'Requires setup'
+
+    print('\nreupload_all results:')
+    print(json.dumps(report, indent=4))
+
+    return JsonResponse(report, safe=False, status=200)
 
 
 
