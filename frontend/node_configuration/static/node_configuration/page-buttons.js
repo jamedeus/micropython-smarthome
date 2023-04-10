@@ -176,6 +176,16 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                  </select>
                              </td>`
 
+            // Wled: Add range slider
+            } else if (instances['devices'][device]['type'] == 'wled') {
+                template +=                `<td>
+                                                <div class="d-flex flex-row align-items-center my-2">
+                                                    <button id="${device}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                                                    <input id="${device}-rule1" type="range" class="rule ${device} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{rule}}" value="{{rule}}" autocomplete="off">
+                                                    <button id="${device}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                                                </div>
+                                            </td>`
+
             // All other device types: add text input
             } else {
                 template += `<td><input type='text' class='form-control ${device}' id='${device}-rule1' placeholder=''></td>`
@@ -185,6 +195,11 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             template += `<td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove1" disabled><i class="bi-x-lg"></i></button></td>
                      </tr>`;
             document.getElementById(`${device}-rules`).innerHTML = template
+
+            // If wled added, initialize rule slider
+            if (instances['devices'][device]['type'] == 'wled') {
+                add_new_slider(`${device}-rule1`);
+            };
 
             // Prevent running again (unless device type changes again)
             instances['devices'][device].modified = false;
@@ -358,6 +373,26 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                                 </select>
                                             </td>`
 
+            // Motion sensor: Add range slider
+            } else if (instances['sensors'][sensor]['type'] == 'pir') {
+                template +=                `<td>
+                                                <div class="d-flex flex-row align-items-center my-2">
+                                                    <button id="${sensor}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                                                    <input id="${sensor}-rule1" type="range" class="rule ${sensor} mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
+                                                    <button id="${sensor}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+                                                </div>
+                                            </td>`
+
+            // Thermostat: Add range slider
+            } else if (instances['sensors'][sensor]['type'] == 'si7021') {
+                template +=                `<td>
+                                                <div class="d-flex flex-row align-items-center my-2">
+                                                    <button id="${sensor}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                                                    <input id="${sensor}-rule1" type="range" class="rule ${sensor} mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
+                                                    <button id="${sensor}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+                                                </div>
+                                            </td>`
+
             // All other sensors: Add text field
             } else {
                 template += `<td><input type='text' class='form-control rule ${sensor}' id='${sensor}-rule1' placeholder=''></td>`
@@ -367,6 +402,11 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                      </tr>`;
 
             document.getElementById(`${sensor}-rules`).innerHTML = template;
+
+            // If thermostat or motion sensor added, initialize rule slider
+            if (instances['sensors'][sensor]['type'] == 'si7021' || instances['sensors'][sensor]['type'] == 'pir') {
+                add_new_slider(`${sensor}-rule1`);
+            };
 
             // Prevent running again (unless user changes type again)
             instances['sensors'][sensor].modified = false;

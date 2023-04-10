@@ -51,16 +51,16 @@ function show_modal(modal, title=false, body=false, footer=false) {
 };
 
 // Used by both pages to upload config files to nodes
-async function upload(filename, target_ip) {
+async function upload() {
     // Show loading screen
     show_modal(uploadModal);
 
     if (edit_existing) {
         // Re-upload existing config
-        var response = await send_post_request("upload/True", {config: filename, ip: target_ip});
+        var response = await send_post_request("upload/True", {config: target_filename, ip: target_ip});
     } else {
         // Upload config
-        var response = await send_post_request("upload", {config: filename, ip: target_ip});
+        var response = await send_post_request("upload", {config: target_filename, ip: target_ip});
     };
 
     // If upload successful, show success animation and reload page
@@ -75,11 +75,11 @@ async function upload(filename, target_ip) {
     // Unable to upload because node has not run setup
     } else if (response.status == 409) {
         const error = await response.text();
-        run_setup_prompt(error, target_ip);
+        run_setup_prompt(error);
 
     // Unable to upload because node is unreachable
     } else if (response.status == 404) {
-        target_unreachable_prompt(target_ip);
+        target_unreachable_prompt();
 
     // Other error, show in alert
     } else {
@@ -91,7 +91,7 @@ async function upload(filename, target_ip) {
 };
 
 // Shown when unable to upload because target node has not run setup yet
-async function run_setup_prompt(error, target_ip) {
+async function run_setup_prompt(error) {
     const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button>
                     <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
 
@@ -132,7 +132,7 @@ async function run_setup_prompt(error, target_ip) {
 };
 
 // Shown when unable to upload because target node unreachable
-async function target_unreachable_prompt(target_ip) {
+async function target_unreachable_prompt() {
     uploadModal.hide();
 
     // Show error modal with instructions
