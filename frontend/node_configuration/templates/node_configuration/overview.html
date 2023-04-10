@@ -256,8 +256,6 @@
 
     <script>
         const edit_existing = false;
-        let target_ip = ""
-        let target_filename = ""
 
         // Create modal objects
         const deleteModal = new bootstrap.Modal(document.getElementById('delete-modal'));
@@ -268,9 +266,9 @@
         const integrationModal = new bootstrap.Modal(document.getElementById('integration-modal'));
 
         function set_upload_target(el) {
-            target_filename = el.id.replace("upload-", "");
-            target_ip = document.getElementById(target_filename + "-ip").value;
-            upload();
+            const target_filename = el.id.replace("upload-", "");
+            const target_ip = document.getElementById(target_filename + "-ip").value;
+            upload(target_filename, target_ip);
         };
 
         function sleep(ms) {

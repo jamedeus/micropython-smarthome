@@ -14,8 +14,128 @@ from .Webrepl import *
 # - configure
 # - node_configuration
 # - reupload_all
-# - upload
 # - setup
+
+
+
+# Test endpoint called by frontend upload buttons (calls get_modules and provision)
+class UploadTests(TestCase):
+    def test_upload_new_node(self):
+        # Create test config, confirm database
+        Config.objects.create(config=test_config_1, filename='test1.json')
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Mock Webrepl to return True without doing anything
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', return_value=True):
+
+            # Upload config, verify response
+            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), 'Upload complete.')
+
+        # Should create 1 Node, no configs
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+        self.assertTrue(Node.objects.get(friendly_name='Test1'))
+
+    def test_reupload_existing(self):
+        # Create test config, confirm database
+        create_test_nodes()
+        self.assertEqual(len(Config.objects.all()), 3)
+        self.assertEqual(len(Node.objects.all()), 3)
+
+        # Mock Webrepl to return True without doing anything
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', return_value=True):
+
+            # Reupload config (second URL parameter), verify response
+            response = self.client.post('/upload/True', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), 'Upload complete.')
+
+        # Should have same number of configs and nodes
+        self.assertEqual(len(Config.objects.all()), 3)
+        self.assertEqual(len(Node.objects.all()), 3)
+
+    def test_upload_non_existing_config(self):
+        # Confirm database empty
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Mock Webrepl to return True without doing anything
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', return_value=True):
+
+            # Reupload config (second URL parameter), verify error
+            response = self.client.post('/upload', {'config': 'fake-config.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.json(), "ERROR: Config file doesn't exist - did you delete it manually?")
+
+        # Database should still be empty
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+    def test_upload_to_offline_node(self):
+        # Create test config, confirm database
+        Config.objects.create(config=test_config_1, filename='test1.json')
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Mock Webrepl to fail to connect
+        with patch.object(Webrepl, 'open_connection', return_value=False):
+
+            # Upload config, verify error
+            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.json(), 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.')
+
+        # Should not create Node or Config
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 0)
+        with self.assertRaises(Node.DoesNotExist):
+            Node.objects.get(friendly_name='Test1')
+
+    def test_upload_connection_timeout(self):
+        # Create test config, confirm database
+        Config.objects.create(config=test_config_1, filename='test1.json')
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Mock Webrepl.put_file to raise TimeoutError
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', side_effect=TimeoutError):
+
+            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 408)
+            self.assertEqual(response.json(), 'Connection timed out - please press target node reset button, wait 30 seconds, and try again.')
+
+        # Should not create Node or Config
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 0)
+        with self.assertRaises(Node.DoesNotExist):
+            Node.objects.get(friendly_name='Test1')
+
+    def test_upload_first_time_setup(self):
+        # Create test config, confirm database
+        Config.objects.create(config=test_config_1, filename='test1.json')
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Mock Webrepl.put_file to raise AssertionError (raised when uploading to non-existing path)
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', new=simulate_first_time_upload):
+
+            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 409)
+            self.assertEqual(response.json(), 'ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?')
+
+        # Should not create Node or Config
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 0)
+        with self.assertRaises(Node.DoesNotExist):
+            Node.objects.get(friendly_name='Test1')
 
 
 

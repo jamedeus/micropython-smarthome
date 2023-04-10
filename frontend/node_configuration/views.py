@@ -96,7 +96,7 @@ def upload(request, reupload=False):
     try:
         config = Config.objects.get(filename = data["config"])
     except Config.DoesNotExist:
-        return JsonResponse("ERROR: Config file doesn't exist - did you delete it manually?", safe=False, status=200)
+        return JsonResponse("ERROR: Config file doesn't exist - did you delete it manually?", safe=False, status=404)
 
     if not data["config"] == "setup.json":
         modules, libs = get_modules(config.config)
