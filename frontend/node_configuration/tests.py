@@ -1,12 +1,12 @@
 from django.test import TestCase, Client
 from django.conf import settings
 import json, os
-from .views import validateConfig, get_modules, get_api_target_menu_options
+from .views import validateConfig, get_modules, get_api_target_menu_options, provision
 from .models import Config, Node, WifiCredentials
 from unittest.mock import patch
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1
+from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload
 from .Webrepl import *
 
 # TODO
@@ -14,9 +14,55 @@ from .Webrepl import *
 # - configure
 # - node_configuration
 # - reupload_all
-# - provision
 # - upload
 # - setup
+
+
+
+# Test view that uploads completed configs and dependencies to esp32 nodes
+class ProvisionTests(TestCase):
+    def test_provision(self):
+        modules, libs = get_modules(test_config_1)
+
+        # Mock Webrepl to return True without doing anything
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', return_value=True):
+
+            response = provision('test1.json', '123.45.67.89', modules, libs)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.content.decode(), '"Upload complete."')
+
+    def test_provision_offline_node(self):
+        modules, libs = get_modules(test_config_1)
+
+        # Mock Webrepl to fail to connect
+        with patch.object(Webrepl, 'open_connection', return_value=False):
+
+            response = provision('test1.json', '123.45.67.89', modules, libs)
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.content.decode(), '"Error: Unable to connect to node, please make sure it is connected to wifi and try again."')
+
+    def test_provision_connection_timeout(self):
+        modules, libs = get_modules(test_config_1)
+
+        # Mock Webrepl.put_file to raise TimeoutError
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', side_effect=TimeoutError):
+
+            response = provision('test1.json', '123.45.67.89', modules, libs)
+            self.assertEqual(response.status_code, 408)
+            self.assertEqual(response.content.decode(), '"Connection timed out - please press target node reset button, wait 30 seconds, and try again."')
+
+    def test_provision_first_time_setup(self):
+        modules, libs = get_modules(test_config_1)
+
+        # Mock Webrepl.put_file to raise AssertionError (raised when uploading to non-existing path)
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', new=simulate_first_time_upload):
+
+            response = provision('test1.json', '123.45.67.89', modules, libs)
+            self.assertEqual(response.status_code, 409)
+            self.assertEqual(response.content.decode(), '"ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?"')
 
 
 

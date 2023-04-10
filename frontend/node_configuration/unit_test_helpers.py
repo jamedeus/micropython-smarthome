@@ -19,6 +19,14 @@ test_config_3 = {"metadata": {"id": "Test3", "location": "Inside cabinet under s
 
 
 
+
+# Replaces Webrepl.put_file to simulate uploading to a node with no /lib directory
+def simulate_first_time_upload(self, src_file, dst_file):
+    if src_file.split("/")[1] == "lib":
+        raise AssertionError
+
+
+
 # Helper function to create test nodes with known values
 def create_test_nodes():
     with open(f'{settings.CONFIG_DIR}/test1.json', 'w') as file:

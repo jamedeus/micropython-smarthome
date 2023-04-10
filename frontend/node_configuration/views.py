@@ -128,50 +128,37 @@ def provision(config, ip, modules, libs):
     try:
         # Upload all device/sensor modules
         for i in modules:
-            src_file = REPO_DIR + i
-            dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
-
+            src_file = os.path.join(REPO_DIR, i)
+            dst_file = i.split("/")[1] # Remove path from filename
             node.put_file(src_file, dst_file)
 
         # Upload all libraries
         for i in libs:
-            src_file = REPO_DIR + i
-            dst_file = i
+            src_file = os.path.join(REPO_DIR, i)
+            node.put_file(src_file, i)
 
-            node.put_file(src_file, dst_file)
+        # Upload core dependencies
+        for i in ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py"]:
+            path = os.path.join(REPO_DIR, i)
+            node.put_file(path, i)
 
         # Upload config file
-        node.put_file(CONFIG_DIR + config, "config.json")
+        node.put_file(os.path.join(CONFIG_DIR, config), "config.json")
 
-        # Upload Config module
-        node.put_file(REPO_DIR + "Config.py", "Config.py")
-
-        # Upload Group module
-        node.put_file(REPO_DIR + "Group.py", "Group.py")
-
-        # Upload SoftwareTimer module
-        node.put_file(REPO_DIR + "SoftwareTimer.py", "SoftwareTimer.py")
-
-        # Upload API module
-        node.put_file(REPO_DIR + "Api.py", "Api.py")
-
+        # Upload boot file last (triggers automatic reboot)
         if not config == "setup.json":
-            # Upload main code last (triggers automatic reboot)
-            node.put_file(REPO_DIR + "boot.py", "boot.py")
+            node.put_file(os.path.join(REPO_DIR, "boot.py"), "boot.py")
         else:
-            node.put_file(REPO_DIR + "setup.py", "boot.py")
+            # First-time setup, creates /lib/ and subdirs
+            node.put_file(os.path.join(REPO_DIR, "setup.py"), "boot.py")
 
         node.close_connection()
 
-    # TODO retest this, not sure if all errors still happen
-    except ConnectionResetError:
-        return JsonResponse("Connection error, please hold down the reset button on target node and try again after about 30 seconds.", safe=False, status=408)
-    except OSError:
-        return JsonResponse("Unable to connect - please ensure target node is plugged in and wait for the blue light to turn off, then try again.", safe=False, status=408)
+    except TimeoutError:
+        return JsonResponse("Connection timed out - please press target node reset button, wait 30 seconds, and try again.", safe=False, status=408)
     except AssertionError:
         print(f"can't upload {src_file}")
-        if src_file.split("/")[-2] == "lib":
-            print("lib")
+        if src_file.split("/")[1] == "lib":
             return JsonResponse("ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?", safe=False, status=409)
 
     return JsonResponse("Upload complete.", safe=False, status=200)
