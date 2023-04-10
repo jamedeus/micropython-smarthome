@@ -1,5 +1,6 @@
 import json, os
 from django.conf import settings
+from django.http import JsonResponse
 from .models import Config, Node
 
 
@@ -17,6 +18,15 @@ test_config_2 = {"metadata": {"id": "Test2", "location": "Bedroom", "floor": "2"
 
 test_config_3 = {"metadata": {"id": "Test3", "location": "Inside cabinet under sink", "floor": "1"}, "wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "device1": {"type": "pwm", "nickname": "Bathroom LEDs", "pin": "4", "min": "0", "max": "1023", "default_rule": 0, "schedule": {"22:00": "1023", "22:01": "fade/256/7140", "00:00": "fade/32/7200", "05:00": "Disabled"}}, "device2": {"type": "relay", "nickname": "Bathroom Lights", "ip": "192.168.1.239", "default_rule": "enabled", "schedule": {"05:00": "enabled", "22:00": "disabled"}}, "device3": {"type": "relay", "nickname": "Entry Light", "ip": "192.168.1.202", "default_rule": "enabled", "schedule": {"05:00": "enabled", "23:00": "disabled"}}, "sensor1": {"type": "pir", "nickname": "Motion Sensor (Bath)", "pin": "15", "default_rule": "2", "targets": ["device1", "device2"], "schedule": {"10:00": "2", "22:00": "2"}}, "sensor2": {"type": "pir", "nickname": "Motion Sensor (Entry)", "pin": "16", "default_rule": "1", "targets": ["device3"], "schedule": {"00:00": "1"}}}
 
+
+
+
+# Replaces provision view to simulate partially successful reupload_all
+def simulate_reupload_all_partial_success(config, ip, modules, libs):
+    if config == "test2.json":
+        return JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
+    else:
+        return JsonResponse("Upload complete.", safe=False, status=200)
 
 
 

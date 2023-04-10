@@ -7,18 +7,55 @@ from .models import Config, Node, WifiCredentials
 from unittest.mock import patch
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload
+from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success
 from .Webrepl import *
 
 # TODO
 # - edit_config
 # - configure
 # - node_configuration
-# - reupload_all
 
 
 
-# Test endpoing that uploads first-time setup script
+# Test endpoint called by reupload all option in config overview
+class ReuploadAllTests(TestCase):
+    def setUp(self):
+        create_test_nodes()
+
+    def test_reupload_all(self):
+        # Mock provision to return success message without doing anything
+        with patch('node_configuration.views.provision') as mock_provision:
+            mock_provision.return_value = JsonResponse("Upload complete.", safe=False, status=200)
+
+            # Send request, validate response, validate that provision is called exactly 3 times
+            response = self.client.get('/reupload_all')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {'success': ['test1', 'test2', 'test3'], 'failed': {}})
+            self.assertEqual(mock_provision.call_count, 3)
+
+    def test_reupload_all_partial_success(self):
+        # Mock provision to return failure message for Test2, success for everything else
+        with patch('node_configuration.views.provision', new=simulate_reupload_all_partial_success):
+
+            # Send request, validate response, validate that test1 and test3 succeeded while test2 failed
+            response = self.client.get('/reupload_all')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {'success': ['test1', 'test3'], 'failed': {'test2': 'Offline'}})
+
+    def test_reupload_all_fail(self):
+        # Mock provision to return failure message without doing anything
+        with patch('node_configuration.views.provision') as mock_provision:
+            mock_provision.return_value = JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
+
+            # Send request, validate response, validate that provision is called exactly 3 times
+            response = self.client.get('/reupload_all')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {'success': [], 'failed': {'test1': 'Offline', 'test2': 'Offline', 'test3': 'Offline'}})
+            self.assertEqual(mock_provision.call_count, 3)
+
+
+
+# Test endpoint that uploads first-time setup script
 class SetupTests(TestCase):
     # Verify response in a normal scenario
     # Testing errors is redundant, it just returns the output of provision (already tested)
