@@ -42,6 +42,15 @@ function add(button) {
                                 </div>`
         add_new_slider(`${instance}-rule${next_row}`);
 
+    } else if (type == "wled") {
+        // Add range slider
+        cell_value.innerHTML = `<div class="d-flex flex-row align-items-center my-2">
+                                    <button id="${instance}-rule${next_row}-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                                    <input id="${instance}-rule${next_row}" type="range" class="${instance} rule mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{rule}}" value="{{rule}}" autocomplete="off">
+                                    <button id="${instance}-rule${next_row}-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                                </div>`
+        add_new_slider(`${instance}-rule${next_row}`);
+
     } else if (type == "dimmer" || type == "bulb" || type == "pwm") {
         // Add text field for instances that take both enabled/disabled and integer
         cell_value.innerHTML = `<input type='text' class='form-control ${instance} rule' id='${instance}-rule${next_row}' placeholder=''>`;

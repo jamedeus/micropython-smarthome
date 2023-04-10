@@ -75,6 +75,16 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                                 </select>
                                             </td>`
 
+            // Wled: Add range slider
+            } else if (instances['devices'][device]['type'] == 'wled') {
+                template +=                `<td>
+                                                <div class="d-flex flex-row align-items-center my-2">
+                                                    <button id="${device}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                                                    <input id="${device}-rule1" type="range" class="rule ${device} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{rule}}" value="{{rule}}" autocomplete="off">
+                                                    <button id="${device}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                                                </div>
+                                            </td>`
+
             // All other device types: add text input
             } else {
                 template +=                 `<td>
@@ -95,6 +105,11 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 
             // Prevent adding duplicates
             instances['devices'][device].new = false;
+
+            // If wled added, initialize rule slider
+            if (instances['devices'][device]['type'] == 'wled') {
+                add_new_slider(`${device}-rule1`);
+            };
 
         // If device nickname changed, but type did not change (targets + rules don't need to be cleared)
         } else if (instances['devices'][device].name_changed && ! instances['devices'][device].modified) {

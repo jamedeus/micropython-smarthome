@@ -719,6 +719,15 @@
                                                         </div>
                                                     </td>
 
+                                                {% elif params.type == "wled" %}
+                                                    <td>
+                                                        <div class="d-flex flex-row align-items-center my-2">
+                                                            <button id="{{instance}}-rule{{forloop.counter}}-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                                                            <input id="{{instance}}-rule{{forloop.counter}}" type="range" class="{{instance}} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{rule}}" value="{{rule}}" autocomplete="off">
+                                                            <button id="{{instance}}-rule{{forloop.counter}}-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                                                        </div>
+                                                    </td>
+
                                                 {% elif params.type == "dimmer" or params.type == "bulb" %}
                                                     <td>
                                                         <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" placeholder="" value="{{rule}}">
