@@ -17,7 +17,10 @@ valid_device_pins = (4, 13, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33)
 valid_sensor_pins = (4, 5, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39)
 valid_device_types = ('dimmer', 'bulb', 'relay', 'dumb-relay', 'desktop', 'pwm', 'mosfet', 'api-target', 'wled')
 valid_sensor_types = ('pir', 'desktop', 'si7021', 'dummy', 'switch')
-ip_regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+
+# Returns True if param matches IPv4 regex, otherwise False
+def valid_ip(ip):
+    return bool(re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip))
 
 # Dependency relative paths for all device and sensor types, used by get_modules
 dependencies = {
@@ -81,6 +84,9 @@ def setup(request):
     else:
         raise Http404("ERROR: Must post data")
 
+    if not valid_ip(data["ip"]):
+        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
+
     # Upload
     return provision("setup.json", data["ip"], [], [])
 
@@ -91,6 +97,9 @@ def upload(request, reupload=False):
         data = json.loads(request.body.decode("utf-8"))
     else:
         raise Http404("ERROR: Must post data")
+
+    if not valid_ip(data["ip"]):
+        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
 
     try:
         config = Config.objects.get(filename = data["config"])
@@ -402,7 +411,7 @@ def validateConfig(config):
     # Validate IP addresses
     ips = [value['ip'] for key, value in config.items() if 'ip' in value]
     for ip in ips:
-        if not re.match(ip_regex, ip):
+        if not valid_ip(ip):
             return f'Invalid IP {ip}'
 
     # Validate Thermostat tolerance
@@ -608,6 +617,9 @@ def restore_config(request):
         data = json.loads(request.body.decode("utf-8"))
     else:
         raise Http404("ERROR: Must post data")
+
+    if not valid_ip(data["ip"]):
+        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
 
     # Open conection, detect if node connected to network
     node = Webrepl(data["ip"], NODE_PASSWD)

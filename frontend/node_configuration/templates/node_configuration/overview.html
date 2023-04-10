@@ -209,9 +209,11 @@
                 <div class="modal-body text-center" id="restore-modal-body">
                     <p class="text-center">This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
 
+                    {# IDs "restore-ip" and "upload-restore" match syntax of new config upload inputs + buttons #}
+                    {# hacky way to make this compatible with listeners (format + validation + submit-on-enter) #}
                     <div id="prompt">
-                        <label for="ip"><b>IP Address:</b></label>
-                        <input type="text" class="form-control modal-input" id="ip" placeholder="" name="ip" autocomplete="off" required>
+                        <label for="restore-ip"><b>IP Address:</b></label>
+                        <input type="text" class="form-control modal-input ip-input" id="restore-ip" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
                     </div>
                     <div id="loading" class="d-none mx-auto">
                         <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
@@ -220,7 +222,7 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" id="restore" class="btn btn-success mx-auto" onclick="restore_config()">Restore</button>
+                        <button type="button" id="upload-restore" class="btn btn-success mx-auto" onclick="restore_config()" disabled>Restore</button>
                     </div>
                 </div>
             </div>
@@ -345,12 +347,12 @@
 
         async function restore_config() {
             // Disable submit, hide field, show loading animation
-            document.getElementById('restore').disabled = true;
+            document.getElementById('upload-restore').disabled = true;
             document.getElementById('prompt').classList.add('d-none')
             document.getElementById('loading').classList.remove('d-none')
 
             // Send request
-            body = {'ip' : document.getElementById('ip').value };
+            body = {'ip' : document.getElementById('restore-ip').value };
             response = await send_post_request("restore_config", body);
 
             // If successfully restore, show animation + reload
@@ -375,7 +377,7 @@
             };
 
             restoreModal.hide();
-            document.getElementById('restore').disabled = false;
+            document.getElementById('upload-restore').disabled = false;
             document.getElementById('loading').classList.add('d-none')
             document.getElementById('prompt').classList.remove('d-none')
         };
@@ -413,7 +415,6 @@
         };
     </script>
     <script src="{% static 'node_configuration/upload.js' %}"></script>
-    {% if context.not_uploaded %}
     {# Must import validate.js first so formatIp runs before listeners below #}
     {# Otherwise upload button can be disabled by an invalid key which is then removed #}
     <script src="{% static 'node_configuration/validate.js' %}"></script>
@@ -439,6 +440,5 @@
             };
         }));
     </script>
-    {% endif %}
 </body>
 </html>

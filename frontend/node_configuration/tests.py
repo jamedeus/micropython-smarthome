@@ -40,6 +40,12 @@ class SetupTests(TestCase):
             response = self.client.post('/setup', {'ip': '123.45.67.89'}, content_type='application/json')
             mock_provision.assert_called_with("setup.json", '123.45.67.89', [], [])
 
+    # Verify correct error when passed an invalid IP
+    def test_invalid_ip(self):
+        response = self.client.post('/setup', {'ip': '123.456.678.90'}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'Error': f'Invalid IP 123.456.678.90'})
+
 
 
 # Test endpoint called by frontend upload buttons (calls get_modules and provision)
@@ -161,6 +167,12 @@ class UploadTests(TestCase):
         with self.assertRaises(Node.DoesNotExist):
             Node.objects.get(friendly_name='Test1')
 
+    # Verify correct error when passed an invalid IP
+    def test_invalid_ip(self):
+        response = self.client.post('/upload', {'ip': '123.456.678.90'}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'Error': f'Invalid IP 123.456.678.90'})
+
 
 
 # Test view that uploads completed configs and dependencies to esp32 nodes
@@ -267,6 +279,12 @@ class RestoreConfigViewTest(TestCase):
         # Should still have 3
         self.assertEqual(len(Config.objects.all()), 3)
         self.assertEqual(len(Node.objects.all()), 3)
+
+    # Verify correct error when passed an invalid IP
+    def test_invalid_ip(self):
+        response = self.client.post('/restore_config', {'ip': '123.456.678.90'}, content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'Error': f'Invalid IP 123.456.678.90'})
 
 
 
