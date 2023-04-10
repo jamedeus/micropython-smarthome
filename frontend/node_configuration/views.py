@@ -264,10 +264,13 @@ def config_overview(request):
 
 
 
-def configure(request):
+def new_config(request):
     template = loader.get_template('node_configuration/edit-config.html')
 
-    context = {"config": {"TITLE": "Create New Config"}, "api_target_options": get_api_target_menu_options()}
+    context = {
+        "config": {"TITLE": "Create New Config"},
+        "api_target_options": get_api_target_menu_options()
+    }
 
     # Add default wifi credentials if configured
     if len(WifiCredentials.objects.all()) > 0:
@@ -276,7 +279,7 @@ def configure(request):
         context["config"]["wifi"]["ssid"] = default.ssid
         context["config"]["wifi"]["password"] = default.password
 
-    return HttpResponse(template.render({'context': context}, request))
+    return HttpResponse(template.render(context, request))
 
 
 
@@ -334,7 +337,7 @@ def edit_config(request, name):
 
     print(json.dumps(context, indent=4))
 
-    return HttpResponse(template.render({'context': context}, request))
+    return HttpResponse(template.render(context, request))
 
 
 

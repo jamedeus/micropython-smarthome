@@ -8,7 +8,7 @@ urlpatterns = [
     path('config_overview', views.config_overview, name='config_overview'),
 
     # Allow accessing with relative path
-    path('configure/setup', views.setup, name='setup'),
+    path('new_config/setup', views.setup, name='setup'),
     path('edit_config/setup', views.setup, name='setup'),
     path('edit_config/upload', views.upload, name='upload'),
     path('edit_config/upload/<str:reupload>', views.upload, name='upload'),
@@ -24,7 +24,7 @@ urlpatterns = [
     path('delete_node', views.delete_node, name='delete_node'),
     path('edit_config/<str:name>', views.edit_config, name='edit_config'),
 
-    path('configure', views.configure, name='configure'),
+    path('new_config', views.new_config, name='new_config'),
 
     # Argument is optional
     path('generateConfigFile', views.generateConfigFile, name='generateConfigFile'),
