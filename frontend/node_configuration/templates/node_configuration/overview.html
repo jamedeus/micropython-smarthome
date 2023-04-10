@@ -35,84 +35,80 @@
             </div>
         </div>
 
-        {% if context %}
+        {% if not_uploaded %}
+            <div id="not_uploaded" class="row mx-3 mb-5">
+                <h3 class="mb-3">Configs ready to upload:</h3>
 
-            {% if context.not_uploaded %}
-                <div id="not_uploaded" class="row mx-3 mb-5">
-                    <h3 class="mb-3">Configs ready to upload:</h3>
-
-                    <table id="not_uploaded_table" class="table table-striped table-borderless table-hover mb-3">
-                        <tr>
-                            <th>Name</th>
-                            <th>IP</th>
-                            <th></th>
-                            <th></th>
+                <table id="not_uploaded_table" class="table table-striped table-borderless table-hover mb-3">
+                    <tr>
+                        <th>Name</th>
+                        <th>IP</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                    {% for config in not_uploaded %}
+                        <tr id="{{config}}">
+                            <td class="min align-middle">{{config}}</td>
+                            <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" class="form-control ip-input" required></td>
+                            <td class="min align-middle"><button type="button" class="btn-primary btn btn-sm" id="upload-{{config}}" onclick="set_upload_target(this);" disabled>Upload</button></td>
+                            <td class="min align-middle"><button type="button" class="btn-danger btn btn-sm" onclick="del_config('{{config}}');"><i class="bi-trash"></i></button></td>
                         </tr>
-                        {% for config in context.not_uploaded %}
-                            <tr id="{{config}}">
-                                <td class="min align-middle">{{config}}</td>
-                                <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" class="form-control ip-input" required></td>
-                                <td class="min align-middle"><button type="button" class="btn-primary btn btn-sm" id="upload-{{config}}" onclick="set_upload_target(this);" disabled>Upload</button></td>
-                                <td class="min align-middle"><button type="button" class="btn-danger btn btn-sm" onclick="del_config('{{config}}');"><i class="bi-trash"></i></button></td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-
-            {% endif %}
-
-            {% if context.uploaded %}
-                <div id="existing" class="row mx-3">
-                    <h3 class="mb-3">Existing Nodes:</h3>
-
-                    <table id="nodes_table" class="table table-striped table-borderless table-hover">
-                        <tr>
-                            <th>Name</th>
-                            <th>IP</th>
-                            <th></th>
-                            <th></th>
-                        </tr>
-
-                        {% for node in context.uploaded %}
-                            <tr id="{{node.friendly_name}}">
-                                <td class="align-middle">{{node.friendly_name}}</td>
-                                <td class="align-middle">{{node.ip}}</td>
-                                <td class="min align-middle">
-                                    <button type="button" class="btn-primary btn btn-sm" title="Edit" onclick="window.location.href = '/edit_config/{{node.friendly_name}}'"><i class="bi-pencil"></i></button>
-                                </td>
-                                <td class="min align-middle">
-                                    <button type="button" class="btn-danger btn btn-sm" title="Delete" onclick="del_node('{{node.friendly_name}}')"><i class="bi-trash"></i></button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-            {% endif %}
-
-            <!-- Add new config button -->
-            <div id="add_new_config" class="mb-3 mx-3 text-center">
-                <a href="/configure" class="btn-primary btn">Create new config</a>
+                    {% endfor %}
+                </table>
             </div>
-
-            <script>
-                // Check if user is in dark mode, change theme (runs once on page load)
-                if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                    document.body.classList.add("dark");
-                    try { document.getElementById("nodes_table").classList.add("table-dark"); } catch(err) {};
-                    try { document.getElementById("not_uploaded_table").classList.add("table-dark"); } catch(err) {};
-                    document.getElementById("settings_button").classList.add("btn-dark");
-                    Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
-                    console.log("Dark mode");
-                } else {
-                    document.getElementById("settings_button").classList.add("btn-light");
-                };
-            </script>
 
         {% endif %}
 
+        {% if uploaded %}
+            <div id="existing" class="row mx-3">
+                <h3 class="mb-3">Existing Nodes:</h3>
+
+                <table id="nodes_table" class="table table-striped table-borderless table-hover">
+                    <tr>
+                        <th>Name</th>
+                        <th>IP</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+
+                    {% for node in uploaded %}
+                        <tr id="{{node.friendly_name}}">
+                            <td class="align-middle">{{node.friendly_name}}</td>
+                            <td class="align-middle">{{node.ip}}</td>
+                            <td class="min align-middle">
+                                <button type="button" class="btn-primary btn btn-sm" title="Edit" onclick="window.location.href = '/edit_config/{{node.friendly_name}}'"><i class="bi-pencil"></i></button>
+                            </td>
+                            <td class="min align-middle">
+                                <button type="button" class="btn-danger btn btn-sm" title="Delete" onclick="del_node('{{node.friendly_name}}')"><i class="bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        {% endif %}
+
+        <!-- Add new config button -->
+        <div id="add_new_config" class="mb-3 mx-3 text-center">
+            <a href="/configure" class="btn-primary btn">Create new config</a>
+        </div>
+
+        <script>
+            // Check if user is in dark mode, change theme (runs once on page load)
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add("dark");
+                try { document.getElementById("nodes_table").classList.add("table-dark"); } catch(err) {};
+                try { document.getElementById("not_uploaded_table").classList.add("table-dark"); } catch(err) {};
+                document.getElementById("settings_button").classList.add("btn-dark");
+                Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
+                console.log("Dark mode");
+            } else {
+                document.getElementById("settings_button").classList.add("btn-light");
+            };
+        </script>
+
         <!-- Link to API card frontend -->
         <div class="d-flex align-items-center flex-column mt-auto">
-            <button class="btn btn-secondary mt-auto mb-3" id="node_configuration_button" type="button" onclick="window.location.href = '/api'">Frontend</button>
+            <button class="btn btn-secondary mt-auto mb-3" type="button" onclick="window.location.href = '/api'">Frontend</button>
         </div>
     </div>
 

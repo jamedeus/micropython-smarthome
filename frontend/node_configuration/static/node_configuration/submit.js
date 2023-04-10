@@ -27,7 +27,7 @@ async function submit_form(edit) {
     // If successfully created new config, redirect to overview
     if (!edit && response.ok) {
         // Redirect back to overview where user can upload the newly-created config
-        window.location.replace("/node_configuration");
+        window.location.replace("/config_overview");
 
     // If successfully edited existing config, re-upload to target node
     } else if (edit && response.ok) {

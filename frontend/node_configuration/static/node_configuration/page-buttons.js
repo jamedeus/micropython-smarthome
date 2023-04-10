@@ -434,7 +434,7 @@ document.getElementById('page2-button').addEventListener("click", function(e) {
 });
 
 document.getElementById('page1-back-button').addEventListener("click", function(e) {
-    window.location.replace("/node_configuration");
+    window.location.replace("/config_overview");
 });
 
 document.getElementById('page2-back-button').addEventListener("click", function(e) {

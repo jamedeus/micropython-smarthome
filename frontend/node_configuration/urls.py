@@ -5,7 +5,7 @@ from . import views
 app_name = "node_configuration"
 
 urlpatterns = [
-    path('node_configuration', views.node_configuration, name='node_configuration'),
+    path('config_overview', views.config_overview, name='config_overview'),
 
     # Allow accessing with relative path
     path('configure/setup', views.setup, name='setup'),

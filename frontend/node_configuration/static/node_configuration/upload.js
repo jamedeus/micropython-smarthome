@@ -70,7 +70,7 @@ async function upload() {
 
         // Wait for animation to complete before reloading
         await sleep(1200);
-        window.location.replace("/node_configuration");
+        window.location.replace("/config_overview");
 
     // Unable to upload because node has not run setup
     } else if (response.status == 409) {

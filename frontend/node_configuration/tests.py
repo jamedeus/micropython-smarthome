@@ -13,7 +13,65 @@ from .Webrepl import *
 # TODO
 # - edit_config
 # - configure
-# - node_configuration
+
+
+# Test main overview page
+class OverviewPageTests(TestCase):
+    def test_overview_page_no_nodes(self):
+        # Request page, confirm correct template used
+        response = self.client.get('/config_overview')
+        self.assertTemplateUsed(response, 'node_configuration/overview.html')
+
+        # Confirm correct context (empty)
+        self.assertEqual(response.context['not_uploaded'], [])
+        self.assertEqual(response.context['uploaded'], [])
+
+        # Confirm neither section present
+        self.assertNotContains(response, '<div id="not_uploaded" class="row mx-3 mb-5">')
+        self.assertNotContains(response, '<div id="existing" class="row mx-3">')
+
+    def test_overview_page_with_nodes(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+        # Request page, confirm correct template used
+        response = self.client.get('/config_overview')
+        self.assertTemplateUsed(response, 'node_configuration/overview.html')
+
+        # Confirm correct context (empty configs, 3 nodes)
+        self.assertEqual(response.context['not_uploaded'], [])
+        self.assertEqual(len(response.context['uploaded']), 3)
+
+        # Confirm existing node section present, new config section not present
+        self.assertNotContains(response, '<div id="not_uploaded" class="row mx-3 mb-5">')
+        self.assertContains(response, '<div id="existing"')
+
+        # Confirm table with all 3 nodes present
+        self.assertContains(response, '<tr id="test1">')
+        self.assertContains(response, '<td class="align-middle">test2</td>')
+        self.assertContains(response, 'onclick="window.location.href = \'/edit_config/test3\'"')
+        self.assertContains(response, 'onclick="del_node(\'test1\')"')
+
+    def test_overview_page_with_configs(self):
+        # Create test config that hasn't been uploaded
+        Config.objects.create(config=test_config_1, filename='test1.json')
+
+        # Rquest page, confirm correct template used
+        response = self.client.get('/config_overview')
+        self.assertTemplateUsed(response, 'node_configuration/overview.html')
+
+        # Confirm correct context (1 config, empty nodes)
+        self.assertEqual(len(response.context['not_uploaded']), 1)
+        self.assertEqual(response.context['uploaded'], [])
+
+        # Confirm new config section present, existing node section section not present
+        self.assertContains(response, '<div id="not_uploaded" class="row mx-3 mb-5">')
+        self.assertNotContains(response, '<div id="existing"')
+
+        # Confirm IP field, upload button, delete button all present
+        self.assertContains(response, '<td><input type="text" id="test1.json-ip"')
+        self.assertContains(response, 'id="upload-test1.json"')
+        self.assertContains(response, 'onclick="del_config(\'test1.json\');"')
 
 
 

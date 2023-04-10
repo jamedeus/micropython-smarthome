@@ -243,7 +243,7 @@ def delete_node(request):
 
 
 
-def node_configuration(request):
+def config_overview(request):
     context = {
         "not_uploaded" : [],
         "uploaded" : []
@@ -260,7 +260,7 @@ def node_configuration(request):
 
     template = loader.get_template('node_configuration/overview.html')
 
-    return HttpResponse(template.render({'context': context}, request))
+    return HttpResponse(template.render(context, request))
 
 
 
