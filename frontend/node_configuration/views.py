@@ -594,13 +594,21 @@ def get_api_target_menu_options(editing_node=False):
                     entry.append("trigger_sensor")
 
             elif i == "ir_blaster":
+
                 instance_string = "ir_blaster-Ir Blaster"
-                entry = {'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'], 'ac': [ 'start', 'stop', 'off' ]}
+
+                entry = {}
+                if 'tv' in config[i]['target']:
+                    entry['tv'] = ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source']
+                if 'ac' in config[i]['target']:
+                    entry['ac'] = [ 'start', 'stop', 'off' ]
 
             else:
                 continue
 
-            entries[instance_string] = entry
+            # Add entry unless it has no options
+            if entry != {}:
+                entries[instance_string] = entry
 
         if editing_node and node.friendly_name == editing_node:
             dropdownObject["self-target"] = entries

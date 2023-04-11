@@ -388,9 +388,24 @@ function get_self_target_options() {
 
     // Add all device options
     for (device in instances['devices']) {
-        const instance_string = `${device}-${instances['devices'][device]['nickname']} (${instances['devices'][device]['type'] })`
+        if (instances['devices'][device]['type'] !== 'ir-blaster') {
+            const instance_string = `${device}-${instances['devices'][device]['nickname']} (${instances['devices'][device]['type'] })`
 
-        ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off']
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off']
+
+        } else {
+            const instance_string = 'ir_blaster-Ir Blaster'
+            ApiTargetOptions['self-target'][instance_string] = {}
+
+            if (document.getElementById('checkbox-tv').checked) {
+                ApiTargetOptions['self-target'][instance_string]['tv'] = ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source']
+            };
+
+            if (document.getElementById('checkbox-ac').checked) {
+                ApiTargetOptions['self-target'][instance_string]['ac'] = ['start', 'stop', 'off']
+            };
+
+        };
     };
 
     // Add all sensor options
