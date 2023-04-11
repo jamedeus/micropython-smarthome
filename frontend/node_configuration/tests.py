@@ -240,7 +240,7 @@ class SetupTests(TestCase):
 
             mock_provision.return_value = JsonResponse("Upload complete.", safe=False, status=200)
             response = self.client.post('/setup', {'ip': '123.45.67.89'}, content_type='application/json')
-            mock_provision.assert_called_with("setup.json", '123.45.67.89', [], [])
+            mock_provision.assert_called_with("setup.json", '123.45.67.89', {}, {})
 
     # Verify correct error when passed an invalid IP
     def test_invalid_ip(self):
@@ -748,27 +748,27 @@ class GetModulesTests(TestCase):
 
     def test_get_modules_full_config(self):
         modules, libs = get_modules(self.config)
-        self.assertEqual(modules, {'devices/LedStrip.py', 'ir-remote/samsung-codes.json', 'ir-remote/whynter-codes.json', 'devices/Device.py', 'devices/Tplink.py', 'sensors/Sensor.py', 'sensors/Dummy.py', 'devices/Wled.py', 'devices/Mosfet.py', 'sensors/Thermostat.py', 'devices/IrBlaster.py', 'sensors/Switch.py', 'devices/Desktop_target.py', 'sensors/Desktop_trigger.py', 'devices/DumbRelay.py', 'sensors/MotionSensor.py', 'devices/Relay.py'})
-        self.assertEqual(libs, ['lib/logging.py', 'lib/si7021.py', 'lib/ir_tx/__init__.py', 'lib/ir_tx/nec.py'])
+        self.assertEqual(modules, {'../sensors/Sensor.py': 'Sensor.py', '../sensors/MotionSensor.py': 'MotionSensor.py', '../devices/LedStrip.py': 'LedStrip.py', '../sensors/Thermostat.py': 'Thermostat.py', '../devices/Mosfet.py': 'Mosfet.py', '../devices/Device.py': 'Device.py', '../devices/Desktop_target.py': 'Desktop_target.py', '../sensors/Dummy.py': 'Dummy.py', '../sensors/Desktop_trigger.py': 'Desktop_trigger.py', '../ir-remote/samsung-codes.json': 'samsung-codes.json', '../sensors/Switch.py': 'Switch.py', '../ir-remote/whynter-codes.json': 'whynter-codes.json', '../devices/Relay.py': 'Relay.py', '../devices/IrBlaster.py': 'IrBlaster.py', '../devices/DumbRelay.py': 'DumbRelay.py', '../devices/Wled.py': 'Wled.py', '../devices/Tplink.py': 'Tplink.py'})
+        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py', '../lib/si7021.py': 'lib/si7021.py', '../lib/ir_tx/__init__.py': 'lib/ir_tx/__init__.py', '../lib/ir_tx/nec.py': 'lib/ir_tx/nec.py'})
 
     def test_get_modules_empty_config(self):
         modules, libs = get_modules({})
-        self.assertEqual(modules, set())
-        self.assertEqual(libs, ['lib/logging.py'])
+        self.assertEqual(modules, {})
+        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py'})
 
     def test_get_modules_no_ir_blaster(self):
         config = self.config.copy()
         del config['ir_blaster']
         modules, libs = get_modules(config)
-        self.assertEqual(modules, {'devices/LedStrip.py', 'devices/Device.py', 'devices/Tplink.py', 'sensors/Sensor.py', 'sensors/Dummy.py', 'devices/Wled.py', 'devices/Mosfet.py', 'sensors/Thermostat.py', 'sensors/Switch.py', 'devices/Desktop_target.py', 'sensors/Desktop_trigger.py', 'devices/DumbRelay.py', 'sensors/MotionSensor.py', 'devices/Relay.py'})
-        self.assertEqual(libs, ['lib/logging.py', 'lib/si7021.py'])
+        self.assertEqual(modules, {'../sensors/Sensor.py': 'Sensor.py', '../sensors/MotionSensor.py': 'MotionSensor.py', '../devices/LedStrip.py': 'LedStrip.py', '../sensors/Thermostat.py': 'Thermostat.py', '../devices/Mosfet.py': 'Mosfet.py', '../devices/Device.py': 'Device.py', '../devices/Desktop_target.py': 'Desktop_target.py', '../sensors/Dummy.py': 'Dummy.py', '../sensors/Desktop_trigger.py': 'Desktop_trigger.py', '../sensors/Switch.py': 'Switch.py', '../devices/Relay.py': 'Relay.py', '../devices/DumbRelay.py': 'DumbRelay.py', '../devices/Wled.py': 'Wled.py', '../devices/Tplink.py': 'Tplink.py'})
+        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py', '../lib/si7021.py': 'lib/si7021.py'})
 
     def test_get_modules_no_thermostat(self):
         config = self.config.copy()
         del config['sensor5']
         modules, libs = get_modules(config)
-        self.assertEqual(modules, {'devices/LedStrip.py', 'ir-remote/samsung-codes.json', 'ir-remote/whynter-codes.json', 'devices/Device.py', 'devices/Tplink.py', 'sensors/Sensor.py', 'sensors/Dummy.py', 'devices/Wled.py', 'devices/Mosfet.py', 'devices/IrBlaster.py', 'sensors/Switch.py', 'devices/Desktop_target.py', 'sensors/Desktop_trigger.py', 'devices/DumbRelay.py', 'sensors/MotionSensor.py', 'devices/Relay.py'})
-        self.assertEqual(libs, ['lib/logging.py', 'lib/ir_tx/__init__.py', 'lib/ir_tx/nec.py'])
+        self.assertEqual(modules, {'../sensors/Sensor.py': 'Sensor.py', '../sensors/MotionSensor.py': 'MotionSensor.py', '../devices/LedStrip.py': 'LedStrip.py', '../devices/Mosfet.py': 'Mosfet.py', '../devices/Device.py': 'Device.py', '../devices/Desktop_target.py': 'Desktop_target.py', '../sensors/Dummy.py': 'Dummy.py', '../sensors/Desktop_trigger.py': 'Desktop_trigger.py', '../ir-remote/samsung-codes.json': 'samsung-codes.json', '../sensors/Switch.py': 'Switch.py', '../ir-remote/whynter-codes.json': 'whynter-codes.json', '../devices/Relay.py': 'Relay.py', '../devices/IrBlaster.py': 'IrBlaster.py', '../devices/DumbRelay.py': 'DumbRelay.py', '../devices/Wled.py': 'Wled.py', '../devices/Tplink.py': 'Tplink.py'})
+        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py', '../lib/ir_tx/__init__.py': 'lib/ir_tx/__init__.py', '../lib/ir_tx/nec.py': 'lib/ir_tx/nec.py'})
 
     def test_get_modules_realistic(self):
         config = self.config.copy()
@@ -780,8 +780,8 @@ class GetModulesTests(TestCase):
         del config['device5']
         del config['device7']
         modules, libs = get_modules(config)
-        self.assertEqual(modules, {'devices/LedStrip.py', 'devices/Device.py', 'devices/Tplink.py', 'sensors/Sensor.py', 'devices/Wled.py', 'sensors/Switch.py', 'sensors/MotionSensor.py', 'devices/Relay.py'})
-        self.assertEqual(libs, ['lib/logging.py'])
+        self.assertEqual(modules, {'../sensors/Sensor.py': 'Sensor.py', '../sensors/MotionSensor.py': 'MotionSensor.py', '../devices/LedStrip.py': 'LedStrip.py', '../devices/Device.py': 'Device.py', '../sensors/Switch.py': 'Switch.py', '../devices/Relay.py': 'Relay.py', '../devices/Wled.py': 'Wled.py', '../devices/Tplink.py': 'Tplink.py'})
+        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py'})
 
 
 

@@ -63,7 +63,7 @@ def simulate_reupload_all_partial_success(config, ip, modules, libs):
 
 # Replaces Webrepl.put_file to simulate uploading to a node with no /lib directory
 def simulate_first_time_upload(self, src_file, dst_file):
-    if src_file.split("/")[1] == "lib":
+    if dst_file.startswith('lib'):
         raise AssertionError
 
 

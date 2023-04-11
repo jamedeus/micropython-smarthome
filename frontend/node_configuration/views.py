@@ -73,6 +73,11 @@ def get_modules(config):
     # Remove duplicates
     modules = set(modules)
 
+    # Convert to dict containing pairs of local:remote filesystem paths
+    # Local path is uploaded to remote path on target ESP32
+    modules = {os.path.join(REPO_DIR, i): i.split("/")[1] for i in modules}
+    libs = {os.path.join(REPO_DIR, i): i for i in libs}
+
     return modules, libs
 
 
@@ -88,7 +93,7 @@ def setup(request):
         return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
 
     # Upload
-    return provision("setup.json", data["ip"], [], [])
+    return provision("setup.json", data["ip"], {}, {})
 
 
 
@@ -109,8 +114,8 @@ def upload(request, reupload=False):
     if not data["config"] == "setup.json":
         modules, libs = get_modules(config.config)
     else:
-        modules = []
-        libs = []
+        modules = {}
+        libs = {}
 
     # Upload
     response = provision(data["config"], data["ip"], modules, libs)
@@ -127,6 +132,8 @@ def upload(request, reupload=False):
 
 
 
+# Takes path to config file, target ip, and modules + libs dicts from get_modules()
+# Uploads config, modules, libs, and core to target IP
 def provision(config, ip, modules, libs):
     # Open conection, detect if node connected to network
     node = Webrepl(ip, NODE_PASSWD)
@@ -135,20 +142,16 @@ def provision(config, ip, modules, libs):
 
     try:
         # Upload all device/sensor modules
-        for i in modules:
-            src_file = os.path.join(REPO_DIR, i)
-            dst_file = i.split("/")[1] # Remove path from filename
-            node.put_file(src_file, dst_file)
+        [node.put_file(local, remote) for local, remote in modules.items()]
 
         # Upload all libraries
-        for i in libs:
-            src_file = os.path.join(REPO_DIR, i)
-            node.put_file(src_file, i)
+        try:
+            [node.put_file(local, remote) for local, remote in libs.items()]
+        except AssertionError:
+            return JsonResponse("ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?", safe=False, status=409)
 
         # Upload core dependencies
-        for i in ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py"]:
-            path = os.path.join(REPO_DIR, i)
-            node.put_file(path, i)
+        [node.put_file(os.path.join(REPO_DIR, i), i) for i in ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py"]]
 
         # Upload config file
         node.put_file(os.path.join(CONFIG_DIR, config), "config.json")
@@ -165,9 +168,7 @@ def provision(config, ip, modules, libs):
     except TimeoutError:
         return JsonResponse("Connection timed out - please press target node reset button, wait 30 seconds, and try again.", safe=False, status=408)
     except AssertionError:
-        print(f"can't upload {src_file}")
-        if src_file.split("/")[1] == "lib":
-            return JsonResponse("ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?", safe=False, status=409)
+        return JsonResponse("ERROR: Upload failed due to filesystem problem, please re-flash node.", safe=False, status=409)
 
     return JsonResponse("Upload complete.", safe=False, status=200)
 
