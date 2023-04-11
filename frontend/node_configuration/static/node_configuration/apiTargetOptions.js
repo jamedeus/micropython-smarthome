@@ -228,8 +228,8 @@ function open_rule_modal(el) {
 
     // Populate instance dropdown
     for (var x in ApiTargetOptions[target]) {
-        instance_select_on.options[instance_select_on.options.length] = new Option(x.split("-")[1], x);
-        instance_select_off.options[instance_select_off.options.length] = new Option(x.split("-")[1], x);
+        instance_select_on.options[instance_select_on.options.length] = new Option(x.substring(x.indexOf('-') + 1), x);
+        instance_select_off.options[instance_select_off.options.length] = new Option(x.substring(x.indexOf('-') + 1), x);
     };
 
     // Attach listeners to populate next dropdown after each selection

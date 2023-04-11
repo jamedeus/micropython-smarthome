@@ -50,7 +50,7 @@ class Device {
     // Remove all properties except id, called when user changes type dropdown
     clearParams() {
         Object.keys(this).forEach(function(key) {
-            if (key != "id" && key != "modified" && key != "new") {
+            if (key != "id" && key != "modified" && key != "new" && key != "nickname") {
                 delete this[key];
             };
         }, this);
