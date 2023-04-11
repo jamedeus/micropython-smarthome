@@ -735,6 +735,8 @@
                                         <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" placeholder="" value="{{rule}}">
                                     </td>
 
+                                    {% elif params.type == "pwm" %}
+
                                     <td>
                                         <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" placeholder="" value="{{rule}}">
                                     </td>
@@ -994,7 +996,7 @@
                                     <option value="" selected="selected">Please select command first</option>
                                 </select>
 
-                                <input name="command-arg-on" id="command-arg-on" class="form-control mb-3 modal-dropdown api-command-arg" style="display:none" disabled>
+                                <input name="command-arg-on" id="command-arg-on" class="form-control mb-3 modal-input api-command-arg" style="display:none" disabled>
                             </div>
 
                             <div id="off-action" style="display:none;">
@@ -1010,7 +1012,7 @@
                                     <option value="" selected="selected">Please select command first</option>
                                 </select>
 
-                                <input name="command-arg-off" id="command-arg-off" class="form-control mb-3 modal-dropdown api-command-arg" style="display:none" disabled>
+                                <input name="command-arg-off" id="command-arg-off" class="form-control mb-3 modal-input api-command-arg" style="display:none" disabled>
                             </div>
                         </form>
 
