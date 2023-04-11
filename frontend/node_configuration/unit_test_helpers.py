@@ -14,7 +14,7 @@ request_payload = {"friendlyName":"Unit Test Config","location":"build pipeline"
 # Full test configs used to create fake Configs + Nodes (see create_test_nodes)
 test_config_1 = {"metadata": {"id": "Test1", "location": "Inside cabinet above microwave", "floor": "1"}, "wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "device1": {"type": "pwm", "nickname": "Cabinet Lights", "pin": "4", "min": "0", "max": "1023", "default_rule": 1023, "schedule": {"22:00": "1023", "22:01": "fade/256/7140", "00:00": "fade/32/7200", "05:00": "Disabled"}}, "device2": {"type": "relay", "nickname": "Overhead Lights", "ip": "192.168.1.217", "default_rule": "enabled", "schedule": {"05:00": "enabled", "22:00": "disabled"}}, "sensor1": {"type": "pir", "nickname": "Motion Sensor", "pin": "15", "default_rule": "2", "targets": ["device1", "device2"], "schedule": {"10:00": "2", "22:00": "2"}}}
 
-test_config_2 = {"metadata": {"id": "Test2", "location": "Bedroom", "floor": "2"}, "wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "device1": {"type": "api-target", "nickname": "Air Conditioner", "ip": "192.168.1.232", "default_rule": {"on": ["ir_key", "ac", "start"], "off": ["ir_key", "ac", "stop"]}, "schedule": {}}, "sensor1": {"type": "si7021", "nickname": "Thermostat", "mode": "cool", "tolerance": "0.5", "default_rule": 74, "targets": ["device1"], "schedule": {}}}
+test_config_2 = {"metadata": {"id": "Test2", "location": "Bedroom", "floor": "2"}, "wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "device1": {"type": "api-target", "nickname": "Air Conditioner", "ip": "127.0.0.1", "default_rule": {"on": ["ir_key", "ac", "start"], "off": ["ir_key", "ac", "stop"]}, "schedule": {}}, "sensor1": {"type": "si7021", "nickname": "Thermostat", "mode": "cool", "tolerance": "0.5", "default_rule": 74, "targets": ["device1"], "schedule": {}}, "ir_blaster": {"pin": "19", "target": ["ac"]}}
 
 test_config_3 = {"metadata": {"id": "Test3", "location": "Inside cabinet under sink", "floor": "1"}, "wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "device1": {"type": "pwm", "nickname": "Bathroom LEDs", "pin": "4", "min": "0", "max": "1023", "default_rule": 0, "schedule": {"22:00": "1023", "22:01": "fade/256/7140", "00:00": "fade/32/7200", "05:00": "Disabled"}}, "device2": {"type": "relay", "nickname": "Bathroom Lights", "ip": "192.168.1.239", "default_rule": "enabled", "schedule": {"05:00": "enabled", "22:00": "disabled"}}, "device3": {"type": "relay", "nickname": "Entry Light", "ip": "192.168.1.202", "default_rule": "enabled", "schedule": {"05:00": "enabled", "23:00": "disabled"}}, "sensor1": {"type": "pir", "nickname": "Motion Sensor (Bath)", "pin": "15", "default_rule": "2", "targets": ["device1", "device2"], "schedule": {"10:00": "2", "22:00": "2"}}, "sensor2": {"type": "pir", "nickname": "Motion Sensor (Entry)", "pin": "16", "default_rule": "1", "targets": ["device3"], "schedule": {"00:00": "1"}}}
 
@@ -37,25 +37,26 @@ def simulate_first_time_upload(self, src_file, dst_file):
 
 
 
+# Helper function to create test node from any config object
+def create_config_and_node_from_json(config_json, ip='192.168.1.123'):
+    friendly_name = config_json['metadata']['id']
+    filename = f'{friendly_name.lower()}.json'
+
+    with open(f'{settings.CONFIG_DIR}/{filename}', 'w') as file:
+        json.dump(config_json, file)
+
+    node = Node.objects.create(friendly_name=friendly_name, ip=ip, floor=config_json['metadata']['floor'])
+    config = Config.objects.create(config=config_json, filename=filename, node=node)
+
+    return config, node
+
+
+
 # Helper function to create test nodes with known values
 def create_test_nodes():
-    with open(f'{settings.CONFIG_DIR}/test1.json', 'w') as file:
-        json.dump(test_config_1, file)
-
-    node1 = Node.objects.create(friendly_name='test1', ip='192.168.1.123', floor='1')
-    config1 = Config.objects.create(config=test_config_1, filename='test1.json', node=node1)
-
-    with open(f'{settings.CONFIG_DIR}/test2.json', 'w') as file:
-        json.dump(test_config_2, file)
-
-    node2 = Node.objects.create(friendly_name='test2', ip='192.168.1.124', floor='1')
-    config2 = Config.objects.create(config=test_config_2, filename='test2.json', node=node2)
-
-    with open(f'{settings.CONFIG_DIR}/test3.json', 'w') as file:
-        json.dump(test_config_2, file)
-
-    node3 = Node.objects.create(friendly_name='test3', ip='192.168.1.125', floor='1')
-    config2 = Config.objects.create(config=test_config_3, filename='test3.json', node=node3)
+    create_config_and_node_from_json(test_config_1, '192.168.1.123')
+    create_config_and_node_from_json(test_config_2, '192.168.1.124')
+    create_config_and_node_from_json(test_config_3, '192.168.1.125')
 
 
 

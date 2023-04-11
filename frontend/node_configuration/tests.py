@@ -7,7 +7,7 @@ from .models import Config, Node, WifiCredentials
 from unittest.mock import patch
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success
+from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json
 from .Webrepl import *
 
 # TODO
@@ -77,10 +77,10 @@ class OverviewPageTests(TestCase):
         self.assertContains(response, '<div id="existing"')
 
         # Confirm table with all 3 nodes present
-        self.assertContains(response, '<tr id="test1">')
-        self.assertContains(response, '<td class="align-middle">test2</td>')
-        self.assertContains(response, 'onclick="window.location.href = \'/edit_config/test3\'"')
-        self.assertContains(response, 'onclick="del_node(\'test1\')"')
+        self.assertContains(response, '<tr id="Test1">')
+        self.assertContains(response, '<td class="align-middle">Test2</td>')
+        self.assertContains(response, 'onclick="window.location.href = \'/edit_config/Test3\'"')
+        self.assertContains(response, 'onclick="del_node(\'Test1\')"')
 
     def test_overview_page_with_configs(self):
         # Create test config that hasn't been uploaded
@@ -118,7 +118,7 @@ class ReuploadAllTests(TestCase):
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'success': ['test1', 'test2', 'test3'], 'failed': {}})
+            self.assertEqual(response.json(), {'success': ['Test1', 'Test2', 'Test3'], 'failed': {}})
             self.assertEqual(mock_provision.call_count, 3)
 
     def test_reupload_all_partial_success(self):
@@ -128,7 +128,7 @@ class ReuploadAllTests(TestCase):
             # Send request, validate response, validate that test1 and test3 succeeded while test2 failed
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'success': ['test1', 'test3'], 'failed': {'test2': 'Offline'}})
+            self.assertEqual(response.json(), {'success': ['Test1', 'Test3'], 'failed': {'Test2': 'Offline'}})
 
     def test_reupload_all_fail(self):
         # Mock provision to return failure message without doing anything
@@ -138,7 +138,7 @@ class ReuploadAllTests(TestCase):
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'success': [], 'failed': {'test1': 'Offline', 'test2': 'Offline', 'test3': 'Offline'}})
+            self.assertEqual(response.json(), {'success': [], 'failed': {'Test1': 'Offline', 'Test2': 'Offline', 'Test3': 'Offline'}})
             self.assertEqual(mock_provision.call_count, 3)
 
 
@@ -428,7 +428,7 @@ class ApiTargetMenuOptionsTest(TestCase):
         options = get_api_target_menu_options()
 
         # Should return valid options for each device and sensor of all existing nodes
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'test1': '192.168.1.123', 'test2': '192.168.1.124', 'test3': '192.168.1.125'}, 'self-target': {}, 'test1': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}, 'test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot']}, 'test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}})
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'Test1': '192.168.1.123', 'Test2': '192.168.1.124', 'Test3': '192.168.1.125'}, 'self-target': {}, 'Test1': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}, 'Test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot'], 'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}, 'Test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}})
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -438,14 +438,52 @@ class ApiTargetMenuOptionsTest(TestCase):
         create_test_nodes()
 
         # Request options with friendly name as argument (used by edit_config)
-        options = get_api_target_menu_options('test1')
+        options = get_api_target_menu_options('Test1')
 
-        # Should return valid options for each device and sensor of all existing nodes, except test1
-        # Should include test1's options in self-target section, should not be in main section
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'test2': '192.168.1.124', 'test3': '192.168.1.125'}, 'self-target': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}, 'test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot']}, 'test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}})
+        # Should return valid options for each device and sensor of all existing nodes, except Test1
+        # Should include Test1's options in self-target section, should not be in main section
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'Test2': '192.168.1.124', 'Test3': '192.168.1.125'}, 'self-target': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}, 'Test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot'], 'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}, 'Test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}})
 
         # Remove test configs from disk
         clean_up_test_nodes()
+
+    # Original bug: IR Blaster options always included both TV and AC, even if only one configured.
+    # Fixed in 8ab9367b, now only includes available options.
+    def test_regression_ir_blaster(self):
+        self.maxDiff = None
+        # Configs with all possible combinations of ir blaster targets
+        no_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': []}}
+        ac_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': ['ac']}}
+        tv_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': ['tv']}}
+        both_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': ['ac', 'tv']}}
+
+        create_config_and_node_from_json(no_target_config)
+        options = get_api_target_menu_options()
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1'}, 'self-target': {}})
+
+        #Config.objects.all()[0].delete()
+        Node.objects.all()[0].delete()
+
+        create_config_and_node_from_json(ac_target_config)
+        options = get_api_target_menu_options()
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}})
+
+        #Config.objects.all()[0].delete()
+        Node.objects.all()[0].delete()
+
+        create_config_and_node_from_json(tv_target_config)
+        options = get_api_target_menu_options()
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source']}}})
+
+        #Config.objects.all()[0].delete()
+        Node.objects.all()[0].delete()
+
+        create_config_and_node_from_json(both_target_config)
+        options = get_api_target_menu_options()
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'], 'ac': ['start', 'stop', 'off']}}})
+
+        #Config.objects.all()[0].delete()
+        Node.objects.all()[0].delete()
 
 
 

@@ -612,7 +612,7 @@ def get_api_target_menu_options(editing_node=False):
 
         if editing_node and node.friendly_name == editing_node:
             dropdownObject["self-target"] = entries
-        else:
+        elif entries != {}:
             dropdownObject[node.friendly_name] = entries
             dropdownObject['addresses'][node.friendly_name] = node.ip
 

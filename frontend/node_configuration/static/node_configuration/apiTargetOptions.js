@@ -394,17 +394,21 @@ function get_self_target_options() {
             ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off']
 
         } else {
-            const instance_string = 'ir_blaster-Ir Blaster'
-            ApiTargetOptions['self-target'][instance_string] = {}
+            const tv_options = document.getElementById('checkbox-tv').checked;
+            const ac_options = document.getElementById('checkbox-ac').checked;
 
-            if (document.getElementById('checkbox-tv').checked) {
-                ApiTargetOptions['self-target'][instance_string]['tv'] = ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source']
+            // Skip if neither is checked
+            if (tv_options || ac_options) {
+                const instance_string = 'ir_blaster-Ir Blaster'
+                ApiTargetOptions['self-target'][instance_string] = {}
+
+                if (tv_options) {
+                    ApiTargetOptions['self-target'][instance_string]['tv'] = ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source']
+                };
+                if (ac_options) {
+                    ApiTargetOptions['self-target'][instance_string]['ac'] = ['start', 'stop', 'off']
+                };
             };
-
-            if (document.getElementById('checkbox-ac').checked) {
-                ApiTargetOptions['self-target'][instance_string]['ac'] = ['start', 'stop', 'off']
-            };
-
         };
     };
 
