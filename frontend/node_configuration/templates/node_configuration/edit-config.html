@@ -626,7 +626,7 @@
 
                     {% endif %}
 
-                    {% if config.devices|length == 0 %}
+                    {% if config.devices|length == 0 and not config.ir_blaster %}
                     <div class="text-center">
                         <button onclick="load_next_device(this)" type="button" id="addDeviceButton0" class="btn-secondary btn my-3">Add</button>
                     </div>
