@@ -110,6 +110,16 @@ body {
     $form-select-indicator-color: #ffffff;
     $form-select-indicator: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='#{$form-select-indicator-color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/></svg>");
 
+    /* Contrasting background for dropdowns inside modal */
+    .modal-dropdown {
+        background-color: #1b1e1f !important;
+    }
+
+    /* Contrasting background for inputs inside modal */
+    .modal-input, .modal-input:focus {
+        background-color: #1b1e1f !important;
+    }
+
     /* Different color for dropdown placeholder text (selected text set to fff above) */
     select:invalid {
         color: #696b6e;
