@@ -388,10 +388,17 @@ function get_self_target_options() {
 
     // Add all device options
     for (device in instances['devices']) {
-        if (instances['devices'][device]['type'] !== 'ir-blaster') {
+        if (instances['devices'][device]['type'] == 'api-target') {
+            console.log('has api target')
             const instance_string = `${device}-${instances['devices'][device]['nickname']} (${instances['devices'][device]['type'] })`
 
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off']
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
+            // Prevent ApiTarget targeting itself (infinite loop)
+            continue;
+        } else if (instances['devices'][device]['type'] !== 'ir-blaster') {
+            const instance_string = `${device}-${instances['devices'][device]['nickname']} (${instances['devices'][device]['type'] })`
+
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off']
 
         } else {
             const tv_options = document.getElementById('checkbox-tv').checked;
@@ -417,9 +424,9 @@ function get_self_target_options() {
         const instance_string = `${sensor}-${instances['sensors'][sensor]['nickname']} (${instances['sensors'][sensor]['type'] })`
 
         if (instances['sensors'][sensor]['type'] == "si7021" || instances['sensors'][sensor]['type'] == "switch") {
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot']
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
         } else {
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']
         };
     };
 };
