@@ -434,7 +434,17 @@ document.getElementById('page2-button').addEventListener("click", function(e) {
 });
 
 document.getElementById('page1-back-button').addEventListener("click", function(e) {
-    window.location.replace("/config_overview");
+    // If user changed any inputs, show warning before redirecting to overview
+    if (changes_made) {
+        const body = "<p class='text-center'>Your changes will be lost if you go back - are you sure?</p>";
+        const footer = `<button type="button" id="yes-button" class="btn btn-danger" data-bs-dismiss="modal" onclick="window.location.replace('/config_overview');">Go Back</button>
+                        <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Editing</button>`;
+        show_modal(errorModal, "Warning", body, footer);
+
+    // Skip warning if no changes
+    } else {
+        window.location.replace("/config_overview");
+    };
 });
 
 document.getElementById('page2-back-button').addEventListener("click", function(e) {

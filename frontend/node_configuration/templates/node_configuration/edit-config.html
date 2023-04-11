@@ -1072,6 +1072,12 @@
             };
         };
 
+        // Track if user made changes (triggers warning before going back to overview)
+        let changes_made = false;
+        document.addEventListener('input', function() {
+            changes_made = true;
+        }, { once: true });
+
         {# Set var passed to submit_form function, controls whether config is re-uploaded or not #}
         {# For new configs length will be 1 if no default password set, otherwise 2. Existing configs have min length of 9 #}
         {% if config|length <= 2 %}
