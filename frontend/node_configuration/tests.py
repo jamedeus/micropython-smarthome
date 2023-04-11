@@ -505,7 +505,7 @@ class ApiTargetMenuOptionsTest(TestCase):
         options = get_api_target_menu_options()
 
         # Should return valid options for each device and sensor of all existing nodes
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'Test1': '192.168.1.123', 'Test2': '192.168.1.124', 'Test3': '192.168.1.125'}, 'self-target': {}, 'Test1': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}, 'Test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot'], 'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}, 'Test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}})
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'Test1': '192.168.1.123', 'Test2': '192.168.1.124', 'Test3': '192.168.1.125'}, 'self-target': {}, 'Test1': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']}, 'Test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule'], 'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}, 'Test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']}})
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -519,7 +519,7 @@ class ApiTargetMenuOptionsTest(TestCase):
 
         # Should return valid options for each device and sensor of all existing nodes, except Test1
         # Should include Test1's options in self-target section, should not be in main section
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'Test2': '192.168.1.124', 'Test3': '192.168.1.125'}, 'self-target': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}, 'Test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot'], 'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}, 'Test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'reboot', 'trigger_sensor']}})
+        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'Test2': '192.168.1.124', 'Test3': '192.168.1.125'}, 'self-target': {}, 'Test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule'], 'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}, 'Test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']}})
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -556,6 +556,22 @@ class ApiTargetMenuOptionsTest(TestCase):
         options = get_api_target_menu_options()
         self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'], 'ac': ['start', 'stop', 'off']}}})
         Node.objects.all()[0].delete()
+
+    # Original bug: It was possible to set ApiTarget to turn itself on/off, resulting in
+    # an infinite loop. These commands are no longer included for api-target instances
+    # while self-targeting. Fixed in b8b8b0bf.
+    def test_regression_self_target_infinite_loop(self):
+        # Create nodes
+        create_test_nodes()
+
+        # Request options for node with ApiTarget
+        options = get_api_target_menu_options('Test2')
+
+        # Should not include turn_on or turn_off in self-target section (infinite loop)
+        self.assertEqual(options['self-target'], {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']})
+
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
 
 
