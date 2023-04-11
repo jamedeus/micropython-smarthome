@@ -7,11 +7,86 @@ from .models import Config, Node, WifiCredentials
 from unittest.mock import patch
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json
+from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context
 from .Webrepl import *
 
-# TODO
-# - edit_config
+
+
+# Test edit config view
+class EditConfigTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes and configs to edit
+        create_test_nodes()
+
+    def test_edit_config_1(self):
+        # Request page, confirm correct template used
+        response = self.client.get('/edit_config/Test1')
+        self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
+
+        # Confirm correct context + api target menu options
+        self.assertEqual(response.context['config'], test_config_1_edit_context['config'])
+        self.assertEqual(response.context['api_target_options'], test_config_1_edit_context['api_target_options'])
+
+        # Confirm title, heading, and edit mode
+        self.assertContains(response, '<title>Editing Test1</title>')
+        self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test1</h1>')
+        self.assertContains(response, 'const edit_existing = true;')
+
+        # Confirm all devices and sensors present
+        self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>')
+        self.assertContains(response, '<input type="text" class="form-control device1 nickname" id="device1-nickname" placeholder="" value="Cabinet Lights" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>')
+
+    def test_edit_config_2(self):
+        self.maxDiff = None
+        # Request page, confirm correct template used
+        response = self.client.get('/edit_config/Test2')
+        self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
+
+        # Confirm correct context + api target menu options
+        self.assertEqual(response.context['config'], test_config_2_edit_context['config'])
+        self.assertEqual(response.context['api_target_options'], test_config_2_edit_context['api_target_options'])
+
+        # Confirm title, heading, and edit mode
+        self.assertContains(response, '<title>Editing Test2</title>')
+        self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test2</h1>')
+        self.assertContains(response, 'const edit_existing = true;')
+
+        # Confirm all devices and sensors present
+        self.assertContains(response, '<input type="text" class="form-control sensor1 thermostat" id="sensor1-tolerance" placeholder="" value="0.5" required>')
+        self.assertContains(response, '<input class="form-check-input ir-target" type="checkbox" value="irblaster-ac" id="checkbox-ac" checked>')
+        self.assertContains(response, '<option value="127.0.0.1" selected>self-target</option>')
+
+    def test_edit_config_3(self):
+        # Request page, confirm correct template used
+        response = self.client.get('/edit_config/Test3')
+        self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
+
+        # Confirm correct context + api target menu options
+        self.assertEqual(response.context['config'], test_config_3_edit_context['config'])
+        self.assertEqual(response.context['api_target_options'], test_config_3_edit_context['api_target_options'])
+
+        # Confirm title, heading, and edit mode
+        self.assertContains(response, '<title>Editing Test3</title>')
+        self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test3</h1>')
+        self.assertContains(response, 'const edit_existing = true;')
+
+        # Confirm all devices and sensors present
+        self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor (Bath)"')
+        self.assertContains(response, '<input type="text" class="form-control sensor2 nickname" id="sensor2-nickname" placeholder="" value="Motion Sensor (Entry)"')
+        self.assertContains(response, '<input type="text" class="form-control device1 pwm-limits" id="device1-max" placeholder="1023" value="1023" required>')
+        self.assertContains(response, '<input type="text" class="form-control device2 ip-input" id="device2-ip" placeholder="" value="192.168.1.239"')
+        self.assertContains(response, '<input type="text" class="form-control device3 nickname" id="device3-nickname" placeholder="" value="Entry Light" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>')
+
+    # Verify setup can be reached from suburl, used when upload fails due to missing /lib on target node
+    def test_setup(self):
+        # Mock Webrepl to return True without doing anything
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', return_value=True):
+
+            response = self.client.post('/edit_config/setup', {'ip': '123.45.67.89'}, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), 'Upload complete.')
+
 
 
 # Test config generation page
@@ -21,9 +96,10 @@ class ConfigGeneratorTests(TestCase):
         response = self.client.get('/new_config')
         self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
 
-        # Confirm correct context (empty) + api target menu options
+        # Confirm correct context (empty) + api target menu options + edit_existing set correctly
         self.assertEqual(response.context['config'], {"TITLE": "Create New Config"})
         self.assertEqual(response.context['api_target_options'], get_api_target_menu_options())
+        self.assertContains(response, 'const edit_existing = false;')
 
         # Confirm wifi fields empty
         self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Create New Config</h1>')
@@ -38,8 +114,9 @@ class ConfigGeneratorTests(TestCase):
         response = self.client.get('/new_config')
         self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
 
-        # Confirm context contains credentials
+        # Confirm context contains credentials + edit_existing set correctly
         self.assertEqual(response.context['config'], {"TITLE": "Create New Config", 'wifi': {'password': 'hunter2', 'ssid': 'AzureDiamond'}})
+        self.assertContains(response, 'const edit_existing = false;')
 
         # Confirm wifi fields pre-filled
         self.assertContains(response, 'name="ssid" value="AzureDiamond" onchange="open_toast()" required>')
@@ -450,39 +527,34 @@ class ApiTargetMenuOptionsTest(TestCase):
     # Original bug: IR Blaster options always included both TV and AC, even if only one configured.
     # Fixed in 8ab9367b, now only includes available options.
     def test_regression_ir_blaster(self):
-        self.maxDiff = None
         # Configs with all possible combinations of ir blaster targets
         no_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': []}}
         ac_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': ['ac']}}
         tv_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': ['tv']}}
         both_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': ['ac', 'tv']}}
 
+        # No targets: All options should be removed
         create_config_and_node_from_json(no_target_config)
         options = get_api_target_menu_options()
         self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1'}, 'self-target': {}})
-
-        #Config.objects.all()[0].delete()
         Node.objects.all()[0].delete()
 
+        # AC only: Should only include AC options
         create_config_and_node_from_json(ac_target_config)
         options = get_api_target_menu_options()
         self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}})
-
-        #Config.objects.all()[0].delete()
         Node.objects.all()[0].delete()
 
+        # TV only: Should only include TV options
         create_config_and_node_from_json(tv_target_config)
         options = get_api_target_menu_options()
         self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source']}}})
-
-        #Config.objects.all()[0].delete()
         Node.objects.all()[0].delete()
 
+        # Both: Should include all options, same as before bug fix
         create_config_and_node_from_json(both_target_config)
         options = get_api_target_menu_options()
         self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'], 'ac': ['start', 'stop', 'off']}}})
-
-        #Config.objects.all()[0].delete()
         Node.objects.all()[0].delete()
 
 
