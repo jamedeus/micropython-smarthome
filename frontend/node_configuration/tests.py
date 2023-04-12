@@ -12,6 +12,19 @@ from .Webrepl import *
 
 
 
+# Test all endpoints that require POST requests
+class ConfirmRequiresPostTests(TestCase):
+    def test_get_request(self):
+        # All endpoints requiring POST requests
+        endpoints = ['/setup', '/new_config/setup', '/edit_config/setup', '/upload', '/upload/reupload', '/edit_config/upload', '/edit_config/upload/reupload', '/delete_config', '/delete_node', '/check_duplicate', '/generateConfigFile', '/set_default_credentials', '/restore_config']
+
+        # Confirm correct error and status code for each endpoint
+        for endpoint in endpoints:
+            response = self.client.get(endpoint)
+            self.assertEqual(response.status_code, 405)
+            self.assertEqual(response.json(), {'Error': 'Must post data'})
+
+
 # Test edit config view
 class EditConfigTests(TestCase):
     def setUp(self):

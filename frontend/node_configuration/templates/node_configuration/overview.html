@@ -286,7 +286,7 @@
             if (result.ok) {
                 location.reload();
             } else {
-                const error = await result.json();
+                const error = await result.text();
                 const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`;
                 show_modal(errorModal, "Error", `<p class="text-center">${error}</p>`, footer);
             };

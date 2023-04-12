@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse, FileResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, FileResponse
 from django.template import loader
 from django.conf import settings
 import json, os, re
@@ -87,7 +87,7 @@ def setup(request):
         data = json.loads(request.body.decode("utf-8"))
         print(json.dumps(data, indent=4))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     if not valid_ip(data["ip"]):
         return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
@@ -101,7 +101,7 @@ def upload(request, reupload=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     if not valid_ip(data["ip"]):
         return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
@@ -208,7 +208,7 @@ def delete_config(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     try:
         # Get model entry, delete from disk + database
@@ -228,7 +228,7 @@ def delete_node(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     try:
         # Get model entry, delete from disk + database
@@ -365,7 +365,7 @@ def check_duplicate(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     friendly_name = data['name']
     filename = friendly_name.lower().replace(" ", "-") + ".json"
@@ -476,7 +476,7 @@ def generateConfigFile(request, edit_existing=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     print("Input:")
     print(json.dumps(data, indent=4))
@@ -646,7 +646,7 @@ def set_default_credentials(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     # If default already set, overwrite
     if len(WifiCredentials.objects.all()) > 0:
@@ -665,7 +665,7 @@ def restore_config(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     if not valid_ip(data["ip"]):
         return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
