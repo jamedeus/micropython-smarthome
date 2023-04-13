@@ -111,13 +111,8 @@ def upload(request, reupload=False):
     except Config.DoesNotExist:
         return JsonResponse("ERROR: Config file doesn't exist - did you delete it manually?", safe=False, status=404)
 
-    if not data["config"] == "setup.json":
-        modules, libs = get_modules(config.config)
-    else:
-        modules = {}
-        libs = {}
-
-    # Upload
+    # Get dependencies, upload
+    modules, libs = get_modules(config.config)
     response = provision(data["config"], data["ip"], modules, libs)
 
     # If uploaded for the first time, update models

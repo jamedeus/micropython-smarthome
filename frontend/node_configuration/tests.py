@@ -7,7 +7,7 @@ from .models import Config, Node, WifiCredentials
 from unittest.mock import patch
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context
+from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context, simulate_corrupt_filesystem_upload, simulate_reupload_all_fail_for_different_reasons
 from .Webrepl import *
 
 
@@ -231,6 +231,15 @@ class ReuploadAllTests(TestCase):
             self.assertEqual(response.json(), {'success': [], 'failed': {'Test1': 'Offline', 'Test2': 'Offline', 'Test3': 'Offline'}})
             self.assertEqual(mock_provision.call_count, 3)
 
+    def test_reupload_all_fail_different_reasons(self):
+        # Mock provision to return failure message without doing anything
+        with patch('node_configuration.views.provision', new=simulate_reupload_all_fail_for_different_reasons):
+
+            # Send request, validate response, validate that provision is called exactly 3 times
+            response = self.client.get('/reupload_all')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {'success': [], 'failed': {'Test1': 'Connection timed out', 'Test2': 'Offline', 'Test3': 'Requires setup'}})
+
 
 
 # Test endpoint that uploads first-time setup script
@@ -427,13 +436,24 @@ class ProvisionTests(TestCase):
     def test_provision_first_time_setup(self):
         modules, libs = get_modules(test_config_1)
 
-        # Mock Webrepl.put_file to raise AssertionError (raised when uploading to non-existing path)
+        # Mock Webrepl.put_file to raise AssertionError for files starting with "/lib/" (simulate uploading to non-existing path)
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file', new=simulate_first_time_upload):
 
             response = provision('test1.json', '123.45.67.89', modules, libs)
             self.assertEqual(response.status_code, 409)
             self.assertEqual(response.content.decode(), '"ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?"')
+
+    def test_provision_corrupt_filesystem(self):
+        modules, libs = get_modules(test_config_1)
+
+        # Mock Webrepl.put_file to raise AssertionError for non-library files (simulate failing to upload to root dir)
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', new=simulate_corrupt_filesystem_upload):
+
+            response = provision('test1.json', '123.45.67.89', modules, libs)
+            self.assertEqual(response.status_code, 409)
+            self.assertEqual(response.content.decode(), '"ERROR: Upload failed due to filesystem problem, please re-flash node."')
 
 
 
