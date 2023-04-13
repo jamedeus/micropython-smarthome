@@ -5,6 +5,7 @@ import json, os
 from .views import validateConfig, get_modules, get_api_target_menu_options, provision, get_api_target_menu_options
 from .models import Config, Node, WifiCredentials
 from unittest.mock import patch
+from copy import deepcopy
 
 # Large JSON objects, helper functions
 from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context, simulate_corrupt_filesystem_upload, simulate_reupload_all_fail_for_different_reasons
@@ -50,7 +51,6 @@ class EditConfigTests(TestCase):
         self.assertContains(response, '<input type="text" class="form-control device1 nickname" id="device1-nickname" placeholder="" value="Cabinet Lights" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>')
 
     def test_edit_config_2(self):
-        self.maxDiff = None
         # Request page, confirm correct template used
         response = self.client.get('/edit_config/Test2')
         self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
@@ -634,7 +634,7 @@ class DuplicateDetectionTests(TestCase):
         self.assertEqual(response.json(), 'Name OK.')
 
         # Create config with same name
-        Client().post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
 
         # Should now reject (identical name)
         response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test Config'}), content_type='application/json')
@@ -647,6 +647,16 @@ class DuplicateDetectionTests(TestCase):
         # Should accept different name
         response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test'}), content_type='application/json')
         self.assertEqual(response.json(), 'Name OK.')
+
+    # Test second conditional in is_duplicate function (unreachable when used as
+    # intended, prevents issues if advanced user creates Node from shell/admin)
+    def test_duplicate_friendly_name_only(self):
+        # Create Node with no matching Config (avoids matching first conditional)
+        node = Node.objects.create(friendly_name="Unit Test Config", ip="123.45.67.89", floor="0")
+
+        # Should reject, identical friendly name exists
+        response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test Config'}), content_type='application/json')
+        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
 
 
 
@@ -820,9 +830,6 @@ class GetModulesTests(TestCase):
 
 # Test config generator backend function
 class GenerateConfigFileTests(TestCase):
-    def setUp(self):
-        self.client = Client()
-
     def test_generate_config_file(self):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 0)
@@ -836,9 +843,36 @@ class GenerateConfigFileTests(TestCase):
         self.assertEqual(len(Config.objects.all()), 1)
         config = Config.objects.all()[0]
 
-        # Confirm output file is same as existing
+        # Confirm output file is same as known-value config
         with open('node_configuration/unit-test-config.json') as file:
             compare = json.load(file)
+            self.assertEqual(config.config, compare)
+
+    def test_edit_existing_config_file(self):
+        # Create config, confirm 1 exists in database
+        response = self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        self.assertEqual(len(Config.objects.all()), 1)
+
+        # Copy request payload, change 1 default_rule
+        modified_request_payload = deepcopy(request_payload)
+        modified_request_payload['devices']['device6']['default_rule'] = 900
+
+        # Send with edit argument (overwrite existing with same name instead of throwing duplicate error)
+        response = self.client.post('/generateConfigFile/True', json.dumps(modified_request_payload), content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'Config created.')
+
+        # Confirm same number of configs, no new config created
+        self.assertEqual(len(Config.objects.all()), 1)
+        config = Config.objects.all()[0]
+
+        # Confirm new output is NOT identical to known-value config
+        with open('node_configuration/unit-test-config.json') as file:
+            compare = json.load(file)
+            self.assertNotEqual(config.config, compare)
+
+            # Change same default_rule, confirm was only change made
+            compare['device6']['default_rule'] = 900
             self.assertEqual(config.config, compare)
 
     def test_duplicate_config_name(self):
@@ -856,6 +890,20 @@ class GenerateConfigFileTests(TestCase):
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
         self.assertEqual(len(Config.objects.all()), 1)
+
+    def test_invalid_config_file(self):
+        # Confirm starting condition
+        self.assertEqual(len(Config.objects.all()), 0)
+
+        # Add invalid default rule to request payload
+        invalid_request_payload = deepcopy(request_payload)
+        invalid_request_payload['devices']['device6']['default_rule'] = 9001
+
+        # Post invalid payload, confirm rejected with correct error, confirm config not created
+        response = self.client.post('/generateConfigFile', json.dumps(invalid_request_payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'Error': 'PWM default rule invalid, must be between max and min'})
+        self.assertEqual(len(Config.objects.all()), 0)
 
 
 
@@ -965,7 +1013,7 @@ class ValidateConfigTests(TestCase):
         result = validateConfig(config)
         self.assertEqual(result, 'PWM default rule invalid, must be between max and min')
 
-    def test_pwm_invalid_default_rule(self):
+    def test_pwm_invalid_schedule_rule(self):
         config = self.valid_config.copy()
         config['device6']['min'] = 500
         config['device6']['max'] = 1000

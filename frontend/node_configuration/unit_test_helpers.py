@@ -69,8 +69,6 @@ def simulate_reupload_all_fail_for_different_reasons(config, ip, modules, libs):
         return JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
     if config == "test3.json":
         return JsonResponse("ERROR: Upload failed due to filesystem problem, please re-flash node.", safe=False, status=409)
-    else:
-        return JsonResponse("Upload complete.", safe=False, status=200)
 
 
 
