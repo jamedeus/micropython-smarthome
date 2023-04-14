@@ -72,9 +72,6 @@ class websocket:
         assert len(d) == size, len(d)
         return d
 
-    def ioctl(self, req, val):
-        assert req == 9 and val == 2
-
     # Minimal client handshake for MicroPython, may not comply with standards
     def client_handshake(self):
         cl = self.s.makefile("rwb", 0)
@@ -103,7 +100,6 @@ class Webrepl():
             s.connect(addr)
             self.ws = websocket(s)
             self.login()
-            self.ws.ioctl(9, 2)
             return True
 
         except OSError:
@@ -116,6 +112,7 @@ class Webrepl():
             # Close socket, remove websocket attribute
             self.ws.s.close()
             self.ws = None
+        return True
 
     def login(self):
         if self.ws is None:

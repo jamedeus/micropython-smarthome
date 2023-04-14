@@ -4,12 +4,136 @@ from django.http import JsonResponse
 import json, os
 from .views import validateConfig, get_modules, get_api_target_menu_options, provision, get_api_target_menu_options
 from .models import Config, Node, WifiCredentials
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from copy import deepcopy
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context, simulate_corrupt_filesystem_upload, simulate_reupload_all_fail_for_different_reasons
+from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context, simulate_corrupt_filesystem_upload, simulate_reupload_all_fail_for_different_reasons, binary_unit_test_config, simulate_read_file_over_webrepl, simulated_read_position
 from .Webrepl import *
+
+
+
+class WebreplTests(TestCase):
+    def test_open_and_close_connection(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Mock all methods called by open_connection + close_connection to return True
+        with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
+             patch.object(websocket, 'client_handshake', return_value=True) as mock_client_handshake, \
+             patch.object(Webrepl, 'login', return_value=True) as mock_login:
+
+            # Should connect successfully due to mocks
+            self.assertTrue(node.open_connection())
+
+            # Confirm correct methods called
+            mock_socket.return_value.settimeout.assert_called()
+            mock_socket.return_value.connect.assert_called()
+            mock_client_handshake.assert_called()
+            mock_login.assert_called()
+
+            # Confirm has websocket attribute
+            self.assertIsInstance(node.ws, websocket)
+
+            # Close connection, confirm method called, confirm lost websocket attribute
+            self.assertTrue(node.close_connection())
+            self.assertEqual(node.ws, None)
+            mock_socket.return_value.close.assert_called()
+
+    def test_bad_connection(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Mock the socket connect method to raise OSError, simulates failed connection
+        with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket:
+            mock_socket.return_value.connect.side_effect = OSError
+
+            # Confirm open_connect catches the error and returns False
+            self.assertFalse(node.open_connection())
+
+    # Confirm error raised if login/read_resp called before open_connection
+    def test_premature_method_calls(self):
+        node = Webrepl('123.45.67.89', 'password')
+        self.assertRaises(OSError, node.login)
+        self.assertRaises(OSError, node.read_resp)
+
+    # Confirm error raised if get/put_file methods called before open_connection and open_connection fails
+    def test_premature_file_io(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        with patch.object(Webrepl, 'open_connection', return_value=False) as mock_open_connection:
+
+            # All methods should attempt to open connection, raise OSError when it fails
+            self.assertRaises(OSError, node.get_file, 'app.log', 'app.log')
+            self.assertTrue(mock_open_connection.called)
+            mock_open_connection.reset_mock()
+
+            self.assertRaises(OSError, node.get_file_mem, 'app.log')
+            self.assertTrue(mock_open_connection.called)
+            mock_open_connection.reset_mock()
+
+            self.assertRaises(OSError, node.put_file, 'app.log', 'app.log')
+            self.assertTrue(mock_open_connection.called)
+
+    def test_get_file(self):
+        node = Webrepl('123.45.67.89', 'password')
+        local_file = "test_get_file_output.json"
+
+        # Mock websocket read method to return contents of unit-test-config.json
+        ws_mock = MagicMock()
+        ws_mock.read.side_effect = simulate_read_file_over_webrepl
+
+        # Set simulated read starting position to beginning of file
+        simulated_read_position[0] = 0
+
+        # Mock open_connection to return True without doing anything
+        # Mock websocket with object created above
+        # Mock read_resp to return bytes indicating valid signature
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(node, 'ws', ws_mock), \
+             patch.object(node, 'read_resp', side_effect=[0, 0]):
+
+            # Call method, should receive simulated data stream and write to disk
+            node.get_file(local_file, "/path/to/remote")
+
+        # Confirm expected data written
+        with open(local_file, 'rb') as f:
+            get_file_output = f.read()
+            self.assertEqual(binary_unit_test_config, get_file_output)
+
+        # Delete test file
+        os.remove(local_file)
+
+    def test_get_file_mem(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Mock websocket read method to return contents of unit-test-config.json
+        ws_mock = MagicMock()
+        ws_mock.read.side_effect = simulate_read_file_over_webrepl
+
+        # Set simulated read starting position to beginning of file
+        simulated_read_position[0] = 0
+
+        # Mock open_connection to return True without doing anything
+        # Mock websocket with object created above
+        # Mock read_resp to return bytes indicating valid signature
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(node, 'ws', ws_mock), \
+             patch.object(node, 'read_resp', side_effect=[0, 0]):
+
+            # Call method, confirm returns expected data stream
+            result = node.get_file_mem("/path/to/remote")
+            self.assertEqual(binary_unit_test_config, result)
+
+    def test_put_file(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Mock websocket and read_resp to allow send to complete
+        with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
+             patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
+
+            # Call method, confirm correct methods called
+            node.put_file('node_configuration/unit-test-config.json', 'config.json')
+            self.assertTrue(mock_websocket.write.called)
+            self.assertTrue(mock_read_resp.called)
 
 
 

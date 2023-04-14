@@ -2,6 +2,38 @@ import json, os
 from django.conf import settings
 from django.http import JsonResponse
 from .models import Config, Node
+import struct
+
+
+
+# Binary contents of test config file, used as payload in simulated Webrepl connections
+binary_unit_test_config = b'{"metadata": {"id": "Unit Test Config", "location": "build pipeline", "floor": "0"}, "wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "device1": {"nickname": "Overhead", "type": "dimmer", "ip": "192.168.1.105", "default_rule": 100, "schedule": {"08:00": "100", "22:00": "35"}}, "device2": {"nickname": "Lamp", "type": "bulb", "ip": "192.168.1.106", "default_rule": 75, "schedule": {"08:00": "100", "22:00": "35"}}, "device3": {"nickname": "Porch Light", "type": "relay", "ip": "192.168.1.107", "default_rule": "enabled", "schedule": {"06:00": "disabled", "18:00": "enabled"}}, "device4": {"nickname": "Fan", "type": "dumb-relay", "pin": "18", "default_rule": "disabled", "schedule": {}}, "device5": {"nickname": "Screen", "type": "desktop", "ip": "192.168.1.150", "default_rule": "enabled", "schedule": {"08:00": "enabled", "22:00": "disabled"}}, "device6": {"nickname": "Cabinet Lights", "type": "pwm", "pin": "26", "min": "0", "max": "1023", "default_rule": 721, "schedule": {}}, "device7": {"nickname": "Humidifier", "type": "mosfet", "pin": "19", "default_rule": "disabled", "schedule": {}}, "device8": {"nickname": "TV Bias Lights", "type": "wled", "ip": "192.168.1.110", "default_rule": 128, "schedule": {"08:00": "100"}}, "device10": {"nickname": "Remote Control", "type": "api-target", "ip": "127.0.0.1", "default_rule": {"on": ["ir_key", "tv", "power"], "off": ["ir_key", "tv", "power"]}, "schedule": {"22:00": {"on": ["ir_key", "tv", "power"], "off": ["ir_key", "tv", "power"]}}}, "sensor1": {"type": "pir", "nickname": "Motion", "pin": "4", "default_rule": 5, "targets": ["device1", "device2", "device5", "device6"], "schedule": {"08:00": "5", "22:00": "1"}}, "sensor2": {"type": "switch", "nickname": "Switch", "pin": "5", "default_rule": "enabled", "targets": ["device4", "device7"], "schedule": {}}, "sensor3": {"type": "dummy", "nickname": "Override", "default_rule": "on", "targets": ["device3"], "schedule": {"06:00": "on", "18:00": "off"}}, "sensor4": {"type": "desktop", "nickname": "Activity", "ip": "192.168.1.150", "default_rule": "enabled", "targets": ["device1", "device2", "device5", "device6"], "schedule": {"08:00": "enabled", "22:00": "disabled"}}, "sensor5": {"type": "si7021", "nickname": "Temperature", "mode": "cool", "tolerance": "3", "default_rule": 71, "targets": ["device4", "device7"], "schedule": {"08:00": "73", "22:00": "69"}}, "ir_blaster": {"nickname": "", "pin": "23", "target": ["tv"]}}'
+
+# Used to track current position in binary_unit_test_config (read function called multiple times)
+# A mutable object must be used for scope reasons, can't use int (would reset each call)
+simulated_read_position = [0]
+
+# Replaces websocket.read method in mock
+# Feeds bytes from binary_unit_test_config to Webrepl.get_file and Webrepl.get_file_mem
+def simulate_read_file_over_webrepl(size):
+    # Client verifying signature, return expected bytes (WB00)
+    if size == 4:
+        return b'WB\x00\x00'
+
+    # Client requested remaining filesize
+    if size == 2:
+        # Return 00 if no data left
+        if simulated_read_position[0] >= len(binary_unit_test_config):
+            return b'\x00\x00'
+
+        # Otherwise return length of unread data
+        remaining_size = len(binary_unit_test_config) - simulated_read_position[0]
+        return struct.pack("<H", remaining_size)
+
+    # Slice requested size starting from first un-read byte, increment counter to index of last byte in slice
+    data = binary_unit_test_config[simulated_read_position[0]:simulated_read_position[0] + size]
+    simulated_read_position[0] += size
+    return data
 
 
 
