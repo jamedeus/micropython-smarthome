@@ -9,6 +9,45 @@ import json
 
 
 
+# Test endpoint that loads modal containing existing macro actions
+class EditModalTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+        # Create macro with a single action
+        # Payload sent by frontend to turn on node1 device1
+        payload = {'name': 'Test1', 'action': {'command': 'turn_on', 'instance': 'device1', 'target': '192.168.1.123'}}
+        self.client.post('/add_macro_action', payload, content_type='application/json')
+
+    def test_edit_macro_button(self):
+        # Send request, confirm status and template used
+        response = self.client.get('/edit_macro/Test1')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'api/edit_modal.html')
+
+        # Confirm correct context
+        self.assertEqual(response.context['name'], 'Test1')
+        self.assertEqual(response.context['actions'], [{'ip': '192.168.1.123', 'args': ['turn_on', 'device1'], 'node_name': 'Test1', 'target_name': 'Cabinet Lights', 'action_name': 'Turn On'}])
+
+    def test_edit_non_existing_macro(self):
+        # Request a macro that does not exist, confirm error
+        response = self.client.get('/edit_macro/Test42')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), 'Error: Macro Test42 does not exist.')
+
+
+
+# Test endpoint that sets cookie to skip macro instructions modal
+class SkipInstructionsTests(TestCase):
+    def test_get_skip_instructions_cookie(self):
+        response = self.client.get('/skip_instructions')
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue('skip_instructions' in response.cookies)
+        self.assertEqual(response.cookies['skip_instructions'].value, 'true')
+
+
+
 # Test legacy api page
 class LegacyApiTests(TestCase):
     def test_legacy_api_page(self):

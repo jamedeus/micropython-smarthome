@@ -1,7 +1,7 @@
 <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
         <div class="modal-header pb-0" style="border-bottom: 0px;">
-            <h3 class="mx-auto mb-0" id="edit-macro-modal-title">Edit {{context.name|capfirst}} Macro</h3>
+            <h3 class="mx-auto mb-0" id="edit-macro-modal-title">Edit {{name|capfirst}} Macro</h3>
             <button type="button" class="btn-close position-absolute" id="edit-close" data-bs-dismiss="modal" aria-label="Close" style="right:5%;"></button>
         </div>
         <div class="modal-body d-flex flex-column align-items-center" id="edit-macro-modal-body">
@@ -14,17 +14,17 @@
                         <th class="text-center">Action</th>
                         <th class="text-center">Delete</th>
                     </tr>
-                    {% for action in context.actions %}
+                    {% for action in actions %}
                         <tr id='action{{forloop.counter0}}'>
                             <td>{{action.node_name}}</td>
                             <td>{{action.target_name}}</td>
                             <td>{{action.action_name}}</td>
-                            <td><button type="button" class="btn-danger btn btn-sm my-auto" onclick="deleteMacroAction('{{context.name}}', '{{forloop.counter0}}')"><i class="bi-trash"></i></button></td>
+                            <td><button type="button" class="btn-danger btn btn-sm my-auto" onclick="deleteMacroAction('{{name}}', '{{forloop.counter0}}')"><i class="bi-trash"></i></button></td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            <button class="btn btn-success mx-auto my-3" onclick="window.location.href = '/api/recording/{{context.name}}/start'">Record More</button>
+            <button class="btn btn-success mx-auto my-3" onclick="window.location.href = '/api/recording/{{name}}/start'">Record More</button>
         </div>
     </div>
 </div>

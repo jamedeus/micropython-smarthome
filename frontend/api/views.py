@@ -318,7 +318,7 @@ def edit_macro(request, name):
 
     context = {'name': name, 'actions': json.loads(macro.actions)}
 
-    return HttpResponse(template.render({'context': context}, request))
+    return HttpResponse(template.render(context, request))
 
 
 
