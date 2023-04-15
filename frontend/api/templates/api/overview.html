@@ -19,8 +19,8 @@
         function openNode(node) {
             // Show loading animation, redirect to selected node
             document.getElementById('loading_overlay').classList.add('d-flex');
-            {% if context.recording %}
-            window.location.href = '/api/' + node + '/{{context.recording}}';
+            {% if recording %}
+            window.location.href = '/api/' + node + '/{{recording}}';
             {% else %}
             window.location.href = '/api/' + node;
             {% endif %}
@@ -31,7 +31,7 @@
     <div id="container" class="container d-flex flex-column vh-100">
         <div class="d-flex justify-content-between">
             <button type="button" class="btn my-auto" id="back_button" style="visibility:hidden"><i class="bi-chevron-left"></i></button>
-            {% if context.recording %}
+            {% if recording %}
             <h1 class="my-3 glow">Recording Macro</h1>
             {% else %}
             <h1 class="my-3">Api Overview</h1>
@@ -57,9 +57,9 @@
             };
         </script>
 
-        {% if context.nodes %}
+        {% if nodes %}
             <div id="container" class="text-center">
-                {% for floor, nodes in context.nodes.items %}
+                {% for floor, nodes in nodes.items %}
                     <div id="floor{{floor}}" class="section mt-3 mb-4 p-3">
                         <h5 class="mb-3"><b>Floor {{floor}}</b></h5>
 
@@ -72,8 +72,8 @@
 
             <h1 class="text-center mt-5">Macros</h1>
 
-            {% if not context.recording %}
-                {% if not context.macros %}
+            {% if not recording %}
+                {% if not macros %}
                     <div id="macros" class="text-center section p-3 mx-auto mb-5">
                         <div class="p-3">
                             <div class="form-floating mb-3">
@@ -86,11 +86,10 @@
                     </div>
                 {% else %}
                     <div id="macros" class="text-center section p-3 mx-auto mb-5">
-                        {% for macro in context.macros %}
-                            {% if not macro == context.recording %}
+                        {% for macro in macros %}
+                            {% if not macro == recording %}
                             <div id="{{macro}}" class="d-flex mb-3">
-                                <h3 class="mx-auto my-auto">{{macro|lower|capfirst}}</h3>
-<!--                                 <div class="mx-auto my-auto"><h3 class="mx-3">{{macro|lower|capfirst}}</h3></div> -->
+                                <h3 class="mx-auto my-auto">{{macro|title}}</h3>
                                 <button id="run-{{macro}}" type="button" class="btn btn-primary btn-macro mx-3" onclick="runMacro('{{macro}}')">Run</button>
                                 <button id="edit-{{macro}}" type="button" class="btn-primary btn btn-macro mx-3" onclick="editMacro('{{macro}}')">Edit</button>
                                 <button id="delete-{{macro}}" type="button" class="btn-danger btn btn-macro mx-3" onclick="deleteMacro('{{macro}}')"><i class="bi-trash"></i></button>
@@ -156,7 +155,7 @@
         </div>
     </div>
 
-    {% if context.start_recording and not context.skip_instructions %}
+    {% if start_recording and not skip_instructions %}
     <!-- Recording macro instructions modal -->
     <div class="modal fade" id="instructions-modal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-fit-contents">
@@ -211,13 +210,13 @@
 
     <script>
         // If only 1 floor, remove label and background
-        if ({{context.nodes|length}} == 1) {
+        if ({{nodes|length}} == 1) {
             let floor1 = document.getElementById('floor1');
             floor1.children[0].remove();
             floor1.classList.remove("section");
 
         // If exactly 2 floors, change labels to Upstairs/Downstairs, move Upstairs to top
-        } else if ({{context.nodes|length}} == 2) {
+        } else if ({{nodes|length}} == 2) {
             let floor1 = document.getElementById('floor1');
             let floor2 = document.getElementById('floor2');
 

@@ -70,7 +70,7 @@ def api_overview(request, recording=False, start=False):
         # Show instructions popup (unless cookie set)
         context['start_recording'] = True
 
-    return render(request, 'api/overview.html', {'context': context})
+    return render(request, 'api/overview.html', context)
 
 
 
