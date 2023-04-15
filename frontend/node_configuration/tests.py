@@ -1,6 +1,8 @@
-from django.test import TestCase, Client
+from django.test import TestCase, Client, TransactionTestCase
 from django.conf import settings
 from django.http import JsonResponse
+from django.core.exceptions import ValidationError
+from django.db.utils import IntegrityError
 import json, os
 from .views import validateConfig, get_modules, get_api_target_menu_options, provision, get_api_target_menu_options
 from .models import Config, Node, WifiCredentials
@@ -8,8 +10,159 @@ from unittest.mock import patch, MagicMock
 from copy import deepcopy
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context, simulate_corrupt_filesystem_upload, simulate_reupload_all_fail_for_different_reasons, binary_unit_test_config, simulate_read_file_over_webrepl, simulated_read_position
+from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, test_config_2, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context, simulate_corrupt_filesystem_upload, simulate_reupload_all_fail_for_different_reasons, binary_unit_test_config, simulate_read_file_over_webrepl, simulated_read_position
 from .Webrepl import *
+
+
+
+# Test the Node model
+class NodeTests(TestCase):
+    def test_create_node(self):
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Create node, confirm exists in database
+        node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='2')
+        self.assertEqual(len(Node.objects.all()), 1)
+        self.assertIsInstance(node, Node)
+
+        # Confirm attributes, should not have config reverse relation
+        self.assertEqual(node.friendly_name, 'Unit Test Node')
+        self.assertEqual(node.ip, '123.45.67.89')
+        self.assertEqual(node.floor, 2)
+        with self.assertRaises(Node.config.RelatedObjectDoesNotExist):
+            print(node.config)
+
+        # Create Config with reverse relation, confirm accessible both ways
+        config = Config.objects.create(config=test_config_1, filename='test1.json', node=node)
+        self.assertEqual(node.config, config)
+        self.assertEqual(config.node, node)
+
+    def test_create_node_invalid(self):
+        # Confirm starting condition
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Should refuse to create with no arguments, only floor has default
+        with self.assertRaises(ValidationError):
+            node = Node.objects.create()
+
+        # Should refuse to create with invalid IP
+        with self.assertRaises(ValidationError):
+            node = Node.objects.create(friendly_name='Unit Test Node', ip='123.456.789.10')
+
+        # Should refuse to create negative floor
+        with self.assertRaises(ValidationError):
+            node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='-5')
+
+        # Should refuse to create floor over 999
+        with self.assertRaises(ValidationError):
+            node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='9999')
+
+        # Should refuse to create non-int floor
+        with self.assertRaises(ValidationError):
+            node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='upstairs')
+
+        # Confirm no nodes were created
+        self.assertEqual(len(Node.objects.all()), 0)
+
+    def test_create_duplicate_node(self):
+        # Create node, confirm number in database
+        Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='2')
+        self.assertEqual(len(Node.objects.all()), 1)
+
+        # Should refuse to create another node with same name
+        with self.assertRaises(ValidationError):
+            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.1.9', floor='3')
+
+        # Confirm no nodes created in db
+        self.assertEqual(len(Node.objects.all()), 1)
+
+
+
+# Test the Config model
+# TransactionTestCase prevents db calls breaking after IntegrityError
+class ConfigTests(TransactionTestCase):
+    def test_create_config(self):
+        # Confirm starting condition
+        self.assertEqual(len(Config.objects.all()), 0)
+
+        # Create node, confirm exists in database
+        config = Config.objects.create(config=test_config_1, filename='test1.json')
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertIsInstance(config, Config)
+
+        # Confirm attributes, confirm no node reverse relation
+        self.assertEqual(config.config, test_config_1)
+        self.assertEqual(config.filename, 'test1.json')
+        self.assertIsNone(config.node)
+
+        # Create Node, add reverse relation
+        node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='2')
+        config.node = node
+        config.save()
+
+        # Confirm accessible both ways
+        self.assertEqual(config.node, node)
+        self.assertEqual(node.config, config)
+
+    def test_create_config_invalid(self):
+        # Confirm starting condition
+        self.assertEqual(len(Config.objects.all()), 0)
+
+        # Should refuse to create with no arguments
+        with self.assertRaises(IntegrityError):
+            Config.objects.create()
+
+        # Confirm no configs created in db
+        self.assertEqual(len(Config.objects.all()), 0)
+
+    def test_duplicate_filename(self):
+        # Create config, confirm number in database
+        Config.objects.create(config=test_config_1, filename='test1.json')
+        self.assertEqual(len(Config.objects.all()), 1)
+
+        # Should refuse to create another config with same name
+        with self.assertRaises(IntegrityError):
+            Config.objects.create(config=test_config_1, filename='test1.json')
+
+        # Confirm no configs created in db
+        self.assertEqual(len(Config.objects.all()), 1)
+
+    def test_write_to_disk(self):
+        # Create config
+        config = Config.objects.create(config=test_config_1, filename='write_to_disk.json')
+
+        # Config should not exist on disk
+        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR + 'write_to_disk.json')))
+
+        # Call method, should exist
+        config.write_to_disk()
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR + 'write_to_disk.json')))
+
+        # Contents should match config attribute
+        with open(os.path.join(settings.CONFIG_DIR + 'write_to_disk.json'), 'r') as file:
+            output = json.load(file)
+            self.assertEqual(config.config, output)
+
+        # Remove file, prevent test failing after first run
+        os.remove(os.path.join(settings.CONFIG_DIR + 'write_to_disk.json'))
+
+    def test_read_from_disk(self):
+        # Create config
+        config = Config.objects.create(config=test_config_1, filename='read_from_disk.json')
+
+        # Write different config to expected config path
+        with open(os.path.join(settings.CONFIG_DIR + 'read_from_disk.json'), 'w') as file:
+            json.dump(test_config_2, file)
+
+        # Confirm configs are different
+        self.assertNotEqual(config.config, test_config_2)
+
+        # Call method, configs should now be identical
+        config.read_from_disk()
+        self.assertEqual(config.config, test_config_2)
+
+        # Remove file
+        os.remove(os.path.join(settings.CONFIG_DIR + 'read_from_disk.json'))
 
 
 

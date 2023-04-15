@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.core.validators import MinValueValidator, MaxValueValidator
 import os, json
 
 
@@ -9,11 +10,16 @@ class Node(models.Model):
     def __str__(self):
         return self.friendly_name
 
-    friendly_name = models.CharField(max_length=50)
+    friendly_name = models.CharField(max_length=50, unique=True)
 
     ip = models.GenericIPAddressField(protocol='IPv4')
 
-    floor = models.IntegerField(default=1)
+    floor = models.IntegerField(default=1, validators=[MinValueValidator(0), MaxValueValidator(999)])
+
+    # Validate all fields before saving
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
 
 
 
@@ -25,7 +31,7 @@ class Config(models.Model):
     # The actual config object
     config = models.JSONField(null=False, blank=False)
 
-    filename = models.CharField(max_length=50, null=False, blank=False)
+    filename = models.CharField(max_length=50, null=False, blank=False, unique=True)
 
     node = models.OneToOneField(
         Node,
