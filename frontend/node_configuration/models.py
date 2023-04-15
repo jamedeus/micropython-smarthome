@@ -50,6 +50,11 @@ class Config(models.Model):
         with open(settings.CONFIG_DIR + self.filename, 'w') as file:
             json.dump(self.config, file)
 
+    # Validate all fields before saving
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
 
 
 class WifiCredentials(models.Model):

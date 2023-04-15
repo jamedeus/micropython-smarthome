@@ -1,4 +1,4 @@
-from django.test import TestCase, Client, TransactionTestCase
+from django.test import TestCase, Client
 from django.conf import settings
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
@@ -24,6 +24,9 @@ class NodeTests(TestCase):
         node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='2')
         self.assertEqual(len(Node.objects.all()), 1)
         self.assertIsInstance(node, Node)
+
+        # Confirm friendly name shown when instance printed
+        self.assertEqual(node.__str__(), 'Unit Test Node')
 
         # Confirm attributes, should not have config reverse relation
         self.assertEqual(node.friendly_name, 'Unit Test Node')
@@ -61,6 +64,10 @@ class NodeTests(TestCase):
         with self.assertRaises(ValidationError):
             node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='upstairs')
 
+        # Should refuse to create with friendly name >50 characters
+        with self.assertRaises(ValidationError):
+            Config.objects.create(config=test_config_1, filename='Very Unrealistically Long Friendly Name That Nobody Needs')
+
         # Confirm no nodes were created
         self.assertEqual(len(Node.objects.all()), 0)
 
@@ -79,8 +86,7 @@ class NodeTests(TestCase):
 
 
 # Test the Config model
-# TransactionTestCase prevents db calls breaking after IntegrityError
-class ConfigTests(TransactionTestCase):
+class ConfigTests(TestCase):
     def test_create_config(self):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 0)
@@ -89,6 +95,9 @@ class ConfigTests(TransactionTestCase):
         config = Config.objects.create(config=test_config_1, filename='test1.json')
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertIsInstance(config, Config)
+
+        # Confirm filename shown when instance printed
+        self.assertEqual(config.__str__(), 'test1.json')
 
         # Confirm attributes, confirm no node reverse relation
         self.assertEqual(config.config, test_config_1)
@@ -109,8 +118,12 @@ class ConfigTests(TransactionTestCase):
         self.assertEqual(len(Config.objects.all()), 0)
 
         # Should refuse to create with no arguments
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(ValidationError):
             Config.objects.create()
+
+        # Should refuse to create with filename >50 characters
+        with self.assertRaises(ValidationError):
+            Config.objects.create(config=test_config_1, filename='very-unrealistically-long-config-name-that-nobody-needs.json')
 
         # Confirm no configs created in db
         self.assertEqual(len(Config.objects.all()), 0)
@@ -121,7 +134,7 @@ class ConfigTests(TransactionTestCase):
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Should refuse to create another config with same name
-        with self.assertRaises(IntegrityError):
+        with self.assertRaises(ValidationError):
             Config.objects.create(config=test_config_1, filename='test1.json')
 
         # Confirm no configs created in db
