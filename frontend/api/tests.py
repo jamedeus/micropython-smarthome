@@ -9,11 +9,33 @@ import json
 
 
 
+# Test legacy api page
+class LegacyApiTests(TestCase):
+    def test_legacy_api_page(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+        # Request page, confirm correct template used
+        response = self.client.get('/legacy_api')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'api/legacy_api.html')
+
+        # Confirm context contains correct number of nodes
+        self.assertEqual(len(response.context['context']), 3)
+
+        # Confirm one button for each node
+        self.assertContains(response, '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test1">Test1</button>')
+        self.assertContains(response, '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test2">Test2</button>')
+        self.assertContains(response, '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test3">Test3</button>')
+
+
+
 # Test api overview page
 class OverviewPageTests(TestCase):
     def test_overview_page_no_nodes(self):
         # Request page, confirm correct template used
         response = self.client.get('/api')
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/overview.html')
 
         # Confirm correct context (empty template)
@@ -34,6 +56,7 @@ class OverviewPageTests(TestCase):
 
         # Request page, confirm correct template used
         response = self.client.get('/api')
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/overview.html')
 
         # Confirm context contains correct number of nodes on each floor
@@ -61,6 +84,7 @@ class OverviewPageTests(TestCase):
 
         # Request page, confirm correct template used, confirm context contains macro
         response = self.client.get('/api')
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/overview.html')
         self.assertEqual(response.context['macros'], test_macro_context)
 
@@ -74,6 +98,7 @@ class OverviewPageTests(TestCase):
 
         # Request page with params to start recording macro named "New Macro Name"
         response = self.client.get('/api/recording/New Macro Name/start')
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/overview.html')
 
         # Confirm context includes correct variables
@@ -86,6 +111,7 @@ class OverviewPageTests(TestCase):
         # Set cookie to skip instructions (checkbox in popup), request page again
         self.client.cookies['skip_instructions'] = 'true'
         response = self.client.get('/api/recording/New Macro Name/start')
+        self.assertEqual(response.status_code, 200)
 
         # Should not contain instructions modal, context should include skip_instructions variable
         self.assertNotContains(response, '<h3 class="mx-auto mb-0" id="error-modal-title">Macro Instructions</h3>')
