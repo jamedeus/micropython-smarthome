@@ -4,8 +4,188 @@ from django.conf import settings
 from node_configuration.models import *
 from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes, create_config_and_node_from_json, test_config_1, test_config_2, test_config_3
 from .models import Macro
+from .views import parse_command
 
 import json
+from unittest.mock import patch
+
+
+
+# Test successful calls to all API endpoints with mocked return values
+class TestEndpoints(TestCase):
+
+    def test_status(self):
+        # Expected return object
+        status_object = {'metadata': {'id': 'Test1', 'floor': '1', 'location': 'Inside cabinet above microwave', 'ir_blaster': False}, 'sensors': {'sensor1': {'current_rule': 2.0, 'enabled': True, 'type': 'pir', 'targets': ['device1', 'device2'], 'schedule': {'10:00': '2', '22:00': '2'}, 'scheduled_rule': 2.0, 'nickname': 'Motion Sensor', 'condition_met': True}}, 'devices': {'device1': {'current_rule': 'disabled', 'enabled': False, 'type': 'pwm', 'schedule': {'00:00': 'fade/32/7200', '05:00': 'Disabled', '22:01': 'fade/256/7140', '22:00': '1023'}, 'scheduled_rule': 'disabled', 'nickname': 'Cabinet Lights', 'turned_on': True}, 'device2': {'current_rule': 'enabled', 'enabled': True, 'type': 'relay', 'schedule': {'05:00': 'enabled', '22:00': 'disabled'}, 'scheduled_rule': 'enabled', 'nickname': 'Overhead Lights', 'turned_on': True}}}
+
+        # Mock request to return status object
+        with patch('api.views.request', return_value = status_object):
+            # Request status, should receive expected object
+            response = parse_command('192.168.1.123', ['status'])
+            self.assertEqual(response, status_object)
+
+    def test_reboot(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = 'Rebooting'):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['reboot'])
+            self.assertEqual(response, 'Rebooting')
+
+    def test_disable(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Disabled': 'device1'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['disable', 'device1'])
+            self.assertEqual(response, {'Disabled': 'device1'})
+
+    def test_disable_in(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Disabled': 'device1', 'Disable_in_seconds': 300.0}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['disable_in', 'device1', '5'])
+            self.assertEqual(response, {'Disabled': 'device1', 'Disable_in_seconds': 300.0})
+
+    def test_enable(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Enabled': 'device1'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['enable', 'device1'])
+            self.assertEqual(response, {'Enabled': 'device1'})
+
+    def test_enable_in(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Enabled': 'device1', 'Enable_in_seconds': 300.0}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['enable_in', 'device1', '5'])
+            self.assertEqual(response, {'Enabled': 'device1', 'Enable_in_seconds': 300.0})
+
+    def test_set_rule(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {"device1": "50"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['set_rule', 'device1', '50'])
+            self.assertEqual(response, {"device1": "50"})
+
+    def test_reset_rule(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['reset_rule', 'device1'])
+            self.assertEqual(response, {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'})
+
+    def test_reset_all_rules(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'New rules': {'device1': 'disabled', 'sensor1': 2.0, 'device2': 'enabled'}}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['reset_all_rules'])
+            self.assertEqual(response, {'New rules': {'device1': 'disabled', 'sensor1': 2.0, 'device2': 'enabled'}})
+
+    def test_get_schedule_rules(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'05:00': 'enabled', '22:00': 'disabled'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['get_schedule_rules', 'device2'])
+            self.assertEqual(response, {'05:00': 'enabled', '22:00': 'disabled'})
+
+    def test_add_rule(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'time': '10:00', 'Rule added': 'disabled'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['add_rule', 'device2', '10:00', 'disabled'])
+            self.assertEqual(response, {'time': '10:00', 'Rule added': 'disabled'})
+
+    def test_remove_rule(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Deleted': '10:00'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['remove_rule', 'device2', '10:00'])
+            self.assertEqual(response, {'Deleted': '10:00'})
+
+    def test_save_rules(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Success': 'Rules written to disk'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['save_rules'])
+            self.assertEqual(response, {'Success': 'Rules written to disk'})
+
+    def test_get_attributes(self):
+        attributes = {'min_bright': 0, 'nickname': 'Cabinet Lights', 'bright': 0, 'scheduled_rule': 'disabled', 'current_rule': 'disabled', 'default_rule': 1023, 'enabled': False, 'rule_queue': ['1023', 'fade/256/7140', 'fade/32/7200', 'Disabled', '1023', 'fade/256/7140'], 'state': False, 'name': 'device1', 'triggered_by': ['sensor1'], 'max_bright': 1023, 'device_type': 'pwm', 'group': 'group1', 'fading': False}
+
+        # Mock request to return status object
+        with patch('api.views.request', return_value = attributes):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['get_attributes', 'device2'])
+            self.assertEqual(response, attributes)
+
+    def test_ir_key(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'tv': 'power'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['ir', 'tv', 'power'])
+            self.assertEqual(response, {'tv': 'power'})
+
+    def test_ir_backlight(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'backlight': 'on'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['ir', 'backlight', 'on'])
+            self.assertEqual(response, {'backlight': 'on'})
+
+    def test_get_temp(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Temp': 69.9683}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['get_temp'])
+            self.assertEqual(response, {'Temp': 69.9683})
+
+    def test_get_humid(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Humidity': 47.09677}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['get_humid'])
+            self.assertEqual(response, {'Humidity': 47.09677})
+
+    def test_get_climate(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'humid': 47.12729, 'temp': 69.94899}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['get_climate'])
+            self.assertEqual(response, {'humid': 47.12729, 'temp': 69.94899})
+
+    def test_clear_log(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'clear_log': 'success'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['clear_log'])
+            self.assertEqual(response, {'clear_log': 'success'})
+
+    def test_condition_met(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Condition': False}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['condition_met', 'sensor1'])
+            self.assertEqual(response, {'Condition': False})
+
+    def test_trigger_sensor(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Triggered': 'sensor1'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['trigger_sensor', 'sensor1'])
+            self.assertEqual(response, {'Triggered': 'sensor1'})
+
+    def test_turn_on(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'On': 'device2'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['turn_on', 'device2'])
+            self.assertEqual(response, {'On': 'device2'})
+
+    def test_turn_off(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = {'Off': 'device2'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['turn_off', 'device2'])
+            self.assertEqual(response, {'Off': 'device2'})
 
 
 
