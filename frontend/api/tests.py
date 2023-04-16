@@ -212,6 +212,135 @@ class TestEndpoints(TestCase):
 
 
 
+# Test unsuccessful calls with invalid arguments to verify errors
+class TestEndpointErrors(TestCase):
+
+    def test_missing_required_argument(self):
+        # Test endpoints with same missing arg error in loop
+        for endpoint in ['disable', 'enable', 'disable_in', 'enable_in', 'set_rule', 'reset_rule', 'get_schedule_rules', 'add_rule', 'remove_rule', 'get_attributes', 'ir']:
+            response = parse_command('192.168.1.123', [endpoint])
+            self.assertEqual(response, {"ERROR" : "Please fill out all fields"})
+
+    def test_disable_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['disable', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Can only disable devices and sensors"})
+
+    def test_enable_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['enable', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Can only enable devices and sensors"})
+
+    def test_disable_in_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['disable_in', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Can only disable devices and sensors"})
+
+    def test_disable_in_no_delay_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['disable_in', 'device1'])
+        self.assertEqual(response, {"ERROR": "Please specify delay in minutes"})
+
+    def test_enable_in_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['enable_in', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Can only enable devices and sensors"})
+
+    def test_enable_in_no_delay_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['enable_in', 'device1'])
+        self.assertEqual(response, {"ERROR": "Please specify delay in minutes"})
+
+    def test_set_rule_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['set_rule', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Can only set rules for devices and sensors"})
+
+    def test_set_rule_no_delay_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['set_rule', 'device1'])
+        self.assertEqual(response, {"ERROR": "Must specify new rule"})
+
+    def test_reset_rule_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['reset_rule', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Can only set rules for devices and sensors"})
+
+    def test_get_schedule_rules_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['get_schedule_rules', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Only devices and sensors have schedule rules"})
+
+    def test_add_rule_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['add_rule', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Only devices and sensors have schedule rules"})
+
+    def test_add_rule_no_time_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['add_rule', 'device1'])
+        self.assertEqual(response, {"ERROR": "Must specify time (HH:MM) followed by rule"})
+
+    def test_add_rule_no_rule_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['add_rule', 'device1', '01:30'])
+        self.assertEqual(response, {"ERROR": "Must specify new rule"})
+
+    def test_remove_rule_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['remove_rule', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Only devices and sensors have schedule rules"})
+
+    def test_remove_rule_no_time_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['remove_rule', 'device1'])
+        self.assertEqual(response, {"ERROR": "Must specify time (HH:MM) of rule to remove"})
+
+    def test_get_attributes_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['get_attributes', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Must specify device or sensor"})
+
+    def test_ir_backlight_no_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['ir', 'backlight'])
+        self.assertEqual(response, {"ERROR": "Must specify 'on' or 'off'"})
+
+    def test_ir_backlight_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['ir', 'backlight', 'foo'])
+        self.assertEqual(response, {"ERROR": "Must specify 'on' or 'off'"})
+
+    def test_condition_met_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['condition_met', 'device1'])
+        self.assertEqual(response, {"ERROR": "Must specify sensor"})
+
+    def test_trigger_sensor_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['trigger_sensor', 'device1'])
+        self.assertEqual(response, {"ERROR": "Must specify sensor"})
+
+    def test_turn_on_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['turn_on', 'sensor1'])
+        self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
+
+    def test_turn_off_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['turn_off', 'sensor1'])
+        self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
+
+    def test_ir_no_key(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['ir', 'tv'])
+        self.assertEqual(response, {"ERROR": "Must speficy one of the following commands: power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source"})
+
+        response = parse_command('192.168.1.123', ['ir', 'ac'])
+        self.assertEqual(response, {"ERROR": "Must speficy one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"})
+
+
+
 # Test endpoint that loads modal containing existing macro actions
 class EditModalTests(TestCase):
     def setUp(self):

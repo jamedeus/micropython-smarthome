@@ -510,7 +510,7 @@ def remove_rule(ip, params):
     if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
         timestamp = params.pop(0)
     else:
-        return {"ERROR": "Must specify time (HH:MM) followed by rule"}
+        return {"ERROR": "Must specify time (HH:MM) of rule to remove"}
 
     return asyncio.run(request(ip, ['remove_rule', target, timestamp]))
 
