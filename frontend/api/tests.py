@@ -9,6 +9,44 @@ from .views import parse_command
 import json
 from unittest.mock import patch
 
+# Example status object used for mocks
+status_object = {'metadata': {'id': 'Test1', 'floor': '1', 'location': 'Inside cabinet above microwave', 'ir_blaster': False}, 'sensors': {'sensor1': {'current_rule': 2.0, 'enabled': True, 'type': 'pir', 'targets': ['device1', 'device2'], 'schedule': {'10:00': '2', '22:00': '2'}, 'scheduled_rule': 2.0, 'nickname': 'Motion Sensor', 'condition_met': True}}, 'devices': {'device1': {'current_rule': 'disabled', 'enabled': False, 'type': 'pwm', 'schedule': {'00:00': 'fade/32/7200', '05:00': 'Disabled', '22:01': 'fade/256/7140', '22:00': '1023'}, 'scheduled_rule': 'disabled', 'nickname': 'Cabinet Lights', 'turned_on': True}, 'device2': {'current_rule': 'enabled', 'enabled': True, 'type': 'relay', 'schedule': {'05:00': 'enabled', '22:00': 'disabled'}, 'scheduled_rule': 'enabled', 'nickname': 'Overhead Lights', 'turned_on': True}}}
+
+
+
+# Test HTTP endpoints that make API requests to nodes and return the response
+class HTTPEndpointTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+    def test_get_climate_data(self):
+        # Mock request to return climate data
+        with patch('api.views.request', return_value = {'humid': 48.05045, 'temp': 70.25787}):
+            response = self.client.get('/get_climate_data/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {'humid': 48.05045, 'temp': 70.25787})
+
+    def test_get_climate_data_offline(self):
+        with patch('api.views.request', side_effect=OSError("Error: Unable to connect.")):
+            response = self.client.get('/get_climate_data/Test1')
+            self.assertEqual(response.status_code, 502)
+            self.assertEqual(response.json(), "Error: Unable to connect.")
+
+    def test_get_status(self):
+        # Mock request to return status object
+        with patch('api.views.request', return_value = status_object):
+            response = self.client.get('/get_status/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), status_object)
+
+    def test_get_status_offline(self):
+        # Mock request to simulate offline target node
+        with patch('api.views.request', side_effect=OSError("Error: Unable to connect.")):
+            response = self.client.get('/get_status/Test1')
+            self.assertEqual(response.status_code, 502)
+            self.assertEqual(response.json(), "Error: Unable to connect.")
+
 
 
 # Test actions in overview top-right dropdown menu
@@ -38,9 +76,6 @@ class TestGlobalCommands(TestCase):
 class TestEndpoints(TestCase):
 
     def test_status(self):
-        # Expected return object
-        status_object = {'metadata': {'id': 'Test1', 'floor': '1', 'location': 'Inside cabinet above microwave', 'ir_blaster': False}, 'sensors': {'sensor1': {'current_rule': 2.0, 'enabled': True, 'type': 'pir', 'targets': ['device1', 'device2'], 'schedule': {'10:00': '2', '22:00': '2'}, 'scheduled_rule': 2.0, 'nickname': 'Motion Sensor', 'condition_met': True}}, 'devices': {'device1': {'current_rule': 'disabled', 'enabled': False, 'type': 'pwm', 'schedule': {'00:00': 'fade/32/7200', '05:00': 'Disabled', '22:01': 'fade/256/7140', '22:00': '1023'}, 'scheduled_rule': 'disabled', 'nickname': 'Cabinet Lights', 'turned_on': True}, 'device2': {'current_rule': 'enabled', 'enabled': True, 'type': 'relay', 'schedule': {'05:00': 'enabled', '22:00': 'disabled'}, 'scheduled_rule': 'enabled', 'nickname': 'Overhead Lights', 'turned_on': True}}}
-
         # Mock request to return status object
         with patch('api.views.request', return_value = status_object):
             # Request status, should receive expected object

@@ -29,7 +29,7 @@ def get_status(request, node):
     try:
         status = parse_command(ip, ["status"])
     except OSError:
-        return JsonResponse("Error: Unable to connect.", safe=False, status=200)
+        return JsonResponse("Error: Unable to connect.", safe=False, status=502)
 
     return JsonResponse(status, safe=False, status=200)
 
@@ -135,13 +135,14 @@ def api(request, node, recording=False):
 
 
 
+# TODO unused? Climate card updates from status object
 def get_climate_data(request, node):
     ip = Node.objects.get(friendly_name = node).ip
 
     try:
         data = parse_command(ip, ["get_climate"])
     except OSError:
-        return JsonResponse("Error: Unable to connect.", safe=False, status=200)
+        return JsonResponse("Error: Unable to connect.", safe=False, status=502)
 
     return JsonResponse(data, safe=False, status=200)
 
@@ -210,7 +211,7 @@ def send_command(request):
     try:
         response = parse_command(ip, args)
     except OSError:
-        return JsonResponse("Error: Unable to connect.", safe=False, status=200)
+        return JsonResponse("Error: Unable to connect.", safe=False, status=502)
 
     if cmd == "disable" and len(data["delay_input"]) > 0:
         args.insert(0, "enable_in")
