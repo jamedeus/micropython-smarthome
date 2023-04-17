@@ -5,12 +5,10 @@ from node_configuration.models import *
 from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes, create_config_and_node_from_json, test_config_1, test_config_2, test_config_3
 from .models import Macro
 from .views import parse_command
+from .unit_test_helpers import *
 
 import json
 from unittest.mock import patch
-
-# Example status object used for mocks
-status_object = {'metadata': {'id': 'Test1', 'floor': '1', 'location': 'Inside cabinet above microwave', 'ir_blaster': False}, 'sensors': {'sensor1': {'current_rule': 2.0, 'enabled': True, 'type': 'pir', 'targets': ['device1', 'device2'], 'schedule': {'10:00': '2', '22:00': '2'}, 'scheduled_rule': 2.0, 'nickname': 'Motion Sensor', 'condition_met': True}}, 'devices': {'device1': {'current_rule': 'disabled', 'enabled': False, 'type': 'pwm', 'schedule': {'00:00': 'fade/32/7200', '05:00': 'Disabled', '22:01': 'fade/256/7140', '22:00': '1023'}, 'scheduled_rule': 'disabled', 'nickname': 'Cabinet Lights', 'turned_on': True}, 'device2': {'current_rule': 'enabled', 'enabled': True, 'type': 'relay', 'schedule': {'05:00': 'enabled', '22:00': 'disabled'}, 'scheduled_rule': 'enabled', 'nickname': 'Overhead Lights', 'turned_on': True}}}
 
 
 
@@ -35,10 +33,10 @@ class HTTPEndpointTests(TestCase):
 
     def test_get_status(self):
         # Mock request to return status object
-        with patch('api.views.request', return_value = status_object):
+        with patch('api.views.request', return_value = config1_status_object):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), status_object)
+            self.assertEqual(response.json(), config1_status_object)
 
     def test_get_status_offline(self):
         # Mock request to simulate offline target node
@@ -77,10 +75,10 @@ class TestEndpoints(TestCase):
 
     def test_status(self):
         # Mock request to return status object
-        with patch('api.views.request', return_value = status_object):
+        with patch('api.views.request', return_value = config1_status_object):
             # Request status, should receive expected object
             response = parse_command('192.168.1.123', ['status'])
-            self.assertEqual(response, status_object)
+            self.assertEqual(response, config1_status_object)
 
     def test_reboot(self):
         # Mock request to return expected response
@@ -522,3 +520,69 @@ class OverviewPageTests(TestCase):
         # Should not contain instructions modal, context should include skip_instructions variable
         self.assertNotContains(response, '<h3 class="mx-auto mb-0" id="error-modal-title">Macro Instructions</h3>')
         self.assertEqual(response.context['skip_instructions'], True)
+
+
+
+# Test API Card interface
+class ApiCardTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+    def test_api_frontend(self):
+        # Mock request to return the expected status object
+        with patch('api.views.request', return_value = config1_status_object):
+            # Request page, confirm correct template used
+            response = self.client.get('/api/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'api/api_card.html')
+
+            # Confirm all context keys
+            self.assertEqual(response.context['context']['metadata'], config1_api_context['metadata'])
+            self.assertEqual(response.context['context']['sensors'], config1_api_context['sensors'])
+            self.assertEqual(response.context['context']['devices'], config1_api_context['devices'])
+
+    # Repeat test above with a node containing ApiTarget and Thermostat
+    def test_api_target_and_thermostat(self):
+        # Mock request to return the expected status object
+        with patch('api.views.request', return_value = config2_status_object):
+            # Request page, confirm correct template used
+            response = self.client.get('/api/Test2')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'api/api_card.html')
+
+            # Confirm all context keys
+            self.assertEqual(response.context['context']['metadata'], config2_api_context['metadata'])
+            self.assertEqual(response.context['context']['sensors'], config2_api_context['sensors'])
+            self.assertEqual(response.context['context']['devices'], config2_api_context['devices'])
+            self.assertEqual(response.context['context']['api_target_options'], config2_api_context['api_target_options'])
+
+    def test_failed_connection(self):
+        # Mock request to simulate offline target node
+        with patch('api.views.request', side_effect=OSError("Error: Unable to connect.")):
+            # Request page, confirm unable_to_connect template used
+            response = self.client.get('/api/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'api/unable_to_connect.html')
+
+            # Confirm context
+            self.assertEqual(response.context['context']['ip'], '192.168.1.123')
+            self.assertEqual(response.context['context']['id'], 'Test1')
+
+        # Mock parse_command to simulate timed out request
+        with patch('api.views.parse_command', return_value='Error: Request timed out'):
+            # Request page, confirm correct template used
+            response = self.client.get('/api/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'api/unable_to_connect.html')
+
+    def test_recording_mode(self):
+        # Mock request to return the expected status object
+        with patch('api.views.request', return_value = config1_status_object):
+            # Request page, confirm correct template used
+            response = self.client.get('/api/Test1/macro-name')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'api/api_card.html')
+
+            # Confirm context contains macro name
+            self.assertEqual(response.context['context']['metadata']['recording'], 'macro-name')

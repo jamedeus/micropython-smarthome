@@ -80,14 +80,11 @@ def api(request, node, recording=False):
 
     try:
         status = parse_command(target.ip, ["status"])
-    # Render connection failed page
-    except OSError:
-        context = {"ip": target.ip, "id": target.friendly_name}
-        template = loader.get_template('api/unable_to_connect.html')
-        return HttpResponse(template.render({'context': context}, request))
+        if status == "Error: Request timed out":
+            raise OSError
 
     # Render connection failed page
-    if status == "Error: Request timed out":
+    except OSError:
         context = {"ip": target.ip, "id": target.friendly_name}
         template = loader.get_template('api/unable_to_connect.html')
         return HttpResponse(template.render({'context': context}, request))
