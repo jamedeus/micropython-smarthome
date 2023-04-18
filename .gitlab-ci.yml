@@ -16,7 +16,7 @@ test:
     - export PATH=$PATH:/home/gitlab-runner/.local/bin
     - pipenv install
     - cd frontend/
-    - pipenv run coverage run --source='.' --omit='*manage.py,*wsgi.py,*asgi.py' manage.py test
+    - pipenv run coverage run --source='.' --omit='*manage.py,*wsgi.py,*asgi.py,*/tests.py,*unit_test_helpers.py,*/migrations/*.py' manage.py test
     - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\%)$/'
   only:
