@@ -288,6 +288,36 @@ class WebreplTests(TestCase):
             result = node.get_file_mem("/path/to/remote")
             self.assertEqual(binary_unit_test_config, result)
 
+    # Confirm OSError raised when either get_file or get_file_mem receive empty buffer during read
+    def test_get_file_failed_read(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Return buffer that unpacks to 256 when remaining size queried (first call)
+        # Return empty buffer to simulate failed read otherwise (second call)
+        def simulate_failed_read(size):
+            if size == 2:
+                return b'\x00\x01'
+            else:
+                return b''
+
+        # Mock open_connection to return True without doing anything
+        # Mock websocket.read to simulate failed read
+        # Mock read_resp to return bytes indicating valid signature
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(node, 'ws', MagicMock()), \
+             patch.object(node.ws, 'read', side_effect = simulate_failed_read) as mock_read, \
+             patch.object(node, 'read_resp', side_effect=[0, 0]):
+
+            # Both methods should raise OSError when empty buffer returned on second call
+            with self.assertRaises(OSError):
+                node.get_file("test.json", "/path/to/remote")
+                self.assertEqual(mock_read.call_count, 2)
+                os.remove("test.json")
+
+            with self.assertRaises(OSError):
+                node.get_file_mem("/path/to/remote")
+                self.assertEqual(mock_read.call_count, 2)
+
     def test_put_file(self):
         node = Webrepl('123.45.67.89', 'password')
 
@@ -299,6 +329,32 @@ class WebreplTests(TestCase):
             node.put_file('node_configuration/unit-test-config.json', 'config.json')
             self.assertTrue(mock_websocket.write.called)
             self.assertTrue(mock_read_resp.called)
+
+    def test_login(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Mock methods to simulate successful login without making network connection
+        with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
+             patch.object(websocket, 'client_handshake', return_value=True) as mock_client_handshake, \
+             patch.object(websocket, 'read', side_effect = [b":", b" "]):
+
+            # Should login successfully due websocket.read simulating password prompt
+            self.assertTrue(node.open_connection())
+
+    def test_read_resp(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Mock open_connection to return True without doing anything
+        # Mock websocket.read to simulate reading file (will only read signature bytes)
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(node, 'ws', MagicMock()), \
+             patch.object(node.ws, 'read', side_effect = simulate_read_file_over_webrepl) as mock_read:
+
+            # Call read_resp directly, confirm mock method called
+            # Returning successfully indicates signature verified
+            node.read_resp()
+            self.assertEqual(mock_read.call_count, 1)
+
 
 
 

@@ -119,6 +119,7 @@ class Webrepl():
             print("ERROR: Should not be invoked directly, use open_connection()")
             raise OSError
 
+        # Read until the password prompt (semicolon followed by space), send password
         while True:
             c = self.ws.read(1, text_ok=True)
             if c == b":":
