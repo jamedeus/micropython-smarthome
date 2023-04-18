@@ -457,9 +457,25 @@ class TestGlobalCommands(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
+    def test_reset_all_offline(self):
+        # Mock request to simulate offline nodes
+        with patch('api.views.request', side_effect=OSError):
+            # Create 3 test nodes
+            response = self.client.get('/reset_all')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
     def test_reboot_all(self):
         # Mock request to return expected response for each node
         with patch('api.views.request', return_value = 'Rebooting'):
+            # Create 3 test nodes
+            response = self.client.get('/reboot_all')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+    def test_reboot_all_offline(self):
+        # Mock request to simulate offline nodes
+        with patch('api.views.request', side_effect=OSError):
             # Create 3 test nodes
             response = self.client.get('/reboot_all')
             self.assertEqual(response.status_code, 200)
@@ -644,6 +660,16 @@ class TestEndpoints(TestCase):
 
 # Test unsuccessful calls with invalid arguments to verify errors
 class TestEndpointErrors(TestCase):
+
+    def test_parse_command_missing_argument(self):
+        # Call parse_command with no argument
+        response = parse_command('192.168.1.123', [])
+        self.assertEqual(response, "Error: No command received")
+
+    def test_parse_command_invalid_argument(self):
+        # Call parse_command with an argument that doesn't exist
+        response = parse_command('192.168.1.123', ['self_destruct'])
+        self.assertEqual(response, "Error: Command not found")
 
     def test_missing_required_argument(self):
         # Test endpoints with same missing arg error in loop

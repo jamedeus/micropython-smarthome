@@ -151,7 +151,7 @@ def reboot_all(request):
             print(f"Rebooting {node.friendly_name}...")
             response = parse_command(node.ip, ['reboot'])
             print("Done")
-        except ConnectionRefusedError:
+        except (ConnectionRefusedError, OSError):
             print(f"Unable to connect to {node.friendly_name}")
 
     return JsonResponse("Done", safe=False, status=200)
@@ -165,9 +165,7 @@ def reset_all(request):
             print(node.friendly_name)
             print(json.dumps(response, indent=4))
             print()
-        except ConnectionRefusedError:
-            print(f"Unable to connect to {node.friendly_name}\n")
-        except OSError:
+        except (ConnectionRefusedError, OSError):
             print(f"Unable to connect to {node.friendly_name}\n")
 
     return JsonResponse("Done", safe=False, status=200)
