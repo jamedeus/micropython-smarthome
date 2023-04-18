@@ -5,11 +5,96 @@ from django.db import IntegrityError
 from node_configuration.models import *
 from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes, create_config_and_node_from_json, test_config_1, test_config_2, test_config_3
 from .models import Macro
-from .views import parse_command
+from .views import parse_command, request
 from .unit_test_helpers import *
 
-import json
-from unittest.mock import patch
+import json, asyncio
+from unittest.mock import patch, MagicMock, AsyncMock
+
+
+
+# Test function that makes async API calls to esp32 nodes (called by send_command)
+class RequestTests(TestCase):
+    def setUp(self):
+        # Simulate successful reply from Node
+        async def read_response():
+            return b'{"Enabled": "device1"}'
+
+        # Simulate invalid reply from Node
+        async def read_response_fail():
+            raise OSError
+
+        # Create mock asyncio reader that returns successful response
+        mock_reader = MagicMock()
+        mock_reader.read = AsyncMock(side_effect=read_response)
+
+        # Create mock asyncio reader that fails to read response
+        mock_reader_fail = MagicMock()
+        mock_reader_fail.read = AsyncMock(side_effect=read_response_fail)
+
+        # Create mock asyncio writer that does nothing
+        mock_writer = MagicMock()
+        mock_writer.drain = AsyncMock()
+        mock_writer.write = MagicMock()
+        mock_writer.wait_closed = AsyncMock()
+
+        # Mock open_connection to return mock_reader + mock_writer
+        async def mock_open_connection(*args, **kwargs):
+            return mock_reader, mock_writer
+
+        # Mock open_connection to return mock_reader_fail + mock_writer
+        async def mock_open_connection_fail(*args, **kwargs):
+            return mock_reader_fail, mock_writer
+
+        # Mock wait_for to return immediately
+        async def mock_wait_for(coro, timeout):
+            return await coro
+
+        # Make accessible in test methods
+        self.mock_open_connection = mock_open_connection
+        self.mock_open_connection_fail = mock_open_connection_fail
+        self.mock_wait_for = mock_wait_for
+
+    async def test_request_successful(self):
+        # Mock asyncio methods to simulate successful connection
+        with patch('api.views.asyncio.open_connection', side_effect=self.mock_open_connection), \
+             patch('api.views.asyncio.wait_for', side_effect=self.mock_wait_for):
+
+            # Send request, verify response
+            response = await request('192.168.1.123', ['enable', 'device1'])
+            self.assertEqual(response, {'Enabled': 'device1'})
+
+    async def test_request_connection_errors(self):
+        # Simulate timed out connection (target node event loop blocked)
+        with patch('api.views.asyncio.wait_for', side_effect=asyncio.TimeoutError):
+
+            # Make request, verify error
+            response = await request('192.168.1.123', ['enable', 'device1'])
+            self.assertEqual(response, "Error: Request timed out")
+
+        # Simulate failed connection (target node offline, wrong IP, etc)
+        with patch('api.views.asyncio.wait_for', side_effect=OSError):
+
+            # Make request, verify error
+            response = await request('192.168.1.123', ['enable', 'device1'])
+            self.assertEqual(response, "Error: Failed to connect")
+
+        # Simulate successful connection, failed write
+        with patch('api.views.asyncio.open_connection', side_effect=self.mock_open_connection_fail), \
+             patch('api.views.asyncio.wait_for', side_effect=self.mock_wait_for):
+
+            # Make request, verify error
+            response = await request('192.168.1.123', ['enable', 'device1'])
+            self.assertEqual(response, "Error: Request failed")
+
+        # Simulate successful connection, receive invalid response
+        with patch('api.views.asyncio.open_connection', side_effect=self.mock_open_connection), \
+             patch('api.views.asyncio.wait_for', side_effect=self.mock_wait_for), \
+             patch('api.views.json.loads', side_effect=ValueError):
+
+            # Make request, verify error
+            response = await request('192.168.1.123', ['enable', 'device1'])
+            self.assertEqual(response, "Error: Unable to decode response")
 
 
 
