@@ -2,7 +2,7 @@ from django.test import TestCase, Client
 from django.conf import settings
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
-import json, os
+import json, os, socket
 from .views import validateConfig, get_modules, get_api_target_menu_options, provision, get_api_target_menu_options
 from .models import Config, Node, WifiCredentials
 from unittest.mock import patch, MagicMock
@@ -10,7 +10,7 @@ from copy import deepcopy
 
 # Large JSON objects, helper functions
 from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, test_config_2, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context, simulate_corrupt_filesystem_upload, simulate_reupload_all_fail_for_different_reasons, binary_unit_test_config, simulate_read_file_over_webrepl, simulated_read_position
-from .Webrepl import *
+from .Webrepl import websocket, Webrepl, handshake_message
 
 
 
@@ -178,7 +178,88 @@ class ConfigTests(TestCase):
 
 
 
+# Test websocket class used by Webrepl
+class WebsocketTests(TestCase):
+
+    def test_write_method(self):
+        # Mock socket and client_handshake to do nothing
+        with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
+             patch.object(websocket, 'client_handshake', return_value=True):
+
+            # Instantiate, write long string to trigger else (rest covered by Webrepl tests)
+            ws = websocket(mock_socket)
+            ws.write('test string longer than the 126 characters, which is the required number of characters to trigger the else clause in websocket.write')
+
+    def test_recvexactly_method(self):
+        # Mock socket.recv to return arbitrary data, mock client_handshake to do nothing
+        with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
+             patch.object(mock_socket, 'recv', return_value=b"A bunch of binary data"), \
+             patch.object(websocket, 'client_handshake', return_value=True):
+
+            # Instantiate, request data, verify response
+            ws = websocket(mock_socket)
+            data = ws.recvexactly(22)
+            self.assertEqual(data, b"A bunch of binary data")
+
+            # Change return value to trigger conditional, verify response
+            mock_socket.recv.return_value = None
+            data = ws.recvexactly(22)
+            self.assertEqual(data, b"")
+
+    # Arbitrary mocks to traverse every line in read method
+    def test_read_method(self):
+        # Mock socket and client_handshake to do nothing
+        with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
+             patch.object(websocket, 'client_handshake', return_value=True):
+
+            # Instantiate websocket
+            ws = websocket(mock_socket)
+
+            # First call: return sz=5, fl=0x82 (trigger break in second if statement)
+            # Second call: Return Hello
+            with patch.object(websocket, 'recvexactly', side_effect=[b'\x82\x05', b'Hello']):
+                # Read 5 bytes, confirm expected response
+                data = ws.read(5)
+                self.assertEqual(data, b'Hello')
+
+            # First call: return sz=5, fl=0x81 (trigger last if statement in loop)
+            # Second call: return World
+            with patch.object(websocket, 'recvexactly', side_effect=[b'\x81\x05', b'World']):
+                # Read 5 bytes, confirm expected response
+                data = ws.read(5, text_ok=True)
+                self.assertEqual(data, b'World')
+
+            # First call: return sz=126 (trigger first if statement in loop)
+            # Second call: return sz=15 (bytes to iterate in inner while sz loop, mock recv to return 5 bytes, evenly divisible with 15)
+            # Third call: return sz=16, fl=0x82 (trigger break in second if statement)
+            # Fourth call: return 16 characters to final recvexactly statement in function
+            with patch.object(websocket, 'recvexactly', side_effect=[b'\x81\x7E', b'\x00\x0F', b'\x82\x10', b'abcdefghijklmnop']), \
+                patch.object(mock_socket, 'recv', return_value=b'abcde'):
+
+                # Read 16 bytes, confirm expected response
+                data = ws.read(16)
+                self.assertEqual(data, b'abcdefghijklmnop')
+
+    def test_client_handshake_method(self):
+        # Mock object to replace socket.makefile.write
+        mock_cl = MagicMock()
+        mock_cl.write = MagicMock()
+        mock_cl.readline =  MagicMock(side_effect=[b'HTTP/1.1 101 Switching Protocols\r\n', b'Upgrade: websocket\r\n', b'Connection: Upgrade\r\n', b'\r\n'])
+
+        # Mock socket to do nothing, mock makefile method to return object created above
+        with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
+             patch.object(mock_socket, 'makefile', return_value = mock_cl):
+
+            # Instantiate, verify correct methods called
+            ws = websocket(mock_socket)
+            mock_cl.write.assert_called_once_with(handshake_message)
+            self.assertEqual(mock_cl.readline.call_count, 4)
+
+
+
+# Test the Webrepl class used to upload config + dependencies to nodes
 class WebreplTests(TestCase):
+
     def test_open_and_close_connection(self):
         node = Webrepl('123.45.67.89', 'password')
 
