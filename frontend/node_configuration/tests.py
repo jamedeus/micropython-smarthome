@@ -2,7 +2,6 @@ from django.test import TestCase, Client
 from django.conf import settings
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
-from django.db.utils import IntegrityError
 import json, os
 from .views import validateConfig, get_modules, get_api_target_menu_options, provision, get_api_target_menu_options
 from .models import Config, Node, WifiCredentials
@@ -913,6 +912,10 @@ class WifiCredentialsTests(TestCase):
         response = self.client.post('/set_default_credentials', json.dumps({'ssid': 'NewWifi', 'password': 'hunter2'}), content_type='application/json')
         self.assertEqual(response.json(), 'Default credentials set')
         self.assertEqual(len(WifiCredentials.objects.all()), 1)
+
+    def test_print_method(self):
+        credentials = WifiCredentials.objects.create(ssid='testnet', password='hunter2')
+        self.assertEqual(credentials.__str__(), 'testnet')
 
 
 
