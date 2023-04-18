@@ -13,6 +13,53 @@ from unittest.mock import patch
 
 
 
+# Test send_command function that bridges frontend HTTP requests to esp32 API calls
+class SendCommandTests(TestCase):
+
+    # Simulate send_command call from new Api frontend
+    def test_send_command_api_cards(self):
+        payload = {"command": "turn_off", "instance": "device1", "target": "192.168.1.123"}
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value={"On": "device1"}) as mock_parse_command:
+            # Call view to run macro, confirm response, confirm parse_command called twice
+            response = self.client.post('/send_command', payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"On": "device1"})
+            self.assertEqual(mock_parse_command.call_count, 1)
+
+    # Simulate send_command call from original Api frontend
+    def test_send_command_legacy_api(self):
+        create_test_nodes()
+        payload = {"command": "turn_off", "instance": "device1", "target": "Test1"}
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value={"On": "device1"}) as mock_parse_command:
+            # Call view to run macro, confirm response, confirm parse_command called twice
+            response = self.client.post('/send_command', payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {"On": "device1"})
+            self.assertEqual(mock_parse_command.call_count, 1)
+
+    def test_send_command_invalid_method(self):
+        # Make get request (requires post)
+        response = self.client.get('/send_command')
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.json(), {'Error': 'Must post data'})
+
+    def test_send_command_connection_failed(self):
+        payload = {"command": "turn_off", "instance": "device1", "target": "192.168.1.123"}
+
+        # Mock parse_command to simulate failed connection to node
+        with patch('api.views.parse_command', side_effect=OSError) as mock_parse_command:
+            # Call view to run macro, confirm response, confirm parse_command called twice
+            response = self.client.post('/send_command', payload, content_type='application/json')
+            self.assertEqual(response.status_code, 502)
+            self.assertEqual(response.json(), "Error: Unable to connect.")
+            self.assertEqual(mock_parse_command.call_count, 1)
+
+
+
 # Test HTTP endpoints that make API requests to nodes and return the response
 class HTTPEndpointTests(TestCase):
     def setUp(self):

@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse, FileResponse
+from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, FileResponse
 from django.template import loader
 from django.views.decorators.csrf import ensure_csrf_cookie
 import json
@@ -178,7 +178,7 @@ def send_command(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", data["target"]):
         # New API Card interface
@@ -189,15 +189,6 @@ def send_command(request):
 
     cmd = data["command"]
     del data["target"], data["command"]
-
-    # Schedule rule endpoints merged into single menu in frontend - determine desired endpoint
-    if cmd == "schedule_rules":
-        if len(data["rule_input"]) == 0:
-            cmd = "remove_rule"
-            del data["rule_input"]
-        else:
-            cmd = "add_rule"
-
     args = [cmd]
 
     for i in data:
