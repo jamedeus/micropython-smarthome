@@ -382,7 +382,7 @@ class EditModalTests(TestCase):
 
         # Create macro with a single action
         # Payload sent by frontend to turn on node1 device1
-        payload = {'name': 'Test1', 'action': {'command': 'turn_on', 'instance': 'device1', 'target': '192.168.1.123'}}
+        payload = {'name': 'Test1', 'action': {'command': 'turn_on', 'instance': 'device1', 'target': '192.168.1.123', 'friendly_name': 'Cabinet Lights'}}
         self.client.post('/add_macro_action', payload, content_type='application/json')
 
     def test_edit_macro_button(self):

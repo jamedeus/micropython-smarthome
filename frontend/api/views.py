@@ -287,17 +287,19 @@ def add_macro_action(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
-        raise Http404("ERROR: Must post data")
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     try:
         macro = Macro.objects.get(name = data['name'])
     except Macro.DoesNotExist:
         macro = Macro.objects.create(name = data['name'])
-        macro.save() # TODO remove? Can't remember if needed, don't think so
 
     try:
         macro.add_action(data['action'])
-    except SyntaxError:
+    except (SyntaxError, KeyError):
+        # Delete empty macro if failed to add first action
+        if not len(json.loads(macro.actions)):
+            macro.delete()
         return JsonResponse("Invalid action", safe=False, status=400)
 
     print(f"Added action: {data['action']}")
@@ -338,7 +340,10 @@ def delete_macro_action(request, name, index):
     except Macro.DoesNotExist:
         return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
 
-    macro.del_action(index)
+    try:
+        macro.del_action(index)
+    except ValueError:
+        return JsonResponse("ERROR: Macro action does not exist.", safe=False, status=404)
 
     return JsonResponse("Done", safe=False, status=200)
 
@@ -350,7 +355,7 @@ def macro_name_available(request, name):
     except Macro.DoesNotExist:
         return JsonResponse(f"Name {name} available.", safe=False, status=200)
 
-    return JsonResponse(f"Name {name} already in use", safe=False, status=409)
+    return JsonResponse(f"Name {name} already in use.", safe=False, status=409)
 
 
 

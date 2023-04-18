@@ -43,55 +43,75 @@ class Macro(models.Model):
         if not isinstance(action, dict):
             raise SyntaxError
 
+        # Get target IP, look up Node instance
         ip = action['target']
         del action['target']
-        args = list(action.values())
-
         node = Node.objects.get(ip = ip)
         node_name = node.friendly_name
 
+        # Throw error if target node config doesn't contain target instance
+        if 'instance' in action.keys():
+            if not action['instance'] in node.config.config.keys():
+                raise KeyError(f"{node_name} has no instance {action['instance']}")
+        else:
+            if not 'ir_blaster' in node.config.config.keys():
+                raise KeyError(f"{node_name} has no IR Blaster")
+
+        # Get friendly_name of target instance (for frontend)
+        if 'friendly_name' in action.keys():
+            target_name = action['friendly_name']
+            del action['friendly_name']
+
+        # Get argument list (format expected by parse_command)
+        args = list(action.values())
+
+        # Get command name (for frontend)
+        command = args[0]
+
+        # Special adjustments for readability in edit macro modal
+        if command == "set_rule":
+            # Append new rule to command shown in frontend
+            command = f'set_rule {args[2]}'
+        elif command == "ir":
+            # Set target name (paylod doesn't contain friendly_name)
+            target_name = "IR Blaster"
+            # Parse 'tv power' from ['ir', 'tv', 'power']
+            command = re.sub('[\[\]\',]', '', str(args[1:]))
+
+        # Deserialize existing macro actions to dict
         actions = json.loads(self.actions)
 
-        command = args[0]
-        if command == "set_rule":
-            target_name = node.config.config[args[1]]['nickname']
-            command = f'{command} {args[2]}'
-        elif command == "turn_on" or command == "turn_off" or command == "trigger_sensor":
-            target_name = node.config.config[args[1]]['nickname']
-        elif command == "ir":
-            target_name = "IR Blaster"
-            command = re.sub('[\[\]\',]', '', str(args[1:]))
-        else:
-            target_name = node.config.config[args[1]]['nickname']
+        # Get existing actions targeting the same node and instance
+        potential_conflicts = [i for i in actions if i['node_name'] == node_name and i['target_name'] == target_name]
 
-        # Prevent conflicting actions applied to the same target
-        for i in actions:
-            # Find actions for same node + target instance
-            if i['node_name'] == node_name and i['target_name'] == target_name:
-                # Prevent multiple set_rule actions
-                if i['action_name'].startswith('Set Rule') and command.startswith('set_rule'):
-                    del actions[actions.index(i)]
-                # Prevent both enable and disable
-                elif i['action_name'] in ["Enable", "Disable"] and command in ['enable', 'disable']:
-                    del actions[actions.index(i)]
-                # Prevent both turn_on and turn_off
-                elif i['action_name'] in ["Turn On", "Turn Off"] and command in ['turn_on', 'turn_off']:
-                    del actions[actions.index(i)]
+        # Remove conflicting actions for the same target instance
+        for i in potential_conflicts:
+            # Prevent multiple set_rule actions
+            if i['action_name'].startswith('Set Rule') and command.startswith('set_rule'):
+                del actions[actions.index(i)]
+            # Prevent both enable and disable, or duplicates
+            elif i['action_name'] in ["Enable", "Disable"] and command in ['enable', 'disable']:
+                del actions[actions.index(i)]
+            # Prevent both turn_on and turn_off, or duplicates
+            elif i['action_name'] in ["Turn On", "Turn Off"] and command in ['turn_on', 'turn_off']:
+                del actions[actions.index(i)]
 
+        # Add new action, reserialize, save
         actions.append({'ip': ip, 'args': args, 'node_name': node_name, 'target_name': target_name, 'action_name': command.replace('_', ' ').title()})
-
         self.actions = json.dumps(actions)
         self.save()
 
     def del_action(self, index):
         if not isinstance(index, int):
-            raise SyntaxError
+            raise SyntaxError("Argument must be integer index of action to delete")
 
+        # Deserialize existing macro actions to dict
         actions = json.loads(self.actions)
 
         if index >= len(actions):
-            raise ValueError
+            raise ValueError(f"Action {index} does not exist")
 
+        # Delete, reserialize, save
         del actions[index]
         self.actions = json.dumps(actions)
         self.save()

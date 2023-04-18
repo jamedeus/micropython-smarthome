@@ -3,6 +3,12 @@ async function send_command(value) {
     // Add target and selected command to request body
     value["target"] = target_node
 
+    // Add friendly name of target instance (catch error for IR)
+    try {
+        category = value.instance.replace(/[^a-z]+/g, '');
+        value["friendly_name"] = target_node_status[category + 's'][value.instance]['nickname'];
+    }catch(err){};
+
     var payload = {'name': recording, 'action': value}
 
     let csrftoken = getCookie('csrftoken');
