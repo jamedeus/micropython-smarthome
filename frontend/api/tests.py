@@ -107,7 +107,7 @@ class SendCommandTests(TestCase):
 
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value={"On": "device1"}) as mock_parse_command:
-            # Call view to run macro, confirm response, confirm parse_command called twice
+            # Make API call, confirm response, confirm parse_command called once
             response = self.client.post('/send_command', payload, content_type='application/json')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {"On": "device1"})
@@ -120,7 +120,7 @@ class SendCommandTests(TestCase):
 
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value={"On": "device1"}) as mock_parse_command:
-            # Call view to run macro, confirm response, confirm parse_command called twice
+            # Make API call, confirm response, confirm parse_command called once
             response = self.client.post('/send_command', payload, content_type='application/json')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {"On": "device1"})
@@ -137,11 +137,33 @@ class SendCommandTests(TestCase):
 
         # Mock parse_command to simulate failed connection to node
         with patch('api.views.parse_command', side_effect=OSError) as mock_parse_command:
-            # Call view to run macro, confirm response, confirm parse_command called twice
+            # Make API call, confirm response, confirm parse_command called once
             response = self.client.post('/send_command', payload, content_type='application/json')
             self.assertEqual(response.status_code, 502)
             self.assertEqual(response.json(), "Error: Unable to connect.")
             self.assertEqual(mock_parse_command.call_count, 1)
+
+    # Test legacy frontend enable_for/disable_for function
+    def test_legacy_api_delay_input(self):
+        create_test_nodes()
+        payload_disable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'disable'}
+        payload_enable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'enable'}
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value={'Disabled': 'device1'}) as mock_parse_command:
+            # Make API call, confirm response, confirm parse_command called twice
+            response = self.client.post('/send_command', payload_disable, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {'Disabled': 'device1'})
+            self.assertEqual(mock_parse_command.call_count, 2)
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value={'Enabled': 'device1'}) as mock_parse_command:
+            # Make API call, confirm response, confirm parse_command called twice
+            response = self.client.post('/send_command', payload_enable, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {'Enabled': 'device1'})
+            self.assertEqual(mock_parse_command.call_count, 2)
 
 
 
