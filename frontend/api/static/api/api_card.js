@@ -160,7 +160,7 @@ async function trigger(el) {
     } else {
         // Update page contents immediately after triggering (sensor probably turned targets on)
         // Catch error for record mode
-        try{updateStatusObject()}catch(err){};
+        try{get_new_status()}catch(err){};
     };
 };
 
