@@ -159,7 +159,8 @@ async function trigger(el) {
         el.classList.add("trigger-off");
     } else {
         // Update page contents immediately after triggering (sensor probably turned targets on)
-        updateStatusObject();
+        // Catch error for record mode
+        try{updateStatusObject()}catch(err){};
     };
 };
 
