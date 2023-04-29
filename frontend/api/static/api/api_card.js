@@ -209,3 +209,45 @@ async function debug(el) {
         debugModal.show();
     };
 };
+
+
+
+// Handler for Schedule Toggle menu option
+function open_schedule_toggle(el) {
+    const target = el.id.split("-")[0];
+    const category = target.replace(/[0-9]/g, '') + "s";
+
+    // Set default option based on current enable/disable state
+    if (target_node_status[category][target]['enabled']) {
+        document.getElementById('command_select').value = 'disable_in';
+    } else {
+        document.getElementById('command_select').value = 'enable_in';
+    };
+
+    // Set target data attribute, show modal
+    document.getElementById('schedule-button').dataset.target = target
+    toggleModal.show();
+}
+
+
+
+// Handler for enable_in/disable_in (toggle-modal)
+async function submit_schedule_toggle() {
+    const unit = document.getElementById('unit_select').value;
+    let delay = document.getElementById('delay_input').value;
+
+    // Convert delay to minutes
+    if (unit === 'seconds') {
+        delay = delay/60;
+    } else if (unit === 'hours') {
+        delay *= 60;
+    };
+
+    // Get instance ID from target attribute, get command from dropdown, make API call
+    const target = document.getElementById('schedule-button').dataset.target;
+    const command = document.getElementById('command_select').value;
+    console.log(`command: ${command} instance: ${target} delay: ${delay}`);
+    var result = await send_command({'command': command, 'instance':target, 'delay': String(delay)});
+    result = await result.json();
+    console.log(result);
+};

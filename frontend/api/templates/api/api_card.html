@@ -98,6 +98,7 @@
                                         {% else %}
                                             <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
                                         {% endif %}
+                                        <li><a id="{{sensor}}-schedule-toggle" class="dropdown-item" onclick="open_schedule_toggle(this);">Schedule Toggle</a></li>
                                         <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
                                         <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
                                         <li><a id="{{sensor}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
@@ -325,6 +326,7 @@
                                         {% else %}
                                             <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
                                         {% endif %}
+                                        <li><a id="{{device}}-schedule-toggle" class="dropdown-item" onclick="open_schedule_toggle(this);">Schedule Toggle</a></li>
                                         <li><a id="{{device}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
                                         {% if params.type == "api-target" %}
                                             <li><a id="{{device}}-current_rule-button" class="dropdown-item" onclick="open_rule_modal(this);">Change rule</a></li>
@@ -680,6 +682,65 @@
         </div>
     </div>
 
+    <!-- Toggle modal used for enable_in, disable_in endpoints -->
+
+    <div class="modal fade" id="toggle-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                    <h3 class="mx-auto mb-0" id="toggle-modal-title">Schedule Toggle</h3>
+                    <button type="button" class="btn-close position-absolute my-auto" id="toggle-close" data-bs-dismiss="modal" aria-label="Close" style="right:5%;"></button>
+                </div>
+                <div class="modal-body text-center" id="toggle-modal-body">
+                    <p>Enable or disable after a delay.</p>
+                    <p>Replaces existing timer if present.</p>
+                    <div class="input-group mb-3 py-2">
+                        <select class="form-select text-center" id="command_select">
+                            <option value="enable_in">Enable</option>
+                            <option value="disable_in">Disable</option>
+                        </select>
+                        <span class="input-group-text text-center"> in </span>
+                        <input id="delay_input" type="text" class="form-control text-center" autocomplete="off" value="15"></input>
+                        <select class="form-select text-center" id="unit_select">
+                            <option value="seconds">Seconds</option>
+                            <option value="minutes" selected>Minutes</option>
+                            <option value="hours">Hours</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="button" id="schedule-button" class="btn btn-success" data-bs-dismiss="modal" onclick="submit_schedule_toggle();">Schedule</button>
+                    </div>
+                    <script>
+                        // Focus delay input when modal opens
+                        document.getElementById('toggle-modal').addEventListener('shown.bs.modal', async function() {
+                            document.getElementById('delay_input').focus();
+                        });
+
+                        // Block non-numeric characters in delay input, limit length
+                        document.getElementById('delay_input').addEventListener('input', function(event) {
+                            const unit = document.getElementById('unit_select').value;
+
+                            // Remove all non-numeric characters, limit delay to (very) roughly 1 day
+                            if (unit === 'seconds') {
+                                event.target.value = event.target.value.replace(/\D/g,'').substring(0,5);
+                            } else if (unit === 'minutes') {
+                                event.target.value = event.target.value.replace(/\D/g,'').substring(0,4);
+                            } else if (unit === 'hours') {
+                                event.target.value = event.target.value.replace(/\D/g,'').substring(0,2);
+                            };
+
+                            if (event.target.value.length == 0) {
+                                document.getElementById('schedule-button').disabled = true;
+                            } else {
+                                document.getElementById('schedule-button').disabled = false;
+                            };
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% if context.api_target_options %}
     <!-- Api-target set rule modal -->
     <div class="modal fade" id="api-rule-modal" tabindex="-1">
@@ -800,6 +861,7 @@
         // Create modal objects
         const debugModal = new bootstrap.Modal(document.getElementById('debug-modal'));
         const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
+        const toggleModal = new bootstrap.Modal(document.getElementById('toggle-modal'));;
 
         {% if context.metadata.recording %}
         const recording = '{{context.metadata.recording}}';
@@ -833,6 +895,7 @@
 
             // Modal close buttons
             document.getElementById('debug-close').classList.add('btn-close-white');
+            document.getElementById('toggle-close').classList.add('btn-close-white');
             try{ document.getElementById('api-close').classList.add('btn-close-white') }catch(err){};
             try{ document.getElementById('chart-close').classList.add('btn-close-white') }catch(err){};
         };
@@ -855,6 +918,7 @@
 
                 // Modal close buttons
                 document.getElementById('debug-close').classList.add('btn-close-white');
+                document.getElementById('toggle-close').classList.add('btn-close-white');
                 try{ document.getElementById('api-close').classList.add('btn-close-white') }catch(err){};
                 try{ document.getElementById('chart-close').classList.add('btn-close-white') }catch(err){};
 
@@ -885,6 +949,7 @@
 
                 // Modal close buttons
                 document.getElementById('debug-close').classList.remove('btn-close-white');
+                document.getElementById('toggle-close').classList.remove('btn-close-white');
                 try{ document.getElementById('api-close').classList.remove('btn-close-white') }catch(err){};
                 try{ document.getElementById('chart-close').classList.remove('btn-close-white') }catch(err){};
 

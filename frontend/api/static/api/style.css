@@ -53,6 +53,7 @@ body {
   --bs-light-rgb: 248, 249, 250;
   /* Modals */
   /* Input fields */
+  /* Input group text */
   /* Dropdowns */
   /* Dropdown down arrow icon */
   /* Contrasting background for dropdowns inside modal */
@@ -573,9 +574,9 @@ body {
   font-weight: 400;
   line-height: 1.5;
   color: #ffffff;
-  background-color: #31363b;
+  background-color: #1b1e1f;
   background-clip: padding-box;
-  border: 1px solid #232627;
+  border: 1px solid #1b1e1f;
   appearance: none;
   border-radius: 0.375rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
@@ -593,8 +594,8 @@ body {
 }
 .dark .form-control:focus {
   color: #ffffff;
-  background-color: #31363b;
-  border-color: #232627;
+  background-color: #1b1e1f;
+  border-color: #1b1e1f;
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
@@ -800,7 +801,7 @@ body {
   filter: brightness(90%);
 }
 .dark .form-check-input:focus {
-  border-color: 1px solid #232627;
+  border-color: 1px solid #1b1e1f;
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
 }
@@ -1055,11 +1056,11 @@ body {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #212529;
+  color: #ffffff;
   text-align: center;
   white-space: nowrap;
-  background-color: #e9ecef;
-  border: 1px solid #ced4da;
+  background-color: #1b1e1f;
+  border: 1px solid #1b1e1f;
   border-radius: 0.375rem;
 }
 .dark .input-group-lg > .form-control,

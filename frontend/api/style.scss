@@ -82,20 +82,25 @@ body {
     $modal-footer-border-color: #31363b;
 
     /* Input fields */
-    $input-bg: #31363b;
+    $input-bg: #1b1e1f;
     $input-color: #ffffff;
     $input-placeholder-color: #696b6e;
-    $input-border-color: #232627;
+    $input-border-color: #1b1e1f;
 
-    $input-focus-bg: #31363b;
-    $input-focus-border-color: #232627;
+    $input-focus-bg: #1b1e1f;
+    $input-focus-border-color: #1b1e1f;
     $input-focus-color: #ffffff;
 
     $input-disabled-bg: #272c31;
 
     $form-check-input-bg: #212529;
-    $form-check-input-focus-border: 1px solid #232627;
+    $form-check-input-focus-border: 1px solid #1b1e1f;
     $form-check-input-checked-bg-color: #212529;
+
+    /* Input group text */
+    $input-group-addon-bg: #1b1e1f;
+    $input-group-addon-border-color: #1b1e1f;
+    $input-group-addon-color: #ffffff;
 
     /* Dropdowns */
     $form-select-bg: #1b1e1f;
