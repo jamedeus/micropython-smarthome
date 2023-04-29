@@ -125,7 +125,7 @@ def led_strip_validator(rule, min_bright, max_bright):
             # Parse parameters from rule
             cmd, target, period = rule.split("/")
 
-            if int(period) < 0:
+            if int(period) < 0 or int(target) < 0:
                 return False
 
             if int(min_bright) <= int(target) <= int(max_bright):
@@ -209,7 +209,7 @@ def dummy_validator(rule):
 def motion_sensor_validator(rule):
     try:
         if rule is None:
-            return 0
+            return True
         # Prevent incorrectly accepting True and False (next condition casts to 1.0, 0.0 respectively)
         elif isinstance(rule, bool):
             return False

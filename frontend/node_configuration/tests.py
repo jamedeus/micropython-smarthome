@@ -11,7 +11,7 @@ from copy import deepcopy
 # Large JSON objects, helper functions
 from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, test_config_2, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context, simulate_corrupt_filesystem_upload, simulate_reupload_all_fail_for_different_reasons, binary_unit_test_config, simulate_read_file_over_webrepl, simulated_read_position
 from .Webrepl import websocket, Webrepl, handshake_message
-
+from .validators import *
 
 
 # Test the Node model
@@ -1456,3 +1456,159 @@ class ValidateConfigTests(TestCase):
         config['device6']['min'] = 'off'
         result = validateConfig(config)
         self.assertEqual(result, 'Invalid PWM limits, both must be int between 0 and 1023')
+
+
+# Test functions in validators.py not already covered by config generation tests
+class ValidatorTests(TestCase):
+    def setUp(self):
+        # Load valid config
+        with open('node_configuration/unit-test-config.json', 'r') as file:
+            self.config = json.load(file)
+
+    def test_api_target_single_param(self):
+        # Should accept all 3 single-parameter commands
+        valid = self.config['device10']['default_rule']
+        valid['on'] = ['ignore']
+        self.assertTrue(api_target_validator(valid))
+        valid['on'] = ['reboot']
+        self.assertTrue(api_target_validator(valid))
+        valid['on'] = ['clear_log']
+        self.assertTrue(api_target_validator(valid))
+
+    def test_api_target_enable_disable(self):
+        # Should accept accept enable and disable if arg is sensor or device
+        valid = self.config['device10']['default_rule']
+        valid['on'] = ['enable', 'sensor1']
+        self.assertTrue(api_target_validator(valid))
+        valid['on'] = ['disable', 'device1']
+        self.assertTrue(api_target_validator(valid))
+
+    def test_api_target_sensor_commands(self):
+        # Should accept sensor-only commands if arg is sensor
+        valid = self.config['device10']['default_rule']
+        valid['on'] = ['trigger_sensor', 'sensor1']
+        self.assertTrue(api_target_validator(valid))
+        valid['on'] = ['condition_met', 'sensor1']
+        self.assertTrue(api_target_validator(valid))
+        # Should reject device
+        valid['on'] = ['condition_met', 'device1']
+        self.assertFalse(api_target_validator(valid))
+
+    def test_api_target_enable_in_disable_in(self):
+        # Should accept accept enable and disable if args ar sensor/device and int/float
+        valid = self.config['device10']['default_rule']
+        valid['on'] = ['enable_in', 'sensor1', '5']
+        self.assertTrue(api_target_validator(valid))
+        valid['on'] = ['disable_in', 'device1', '2.5']
+        self.assertTrue(api_target_validator(valid))
+        # Should fail with non-numeric delay
+        valid['on'] = ['disable_in', 'device1', 'five minutes']
+        self.assertFalse(api_target_validator(valid))
+
+    def test_api_target_set_rule(self):
+        # Should accept set_rule if args are sensor/device and rule
+        valid = self.config['device10']['default_rule']
+        valid['on'] = ['set_rule', 'sensor1', '50']
+        self.assertTrue(api_target_validator(valid))
+        valid['on'] = ['set_rule', 'device1', '50']
+        self.assertTrue(api_target_validator(valid))
+
+    def test_api_target_ir_key(self):
+        # Should accept valid command
+        valid = self.config['device10']['default_rule']
+        self.assertTrue(api_target_validator(valid))
+        # Should reject unknown args
+        valid['on'] = ['ir_key', 'invalid', 'invalid', 'invalid']
+        self.assertFalse(api_target_validator(valid))
+
+    def test_fade_rules(self):
+        # LedStrip and Tplink should accept fade rules
+        self.assertTrue(led_strip_validator('fade/50/3600', '0', '1023'))
+        self.assertTrue(tplink_validator('fade/50/3600'))
+
+        # LedStrip should reject if target out of range
+        self.assertFalse(led_strip_validator('fade/50/3600', '500', '1023'))
+
+        # Both should reject if target negative
+        self.assertFalse(led_strip_validator('fade/-5/3600', '-500', '1023'))
+        self.assertFalse(tplink_validator('fade/-5/3600'))
+
+        # Both should reject if period negative
+        self.assertFalse(led_strip_validator('fade/50/-500', '0', '1023'))
+        self.assertFalse(tplink_validator('fade/50/-500'))
+
+        # Both should reject if target is non-integer
+        self.assertFalse(led_strip_validator('fade/max/3600', '0', '1023'))
+        self.assertFalse(tplink_validator('fade/max/3600'))
+
+    def test_motion_sensor_rules(self):
+        # Should accept None (converts to 0)
+        self.assertTrue(motion_sensor_validator(None))
+
+
+# Confirm functions in validators.py correctly reject invalid rules
+class ValidatorErrorTests(TestCase):
+    def setUp(self):
+        # Load valid config
+        with open('node_configuration/unit-test-config.json', 'r') as file:
+            self.config = json.load(file)
+
+    def test_invalid_type(self):
+        # Verify error when type is unsupported
+        invalid = self.config['device1']
+        invalid['type'] = 'foobar'
+        self.assertEqual(validate_rules(invalid), 'Invalid type foobar')
+
+    def test_invalid_rule_no_special_validator(self):
+        # Verify error when failed to verify default-only rule
+        invalid = self.config['device5']
+        invalid['default_rule'] = '50'
+        self.assertEqual(validate_rules(invalid), 'Screen: Invalid default rule 50')
+
+    def test_api_target_non_dict_rule_string(self):
+        # Should reject unless rule is dict with 2 keys
+        self.assertFalse(api_target_validator("string that can't convert to dict"))
+        self.assertFalse(api_target_validator(50))
+
+    def test_api_target_dict_too_long(self):
+        # Should reject after adding 3rd key
+        invalid = self.config['device10']
+        invalid['default_rule']['value'] = '50'
+        self.assertFalse(api_target_validator(invalid))
+
+    def test_api_target_invalid_key(self):
+        # Should reject keys other than on and off
+        invalid = self.config['device10']['default_rule']
+        invalid['new'] = invalid['on'].copy()
+        del invalid['on']
+        self.assertFalse(api_target_validator(invalid))
+
+    def test_api_target_invalid_non_list_subrule(self):
+        # Keys (on and off) must contain list of parameters
+        invalid = self.config['device10']['default_rule']
+        invalid['on'] = 42
+        self.assertFalse(api_target_validator(invalid))
+
+    def test_invalid_bool_rule(self):
+        # Confirm bool is rejected for correct types
+        self.assertFalse(led_strip_validator(True, '0', '1023'))
+        self.assertFalse(tplink_validator(True))
+        self.assertFalse(wled_validator(True))
+        self.assertFalse(motion_sensor_validator(True))
+
+    def test_invalid_out_of_range_rules(self):
+        # Confirm range is enforced for correct types
+        self.assertFalse(tplink_validator('-50'))
+        self.assertFalse(wled_validator('-50'))
+        self.assertFalse(thermostat_validator('50'))
+
+    def test_invalid_noninteger_rules(self):
+        # Confirm string is rejected for correct types
+        self.assertFalse(wled_validator('max'))
+        self.assertFalse(motion_sensor_validator('max'))
+        self.assertFalse(thermostat_validator('max'))
+
+    def test_invalid_keyword_rules(self):
+        # Confirm wrong keywords are rejected for correct types
+        self.assertFalse(dummy_validator('max'))
+        self.assertFalse(dummy_validator(50))
