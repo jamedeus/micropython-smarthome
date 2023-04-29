@@ -7,6 +7,7 @@ import json, os, re
 from .models import Node, Config, WifiCredentials
 
 from .Webrepl import *
+from .validators import *
 
 REPO_DIR = settings.REPO_DIR
 CONFIG_DIR = settings.CONFIG_DIR
@@ -21,6 +22,12 @@ valid_sensor_types = ('pir', 'desktop', 'si7021', 'dummy', 'switch')
 # Returns True if param matches IPv4 regex, otherwise False
 def valid_ip(ip):
     return bool(re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip))
+
+# Options for each supported IR Blaster target device, used to populate ApiTarget menu
+ir_blaster_options = {
+    "tv": ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'],
+    "ac": ['start', 'stop', 'off']
+}
 
 # Dependency relative paths for all device and sensor types, used by get_modules
 dependencies = {
@@ -435,16 +442,15 @@ def validateConfig(config):
             tolerance = config[sensor]['tolerance']
             try:
                 if not 0.1 <= float(tolerance) <= 10.0:
-                    return f'Thermostat tolerance out of range (0.1 - 10.0)'
+                    return 'Thermostat tolerance out of range (0.1 - 10.0)'
             except ValueError:
                 return f'Invalid thermostat tolerance {config[sensor]["tolerance"]}'
 
-    # Validate PWM limits and rules
+    # Validate PWM limits
     for device in devices:
         if config[device]['type'] == 'pwm':
             minimum = config[device]['min']
             maximum = config[device]['max']
-            default = config[device]['default_rule']
 
             try:
                 if int(minimum) > int(maximum):
@@ -453,15 +459,17 @@ def validateConfig(config):
                     return 'PWM limits cannot be less than 0'
                 elif int(minimum) > 1023 or int(maximum) > 1023:
                     return 'PWM limits cannot be greater than 1023'
-                elif not int(minimum) <= int(default) <= int(maximum):
-                    return 'PWM default rule invalid, must be between max and min'
-
-                for rule in config[device]['schedule'].values():
-                    if not int(minimum) <= int(rule) <= int(maximum):
-                        return f'PWM invalid schedule rule {rule}, must be between max and min'
 
             except ValueError:
-                return 'Invalid PWM limits or rules, must be int between 0 and 1023'
+                return 'Invalid PWM limits, both must be int between 0 and 1023'
+
+    # Validate rules for all devices and sensors
+    instances = devices + sensors
+    for i in instances:
+        valid = validate_rules(config[i])
+        if valid is not True:
+            print(f"\nERROR: {valid}\n")
+            return valid
 
     return True
 
@@ -556,14 +564,6 @@ def generateConfigFile(request, edit_existing=False):
         old.write_to_disk()
 
     return JsonResponse("Config created.", safe=False, status=200)
-
-
-
-# Options for each supported IR Blaster target device, used to populate ApiTarget menu
-ir_blaster_options = {
-    "tv": ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'],
-    "ac": ['start', 'stop', 'off']
-}
 
 
 

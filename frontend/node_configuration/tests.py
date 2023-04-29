@@ -1332,7 +1332,7 @@ class GenerateConfigFileTests(TestCase):
         # Post invalid payload, confirm rejected with correct error, confirm config not created
         response = self.client.post('/generateConfigFile', json.dumps(invalid_request_payload), content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'PWM default rule invalid, must be between max and min'})
+        self.assertEqual(response.json(), {'Error': 'Cabinet Lights: Invalid default rule 9001'})
         self.assertEqual(len(Config.objects.all()), 0)
 
 
@@ -1441,7 +1441,7 @@ class ValidateConfigTests(TestCase):
         config['device6']['max'] = 1000
         config['device6']['default_rule'] = 1100
         result = validateConfig(config)
-        self.assertEqual(result, 'PWM default rule invalid, must be between max and min')
+        self.assertEqual(result, 'Cabinet Lights: Invalid default rule 1100')
 
     def test_pwm_invalid_schedule_rule(self):
         config = self.valid_config.copy()
@@ -1449,10 +1449,10 @@ class ValidateConfigTests(TestCase):
         config['device6']['max'] = 1000
         config['device6']['schedule']['01:00'] = 1023
         result = validateConfig(config)
-        self.assertEqual(result, 'PWM invalid schedule rule 1023, must be between max and min')
+        self.assertEqual(result, 'Cabinet Lights: Invalid schedule rule 1023')
 
     def test_pwm_noninteger_limit(self):
         config = self.valid_config.copy()
         config['device6']['min'] = 'off'
         result = validateConfig(config)
-        self.assertEqual(result, 'Invalid PWM limits or rules, must be int between 0 and 1023')
+        self.assertEqual(result, 'Invalid PWM limits, both must be int between 0 and 1023')
