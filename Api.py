@@ -486,7 +486,7 @@ def turn_on(args):
 
 
 @app.route("turn_off")
-def turn_on(args):
+def turn_off(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
@@ -518,7 +518,7 @@ def get_temp(args):
 
 
 @app.route("get_humid")
-def get_temp(args):
+def get_humid(args):
     for sensor in app.config.sensors:
         if sensor.sensor_type == "si7021":
             return {"Humidity": sensor.temp_sensor.relative_humidity}

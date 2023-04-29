@@ -13,7 +13,7 @@ class MotionSensor(Sensor):
         super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
 
         # Pin setup
-        self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+        self.sensor = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 
         # Create hardware interrupt
         self.enable()

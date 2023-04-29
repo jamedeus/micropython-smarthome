@@ -14,7 +14,7 @@ class Switch(Sensor):
     def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets, pin):
         super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
 
-        self.switch = switch = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+        self.switch = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 
         log.info(f"Instantiated switch sensor named {self.name}")
 
