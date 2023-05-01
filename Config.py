@@ -205,6 +205,11 @@ class Config():
             status_dict["devices"][i.name]["turned_on"] = i.state
             status_dict["devices"][i.name]["schedule"] = self.schedule[i.name]
 
+            # If device is PWM, add min/max
+            if i.device_type == "pwm":
+                status_dict["devices"][i.name]["min"] = i.min_bright
+                status_dict["devices"][i.name]["max"] = i.max_bright
+
         status_dict["sensors"] = {}
         for i in self.sensors:
             status_dict["sensors"][i.name] = {}
