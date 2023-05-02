@@ -33,6 +33,18 @@ function show_tooltip(element, text=null) {
 };
 
 
+// Replace modal buttons with loading animation, prevent user submitting multiple times
+function loading_animation(start=true) {
+    if (start) {
+        document.getElementById('rule-loading').classList.remove('d-none');
+        document.getElementById('rule-buttons').classList.add('d-none');
+    } else {
+        document.getElementById('rule-loading').classList.add('d-none');
+        document.getElementById('rule-buttons').classList.remove('d-none');
+    };
+};
+
+
 // Handler for toggle under timestamp field in rule modal
 function toggle_time_mode(event) {
     if (event.target.checked) {
@@ -108,7 +120,6 @@ function edit_existing_rule(el) {
     open_schedule_rule_modal(payload);
 };
 
-
 // Called by + button under schedule rules
 // Opens modal with delete button hidden, blank attributes (new rule)
 function add_new_rule(el) {
@@ -163,9 +174,8 @@ function add_new_row(target, timestamp, rule) {
 
 // Handler for add button in schedule rules dropdown, used to create new rules and edit existing
 async function add_rule() {
-    // Disable + add loading animation to submit button
-//     add_button.innerHTML =
-    add_button.disabled = true;
+    // Start loading animation
+    loading_animation();
 
     // Get target device/sensor + type
     const target = add_button.dataset.target;
@@ -267,16 +277,16 @@ async function add_rule() {
         save_rules_toast.show();
     };
 
-    // Re-enable add button, change text back
-    add_button.disabled = false;
-    add_button.innerHTML = "Submit";
+    // Stop loading animation, hide modal
+    loading_animation(false);
+    ruleModal.hide();
 };
 
 
 // Handler for delete button in schedule rules dropdown, removes row after deleting rule
 async function delete_rule() {
-    // Prevent user submitting multiple times
-    delete_button.disabled = true;
+    // Start loading animation
+    loading_animation();
 
     // Get target device/sensor and rule index
     const target = delete_button.dataset.target;
@@ -304,7 +314,7 @@ async function delete_rule() {
         save_rules_toast.show();
     };
 
-    // Re-enable delete button, hide modal
-    delete_button.disabled = false;
+    // Stop loading animation, hide modal
+    loading_animation(false);
     ruleModal.hide();
 };

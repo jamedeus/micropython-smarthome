@@ -10,6 +10,7 @@
     {% progressive_web_app_meta %}
     <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'spinkit.min.css' %}">
     <link rel="stylesheet" href="{% static 'api/style.css' %}">
     <link rel="stylesheet" href="{% static 'api/sliders.css' %}">
     <link rel="stylesheet" href="{% static 'api/animations.css' %}">
@@ -685,9 +686,18 @@
                 <div class="modal-body d-flex flex-column" id="rule-modal-body">
                 <!-- Populated by template when opened -->
                 </div>
-                <div class="modal-footer mx-auto">
-                    <button type="button" id="add-rule" class="btn btn-success" onclick="add_rule()">Submit</button>
-                    <button type="button" id="del-rule" class="btn btn-danger" onclick="delete_rule()">Delete</button>
+                <div id="rule-footer" class="modal-footer mx-auto">
+                    <div id="rule-buttons">
+                        <button type="button" id="add-rule" class="btn btn-success" onclick="add_rule()">Submit</button>
+                        <button type="button" id="del-rule" class="btn btn-danger" onclick="delete_rule()">Delete</button>
+                    </div>
+                    <div id="rule-loading" class="m-0 d-none">
+                        <div class="sk-flow">
+                            <div class="sk-flow-dot my-auto"></div>
+                            <div class="sk-flow-dot my-auto"></div>
+                            <div class="sk-flow-dot my-auto"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

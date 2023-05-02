@@ -67,6 +67,9 @@ body {
   /* Prevent color change on focus (not enough contrast with body bg) */
   /* Toasts */
   /* Section background color override */
+  /* Dark mode spinkit */
+  --sk-size: 34px;
+  --sk-color: #fff;
 }
 .dark .modal-dropdown {
   background-color: #1b1e1f !important;

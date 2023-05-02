@@ -163,6 +163,10 @@ body {
         background-color: #212529;
     }
 
+    /* Spinkit dark mode */
+    --sk-size: 34px;
+    --sk-color: #fff;
+
     @import "../node_modules/bootstrap/scss/_card";
     @import "../node_modules/bootstrap/scss/_modal";
     @import "../node_modules/bootstrap/scss/_forms";
