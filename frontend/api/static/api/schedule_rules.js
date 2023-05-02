@@ -67,6 +67,11 @@ function toggle_fade_mode(event) {
 };
 
 
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+
 // Takes object containing rule parameters, loads rule_modal template, shows modal
 async function open_schedule_rule_modal(payload) {
     console.log(payload);
@@ -84,8 +89,18 @@ async function open_schedule_rule_modal(payload) {
     document.getElementById('rule-modal-body').innerHTML = await result.text();
     ruleModal.show();
 
-    // Focus time field TODO think I need sleep first
+    // Focus time field
+    await sleep(468);
     document.getElementById(`timestamp`).focus();
+
+    // Press enter to submit
+    document.getElementById('schedule-rule-modal').querySelectorAll('input').forEach(input => {
+        input.addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                add_rule();
+            };
+        });
+    });
 };
 
 
@@ -119,6 +134,7 @@ function edit_existing_rule(el) {
     const payload = {'timestamp': timestamp, 'rule': rule, 'type': type};
     open_schedule_rule_modal(payload);
 };
+
 
 // Called by + button under schedule rules
 // Opens modal with delete button hidden, blank attributes (new rule)
@@ -267,9 +283,6 @@ async function add_rule() {
             document.getElementById(`${target}-rule${num}`).value = rule;
         };
 
-        // Hide modal
-        ruleModal.hide();
-
         // Resume status updates
         status_lock = false;
 
@@ -278,8 +291,9 @@ async function add_rule() {
     };
 
     // Stop loading animation, hide modal
-    loading_animation(false);
     ruleModal.hide();
+    await sleep(468);
+    loading_animation(false);
 };
 
 
@@ -315,6 +329,7 @@ async function delete_rule() {
     };
 
     // Stop loading animation, hide modal
-    loading_animation(false);
     ruleModal.hide();
+    await sleep(468);
+    loading_animation(false);
 };
