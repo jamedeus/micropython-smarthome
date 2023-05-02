@@ -10,6 +10,32 @@ from node_configuration.models import Node
 from node_configuration.views import get_api_target_menu_options
 from api.models import Macro
 
+# Used to determine if keyword or timestamp schedule rule
+timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+
+
+
+def edit_rule(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        return render(request, 'api/rule_modal.html')
+
+    if data['rule'].startswith('fade'):
+        data['fade'] = True
+        data['duration'] = data['rule'].split('/')[2]
+        data['rule'] = data['rule'].split('/')[1]
+
+    if len(data['timestamp']) == 0 or re.match(timestamp_regex, data['timestamp']):
+        data['show_timestamp'] = True
+    else:
+        data['show_timestamp'] = False
+
+    print(data)
+
+    return render(request, 'api/rule_modal.html', data)
+
+
 
 def legacy_api(request):
     context = []

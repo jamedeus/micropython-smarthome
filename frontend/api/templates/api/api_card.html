@@ -200,7 +200,8 @@
                             </p>
                             <div class="collapse" id="{{sensor}}-schedule-rules">
 
-                                <table id="{{sensor}}-rules" class="table table-borderless">
+                                <!-- Hide table if no rules exist (just see headings, confusing) -->
+                                <table id="{{sensor}}-rules" class="table table-borderless {% if params.schedule.items|length == 0 %} d-none {% endif %}">
                                     <tr>
                                         <th style="text-align: left;">Time</th>
                                         <th style="text-align: left;">Rule</th>
@@ -212,88 +213,19 @@
                                                 {# Add time field #}
                                                 <td><input type="time" class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}-time" placeholder="HH:MM" name="{{sensor}}-rule{{forloop.counter}}-time" value="{{ time }}" data-original="{{ time }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists" autocomplete="off"></td>
 
-                                                {# Add correct input for each sensor type #}
-                                                {% if params.type == "pir" %}
-                                                    <td style="width: 100%">
-                                                        <div class="d-flex flex-row align-items-center mt-2 pt-1">
-                                                            <input id="{{sensor}}-rule{{forloop.counter}}" name="{{sensor}}-rule{{forloop.counter}}" type="range" class="schedule-rule mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                                                        </div>
-                                                    </td>
+                                                {# Add rule field #}
+                                                <td><input type="text" class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}" placeholder="" name="{{sensor}}-rule{{forloop.counter}}" value="{{ rule }}"></td>
 
-                                                {% elif params.type == "switch" or params.type == "desktop" %}
-                                                    <td><select id="{{sensor}}-rule{{forloop.counter}}" name="{{sensor}}-rule{{forloop.counter}}" class="form-select schedule-rule" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                                                        <option disabled>Select rule</option>
-                                                        <option value="enabled" {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                                        <option value="disabled" {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                                    </select></td>
-
-                                                {% elif params.type == "dummy" %}
-                                                    <td><select id="{{sensor}}-rule{{forloop.counter}}" name="{{sensor}}-rule{{forloop.counter}}" class="form-select schedule-rule" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                                                        <option disabled>Select rule</option>
-                                                        <option value="enabled" {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                                        <option value="disabled" {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                                        <option value="on" {% if rule|lower == "on" %} selected {% endif %}>On</option>
-                                                        <option value="off" {% if rule|lower == "off" %} selected {% endif %}>Off</option>
-                                                    </select></td>
-
-                                                {% elif params.type == "si7021" %}
-                                                    <td><input id="{{sensor}}-rule{{forloop.counter}}" name="{{sensor}}-rule{{forloop.counter}}" type="range" class="schedule-rule mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{ rule }}" data-original="{{ rule }}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
-                                                {% endif %}
-
-                                                {# Add delete button #}
-                                                <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{sensor}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
+                                                {# Add edit/delete button #}
+                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{sensor}}-edit{{forloop.counter}}"  onclick="edit_rule_with_modal(this);"><i class="bi-pencil"></i></button></td>
                                             </tr>
                                         {% endfor %}
-                                    {% else %}
-                                        <tr id="{{sensor}}-row-1">
-                                            {# Add time field #}
-                                            <td><input type="time" class="form-control" id="{{sensor}}-rule1-time" placeholder="HH:MM" name="{{sensor}}-rule1-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>
-
-                                            {# Add correct input for each sensor type #}
-                                            {% if params.type == "pir" %}
-                                                <td style="width: 100%">
-                                                    <div class="d-flex flex-row align-items-center mt-2 pt-1">
-                                                        <input id="{{sensor}}-rule1" name="{{sensor}}-rule1" type="range" class="schedule-rule mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                                                    </div>
-                                                </td>
-
-                                            {% elif params.type == "switch" or params.type == "desktop" %}
-                                                <td><select id="{{sensor}}-rule1" name="{{sensor}}-rule1" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                                                    <option>Select rule</option>
-                                                    <option value="enabled">Enabled</option>
-                                                    <option value="disabled">Disabled</option>
-                                                </select></td>
-
-                                            {% elif params.type == "dummy" %}
-                                                <td><select id="{{sensor}}-rule1" name="{{sensor}}-rule1" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                                                    <option>Select rule</option>
-                                                    <option value="enabled">Enabled</option>
-                                                    <option value="disabled">Disabled</option>
-                                                    <option value="on">On</option>
-                                                    <option value="off">Off</option>
-                                                </select></td>
-
-                                            {% elif params.type == "si7021" %}
-                                                <td><input id="{{sensor}}-rule1" name="{{sensor}}-rule1" type="range" class="schedule-rule mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>
-                                            {% endif %}
-
-                                            {# Add add_rule button #}
-                                            <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="{{sensor}}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
-                                        </tr>
                                     {% endif %}
                                 </table>
 
                                 <div class="text-center mx-3 mb-3">
-                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{sensor}}-add-rule" onclick="add_rule_row(this)"><i class="bi-plus-lg"></i></button>
+                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{sensor}}-add-rule" onclick="add_rule_with_modal(this)"><i class="bi-plus-lg"></i></button>
                                 </div>
-
-                                <!-- If no rules exist, hide add rule button (blank row above already has add button) -->
-                                {% if params.schedule.items|length == 0 %}
-                                    <script>
-                                        document.getElementById("{{sensor}}-add-rule").style.display = "none";
-                                    </script>
-                                {% endif %}
-
                             </div>
                             <!-- End schedule rules section -->
                         </div>
@@ -429,7 +361,7 @@
                                                 {% endif %}
 
                                                 {# Add delete button #}
-                                                <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="{{device}}-remove{{forloop.counter}}"  onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
+                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{device}}-edit{{forloop.counter}}" onclick="edit_rule_with_modal(this);"><i class="bi-pencil"></i></button></td>
                                             </tr>
                                         {% endfor %}
                                     {% else %}
@@ -476,7 +408,7 @@
 
                                 {# Add add button #}
                                 <div class="text-center mx-3 mb-3">
-                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{device}}-add-rule" onclick="add_rule_row(this)"><i class="bi-plus-lg"></i></button>
+                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{device}}-add-rule" onclick="add_rule_with_modal(this)"><i class="bi-plus-lg"></i></button>
                                 </div>
 
                                 <!-- If no rules exist, hide add rule button (blank row above already has add button) -->
@@ -741,6 +673,26 @@
         </div>
     </div>
 
+     <!-- Schedule rule modal -->
+    <div class="modal fade" id="schedule-rule-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <button type="button" class="btn-close" style="visibility:hidden;"></button>
+                    <h5 class="modal-title">Schedule Rule</h5>
+                    <button type="button" class="btn-close" id="schedule-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column" id="rule-modal-body">
+                <!-- Populated by template when opened -->
+                </div>
+                <div class="modal-footer mx-auto">
+                    <button type="button" id="add-rule" class="btn btn-success" onclick="add_rule(this)">Submit</button>
+                    <button type="button" id="del-rule" class="btn btn-danger" data-bs-dismiss="modal" onclick="delete_rule(this)">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% if context.api_target_options %}
     <!-- Api-target set rule modal -->
     <div class="modal fade" id="api-rule-modal" tabindex="-1">
@@ -861,7 +813,8 @@
         // Create modal objects
         const debugModal = new bootstrap.Modal(document.getElementById('debug-modal'));
         const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
-        const toggleModal = new bootstrap.Modal(document.getElementById('toggle-modal'));;
+        const toggleModal = new bootstrap.Modal(document.getElementById('toggle-modal'));
+        const ruleModal = new bootstrap.Modal(document.getElementById('schedule-rule-modal'));
 
         {% if context.metadata.recording %}
         const recording = '{{context.metadata.recording}}';
@@ -894,10 +847,7 @@
             });
 
             // Modal close buttons
-            document.getElementById('debug-close').classList.add('btn-close-white');
-            document.getElementById('toggle-close').classList.add('btn-close-white');
-            try{ document.getElementById('api-close').classList.add('btn-close-white') }catch(err){};
-            try{ document.getElementById('chart-close').classList.add('btn-close-white') }catch(err){};
+            Array.from(document.getElementsByClassName('btn-close')).forEach(el => el.classList.add('btn-close-white'));
         };
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
@@ -917,10 +867,7 @@
                 });
 
                 // Modal close buttons
-                document.getElementById('debug-close').classList.add('btn-close-white');
-                document.getElementById('toggle-close').classList.add('btn-close-white');
-                try{ document.getElementById('api-close').classList.add('btn-close-white') }catch(err){};
-                try{ document.getElementById('chart-close').classList.add('btn-close-white') }catch(err){};
+                Array.from(document.getElementsByClassName('btn-close')).forEach(el => el.classList.add('btn-close-white'));
 
                 {% if context.api_target_options %}
                 // Buttons in ApiTarget rule modal
@@ -948,10 +895,7 @@
                 });
 
                 // Modal close buttons
-                document.getElementById('debug-close').classList.remove('btn-close-white');
-                document.getElementById('toggle-close').classList.remove('btn-close-white');
-                try{ document.getElementById('api-close').classList.remove('btn-close-white') }catch(err){};
-                try{ document.getElementById('chart-close').classList.remove('btn-close-white') }catch(err){};
+                Array.from(document.getElementsByClassName('btn-close')).forEach(el => el.classList.remove('btn-close-white'));
 
                 {% if context.api_target_options %}
                 // Buttons in ApiTarget rule modal

@@ -23,22 +23,6 @@ for (id in schedule_rule_tooltips) {
 
 
 
-// Add listeners to existing schedule rule fields, if modified change delete button to upload button
-for (field of document.getElementsByClassName("schedule-rule")) {
-    // Slider library requires jquery listener
-    if (field.type == 'range') {
-        $('#' + field.id).on('change', async function(e) {
-            schedule_rule_field_handler(e);
-        });
-
-    // All others inputs use vanilla listener
-    } else {
-        field.addEventListener("input", schedule_rule_field_handler);
-    };
-};
-
-
-
 // Handler for schedule rules button on each card
 function open_rules(button) {
     // Scroll opened card into view
@@ -55,225 +39,46 @@ const save_rules_toast = new bootstrap.Toast(document.getElementById("save_rules
 
 
 
-// Runs when user changes schedule rule fields
-// Existing rules: Delete button changes to add button
-// Modified rules: If changed back to original value, add button reverts back to delete
-function schedule_rule_field_handler(e) {
-    const id = e.target.id.split("-")[0];
-    const row = e.target.id.split("-")[1].replace("rule", "");
-    const time_field = document.getElementById(`${id}-rule${row}-time`);
-    const rule_field = document.getElementById(`${id}-rule${row}`);
-
-    // Function runs on each keystroke, only need to change button once on first change
-    // Subsequent changes will throw error when getting button element (ID changed first time)
-    try {
-        // If user changed an existing rule, replace Delete button with Add button
-        if (time_field.value != time_field.dataset.original || rule_field.value != rule_field.dataset.original) {
-
-            var button = document.getElementById(id + "-remove" + row);
-
-            // Change to Add button
-            button.classList.remove("btn-danger");
-            button.classList.add("btn-success");
-            button.innerHTML = "<i class='bi-plus-lg'>";
-            button.id = button.id.replace("remove", "add");
-            button.setAttribute( "onClick", "add_rule(this);" );
-
-        // If user modified a rule and then reverted changes, replace Add button with Delete button
-        } else {
-
-            var button = document.getElementById(id + "-add" + row);
-
-            // Change back to Delete button
-            button.classList.remove("btn-success");
-            button.classList.add("btn-danger");
-            button.innerHTML = "<i class='bi-trash'></i>";
-            button.id = button.id.replace("add", "remove");
-            button.setAttribute( "onClick", "delete_rule(this);" );
-
-        };
-    } catch(err) {};
-};
-
-
-
-async function add_rule_row(el) {
-    // Get target device/sensor
-    const target = el.id.split("-")[0];
-
-    // Get new row number
-    const table = document.getElementById(target + "-rules");
-    const row = parseInt(table.rows[table.rows.length-1].id.split("-")[2]) + 1
-
-    // Track if a slider was added (needs to be initialized)
-    var slider = false;
-
-    // Add row number + target id + time field to empty row template
-    var template = `<tr id="${target}-row-${row}">
-                        <td><input type="time" class="form-control" id="${target}-rule${row}-time" placeholder="HH:MM" name="${target}-rule${row}-time" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists"></td>`
-
-    // Add rule field depending on target type
-    if (target.startsWith("device")) {
-        var type = target_node_status['devices'][target]['type'];
-
-        if (type == "dimmer" || type == "bulb") {
-            // Text field
-            template += `<td><input type="text" class="form-control" id="${target}-rule${row}" placeholder="" name="${target}-rule${row}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule"></td>`
-
-        } else if (type == "relay" || type == "dumb-relay" || type == "desktop" || type == "mosfet") {
-            // Dropdown
-            template += `<td><select id="${target}-rule${row}" name="${target}-rule${row}" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                             <option>Select rule</option>
-                             <option value="enabled">Enabled</option>
-                             <option value="disabled">Disabled</option>
-                         </select></td>`
-
-        } else if (type == "pwm") {
-            // Slider
-            slider = true;
-            template += `<td style="width: 100%">
-                             <div class="d-flex flex-row align-items-center mt-2 pt-1">
-                                 <input id="${target}-rule${row}" name="${target}-rule${row}" type="range" class="schedule-rule mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                             </div>
-                         </td>`
-
-        } else if (type == "wled") {
-            // Slider
-            slider = true;
-            template += `<td style="width: 100%">
-                             <div class="d-flex flex-row align-items-center mt-2 pt-1">
-                                 <input id="${target}-rule${row}" name="${target}-rule${row}" type="range" class="schedule-rule mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                             </div>
-                         </td>`
-
-        } else if (type == "api-target") {
-            // Button with hidden field, opens modal
-            template += `<td><button id="${target}-rule${row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                        <input type="text" class="form-control rule ${target}" id="${target}-rule${row}" value="" style="display:none;"></td>`
-
-        };
-    } else if (target.startsWith("sensor")) {
-        var type = target_node_status['sensors'][target]['type'];
-
-        if (type == "pir") {
-            // Slider
-            slider = true;
-            template += `<td style="width: 100%">
-                             <div class="d-flex flex-row align-items-center mt-2 pt-1">
-                                 <input id="${target}-rule${row}" name="${target}-rule${row}" type="range" class="schedule-rule mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                             </div>
-                         </td>`
-
-        } else if (type == "switch" || type == "desktop") {
-            // Dropdown
-            template += `<td><select id="${target}-rule${row}" name="${target}-rule${row}" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                             <option>Select rule</option>
-                             <option value="enabled">Enabled</option>
-                             <option value="disabled">Disabled</option>
-                         </select></td>`
-
-        } else if (type == "dummy") {
-            // Dropdown with additional options
-            template += `<td><select id="${target}-rule${row}" name="${target}-rule${row}" class="form-select schedule-rule" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off">
-                             <option>Select rule</option>
-                             <option value="enabled">Enabled</option>
-                             <option value="disabled">Disabled</option>
-                             <option value="on">On</option>
-                             <option value="off">Off</option>
-                         </select></td>`
-
-        } else if (type == "si7021") {
-            // Slider
-            slider = true;
-            template += `<td><input id="${target}-rule${row}" name="${target}-rule${row}" type="range" class="schedule-rule mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" autocomplete="off"></td>`
-
-        };
-    };
-
-    // Finish empty row with add rule button
-    template +=     `<td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add${row}" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
-                 </tr>`
-
-    // Add new empty rows
-    document.getElementById(target + "-rules").insertAdjacentHTML('beforeend', template);
-
-    // Add tooltips (used for help messages when invalid rule entered)
-    schedule_rule_tooltips[`${target}-rule${row}-time`] = new bootstrap.Tooltip(document.getElementById(`${target}-rule${row}-time`));
-    schedule_rule_tooltips[`${target}-rule${row}`] = new bootstrap.Tooltip(document.getElementById(`${target}-rule${row}`));
-
-    // Add listener to dismiss tooltips on hover/select
-    document.getElementById(`${target}-rule${row}-time`).addEventListener("mouseover", hide_tooltip);
-    document.getElementById(`${target}-rule${row}-time`).addEventListener("focus", hide_tooltip);
-    document.getElementById(`${target}-rule${row}`).addEventListener("mouseover", hide_tooltip);
-    document.getElementById(`${target}-rule${row}`).addEventListener("focus", hide_tooltip);
-
-    // Focus time field
-    document.getElementById(`${target}-rule${row}-time`).focus();
-
-    // Hide add rule button (will be un-hidden when user finishes adding this rule)
-    document.getElementById(target + "-add-rule").style.display = "none"
-
-    // If a slider was added, initialze and attach listener
-    if (slider) {
-        // Initialize
-        $('#' + `${target}-rule${row}`).rangeslider({
-            polyfill: false,
-            onInit: function() {
-            // Select handle element closest to slider, update displayed rule
-            $handle = $('.rangeslider__handle', this.$range);
-            $handle[0].textContent = get_display_value(document.getElementById(`${target}-rule${row}`));
-
-            this.$range[0].classList.add("mx-auto")
-            }
-        });
-
-        // Update current rule displayed while slider moves
-        $('#' + `${target}-rule${row}`).on('input', function(e) {
-
-            // Select handle element closest to slider, update displayed rule
-            var $handle = $('.rangeslider__handle', e.target.nextSibling);
-            $handle[0].textContent = get_display_value(document.getElementById(e.target.id));
-        });
-    };
-};
-
-
-
-function disable_row(row, disable) {
-    if (disable) {
-        for (field of row.children) {
-            field.children[0].disabled = true;
-        };
-    } else {
-        for (field of row.children) {
-            field.children[0].disabled = false;
-        };
-    };
-};
-
-
-
 // Handler for add button in schedule rules dropdown, used to create new rules and edit existing
 async function add_rule(el) {
-    // Get target device/sensor
-    const target = el.id.split("-")[0];
+    // Disable + add loading animation to submit button
+//     document.getElementById('add-rule').innerHTML =
+    document.getElementById('add-rule').disabled = true;
+
+    // Get target device/sensor + type
+    const target = el.dataset.target;
+    const type = el.dataset.type;
 
     // Get rule number
     const num = el.id.split("add")[1];
 
-    // Disable row fields + button (prevent user submitting multiple times)
-    row = document.getElementById(target + "-row-" + num);
-    disable_row(row, true);
+    // Get timestamp depending on check mode
+    if (document.getElementById('toggle-time-mode').checked) {
+        var timestamp = document.getElementById('keyword').value;
+        var original_timestamp = document.getElementById('keyword').dataset.original;
+        var timestamp_el = document.getElementById('keyword');
+    } else {
+        var timestamp = document.getElementById('timestamp').value;
+        var original_timestamp = document.getElementById('timestamp').dataset.original;
+        var timestamp_el = document.getElementById('timestamp');
+    };
 
-    // Get timestamp input
-    const timestamp = document.getElementById(`${target}-rule${num}-time`);
+    console.log(timestamp_el.id)
 
-    // Get rule input
-    const rule = document.getElementById(`${target}-rule${num}`);
+    // Get rule
+    let rule = document.getElementById('rule-input').value;
+
+    // If fade rule: convert to correct syntax
+    if (['dimmer', 'bulb', 'pwm'].includes(type)) {
+        if (document.getElementById('toggle-rule-mode').checked) {
+            const duration = document.getElementById('duration').value;
+            rule = `fade/${rule}/${duration}`;
+        };
+    };
 
     // Do not add incomplete rule
-    if (timestamp.value.length == 0 || rule.value.length == 0) {
-        el.disabled = false;
+    if (timestamp.length == 0 || rule.length == 0) {
+//         el.disabled = false;
         return;
     };
 
@@ -282,86 +87,95 @@ async function add_rule(el) {
     status_lock = true;
 
     // If user modified an existing rule without changing timestamp, add overwrite arg
-    if (timestamp.dataset.original == timestamp.value) {
-        var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp.value, 'rule': rule.value, 'overwrite': 'overwrite'});
+    if (original_timestamp == timestamp) {
+        var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp, 'rule': rule, 'overwrite': 'overwrite'});
         result = await result.json();
     } else {
-        var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp.value, 'rule': rule.value});
+        var result = await send_command({'command': 'add_rule', 'instance': target, 'time': timestamp, 'rule': rule});
         result = await result.json();
     };
 
+    console.log(result);
+
     if (JSON.stringify(result).startsWith('{"ERROR":"Rule already exists')) {
-        // Re-enable row inputs and button
-        disable_row(row, false);
+        // Show tooltip on field with invalid param
+        const tooltip = new bootstrap.Tooltip(timestamp_el);
+        tooltip.show();
 
-        // Focus field with invalid param
-        timestamp.focus();
-
-        // Show tooltip
-        schedule_rule_tooltips[timestamp.id].show();
+        // Dismiss on hover or focus
+        function dismiss_tooltip() {
+            tooltip.dispose();
+            timestamp_el.removeEventListener('focus', dismiss_tooltip);
+            timestamp_el.removeEventListener('mouseover', dismiss_tooltip);
+        };
+        timestamp_el.addEventListener('focus', dismiss_tooltip, { once: true });
+        timestamp_el.addEventListener('mouseover', dismiss_tooltip, { once: true });
 
     } else if (JSON.stringify(result) == '{"ERROR":"Invalid rule"}') {
-        // Re-enable row inputs and button
-        disable_row(row, false);
+        const rule_field = document.getElementById('rule-input');
 
-        // Focus field with invalid param
-        rule.focus();
+        // Show tooltip on field with invalid param
+        const tooltip = new bootstrap.Tooltip(rule_field);
+        tooltip.show();
 
-        // Show tooltip
-        schedule_rule_tooltips[rule.id].show();
+        // Dismiss on hover or focus
+        function dismiss_tooltip() {
+            tooltip.dispose();
+            rule_field.removeEventListener('focus', dismiss_tooltip);
+            rule_field.removeEventListener('mouseover', dismiss_tooltip);
+        };
+        rule_field.addEventListener('focus', dismiss_tooltip, { once: true });
+        rule_field.addEventListener('mouseover', dismiss_tooltip, { once: true });
 
     } else if (JSON.stringify(result).startsWith('{"ERROR')) {
         // All other errors (unable to connect etc.)
         alert(JSON.stringify(result));
 
-        // Re-enable row inputs and button
-        disable_row(row, false);
-
     } else {
         // Add to current status object (prevent duplicate being created when new status object containing this rule is received)
-        target_node_status[target.replace(/[0-9]/g, '') + "s"][target]["schedule"][timestamp.value] = rule.value;
-
-        // If successfully added, change add button to delete button, re-enable
-        el.classList.remove("btn-success");
-        el.classList.add("btn-danger");
-        el.innerHTML = "<i class='bi-trash'></i>";
-        el.id = el.id.replace("add", "remove");
-        el.setAttribute( "onClick", "delete_rule(this);" );
+        target_node_status[target.replace(/[0-9]/g, '') + "s"][target]["schedule"][timestamp] = rule;
 
         // If user modified existing rule's timestamp, delete rule with old timestamp
-        if (timestamp.dataset.original && timestamp.value != timestamp.dataset.original) {
-            delete_rule(document.getElementById(target + "-remove" + num), false);
+        if (timestamp_el.dataset.original && timestamp != timestamp_el.dataset.original) {
+//             delete_rule(document.getElementById(target + "-remove" + num), false);
+            delete_rule(document.getElementById('del-rule'), false);
         };
 
+        // Show rules table if first rule added
+        if (document.getElementById(target + "-rules").rows.length == 1) {
+            document.getElementById(target + "-rules").classList.remove('d-none');
+        };
+
+        // Get new row number
+        const table = document.getElementById(target + "-rules");
+        const row = parseInt(table.rows[table.rows.length-1].id.split("-")[2]) + 1
+
+        // Add row number + target id + time field to empty row template
+        var template = `<tr id="${target}-row-${row}">
+                            <td><input type="time" class="form-control" id="${target}-rule${row}-time" placeholder="HH:MM" name="${target}-rule${row}-time" value="${timestamp}" data-original="${timestamp}"></td>
+                            <td><input type="text" class="form-control" id="${target}-rule${row}" placeholder="" name="${target}-rule${row}" value="${rule}"></td>
+                            <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${target}-edit${row}"  onclick="edit_rule_with_modal(this);"><i class="bi-pencil"></i></button></td>
+                        </tr>`
+
+        // Add new row
+        document.getElementById(target + "-rules").insertAdjacentHTML('beforeend', template);
+
         // Replace original values with new values (used to detect change after adding)
-        timestamp.dataset.original = timestamp.value;
-        rule.dataset.original = rule.value;
+        timestamp_el.dataset.original = timestamp;
 
         // Allow overwriting
         status_lock = false;
 
-        // Add listeners, changes delete button to add button if user modifies fields (newly added rows don't have listener until add button clicked)
-        timestamp.addEventListener("input", schedule_rule_field_handler);
-
-        // Slider input requires jquery listener to cover all scenarios
-        if (rule.type == 'range') {
-            $('#' + rule.id).on('change', async function(e) {
-                schedule_rule_field_handler(e);
-            });
-        // All others inputs use vanilla listener
-        } else {
-            rule.addEventListener("input", schedule_rule_field_handler);
-        };
-
-        // Unhide add rule button so user can continue adding rules if needed
-        document.getElementById(target + "-add-rule").style.display = "initial"
-
-        // Re-enable row inputs and button
-        disable_row(row, false);
+        // Hide modal
+        ruleModal.hide();
 
         // Show toast message, allows user to write change to disk
         save_rules_toast.show();
     };
+
+    // Re-enable add button, change text back
+    document.getElementById('add-rule').disabled = false;
+    document.getElementById('add-rule').innerHTML = "Submit";
 };
 
 
@@ -373,10 +187,10 @@ async function delete_rule(selected, remove=true) {
     selected.disabled = true;
 
     // Get target device/sensor
-    const target = selected.id.split("-")[0];
+    const target = selected.dataset.target;
 
     // Get rule number
-    const rule = selected.id.split("-")[1].replace(/[a-z]/g, '')
+    const rule = selected.dataset.number;
 
     // Get timestamp
     // Uses dataset.original instead of .value to allow editing existing rules (old needs to be deleted before adding new, see add_rule() below)
@@ -390,27 +204,118 @@ async function delete_rule(selected, remove=true) {
     if (JSON.stringify(result).startsWith('{"ERROR')) {
         // Re-enable button if failed to delete
         alert(JSON.stringify(result));
-        selected.disabled = false;
     } else if (remove) {
         // Delete row if success
-        document.getElementById(selected.id).parentElement.parentElement.remove();
+        document.getElementById(`${target}-row-${rule}`).remove();
 
         // Check if deleted rule was last rule
         if (document.getElementById(target + "-rules").rows.length == 1) {
-            // If no rules remain, add blank row
-            var template = `<tr id="${target}-row-1">
-                                <td><input type="time" class="form-control" id="${target}-rule1-time" placeholder="HH:MM" name="${target}-rule1-time"></td>
-                                <td><input type="text" class="form-control" id="${target}-rule1" placeholder="" name="${target}-rule1"></td>
-                                <td class="min"><button type="button" class="remove btn btn-sm btn-success mt-1" id="${target}-add1" onclick="add_rule(this)"><i class="bi-plus-lg"></i></button></td>
-                            </tr>`
-
-            document.getElementById(target + "-rules").insertAdjacentHTML('beforeend', template);
-
-            // Hide add row button
-            document.getElementById(target + "-add-rule").style.display = "none";
+            document.getElementById(target + "-rules").classList.add('d-none');
         };
 
         // Show toast message, allows user to write change to disk
         save_rules_toast.show();
     };
+
+    // Re-enable delete button
+    selected.disabled = false;
+};
+
+
+
+// Handler for toggle under timestamp field in modal
+function toggle_time_mode(event) {
+    if (event.target.checked) {
+        document.getElementById('timestamp-input').classList.add('d-none');
+        document.getElementById('keyword-input').classList.remove('d-none');
+    } else {
+        document.getElementById('timestamp-input').classList.remove('d-none');
+        document.getElementById('keyword-input').classList.add('d-none');
+    };
+};
+
+
+
+// Handler for toggle under rule field in modal
+function toggle_fade_mode(event) {
+    if (event.target.checked) {
+        document.getElementById('duration-input').classList.remove('d-none');
+    } else {
+        document.getElementById('duration-input').classList.add('d-none');
+    };
+};
+
+
+
+async function open_schedule_rule_modal(payload) {
+    console.log(payload);
+
+    // Fetch template, show modal
+    var result = await fetch('/edit_rule', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+                             headers: { 'Accept': 'application/json, text/plain, */*',
+                                 'Content-Type': 'application/json',
+                             "X-CSRFToken": getCookie('csrftoken') }
+    });
+
+    document.getElementById('rule-modal-body').innerHTML = await result.text();
+    ruleModal.show();
+    // Focus time field
+    document.getElementById(`timestamp`).focus();
+};
+
+
+
+function edit_rule_with_modal(el) {
+    // Get target device/sensor, rule number
+    const target = el.id.split("-")[0];
+    const num = el.id.split("edit")[1];
+
+    // Get timestamp + rule values
+    const timestamp = document.getElementById(`${target}-rule${num}-time`).value;
+    const rule = document.getElementById(`${target}-rule${num}`).value;
+
+    // Get instance type
+    if (target.startsWith('sensor')) {
+        var type = target_node_status['sensors'][target]['type'];
+    } else {
+        var type = target_node_status['devices'][target]['type'];
+    };
+
+    // Add dataset attributes to add button
+    document.getElementById('add-rule').dataset.target = target;
+    document.getElementById('add-rule').dataset.type = type;
+
+    // Add dataset attributes to delete button, show
+    document.getElementById('del-rule').dataset.target = target;
+    document.getElementById('del-rule').dataset.number = num;
+    document.getElementById('del-rule').classList.remove('d-none')
+
+    const payload = {'timestamp': timestamp, 'rule': rule, 'type': type};
+    open_schedule_rule_modal(payload);
+};
+
+
+
+function add_rule_with_modal(el) {
+    // Get target device/sensor
+    const target = el.id.split("-")[0];
+
+    // Get instance type
+    if (target.startsWith('sensor')) {
+        var type = target_node_status['sensors'][target]['type'];
+    } else {
+        var type = target_node_status['devices'][target]['type'];
+    };
+
+    // Add dataset attributes to add button
+    document.getElementById('add-rule').dataset.target = target;
+    document.getElementById('add-rule').dataset.type = type;
+
+    // Hide delete button (adding new rule)
+    document.getElementById('del-rule').classList.add('d-none')
+
+    const payload = {'timestamp': '', 'rule': '', 'type': type};
+    open_schedule_rule_modal(payload);
 };

@@ -227,15 +227,15 @@ const update_schedule_rules = monitor_status.subscribe("schedule", (new_status) 
             var template = `<tr id="${instance}-row-${row}">
             <td><input type="time" class="form-control" id="schedule-${instance}-rule${row}-time" placeholder="HH:MM" name="schedule-${instance}-rule${row}-time" value=${time} data-original=${time}></td>
             <td><input type="text" class="form-control" id="schedule-${instance}-rule${row}-value" placeholder="" name="schedule-${instance}-rule${row}-value" value=${new_rules[time]} data-original=${new_rules[time]}></td>
-            <td class="min"><button type="button" class="remove btn btn-sm btn-danger mt-1" id="${instance}-remove${row}" onclick="delete_rule(this)"><i class="bi-trash"></i></button></td>
+            <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${instance}-edit${row}"  onclick="edit_rule_with_modal(this);"><i class="bi-pencil"></i></button></td>
             </tr>`
 
             // Add new row
             table.insertAdjacentHTML('beforeend', template);
 
             // Add listeners, changes delete button to add button if user modifies fields (newly added rows don't have listener until add button clicked)
-            document.getElementById(`schedule-${instance}-rule${row}-time`).addEventListener("input", schedule_rule_field_handler);
-            document.getElementById(`schedule-${instance}-rule${row}-value`).addEventListener("input", schedule_rule_field_handler);
+//             document.getElementById(`schedule-${instance}-rule${row}-time`).addEventListener("input", schedule_rule_field_handler);
+//             document.getElementById(`schedule-${instance}-rule${row}-value`).addEventListener("input", schedule_rule_field_handler);
 
         } else if (new_rules[time] != old_rules[time]) {
             // Timestamp unchanged, rule changed
