@@ -217,14 +217,14 @@
                                                 <td><input type="text" class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}" placeholder="" name="{{sensor}}-rule{{forloop.counter}}" value="{{ rule }}"></td>
 
                                                 {# Add edit/delete button #}
-                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{sensor}}-edit{{forloop.counter}}"  onclick="edit_rule_with_modal(this);"><i class="bi-pencil"></i></button></td>
+                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{sensor}}-edit{{forloop.counter}}"  onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
                                             </tr>
                                         {% endfor %}
                                     {% endif %}
                                 </table>
 
                                 <div class="text-center mx-3 mb-3">
-                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{sensor}}-add-rule" onclick="add_rule_with_modal(this)"><i class="bi-plus-lg"></i></button>
+                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{sensor}}-add-rule" onclick="add_new_rule(this)"><i class="bi-plus-lg"></i></button>
                                 </div>
                             </div>
                             <!-- End schedule rules section -->
@@ -361,7 +361,7 @@
                                                 {% endif %}
 
                                                 {# Add delete button #}
-                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{device}}-edit{{forloop.counter}}" onclick="edit_rule_with_modal(this);"><i class="bi-pencil"></i></button></td>
+                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{device}}-edit{{forloop.counter}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
                                             </tr>
                                         {% endfor %}
                                     {% else %}
@@ -408,7 +408,7 @@
 
                                 {# Add add button #}
                                 <div class="text-center mx-3 mb-3">
-                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{device}}-add-rule" onclick="add_rule_with_modal(this)"><i class="bi-plus-lg"></i></button>
+                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{device}}-add-rule" onclick="add_new_rule(this)"><i class="bi-plus-lg"></i></button>
                                 </div>
 
                                 <!-- If no rules exist, hide add rule button (blank row above already has add button) -->
@@ -686,8 +686,8 @@
                 <!-- Populated by template when opened -->
                 </div>
                 <div class="modal-footer mx-auto">
-                    <button type="button" id="add-rule" class="btn btn-success" onclick="add_rule(this)">Submit</button>
-                    <button type="button" id="del-rule" class="btn btn-danger" data-bs-dismiss="modal" onclick="delete_rule(this)">Delete</button>
+                    <button type="button" id="add-rule" class="btn btn-success" onclick="add_rule()">Submit</button>
+                    <button type="button" id="del-rule" class="btn btn-danger" onclick="delete_rule()">Delete</button>
                 </div>
             </div>
         </div>

@@ -220,22 +220,8 @@ const update_schedule_rules = monitor_status.subscribe("schedule", (new_status) 
     // Find new or modified rules
     for (let time in new_rules) {
         if (!old_rules[time]) {
-            // New rule found (didn't exist in old). Get new row number
-            const row = parseInt(rows[rows.length-1].id.split("-")[2]) + 1
-
-            // Add row number + instance id + rule vlaues to template
-            var template = `<tr id="${instance}-row-${row}">
-            <td><input type="time" class="form-control" id="schedule-${instance}-rule${row}-time" placeholder="HH:MM" name="schedule-${instance}-rule${row}-time" value=${time} data-original=${time}></td>
-            <td><input type="text" class="form-control" id="schedule-${instance}-rule${row}-value" placeholder="" name="schedule-${instance}-rule${row}-value" value=${new_rules[time]} data-original=${new_rules[time]}></td>
-            <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${instance}-edit${row}"  onclick="edit_rule_with_modal(this);"><i class="bi-pencil"></i></button></td>
-            </tr>`
-
-            // Add new row
-            table.insertAdjacentHTML('beforeend', template);
-
-            // Add listeners, changes delete button to add button if user modifies fields (newly added rows don't have listener until add button clicked)
-//             document.getElementById(`schedule-${instance}-rule${row}-time`).addEventListener("input", schedule_rule_field_handler);
-//             document.getElementById(`schedule-${instance}-rule${row}-value`).addEventListener("input", schedule_rule_field_handler);
+            // New rule found (didn't exist in old), add to schedule rules table
+            add_new_row(instance, time, new_rules[time]);
 
         } else if (new_rules[time] != old_rules[time]) {
             // Timestamp unchanged, rule changed
