@@ -8,10 +8,12 @@ const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
 // Initialize toast, allows user to write new/deleted rules to disk
 const save_rules_toast = new bootstrap.Toast(document.getElementById("save_rules_toast"));
 
-// Replace 24h timestamps from template with 12h
+// Replace 24h timestamps from template with 12h, skip keywords (sunrise etc)
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.schedule-rule.time').forEach(rule => {
-        rule.innerHTML = format12h(rule.dataset.original);
+        if (timestamp_regex.test(rule.dataset.original)) {
+            rule.innerHTML = format12h(rule.dataset.original);
+        };
     });
 });
 
@@ -180,14 +182,9 @@ function add_new_row(target, timestamp, rule) {
     // Cannot use length, results in duplicate IDs if rows above were deleted before adding
     const row = parseInt(table.rows[table.rows.length-1].id.split("-")[2]) + 1
 
-    // Format if non-keyword
-    if (timestamp_regex.test(timestamp)) {
-        timestamp = format12h(timestamp);
-    };
-
     // Populate template with received parameters
     var template = `<tr id="${target}-row-${row}">
-    <td><span class="form-control schedule-rule time" id="${target}-rule${row}-time" data-original="${timestamp}" onclick="edit_existing_rule(this);">${timestamp}</span></td>
+    <td><span class="form-control schedule-rule time" id="${target}-rule${row}-time" data-original="${timestamp}" onclick="edit_existing_rule(this);">${format12h(timestamp)}</span></td>
     <td><span class="form-control schedule-rule" id="${target}-rule${row}" data-original="${rule}" onclick="edit_existing_rule(this);">${rule}</span></td>
     <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${target}-edit${row}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
     </tr>`
@@ -205,6 +202,11 @@ function add_new_row(target, timestamp, rule) {
 
 // Takes 24h timestamp, returns 12h with am/pm suffix
 function format12h(timestamp) {
+    // Return keywords unchanged
+    if ( ! timestamp_regex.test(timestamp)) {
+        return timestamp;
+    };
+
     let [hour, minute] = timestamp.split(':');
     const suffix = parseInt(hour) >= 12 ? 'pm' : 'am';
     // Convert to 12h format, if midnight replace 0 with 12
@@ -224,7 +226,6 @@ async function add_rule() {
     const type = add_button.dataset.type;
 
     // Get timestamp or time keyword depending on toggle position
-    // TODO will break if toggle was changed, set dataset attrs on both?
     if (document.getElementById('toggle-time-mode').checked) {
         var timestamp_el = document.getElementById('keyword');
     } else {
@@ -307,6 +308,7 @@ async function add_rule() {
             // Modify rule in rule field
             const num = delete_button.dataset.number;
             document.getElementById(`${target}-rule${num}`).dataset.original = rule;
+            document.getElementById(`${target}-rule${num}`).innerHTML = rule;
         };
 
         // Resume status updates

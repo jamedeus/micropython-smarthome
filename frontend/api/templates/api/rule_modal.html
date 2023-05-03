@@ -9,9 +9,9 @@
         <div id="keyword-input" class="text-center {% if show_timestamp %} d-none {% endif %}">
             <label for="keyword" class="form-label">Keyword</label>
             <select class="form-select" id="keyword" name="keyword" data-original="{{timestamp}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists">
-                <option selected disabled>Select a keyword</option>
-                <option value="sunrise">Sunrise</option>
-                <option value="sunset">Sunset</option>
+                <option disabled {% if timestamp == "" %}selected{% endif %}>Select a keyword</option>
+                <option value="sunrise" {% if timestamp == "sunrise" %}selected{% endif %}>Sunrise</option>
+                <option value="sunset" {% if timestamp == "sunset" %}selected{% endif %}>Sunset</option>
             </select>
         </div>
 

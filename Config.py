@@ -388,7 +388,8 @@ class Config():
         SoftwareTimer.timer.cancel("scheduler")
 
         for i in self.schedule:
-            rules = self.convert_rules(self.schedule[i])
+            # Convert copy (preserve sunrise/sunset keywords in original)
+            rules = self.convert_rules(self.schedule[i].copy())
 
             # Get target instance
             instance = self.find(i)
