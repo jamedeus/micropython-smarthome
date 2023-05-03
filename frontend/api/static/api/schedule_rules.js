@@ -5,6 +5,13 @@ const add_button = document.getElementById('add-rule');
 // Initialize toast, allows user to write new/deleted rules to disk
 const save_rules_toast = new bootstrap.Toast(document.getElementById("save_rules_toast"));
 
+// Replace 24h timestamps from template with 12h
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.schedule-rule.time').forEach(rule => {
+        rule.innerHTML = format12h(rule.dataset.original);
+    });
+});
+
 
 // Handler for schedule rules button on each card, opens collapse
 function open_rules(button) {
@@ -108,12 +115,13 @@ async function open_schedule_rule_modal(payload) {
 // Opens modal with delete button + data attributes for selected rule
 function edit_existing_rule(el) {
     // Get target device/sensor, rule number
-    const target = el.id.split("-")[0];
-    const num = el.id.split("edit")[1];
+    let [target, num] = el.id.split("-");
+    num = num.replace(/[a-zA-Z]/g, '');
+
 
     // Get timestamp + rule values
-    const timestamp = document.getElementById(`${target}-rule${num}-time`).value;
-    const rule = document.getElementById(`${target}-rule${num}`).value;
+    const timestamp = document.getElementById(`${target}-rule${num}-time`).dataset.original;
+    const rule = document.getElementById(`${target}-rule${num}`).dataset.original;
 
     // Get instance type
     if (target.startsWith('sensor')) {
@@ -156,7 +164,7 @@ function add_new_rule(el) {
     // Hide delete button (adding new rule)
     delete_button.classList.add('d-none')
 
-    const payload = {'timestamp': '', 'rule': '', 'type': type};
+    const payload = {'timestamp': '', 'rule': '', 'type': type, 'target'};
     open_schedule_rule_modal(payload);
 };
 
@@ -178,13 +186,24 @@ function add_new_row(target, timestamp, rule) {
 
     // Populate template with received parameters
     var template = `<tr id="${target}-row-${row}">
-    <td><input type="time" class="form-control" id="${target}-rule${row}-time" placeholder="HH:MM" name="${target}-rule${row}-time" value="${timestamp}" data-original="${timestamp}"></td>
-    <td><input type="text" class="form-control" id="${target}-rule${row}" placeholder="" name="${target}-rule${row}" value="${rule}"></td>
+    <td><span class="form-control schedule-rule time" id="${target}-rule${row}-time" data-original="${timestamp}">${format12h(timestamp)}</span></td>
+    <td><span class="form-control schedule-rule" id="${target}-rule${row}" data-original="${rule}">${rule}</span></td>
     <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${target}-edit${row}"  onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
     </tr>`
 
     // Add row to bottom of table
     table.insertAdjacentHTML('beforeend', template);
+};
+
+
+// Takes 24h timestamp, returns 12h with am/pm suffix
+function format12h(timestamp) {
+    let [hour, minute] = timestamp.split(':');
+    const suffix = parseInt(hour) >= 12 ? 'pm' : 'am';
+    // Convert to 12h format, if midnight replace 0 with 12
+    hour = parseInt(hour) % 12;
+    hour = hour === 0 ? 12 : hour;
+    return `${hour}:${minute} ${suffix}`;
 };
 
 
@@ -280,7 +299,7 @@ async function add_rule() {
         } else if (original_timestamp === timestamp) {
             // Modify rule in rule field
             const num = delete_button.dataset.number;
-            document.getElementById(`${target}-rule${num}`).value = rule;
+            document.getElementById(`${target}-rule${num}`).dataset.original = rule;
         };
 
         // Resume status updates
@@ -307,7 +326,7 @@ async function delete_rule() {
     const rule = delete_button.dataset.number;
 
     // Get timestamp from schedule rules table
-    const timestamp = document.getElementById(`${target}-rule${rule}-time`).value;
+    const timestamp = document.getElementById(`${target}-rule${rule}-time`).dataset.original;
 
     // Delete rule
     var result = await send_command({'command': 'remove_rule', 'instance': target, 'rule': timestamp});
