@@ -104,7 +104,7 @@ class TestApi(unittest.TestCase):
         try:
             writer.write('{}\n'.format(json.dumps(msg)).encode())
             await writer.drain()
-            res = await reader.read(1100)
+            res = await reader.read(1200)
         except OSError:
             pass
         try:
