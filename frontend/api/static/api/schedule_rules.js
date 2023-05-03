@@ -2,6 +2,9 @@
 const delete_button = document.getElementById('del-rule');
 const add_button = document.getElementById('add-rule');
 
+// Used to identify HH:MM timestamp
+const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+
 // Initialize toast, allows user to write new/deleted rules to disk
 const save_rules_toast = new bootstrap.Toast(document.getElementById("save_rules_toast"));
 
@@ -177,9 +180,14 @@ function add_new_row(target, timestamp, rule) {
     // Cannot use length, results in duplicate IDs if rows above were deleted before adding
     const row = parseInt(table.rows[table.rows.length-1].id.split("-")[2]) + 1
 
+    // Format if non-keyword
+    if (timestamp_regex.test(timestamp)) {
+        timestamp = format12h(timestamp);
+    };
+
     // Populate template with received parameters
     var template = `<tr id="${target}-row-${row}">
-    <td><span class="form-control schedule-rule time" id="${target}-rule${row}-time" data-original="${timestamp}" onclick="edit_existing_rule(this);">${format12h(timestamp)}</span></td>
+    <td><span class="form-control schedule-rule time" id="${target}-rule${row}-time" data-original="${timestamp}" onclick="edit_existing_rule(this);">${timestamp}</span></td>
     <td><span class="form-control schedule-rule" id="${target}-rule${row}" data-original="${rule}" onclick="edit_existing_rule(this);">${rule}</span></td>
     <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${target}-edit${row}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
     </tr>`

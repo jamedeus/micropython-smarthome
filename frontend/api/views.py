@@ -99,7 +99,6 @@ def api_overview(request, recording=False, start=False):
     return render(request, 'api/overview.html', context)
 
 
-
 @ensure_csrf_cookie
 def api(request, node, recording=False):
     target = Node.objects.get(friendly_name = node)
@@ -500,6 +499,8 @@ def add_schedule_rule(ip, params):
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
     if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
+        timestamp = params.pop(0)
+    elif len(params) > 0 and params[0] in ['sunrise', 'sunset']:
         timestamp = params.pop(0)
     else:
         return {"ERROR": "Must specify time (HH:MM) followed by rule"}
