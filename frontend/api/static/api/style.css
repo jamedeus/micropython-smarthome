@@ -25,6 +25,11 @@ body {
     text-shadow: 0 0 0.2em #dc3545;
   }
 }
+/* Schedule modal animation size */
+#rule-loading {
+  --sk-size: 34px;
+}
+
 /* Section backgrounds (floors, macros, debug json dumps) */
 .section {
   background-color: #eee;
@@ -67,8 +72,7 @@ body {
   /* Prevent color change on focus (not enough contrast with body bg) */
   /* Toasts */
   /* Section background color override */
-  /* Dark mode spinkit */
-  --sk-size: 34px;
+  /* Spinkit dark mode */
   --sk-color: #fff;
 }
 .dark .modal-dropdown {

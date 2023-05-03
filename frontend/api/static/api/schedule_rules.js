@@ -118,17 +118,10 @@ function edit_existing_rule(el) {
     let [target, num] = el.id.split("-");
     num = num.replace(/[a-zA-Z]/g, '');
 
-
-    // Get timestamp + rule values
+    // Get timestamp, rule, instance type
     const timestamp = document.getElementById(`${target}-rule${num}-time`).dataset.original;
     const rule = document.getElementById(`${target}-rule${num}`).dataset.original;
-
-    // Get instance type
-    if (target.startsWith('sensor')) {
-        var type = target_node_status['sensors'][target]['type'];
-    } else {
-        var type = target_node_status['devices'][target]['type'];
-    };
+    const type = target_node_status[`${target.replace(/[0-9]/g, '')}s`][target]['type'];
 
     // Add dataset attributes, used by add_rule function
     add_button.dataset.target = target;
@@ -164,7 +157,7 @@ function add_new_rule(el) {
     // Hide delete button (adding new rule)
     delete_button.classList.add('d-none')
 
-    const payload = {'timestamp': '', 'rule': '', 'type': type, 'target'};
+    const payload = {'timestamp': '', 'rule': '', 'type': type};
     open_schedule_rule_modal(payload);
 };
 
@@ -186,9 +179,9 @@ function add_new_row(target, timestamp, rule) {
 
     // Populate template with received parameters
     var template = `<tr id="${target}-row-${row}">
-    <td><span class="form-control schedule-rule time" id="${target}-rule${row}-time" data-original="${timestamp}">${format12h(timestamp)}</span></td>
-    <td><span class="form-control schedule-rule" id="${target}-rule${row}" data-original="${rule}">${rule}</span></td>
-    <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${target}-edit${row}"  onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
+    <td><span class="form-control schedule-rule time" id="${target}-rule${row}-time" data-original="${timestamp}" onclick="edit_existing_rule(this);">${format12h(timestamp)}</span></td>
+    <td><span class="form-control schedule-rule" id="${target}-rule${row}" data-original="${rule}" onclick="edit_existing_rule(this);">${rule}</span></td>
+    <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${target}-edit${row}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
     </tr>`
 
     // Add row to bottom of table

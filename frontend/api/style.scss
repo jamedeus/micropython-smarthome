@@ -33,7 +33,10 @@ body {
     }
 }
 
-
+/* Schedule modal animation size */
+#rule-loading {
+    --sk-size: 34px;
+}
 
 /* Section backgrounds (floors, macros, debug json dumps) */
 .section {
@@ -164,7 +167,6 @@ body {
     }
 
     /* Spinkit dark mode */
-    --sk-size: 34px;
     --sk-color: #fff;
 
     @import "../node_modules/bootstrap/scss/_card";
