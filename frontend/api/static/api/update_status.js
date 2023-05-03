@@ -225,13 +225,20 @@ const update_schedule_rules = monitor_status.subscribe("schedule", (new_status) 
 
         } else if (new_rules[time] != old_rules[time]) {
             // Timestamp unchanged, rule changed
-            console.log("overwriting rule")
             for (row of rows) {
-                if (row.cells[0].children[0]?.value == time) {
-                    row.cells[1].children[0].value = new_rules[time];
-                    row.cells[1].children[0].dataset.original = new_rules[time];
+                if (row.cells[0].children[0]?.dataset.original == time) {
+                    console.log(`overwriting ${time} rule`)
+                    row.cells[1].children[0].innerHTML = new_rules[time];
+                    row.cells[1].children[0].dataset.original = JSON.stringify(new_rules[time]);
                 };
             };
+        };
+    };
+
+    // Replace [object Object] on ApiTarget buttons
+    if (new_status['value']["type"] == "api-target") {
+        for (let i = 1; i < rows.length; i++) {
+            rows[i].cells[1].children[0].innerHTML = "click to view";
         };
     };
 });
