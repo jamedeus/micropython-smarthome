@@ -193,9 +193,18 @@ class TestParseCommand(unittest.TestCase):
         response = parse_command(target_ip, ['add_rule', 'device1', '02:52', '0'])
         self.assertEqual(response, {'time': '02:52', 'Rule added': 0})
 
+        # Add a rule with sunrise keyword instead of timestamp
+        response = parse_command(target_ip, ['add_rule', 'device1', 'sunrise', '512'])
+        self.assertEqual(response, {'time': 'sunrise', 'Rule added': 512})
+
     def test_remove_rule(self):
+        # Delete a rule by timestamp
         response = parse_command(target_ip, ['remove_rule', 'device1', '01:00'])
         self.assertEqual(response, {'Deleted': '01:00'})
+
+        # Delete a rule by keyword
+        response = parse_command(target_ip, ['remove_rule', 'device1', 'sunrise'])
+        self.assertEqual(response, {'Deleted': 'sunrise'})
 
     def test_get_attributes(self):
         response = parse_command(target_ip, ['get_attributes', 'sensor1'])
@@ -454,6 +463,9 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['add_rule', 'device1', '09:13', '9999'])
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
+        response = parse_command(target_ip, ['add_rule', 'device1', 'midnight', '50'])
+        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+
     def test_remove_rule_invalid(self):
         response = parse_command(target_ip, ['remove_rule'])
         self.assertEqual(response, {'Example usage': './api_client.py remove_rule [device|sensor] [HH:MM]'})
@@ -472,6 +484,9 @@ class TestParseCommandInvalid(unittest.TestCase):
 
         response = parse_command(target_ip, ['remove_rule', 'device1', '07:16'])
         self.assertEqual(response, {'ERROR': 'No rule exists at that time'})
+
+        response = parse_command(target_ip, ['add_rule', 'device1', 'midnight'])
+        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
 
     def test_get_attributes_invalid(self):
         response = parse_command(target_ip, ['get_attributes'])

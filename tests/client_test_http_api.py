@@ -61,17 +61,30 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/04:00/256')
         self.assertEqual(response.json(), {'time': '04:00', 'Rule added': 256})
 
-        # Add another rule at the same time, should refuse to overwrite
+        # Add a rule at the same time, should refuse to overwrite
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/04:00/512')
         self.assertEqual(response.json(), {'ERROR': "Rule already exists at 04:00, add 'overwrite' arg to replace"})
 
-        # Add another rule at the same time with the 'overwrite' argument, rule should be replaced
+        # Add a rule at the same time with the 'overwrite' argument, rule should be replaced
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/04:00/512/overwrite')
         self.assertEqual(response.json(), {'time': '04:00', 'Rule added': 512})
 
+        # Add a rule (0) which is equivalent to False in conditional (regression test for bug causing incorrect rejection)
+        response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/02:52/0')
+        self.assertEqual(response.json(), {'time': '02:52', 'Rule added': 0})
+
+        # Add a rule with sunrise keyword instead of timestamp
+        response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/sunrise/512')
+        self.assertEqual(response.json(), {'time': 'sunrise', 'Rule added': 512})
+
     def test_remove_rule(self):
+        # Delete a rule by timestamp
         response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/01:00')
         self.assertEqual(response.json(), {'Deleted': '01:00'})
+
+        # Delete a rule by keyword
+        response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/sunrise')
+        self.assertEqual(response.json(), {'Deleted': 'sunrise'})
 
     def test_get_attributes(self):
         response = requests.get(f'http://{target_ip}:8123/get_attributes?sensor1')
