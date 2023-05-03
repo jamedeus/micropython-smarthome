@@ -332,8 +332,8 @@
 
                                                 {# Add rule field #}
                                                 {% if params.type == "api-target" %}
-                                                    <td style="width: 100%"><button id="{{device}}-rule{{forloop.counter}}-button" class="form-control" onclick="open_rule_modal(this);" type="button" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">Set rule</button>
-                                                    <input type="text" class="form-control rule {{device}}" id="{{device}}-rule{{forloop.counter}}" value="{{rule}}" data-original="{{ rule }}" style="display:none;"></td>
+                                                    <td><span class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}-button" onclick="edit_existing_rule(this);">click to view</span></td>
+                                                    <input type="text" class="form-control rule {{device}}" id="{{device}}-rule{{forloop.counter}}" data-original="{{rule}}" style="display:none;"></td>
                                                 {% else %}
                                                     <td><span class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}" data-original="{{rule}}"  onclick="edit_existing_rule(this);">{{rule}}</span></td>
                                                 {% endif %}

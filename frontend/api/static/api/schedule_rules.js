@@ -132,7 +132,7 @@ function edit_existing_rule(el) {
     delete_button.dataset.number = num;
     delete_button.classList.remove('d-none')
 
-    const payload = {'timestamp': timestamp, 'rule': rule, 'type': type};
+    const payload = {'timestamp': timestamp, 'rule': rule, 'type': type, 'target': target};
     open_schedule_rule_modal(payload);
 };
 
@@ -157,7 +157,7 @@ function add_new_rule(el) {
     // Hide delete button (adding new rule)
     delete_button.classList.add('d-none')
 
-    const payload = {'timestamp': '', 'rule': '', 'type': type};
+    const payload = {'timestamp': '', 'rule': '', 'type': type, 'target': target};
     open_schedule_rule_modal(payload);
 };
 
@@ -186,6 +186,12 @@ function add_new_row(target, timestamp, rule) {
 
     // Add row to bottom of table
     table.insertAdjacentHTML('beforeend', template);
+
+    // Change text for api-target
+    if (target_node_status[`${target.replace(/[0-9]/g, '')}s`][target]['type'] === "api-target") {
+        console.log('overwriting api-target innerHTML')
+        document.getElementById(`${target}-rule${row}`).innerHTML = "click to view";
+    };
 };
 
 

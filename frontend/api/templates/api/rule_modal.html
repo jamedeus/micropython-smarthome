@@ -50,8 +50,6 @@
         </div>
     {% endif %}
 
-
-
     {% elif type in "relay,dumb-relay,desktop,mosfet,switch" %}
         <div class="text-center">
             <label for="rule-input" class="form-label">Keyword</label>
@@ -75,7 +73,18 @@
         </div>
 
     {% elif type == "api-target" %}
-        <input id="{{device}}-current_rule" type="text" autocomplete="off" value="{{params.current_rule}}" onchange="change_api_target_rule(this);">
+        <div class="text-center">
+            {# Hidden input with expected rule ID #}
+            <input type="text" id="rule-input" value="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" style="display:none;">
+
+            {# Hidden input receives rule from submit_api_rule, immediately passes to rule-input #}
+            <input type="text" id="{{target}}" value="{{rule}}" style="display:none;" onchange="document.getElementById('rule-input').value = this.value;">
+
+            {# Button has id expected by open_rule_modal,  #}
+            <label for="{{target}}-button" class="form-label">Rule</label>
+            <button class="form-control" id="{{target}}-button" name="{{target}}-button" value="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" onclick="open_rule_modal(this);">Set Rule</button>
+        </div>
+
     {% endif %}
 
     </div>
