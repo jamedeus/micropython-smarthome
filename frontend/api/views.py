@@ -7,7 +7,7 @@ import asyncio
 import re
 
 from node_configuration.models import Node
-from node_configuration.views import get_api_target_menu_options
+from node_configuration.get_api_target_menu_options import get_api_target_menu_options
 from api.models import Macro
 
 # Used to determine if keyword or timestamp schedule rule

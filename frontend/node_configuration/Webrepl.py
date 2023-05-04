@@ -90,7 +90,6 @@ class Webrepl():
         self.password = password
         self.ws = None
 
-
     def open_connection(self):
         try:
             s = socket.socket()
