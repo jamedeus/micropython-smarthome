@@ -110,7 +110,7 @@ const update_power_state = monitor_status.subscribe("turned_on", (new_status) =>
         button.classList.add("toggle-on");
         console.log(`${new_status['instance']} turned on`);
 
-        // Device turned OFF since last status update
+    // Device turned OFF since last status update
     } else {
         button.classList.remove("toggle-on");
         button.classList.add("toggle-off");

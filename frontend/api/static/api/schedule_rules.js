@@ -137,7 +137,13 @@ function edit_existing_rule(el) {
     delete_button.dataset.number = num;
     delete_button.classList.remove('d-none')
 
-    const payload = {'timestamp': timestamp, 'rule': rule, 'type': type, 'target': target};
+    const payload = {
+        'timestamp': timestamp,
+        'rule': rule,
+        'type': type,
+        'target': target,
+        'schedule_keywords': target_node_status['metadata']['schedule_keywords']
+    };
     open_schedule_rule_modal(payload);
 };
 
@@ -162,7 +168,13 @@ function add_new_rule(el) {
     // Hide delete button (adding new rule)
     delete_button.classList.add('d-none')
 
-    const payload = {'timestamp': '', 'rule': '', 'type': type, 'target': target};
+    const payload = {
+        'timestamp': '',
+        'rule': '',
+        'type': type,
+        'target': target,
+        'schedule_keywords': target_node_status['metadata']['schedule_keywords']
+    };
     open_schedule_rule_modal(payload);
 };
 

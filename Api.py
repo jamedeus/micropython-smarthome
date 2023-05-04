@@ -309,10 +309,10 @@ def add_schedule_rule(args):
 
     if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args[1]):
         timestamp = args[1]
-    elif args[1] in ['sunrise', 'sunset']:
+    elif args[1] in app.config.schedule_keywords.keys():
         timestamp = args[1]
     else:
-        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"}
 
     valid = target.rule_validator(args[2])
 
@@ -343,10 +343,10 @@ def remove_rule(args):
 
     if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args[1]):
         timestamp = args[1]
-    elif args[1] in ['sunrise', 'sunset']:
+    elif args[1] in app.config.schedule_keywords.keys():
         timestamp = args[1]
     else:
-        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"}
 
     try:
         del rules[timestamp]
@@ -373,6 +373,65 @@ def save_rules(args):
 
     return {"Success": "Rules written to disk"}
 
+
+
+@app.route("get_schedule_keywords")
+def get_schedule_keywords(args):
+    return app.config.schedule_keywords
+
+
+
+@app.route("add_schedule_keyword")
+def add_schedule_keyword(args):
+    if not len(args) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    if not isinstance(args[0], dict):
+        return {"ERROR": "Requires dict with keyword and timestamp"}
+
+    keyword, timestamp = args[0].popitem()
+
+    # TODO handle keyword already exists?
+    if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", timestamp):
+        app.config.schedule_keywords[keyword] = timestamp
+        app.config.build_queue()
+        return {"Keyword added": keyword, "time": timestamp}
+    else:
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+
+
+# TODO prevent delete sunrise + sunset?
+@app.route("remove_schedule_keyword")
+def remove_schedule_keyword(args):
+    if not len(args) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    if args[0] in app.config.schedule_keywords.keys():
+        keyword = args[0]
+    else:
+        return {"ERROR": "Keyword does not exist"}
+
+    # Remove all existing rules using keyword
+    for i in app.config.schedule:
+        if keyword in app.config.schedule[i].keys():
+            del app.config.schedule[i][keyword]
+
+    del app.config.schedule_keywords[keyword]
+    app.config.build_queue()
+    return {"Keyword removed": args[0]}
+
+
+@app.route("save_schedule_keywords")
+def save_schedule_keywords(args):
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+
+    config['metadata']['schedule_keywords'] = app.config.schedule_keywords
+
+    with open('config.json', 'w') as file:
+        json.dump(config, file)
+
+    return {"Success": "Keywords written to disk"}
 
 
 @app.route("get_attributes")

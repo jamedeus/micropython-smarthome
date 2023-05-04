@@ -7,6 +7,7 @@ from random import randrange
 import uasyncio as asyncio
 import logging
 import gc
+import re
 import SoftwareTimer
 from Group import Group
 
@@ -37,14 +38,18 @@ class Config():
         self.location = conf["metadata"]["location"]
         self.floor = conf["metadata"]["floor"]
 
-        # Call function to connect to wifi + hit APIs
-        self.api_calls()
-
         # Tells loop when it is time to re-run API calls + build schedule rule queue
         self.reload_rules = False
 
         # Dictionairy holds schedule rules for all devices and sensors
         self.schedule = {}
+
+        # Dictionairy of keyword-timestamp pairs, used for schedule rules
+        self.schedule_keywords = {'sunrise': '00:00', 'sunset': '00:00'}
+        self.schedule_keywords.update(conf["metadata"]["schedule_keywords"])
+
+        # Call function to connect to wifi + hit APIs
+        self.api_calls()
 
         # Create empty list, will contain instances for each device
         self.devices = []
@@ -189,6 +194,7 @@ class Config():
         status_dict["metadata"]["id"] = self.identifier
         status_dict["metadata"]["floor"] = self.floor
         status_dict["metadata"]["location"] = self.location
+        status_dict["metadata"]["schedule_keywords"] = self.schedule_keywords
         if "ir_blaster" in self.__dict__:
             status_dict["metadata"]["ir_blaster"] = True
         else:
@@ -298,8 +304,8 @@ class Config():
             try:
                 response = urequests.get("https://api.ipgeolocation.io/astronomy?apiKey=ddcf9be5a455453e99d84de3dfe825bc&lat=45.524722&long=-122.6771891")
                 # Parse out sunrise/sunset, convert to 24h format
-                self.sunrise = response.json()["sunrise"]
-                self.sunset = response.json()["sunset"]
+                self.schedule_keywords["sunrise"] = response.json()["sunrise"]
+                self.schedule_keywords["sunset"] = response.json()["sunset"]
                 response.close()
                 break # Break loop once request succeeds
             except:
@@ -330,13 +336,12 @@ class Config():
         # Create empty dict to store new schedule rules
         result = {}
 
-        # Check for sunrise/sunet rules, replace "sunrise"/"sunset" with today's timestamps (converted to epoch time in loop below)
-        if "sunrise" in rules:
-            rules[self.sunrise] = rules["sunrise"]
-            del rules["sunrise"]
-        if "sunset" in rules:
-            rules[self.sunset] = rules["sunset"]
-            del rules["sunset"]
+        # Replace keywords with timestamp from dict, timestamps convert to epoch below
+        for keyword in self.schedule_keywords:
+            if keyword in rules:
+                keyword_time = self.schedule_keywords[keyword]
+                rules[keyword_time] = rules[keyword]
+                del rules[keyword]
 
         # Get rule start times, sort chronologically
         schedule = list(rules)
@@ -348,6 +353,10 @@ class Config():
         now = time.localtime(epoch)
 
         for rule in schedule:
+            # Skip unconverted keywords
+            if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", rule):
+                continue
+
             # Returns epoch time of rule, uses all current parameters but substitutes hour + min from schedule and 0 for seconds
             trigger_time = time.mktime((now[0], now[1], now[2], int(rule.split(":")[0]), int(rule.split(":")[1]), 0, now[6], now[7]))
 

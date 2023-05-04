@@ -10,8 +10,9 @@
             <label for="keyword" class="form-label">Keyword</label>
             <select class="form-select" id="keyword" name="keyword" data-original="{{timestamp}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists">
                 <option disabled {% if timestamp == "" %}selected{% endif %}>Select a keyword</option>
-                <option value="sunrise" {% if timestamp == "sunrise" %}selected{% endif %}>Sunrise</option>
-                <option value="sunset" {% if timestamp == "sunset" %}selected{% endif %}>Sunset</option>
+                {% for keyword in schedule_keywords %}
+                <option value="{{keyword}}" {% if timestamp == keyword %}selected{% endif %}>{{keyword|title}}</option>
+                {% endfor %}
             </select>
         </div>
 
