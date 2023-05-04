@@ -23,6 +23,10 @@ valid_sensor_types = ('pir', 'desktop', 'si7021', 'dummy', 'switch')
 def valid_ip(ip):
     return bool(re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip))
 
+# Returns all schedule keywords in dict format used by node config files and overview template
+def get_schedule_keywords_dict():
+    return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
+
 # Options for each supported IR Blaster target device, used to populate ApiTarget menu
 ir_blaster_options = {
     "tv": ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'],
@@ -249,7 +253,8 @@ def delete_node(request):
 def config_overview(request):
     context = {
         "not_uploaded" : [],
-        "uploaded" : []
+        "uploaded" : [],
+        "schedule_keywords" : get_schedule_keywords_dict()
     }
 
     not_uploaded = Config.objects.filter(node = None)
@@ -494,16 +499,13 @@ def generateConfigFile(request, edit_existing=False):
         if is_duplicate(filename, data["friendlyName"]):
             return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
 
-    # Get dict of all schedule keywords
-    schedule_keywords = {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
-
     # Populate metadata and credentials directly from JSON
     config = {
         "metadata": {
             "id" : data["friendlyName"],
             "location" : data["location"],
             "floor" : data["floor"],
-            "schedule_keywords": schedule_keywords
+            "schedule_keywords": get_schedule_keywords_dict()
         },
         "wifi": {
             "ssid" : data["ssid"],

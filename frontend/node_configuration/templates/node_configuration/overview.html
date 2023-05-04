@@ -92,12 +92,59 @@
             <a href="/new_config" class="btn-primary btn">Create new config</a>
         </div>
 
+        {% if schedule_keywords %}
+            <div id="keywords" class="row mx-3">
+                <h3 class="mb-3">Schedule Keywords:</h3>
+
+                <table id="keywords_table" class="table table-borderless table-hover">
+                    <tr>
+                        <th class="w-50">Keyword</th>
+                        <th class="w-50">Timestamp</th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+
+                    {% for keyword, timestamp in schedule_keywords.items %}
+                        <tr id="{{keyword}}_row">
+                            <td class="align-middle">
+                                <input id="{{keyword}}_keyword" type="text" class="form-control keyword" value="{{keyword}}" data-original="{{keyword}}" placeholder="Keyword" oninput="update_keyword_listener(this)">
+                            </td>
+                            <td class="align-middle">
+                                <input id="{{keyword}}_timestamp" type="time" class="form-control keyword" value="{{timestamp}}" data-original="{{timestamp}}" placeholder="HH:MM" oninput="update_keyword_listener(this)">
+                            </td>
+                            <td class="min align-middle">
+                                <button id="{{keyword}}_edit_button" type="button" class="btn-primary btn btn-sm" title="Update" onclick="update_keyword('{{keyword}}')" disabled><i class="bi bi-arrow-clockwise"></i></button>
+                            </td>
+                            <td class="min align-middle">
+                                <button type="button" class="btn-danger btn btn-sm" title="Delete" onclick="del_keyword('{{keyword}}')"><i class="bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    <tr id="add_keyword_row">
+                        <td class="align-middle">
+                            <input id="add_keyword_keyword" type="text" class="form-control" value="" placeholder="Keyword" autocomplete="off">
+                        </td>
+                        <td class="align-middle">
+                            <input id="add_keyword_timestamp" type="time" class="form-control" value="" placeholder="HH:MM" autocomplete="off">
+                        </td>
+                        <td class="min align-middle">
+                            <button id="add_keyword_button" type="button" class="btn-primary btn btn-sm" title="Add" onclick="add_keyword()" disabled><i class="bi-plus"></i></button>
+                        </td>
+                        <td class="min align-middle">
+                            <button type="button" class="btn-primary btn btn-sm" style="visibility: hidden;"><i class="bi bi-arrow-clockwise"></i></button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        {% endif %}
+
         <script>
             // Check if user is in dark mode, change theme (runs once on page load)
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 document.body.classList.add("dark");
                 try { document.getElementById("nodes_table").classList.add("table-dark"); } catch(err) {};
                 try { document.getElementById("not_uploaded_table").classList.add("table-dark"); } catch(err) {};
+                try { document.getElementById("keywords_table").classList.add("table-dark"); } catch(err) {};
                 document.getElementById("settings_button").classList.add("btn-dark");
                 Array.from(document.getElementsByClassName("dropdown-menu")).forEach(menu => menu.classList.add("dropdown-menu-dark"));
                 console.log("Dark mode");
@@ -387,6 +434,57 @@
             document.getElementById('loading').classList.add('d-none')
             document.getElementById('prompt').classList.remove('d-none')
         };
+
+        async function add_keyword() {
+            const keyword = document.getElementById('add_keyword_keyword').value;
+            const timestamp = document.getElementById('add_keyword_timestamp').value;
+            console.log(keyword)
+            console.log(timestamp)
+        };
+
+        async function update_keyword(kw) {
+            const keyword = document.getElementById(`${kw}_keyword`).value;
+            const timestamp = document.getElementById(`${kw}_timestamp`).value;
+            console.log(keyword)
+            console.log(timestamp)
+        };
+
+        async function del_keyword(kw) {
+            const keyword = document.getElementById(`${kw}_keyword`).value;
+            const timestamp = document.getElementById(`${kw}_timestamp`).value;
+            console.log(keyword)
+            console.log(timestamp)
+        };
+
+        function new_keyword_listener() {
+            const keyword_length = document.getElementById('add_keyword_keyword').value.length;
+            const timestamp_length = document.getElementById('add_keyword_timestamp').value.length;
+
+            if (keyword_length === 0 || timestamp_length === 0) {
+                document.getElementById('add_keyword_button').disabled = true;
+            } else {
+                document.getElementById('add_keyword_button').disabled = false;
+            };
+        };
+        document.getElementById('add_keyword_keyword').addEventListener('input', new_keyword_listener);
+        document.getElementById('add_keyword_timestamp').addEventListener('input', new_keyword_listener);
+
+        function update_keyword_listener(input) {
+            const target = input.id.split('_')[0];
+
+            const new_keyword = document.getElementById(`${target}_keyword`).value;
+            const new_timestamp = document.getElementById(`${target}_timestamp`).value;
+
+            const old_keyword = document.getElementById(`${target}_keyword`).dataset.original;
+            const old_timestamp = document.getElementById(`${target}_timestamp`).dataset.original;
+
+            if (new_keyword != old_keyword || new_timestamp != old_timestamp) {
+                document.getElementById(`${target}_edit_button`).disabled = false;
+            } else {
+                document.getElementById(`${target}_edit_button`).disabled = true;
+            };
+        };
+
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
