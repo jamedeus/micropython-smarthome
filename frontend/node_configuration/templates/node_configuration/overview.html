@@ -92,51 +92,52 @@
             <a href="/new_config" class="btn-primary btn">Create new config</a>
         </div>
 
-        {% if schedule_keywords %}
-            <div id="keywords" class="row mx-3">
-                <h3 class="mb-3">Schedule Keywords:</h3>
 
-                <table id="keywords_table" class="table table-borderless table-hover">
-                    <tr>
-                        <th class="w-50">Keyword</th>
-                        <th class="w-50">Timestamp</th>
-                        <th></th>
-                        <th></th>
-                    </tr>
+        <div id="keywords" class="row mx-3">
+            <h3 class="mb-3">Schedule Keywords:</h3>
 
-                    {% for keyword, timestamp in schedule_keywords.items %}
-                        <tr id="{{keyword}}_row">
-                            <td class="align-middle">
-                                <input id="{{keyword}}_keyword" type="text" class="form-control keyword" value="{{keyword}}" data-original="{{keyword}}" placeholder="Keyword" oninput="update_keyword_listener(this)">
-                            </td>
-                            <td class="align-middle">
-                                <input id="{{keyword}}_timestamp" type="time" class="form-control keyword" value="{{timestamp}}" data-original="{{timestamp}}" placeholder="HH:MM" oninput="update_keyword_listener(this)">
-                            </td>
-                            <td class="min align-middle">
-                                <button id="{{keyword}}_edit_button" type="button" class="btn-primary btn btn-sm" title="Update" onclick="update_keyword('{{keyword}}')" disabled><i class="bi bi-arrow-clockwise"></i></button>
-                            </td>
-                            <td class="min align-middle">
-                                <button type="button" class="btn-danger btn btn-sm" title="Delete" onclick="del_keyword('{{keyword}}')"><i class="bi-trash"></i></button>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    <tr id="add_keyword_row">
+            <table id="keywords_table" class="table table-borderless table-hover">
+                <tr>
+                    <th class="w-50">Keyword</th>
+                    <th class="w-50">Timestamp</th>
+                    <th></th>
+                    <th></th>
+                </tr>
+
+                {% if schedule_keywords %}
+                {% for keyword, timestamp in schedule_keywords.items %}
+                    <tr id="{{keyword}}_row">
                         <td class="align-middle">
-                            <input id="add_keyword_keyword" type="text" class="form-control" value="" placeholder="Keyword" autocomplete="off">
+                            <input id="{{keyword}}_keyword" type="text" class="form-control keyword" value="{{keyword}}" data-original="{{keyword}}" placeholder="Keyword"  autocomplete="off" oninput="update_keyword_listener(this)">
                         </td>
                         <td class="align-middle">
-                            <input id="add_keyword_timestamp" type="time" class="form-control" value="" placeholder="HH:MM" autocomplete="off">
+                            <input id="{{keyword}}_timestamp" type="time" class="form-control keyword" value="{{timestamp}}" data-original="{{timestamp}}" placeholder="HH:MM"  autocomplete="off" oninput="update_keyword_listener(this)">
                         </td>
                         <td class="min align-middle">
-                            <button id="add_keyword_button" type="button" class="btn-primary btn btn-sm" title="Add" onclick="add_keyword()" disabled><i class="bi-plus"></i></button>
+                            <button id="{{keyword}}_edit_button" type="button" class="btn-primary btn btn-sm" title="Update" onclick="update_keyword('{{keyword}}')" disabled><i class="bi bi-arrow-clockwise"></i></button>
                         </td>
                         <td class="min align-middle">
-                            <button type="button" class="btn-primary btn btn-sm" style="visibility: hidden;"><i class="bi bi-arrow-clockwise"></i></button>
+                            <button type="button" class="btn-danger btn btn-sm" title="Delete" onclick="del_keyword('{{keyword}}')"><i class="bi-trash"></i></button>
                         </td>
                     </tr>
-                </table>
-            </div>
-        {% endif %}
+                {% endfor %}
+                {% endif %}
+                <tr id="add_keyword_row">
+                    <td class="align-middle">
+                        <input id="add_keyword_keyword" type="text" class="form-control" value="" placeholder="Keyword" autocomplete="off" oninput="new_keyword_listener()">
+                    </td>
+                    <td class="align-middle">
+                        <input id="add_keyword_timestamp" type="time" class="form-control" value="" placeholder="HH:MM" autocomplete="off" oninput="new_keyword_listener()">
+                    </td>
+                    <td class="min align-middle">
+                        <button id="add_keyword_button" type="button" class="btn-primary btn btn-sm" title="Add" onclick="add_keyword()" disabled><i class="bi-plus"></i></button>
+                    </td>
+                    <td class="min align-middle">
+                        <button type="button" class="btn-primary btn btn-sm" style="visibility: hidden;"><i class="bi bi-arrow-clockwise"></i></button>
+                    </td>
+                </tr>
+            </table>
+        </div>
 
         <script>
             // Check if user is in dark mode, change theme (runs once on page load)
@@ -438,22 +439,43 @@
         async function add_keyword() {
             const keyword = document.getElementById('add_keyword_keyword').value;
             const timestamp = document.getElementById('add_keyword_timestamp').value;
-            console.log(keyword)
-            console.log(timestamp)
+
+            let result = await send_post_request("add_schedule_keyword", {"keyword": keyword, "timestamp": timestamp});
+            if (result.ok) {
+                location.reload();
+            } else {
+                alert(await result.text());
+            };
         };
 
         async function update_keyword(kw) {
+            const keyword_old = document.getElementById(`${kw}_keyword`).dataset.original;
             const keyword = document.getElementById(`${kw}_keyword`).value;
             const timestamp = document.getElementById(`${kw}_timestamp`).value;
-            console.log(keyword)
-            console.log(timestamp)
+
+            const payload = {
+                "keyword_old": keyword_old,
+                "keyword_new": keyword,
+                "timestamp_new": timestamp
+            };
+
+            let result = await send_post_request("edit_schedule_keyword", payload);
+            if (result.ok) {
+                location.reload();
+            } else {
+                alert(await result.text());
+            };
         };
 
         async function del_keyword(kw) {
             const keyword = document.getElementById(`${kw}_keyword`).value;
-            const timestamp = document.getElementById(`${kw}_timestamp`).value;
-            console.log(keyword)
-            console.log(timestamp)
+
+            let result = await send_post_request("delete_schedule_keyword", {"keyword": keyword});
+            if (result.ok) {
+                location.reload();
+            } else {
+                alert(await result.text());
+            };
         };
 
         function new_keyword_listener() {
@@ -466,8 +488,6 @@
                 document.getElementById('add_keyword_button').disabled = false;
             };
         };
-        document.getElementById('add_keyword_keyword').addEventListener('input', new_keyword_listener);
-        document.getElementById('add_keyword_timestamp').addEventListener('input', new_keyword_listener);
 
         function update_keyword_listener(input) {
             const target = input.id.split('_')[0];

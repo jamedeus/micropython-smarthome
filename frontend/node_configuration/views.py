@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, FileResponse
 from django.template import loader
 from django.conf import settings
+from django.core.exceptions import ValidationError
 import json, os, re
 
 from .models import Node, Config, WifiCredentials, ScheduleKeyword
@@ -703,3 +704,54 @@ def restore_config(request):
     config.save()
 
     return JsonResponse("Config restored", safe=False, status=200)
+
+
+
+def add_schedule_keyword(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+
+    try:
+        print(data["keyword"])
+        print(data["timestamp"])
+        ScheduleKeyword.objects.create(keyword=data["keyword"], timestamp=data["timestamp"])
+        return JsonResponse("Keyword created", safe=False, status=200)
+    except ValidationError as ex:
+        return JsonResponse(str(ex), safe=False, status=400)
+
+
+
+def edit_schedule_keyword(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+
+    target = ScheduleKeyword.objects.get(keyword=data["keyword_old"])
+
+    target.keyword = data["keyword_new"]
+    target.timestamp = data["timestamp_new"]
+
+    try:
+        target.save()
+        return JsonResponse("Keyword updated", safe=False, status=200)
+    except:
+        return JsonResponse("Failed to update keyword", safe=False, status=400)
+
+
+
+def delete_schedule_keyword(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+
+    target = ScheduleKeyword.objects.get(keyword=data["keyword"])
+
+    try:
+        target.delete()
+        return JsonResponse("Keyword deleted", safe=False, status=200)
+    except:
+        return JsonResponse("Failed to delete keyword", safe=False, status=500)

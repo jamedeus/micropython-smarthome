@@ -35,4 +35,8 @@ urlpatterns = [
     path('restore_config', views.restore_config, name='restore_config'),
 
     path('check_duplicate', views.check_duplicate, name='check_duplicate'),
+
+    path('add_schedule_keyword', views.add_schedule_keyword, name='add_schedule_keyword'),
+    path('edit_schedule_keyword', views.edit_schedule_keyword, name='edit_schedule_keyword'),
+    path('delete_schedule_keyword', views.delete_schedule_keyword, name='delete_schedule_keyword'),
 ]
