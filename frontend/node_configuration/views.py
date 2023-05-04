@@ -4,7 +4,7 @@ from django.template import loader
 from django.conf import settings
 import json, os, re
 
-from .models import Node, Config, WifiCredentials
+from .models import Node, Config, WifiCredentials, ScheduleKeyword
 
 from .Webrepl import *
 from .validators import *
@@ -494,13 +494,16 @@ def generateConfigFile(request, edit_existing=False):
         if is_duplicate(filename, data["friendlyName"]):
             return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
 
+    # Get dict of all schedule keywords
+    schedule_keywords = {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
+
     # Populate metadata and credentials directly from JSON
     config = {
         "metadata": {
             "id" : data["friendlyName"],
             "location" : data["location"],
             "floor" : data["floor"],
-            "schedule_keywords": {}
+            "schedule_keywords": schedule_keywords
         },
         "wifi": {
             "ssid" : data["ssid"],
