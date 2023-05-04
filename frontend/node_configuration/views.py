@@ -499,7 +499,8 @@ def generateConfigFile(request, edit_existing=False):
         "metadata": {
             "id" : data["friendlyName"],
             "location" : data["location"],
-            "floor" : data["floor"]
+            "floor" : data["floor"],
+            "schedule_keywords": {}
         },
         "wifi": {
             "ssid" : data["ssid"],
