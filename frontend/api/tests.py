@@ -1031,3 +1031,110 @@ class ApiCardTests(TestCase):
 
             # Confirm context contains macro name
             self.assertEqual(response.context['context']['metadata']['recording'], 'macro-name')
+
+
+
+# Test modal used to edit schedule rules
+class RuleModalTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+    # Get request is sent when adding a new rule
+    def test_create_new_rule(self):
+        response = self.client.get('/edit_rule')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'api/rule_modal.html')
+
+    def test_edit_schedule_rule(self):
+        # Send post request, confirm status and template used
+        payload = {'timestamp': '14:00', 'rule': 'enabled', 'type': 'switch', 'target': 'sensor3', 'schedule_keywords': {'sunrise': '05:55', 'sunset': '20:20'}}
+        response = self.client.post('/edit_rule', payload, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'api/rule_modal.html')
+
+        # Confirm correct context
+        self.assertEqual(response.context['timestamp'], '14:00')
+        self.assertEqual(response.context['rule'], 'enabled')
+        self.assertEqual(response.context['type'], 'switch')
+        self.assertEqual(response.context['target'], 'sensor3')
+        self.assertEqual(response.context['show_timestamp'], True)
+
+    def test_edit_fade_rule(self):
+        # Send post request, confirm status and template used
+        payload = {'timestamp': '14:00', 'rule': 'fade/50/3600', 'type': 'dimmer', 'target': 'device1', 'schedule_keywords': {'sunrise': '05:55', 'sunset': '20:20'}}
+        response = self.client.post('/edit_rule', payload, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'api/rule_modal.html')
+
+        # Confirm correct context
+        self.assertEqual(response.context['timestamp'], '14:00')
+        self.assertEqual(response.context['fade'], True)
+        self.assertEqual(response.context['rule'], '50')
+        self.assertEqual(response.context['duration'], '3600')
+        self.assertEqual(response.context['type'], 'dimmer')
+        self.assertEqual(response.context['target'], 'device1')
+        self.assertEqual(response.context['show_timestamp'], True)
+
+    def test_edit_keyword_rule(self):
+        # Send post request, confirm status and template used
+        payload = {'timestamp': 'morning', 'rule': 'enabled', 'type': 'switch', 'target': 'sensor3', 'schedule_keywords': {'sunrise': '05:55', 'sunset': '20:20'}}
+        response = self.client.post('/edit_rule', payload, content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'api/rule_modal.html')
+
+        # Confirm correct context
+        self.assertEqual(response.context['timestamp'], 'morning')
+        self.assertEqual(response.context['rule'], 'enabled')
+        self.assertEqual(response.context['type'], 'switch')
+        self.assertEqual(response.context['target'], 'sensor3')
+        self.assertEqual(response.context['show_timestamp'], False)
+
+
+# Test endpoints used to manage schedule keywords
+class ScheduleKeywordTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+    def test_get_keywords(self):
+        # Mock request to return expected response
+        with patch('api.views.request', return_value = {"sunrise": "05:55", "sunset": "20:20"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['get_schedule_keywords'])
+            self.assertEqual(response, {"sunrise": "05:55", "sunset": "20:20"})
+
+    def test_add_keyword(self):
+        # Mock request to return expected response
+        with patch('api.views.request', return_value = {"Keyword added": "test", "time": "05:00"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test', '05:00'])
+            self.assertEqual(response, {"Keyword added": "test", "time": "05:00"})
+
+    def test_remove_keyword(self):
+        # Mock request to return expected response
+        with patch('api.views.request', return_value = {"Keyword removed": "test"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['remove_schedule_keyword', 'test'])
+            self.assertEqual(response, {"Keyword removed": "test"})
+
+    def test_save_keywords(self):
+        # Mock request to return expected response
+        with patch('api.views.request', return_value = {"Success": "Keywords written to disk"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['save_schedule_keywords'])
+            self.assertEqual(response, {"Success": "Keywords written to disk"})
+
+    def test_add_errors(self):
+        # Send request with no args, verify error
+        response = parse_command('192.168.1.123', ['add_schedule_keyword'])
+        self.assertEqual(response, {"ERROR" : "Please fill out all fields"})
+
+        # Send request with no timestamp, verify error
+        response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test'])
+        self.assertEqual(response, {"ERROR" : "Timestamp format must be HH:MM (no AM/PM)"})
+
+    def test_remove_errors(self):
+        # Send request with no args, verify error
+        response = parse_command('192.168.1.123', ['remove_schedule_keyword'])
+        self.assertEqual(response, {"ERROR" : "Please fill out all fields"})

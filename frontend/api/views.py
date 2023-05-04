@@ -14,7 +14,7 @@ from api.models import Macro
 timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 
 
-
+# Receives schedule params in post, renders rule_modal template
 def edit_rule(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -500,6 +500,7 @@ def add_schedule_rule(ip, params):
 
     if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
         timestamp = params.pop(0)
+    # TODO iterate model
     elif len(params) > 0 and params[0] in ['sunrise', 'sunset']:
         timestamp = params.pop(0)
     else:
@@ -528,6 +529,7 @@ def remove_rule(ip, params):
 
     if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
         timestamp = params.pop(0)
+    # TODO iterate model
     elif len(params) > 0 and params[0] in ['sunrise', 'sunset']:
         timestamp = params.pop(0)
     else:

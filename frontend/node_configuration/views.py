@@ -684,8 +684,6 @@ def edit_schedule_keyword_config(request):
 
 
 
-
-
 def delete_schedule_keyword_config(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
