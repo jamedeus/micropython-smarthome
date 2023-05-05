@@ -6,12 +6,16 @@ import json
 import asyncio
 import re
 
-from node_configuration.models import Node
+from node_configuration.models import Node, ScheduleKeyword
 from node_configuration.get_api_target_menu_options import get_api_target_menu_options
 from api.models import Macro
 
 # Used to determine if keyword or timestamp schedule rule
 timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+
+# Returns all schedule keywords in dict format used by node config files and overview template
+def get_schedule_keywords_dict():
+    return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
 
 
 # Receives schedule params in post, renders rule_modal template
@@ -30,6 +34,9 @@ def edit_rule(request):
         data['show_timestamp'] = True
     else:
         data['show_timestamp'] = False
+
+    # Add schedule keywords
+    data['schedule_keywords'] = get_schedule_keywords_dict()
 
     print(data)
 
@@ -153,6 +160,7 @@ def api(request, node, recording=False):
 
     print(json.dumps(status, indent=4))
 
+    # TODO after page loaded, sync schedule keywords with node (offline during change etc)
     return HttpResponse(template.render({'context': status}, request))
 
 

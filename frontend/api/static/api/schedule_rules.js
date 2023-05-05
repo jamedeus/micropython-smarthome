@@ -126,7 +126,7 @@ function edit_existing_rule(el) {
     // Get timestamp, rule, instance type
     const timestamp = document.getElementById(`${target}-rule${num}-time`).dataset.original;
     const rule = document.getElementById(`${target}-rule${num}`).dataset.original;
-    const type = target_node_status[`${target.replace(/[0-9]/g, '')}s`][target]['type'];
+    const type = el.dataset.type;
 
     // Add dataset attributes, used by add_rule function
     add_button.dataset.target = target;
@@ -141,8 +141,7 @@ function edit_existing_rule(el) {
         'timestamp': timestamp,
         'rule': rule,
         'type': type,
-        'target': target,
-        'schedule_keywords': target_node_status['metadata']['schedule_keywords']
+        'target': target
     };
     open_schedule_rule_modal(payload);
 };
@@ -153,13 +152,7 @@ function edit_existing_rule(el) {
 function add_new_rule(el) {
     // Get target device/sensor
     const target = el.id.split("-")[0];
-
-    // Get instance type
-    if (target.startsWith('sensor')) {
-        var type = target_node_status['sensors'][target]['type'];
-    } else {
-        var type = target_node_status['devices'][target]['type'];
-    };
+    const type = el.dataset.type;
 
     // Add dataset attributes to add button
     add_button.dataset.target = target;
@@ -172,8 +165,7 @@ function add_new_rule(el) {
         'timestamp': '',
         'rule': '',
         'type': type,
-        'target': target,
-        'schedule_keywords': target_node_status['metadata']['schedule_keywords']
+        'target': target
     };
     open_schedule_rule_modal(payload);
 };
@@ -181,7 +173,7 @@ function add_new_rule(el) {
 
 // Takes target ID, new rule timestamp, new rule
 // Adds new row to schedule rules table with params
-function add_new_row(target, timestamp, rule) {
+function add_new_row(target, timestamp, rule, type) {
     // Get schedule rules table for target instance
     const table = document.getElementById(target + "-rules");
 
@@ -196,16 +188,16 @@ function add_new_row(target, timestamp, rule) {
 
     // Populate template with received parameters
     var template = `<tr id="${target}-row-${row}">
-    <td><span class="form-control schedule-rule time" id="${target}-rule${row}-time" data-original="${timestamp}" onclick="edit_existing_rule(this);">${format12h(timestamp)}</span></td>
-    <td><span class="form-control schedule-rule" id="${target}-rule${row}" data-original="${rule}" onclick="edit_existing_rule(this);">${rule}</span></td>
-    <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${target}-edit${row}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
+    <td><span class="form-control schedule-rule time" id="${target}-rule${row}-time" data-original="${timestamp}" data-type="${type}" onclick="edit_existing_rule(this);">${format12h(timestamp)}</span></td>
+    <td><span class="form-control schedule-rule" id="${target}-rule${row}" data-original="${rule}" data-type="${type}" onclick="edit_existing_rule(this);">${rule}</span></td>
+    <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${target}-edit${row}" data-type="${type}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
     </tr>`
 
     // Add row to bottom of table
     table.insertAdjacentHTML('beforeend', template);
 
     // Change text for api-target
-    if (target_node_status[`${target.replace(/[0-9]/g, '')}s`][target]['type'] === "api-target") {
+    if (type === "api-target") {
         console.log('overwriting api-target innerHTML')
         document.getElementById(`${target}-rule${row}`).innerHTML = "click to view";
     };
@@ -305,7 +297,7 @@ async function add_rule() {
         // New rule added
         if (original_timestamp == '') {
             // Add to schedule rules table
-            add_new_row(target, timestamp, rule);
+            add_new_row(target, timestamp, rule, type);
 
         // Modified existing rules timestamp
         } else if (original_timestamp != timestamp) {
@@ -313,7 +305,7 @@ async function add_rule() {
             await delete_rule();
 
             // Add new rule to schedule rules table
-            add_new_row(target, timestamp, rule);
+            add_new_row(target, timestamp, rule, type);
 
         // Modified existing rule without changing timestamp
         } else if (original_timestamp === timestamp) {

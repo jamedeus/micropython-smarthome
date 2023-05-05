@@ -212,20 +212,20 @@
                                         {% for time, rule in params.schedule.items %}
                                             <tr id="{{sensor}}-row-{{forloop.counter}}">
                                                 {# Add time field #}
-                                                <td><span class="form-control schedule-rule time" id="{{sensor}}-rule{{forloop.counter}}-time" data-original="{{time}}"  onclick="edit_existing_rule(this);">{{time}}</span></td>
+                                                <td><span class="form-control schedule-rule time" id="{{sensor}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{params.type}}"  onclick="edit_existing_rule(this);">{{time}}</span></td>
 
                                                 {# Add rule field #}
-                                                <td><span class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}" data-original="{{rule}}" onclick="edit_existing_rule(this);">{{rule}}</span></td>
+                                                <td><span class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{rule}}</span></td>
 
                                                 {# Add edit/delete button #}
-                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{sensor}}-edit{{forloop.counter}}"  onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
+                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{sensor}}-edit{{forloop.counter}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
                                             </tr>
                                         {% endfor %}
                                     {% endif %}
                                 </table>
 
                                 <div class="text-center mx-3 mb-3">
-                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{sensor}}-add-rule" onclick="add_new_rule(this)"><i class="bi-plus-lg"></i></button>
+                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{sensor}}-add-rule" data-type="{{params.type}}" onclick="add_new_rule(this)"><i class="bi-plus-lg"></i></button>
                                 </div>
                             </div>
                             <!-- End schedule rules section -->
@@ -328,18 +328,18 @@
                                         {% for time, rule in params.schedule.items %}
                                             <tr id="{{device}}-row-{{forloop.counter}}">
                                                 {# Add time field #}
-                                                <td><span class="form-control schedule-rule time" id="{{device}}-rule{{forloop.counter}}-time" data-original="{{ time }}"  onclick="edit_existing_rule(this);">{{time}}</span></td>
+                                                <td><span class="form-control schedule-rule time" id="{{device}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{time}}</span></td>
 
                                                 {# Add rule field #}
                                                 {% if params.type == "api-target" %}
-                                                    <td><span class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}-button" data-original="{{rule}}" onclick="edit_existing_rule(this);">click to view</span>
-                                                    <input type="text" class="form-control" id="{{device}}-rule{{forloop.counter}}" data-original="{{rule}}" style="display:none;"></td>
+                                                    <td><span class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}-button" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">click to view</span>
+                                                    <input type="text" class="form-control" id="{{device}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}" style="display:none;"></td>
                                                 {% else %}
-                                                    <td><span class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}" data-original="{{rule}}"  onclick="edit_existing_rule(this);">{{rule}}</span></td>
+                                                    <td><span class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}"  onclick="edit_existing_rule(this);">{{rule}}</span></td>
                                                 {% endif %}
 
                                                 {# Add edit button #}
-                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{device}}-edit{{forloop.counter}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
+                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{device}}-edit{{forloop.counter}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
                                             </tr>
                                         {% endfor %}
                                     {% endif %}
@@ -347,7 +347,7 @@
 
                                 {# Add new rule button #}
                                 <div class="text-center mx-3 mb-3">
-                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{device}}-add-rule" onclick="add_new_rule(this)"><i class="bi-plus-lg"></i></button>
+                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{device}}-add-rule" data-type="{{params.type}}" onclick="add_new_rule(this)"><i class="bi-plus-lg"></i></button>
                                 </div>
 
                             </div>
