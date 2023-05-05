@@ -391,7 +391,6 @@ def add_schedule_keyword(args):
 
     keyword, timestamp = args[0].popitem()
 
-    # TODO handle keyword already exists?
     if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", timestamp):
         app.config.schedule_keywords[keyword] = timestamp
         app.config.build_queue()
@@ -400,13 +399,14 @@ def add_schedule_keyword(args):
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
 
 
-# TODO prevent delete sunrise + sunset?
 @app.route("remove_schedule_keyword")
 def remove_schedule_keyword(args):
     if not len(args) == 1:
         return {"ERROR": "Invalid syntax"}
 
-    if args[0] in app.config.schedule_keywords.keys():
+    if args[0] in ['sunrise', 'sunset']:
+        return {"ERROR": "Cannot delete sunrise or sunset"}
+    elif args[0] in app.config.schedule_keywords.keys():
         keyword = args[0]
     else:
         return {"ERROR": "Keyword does not exist"}

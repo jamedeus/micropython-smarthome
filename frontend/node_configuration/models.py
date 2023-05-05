@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, IntegrityError
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 import os, json
@@ -89,3 +89,10 @@ class ScheduleKeyword(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
+
+    # Prevent deleting sunrise or sunset
+    def delete(self, *args, **kwargs):
+        if self.keyword in ["sunrise", "sunset"]:
+            raise IntegrityError(f"{self.keyword} is required and cannot be deleted")
+        else:
+            return super().delete(*args, **kwargs)
