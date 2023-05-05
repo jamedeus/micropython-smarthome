@@ -48,56 +48,15 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                 <label id='${device}-rules-label' class='card-title schedule-rule-card ${device}' title='${device} - ${instances['devices'][device]['type']}'>
                                     <b>${instances['devices'][device]['nickname']}</b>
                                 </label>
-                                <table id='${device}-rules' class='table table-borderless ${device}'>
+                                <table id='${device}-rules' class='table table-borderless ${device} d-none'>
                                     <tr>
                                         <th style='text-align: center;'>Time</th>
                                         <th style='text-align: center;'>Rule</th>
                                     </tr>
-                                        <tr id='${device}-row-1' class='${device}'>
-                                            <td>
-                                                <input type='time' class='form-control ${device} timestamp' id='${device}-rule1-time' placeholder='HH:MM'>
-                                            </td>`
-
-            // ApiTarget: add button that opens rule modal + hidden input field that receives value from modal
-            if (instances['devices'][device]['type'] == 'api-target') {
-                template +=                `<td>
-                                                <button id="${device}-rule1-button" class="form-control ${device}" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                                <input type="text" class="form-control ${device} rule" id="${device}-rule1" placeholder="" style="display:none;">
-                                            </td>`
-
-            // Devices that only take enabled and disabled: add dropdown
-            } else if (instances['devices'][device]['type'] == 'desktop' || instances['devices'][device]['type'] == 'relay' || instances['devices'][device]['type'] == 'dumb-relay' || instances['devices'][device]['type'] == 'mosfet') {
-                template +=                `<td>
-                                                <select id="${device}-rule1" class="form-select rule ${device} autocomplete="off">
-                                                    <option>Select rule</option>
-                                                    <option value='enabled'>Enabled</option>
-                                                    <option value='disabled'>Disabled</option>
-                                                </select>
-                                            </td>`
-
-            // Wled: Add range slider
-            } else if (instances['devices'][device]['type'] == 'wled') {
-                template +=                `<td>
-                                                <div class="d-flex flex-row align-items-center my-2">
-                                                    <button id="${device}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                                                    <input id="${device}-rule1" type="range" class="rule ${device} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                                    <button id="${device}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
-                                                </div>
-                                            </td>`
-
-            // All other device types: add text input
-            } else {
-                template +=                 `<td>
-                                                 <input type='text' class='form-control ${device} rule' id='${device}-rule1' placeholder=''>
-                                             </td>`
-            };
-
-            template +=                     `<td class='min'>
-                                                 <button type='button' class='remove btn btn-sm btn-danger mt-1 ${device}' id='${device}-remove1' disabled><i class="bi-x-lg"></i></button>
-                                             </td>
-                                        </tr>
                                 </table>
-                                <button type='button' class='btn btn-secondary add ${device}' id='${device}-add-rule' onclick='add(this)'>Add another</button>
+                                <div>
+                                    <button type="button" class="btn btn-secondary add ${device}" id="${device}-add-rule" data-type="${instances['devices'][device]['type']}" onclick="add_new_rule(this)">Add Rule</i></button>
+                                </div>
                             </div>
                         </div>`;
 
@@ -105,11 +64,6 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 
             // Prevent adding duplicates
             instances['devices'][device].new = false;
-
-            // If wled added, initialize rule slider
-            if (instances['devices'][device]['type'] == 'wled') {
-                add_new_slider(`${device}-rule1`);
-            };
 
         // If device nickname changed, but type did not change (targets + rules don't need to be cleared)
         } else if (instances['devices'][device].name_changed && ! instances['devices'][device].modified) {
@@ -155,51 +109,9 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             template = `<tr>
                             <th style='text-align: center;'>Time</th>
                             <th style='text-align: center;'>Rule</th>
-                        </tr>
-                        <tr id='${device}-row-1' class='${device}'>
-                            <td><input type='time' class='form-control ${device}' id='${device}-rule1-time' placeholder='HH:MM'></td>`
-
-            // ApiTarget: Add rule modal button
-            if (instances['devices'][device]['type'] == "api-target") {
-                template += `<td>
-                                <button id='${device}-rule1-button' class='form-control ${device}' onclick='open_rule_modal(this);' type='button'>Set rule</button>
-                                <input type='text' class='form-control rule ${device}' id='${device}-rule1' style='display:none;'>
-                            </td>`
-
-            // Devices that only take enabled and disabled: add dropdown
-            } else if (instances['devices'][device]['type'] == 'desktop' || instances['devices'][device]['type'] == 'relay' || instances['devices'][device]['type'] == 'dumb-relay' || instances['devices'][device]['type'] == 'mosfet') {
-                template += `<td>
-                                 <select id="${device}-rule1" class="form-select rule ${device} autocomplete="off">
-                                     <option>Select rule</option>
-                                     <option value='enabled'>Enabled</option>
-                                     <option value='disabled'>Disabled</option>
-                                 </select>
-                             </td>`
-
-            // Wled: Add range slider
-            } else if (instances['devices'][device]['type'] == 'wled') {
-                template +=                `<td>
-                                                <div class="d-flex flex-row align-items-center my-2">
-                                                    <button id="${device}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                                                    <input id="${device}-rule1" type="range" class="rule ${device} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                                    <button id="${device}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
-                                                </div>
-                                            </td>`
-
-            // All other device types: add text input
-            } else {
-                template += `<td><input type='text' class='form-control ${device}' id='${device}-rule1' placeholder=''></td>`
-
-            }
-
-            template += `<td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${device}" id="${device}-remove1" disabled><i class="bi-x-lg"></i></button></td>
-                     </tr>`;
+                        </tr>`;
             document.getElementById(`${device}-rules`).innerHTML = template
-
-            // If wled added, initialize rule slider
-            if (instances['devices'][device]['type'] == 'wled') {
-                add_new_slider(`${device}-rule1`);
-            };
+            document.getElementById(`${device}-rules`).classList.add('d-none');
 
             // Prevent running again (unless device type changes again)
             instances['devices'][device].modified = false;
@@ -237,81 +149,18 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                 <label id='${sensor}-rules-label' class='card-title schedule-rule-card ${sensor}' title='${sensor} - ${instances['sensors'][sensor]['type']}'>
                                     <b>${instances['sensors'][sensor]['nickname']}</b>
                                 </label>
-                                <table id='${sensor}-rules' class='table table-borderless ${sensor}'>
+                                <table id='${sensor}-rules' class='table table-borderless ${sensor} d-none'>
                                     <tr>
                                         <th style='text-align: center;'>Time</th>
                                         <th style='text-align: center;'>Rule</th>
                                     </tr>
-                                        <tr id='${sensor}-row-1' class='${sensor}'>
-                                            <td>
-                                                <input type='time' class='form-control ${sensor} timestamp' id='${sensor}-rule1-time' placeholder='HH:MM'>
-                                            </td>`
-
-            // Sensors that only take enabled and disabled: add dropdown
-            if (instances['sensors'][sensor]['type'] == 'switch' || instances['sensors'][sensor]['type'] == 'desktop') {
-                template +=                `<td>
-                                                <select id="${sensor}-rule1" class="form-select rule ${sensor} autocomplete="off">
-                                                    <option>Select rule</option>
-                                                    <option value='enabled'>Enabled</option>
-                                                    <option value='disabled'>Disabled</option>
-                                                </select>
-                                            </td>`
-
-            // Dummy sensor: Add dropdown with extra options (on and off)
-            } else if (instances['sensors'][sensor]['type'] == 'dummy') {
-                template += `               <td>
-                                                <select id="${sensor}-rule1" class="form-select rule ${sensor} autocomplete="off">
-                                                    <option>Select rule</option>
-                                                    <option value='enabled'>Enabled</option>
-                                                    <option value='disabled'>Disabled</option>
-                                                    <option value='on'>On</option>
-                                                    <option value='off'>Off</option>
-                                                </select>
-                                            </td>`
-
-            // Motion sensor: Add range slider
-            } else if (instances['sensors'][sensor]['type'] == 'pir') {
-                template +=                `<td>
-                                                <div class="d-flex flex-row align-items-center my-2">
-                                                    <button id="${sensor}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                                    <input id="${sensor}-rule1" type="range" class="rule ${sensor} mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                                    <button id="${sensor}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                                </div>
-                                            </td>`
-
-            // Thermostat: Add range slider
-            } else if (instances['sensors'][sensor]['type'] == 'si7021') {
-                template +=                `<td>
-                                                <div class="d-flex flex-row align-items-center my-2">
-                                                    <button id="${sensor}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                                    <input id="${sensor}-rule1" type="range" class="rule ${sensor} mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                                    <button id="${sensor}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                                </div>
-                                            </td>`
-
-            // All other sensors: Add text field
-            } else {
-                template +=                `<td>
-                                                <input type='text' class='form-control ${sensor} rule' id='${sensor}-rule1' placeholder=''>
-                                            </td>`
-
-            };
-
-            template +=                    `<td class='min'>
-                                                <button type='button' class='remove btn btn-sm btn-danger mt-1 ${sensor}' id='${sensor}-remove1' disabled><i class="bi-x-lg"></i></button>
-                                            </td>
-                                        </tr>
                                 </table>
-                                <button type='button' class='btn btn-secondary add ${sensor}' id='${sensor}-add-rule' onclick='add(this)'>Add another</button>
+                                <div>
+                                    <button type="button" class="btn btn-secondary add ${sensor}" id="${sensor}-add-rule" data-type="${instances['sensors'][sensor]['type']}" onclick="add_new_rule(this)">Add Rule</i></button>
+                                </div>
                             </div>
-                        </div>`
-
+                        </div>`;
             document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
-
-            // If thermostat or motion sensor added, initialize rule slider
-            if (instances['sensors'][sensor]['type'] == 'si7021' || instances['sensors'][sensor]['type'] == 'pir') {
-                add_new_slider(`${sensor}-rule1`);
-            };
 
             // Prevent adding duplicates if user goes back to page1
             instances['sensors'][sensor].new = false;
@@ -347,66 +196,9 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             template = `<tr>
                             <th style='text-align: center;'>Time</th>
                             <th style='text-align: center;'>Rule</th>
-                        </tr>
-                        <tr id='${sensor}-row-1' class='${sensor}'>
-                            <td><input type='time' class='form-control timestamp ${sensor}' id='${sensor}-rule1-time' placeholder='HH:MM'></td>`
-
-            // Sensors that only take enabled and disabled: add dropdown
-            if (instances['sensors'][sensor]['type'] == 'switch' || instances['sensors'][sensor]['type'] == 'desktop') {
-                template +=                `<td>
-                                                <select id="${sensor}-rule1" class="form-select rule ${sensor} autocomplete="off">
-                                                    <option>Select rule</option>
-                                                    <option value='enabled'>Enabled</option>
-                                                    <option value='disabled'>Disabled</option>
-                                                </select>
-                                            </td>`
-
-            // Dummy sensor: Add dropdown with extra options (on and off)
-            } else if (instances['sensors'][sensor]['type'] == 'dummy') {
-                template += `               <td>
-                                                <select id="${sensor}-rule1" class="form-select rule ${sensor} autocomplete="off">
-                                                    <option>Select rule</option>
-                                                    <option value='enabled'>Enabled</option>
-                                                    <option value='disabled'>Disabled</option>
-                                                    <option value='on'>On</option>
-                                                    <option value='off'>Off</option>
-                                                </select>
-                                            </td>`
-
-            // Motion sensor: Add range slider
-            } else if (instances['sensors'][sensor]['type'] == 'pir') {
-                template +=                `<td>
-                                                <div class="d-flex flex-row align-items-center my-2">
-                                                    <button id="${sensor}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                                    <input id="${sensor}-rule1" type="range" class="rule ${sensor} mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                                    <button id="${sensor}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                                </div>
-                                            </td>`
-
-            // Thermostat: Add range slider
-            } else if (instances['sensors'][sensor]['type'] == 'si7021') {
-                template +=                `<td>
-                                                <div class="d-flex flex-row align-items-center my-2">
-                                                    <button id="${sensor}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                                    <input id="${sensor}-rule1" type="range" class="rule ${sensor} mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                                    <button id="${sensor}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                                </div>
-                                            </td>`
-
-            // All other sensors: Add text field
-            } else {
-                template += `<td><input type='text' class='form-control rule ${sensor}' id='${sensor}-rule1' placeholder=''></td>`
-            };
-
-            template += `<td class='min'><button type="button" class="remove btn btn-sm btn-danger mt-1 ${sensor}" id="${sensor}-remove1" disabled="true"><i class="bi-x-lg"></i></button></td>
-                     </tr>`;
-
-            document.getElementById(`${sensor}-rules`).innerHTML = template;
-
-            // If thermostat or motion sensor added, initialize rule slider
-            if (instances['sensors'][sensor]['type'] == 'si7021' || instances['sensors'][sensor]['type'] == 'pir') {
-                add_new_slider(`${sensor}-rule1`);
-            };
+                        </tr>`;
+            document.getElementById(`${sensor}-rules`).innerHTML = template
+            document.getElementById(`${sensor}-rules`).classList.add('d-none');
 
             // Prevent running again (unless user changes type again)
             instances['sensors'][sensor].modified = false;

@@ -1,92 +1,78 @@
-function add(button) {
-    var instance = button.id.split("-", 1)[0];
+// Handler for add button in schedule rules dropdown, used to create new rules and edit existing
+async function add_rule() {
+    // Get target device/sensor + type
+    const target = add_button.dataset.target;
+    const type = add_button.dataset.type;
 
-    table = document.getElementById(instance + "-rules");
-
-    // Rows are numbered sequentially. Get number of last row and increment
-    var next_row = parseInt(table.rows[table.rows.length - 1].id.split('-').pop()) + 1;
-
-    var row = table.insertRow();
-    row.setAttribute("id", instance + "-row-" + next_row);
-
-    var cell_time = row.insertCell(0);
-    var cell_value = row.insertCell(1);
-    var cell_del = row.insertCell(2);
-
-    // Add timestamp field
-    cell_time.innerHTML = `<input type='time' class='form-control ${instance} timestamp' id='${instance}-rule${next_row}-time' placeholder='HH:MM'>`;
-
-    // Get instance type
-    if (instance.startsWith("device")) {
-        var type = document.getElementById(instance.replace("device", "deviceType")).value;
+    // Get timestamp or time keyword depending on toggle position
+    if (document.getElementById('toggle-time-mode').checked) {
+        var timestamp_el = document.getElementById('keyword');
     } else {
-        var type = document.getElementById(instance.replace("sensor", "sensorType")).value;
+        var timestamp_el = document.getElementById('timestamp');
     };
 
-    // Add appropriate input for given instance type
-    if (type == "pir") {
-        // Add range slider
-        cell_value.innerHTML = `<div class="d-flex flex-row align-items-center my-2">
-                                    <button id="${instance}-rule${next_row}-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                    <input id="${instance}-rule${next_row}" type="range" class="${instance} rule mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                    <button id="${instance}-rule${next_row}-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                </div>`
-        add_new_slider(`${instance}-rule${next_row}`);
+    const timestamp = timestamp_el.value;
+    const original_timestamp = timestamp_el.dataset.original;
 
-    } else if (type == "si7021") {
-        // Add range slider
-        cell_value.innerHTML = `<div class="d-flex flex-row align-items-center my-2">
-                                    <button id="${instance}-rule${next_row}-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                    <input id="${instance}-rule${next_row}" type="range" class="${instance} rule mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                    <button id="${instance}-rule${next_row}-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                </div>`
-        add_new_slider(`${instance}-rule${next_row}`);
+    // Get rule (all inputs have same ID, only 1 included in template)
+    const rule_field = document.getElementById('rule-input');
+    let rule = rule_field.value;
 
-    } else if (type == "wled") {
-        // Add range slider
-        cell_value.innerHTML = `<div class="d-flex flex-row align-items-center my-2">
-                                    <button id="${instance}-rule${next_row}-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                                    <input id="${instance}-rule${next_row}" type="range" class="${instance} rule mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                    <button id="${instance}-rule${next_row}-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
-                                </div>`
-        add_new_slider(`${instance}-rule${next_row}`);
-
-    } else if (type == "dimmer" || type == "bulb" || type == "pwm") {
-        // Add text field for instances that take both enabled/disabled and integer
-        cell_value.innerHTML = `<input type='text' class='form-control ${instance} rule' id='${instance}-rule${next_row}' placeholder=''>`;
-
-    } else if (type == "switch" || type == "desktop" || type == "relay" || type == "dumb-relay" || type == "mosfet") {
-        // Add dropdown for instances that only take enabled/disabled
-        cell_value.innerHTML = `<select id="${instance}-rule${next_row}" class="form-select rule ${instance} autocomplete="off">
-                                    <option>Select rule</option>
-                                    <option value='enabled'>Enabled</option>
-                                    <option value='disabled'>Disabled</option>
-                                </select>`
-
-    } else if (type == "dummy") {
-        // Add dropdown with additional options for dummy
-        cell_value.innerHTML = `<select id="${instance}-rule${next_row}" class="form-select rule ${instance} autocomplete="off">
-                                    <option>Select rule</option>
-                                    <option value='enabled'>Enabled</option>
-                                    <option value='disabled'>Disabled</option>
-                                    <option value='on'>On</option>
-                                    <option value='off'>Off</option>
-                                </select>`
-
-    } else if (type == "api-target") {
-        // Add button that opens rule modal + hidden input field that receives value from modal for ApiTarget
-        cell_value.innerHTML = `<button id="${instance}-rule${next_row}-button" class="form-control" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                <input type="text" class="form-control ${instance} rule" id="${instance}-rule${next_row}" placeholder="" style="display:none;">`
+    // If fade rule: convert to correct syntax
+    if (['dimmer', 'bulb', 'pwm'].includes(type)) {
+        if (document.getElementById('toggle-rule-mode').checked) {
+            // TODO handle empty duration field
+            const duration = document.getElementById('duration').value;
+            rule = `fade/${rule}/${duration}`;
+        };
     };
 
-    // Add delete button
-    cell_del.innerHTML = `<button type='button' class='remove btn btn-sm btn-danger mt-1 ${instance}' id='${instance}-remove${next_row}' onclick='remove(this)'><i class="bi-x-lg"></i></button>`;
+    // Do not add incomplete rule
+    if (timestamp.length == 0) {
+        show_tooltip(timestamp_el, "Required field");
+        add_button.disabled = false;
+        return;
+    } else if (rule.length == 0) {
+        show_tooltip(rule_field, "Required field");
+        add_button.disabled = false;
+        return;
+    };
+
+
+    // New rule added
+    if (original_timestamp == '') {
+        // Add to schedule rules table
+        add_new_row(target, timestamp, rule, type);
+
+    // Modified existing rule
+    } else if (original_timestamp != timestamp) {
+        // Modify rule in rule field
+        const num = delete_button.dataset.number;
+        document.getElementById(`${target}-rule${num}`).dataset.original = rule;
+        document.getElementById(`${target}-rule${num}`).innerHTML = rule;
+        document.getElementById(`${target}-rule${num}-time`).dataset.original = timestamp;
+        document.getElementById(`${target}-rule${num}-time`).innerHTML = timestamp;
+    };
+
+    // Hide modal
+    ruleModal.hide();
 };
 
-function remove(el) {
-    // Get row of clicked button
-    const row = el.parentElement.parentElement.rowIndex;
 
-    // Get table containing clicked button, delete row
-    document.getElementById(el.id.split("-", 1) + "-rules").deleteRow(row);
+// Handler for delete button in schedule rules dropdown, removes row after deleting rule
+async function delete_rule() {
+    // Get target device/sensor and rule index
+    const target = delete_button.dataset.target;
+    const rule = delete_button.dataset.number;
+
+    // Delete row from schedule rules table
+    document.getElementById(`${target}-row-${rule}`).remove();
+
+    // Hide schedule rules table if last rule deleted
+    if (document.getElementById(target + "-rules").rows.length == 1) {
+        document.getElementById(target + "-rules").classList.add('d-none');
+    };
+
+    // Hide modal
+    ruleModal.hide();
 };

@@ -58,15 +58,15 @@ class Device {
 
     // Build object containing all schedule rule time:value pairs
     getScheduleRules() {
-        var timestamps = document.getElementsByClassName(`timestamp ${this.id}`);
+        var timestamps = document.getElementsByClassName(`time ${this.id}`);
         var rules = document.getElementsByClassName(`rule ${this.id}`);
 
         this.schedule = {};
 
         for (let i=0; i < rules.length; i++) {
             // Don't add if either field is empty
-            if (timestamps[i].value.length > 0 && rules[i].value.length > 0) {
-                this.schedule[timestamps[i].value] = rules[i].value;
+            if (timestamps[i].dataset.original.length > 0 && rules[i].dataset.original.length > 0) {
+                this.schedule[timestamps[i].dataset.original] = rules[i].dataset.original;
             };
         };
     };
@@ -141,15 +141,15 @@ class Sensor {
 
     // Build object containing all schedule rule time:value pairs
     getScheduleRules() {
-        var timestamps = document.getElementsByClassName(`timestamp ${this.id}`);
+        var timestamps = document.getElementsByClassName(`time ${this.id}`);
         var rules = document.getElementsByClassName(`rule ${this.id}`);
 
         this.schedule = {};
 
         for (let i=0; i < rules.length; i++) {
             // Don't add if either field is empty
-            if (timestamps[i].value.length > 0 && rules[i].value.length > 0) {
-                this.schedule[timestamps[i].value] = rules[i].value;
+            if (timestamps[i].dataset.original.length > 0 && rules[i].dataset.original.length > 0) {
+                this.schedule[timestamps[i].dataset.original] = rules[i].dataset.original;
             };
         };
     };

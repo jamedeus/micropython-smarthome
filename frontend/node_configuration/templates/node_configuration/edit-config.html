@@ -685,7 +685,7 @@
                             <label id="{{instance}}-rules-label" class="card-title schedule-rule-card {{instance}}" title="{{instance}} - {{params.type}}">
                                 <b>{{ params.nickname }}</b>
                             </label>
-                            <table id="{{instance}}-rules" class="table table-borderless {{instance}}">
+                            <table id="{{instance}}-rules" class="table table-borderless {{instance}} {% if params.schedule.items|length == 0 %} d-none {% endif %}">
                                 <tr>
                                     <th style="text-align: center;">Time</th>
                                     <th style="text-align: center;">Rule</th>
@@ -696,184 +696,36 @@
 
                                 <tr id="{{instance}}-row-{{forloop.counter}}" class="{{instance}}">
                                     <td>
-                                        <input type="time" class="form-control timestamp {{instance}}" id="{{instance}}-rule{{forloop.counter}}-time" placeholder="HH:MM" value="{{time}}">
+                                        <span class="form-control time {{instance}}" id="{{instance}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{time}}</span>
                                     </td>
 
-                                    {% if params.type == "pir" %}
+                                    {% if params.type == "api-target" %}
 
                                     <td>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{instance}}-rule{{forloop.counter}}-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                            <input id="{{instance}}-rule{{forloop.counter}}" type="range" class="{{instance}} rule mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                            <button id="{{instance}}-rule{{forloop.counter}}-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </td>
-
-                                    {% elif params.type == "si7021" %}
-
-                                    <td>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{instance}}-rule{{forloop.counter}}-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                            <input id="{{instance}}-rule{{forloop.counter}}" type="range" class="{{instance}} rule mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                            <button id="{{instance}}-rule{{forloop.counter}}-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </td>
-
-                                    {% elif params.type == "wled" %}
-
-                                    <td>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{instance}}-rule{{forloop.counter}}-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                                            <input id="{{instance}}-rule{{forloop.counter}}" type="range" class="{{instance}} rule mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                            <button id="{{instance}}-rule{{forloop.counter}}-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </td>
-
-                                    {% elif params.type == "dimmer" or params.type == "bulb" %}
-
-                                    <td>
-                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" placeholder="" value="{{rule}}">
-                                    </td>
-
-                                    {% elif params.type == "pwm" %}
-
-                                    <td>
-                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" placeholder="" value="{{rule}}">
-                                    </td>
-
-                                    {% elif params.type == "dummy" %}
-
-                                    <td>
-                                        <select id="{{instance}}-rule{{forloop.counter}}" class="form-select rule {{instance}} autocomplete="off">
-                                            <option disabled>Select rule</option>
-                                            <option value='enabled' {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value='disabled' {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                            <option value='on' {% if rule|lower == "on" %} selected {% endif %}>On</option>
-                                            <option value='off' {% if rule|lower == "off" %} selected {% endif %}>Off</option>
-                                        </select>
-                                    </td>
-
-                                    {% elif params.type == "switch" or params.type == "desktop" or params.type == "relay" or params.type == "dumb-relay" or params.type == "mosfet" %}
-
-                                    <td>
-                                        <select id="{{instance}}-rule{{forloop.counter}}" class="form-select rule {{instance}} autocomplete="off">
-                                            <option disabled>Select rule</option>
-                                            <option value='enabled' {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value='disabled' {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                        </select>
-                                    </td>
-
-                                    {% elif params.type == "api-target" %}
-
-                                    <td>
-                                        <button id="{{instance}}-rule{{forloop.counter}}-button" class="form-control {{instance}}" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" value="{{rule}}" style="display:none;">
-                                    </td>
-
-                                    {% endif %}
-
-                                    <td class="min">
-                                        <button type="button" class="remove btn btn-sm btn-danger mt-1 {{instance}}" id="{{instance}}-remove{{forloop.counter}}" onclick="remove(this)"><i class="bi-x-lg"></i></button>
-                                    </td>
-                                </tr>
-
-                            {% endfor %}
-                            {% else %}
-
-                                <tr id="{{instance}}-row-1" class="{{instance}}">
-                                    <td>
-                                        <input type="time" class="form-control timestamp {{instance}}" id="{{instance}}-rule1-time" placeholder="HH:MM">
-                                    </td>
-
-                                    {% if params.type == "pir" %}
-
-                                    <td>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{instance}}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                            <input id="{{instance}}-rule1" type="range" class="{{instance}} rule mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                            <button id="{{instance}}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </td>
-
-                                    {% elif params.type == "si7021" %}
-
-                                    <td>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{instance}}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                            <input id="{{instance}}-rule1" type="range" class="{{instance}} rule mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                            <button id="{{instance}}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </td>
-
-                                    {% elif params.type == "wled" %}
-
-                                    <td>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{instance}}-rule1-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                                            <input id="{{instance}}-rule1" type="range" class="{{instance}} rule mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{rule}}" value="{{rule}}" autocomplete="off">
-                                            <button id="{{instance}}-rule1-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </td>
-
-                                    {% elif params.type == "dimmer" or params.type == "bulb" %}
-
-                                    <td>
-                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule1" placeholder="" value="{{rule}}">
-                                    </td>
-
-                                    {% elif params.type == "pwm" %}
-
-                                    <td>
-                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule1" placeholder="" value="{{rule}}">
-                                    </td>
-
-                                    {% elif params.type == "dummy" %}
-
-                                    <td>
-                                        <select id="{{instance}}-rule1" class="form-select rule {{instance}} autocomplete="off">
-                                            <option disabled>Select rule</option>
-                                            <option value='enabled' {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value='disabled' {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                            <option value='on' {% if rule|lower == "on" %} selected {% endif %}>On</option>
-                                            <option value='off' {% if rule|lower == "off" %} selected {% endif %}>Off</option>
-                                        </select>
-                                    </td>
-
-                                    {% elif params.type == "switch" or params.type == "desktop" or params.type == "relay" or params.type == "dumb-relay" or params.type == "mosfet" %}
-
-                                    <td>
-                                        <select id="{{instance}}-rule1" class="form-select rule {{instance}} autocomplete="off">
-                                            <option disabled>Select rule</option>
-                                            <option value='enabled' {% if rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value='disabled' {% if rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                        </select>
-                                    </td>
-
-                                    {% elif params.type == "api-target" %}
-
-                                    <td>
-                                        {# Show button that opens api rule modal containing dropdowns used to set rule. Selection from modal added to hidden text box, read by form #}
-                                        <button id="{{instance}}-rule1-button" class="form-control {{instance}}" onclick="open_rule_modal(this);" type="button">Set rule</button>
-                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule1" style="display:none;">
+                                        <span class="form-control {{instance}}" id="{{instance}}-rule{{forloop.counter}}-button" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">click to view</span>
+                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" value="{{rule}}" data-original="{{rule}}" data-type="{{params.type}}" style="display:none;">
                                     </td>
 
                                     {% else %}
 
                                     <td>
-                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule1" placeholder="">
+                                        <span class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{rule}}</span>
                                     </td>
 
                                     {% endif %}
 
                                     <td class="min">
-                                        <button type="button" class="remove btn btn-sm btn-danger mt-1 {{instance}}" id="{{instance}}-remove1"  onclick="remove(this)"><i class="bi-x-lg"></i></button>
+                                        <button type="button" class="btn btn-sm btn-primary mt-1" id="{{device}}-edit{{forloop.counter}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button>
                                     </td>
                                 </tr>
 
+                            {% endfor %}
                             {% endif %}
 
                             </table>
-                            <button type="button" class="btn btn-secondary {{instance}}" id="{{instance}}-add-rule" onclick="add(this)">Add another</button>
+                            <div>
+                                <button type="button" class="btn btn-secondary {{instance}}" id="{{instance}}-add-rule" data-type="{{params.type}}" onclick="add_new_rule(this)">Add Rule</i></button>
+                            </div>
                         </div>
                     </div>
 
@@ -884,6 +736,36 @@
                 <button id="page3-back-button" type="button" class="btn btn-primary mb-3">Back</button>
                 <button id="submit-button" type="submit" class="btn btn-primary mb-3">Submit</button>
                 <button type="button" class="btn btn-secondary mb-3" disabled>Next</button>
+            </div>
+        </div>
+
+        <!-- Schedule rule modal opened when user clicks rule parameter -->
+
+        <div class="modal fade" id="schedule-rule-modal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-between">
+                        <button type="button" class="btn-close" style="visibility:hidden;"></button>
+                        <h5 class="modal-title">Schedule Rule</h5>
+                        <button type="button" class="btn-close" id="schedule-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-flex flex-column" id="rule-modal-body">
+                    <!-- Populated by template when opened -->
+                    </div>
+                    <div id="rule-footer" class="modal-footer mx-auto">
+                        <div id="rule-buttons">
+                            <button type="button" id="add-rule" class="btn btn-success" onclick="add_rule()">Submit</button>
+                            <button type="button" id="del-rule" class="btn btn-danger" onclick="delete_rule()">Delete</button>
+                        </div>
+                        <div id="rule-loading" class="m-0 d-none">
+                            <div class="sk-flow">
+                                <div class="sk-flow-dot my-auto"></div>
+                                <div class="sk-flow-dot my-auto"></div>
+                                <div class="sk-flow-dot my-auto"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -1093,6 +975,7 @@
         const uploadModal = new bootstrap.Modal(document.getElementById('upload-modal'));
         const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
         const duplicateModal = new bootstrap.Modal(document.getElementById('duplicate-modal'));
+        const ruleModal = new bootstrap.Modal(document.getElementById('schedule-rule-modal'));
 
         // Prevent all keys except digits in floor input, 3 character max
         document.getElementById('floor').addEventListener('input', function(event) {
@@ -1197,5 +1080,6 @@
     <script src="{% static 'node_configuration/add-instance.js' %}"></script>
     <script src="{% static 'node_configuration/page-buttons.js' %}"></script>
     <script src="{% static 'node_configuration/schedule-rules.js' %}"></script>
+    <script src="{% static 'api/schedule_rule_modal.js' %}"></script>
 </body>
 </html>
