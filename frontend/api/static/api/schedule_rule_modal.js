@@ -156,14 +156,16 @@ function add_new_row(target, timestamp, rule, type) {
     // Get schedule rules table for target instance
     const table = document.getElementById(target + "-rules");
 
-    // If adding first rule: unhide table
+    // If adding first rule: unhide table, set row to 1
     if (table.rows.length == 1) {
         table.classList.remove('d-none');
-    };
+        var row = 1;
 
-    // Get index for new row by parsing ID from last row and incrementing
-    // Cannot use length, results in duplicate IDs if rows above were deleted before adding
-    const row = parseInt(table.rows[table.rows.length-1].id.split("-")[2]) + 1
+    } else {
+        // Get index for new row by parsing ID from last row and incrementing
+        // Cannot use length, results in duplicate IDs if rows above were deleted before adding
+        var row = parseInt(table.rows[table.rows.length-1].id.split("-")[2]) + 1;
+    };
 
     // Populate template with received parameters
     var template = `<tr id="${target}-row-${row}">
