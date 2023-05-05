@@ -121,20 +121,20 @@ td.min {
     $modal-footer-border-color: #31363b;
 
     /* Input fields */
-    $input-bg: #31363b;
+    $input-bg: #1B1E1F;
     $input-color: #ffffff;
     $input-placeholder-color: #696b6e;
     $input-border-color: #232627;
 
-    $input-focus-bg: #31363b;
+    $input-focus-bg: #1B1E1F;
     $input-focus-border-color: #232627;
     $input-focus-color: #ffffff;
 
     $input-disabled-bg: #272c31;
 
-    $form-check-input-bg: #31363b;
+    $form-check-input-bg: #1B1E1F;
     $form-check-input-focus-border: 1px solid #232627;
-    $form-check-input-checked-bg-color: #31363b;
+    $form-check-input-checked-bg-color: #1B1E1F;
 
     /* Fix form validation messages in dark mode */
     .is-invalid~.invalid-feedback, .is-invalid~.invalid-tooltip, .was-validated :invalid~.invalid-feedback, .was-validated :invalid~.invalid-tooltip {
@@ -142,7 +142,7 @@ td.min {
     };
 
     /* Dropdowns */
-    $form-select-bg: #31363b;
+    $form-select-bg: #1B1E1F;
     $form-select-color: #ffffff;
     $form-select-border-color: #232627;
     $form-select-focus-border-color: #232627;
