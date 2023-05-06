@@ -248,6 +248,39 @@ def delete_node(request):
 
 
 
+def change_node_ip(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+
+    if not valid_ip(data["new_ip"]):
+        return JsonResponse({'Error': f'Invalid IP {data["new_ip"]}'}, safe=False, status=400)
+
+    try:
+        # Get model entry, delete from disk + database
+        node = Node.objects.get(friendly_name = data['friendly_name'])
+    except Node.DoesNotExist:
+        return JsonResponse(f"Unable to change IP, node does not exist", safe=False, status=404)
+
+    if node.ip == data["new_ip"]:
+        return JsonResponse({'Error': 'New IP must be different than old'}, safe=False, status=400)
+
+    # Get dependencies, upload to new IP
+    modules, libs = get_modules(node.config.config)
+    response = provision(node.config.filename, data["new_ip"], modules, libs)
+
+    if response.status_code == 200:
+        # Update model
+        node.ip = data["new_ip"]
+        node.save()
+
+        return JsonResponse("Successfully uploaded to new IP", safe=False, status=200)
+    else:
+        return response
+
+
+
 def config_overview(request):
     context = {
         "not_uploaded" : [],

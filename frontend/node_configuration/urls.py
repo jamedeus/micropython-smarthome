@@ -26,6 +26,8 @@ urlpatterns = [
 
     path('new_config', views.new_config, name='new_config'),
 
+    path('change_node_ip', views.change_node_ip, name='change_node_ip'),
+
     # Argument is optional
     path('generateConfigFile', views.generateConfigFile, name='generateConfigFile'),
     path('generateConfigFile/<str:edit_existing>', views.generateConfigFile, name='generateConfigFile'),

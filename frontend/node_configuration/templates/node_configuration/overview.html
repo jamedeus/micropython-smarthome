@@ -68,7 +68,6 @@
                             <th class="w-50">Name</th>
                             <th class="w-50">IP</th>
                             <th></th>
-<!--                             <th></th> -->
                         </tr>
 
                         {% for node in uploaded %}
@@ -80,8 +79,8 @@
                                         <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi bi-list"></i></button>
                                         <ul class="dropdown-menu dropdown-menu-end">
                                             <li><a class="dropdown-item" onclick="window.location.href = '/edit_config/{{node.friendly_name}}'">Edit</a></li>
-                                            <li><a class="dropdown-item">Re-upload</a></li>
-                                            <li><a class="dropdown-item">Change IP</a></li>
+                                            <li><a class="dropdown-item" onclick="reupload('{{node.config.filename}}', '{{node.ip}}');">Re-upload</a></li>
+                                            <li><a class="dropdown-item" onclick="open_change_ip_modal(this)" data-friendly_name="{{node.friendly_name}}" data-ip="{{node.ip}}">Change IP</a></li>
                                             <li><a class="dropdown-item" onclick="del_node('{{node.friendly_name}}')">Delete</a></li>
                                         </ul>
                                     </div>
@@ -299,6 +298,47 @@
         </div>
     </div>
 
+    <!-- Change IP modal, used to reupload an existing node's config to a new node -->
+
+    <div class="modal fade" id="change-ip-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header justify-content-between pb-0">
+                    <button type="button" class="btn-close" style="visibility:hidden"></button>
+                    <h5 id="change-ip-modal-title" class="modal-title">Change IP</h5>
+                    <button id="change-ip-modal-close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center" id="change-ip-modal-body">
+                    <p class="text-center">Upload an existing config file to a new IP</p>
+                    <p class="text-center">This has no effect on the existing node, don't forget to upload another config or unplug it</p>
+
+                    <div id="change-ip-prompt">
+                        <label for="new-ip"><b>New IP:</b></label>
+                        <input type="text" class="form-control modal-input ip-input text-center" id="new_ip-input" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
+                    </div>
+                    <div id="change-ip-loading" class="d-none mx-auto">
+                        <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" id="upload-new_ip" class="btn btn-success mx-auto" onclick="change_ip(this)" disabled>Restore</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notification used for status updates for hidden buttons -->
+    <div class="fixed-bottom">
+        <div id="notification_toast" class="toast text-center mx-auto mb-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000">
+            <div class="toast-body">
+                <div id="toast-text" class="mb-2"></div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const edit_existing = false;
         let target_ip = ""
@@ -311,6 +351,10 @@
         const wifiModal = new bootstrap.Modal(document.getElementById('wifi-modal'));
         const restoreModal = new bootstrap.Modal(document.getElementById('restore-modal'));
         const integrationModal = new bootstrap.Modal(document.getElementById('integration-modal'));
+        const changeIpModal = new bootstrap.Modal(document.getElementById('change-ip-modal'));
+
+        // Initialize toast used by functions in existing node dropdown menu
+        const notification_toast = new bootstrap.Toast(document.getElementById("notification_toast"));
 
         function set_upload_target(el) {
             target_filename = el.id.replace("upload-", "");
@@ -433,6 +477,68 @@
             document.getElementById('upload-restore').disabled = false;
             document.getElementById('loading').classList.add('d-none')
             document.getElementById('prompt').classList.remove('d-none')
+        };
+
+        async function reupload(filename, ip) {
+            document.getElementById('toast-text').innerHTML = `Reuploading ${filename} to ${ip}...`;
+            notification_toast.show();
+
+            // Reupload node
+            let response = await send_post_request("upload/True", {config: filename, ip: ip});
+
+            if (response.ok) {
+                document.getElementById('toast-text').innerHTML = `Reupload complete`;
+                notification_toast.show();
+            } else {
+                const error = await response.text();
+                document.getElementById('toast-text').innerHTML = error;
+                notification_toast.show();
+            };
+        };
+
+        function open_change_ip_modal(button) {
+            // Add friendly name to submit button data attr, prefill field with current IP
+            document.getElementById('upload-new_ip').dataset.friendly_name = button.dataset.friendly_name;
+            document.getElementById('new_ip-input').value = button.dataset.ip;
+            changeIpModal.show();
+        };
+
+        async function change_ip(button) {
+            // Disable submit, hide field, show loading animation
+            button.disabled = true;
+            document.getElementById('change-ip-prompt').classList.add('d-none')
+            document.getElementById('change-ip-loading').classList.remove('d-none')
+
+            // Send request
+            body = {
+                'new_ip': document.getElementById('new_ip-input').value,
+                'friendly_name': button.dataset.friendly_name
+            };
+            response = await send_post_request("change_node_ip", body);
+
+            // If successfully changed, show animation + reload
+            if (response.ok) {
+                document.getElementById('loading').innerHTML = upload_complete;
+
+                // Wait for animation to complete before reloading
+                await sleep(1200);
+                location.reload();
+
+            // Unreachable
+            } else if (response.status == 404) {
+                target_unreachable_prompt();
+
+            // Other error, show in modal
+            } else {
+                const error = await response.text();
+                const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`;
+                show_modal(errorModal, "Error", `<p class="text-center">${error}</p>`, footer);
+            };
+
+            changeIpModal.hide();
+            button.disabled = false;
+            document.getElementById('change-ip-loading').classList.add('d-none')
+            document.getElementById('change-ip-prompt').classList.remove('d-none')
         };
 
         async function add_keyword() {
