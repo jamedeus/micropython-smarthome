@@ -14,6 +14,16 @@ td.min {
   white-space: nowrap;
 }
 
+/* Section backgrounds (existing nodes, schedule keywords) */
+.section {
+  background-color: #eee;
+  border: 1px solid #c8c8c8;
+  border-radius: 15px;
+  padding: 0.5rem;
+  margin: 0.1rem;
+  text-align: center;
+}
+
 /* Upload complete checkmark animation */
 .light {
   --success: #198754;
@@ -89,6 +99,7 @@ td.min {
   --bs-info-rgb: 102, 16, 242;
   --bs-dark-rgb: 33, 37, 41;
   --bs-light-rgb: 248, 249, 250;
+  /* Tables */
   /* Modals */
   /* Input fields */
   /* Fix form validation messages in dark mode */
@@ -104,6 +115,7 @@ td.min {
   --bs-body-bg: #1b1e1f;
   /* Prevent color change on focus (not enough contrast with body bg) */
   /* Toasts */
+  /* Section background color override */
 }
 .dark .is-invalid ~ .invalid-feedback, .dark .is-invalid ~ .invalid-tooltip, .dark .was-validated :invalid ~ .invalid-feedback, .dark .was-validated :invalid ~ .invalid-tooltip {
   display: block;
@@ -128,6 +140,10 @@ td.min {
 .dark .btn-dark:hover, .dark .btn-dark:focus, .dark .btn-dark:active {
   background-color: #212529 !important;
   border-color: #212529 !important;
+}
+.dark .section {
+  border: 0px;
+  background-color: #212529;
 }
 .dark .card {
   --bs-card-spacer-y: 1rem;
@@ -1635,7 +1651,7 @@ td.min {
 }
 .dark .table {
   --bs-table-color: #eee;
-  --bs-table-bg: transparent;
+  --bs-table-bg: #212529 !important;
   --bs-table-border-color: var(--bs-border-color);
   --bs-table-accent-bg: transparent;
   --bs-table-striped-color: var(--bs-body-color);
@@ -1643,7 +1659,7 @@ td.min {
   --bs-table-active-color: var(--bs-body-color);
   --bs-table-active-bg: rgba(0, 0, 0, 0.1);
   --bs-table-hover-color: var(--bs-body-color);
-  --bs-table-hover-bg: rgba(0, 0, 0, 0.075);
+  --bs-table-hover-bg: #35393f !important;
   width: 100%;
   margin-bottom: 1rem;
   color: var(--bs-table-color);

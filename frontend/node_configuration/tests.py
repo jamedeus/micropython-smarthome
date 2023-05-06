@@ -572,8 +572,8 @@ class OverviewPageTests(TestCase):
         self.assertEqual(response.context['uploaded'], [])
 
         # Confirm neither section present
-        self.assertNotContains(response, '<div id="not_uploaded" class="row mx-3 mb-5">')
-        self.assertNotContains(response, '<div id="existing" class="row mx-3">')
+        self.assertNotContains(response, '<div id="not_uploaded" class="row section px-0 pt-2 mb-5">')
+        self.assertNotContains(response, '<div id="existing" class="row section px-0 pt-2">')
 
     def test_overview_page_with_nodes(self):
         # Create 3 test nodes
@@ -588,12 +588,12 @@ class OverviewPageTests(TestCase):
         self.assertEqual(len(response.context['uploaded']), 3)
 
         # Confirm existing node section present, new config section not present
-        self.assertNotContains(response, '<div id="not_uploaded" class="row mx-3 mb-5">')
-        self.assertContains(response, '<div id="existing"')
+        self.assertNotContains(response, '<div id="not_uploaded" class="row section px-0 pt-2 mb-5">')
+        self.assertContains(response, '<div id="existing" class="row section px-0 pt-2">')
 
         # Confirm table with all 3 nodes present
         self.assertContains(response, '<tr id="Test1">')
-        self.assertContains(response, '<td class="align-middle">Test2</td>')
+        self.assertContains(response, '<td class="align-middle"><span class="form-control keyword text-center">Test2</span></td>')
         self.assertContains(response, 'onclick="window.location.href = \'/edit_config/Test3\'"')
         self.assertContains(response, 'onclick="del_node(\'Test1\')"')
 
@@ -610,8 +610,8 @@ class OverviewPageTests(TestCase):
         self.assertEqual(response.context['uploaded'], [])
 
         # Confirm new config section present, existing node section section not present
-        self.assertContains(response, '<div id="not_uploaded" class="row mx-3 mb-5">')
-        self.assertNotContains(response, '<div id="existing"')
+        self.assertContains(response, '<div id="not_uploaded" class="row section px-0 pt-2 mb-5">')
+        self.assertNotContains(response, '<div id="existing" class="row section px-0 pt-2">')
 
         # Confirm IP field, upload button, delete button all present
         self.assertContains(response, '<td><input type="text" id="test1.json-ip"')

@@ -21,6 +21,16 @@ td.min {
     white-space: nowrap;
 }
 
+/* Section backgrounds (existing nodes, schedule keywords) */
+.section {
+    background-color: #eee;
+    border: 1px solid #c8c8c8;
+    border-radius: 15px;
+    padding: 0.5rem;
+    margin: 0.1rem;
+    text-align: center;
+}
+
 
 /* Upload complete checkmark animation */
 .light {
@@ -115,6 +125,10 @@ td.min {
     $card-bg: #212529;
     $table-color: #eee;
 
+    /* Tables */
+    $table-bg: #212529 !important;
+    $table-hover-bg: #35393f !important;
+
     /* Modals */
     $modal-content-bg: #31363b;
     $modal-header-border-color: #31363b;
@@ -195,6 +209,12 @@ td.min {
 
     /* Toasts */
     $toast-background-color: #394047cc;
+
+    /* Section background color override */
+    .section {
+        border: 0px;
+        background-color: #212529;
+    }
 
     @import "../node_modules/bootstrap/scss/_card";
     @import "../node_modules/bootstrap/scss/_modal";
