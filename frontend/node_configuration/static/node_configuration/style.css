@@ -102,6 +102,7 @@ td.min {
   /* Tables */
   /* Modals */
   /* Input fields */
+  /* Override inputs outside of cards */
   /* Fix form validation messages in dark mode */
   /* Dropdowns */
   /* Dropdown down arrow icon */
@@ -116,6 +117,9 @@ td.min {
   /* Prevent color change on focus (not enough contrast with body bg) */
   /* Toasts */
   /* Section background color override */
+}
+.dark #form input {
+  background-color: #31363b;
 }
 .dark .is-invalid ~ .invalid-feedback, .dark .is-invalid ~ .invalid-tooltip, .dark .was-validated :invalid ~ .invalid-feedback, .dark .was-validated :invalid ~ .invalid-tooltip {
   display: block;
