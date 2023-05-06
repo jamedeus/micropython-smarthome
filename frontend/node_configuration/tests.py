@@ -1212,6 +1212,68 @@ class DeleteNodeTests(TestCase):
 
 
 
+# Test endpoint used to change an existing node's IP
+class ChangeNodeIpTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+    def test_change_node_ip(self):
+        # Confirm starting IP
+        self.assertEqual(Node.objects.all()[0].ip, '192.168.1.123')
+
+        # Mock provision to return success message
+        with patch('node_configuration.views.provision') as mock_provision:
+            mock_provision.return_value =  JsonResponse("Upload complete.", safe=False, status=200)
+
+            # Make request, confirm response
+            request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
+            response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), 'Successfully uploaded to new IP')
+
+            # Confirm node model IP changed, upload was called
+            self.assertEqual(Node.objects.all()[0].ip, '192.168.1.255')
+            self.assertEqual(mock_provision.call_count, 1)
+
+    def test_target_ip_offline(self):
+        # Mock provision to return failure message without doing anything
+        with patch('node_configuration.views.provision') as mock_provision:
+            mock_provision.return_value = JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
+
+            # Make request, confirm error
+            request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
+            response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.json(), "Error: Unable to connect to node, please make sure it is connected to wifi and try again.")
+
+    def test_invalid_get_request(self):
+        # Requires post, confirm errors
+        response = self.client.get('/change_node_ip')
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.json(), {'Error': 'Must post data'})
+
+    def test_invalid_parameters(self):
+        # Make request with invalid IP, confirm error
+        request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.555'}
+        response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'Error': 'Invalid IP 192.168.1.555'})
+
+        # Make request targeting non-existing node, confirm error
+        request_payload = {'friendly_name': 'Test9', 'new_ip': '192.168.1.255'}
+        response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), "Unable to change IP, node does not exist")
+
+        # Make request with current IP, confirm error
+        request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.123'}
+        response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'Error': 'New IP must be different than old'})
+
+
+
 # Test function that takes config file, returns list of dependencies for upload
 class GetModulesTests(TestCase):
     def setUp(self):
