@@ -106,7 +106,6 @@
                         <th class="w-50">Keyword</th>
                         <th class="w-50">Timestamp</th>
                         <th></th>
-                        <th></th>
                     </tr>
 
                     {% if schedule_keywords %}
@@ -119,10 +118,7 @@
                                 <input id="{{keyword}}_timestamp" type="time" class="form-control keyword text-center" value="{{timestamp}}" data-original="{{timestamp}}" placeholder="HH:MM"  autocomplete="off" oninput="update_keyword_listener(this)">
                             </td>
                             <td class="min align-middle">
-                                <button id="{{keyword}}_edit_button" type="button" class="btn-primary btn btn-sm" title="Update" onclick="update_keyword('{{keyword}}')" disabled><i class="bi bi-arrow-clockwise"></i></button>
-                            </td>
-                            <td class="min align-middle">
-                                <button id="{{keyword}}_del_button" type="button" class="btn-danger btn btn-sm" title="Delete" onclick="del_keyword('{{keyword}}')"><i class="bi-trash"></i></button>
+                                <button id="{{keyword}}_edit_button" type="button" class="btn-danger btn btn-sm" title="Delete" onclick="edit_keyword(this)"><i class="bi-trash"></i></button>
                             </td>
                         </tr>
                     {% endfor %}
@@ -136,9 +132,6 @@
                         </td>
                         <td class="min align-middle">
                             <button id="add_keyword_button" type="button" class="btn-primary btn btn-sm" title="Add" onclick="add_keyword()" disabled><i class="bi-plus"></i></button>
-                        </td>
-                        <td class="min align-middle">
-                            <button type="button" class="btn-primary btn btn-sm" style="visibility: hidden;"><i class="bi bi-arrow-clockwise"></i></button>
                         </td>
                     </tr>
                 </table>
@@ -457,13 +450,26 @@
             };
         };
 
-        async function update_keyword(kw) {
-            // Start loading animation on clicked button
-            document.getElementById(`${kw}_edit_button`).innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
+        // Handler for button next to existing keywords
+        async function edit_keyword(button) {
+            // Get target keyword
+            const target = button.id.split('_')[0];
 
-            const keyword_old = document.getElementById(`${kw}_keyword`).dataset.original;
-            const keyword = document.getElementById(`${kw}_keyword`).value;
-            const timestamp = document.getElementById(`${kw}_timestamp`).value;
+            // Start loading animation on clicked button
+            button.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
+
+            if (button.classList.contains('btn-danger')) {
+                del_keyword(target);
+            } else {
+                update_keyword(target);
+            };
+        };
+
+        // Change existing keyword name or timestamp, update on all nodes
+        async function update_keyword(target) {
+            const keyword_old = document.getElementById(`${target}_keyword`).dataset.original;
+            const keyword = document.getElementById(`${target}_keyword`).value;
+            const timestamp = document.getElementById(`${target}_timestamp`).value;
 
             const payload = {
                 "keyword_old": keyword_old,
@@ -479,11 +485,9 @@
             };
         };
 
-        async function del_keyword(kw) {
-            // Start loading animation on clicked button
-            document.getElementById(`${kw}_del_button`).innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
-
-            const keyword = document.getElementById(`${kw}_keyword`).value;
+        // Delete existing keyword, remove from all nodes
+        async function del_keyword(target) {
+            const keyword = document.getElementById(`${target}_keyword`).value;
 
             let result = await send_post_request("delete_schedule_keyword", {"keyword": keyword});
             if (result.ok) {
@@ -514,12 +518,19 @@
             const old_timestamp = document.getElementById(`${target}_timestamp`).dataset.original;
 
             if (new_keyword != old_keyword || new_timestamp != old_timestamp) {
-                document.getElementById(`${target}_edit_button`).disabled = false;
+                // Change to edit button when contents have changed
+                document.getElementById(`${target}_edit_button`).classList.remove('btn-danger');
+                document.getElementById(`${target}_edit_button`).classList.add('btn-primary');
+                document.getElementById(`${target}_edit_button`).title = "Update";
+                document.getElementById(`${target}_edit_button`).innerHTML = `<i class="bi bi-arrow-clockwise"></i>`;
             } else {
-                document.getElementById(`${target}_edit_button`).disabled = true;
+                // Change to delete button when identical with original
+                document.getElementById(`${target}_edit_button`).classList.remove('btn-primary');
+                document.getElementById(`${target}_edit_button`).classList.add('btn-danger');
+                document.getElementById(`${target}_edit_button`).title = "Delete";
+                document.getElementById(`${target}_edit_button`).innerHTML = `<i class="bi-trash"></i>`;
             };
         };
-
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
         window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
