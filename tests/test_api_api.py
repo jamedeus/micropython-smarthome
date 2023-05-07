@@ -19,7 +19,8 @@ config_file = {
     "metadata": {
         "id": "unit-testing",
         "location": "test environment",
-        "floor": "0"
+        "floor": "0",
+        "schedule_keywords": {}
     },
     "sensor1": {
         "targets": [
@@ -217,11 +218,11 @@ class TestApi(unittest.TestCase):
 
         # Confirm correct error received when timestamp format is incorrect
         response = self.send_command(['add_schedule_rule', 'device1', '1234', '99'])
-        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
         # Confirm correct error received when timestamp exceeds 24 hours
         response = self.send_command(['add_schedule_rule', 'device1', '42:99', '99'])
-        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
     def test_remove_rule(self):
         # Get starting rules
@@ -241,7 +242,7 @@ class TestApi(unittest.TestCase):
 
         # Confirm correct error received when timestamp exceeds 24 hours
         response = self.send_command(['remove_rule', 'device1', '42:99'])
-        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
     def test_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor1'])
