@@ -13,7 +13,8 @@ from api.models import Macro
 timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 
 # IPv4 regular expression
-ip_regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+ip_regex = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+
 
 
 # Returns all schedule keywords in dict format used by node config files and overview template
@@ -503,7 +504,7 @@ def add_schedule_rule(ip, params):
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
+    if len(params) > 0 and re.match(timestamp_regex, params[0]):
         timestamp = params.pop(0)
     elif len(params) > 0 and params[0] in ScheduleKeyword.objects.values_list('keyword', flat=True):
         timestamp = params.pop(0)
@@ -532,7 +533,7 @@ def remove_rule(ip, params):
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
+    if len(params) > 0 and re.match(timestamp_regex, params[0]):
         timestamp = params.pop(0)
     elif len(params) > 0 and params[0] in ScheduleKeyword.objects.values_list('keyword', flat=True):
         timestamp = params.pop(0)
@@ -559,7 +560,7 @@ def add_schedule_keyword(ip, params):
 
     keyword = params.pop(0)
 
-    if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
+    if len(params) > 0 and re.match(timestamp_regex, params[0]):
         timestamp = params.pop(0)
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}

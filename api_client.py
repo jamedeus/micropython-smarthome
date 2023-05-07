@@ -2,10 +2,13 @@
 
 import os
 import sys
-from colorama import Fore, Style
 import json
 import asyncio
 import re
+from colorama import Fore, Style
+
+timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+ip_regex = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 
 def error():
     print()
@@ -86,13 +89,13 @@ def parse_ip(args):
         elif args[i] == "-ip":
             args.pop(i)
             ip = args.pop(i)
-            if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip):
+            if re.match(ip_regex, ip):
                 return parse_command(ip, args)
             else:
                 print("Error: Invalid IP format")
                 raise SystemExit
 
-        elif re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", args[i]):
+        elif re.match(ip_regex, args[i]):
             ip = args.pop(i)
             return parse_command(ip, args)
 
@@ -282,7 +285,7 @@ def add_schedule_keyword(ip, params):
 
     keyword = params.pop(0)
 
-    if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
+    if len(params) > 0 and re.match(timestamp_regex, params[0]):
         timestamp = params.pop(0)
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}

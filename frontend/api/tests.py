@@ -832,6 +832,20 @@ class TestEndpointErrors(TestCase):
         response = parse_command('192.168.1.123', ['ir', 'ac'])
         self.assertEqual(response, {"ERROR": "Must speficy one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"})
 
+    # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
+    def test_regression_single_digit_hour(self):
+        # Mock request to return expected response (should not run)
+        with patch('api.views.request', return_value={'time': '5:00', 'Rule added': 'disabled'}):
+            # Send request, should receive error instead of mock response
+            response = parse_command('192.168.1.123', ['add_rule', 'device2', '5:00', 'disabled'])
+            self.assertEqual(response, {"ERROR": "Must specify time (HH:MM) followed by rule"})
+
+        # Mock request to return expected response (should not run)
+        with patch('api.views.request', return_value={'Deleted': '5:00'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['remove_rule', 'device2', '5:00'])
+            self.assertEqual(response, {"ERROR": "Must specify time (HH:MM) of rule to remove"})
+
 
 # Test endpoint that loads modal containing existing macro actions
 class EditModalTests(TestCase):
@@ -1183,3 +1197,11 @@ class ScheduleKeywordTests(TestCase):
         # Send request with no args, verify error
         response = parse_command('192.168.1.123', ['remove_schedule_keyword'])
         self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+
+    # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
+    def test_regression_single_digit_hour(self):
+        # Mock request to return expected response (should not run)
+        with patch('api.views.request', return_value={"Keyword added": "test", "time": "5:00"}):
+            # Send request, should receive error instead of mock response
+            response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test', '5:00'])
+            self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
