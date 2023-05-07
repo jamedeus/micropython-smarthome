@@ -1028,13 +1028,13 @@
 
                 // Buttons in ApiTarget rule modal
                 modal = document.getElementById('api-rule-modal');
-                Array.from(modal.querySelectorAll('button')).forEach(function(button) {
+                modal.querySelectorAll('button').forEach(function(button) {
                     if (button.classList.contains("btn-secondary")) {
                         button.classList.remove("btn-secondary");
                         button.classList.add("btn-dark");
                     };
                 });
-                Array.from(modal.querySelectorAll('label')).forEach(function(button) {
+                modal.querySelectorAll('label').forEach(function(button) {
                     if (button.classList.contains("btn-outline-secondary")) {
                         button.classList.remove("btn-outline-secondary");
                         button.classList.add("btn-outline-dark");
@@ -1042,21 +1042,20 @@
                 });
 
                 // Modal close buttons
-                document.getElementById('api-modal-close').classList.add('btn-close-white');
-                document.getElementById('schedule-close').classList.add('btn-close-white');
+                document.querySelectorAll('.btn-close').forEach(button => button.classList.add("btn-close-white"));
             } else {
                 document.body.classList.remove("dark");
                 document.body.classList.add("light");
 
                 // Buttons in ApiTarget rule modal
                 modal = document.getElementById('api-rule-modal');
-                Array.from(modal.querySelectorAll('button')).forEach(function(button) {
+                modal.querySelectorAll('button').forEach(function(button) {
                     if (button.classList.contains("btn-dark")) {
                         button.classList.remove("btn-dark");
                         button.classList.add("btn-secondary");
                     };
                 });
-                Array.from(modal.querySelectorAll('label')).forEach(function(button) {
+                modal.querySelectorAll('label').forEach(function(button) {
                     if (button.classList.contains("btn-outline-dark")   ) {
                         button.classList.remove("btn-outline-dark");
                         button.classList.add("btn-outline-secondary");
@@ -1064,15 +1063,13 @@
                 });
 
                 // Modal close buttons
-                document.getElementById('api-modal-close').classList.remove('btn-close-white');
-                document.getElementById('schedule-close').classList.remove('btn-close-white');
+                document.querySelectorAll('.btn-close').forEach(button => button.classList.remove("btn-close-white"));
             };
         });
 
         // Set modal close button color (runs once on load)
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.getElementById('api-modal-close').classList.add('btn-close-white');
-            document.getElementById('schedule-close').classList.add('btn-close-white');
+            document.querySelectorAll('.btn-close').forEach(button => button.classList.add("btn-close-white"));
         };
     </script>
     <script src="{% static 'node_configuration/validate.js' %}"></script>
