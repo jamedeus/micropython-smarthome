@@ -1,17 +1,15 @@
+import json
+import os
+import re
 from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, FileResponse
-from django.template import loader
+from django.http import JsonResponse
 from django.conf import settings
 from django.core.exceptions import ValidationError
-import json, os, re
-
 from .models import Node, Config, WifiCredentials, ScheduleKeyword
-
-from .Webrepl import *
-from .validators import *
+from .Webrepl import Webrepl
+from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
-
-from api.views import add_schedule_keyword, remove_schedule_keyword, save_rules
+from api.views import add_schedule_keyword, remove_schedule_keyword
 
 REPO_DIR = settings.REPO_DIR
 CONFIG_DIR = settings.CONFIG_DIR
@@ -22,14 +20,6 @@ valid_device_pins = (4, 13, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33)
 valid_sensor_pins = (4, 5, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39)
 valid_device_types = ('dimmer', 'bulb', 'relay', 'dumb-relay', 'desktop', 'pwm', 'mosfet', 'api-target', 'wled')
 valid_sensor_types = ('pir', 'desktop', 'si7021', 'dummy', 'switch')
-
-# Returns True if param matches IPv4 regex, otherwise False
-def valid_ip(ip):
-    return bool(re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip))
-
-# Returns all schedule keywords in dict format used by node config files and overview template
-def get_schedule_keywords_dict():
-    return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
 
 # Dependency relative paths for all device and sensor types, used by get_modules
 dependencies = {
@@ -53,6 +43,15 @@ dependencies = {
     }
 }
 
+
+# Returns True if param matches IPv4 regex, otherwise False
+def valid_ip(ip):
+    return bool(re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip))
+
+
+# Returns all schedule keywords in dict format used by node config files and overview template
+def get_schedule_keywords_dict():
+    return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
 
 
 # Takes full config file, returns all dependencies in 2 lists:
@@ -90,7 +89,6 @@ def get_modules(config):
     return modules, libs
 
 
-
 def setup(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -105,7 +103,6 @@ def setup(request):
     return provision("setup.json", data["ip"], {}, {})
 
 
-
 def upload(request, reupload=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -116,7 +113,7 @@ def upload(request, reupload=False):
         return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
 
     try:
-        config = Config.objects.get(filename = data["config"])
+        config = Config.objects.get(filename=data["config"])
     except Config.DoesNotExist:
         return JsonResponse("ERROR: Config file doesn't exist - did you delete it manually?", safe=False, status=404)
 
@@ -126,14 +123,16 @@ def upload(request, reupload=False):
 
     # If uploaded for the first time, update models
     if response.status_code == 200 and not reupload:
-        new = Node(friendly_name = config.config["metadata"]["id"], ip = data["ip"], floor = config.config["metadata"]["floor"])
-        new.save()
+        new = Node.objects.create(
+            friendly_name=config.config["metadata"]["id"],
+            ip=data["ip"],
+            floor=config.config["metadata"]["floor"]
+        )
 
         config.node = new
         config.save()
 
     return response
-
 
 
 # Takes path to config file, target ip, and modules + libs dicts from get_modules()
@@ -177,7 +176,6 @@ def provision(config, ip, modules, libs):
     return JsonResponse("Upload complete.", safe=False, status=200)
 
 
-
 def reupload_all(request):
     print("Reuploading all configs...")
     nodes = Node.objects.all()
@@ -207,7 +205,6 @@ def reupload_all(request):
     return JsonResponse(report, safe=False, status=200)
 
 
-
 def delete_config(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -216,7 +213,7 @@ def delete_config(request):
 
     try:
         # Get model entry, delete from disk + database
-        target = Config.objects.get(filename = data)
+        target = Config.objects.get(filename=data)
         os.remove(f'{CONFIG_DIR}/{target.filename}')
         target.delete()
         return JsonResponse(f"Deleted {data}", safe=False, status=200)
@@ -224,8 +221,7 @@ def delete_config(request):
     except Config.DoesNotExist:
         return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
     except PermissionError:
-        return JsonResponse(f"Failed to delete, permission denied. This will break other features, check your filesystem permissions.", safe=False, status=500)
-
+        return JsonResponse("Failed to delete, permission denied. This will break other features, check your filesystem permissions.", safe=False, status=500)
 
 
 def delete_node(request):
@@ -236,7 +232,7 @@ def delete_node(request):
 
     try:
         # Get model entry, delete from disk + database
-        node = Node.objects.get(friendly_name = data)
+        node = Node.objects.get(friendly_name=data)
         os.remove(f'{CONFIG_DIR}/{node.config.filename}')
         node.delete()
         return JsonResponse(f"Deleted {data}", safe=False, status=200)
@@ -244,8 +240,7 @@ def delete_node(request):
     except Node.DoesNotExist:
         return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
     except PermissionError:
-        return JsonResponse(f"Failed to delete, permission denied. This will break other features, check your filesystem permissions.", safe=False, status=500)
-
+        return JsonResponse("Failed to delete, permission denied. This will break other features, check your filesystem permissions.", safe=False, status=500)
 
 
 def change_node_ip(request):
@@ -259,9 +254,9 @@ def change_node_ip(request):
 
     try:
         # Get model entry, delete from disk + database
-        node = Node.objects.get(friendly_name = data['friendly_name'])
+        node = Node.objects.get(friendly_name=data['friendly_name'])
     except Node.DoesNotExist:
-        return JsonResponse(f"Unable to change IP, node does not exist", safe=False, status=404)
+        return JsonResponse("Unable to change IP, node does not exist", safe=False, status=404)
 
     if node.ip == data["new_ip"]:
         return JsonResponse({'Error': 'New IP must be different than old'}, safe=False, status=400)
@@ -280,15 +275,14 @@ def change_node_ip(request):
         return response
 
 
-
 def config_overview(request):
     context = {
-        "not_uploaded" : [],
-        "uploaded" : [],
-        "schedule_keywords" : get_schedule_keywords_dict()
+        "not_uploaded": [],
+        "uploaded": [],
+        "schedule_keywords": get_schedule_keywords_dict()
     }
 
-    not_uploaded = Config.objects.filter(node = None)
+    not_uploaded = Config.objects.filter(node=None)
 
     for i in not_uploaded:
         context["not_uploaded"].append(str(i))
@@ -297,15 +291,10 @@ def config_overview(request):
     for i in uploaded:
         context["uploaded"].append(i)
 
-    template = loader.get_template('node_configuration/overview.html')
-
-    return HttpResponse(template.render(context, request))
-
+    return render(request, 'node_configuration/overview.html', context)
 
 
 def new_config(request):
-    template = loader.get_template('node_configuration/edit-config.html')
-
     context = {
         "config": {"TITLE": "Create New Config"},
         "api_target_options": get_api_target_menu_options()
@@ -318,12 +307,11 @@ def new_config(request):
         context["config"]["wifi"]["ssid"] = default.ssid
         context["config"]["wifi"]["password"] = default.password
 
-    return HttpResponse(template.render(context, request))
-
+    return render(request, 'node_configuration/edit-config.html', context)
 
 
 def edit_config(request, name):
-    target = Node.objects.get(friendly_name = name)
+    target = Node.objects.get(friendly_name=name)
 
     config = target.config.config
 
@@ -366,36 +354,30 @@ def edit_config(request, name):
     config["devices"] = devices
     config["instances"] = instances
 
-    #print(json.dumps(config, indent=4))
-
-    template = loader.get_template('node_configuration/edit-config.html')
-
     api_target_options = get_api_target_menu_options(target.friendly_name)
 
     context = {"config": config, "api_target_options": api_target_options}
 
     print(json.dumps(context, indent=4))
 
-    return HttpResponse(template.render(context, request))
-
+    return render(request, 'node_configuration/edit-config.html', context)
 
 
 # Return True if filename or friendly_name would conflict with an existing config or node
 def is_duplicate(filename, friendly_name):
     # Check if filename will conflict with existing configs
     try:
-        duplicate = Config.objects.get(filename = filename)
+        duplicate = Config.objects.get(filename=filename)
         return True
     except Config.DoesNotExist:
         pass
 
     # Check if friendly name is a duplicate, must be unique for frontend
     try:
-        duplicate = Node.objects.get(friendly_name = friendly_name)
+        duplicate = Node.objects.get(friendly_name=friendly_name)
         return True
     except Node.DoesNotExist:
         return False
-
 
 
 # Used to warn when duplicate name entered in config generator
@@ -412,7 +394,6 @@ def check_duplicate(request):
         return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
     else:
         return JsonResponse("Name OK.", safe=False, status=200)
-
 
 
 # Accepts completed config, return True if valid, error string if invalid
@@ -510,7 +491,6 @@ def validateConfig(config):
     return True
 
 
-
 def generateConfigFile(request, edit_existing=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -533,14 +513,14 @@ def generateConfigFile(request, edit_existing=False):
     # Populate metadata and credentials directly from JSON
     config = {
         "metadata": {
-            "id" : data["friendlyName"],
-            "location" : data["location"],
-            "floor" : data["floor"],
+            "id": data["friendlyName"],
+            "location": data["location"],
+            "floor": data["floor"],
             "schedule_keywords": get_schedule_keywords_dict()
         },
         "wifi": {
-            "ssid" : data["ssid"],
-            "password" : data["password"]
+            "ssid": data["ssid"],
+            "password": data["password"]
         }
     }
 
@@ -589,7 +569,7 @@ def generateConfigFile(request, edit_existing=False):
 
     # If creating new config, add to models + write to disk
     if not edit_existing:
-        new = Config(config = config, filename = filename)
+        new = Config(config=config, filename=filename)
         new.save()
         new.write_to_disk()
 
@@ -603,7 +583,6 @@ def generateConfigFile(request, edit_existing=False):
     return JsonResponse("Config created.", safe=False, status=200)
 
 
-
 def set_default_credentials(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -615,11 +594,10 @@ def set_default_credentials(request):
         for i in WifiCredentials.objects.all():
             i.delete()
 
-    new = WifiCredentials(ssid = data["ssid"], password = data["password"])
+    new = WifiCredentials(ssid=data["ssid"], password=data["password"])
     new.save()
 
     return JsonResponse("Default credentials set", safe=False, status=200)
-
 
 
 # Downloads config file from an existing node and saves to database + disk
@@ -653,18 +631,20 @@ def restore_config(request):
         json.dump(config, file)
 
     # Create Config model entry
-    config = Config(config = config, filename = filename)
+    config = Config(config=config, filename=filename)
 
     # Create Node model entry
-    node = Node(friendly_name = config.config["metadata"]["id"], ip = data["ip"], floor = config.config["metadata"]["floor"])
-    node.save()
+    node = Node.objects.create(
+        friendly_name=config.config["metadata"]["id"],
+        ip=data["ip"],
+        floor=config.config["metadata"]["floor"]
+    )
 
     # Add reverse relation
     config.node = node
     config.save()
 
     return JsonResponse("Config restored", safe=False, status=200)
-
 
 
 def add_schedule_keyword_config(request):
@@ -683,7 +663,6 @@ def add_schedule_keyword_config(request):
         add_schedule_keyword(node.ip, [data["keyword"], data["timestamp"]])
 
     return JsonResponse("Keyword created", safe=False, status=200)
-
 
 
 def edit_schedule_keyword_config(request):
@@ -714,7 +693,6 @@ def edit_schedule_keyword_config(request):
             add_schedule_keyword(node.ip, [data["keyword_new"], data["timestamp_new"]])
 
     return JsonResponse("Keyword updated", safe=False, status=200)
-
 
 
 def delete_schedule_keyword_config(request):

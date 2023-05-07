@@ -1,7 +1,8 @@
+import json
 from django.db import models, IntegrityError
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
-import os, json
+
 
 class TimeStampField(models.CharField):
     def __init__(self, *args, **kwargs):
@@ -12,7 +13,6 @@ class TimeStampField(models.CharField):
         kwargs['max_length'] = 5
         kwargs['validators'] = [time_validator]
         super().__init__(*args, **kwargs)
-
 
 
 class Node(models.Model):
@@ -30,7 +30,6 @@ class Node(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         return super().save(*args, **kwargs)
-
 
 
 class Config(models.Model):
@@ -74,7 +73,6 @@ class WifiCredentials(models.Model):
 
     ssid = models.TextField()
     password = models.TextField()
-
 
 
 class ScheduleKeyword(models.Model):

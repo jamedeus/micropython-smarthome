@@ -1,17 +1,45 @@
+import json
+import os
+import socket
+from copy import deepcopy
+from unittest.mock import patch, MagicMock
 from django.test import TestCase, Client
 from django.conf import settings
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
-import json, os, socket
-from .views import validateConfig, get_modules, get_api_target_menu_options, provision, get_api_target_menu_options
+from .views import validateConfig, get_modules, get_api_target_menu_options, provision
 from .models import Config, Node, WifiCredentials, ScheduleKeyword
-from unittest.mock import patch, MagicMock
-from copy import deepcopy
+from .Webrepl import websocket, Webrepl, handshake_message
+from .validators import (
+    validate_rules,
+    api_target_validator,
+    led_strip_validator,
+    tplink_validator,
+    wled_validator,
+    dummy_validator,
+    motion_sensor_validator,
+    thermostat_validator,
+)
 
 # Large JSON objects, helper functions
-from .unit_test_helpers import request_payload, create_test_nodes, clean_up_test_nodes, test_config_1, test_config_2, simulate_first_time_upload, simulate_reupload_all_partial_success, create_config_and_node_from_json, test_config_1_edit_context, test_config_2_edit_context, test_config_3_edit_context, simulate_corrupt_filesystem_upload, simulate_reupload_all_fail_for_different_reasons, binary_unit_test_config, simulate_read_file_over_webrepl, simulated_read_position
-from .Webrepl import websocket, Webrepl, handshake_message
-from .validators import *
+from .unit_test_helpers import (
+    request_payload,
+    create_test_nodes,
+    clean_up_test_nodes,
+    test_config_1,
+    test_config_2,
+    simulate_first_time_upload,
+    simulate_reupload_all_partial_success,
+    create_config_and_node_from_json,
+    test_config_1_edit_context,
+    test_config_2_edit_context,
+    test_config_3_edit_context,
+    simulate_corrupt_filesystem_upload,
+    simulate_reupload_all_fail_for_different_reasons,
+    binary_unit_test_config,
+    simulate_read_file_over_webrepl,
+    simulated_read_position,
+)
 
 
 # Test the Node model
@@ -65,7 +93,7 @@ class NodeTests(TestCase):
 
         # Should refuse to create with friendly name >50 characters
         with self.assertRaises(ValidationError):
-            Config.objects.create(config=test_config_1, filename='Very Unrealistically Long Friendly Name That Nobody Needs')
+            Config.objects.create(config=test_config_1, filename='Unrealistically Long Friendly Name That Nobody Needs')
 
         # Confirm no nodes were created
         self.assertEqual(len(Node.objects.all()), 0)
@@ -81,7 +109,6 @@ class NodeTests(TestCase):
 
         # Confirm no nodes created in db
         self.assertEqual(len(Node.objects.all()), 1)
-
 
 
 # Test the Config model
@@ -122,7 +149,7 @@ class ConfigTests(TestCase):
 
         # Should refuse to create with filename >50 characters
         with self.assertRaises(ValidationError):
-            Config.objects.create(config=test_config_1, filename='very-unrealistically-long-config-name-that-nobody-needs.json')
+            Config.objects.create(config=test_config_1, filename='unrealistically-long-config-name-that-nobody-needs.json')
 
         # Confirm no configs created in db
         self.assertEqual(len(Config.objects.all()), 0)
@@ -177,7 +204,6 @@ class ConfigTests(TestCase):
         os.remove(os.path.join(settings.CONFIG_DIR + 'read_from_disk.json'))
 
 
-
 # Test websocket class used by Webrepl
 class WebsocketTests(TestCase):
 
@@ -230,7 +256,7 @@ class WebsocketTests(TestCase):
                 self.assertEqual(data, b'World')
 
             # First call: return sz=126 (trigger first if statement in loop)
-            # Second call: return sz=15 (bytes to iterate in inner while sz loop, mock recv to return 5 bytes, evenly divisible with 15)
+            # Second call: return sz=15 (bytes to iterate in inner loop, evenly divisible by 5 bytes returned by recv)
             # Third call: return sz=16, fl=0x82 (trigger break in second if statement)
             # Fourth call: return 16 characters to final recvexactly statement in function
             with patch.object(websocket, 'recvexactly', side_effect=[b'\x81\x7E', b'\x00\x0F', b'\x82\x10', b'abcdefghijklmnop']), \
@@ -244,17 +270,16 @@ class WebsocketTests(TestCase):
         # Mock object to replace socket.makefile.write
         mock_cl = MagicMock()
         mock_cl.write = MagicMock()
-        mock_cl.readline =  MagicMock(side_effect=[b'HTTP/1.1 101 Switching Protocols\r\n', b'Upgrade: websocket\r\n', b'Connection: Upgrade\r\n', b'\r\n'])
+        mock_cl.readline = MagicMock(side_effect=[b'HTTP/1.1 101 Switching Protocols\r\n', b'Upgrade: websocket\r\n', b'Connection: Upgrade\r\n', b'\r\n'])
 
         # Mock socket to do nothing, mock makefile method to return object created above
         with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
-             patch.object(mock_socket, 'makefile', return_value = mock_cl):
+             patch.object(mock_socket, 'makefile', return_value=mock_cl):
 
             # Instantiate, verify correct methods called
             ws = websocket(mock_socket)
             mock_cl.write.assert_called_once_with(handshake_message)
             self.assertEqual(mock_cl.readline.call_count, 4)
-
 
 
 # Test the Webrepl class used to upload config + dependencies to nodes
@@ -415,12 +440,13 @@ class WebreplTests(TestCase):
         node = Webrepl('123.45.67.89', 'password')
 
         # Mock methods to simulate successful login without making network connection
-        with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
+        with patch.object(socket, 'socket', return_value=MagicMock()), \
              patch.object(websocket, 'client_handshake', return_value=True) as mock_client_handshake, \
-             patch.object(websocket, 'read', side_effect = [b":", b" "]):
+             patch.object(websocket, 'read', side_effect=[b":", b" "]):
 
-            # Should login successfully due websocket.read simulating password prompt
+            # Should login successfully due to websocket.read simulating password prompt
             self.assertTrue(node.open_connection())
+            self.assertTrue(mock_client_handshake.called)
 
     def test_read_resp(self):
         node = Webrepl('123.45.67.89', 'password')
@@ -429,7 +455,7 @@ class WebreplTests(TestCase):
         # Mock websocket.read to simulate reading file (will only read signature bytes)
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(node, 'ws', MagicMock()), \
-             patch.object(node.ws, 'read', side_effect = simulate_read_file_over_webrepl) as mock_read:
+             patch.object(node.ws, 'read', side_effect=simulate_read_file_over_webrepl) as mock_read:
 
             # Call read_resp directly, confirm mock method called
             # Returning successfully indicates signature verified
@@ -437,12 +463,25 @@ class WebreplTests(TestCase):
             self.assertEqual(mock_read.call_count, 1)
 
 
-
 # Test all endpoints that require POST requests
 class ConfirmRequiresPostTests(TestCase):
     def test_get_request(self):
         # All endpoints requiring POST requests
-        endpoints = ['/setup', '/new_config/setup', '/edit_config/setup', '/upload', '/upload/reupload', '/edit_config/upload', '/edit_config/upload/reupload', '/delete_config', '/delete_node', '/check_duplicate', '/generateConfigFile', '/set_default_credentials', '/restore_config']
+        endpoints = [
+            '/setup',
+            '/new_config/setup',
+            '/edit_config/setup',
+            '/upload',
+            '/upload/reupload',
+            '/edit_config/upload',
+            '/edit_config/upload/reupload',
+            '/delete_config',
+            '/delete_node',
+            '/check_duplicate',
+            '/generateConfigFile',
+            '/set_default_credentials',
+            '/restore_config'
+        ]
 
         # Confirm correct error and status code for each endpoint
         for endpoint in endpoints:
@@ -526,7 +565,6 @@ class EditConfigTests(TestCase):
             self.assertEqual(response.json(), 'Upload complete.')
 
 
-
 # Test config generation page
 class ConfigGeneratorTests(TestCase):
     def test_new_config(self):
@@ -559,6 +597,7 @@ class ConfigGeneratorTests(TestCase):
         # Confirm wifi fields pre-filled
         self.assertContains(response, 'name="ssid" value="AzureDiamond" onchange="open_toast()" required>')
         self.assertContains(response, 'name="password" value="hunter2" onchange="open_toast()" required>')
+
 
 # Test main overview page
 class OverviewPageTests(TestCase):
@@ -619,7 +658,6 @@ class OverviewPageTests(TestCase):
         self.assertContains(response, 'onclick="del_config(\'test1.json\');"')
 
 
-
 # Test endpoint called by reupload all option in config overview
 class ReuploadAllTests(TestCase):
     def setUp(self):
@@ -666,7 +704,6 @@ class ReuploadAllTests(TestCase):
             self.assertEqual(response.json(), {'success': [], 'failed': {'Test1': 'Connection timed out', 'Test2': 'Offline', 'Test3': 'Requires setup'}})
 
 
-
 # Test endpoint that uploads first-time setup script
 class SetupTests(TestCase):
     # Verify response in a normal scenario
@@ -694,7 +731,6 @@ class SetupTests(TestCase):
         response = self.client.post('/setup', {'ip': '123.456.678.90'}, content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'Error': f'Invalid IP 123.456.678.90'})
-
 
 
 # Test endpoint called by frontend upload buttons (calls get_modules and provision)
@@ -823,7 +859,6 @@ class UploadTests(TestCase):
         self.assertEqual(response.json(), {'Error': f'Invalid IP 123.456.678.90'})
 
 
-
 # Test view that uploads completed configs and dependencies to esp32 nodes
 class ProvisionTests(TestCase):
     def test_provision(self):
@@ -879,7 +914,6 @@ class ProvisionTests(TestCase):
             response = provision('test1.json', '123.45.67.89', modules, libs)
             self.assertEqual(response.status_code, 409)
             self.assertEqual(response.content.decode(), '"ERROR: Upload failed due to filesystem problem, please re-flash node."')
-
 
 
 # Test view that connects to existing node, downloads config file, writes to database
@@ -944,8 +978,7 @@ class RestoreConfigViewTest(TestCase):
     def test_invalid_ip(self):
         response = self.client.post('/restore_config', {'ip': '123.456.678.90'}, content_type='application/json')
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': f'Invalid IP 123.456.678.90'})
-
+        self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
 
 
 # Test function that generates JSON used to populate API target set_rule menu
@@ -1032,7 +1065,6 @@ class ApiTargetMenuOptionsTest(TestCase):
         clean_up_test_nodes()
 
 
-
 # Test setting default wifi credentials
 class WifiCredentialsTests(TestCase):
     def test_setting_credentials(self):
@@ -1052,7 +1084,6 @@ class WifiCredentialsTests(TestCase):
     def test_print_method(self):
         credentials = WifiCredentials.objects.create(ssid='testnet', password='hunter2')
         self.assertEqual(credentials.__str__(), 'testnet')
-
 
 
 # Test duplicate detection
@@ -1086,7 +1117,6 @@ class DuplicateDetectionTests(TestCase):
         # Should reject, identical friendly name exists
         response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test Config'}), content_type='application/json')
         self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
-
 
 
 # Test delete config
@@ -1142,7 +1172,6 @@ class DeleteConfigTests(TestCase):
         # Undo permissions
         os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o664)
         os.chmod(settings.CONFIG_DIR, 0o775)
-
 
 
 class DeleteNodeTests(TestCase):
@@ -1211,7 +1240,6 @@ class DeleteNodeTests(TestCase):
         os.chmod(settings.CONFIG_DIR, 0o775)
 
 
-
 # Test endpoint used to change an existing node's IP
 class ChangeNodeIpTests(TestCase):
     def setUp(self):
@@ -1224,7 +1252,7 @@ class ChangeNodeIpTests(TestCase):
 
         # Mock provision to return success message
         with patch('node_configuration.views.provision') as mock_provision:
-            mock_provision.return_value =  JsonResponse("Upload complete.", safe=False, status=200)
+            mock_provision.return_value = JsonResponse("Upload complete.", safe=False, status=200)
 
             # Make request, confirm response
             request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
@@ -1273,7 +1301,6 @@ class ChangeNodeIpTests(TestCase):
         self.assertEqual(response.json(), {'Error': 'New IP must be different than old'})
 
 
-
 # Test function that takes config file, returns list of dependencies for upload
 class GetModulesTests(TestCase):
     def setUp(self):
@@ -1316,7 +1343,6 @@ class GetModulesTests(TestCase):
         modules, libs = get_modules(config)
         self.assertEqual(modules, {'../sensors/Sensor.py': 'Sensor.py', '../sensors/MotionSensor.py': 'MotionSensor.py', '../devices/LedStrip.py': 'LedStrip.py', '../devices/Device.py': 'Device.py', '../sensors/Switch.py': 'Switch.py', '../devices/Relay.py': 'Relay.py', '../devices/Wled.py': 'Wled.py', '../devices/Tplink.py': 'Tplink.py', '../devices/ApiTarget.py': 'ApiTarget.py'})
         self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py'})
-
 
 
 # Test config generator backend function
@@ -1397,7 +1423,6 @@ class GenerateConfigFileTests(TestCase):
         self.assertEqual(len(Config.objects.all()), 0)
 
 
-
 # Test the validateConfig function called when user submits config generator form
 class ValidateConfigTests(TestCase):
     def setUp(self):
@@ -1466,7 +1491,7 @@ class ValidateConfigTests(TestCase):
         config = self.valid_config.copy()
         config['sensor5']['tolerance'] = 12.5
         result = validateConfig(config)
-        self.assertEqual(result, f'Thermostat tolerance out of range (0.1 - 10.0)')
+        self.assertEqual(result, 'Thermostat tolerance out of range (0.1 - 10.0)')
 
     def test_invalid_thermostat_tolerance(self):
         config = self.valid_config.copy()
@@ -1673,7 +1698,6 @@ class ValidatorErrorTests(TestCase):
         # Confirm wrong keywords are rejected for correct types
         self.assertFalse(dummy_validator('max'))
         self.assertFalse(dummy_validator(50))
-
 
 
 # Test views used to manage schedule keywords from config overview
