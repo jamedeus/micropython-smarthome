@@ -491,7 +491,7 @@ def validateConfig(config):
     return True
 
 
-def generateConfigFile(request, edit_existing=False):
+def generate_config_file(request, edit_existing=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:

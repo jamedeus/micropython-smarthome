@@ -5,40 +5,46 @@ from . import views
 app_name = "node_configuration"
 
 urlpatterns = [
-    path('config_overview', views.config_overview, name='config_overview'),
+    # Generate endpoint, must post form data
+    # Optional argument contains name of existing node to overwrite
+    path('generate_config_file', views.generate_config_file, name='generate_config_file'),
+    path('generate_config_file/<str:edit_existing>', views.generate_config_file, name='generate_config_file'),
+    path('edit_config/generate_config_file/<str:edit_existing>', views.generate_config_file, name='generate_config_file'),
 
-    # Allow accessing with relative path
-    path('new_config/setup', views.setup, name='setup'),
-    path('edit_config/setup', views.setup, name='setup'),
-    path('edit_config/upload', views.upload, name='upload'),
-    path('edit_config/upload/<str:reupload>', views.upload, name='upload'),
-    path('edit_config/generateConfigFile/<str:edit_existing>', views.generateConfigFile, name='generateConfigFile'),
-
-    # Argument is optional
-    path('upload', views.upload, name='upload'),
-    path('upload/<str:reupload>', views.upload, name='upload'),
-    path('reupload_all', views.reupload_all, name='reupload_all'),
-    path('setup', views.setup, name='setup'),
-
-    path('delete_config', views.delete_config, name='delete_config'),
-    path('delete_node', views.delete_node, name='delete_node'),
-    path('edit_config/<str:name>', views.edit_config, name='edit_config'),
-
-    path('new_config', views.new_config, name='new_config'),
-
-    path('change_node_ip', views.change_node_ip, name='change_node_ip'),
-
-    # Argument is optional
-    path('generateConfigFile', views.generateConfigFile, name='generateConfigFile'),
-    path('generateConfigFile/<str:edit_existing>', views.generateConfigFile, name='generateConfigFile'),
-
-    path('set_default_credentials', views.set_default_credentials, name='set_default_credentials'),
-
-    path('restore_config', views.restore_config, name='restore_config'),
-
+    # Post node name, returns bool
     path('check_duplicate', views.check_duplicate, name='check_duplicate'),
 
+    # Config file management endpoints
+    path('delete_config', views.delete_config, name='delete_config'),
+
+    # Node management endpoints
+    path('delete_node', views.delete_node, name='delete_node'),
+    path('change_node_ip', views.change_node_ip, name='change_node_ip'),
+
+    # Uploads setup script to new node (accessible from relative path)
+    path('setup', views.setup, name='setup'),
+    path('new_config/setup', views.setup, name='setup'),
+    path('edit_config/setup', views.setup, name='setup'),
+
+    # Uploads config to node (accessible from relative path)
+    # Optional reupload arg prevents creating new model entry
+    path('upload', views.upload, name='upload'),
+    path('upload/<str:reupload>', views.upload, name='upload'),
+    path('edit_config/upload', views.upload, name='upload'),
+    path('edit_config/upload/<str:reupload>', views.upload, name='upload'),
+
+    # Overview dropdown menu endpoints
+    path('reupload_all', views.reupload_all, name='reupload_all'),
+    path('restore_config', views.restore_config, name='restore_config'),
+    path('set_default_credentials', views.set_default_credentials, name='set_default_credentials'),
+
+    # Schedule keyword management endpoints
     path('add_schedule_keyword', views.add_schedule_keyword_config, name='add_schedule_keyword'),
     path('edit_schedule_keyword', views.edit_schedule_keyword_config, name='edit_schedule_keyword'),
     path('delete_schedule_keyword', views.delete_schedule_keyword_config, name='delete_schedule_keyword'),
+
+    # Template views: overview, create new config, edit existing config
+    path('config_overview', views.config_overview, name='config_overview'),
+    path('new_config', views.new_config, name='new_config'),
+    path('edit_config/<str:name>', views.edit_config, name='edit_config')
 ]

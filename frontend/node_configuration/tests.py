@@ -478,7 +478,7 @@ class ConfirmRequiresPostTests(TestCase):
             '/delete_config',
             '/delete_node',
             '/check_duplicate',
-            '/generateConfigFile',
+            '/generate_config_file',
             '/set_default_credentials',
             '/restore_config'
         ]
@@ -1094,7 +1094,7 @@ class DuplicateDetectionTests(TestCase):
         self.assertEqual(response.json(), 'Name OK.')
 
         # Create config with same name
-        self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
 
         # Should now reject (identical name)
         response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test Config'}), content_type='application/json')
@@ -1124,7 +1124,7 @@ class DeleteConfigTests(TestCase):
     def setUp(self):
         # Generate Config, will be deleted below
         self.client = Client()
-        response = self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
 
@@ -1178,7 +1178,7 @@ class DeleteNodeTests(TestCase):
     def setUp(self):
         # Generate Config for test Node
         self.client = Client()
-        response = self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
 
@@ -1352,7 +1352,7 @@ class GenerateConfigFileTests(TestCase):
         self.assertEqual(len(Config.objects.all()), 0)
 
         # Post frontend config generator payload to view
-        response = self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Config created.')
 
@@ -1367,7 +1367,7 @@ class GenerateConfigFileTests(TestCase):
 
     def test_edit_existing_config_file(self):
         # Create config, confirm 1 exists in database
-        response = self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Copy request payload, change 1 default_rule
@@ -1375,7 +1375,7 @@ class GenerateConfigFileTests(TestCase):
         modified_request_payload['devices']['device6']['default_rule'] = 900
 
         # Send with edit argument (overwrite existing with same name instead of throwing duplicate error)
-        response = self.client.post('/generateConfigFile/True', json.dumps(modified_request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file/True', json.dumps(modified_request_payload), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Config created.')
 
@@ -1397,13 +1397,13 @@ class GenerateConfigFileTests(TestCase):
         self.assertEqual(len(Config.objects.all()), 0)
 
         # Post frontend config generator payload to view, confirm response + model created
-        response = self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Config created.')
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Post again, should throw error (duplicate name), should not create model
-        response = self.client.post('/generateConfigFile', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1417,7 +1417,7 @@ class GenerateConfigFileTests(TestCase):
         invalid_request_payload['devices']['device6']['default_rule'] = 9001
 
         # Post invalid payload, confirm rejected with correct error, confirm config not created
-        response = self.client.post('/generateConfigFile', json.dumps(invalid_request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', json.dumps(invalid_request_payload), content_type='application/json')
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'Error': 'Cabinet Lights: Invalid default rule 9001'})
         self.assertEqual(len(Config.objects.all()), 0)
