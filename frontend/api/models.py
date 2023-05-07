@@ -1,11 +1,12 @@
-from django.db import models
 import json
 import re
-
+from django.db import models
 from node_configuration.models import Node
+
 
 def default_actions():
     return json.dumps([])
+
 
 # Override method to automatically convert to lowercase, replace -/_ with spaces, remove special chars
 # Also allows case-insensitive lookups with Macro.objects.get()
@@ -17,7 +18,6 @@ class NameField(models.CharField):
             value = re.sub('[-_]', ' ', str(value).lower())
 
         return re.sub('[^0-9a-z ]+', '', value)
-
 
 
 class Macro(models.Model):
@@ -46,15 +46,15 @@ class Macro(models.Model):
         # Get target IP, look up Node instance
         ip = action['target']
         del action['target']
-        node = Node.objects.get(ip = ip)
+        node = Node.objects.get(ip=ip)
         node_name = node.friendly_name
 
         # Throw error if target node config doesn't contain target instance
         if 'instance' in action.keys():
-            if not action['instance'] in node.config.config.keys():
+            if action['instance'] not in node.config.config.keys():
                 raise KeyError(f"{node_name} has no instance {action['instance']}")
         else:
-            if not 'ir_blaster' in node.config.config.keys():
+            if 'ir_blaster' not in node.config.config.keys():
                 raise KeyError(f"{node_name} has no IR Blaster")
 
         # Get friendly_name of target instance (for frontend)
@@ -97,7 +97,15 @@ class Macro(models.Model):
                 del actions[actions.index(i)]
 
         # Add new action, reserialize, save
-        actions.append({'ip': ip, 'args': args, 'node_name': node_name, 'target_name': target_name, 'action_name': command.replace('_', ' ').title()})
+        actions.append(
+            {
+                'ip': ip,
+                'args': args,
+                'node_name': node_name,
+                'target_name': target_name,
+                'action_name': command.replace('_', ' ').title()
+            }
+        )
         self.actions = json.dumps(actions)
         self.save()
 

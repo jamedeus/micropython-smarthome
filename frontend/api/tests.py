@@ -1,16 +1,12 @@
+import json
+import asyncio
+from unittest.mock import patch, MagicMock, AsyncMock
 from django.test import TestCase
-from django.conf import settings
 from django.db import IntegrityError
-
-from node_configuration.models import *
-from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes, create_config_and_node_from_json, test_config_1, test_config_2, test_config_3
 from .models import Macro
 from .views import parse_command, request
-from .unit_test_helpers import *
-
-import json, asyncio
-from unittest.mock import patch, MagicMock, AsyncMock
-
+from .unit_test_helpers import config1_status_object, config1_api_context, config2_status_object, config2_api_context
+from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes
 
 
 # Test function that makes async API calls to esp32 nodes (called by send_command)
@@ -97,7 +93,6 @@ class RequestTests(TestCase):
             self.assertEqual(response, "Error: Unable to decode response")
 
 
-
 # Test send_command function that bridges frontend HTTP requests to esp32 API calls
 class SendCommandTests(TestCase):
 
@@ -125,6 +120,9 @@ class SendCommandTests(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {"On": "device1"})
             self.assertEqual(mock_parse_command.call_count, 1)
+
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     def test_send_command_invalid_method(self):
         # Make get request (requires post)
@@ -165,6 +163,8 @@ class SendCommandTests(TestCase):
             self.assertEqual(response.json(), {'Enabled': 'device1'})
             self.assertEqual(mock_parse_command.call_count, 2)
 
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
 
 # Test HTTP endpoints that make API requests to nodes and return the response
@@ -173,9 +173,13 @@ class HTTPEndpointTests(TestCase):
         # Create 3 test nodes
         create_test_nodes()
 
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
     def test_get_climate_data(self):
         # Mock request to return climate data
-        with patch('api.views.request', return_value = {'humid': 48.05045, 'temp': 70.25787}):
+        with patch('api.views.request', return_value={'humid': 48.05045, 'temp': 70.25787}):
             response = self.client.get('/get_climate_data/Test1')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {'humid': 48.05045, 'temp': 70.25787})
@@ -188,7 +192,7 @@ class HTTPEndpointTests(TestCase):
 
     def test_get_status(self):
         # Mock request to return status object
-        with patch('api.views.request', return_value = config1_status_object):
+        with patch('api.views.request', return_value=config1_status_object):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), config1_status_object)
@@ -201,9 +205,15 @@ class HTTPEndpointTests(TestCase):
             self.assertEqual(response.json(), "Error: Unable to connect.")
 
 
-
 # Test model that stores and plays recorded macros
 class MacroModelTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     # Test instantiation, name standardization, __str__ method
     def test_instantiation(self):
@@ -243,8 +253,7 @@ class MacroModelTests(TestCase):
             Macro.objects.create(name='')
 
     def test_add_and_delete_action(self):
-        # Create 3 test nodes, test macro
-        create_test_nodes()
+        # Create test macro
         macro = Macro.objects.create(name='New Macro')
 
         # Add action, confirm 1 action exists, confirm value correct
@@ -258,9 +267,11 @@ class MacroModelTests(TestCase):
         actions = json.loads(macro.actions)
         self.assertEqual(len(actions), 0)
 
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
     def test_add_action_invalid(self):
-        # Create 3 test nodes, test macro
-        create_test_nodes()
+        # Create test macro
         macro = Macro.objects.create(name='New Macro')
 
         # Attempt to add incomplete action (args only, no containing dict)
@@ -276,8 +287,7 @@ class MacroModelTests(TestCase):
             macro.add_action({"command": "ir", "ir_target": "tv", "key": "power", "target": "192.168.1.123"})
 
     def test_delete_action_invalid(self):
-        # Create 3 test nodes, test macro with 1 action
-        create_test_nodes()
+        # Create test macro with 1 action
         macro = Macro.objects.create(name='New Macro')
         macro.add_action({"command": "set_rule", "instance": "device1", "rule": "248", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
 
@@ -291,8 +301,7 @@ class MacroModelTests(TestCase):
 
     # Should reformat certain commands for readability in edit macro modal
     def test_set_frontend_values(self):
-        # Create 3 test nodes, test macro
-        create_test_nodes()
+        # Create test macro
         macro = Macro.objects.create(name='New Macro')
 
         # Add action containing set_rule, should change to Set Rule and append value
@@ -305,8 +314,7 @@ class MacroModelTests(TestCase):
 
     # Confirm that new rules overwrite existing rules they would conflict with
     def test_no_conflicting_rules(self):
-        # Create 3 test nodes, test macro
-        create_test_nodes()
+        # Create test macro
         macro = Macro.objects.create(name='New Macro')
 
         # Add 2 set_rule actions targeting the same instance with different values
@@ -334,12 +342,15 @@ class MacroModelTests(TestCase):
         self.assertEqual(json.loads(macro.actions)[2]['action_name'], 'Turn Off')
 
 
-
 # Test endpoints used to record and edit macros
 class MacroTests(TestCase):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
+
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     def test_macro_name_available(self):
         # Should be available
@@ -410,11 +421,14 @@ class MacroTests(TestCase):
             self.assertEqual(mock_parse_command.call_count, 2)
 
 
-
 class InvalidMacroTests(TestCase):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
+
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     def test_add_macro_action_get_request(self):
         # Requires POST request
@@ -465,15 +479,18 @@ class InvalidMacroTests(TestCase):
         self.assertEqual(response.json(), 'Error: Macro not-real does not exist.')
 
 
-
 # Test actions in overview top-right dropdown menu
 class TestGlobalCommands(TestCase):
     def setUp(self):
         create_test_nodes()
 
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
     def test_reset_all(self):
         # Mock request to return expected response for each node
-        with patch('api.views.request', return_value = {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}):
+        with patch('api.views.request', return_value={'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}):
             # Create 3 test nodes
             response = self.client.get('/reset_all')
             self.assertEqual(response.status_code, 200)
@@ -489,7 +506,7 @@ class TestGlobalCommands(TestCase):
 
     def test_reboot_all(self):
         # Mock request to return expected response for each node
-        with patch('api.views.request', return_value = 'Rebooting'):
+        with patch('api.views.request', return_value='Rebooting'):
             # Create 3 test nodes
             response = self.client.get('/reboot_all')
             self.assertEqual(response.status_code, 200)
@@ -504,97 +521,96 @@ class TestGlobalCommands(TestCase):
             self.assertEqual(response.json(), "Done")
 
 
-
 # Test successful calls to all API endpoints with mocked return values
 class TestEndpoints(TestCase):
 
     def test_status(self):
         # Mock request to return status object
-        with patch('api.views.request', return_value = config1_status_object):
+        with patch('api.views.request', return_value=config1_status_object):
             # Request status, should receive expected object
             response = parse_command('192.168.1.123', ['status'])
             self.assertEqual(response, config1_status_object)
 
     def test_reboot(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = 'Rebooting'):
+        with patch('api.views.request', return_value='Rebooting'):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['reboot'])
             self.assertEqual(response, 'Rebooting')
 
     def test_disable(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Disabled': 'device1'}):
+        with patch('api.views.request', return_value={'Disabled': 'device1'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['disable', 'device1'])
             self.assertEqual(response, {'Disabled': 'device1'})
 
     def test_disable_in(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Disabled': 'device1', 'Disable_in_seconds': 300.0}):
+        with patch('api.views.request', return_value={'Disabled': 'device1', 'Disable_in_seconds': 300.0}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['disable_in', 'device1', '5'])
             self.assertEqual(response, {'Disabled': 'device1', 'Disable_in_seconds': 300.0})
 
     def test_enable(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Enabled': 'device1'}):
+        with patch('api.views.request', return_value={'Enabled': 'device1'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['enable', 'device1'])
             self.assertEqual(response, {'Enabled': 'device1'})
 
     def test_enable_in(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Enabled': 'device1', 'Enable_in_seconds': 300.0}):
+        with patch('api.views.request', return_value={'Enabled': 'device1', 'Enable_in_seconds': 300.0}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['enable_in', 'device1', '5'])
             self.assertEqual(response, {'Enabled': 'device1', 'Enable_in_seconds': 300.0})
 
     def test_set_rule(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {"device1": "50"}):
+        with patch('api.views.request', return_value={"device1": "50"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['set_rule', 'device1', '50'])
             self.assertEqual(response, {"device1": "50"})
 
     def test_reset_rule(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}):
+        with patch('api.views.request', return_value={'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['reset_rule', 'device1'])
             self.assertEqual(response, {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'})
 
     def test_reset_all_rules(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'New rules': {'device1': 'disabled', 'sensor1': 2.0, 'device2': 'enabled'}}):
+        with patch('api.views.request', return_value={'New rules': {'device1': 'disabled', 'sensor1': 2.0, 'device2': 'enabled'}}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['reset_all_rules'])
             self.assertEqual(response, {'New rules': {'device1': 'disabled', 'sensor1': 2.0, 'device2': 'enabled'}})
 
     def test_get_schedule_rules(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'05:00': 'enabled', '22:00': 'disabled'}):
+        with patch('api.views.request', return_value={'05:00': 'enabled', '22:00': 'disabled'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_schedule_rules', 'device2'])
             self.assertEqual(response, {'05:00': 'enabled', '22:00': 'disabled'})
 
     def test_add_rule(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'time': '10:00', 'Rule added': 'disabled'}):
+        with patch('api.views.request', return_value={'time': '10:00', 'Rule added': 'disabled'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['add_rule', 'device2', '10:00', 'disabled'])
             self.assertEqual(response, {'time': '10:00', 'Rule added': 'disabled'})
 
     def test_remove_rule(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Deleted': '10:00'}):
+        with patch('api.views.request', return_value={'Deleted': '10:00'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', '10:00'])
             self.assertEqual(response, {'Deleted': '10:00'})
 
     def test_save_rules(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Success': 'Rules written to disk'}):
+        with patch('api.views.request', return_value={'Success': 'Rules written to disk'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['save_rules'])
             self.assertEqual(response, {'Success': 'Rules written to disk'})
@@ -603,81 +619,80 @@ class TestEndpoints(TestCase):
         attributes = {'min_bright': 0, 'nickname': 'Cabinet Lights', 'bright': 0, 'scheduled_rule': 'disabled', 'current_rule': 'disabled', 'default_rule': 1023, 'enabled': False, 'rule_queue': ['1023', 'fade/256/7140', 'fade/32/7200', 'Disabled', '1023', 'fade/256/7140'], 'state': False, 'name': 'device1', 'triggered_by': ['sensor1'], 'max_bright': 1023, 'device_type': 'pwm', 'group': 'group1', 'fading': False}
 
         # Mock request to return expected response
-        with patch('api.views.request', return_value = attributes):
+        with patch('api.views.request', return_value=attributes):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_attributes', 'device2'])
             self.assertEqual(response, attributes)
 
     def test_ir_key(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'tv': 'power'}):
+        with patch('api.views.request', return_value={'tv': 'power'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['ir', 'tv', 'power'])
             self.assertEqual(response, {'tv': 'power'})
 
     def test_ir_backlight(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'backlight': 'on'}):
+        with patch('api.views.request', return_value={'backlight': 'on'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['ir', 'backlight', 'on'])
             self.assertEqual(response, {'backlight': 'on'})
 
     def test_get_temp(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Temp': 69.9683}):
+        with patch('api.views.request', return_value={'Temp': 69.9683}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_temp'])
             self.assertEqual(response, {'Temp': 69.9683})
 
     def test_get_humid(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Humidity': 47.09677}):
+        with patch('api.views.request', return_value={'Humidity': 47.09677}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_humid'])
             self.assertEqual(response, {'Humidity': 47.09677})
 
     def test_get_climate(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'humid': 47.12729, 'temp': 69.94899}):
+        with patch('api.views.request', return_value={'humid': 47.12729, 'temp': 69.94899}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_climate'])
             self.assertEqual(response, {'humid': 47.12729, 'temp': 69.94899})
 
     def test_clear_log(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'clear_log': 'success'}):
+        with patch('api.views.request', return_value={'clear_log': 'success'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['clear_log'])
             self.assertEqual(response, {'clear_log': 'success'})
 
     def test_condition_met(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Condition': False}):
+        with patch('api.views.request', return_value={'Condition': False}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['condition_met', 'sensor1'])
             self.assertEqual(response, {'Condition': False})
 
     def test_trigger_sensor(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Triggered': 'sensor1'}):
+        with patch('api.views.request', return_value={'Triggered': 'sensor1'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['trigger_sensor', 'sensor1'])
             self.assertEqual(response, {'Triggered': 'sensor1'})
 
     def test_turn_on(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'On': 'device2'}):
+        with patch('api.views.request', return_value={'On': 'device2'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['turn_on', 'device2'])
             self.assertEqual(response, {'On': 'device2'})
 
     def test_turn_off(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {'Off': 'device2'}):
+        with patch('api.views.request', return_value={'Off': 'device2'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['turn_off', 'device2'])
             self.assertEqual(response, {'Off': 'device2'})
-
 
 
 # Test unsuccessful calls with invalid arguments to verify errors
@@ -697,7 +712,7 @@ class TestEndpointErrors(TestCase):
         # Test endpoints with same missing arg error in loop
         for endpoint in ['disable', 'enable', 'disable_in', 'enable_in', 'set_rule', 'reset_rule', 'get_schedule_rules', 'add_rule', 'remove_rule', 'get_attributes', 'ir']:
             response = parse_command('192.168.1.123', [endpoint])
-            self.assertEqual(response, {"ERROR" : "Please fill out all fields"})
+            self.assertEqual(response, {"ERROR": "Please fill out all fields"})
 
     def test_disable_invalid_arg(self):
         # Send request, verify response
@@ -818,7 +833,6 @@ class TestEndpointErrors(TestCase):
         self.assertEqual(response, {"ERROR": "Must speficy one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"})
 
 
-
 # Test endpoint that loads modal containing existing macro actions
 class EditModalTests(TestCase):
     def setUp(self):
@@ -827,8 +841,20 @@ class EditModalTests(TestCase):
 
         # Create macro with a single action
         # Payload sent by frontend to turn on node1 device1
-        payload = {'name': 'Test1', 'action': {'command': 'turn_on', 'instance': 'device1', 'target': '192.168.1.123', 'friendly_name': 'Cabinet Lights'}}
+        payload = {
+            'name': 'Test1',
+            'action': {
+                'command': 'turn_on',
+                'instance': 'device1',
+                'target': '192.168.1.123',
+                'friendly_name': 'Cabinet Lights'
+            }
+        }
         self.client.post('/add_macro_action', payload, content_type='application/json')
+
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     def test_edit_macro_button(self):
         # Send request, confirm status and template used
@@ -847,7 +873,6 @@ class EditModalTests(TestCase):
         self.assertEqual(response.json(), 'Error: Macro Test42 does not exist.')
 
 
-
 # Test endpoint that sets cookie to skip macro instructions modal
 class SkipInstructionsTests(TestCase):
     def test_get_skip_instructions_cookie(self):
@@ -855,7 +880,6 @@ class SkipInstructionsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('skip_instructions' in response.cookies)
         self.assertEqual(response.cookies['skip_instructions'].value, 'true')
-
 
 
 # Test legacy api page
@@ -877,6 +901,8 @@ class LegacyApiTests(TestCase):
         self.assertContains(response, '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test2">Test2</button>')
         self.assertContains(response, '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test3">Test3</button>')
 
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
 
 # Test api overview page
@@ -921,6 +947,9 @@ class OverviewPageTests(TestCase):
         self.assertNotContains(response, '<h2>No Nodes Configured</h2>')
         self.assertNotContains(response, '<p>Click <a href="/new_config">here</a> to create</p>')
 
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
     def test_overview_page_with_macro(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -940,6 +969,9 @@ class OverviewPageTests(TestCase):
         # Confirm macro section present with correct-name macro
         self.assertContains(response, '<h1 class="text-center mt-5">Macros</h1>')
         self.assertContains(response, '<h3 class="mx-auto my-auto">Test Macro</h3>')
+
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     def test_overview_page_record_macro(self):
         # Create 3 test nodes
@@ -966,6 +998,8 @@ class OverviewPageTests(TestCase):
         self.assertNotContains(response, '<h3 class="mx-auto mb-0" id="error-modal-title">Macro Instructions</h3>')
         self.assertEqual(response.context['skip_instructions'], True)
 
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
 
 # Test API Card interface
@@ -974,9 +1008,13 @@ class ApiCardTests(TestCase):
         # Create 3 test nodes
         create_test_nodes()
 
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
     def test_api_frontend(self):
         # Mock request to return the expected status object
-        with patch('api.views.request', return_value = config1_status_object):
+        with patch('api.views.request', return_value=config1_status_object):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test1')
             self.assertEqual(response.status_code, 200)
@@ -990,7 +1028,7 @@ class ApiCardTests(TestCase):
     # Repeat test above with a node containing ApiTarget and Thermostat
     def test_api_target_and_thermostat(self):
         # Mock request to return the expected status object
-        with patch('api.views.request', return_value = config2_status_object):
+        with patch('api.views.request', return_value=config2_status_object):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test2')
             self.assertEqual(response.status_code, 200)
@@ -1023,7 +1061,7 @@ class ApiCardTests(TestCase):
 
     def test_recording_mode(self):
         # Mock request to return the expected status object
-        with patch('api.views.request', return_value = config1_status_object):
+        with patch('api.views.request', return_value=config1_status_object):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test1/macro-name')
             self.assertEqual(response.status_code, 200)
@@ -1033,12 +1071,15 @@ class ApiCardTests(TestCase):
             self.assertEqual(response.context['context']['metadata']['recording'], 'macro-name')
 
 
-
 # Test modal used to edit schedule rules
 class RuleModalTests(TestCase):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
+
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     # Get request is sent when adding a new rule
     def test_create_new_rule(self):
@@ -1097,30 +1138,34 @@ class ScheduleKeywordTests(TestCase):
         # Create 3 test nodes
         create_test_nodes()
 
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
     def test_get_keywords(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {"sunrise": "05:55", "sunset": "20:20"}):
+        with patch('api.views.request', return_value={"sunrise": "05:55", "sunset": "20:20"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_schedule_keywords'])
             self.assertEqual(response, {"sunrise": "05:55", "sunset": "20:20"})
 
     def test_add_keyword(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {"Keyword added": "test", "time": "05:00"}):
+        with patch('api.views.request', return_value={"Keyword added": "test", "time": "05:00"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test', '05:00'])
             self.assertEqual(response, {"Keyword added": "test", "time": "05:00"})
 
     def test_remove_keyword(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {"Keyword removed": "test"}):
+        with patch('api.views.request', return_value={"Keyword removed": "test"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_schedule_keyword', 'test'])
             self.assertEqual(response, {"Keyword removed": "test"})
 
     def test_save_keywords(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value = {"Success": "Keywords written to disk"}):
+        with patch('api.views.request', return_value={"Success": "Keywords written to disk"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['save_schedule_keywords'])
             self.assertEqual(response, {"Success": "Keywords written to disk"})
@@ -1128,13 +1173,13 @@ class ScheduleKeywordTests(TestCase):
     def test_add_errors(self):
         # Send request with no args, verify error
         response = parse_command('192.168.1.123', ['add_schedule_keyword'])
-        self.assertEqual(response, {"ERROR" : "Please fill out all fields"})
+        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
 
         # Send request with no timestamp, verify error
         response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test'])
-        self.assertEqual(response, {"ERROR" : "Timestamp format must be HH:MM (no AM/PM)"})
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
     def test_remove_errors(self):
         # Send request with no args, verify error
         response = parse_command('192.168.1.123', ['remove_schedule_keyword'])
-        self.assertEqual(response, {"ERROR" : "Please fill out all fields"})
+        self.assertEqual(response, {"ERROR": "Please fill out all fields"})

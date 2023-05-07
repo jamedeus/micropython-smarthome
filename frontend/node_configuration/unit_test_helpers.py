@@ -1,8 +1,9 @@
-import json, os
+import json
+import os
+import struct
 from django.conf import settings
 from django.http import JsonResponse
 from .models import Config, Node
-import struct
 
 
 
@@ -78,9 +79,11 @@ def create_test_nodes():
 
 # Deletes files written to disk by create_test_nodes
 def clean_up_test_nodes():
-    os.remove(f'{settings.CONFIG_DIR}/test1.json')
-    os.remove(f'{settings.CONFIG_DIR}/test2.json')
-    os.remove(f'{settings.CONFIG_DIR}/test3.json')
+    for i in range(1, 4):
+        try:
+            os.remove(f'{settings.CONFIG_DIR}/test{i}.json')
+        except FileNotFoundError:
+            pass
 
 
 

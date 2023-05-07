@@ -1,17 +1,20 @@
-from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse, JsonResponse, FileResponse
-from django.template import loader
-from django.views.decorators.csrf import ensure_csrf_cookie
 import json
 import asyncio
 import re
-
+from django.shortcuts import render
+from django.http import HttpResponse, JsonResponse
+from django.template import loader
+from django.views.decorators.csrf import ensure_csrf_cookie
 from node_configuration.models import Node, ScheduleKeyword
 from node_configuration.get_api_target_menu_options import get_api_target_menu_options
 from api.models import Macro
 
 # Used to determine if keyword or timestamp schedule rule
 timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+
+# IPv4 regular expression
+ip_regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+
 
 # Returns all schedule keywords in dict format used by node config files and overview template
 def get_schedule_keywords_dict():
@@ -43,7 +46,6 @@ def edit_rule(request):
     return render(request, 'api/rule_modal.html', data)
 
 
-
 def legacy_api(request):
     context = []
 
@@ -55,9 +57,8 @@ def legacy_api(request):
     return HttpResponse(template.render({'context': context}, request))
 
 
-
 def get_status(request, node):
-    ip = Node.objects.get(friendly_name = node).ip
+    ip = Node.objects.get(friendly_name=node).ip
 
     try:
         status = parse_command(ip, ["status"])
@@ -65,7 +66,6 @@ def get_status(request, node):
         return JsonResponse("Error: Unable to connect.", safe=False, status=502)
 
     return JsonResponse(status, safe=False, status=200)
-
 
 
 @ensure_csrf_cookie
@@ -108,7 +108,7 @@ def api_overview(request, recording=False, start=False):
 
 @ensure_csrf_cookie
 def api(request, node, recording=False):
-    target = Node.objects.get(friendly_name = node)
+    target = Node.objects.get(friendly_name=node)
 
     try:
         status = parse_command(target.ip, ["status"])
@@ -164,10 +164,9 @@ def api(request, node, recording=False):
     return HttpResponse(template.render({'context': status}, request))
 
 
-
 # TODO unused? Climate card updates from status object
 def get_climate_data(request, node):
-    ip = Node.objects.get(friendly_name = node).ip
+    ip = Node.objects.get(friendly_name=node).ip
 
     try:
         data = parse_command(ip, ["get_climate"])
@@ -175,7 +174,6 @@ def get_climate_data(request, node):
         return JsonResponse("Error: Unable to connect.", safe=False, status=502)
 
     return JsonResponse(data, safe=False, status=200)
-
 
 
 def reboot_all(request):
@@ -188,7 +186,6 @@ def reboot_all(request):
             print(f"Unable to connect to {node.friendly_name}")
 
     return JsonResponse("Done", safe=False, status=200)
-
 
 
 def reset_all(request):
@@ -204,19 +201,18 @@ def reset_all(request):
     return JsonResponse("Done", safe=False, status=200)
 
 
-
 def send_command(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
-    if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", data["target"]):
+    if re.match(ip_regex, data["target"]):
         # New API Card interface
         ip = data["target"]
     else:
         # Legacy API
-        ip = Node.objects.get(friendly_name = data["target"]).ip
+        ip = Node.objects.get(friendly_name=data["target"]).ip
 
     cmd = data["command"]
     del data["target"], data["command"]
@@ -242,7 +238,6 @@ def send_command(request):
         parse_command(ip, args)
 
     return JsonResponse(response, safe=False, status=200)
-
 
 
 # Send JSON api request to node
@@ -274,7 +269,6 @@ async def request(ip, msg):
     return response
 
 
-
 def parse_command(ip, args):
     if len(args) == 0:
         return "Error: No command received"
@@ -290,10 +284,9 @@ def parse_command(ip, args):
         return "Error: Command not found"
 
 
-
 def run_macro(request, name):
     try:
-        macro = Macro.objects.get(name = name)
+        macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
         return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
 
@@ -304,7 +297,6 @@ def run_macro(request, name):
     return JsonResponse("Done", safe=False, status=200)
 
 
-
 def add_macro_action(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -312,9 +304,9 @@ def add_macro_action(request):
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     try:
-        macro = Macro.objects.get(name = data['name'])
+        macro = Macro.objects.get(name=data['name'])
     except Macro.DoesNotExist:
-        macro = Macro.objects.create(name = data['name'])
+        macro = Macro.objects.create(name=data['name'])
 
     try:
         macro.add_action(data['action'])
@@ -329,10 +321,9 @@ def add_macro_action(request):
     return JsonResponse("Done", safe=False, status=200)
 
 
-
 def edit_macro(request, name):
     try:
-        macro = Macro.objects.get(name = name)
+        macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
         return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
 
@@ -343,10 +334,9 @@ def edit_macro(request, name):
     return HttpResponse(template.render(context, request))
 
 
-
 def delete_macro(request, name):
     try:
-        macro = Macro.objects.get(name = name)
+        macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
         return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
 
@@ -355,10 +345,9 @@ def delete_macro(request, name):
     return JsonResponse("Done", safe=False, status=200)
 
 
-
 def delete_macro_action(request, name, index):
     try:
-        macro = Macro.objects.get(name = name)
+        macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
         return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
 
@@ -370,15 +359,12 @@ def delete_macro_action(request, name, index):
     return JsonResponse("Done", safe=False, status=200)
 
 
-
 def macro_name_available(request, name):
     try:
-        macro = Macro.objects.get(name = name)
+        Macro.objects.get(name=name)
+        return JsonResponse(f"Name {name} already in use.", safe=False, status=409)
     except Macro.DoesNotExist:
         return JsonResponse(f"Name {name} available.", safe=False, status=200)
-
-    return JsonResponse(f"Name {name} already in use.", safe=False, status=409)
-
 
 
 # Returns cookie to skip record macro instructions popup
@@ -388,9 +374,9 @@ def skip_instructions(request):
     return response
 
 
-
 # Populated with endpoint:handler pairs by decorators below
 endpoints = []
+
 
 def add_endpoint(url):
     def _add_endpoint(func):
@@ -398,28 +384,32 @@ def add_endpoint(url):
         return func
     return _add_endpoint
 
+
 @add_endpoint("status")
 def status(ip, params):
     return asyncio.run(request(ip, ['status']))
+
 
 @add_endpoint("reboot")
 def reboot(ip, params):
     return asyncio.run(request(ip, ['reboot']))
 
+
 @add_endpoint("disable")
 def disable(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         return asyncio.run(request(ip, ['disable', params[0]]))
     else:
-        return {"ERROR" : "Can only disable devices and sensors"}
+        return {"ERROR": "Can only disable devices and sensors"}
+
 
 @add_endpoint("disable_in")
 def disable_in(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -431,20 +421,22 @@ def disable_in(ip, params):
     else:
         return {"ERROR": "Can only disable devices and sensors"}
 
+
 @add_endpoint("enable")
-def disable(ip, params):
+def enable(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         return asyncio.run(request(ip, ['enable', params[0]]))
     else:
-        return {"ERROR" : "Can only enable devices and sensors"}
+        return {"ERROR": "Can only enable devices and sensors"}
+
 
 @add_endpoint("enable_in")
 def enable_in(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -456,10 +448,11 @@ def enable_in(ip, params):
     else:
         return {"ERROR": "Can only enable devices and sensors"}
 
+
 @add_endpoint("set_rule")
 def set_rule(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -470,10 +463,11 @@ def set_rule(ip, params):
     else:
         return {"ERROR": "Can only set rules for devices and sensors"}
 
+
 @add_endpoint("reset_rule")
 def reset_rule(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -481,14 +475,16 @@ def reset_rule(ip, params):
     else:
         return {"ERROR": "Can only set rules for devices and sensors"}
 
+
 @add_endpoint("reset_all_rules")
 def reset_all_rules(ip, params):
     return asyncio.run(request(ip, ['reset_all_rules']))
 
+
 @add_endpoint("get_schedule_rules")
 def get_schedule_rules(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -496,10 +492,11 @@ def get_schedule_rules(ip, params):
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
+
 @add_endpoint("add_rule")
 def add_schedule_rule(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -524,10 +521,11 @@ def add_schedule_rule(ip, params):
 
     return asyncio.run(request(ip, cmd))
 
+
 @add_endpoint("remove_rule")
 def remove_rule(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -543,18 +541,21 @@ def remove_rule(ip, params):
 
     return asyncio.run(request(ip, ['remove_rule', target, timestamp]))
 
+
 @add_endpoint("save_rules")
 def save_rules(ip, params):
     return asyncio.run(request(ip, ['save_rules']))
+
 
 @add_endpoint("get_schedule_keywords")
 def get_schedule_keywords(ip, params):
     return asyncio.run(request(ip, ['get_schedule_keywords']))
 
+
 @add_endpoint("add_schedule_keyword")
 def add_schedule_keyword(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     keyword = params.pop(0)
 
@@ -567,28 +568,32 @@ def add_schedule_keyword(ip, params):
 
     return asyncio.run(request(ip, cmd))
 
+
 @add_endpoint("remove_schedule_keyword")
 def remove_schedule_keyword(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     cmd = ['remove_schedule_keyword', params.pop(0)]
     return asyncio.run(request(ip, cmd))
 
+
 @add_endpoint("save_schedule_keywords")
-def save_rules(ip, params):
+def save_schedule_keywords(ip, params):
     return asyncio.run(request(ip, ['save_schedule_keywords']))
+
 
 @add_endpoint("get_attributes")
 def get_attributes(ip, params):
     if len(params) == 0:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
         return asyncio.run(request(ip, ['get_attributes', target]))
     else:
         return {"ERROR": "Must specify device or sensor"}
+
 
 @add_endpoint("ir")
 def ir(ip, params):
@@ -612,23 +617,28 @@ def ir(ip, params):
         except IndexError:
             return {"ERROR": "Must specify 'on' or 'off'"}
     else:
-        return {"ERROR" : "Please fill out all fields"}
+        return {"ERROR": "Please fill out all fields"}
+
 
 @add_endpoint("get_temp")
 def get_temp(ip, params):
     return asyncio.run(request(ip, ['get_temp']))
 
+
 @add_endpoint("get_humid")
 def get_humid(ip, params):
     return asyncio.run(request(ip, ['get_humid']))
+
 
 @add_endpoint("get_climate")
 def get_climate(ip, params):
     return asyncio.run(request(ip, ['get_climate_data']))
 
+
 @add_endpoint("clear_log")
 def clear_log(ip, params):
     return asyncio.run(request(ip, ['clear_log']))
+
 
 @add_endpoint("condition_met")
 def condition_met(ip, params):
@@ -640,6 +650,7 @@ def condition_met(ip, params):
     except IndexError:
         return {"ERROR": "Must specify sensor"}
 
+
 @add_endpoint("trigger_sensor")
 def trigger_sensor(ip, params):
     try:
@@ -649,6 +660,7 @@ def trigger_sensor(ip, params):
             raise IndexError
     except IndexError:
         return {"ERROR": "Must specify sensor"}
+
 
 @add_endpoint("turn_on")
 def turn_on(ip, params):
@@ -660,8 +672,9 @@ def turn_on(ip, params):
     except IndexError:
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
+
 @add_endpoint("turn_off")
-def turn_on(ip, params):
+def turn_off(ip, params):
     try:
         if params[0].startswith("device"):
             return asyncio.run(request(ip, ['turn_off', params[0]]))

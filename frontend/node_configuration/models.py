@@ -16,7 +16,6 @@ class TimeStampField(models.CharField):
 
 
 class Node(models.Model):
-
     def __str__(self):
         return self.friendly_name
 
@@ -33,7 +32,6 @@ class Node(models.Model):
 
 
 class Config(models.Model):
-
     def __str__(self):
         return self.filename
 
@@ -67,7 +65,6 @@ class Config(models.Model):
 
 # TODO fix cleartext password
 class WifiCredentials(models.Model):
-
     def __str__(self):
         return self.ssid
 

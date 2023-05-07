@@ -496,6 +496,10 @@ class EditConfigTests(TestCase):
         # Create 3 test nodes and configs to edit
         create_test_nodes()
 
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
     def test_edit_config_1(self):
         # Request page, confirm correct template used
         response = self.client.get('/edit_config/Test1')
@@ -636,6 +640,9 @@ class OverviewPageTests(TestCase):
         self.assertContains(response, 'onclick="window.location.href = \'/edit_config/Test3\'"')
         self.assertContains(response, 'onclick="del_node(\'Test1\')"')
 
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
     def test_overview_page_with_configs(self):
         # Create test config that hasn't been uploaded
         Config.objects.create(config=test_config_1, filename='test1.json')
@@ -662,6 +669,10 @@ class OverviewPageTests(TestCase):
 class ReuploadAllTests(TestCase):
     def setUp(self):
         create_test_nodes()
+
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     def test_reupload_all(self):
         # Mock provision to return success message without doing anything
@@ -773,6 +784,9 @@ class UploadTests(TestCase):
         # Should have same number of configs and nodes
         self.assertEqual(len(Config.objects.all()), 3)
         self.assertEqual(len(Node.objects.all()), 3)
+
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     def test_upload_non_existing_config(self):
         # Confirm database empty
@@ -973,6 +987,9 @@ class RestoreConfigViewTest(TestCase):
         # Should still have 3
         self.assertEqual(len(Config.objects.all()), 3)
         self.assertEqual(len(Node.objects.all()), 3)
+
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     # Verify correct error when passed an invalid IP
     def test_invalid_ip(self):
@@ -1245,6 +1262,10 @@ class ChangeNodeIpTests(TestCase):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
+
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
 
     def test_change_node_ip(self):
         # Confirm starting IP
