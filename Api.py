@@ -12,6 +12,9 @@ log = logging.getLogger("API")
 
 lock = Lock()
 
+# Matches HH:MM
+timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+
 async def reboot():
     # Lock released when API finishes sending reply
     await lock.acquire()
@@ -307,7 +310,7 @@ def add_schedule_rule(args):
 
     rules = app.config.schedule[args[0]]
 
-    if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args[1]):
+    if re.match(timestamp_regex, args[1]):
         timestamp = args[1]
     elif args[1] in app.config.schedule_keywords.keys():
         timestamp = args[1]
@@ -341,7 +344,7 @@ def remove_rule(args):
 
     rules = app.config.schedule[args[0]]
 
-    if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args[1]):
+    if re.match(timestamp_regex, args[1]):
         timestamp = args[1]
     elif args[1] in app.config.schedule_keywords.keys():
         timestamp = args[1]
@@ -391,7 +394,7 @@ def add_schedule_keyword(args):
 
     keyword, timestamp = args[0].popitem()
 
-    if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", timestamp):
+    if re.match(timestamp_regex, timestamp):
         app.config.schedule_keywords[keyword] = timestamp
         app.config.build_queue()
         return {"Keyword added": keyword, "time": timestamp}

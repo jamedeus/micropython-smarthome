@@ -224,6 +224,10 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['add_schedule_rule', 'device1', '42:99', '99'])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
+        # Confirm correct error received when timestamp is H:MM format
+        response = self.send_command(['add_schedule_rule', 'device1', '8:22', '42'])
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
+
     def test_remove_rule(self):
         # Get starting rules
         before = self.send_command(['get_schedule_rules', 'device1'])
