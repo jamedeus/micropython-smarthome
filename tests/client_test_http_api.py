@@ -326,7 +326,7 @@ class TestEndpointInvalid(unittest.TestCase):
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/99:99/15')
-        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM)'})
+        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/05:00/256')
         self.assertEqual(response.json(), {'ERROR': "Rule already exists at 05:00, add 'overwrite' arg to replace"})
@@ -347,7 +347,7 @@ class TestEndpointInvalid(unittest.TestCase):
         self.assertEqual(response.json(), {'ERROR': 'Invalid rule'})
 
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/0913/256')
-        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM)'})
+        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
     def test_remove_rule_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/remove_rule')
@@ -360,7 +360,7 @@ class TestEndpointInvalid(unittest.TestCase):
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
         response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/99:99')
-        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM)'})
+        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
         response = requests.get(f'http://{target_ip}:8123/remove_rule?device99/01:00')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
@@ -369,7 +369,7 @@ class TestEndpointInvalid(unittest.TestCase):
         self.assertEqual(response.json(), {'ERROR': 'No rule exists at that time'})
 
         response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/0913')
-        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM)'})
+        self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
     def test_get_attributes_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/get_attributes')

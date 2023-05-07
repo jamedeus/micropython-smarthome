@@ -263,7 +263,7 @@ def remove_rule(ip, params):
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    if len(params) < 2:
+    if len(params) < 1:
         return {"ERROR": "Must specify timestamp/keyword followed by rule"}
     else:
         timestamp = params.pop(0)

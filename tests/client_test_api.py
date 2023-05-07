@@ -434,13 +434,13 @@ class TestParseCommandInvalid(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Only devices and sensors have schedule rules'})
 
         response = parse_command(target_ip, ['add_rule', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
 
         response = parse_command(target_ip, ['add_rule', 'device1', '99:99'])
-        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
 
         response = parse_command(target_ip, ['add_rule', 'device1', '08:00'])
-        self.assertEqual(response, {'ERROR': 'Must specify new rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
 
         response = parse_command(target_ip, ['add_rule', 'device1', '05:00', '256'])
         self.assertEqual(response, {'ERROR': "Rule already exists at 05:00, add 'overwrite' arg to replace"})
@@ -448,23 +448,25 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['add_rule', 'device1', '05:00', '256', 'del'])
         self.assertEqual(response, {'ERROR': "Rule already exists at 05:00, add 'overwrite' arg to replace"})
 
+        # Should get error response from node (cannot regex timestamp without rejecting keyword)
         response = parse_command(target_ip, ['add_rule', 'device1', '99:13', '256'])
-        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
         response = parse_command(target_ip, ['add_rule', 'device99', '09:13', '256'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
         response = parse_command(target_ip, ['add_rule', 'device99', '99:13', '256'])
-        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
         response = parse_command(target_ip, ['add_rule', 'device99', '256'])
-        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
 
         response = parse_command(target_ip, ['add_rule', 'device1', '09:13', '9999'])
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
+        # Should get error response from node, schedule keyword doesn't exist
         response = parse_command(target_ip, ['add_rule', 'device1', 'midnight', '50'])
-        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
     def test_remove_rule_invalid(self):
         response = parse_command(target_ip, ['remove_rule'])
@@ -474,10 +476,10 @@ class TestParseCommandInvalid(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Only devices and sensors have schedule rules'})
 
         response = parse_command(target_ip, ['remove_rule', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
 
         response = parse_command(target_ip, ['remove_rule', 'device1', '99:99'])
-        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
         response = parse_command(target_ip, ['remove_rule', 'device99', '01:00'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
@@ -486,7 +488,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'No rule exists at that time'})
 
         response = parse_command(target_ip, ['add_rule', 'device1', 'midnight'])
-        self.assertEqual(response, {'ERROR': 'Must specify time (HH:MM) followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
 
     def test_get_attributes_invalid(self):
         response = parse_command(target_ip, ['get_attributes'])
