@@ -508,8 +508,7 @@ def add_schedule_rule(ip, params):
 
     if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
         timestamp = params.pop(0)
-    # TODO iterate model
-    elif len(params) > 0 and params[0] in ['sunrise', 'sunset']:
+    elif len(params) > 0 and params[0] in ScheduleKeyword.objects.values_list('keyword', flat=True):
         timestamp = params.pop(0)
     else:
         return {"ERROR": "Must specify time (HH:MM) followed by rule"}
@@ -537,8 +536,7 @@ def remove_rule(ip, params):
 
     if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
         timestamp = params.pop(0)
-    # TODO iterate model
-    elif len(params) > 0 and params[0] in ['sunrise', 'sunset']:
+    elif len(params) > 0 and params[0] in ScheduleKeyword.objects.values_list('keyword', flat=True):
         timestamp = params.pop(0)
     else:
         return {"ERROR": "Must specify time (HH:MM) of rule to remove"}
