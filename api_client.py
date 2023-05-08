@@ -297,7 +297,7 @@ def add_schedule_keyword(ip, params):
 @add_endpoint("remove_schedule_keyword")
 def remove_schedule_keyword(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py add_schedule_keyword [keyword] [HH:MM]"}
+        return {"Example usage" : "./api_client.py remove_schedule_keyword [keyword]"}
 
     cmd = ['remove_schedule_keyword', params.pop(0)]
     return asyncio.run(request(ip, cmd))

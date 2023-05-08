@@ -134,7 +134,7 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response, "Rebooting")
 
         # Wait for node to finish booting before running next test
-        time.sleep(20)
+        time.sleep(30)
 
     def test_status(self):
         response = parse_command(target_ip, ['status'])
@@ -205,6 +205,32 @@ class TestParseCommand(unittest.TestCase):
         # Delete a rule by keyword
         response = parse_command(target_ip, ['remove_rule', 'device1', 'sunrise'])
         self.assertEqual(response, {'Deleted': 'sunrise'})
+
+    def test_save_rules(self):
+        # Send command, verify response
+        response = parse_command(target_ip, ['save_rules'])
+        self.assertEqual(response, {"Success": "Rules written to disk"})
+
+    def test_get_schedule_keywords(self):
+        # Get keywords, should contain sunrise and sunset
+        response = parse_command(target_ip, ['get_schedule_keywords'])
+        self.assertEqual(len(response), 3)
+        self.assertIn('sunrise', response.keys())
+        self.assertIn('sunset', response.keys())
+
+    def test_add_schedule_keyword(self):
+        # Add keyword, confirm added
+        response = parse_command(target_ip, ['add_schedule_keyword', 'sleep', '23:00'])
+        self.assertEqual(response, {"Keyword added": 'sleep', "time": '23:00'})
+
+    def test_remove_schedule_keyword(self):
+        # Remove keyword, confirm removed
+        response = parse_command(target_ip, ['remove_schedule_keyword', 'sleep'])
+        self.assertEqual(response, {"Keyword removed": 'sleep'})
+
+    def test_save_schedule_keywords(self):
+        response = parse_command(target_ip, ['save_schedule_keywords'])
+        self.assertEqual(response, {"Success": "Keywords written to disk"})
 
     def test_get_attributes(self):
         response = parse_command(target_ip, ['get_attributes', 'sensor1'])
@@ -489,6 +515,26 @@ class TestParseCommandInvalid(unittest.TestCase):
 
         response = parse_command(target_ip, ['add_rule', 'device1', 'midnight'])
         self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
+
+    def test_add_schedule_keyword_invalid(self):
+        response = parse_command(target_ip, ['add_schedule_keyword'])
+        self.assertEqual(response, {"Example usage" : "./api_client.py add_schedule_keyword [keyword] [HH:MM]"})
+
+        response = parse_command(target_ip, ['add_schedule_keyword', 'new_keyword'])
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
+
+        response = parse_command(target_ip, ['add_schedule_keyword', 'new_keyword', '99:99'])
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
+
+    def test_remove_schedule_keyword_invalid(self):
+        response = parse_command(target_ip, ['remove_schedule_keyword'])
+        self.assertEqual(response, {"Example usage" : "./api_client.py remove_schedule_keyword [keyword]"})
+
+        response = parse_command(target_ip, ['remove_schedule_keyword', 'sunrise'])
+        self.assertEqual(response, {"ERROR": "Cannot delete sunrise or sunset"})
+
+        response = parse_command(target_ip, ['remove_schedule_keyword', 'doesnotexist'])
+        self.assertEqual(response, {"ERROR": "Keyword does not exist"})
 
     def test_get_attributes_invalid(self):
         response = parse_command(target_ip, ['get_attributes'])
