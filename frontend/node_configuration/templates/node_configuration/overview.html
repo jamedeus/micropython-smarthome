@@ -533,6 +533,7 @@
             document.getElementById('change-ip-prompt').classList.remove('d-none')
         };
 
+        // Handler for button next to empty keyword fields
         async function add_keyword() {
             // Start loading animation on clicked button
             document.getElementById("add_keyword_button").innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
@@ -544,7 +545,9 @@
             if (result.ok) {
                 location.reload();
             } else {
+                // Show in alert, stop loading animation
                 alert(await result.text());
+                document.getElementById("add_keyword_button").innerHTML = `<i class="bi-plus"></i>`;
             };
         };
 
@@ -553,18 +556,18 @@
             // Get target keyword
             const target = button.id.split('_')[0];
 
-            // Start loading animation on clicked button
-            button.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
-
             if (button.classList.contains('btn-danger')) {
-                del_keyword(target);
+                del_keyword(button, target);
             } else {
-                update_keyword(target);
+                update_keyword(button, target);
             };
         };
 
         // Change existing keyword name or timestamp, update on all nodes
-        async function update_keyword(target) {
+        async function update_keyword(button, target) {
+            // Start loading animation on clicked button
+            button.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
+
             const keyword_old = document.getElementById(`${target}_keyword`).dataset.original;
             const keyword = document.getElementById(`${target}_keyword`).value;
             const timestamp = document.getElementById(`${target}_timestamp`).value;
@@ -579,19 +582,26 @@
             if (result.ok) {
                 location.reload();
             } else {
+                // Show in alert, stop loading animation
                 alert(await result.text());
+                button.innerHTML = `<i class="bi bi-arrow-clockwise"></i>`;
             };
         };
 
         // Delete existing keyword, remove from all nodes
-        async function del_keyword(target) {
-            const keyword = document.getElementById(`${target}_keyword`).value;
+        async function del_keyword(button, target) {
+            // Start loading animation on clicked button
+            button.innerHTML = `<div class="spinner-border spinner-border-sm" role="status"></div>`;
 
+            const keyword = document.getElementById(`${target}_keyword`).value;
             let result = await send_post_request("delete_schedule_keyword", {"keyword": keyword});
+
             if (result.ok) {
                 location.reload();
             } else {
+                // Show in alert, stop loading animation
                 alert(await result.text());
+                button.innerHTML = `<i class="bi-trash"></i>`;
             };
         };
 

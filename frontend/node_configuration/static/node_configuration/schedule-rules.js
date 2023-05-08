@@ -38,7 +38,6 @@ async function add_rule() {
         return;
     };
 
-
     // New rule added
     if (original_timestamp == '') {
         // Add to schedule rules table
