@@ -248,6 +248,33 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['remove_rule', 'device1', '42:99'])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
+    # Note: will fail if config.json missing or contains fewer devices/sensors than test config
+    def test_save_schedule_rules(self):
+        # Save rules, confirm response
+        response = self.send_command(['save_rules'])
+        self.assertEqual(response, {"Success": "Rules written to disk"})
+
+    def test_get_schedule_keywords(self):
+        # Get keywords, should contain sunrise and sunset
+        response = self.send_command(['get_schedule_keywords'])
+        self.assertEqual(len(response), 2)
+        self.assertIn('sunrise', response.keys())
+        self.assertIn('sunset', response.keys())
+
+    def test_add_schedule_keyword(self):
+        # Add keyword, confirm added
+        response = self.send_command(['add_schedule_keyword', {'sleep': '23:00'}])
+        self.assertEqual(response, {"Keyword added": 'sleep', "time": '23:00'})
+
+    def test_remove_schedule_keyword(self):
+        # Remove keyword, confirm removed
+        response = self.send_command(['remove_schedule_keyword', 'sleep'])
+        self.assertEqual(response, {"Keyword removed": 'sleep'})
+
+    def test_save_schedule_keywords(self):
+        response = self.send_command(['save_schedule_keywords'])
+        self.assertEqual(response, {"Success": "Keywords written to disk"})
+
     def test_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor1'])
         self.assertIsInstance(response, dict)
@@ -419,6 +446,15 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
         response = self.send_command(['remove_rule', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['add_schedule_keyword'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['add_schedule_keyword', 'start'])
+        self.assertEqual(response, {"ERROR": "Requires dict with keyword and timestamp"})
+
+        response = self.send_command(['remove_schedule_keyword'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
         response = self.send_command(['get_attributes'])
