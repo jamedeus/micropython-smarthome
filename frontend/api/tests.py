@@ -1200,8 +1200,8 @@ class ScheduleKeywordTests(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
-            # Verify called once for each keyword + once for save_schedule_keywords
-            self.assertEqual(mock_parse_command.call_count, 6)
+            # Verify called for each keyword except sunrise/sunset + once for save_schedule_keywords
+            self.assertEqual(mock_parse_command.call_count, 4)
 
     def test_sync_keywords_errors(self):
         # Make invalid get request (requires post), confirm error

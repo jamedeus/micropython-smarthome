@@ -208,6 +208,8 @@ def sync_schedule_keywords(request):
 
     # Add each schedule keyword to target node
     for keyword in ScheduleKeyword.objects.all():
+        # Don't overwrite sunrise/sunset times (node updates daily, model does not)
+        if keyword.keyword in ['sunrise', 'sunset']: continue
         parse_command(data['ip'], ['add_schedule_keyword', keyword.keyword, keyword.timestamp])
 
     # Save schedule rules to disk on target node
