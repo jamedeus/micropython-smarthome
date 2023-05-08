@@ -14,7 +14,7 @@ class TestEndpoint(unittest.TestCase):
         self.assertEqual(response.json(), "Rebooting")
 
         # Wait for node to finish booting before running next test
-        time.sleep(20)
+        time.sleep(30)
 
     def test_status(self):
         response = requests.get(f'http://{target_ip}:8123/status')
@@ -85,6 +85,33 @@ class TestEndpoint(unittest.TestCase):
         # Delete a rule by keyword
         response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/sunrise')
         self.assertEqual(response.json(), {'Deleted': 'sunrise'})
+
+    def test_save_rules(self):
+        # Send command, verify response
+        response = requests.get(f'http://{target_ip}:8123/save_rules')
+        self.assertEqual(response.json(), {"Success": "Rules written to disk"})
+
+    def test_get_schedule_keywords(self):
+        # Get keywords, should contain sunrise and sunset
+        response = requests.get(f'http://{target_ip}:8123/get_schedule_keywords')
+        self.assertEqual(len(response.json()), 2)
+        self.assertIn('sunrise', response.json().keys())
+        self.assertIn('sunset', response.json().keys())
+
+    # Not currently supported, unable to parse url param to dict
+    #def test_add_schedule_keyword(self):
+        ## Add keyword, confirm added
+        #response = requests.get(f'http://{target_ip}:8123/add_schedule_keyword?sleep/23:00')
+        #self.assertEqual(response.json(), {"Keyword added": 'sleep', "time": '23:00'})
+
+    #def test_remove_schedule_keyword(self):
+        ## Remove keyword, confirm removed
+        #response = requests.get(f'http://{target_ip}:8123/remove_schedule_keyword?sleep')
+        #self.assertEqual(response.json(), {"Keyword removed": 'sleep'})
+
+    def test_save_schedule_keywords(self):
+        response = requests.get(f'http://{target_ip}:8123/save_schedule_keywords')
+        self.assertEqual(response.json(), {"Success": "Keywords written to disk"})
 
     def test_get_attributes(self):
         response = requests.get(f'http://{target_ip}:8123/get_attributes?sensor1')
