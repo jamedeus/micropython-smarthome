@@ -160,7 +160,6 @@ def api(request, node, recording=False):
 
     print(json.dumps(status, indent=4))
 
-    # TODO after page loaded, sync schedule keywords with node (offline during change etc)
     return HttpResponse(template.render({'context': status}, request))
 
 
@@ -180,7 +179,7 @@ def reboot_all(request):
     for node in Node.objects.all():
         try:
             print(f"Rebooting {node.friendly_name}...")
-            response = parse_command(node.ip, ['reboot'])
+            parse_command(node.ip, ['reboot'])
             print("Done")
         except (ConnectionRefusedError, OSError):
             print(f"Unable to connect to {node.friendly_name}")
@@ -208,7 +207,7 @@ def sync_schedule_keywords(request):
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     for keyword in ScheduleKeyword.objects.all():
-        response = parse_command(data['ip'], ['add_schedule_keyword', keyword.keyword, keyword.timestamp])
+        parse_command(data['ip'], ['add_schedule_keyword', keyword.keyword, keyword.timestamp])
 
     return JsonResponse("Done", safe=False, status=200)
 

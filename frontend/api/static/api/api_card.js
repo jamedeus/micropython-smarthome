@@ -17,18 +17,6 @@ async function send_command(value) {
 };
 
 
-// Download all keywords on page load
-async function sync_keywords() {
-    await fetch('/sync_schedule_keywords', {
-        method: 'POST',
-        body: JSON.stringify({'ip': target_node}),
-                headers: { 'Accept': 'application/json, text/plain, */*',
-                    'Content-Type': 'application/json',
-                "X-CSRFToken": getCookie('csrftoken') }
-    });
-}
-sync_keywords()
-
 
 // Handler for back button (top-left)
 function back(node) {

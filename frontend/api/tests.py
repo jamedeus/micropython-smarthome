@@ -7,6 +7,7 @@ from .models import Macro
 from .views import parse_command, request
 from .unit_test_helpers import config1_status_object, config1_api_context, config2_status_object, config2_api_context
 from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes
+from node_configuration.models import ScheduleKeyword
 
 
 # Test function that makes async API calls to esp32 nodes (called by send_command)
@@ -1183,6 +1184,30 @@ class ScheduleKeywordTests(TestCase):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['save_schedule_keywords'])
             self.assertEqual(response, {"Success": "Keywords written to disk"})
+
+    def test_sync_keywords(self):
+        # Create 3 test keywords
+        ScheduleKeyword.objects.create(keyword='Test1', timestamp='12:34')
+        ScheduleKeyword.objects.create(keyword='Test2', timestamp='23:45')
+        ScheduleKeyword.objects.create(keyword='Test3', timestamp='04:56')
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
+            # Send request, verify response
+            payload = {'ip': '192.168.1.123'}
+            response = self.client.post('/sync_schedule_keywords', payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Verify called once for each keyword
+            self.assertEqual(mock_parse_command.call_count, 3)
+
+    def test_sync_keywords_errors(self):
+        # Make invalid get request (requires post), confirm error
+        response = self.client.get('/sync_schedule_keywords')
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.json(), {'Error': 'Must post data'})
 
     def test_add_errors(self):
         # Send request with no args, verify error

@@ -858,6 +858,15 @@
                 document.getElementById('container').classList.remove('fade-out');
             };
         };
+
+        // Sync schedule keywords from backend to node when page loads
+        fetch('/sync_schedule_keywords', {
+            method: 'POST',
+            body: JSON.stringify({'ip': target_node}),
+            headers: { 'Accept': 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json',
+                        "X-CSRFToken": getCookie('csrftoken') }
+        });
     </script>
     <script src="{% static 'api/rule_sliders.js' %}"></script>
     <script src="{% static 'api/schedule_rules.js' %}"></script>
