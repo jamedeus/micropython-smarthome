@@ -19,9 +19,9 @@ async function submit_form(edit) {
 
     // Generate config file from form data
     if (edit) {
-        var response = await send_post_request("generateConfigFile/True", value);
+        var response = await send_post_request("generate_config_file/True", value);
     } else {
-        var response = await send_post_request("generateConfigFile", value);
+        var response = await send_post_request("generate_config_file", value);
     };
 
     // If successfully created new config, redirect to overview
