@@ -16,7 +16,6 @@ timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 ip_regex = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 
 
-
 # Returns all schedule keywords in dict format used by node config files and overview template
 def get_schedule_keywords_dict():
     return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
@@ -198,6 +197,18 @@ def reset_all(request):
             print()
         except (ConnectionRefusedError, OSError):
             print(f"Unable to connect to {node.friendly_name}\n")
+
+    return JsonResponse("Done", safe=False, status=200)
+
+
+def sync_schedule_keywords(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+
+    for keyword in ScheduleKeyword.objects.all():
+        response = parse_command(data['ip'], ['add_schedule_keyword', keyword.keyword, keyword.timestamp])
 
     return JsonResponse("Done", safe=False, status=200)
 
