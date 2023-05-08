@@ -206,8 +206,12 @@ def sync_schedule_keywords(request):
     else:
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
+    # Add each schedule keyword to target node
     for keyword in ScheduleKeyword.objects.all():
         parse_command(data['ip'], ['add_schedule_keyword', keyword.keyword, keyword.timestamp])
+
+    # Save schedule rules to disk on target node
+    parse_command(data['ip'], ['save_schedule_keywords'])
 
     return JsonResponse("Done", safe=False, status=200)
 

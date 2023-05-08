@@ -282,6 +282,10 @@ def config_overview(request):
         "schedule_keywords": get_schedule_keywords_dict()
     }
 
+    # Don't show sunrise or sunset (prevent editing time, overwrites on nodes)
+    del context["schedule_keywords"]["sunrise"]
+    del context["schedule_keywords"]["sunset"]
+
     not_uploaded = Config.objects.filter(node=None)
 
     for i in not_uploaded:

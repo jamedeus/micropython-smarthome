@@ -76,7 +76,7 @@ class Macro(models.Model):
             # Set target name (paylod doesn't contain friendly_name)
             target_name = "IR Blaster"
             # Parse 'tv power' from ['ir', 'tv', 'power']
-            command = re.sub('[\[\]\',]', '', str(args[1:]))
+            command = re.sub(r'[\[\]\',]', '', str(args[1:]))
 
         # Deserialize existing macro actions to dict
         actions = json.loads(self.actions)

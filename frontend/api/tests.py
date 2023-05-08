@@ -1186,11 +1186,11 @@ class ScheduleKeywordTests(TestCase):
             self.assertEqual(response, {"Success": "Keywords written to disk"})
 
     def test_sync_keywords(self):
-        # Create 3 test keywords
+        # Create 3 test keywords, confirm 5 total (sunrise + sunset already exist)
         ScheduleKeyword.objects.create(keyword='Test1', timestamp='12:34')
         ScheduleKeyword.objects.create(keyword='Test2', timestamp='23:45')
         ScheduleKeyword.objects.create(keyword='Test3', timestamp='04:56')
-        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 5)
 
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
@@ -1200,8 +1200,8 @@ class ScheduleKeywordTests(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
-            # Verify called once for each keyword
-            self.assertEqual(mock_parse_command.call_count, 3)
+            # Verify called once for each keyword + once for save_schedule_keywords
+            self.assertEqual(mock_parse_command.call_count, 6)
 
     def test_sync_keywords_errors(self):
         # Make invalid get request (requires post), confirm error
