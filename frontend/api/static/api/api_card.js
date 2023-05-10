@@ -38,8 +38,6 @@ function back(node) {
 async function reset(el) {
     const target = el.id.split("-")[0];
     console.log(`Reseting ${target}`);
-    // Device or sensor
-    const category = target.replace(/[0-9]/g, '') + "s";
 
     var result = await send_command({'command': 'reset_rule', 'instance': target});
     result = await result.json();
@@ -48,7 +46,7 @@ async function reset(el) {
         console.log(`Failed to reset ${target} rule`);
     } else {
         // Update current rule
-        const scheduled = target_node_status[category][target]["scheduled_rule"];
+        const scheduled = get_status_attribute(target, "scheduled_rule");
 
         try {
             // Update slider position
@@ -170,7 +168,7 @@ async function trigger(el) {
 function show_targets(el) {
     // Get sensor ID, array of all targets
     const sensor = el.id.split("-")[0];
-    const targets = target_node_status["sensors"][sensor]["targets"];
+    const targets = get_status_attribute(sensor, 'targets');
 
     // Prevent click bubbling to listener below, close dropdown manually
     event.stopPropagation();
@@ -215,10 +213,9 @@ async function debug(el) {
 // Handler for Schedule Toggle menu option
 function open_schedule_toggle(el) {
     const target = el.id.split("-")[0];
-    const category = target.replace(/[0-9]/g, '') + "s";
 
     // Set default option based on current enable/disable state
-    if (target_node_status[category][target]['enabled']) {
+    if (get_status_attribute(target, 'enabled')) {
         document.getElementById('command_select').value = 'disable_in';
     } else {
         document.getElementById('command_select').value = 'enable_in';

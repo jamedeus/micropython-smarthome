@@ -776,6 +776,13 @@
         // Prevent multiple functions modifying status object at the same time
         var status_lock = false;
 
+        // Takes instance ID and attribute, returns current value from status object
+        function get_status_attribute(id, attr) {
+            // Either 'devices' or 'sensors'
+            const category = id.replace(/[0-9]/g, '') + "s";
+            return target_node_status[category][id][attr];
+        };
+
         // Darkmode for elements generated after initial check
         if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
             // Dropdown menus

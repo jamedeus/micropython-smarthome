@@ -196,8 +196,8 @@ const update_scheduled_rule = monitor_status.subscribe("scheduled_rule", (new_st
 
 // Find new, deleted, or modified rules and update table to reflect
 const update_schedule_rules = monitor_status.subscribe("schedule", (new_status) => {
-    console.log(`Updating ${new_status['instance']} schedule rules`)
-    const old_rules = target_node_status[new_status.section][new_status.instance]["schedule"];
+    console.log(`Updating ${new_status['instance']} schedule rules`);
+    const old_rules = get_status_attribute(new_status.instance, "schedule");
     const new_rules = new_status['value']["schedule"]
     const instance = new_status['instance']
 
