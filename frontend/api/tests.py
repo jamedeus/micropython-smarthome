@@ -1192,16 +1192,50 @@ class ScheduleKeywordTests(TestCase):
         ScheduleKeyword.objects.create(keyword='Test3', timestamp='04:56')
         self.assertEqual(len(ScheduleKeyword.objects.all()), 5)
 
+        # Simulated request from node that already has all keywords
+        payload = {
+            'ip': '192.168.1.123',
+            'existing_keywords': {
+                    'sunrise': '05:49',
+                    'sunset': '20:26',
+                    'Test1': '12:34',
+                    'Test2': '23:45',
+                    'Test3': '04:56'
+                }
+        }
+
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
             # Send request, verify response
-            payload = {'ip': '192.168.1.123'}
             response = self.client.post('/sync_schedule_keywords', payload, content_type='application/json')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
-            # Verify called for each keyword except sunrise/sunset + once for save_schedule_keywords
-            self.assertEqual(mock_parse_command.call_count, 4)
+            # Should not be called, no keywords to upload
+            self.assertEqual(mock_parse_command.call_count, 0)
+
+        # Delete 2 keywords, test again
+        del payload['existing_keywords']['Test1']
+        del payload['existing_keywords']['sunset']
+
+        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
+            response = self.client.post('/sync_schedule_keywords', payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Should be called 3 times - once for each keyword, once for save_schedule_keywords
+            self.assertEqual(mock_parse_command.call_count, 3)
+
+        # Delete all keywords, test again
+        payload['existing_keywords'] = {}
+
+        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
+            response = self.client.post('/sync_schedule_keywords', payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Should be called 6 times - once for each keyword, once for save_schedule_keywords
+            self.assertEqual(mock_parse_command.call_count, 6)
 
     def test_sync_keywords_errors(self):
         # Make invalid get request (requires post), confirm error

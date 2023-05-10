@@ -862,10 +862,15 @@
         // Sync schedule keywords from backend to node when page loads
         fetch('/sync_schedule_keywords', {
             method: 'POST',
-            body: JSON.stringify({'ip': target_node}),
-            headers: { 'Accept': 'application/json, text/plain, */*',
-                        'Content-Type': 'application/json',
-                        "X-CSRFToken": getCookie('csrftoken') }
+            body: JSON.stringify({
+                'ip': target_node,
+                'existing_keywords': target_node_status['metadata']['schedule_keywords']
+            }),
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                "X-CSRFToken": getCookie('csrftoken')
+            }
         });
     </script>
     <script src="{% static 'api/rule_sliders.js' %}"></script>

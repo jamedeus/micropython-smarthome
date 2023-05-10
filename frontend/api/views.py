@@ -200,20 +200,26 @@ def reset_all(request):
     return JsonResponse("Done", safe=False, status=200)
 
 
+# Receives node IP and existing schedule keywords in post body
+# Uploads missing keywords (if any) from database
 def sync_schedule_keywords(request):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
     else:
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
-    # Add each schedule keyword to target node
-    for keyword in ScheduleKeyword.objects.all():
-        # Don't overwrite sunrise/sunset times (node updates daily, model does not)
-        if keyword.keyword in ['sunrise', 'sunset']: continue
+    # Get all schedule keywords missing from target node
+    existing = data['existing_keywords'].keys()
+    missing = ScheduleKeyword.objects.exclude(keyword__in=existing)
+
+    # Add each missing keyword to target node
+    for keyword in missing:
         parse_command(data['ip'], ['add_schedule_keyword', keyword.keyword, keyword.timestamp])
 
-    # Save schedule rules to disk on target node
-    parse_command(data['ip'], ['save_schedule_keywords'])
+    # Save schedule keywords to disk on target node
+    if len(missing):
+        print(f"Added {len(missing)} missing schedule keywords")
+        parse_command(data['ip'], ['save_schedule_keywords'])
 
     return JsonResponse("Done", safe=False, status=200)
 
