@@ -60,8 +60,6 @@ COPY --from=node_build node_modules/smoothscroll-polyfill/dist/smoothscroll.min.
 COPY --from=node_build node_modules/rangeslider.js/dist/rangeslider.min.js /repo/frontend/node_modules/rangeslider.js/dist/rangeslider.min.js
 COPY --from=py_build /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
 
-# Vanilla database, migrations applied, no configs/nodes
-# Persists between sessions if volume used, or can mount in external db
-COPY docker/default-db.sqlite3 /repo/frontend/db.sqlite3
-
-CMD ["python", "frontend/manage.py", "runserver", "0:8456"]
+# Run migrations, start dev server
+COPY docker/entrypoint.sh /repo/entrypoint.sh
+CMD ["/repo/entrypoint.sh"]
