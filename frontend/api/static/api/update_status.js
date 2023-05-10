@@ -198,8 +198,8 @@ const update_scheduled_rule = monitor_status.subscribe("scheduled_rule", (new_st
 const update_schedule_rules = monitor_status.subscribe("schedule", (new_status) => {
     console.log(`Updating ${new_status['instance']} schedule rules`);
     const old_rules = get_status_attribute(new_status.instance, "schedule");
-    const new_rules = new_status['value']["schedule"]
-    const instance = new_status['instance']
+    const new_rules = new_status.value.schedule;
+    const instance = new_status.instance;
 
     var table = document.getElementById(`${instance}-rules`);
     var rows = Array.from(table.rows);
@@ -221,7 +221,7 @@ const update_schedule_rules = monitor_status.subscribe("schedule", (new_status) 
     for (let time in new_rules) {
         if (!old_rules[time]) {
             // New rule found (didn't exist in old), add to schedule rules table
-            add_new_row(instance, time, new_rules[time]);
+            add_new_row(instance, time, new_rules[time], new_status.value.type);
 
         } else if (new_rules[time] != old_rules[time]) {
             // Timestamp unchanged, rule changed
