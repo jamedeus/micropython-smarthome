@@ -1,6 +1,7 @@
 import json
 import os
 import re
+from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
@@ -657,14 +658,16 @@ def add_schedule_keyword_config(request):
     else:
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
+    # Create keyword in database
     try:
         ScheduleKeyword.objects.create(keyword=data["keyword"], timestamp=data["timestamp"])
     except ValidationError as ex:
         return JsonResponse(str(ex), safe=False, status=400)
 
-    # Add to all existing nodes
-    for node in Node.objects.all():
-        add_schedule_keyword(node.ip, [data["keyword"], data["timestamp"]])
+    # Add keyword to all existing nodes in parallel
+    commands = [(node.ip, [data["keyword"], data["timestamp"]]) for node in Node.objects.all()]
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        executor.map(add_schedule_keyword, *zip(*commands))
 
     return JsonResponse("Keyword created", safe=False, status=200)
 
@@ -687,14 +690,22 @@ def edit_schedule_keyword_config(request):
 
     # If timestamp changed: Call add to overwrite existing keyword
     if data["keyword_old"] == data["keyword_new"]:
-        for node in Node.objects.all():
-            add_schedule_keyword(node.ip, [data["keyword_new"], data["timestamp_new"]])
+        # Update keyword on all existing nodes in parallel
+        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]]) for node in Node.objects.all()]
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            executor.map(add_schedule_keyword, *zip(*commands))
 
     # If keyword changed: Remove existing keyword, add new keyword
     else:
-        for node in Node.objects.all():
-            remove_schedule_keyword(node.ip, [data["keyword_old"]])
-            add_schedule_keyword(node.ip, [data["keyword_new"], data["timestamp_new"]])
+        # Remove keyword from all existing nodes in parallel
+        commands = [(node.ip, [data["keyword_old"]]) for node in Node.objects.all()]
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            executor.map(remove_schedule_keyword, *zip(*commands))
+
+        # Add keyword to all existing nodes in parallel
+        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]]) for node in Node.objects.all()]
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            executor.map(add_schedule_keyword, *zip(*commands))
 
     return JsonResponse("Keyword updated", safe=False, status=200)
 
@@ -712,8 +723,9 @@ def delete_schedule_keyword_config(request):
     except:
         return JsonResponse("Failed to delete keyword", safe=False, status=500)
 
-    # Delete from all existing nodes
-    for node in Node.objects.all():
-        remove_schedule_keyword(node.ip, [data["keyword"]])
+    # Remove keyword from all existing nodes in parallel
+    commands = [(node.ip, [data["keyword"]]) for node in Node.objects.all()]
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        executor.map(remove_schedule_keyword, *zip(*commands))
 
     return JsonResponse("Keyword deleted", safe=False, status=200)
