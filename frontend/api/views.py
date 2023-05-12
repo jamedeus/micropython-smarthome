@@ -1,6 +1,7 @@
 import json
 import asyncio
 import re
+from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.template import loader
@@ -313,9 +314,13 @@ def run_macro(request, name):
     except Macro.DoesNotExist:
         return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
 
-    actions = json.loads(macro.actions)
-    for action in actions:
-        parse_command(action['ip'], action['args'])
+    # List of 2-item tuples containing ip, arg list for each action
+    # example: ('192.168.1.246', ['disable', 'device2'])
+    actions = [(action['ip'], action['args']) for action in json.loads(macro.actions)]
+
+    # Run all actions in parallel
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        executor.map(parse_command, *zip(*actions))
 
     return JsonResponse("Done", safe=False, status=200)
 
