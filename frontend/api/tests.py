@@ -524,7 +524,7 @@ class TestGlobalCommands(TestCase):
 
     def test_reset_all_offline(self):
         # Mock request to simulate offline nodes
-        with patch('api.views.request', side_effect=OSError):
+        with patch('api.views.asyncio.open_connection', side_effect=OSError):
             # Create 3 test nodes
             response = self.client.get('/reset_all')
             self.assertEqual(response.status_code, 200)
@@ -540,7 +540,7 @@ class TestGlobalCommands(TestCase):
 
     def test_reboot_all_offline(self):
         # Mock request to simulate offline nodes
-        with patch('api.views.request', side_effect=OSError):
+        with patch('api.views.asyncio.open_connection', side_effect=OSError):
             # Create 3 test nodes
             response = self.client.get('/reboot_all')
             self.assertEqual(response.status_code, 200)

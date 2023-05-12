@@ -177,26 +177,25 @@ def get_climate_data(request, node):
 
 
 def reboot_all(request):
-    for node in Node.objects.all():
-        try:
-            print(f"Rebooting {node.friendly_name}...")
-            parse_command(node.ip, ['reboot'])
-            print("Done")
-        except (ConnectionRefusedError, OSError):
-            print(f"Unable to connect to {node.friendly_name}")
+    print('Rebooting all nodes:')
+
+    # Call parse_command(node.ip, ['reboot']) for all nodes in parallel
+    actions = [(node, ['reboot']) for node in Node.objects.all()]
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        for result in executor.map(parse_command_wrapper, *zip(*actions)):
+            print(json.dumps(result, indent=4))
 
     return JsonResponse("Done", safe=False, status=200)
 
 
 def reset_all(request):
-    for node in Node.objects.all():
-        try:
-            response = parse_command(node.ip, ['reset_all_rules'])
-            print(node.friendly_name)
-            print(json.dumps(response, indent=4))
-            print()
-        except (ConnectionRefusedError, OSError):
-            print(f"Unable to connect to {node.friendly_name}\n")
+    print('Reseting all rules:')
+
+    # Call parse_command(node.ip, ['reset_all_rules']) for all nodes in parallel
+    actions = [(node, ['reset_all_rules']) for node in Node.objects.all()]
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        for result in executor.map(parse_command_wrapper, *zip(*actions)):
+            print(json.dumps(result, indent=4))
 
     return JsonResponse("Done", safe=False, status=200)
 
@@ -309,6 +308,16 @@ def parse_command(ip, args):
 
     else:
         return "Error: Command not found"
+
+
+# Takes node instead of IP, returns JSON-printable dict with response
+# Used by bulk command endpoints (reboot_all, reset_all_rules, etc)
+def parse_command_wrapper(node, args):
+    response = parse_command(node.ip, args)
+    return {
+        'node': node.friendly_name,
+        'response': response
+    }
 
 
 def run_macro(request, name):
