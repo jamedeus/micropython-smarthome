@@ -327,7 +327,8 @@ def add_schedule_rule(args):
     else:
         rules[timestamp] = valid
         app.config.schedule[args[0]] = rules
-        app.config.build_queue()
+        # Schedule queue rebuild after connection closes (blocks for several seconds)
+        SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
         return {"Rule added" : valid, "time" : timestamp}
 
 
@@ -354,7 +355,8 @@ def remove_rule(args):
     try:
         del rules[timestamp]
         app.config.schedule[args[0]] = rules
-        app.config.build_queue()
+        # Schedule queue rebuild after connection closes (blocks for several seconds)
+        SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
     except KeyError:
         return {"ERROR": "No rule exists at that time"}
 
@@ -396,7 +398,8 @@ def add_schedule_keyword(args):
 
     if re.match(timestamp_regex, timestamp):
         app.config.schedule_keywords[keyword] = timestamp
-        app.config.build_queue()
+        # Schedule queue rebuild after connection closes (blocks for several seconds)
+        SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
         return {"Keyword added": keyword, "time": timestamp}
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
@@ -420,7 +423,8 @@ def remove_schedule_keyword(args):
             del app.config.schedule[i][keyword]
 
     del app.config.schedule_keywords[keyword]
-    app.config.build_queue()
+    # Schedule queue rebuild after connection closes (blocks for several seconds)
+    SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
     return {"Keyword removed": args[0]}
 
 
