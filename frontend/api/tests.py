@@ -21,6 +21,10 @@ class RequestTests(TestCase):
         async def read_response_fail():
             raise OSError
 
+        # Simulate read call that hangs forever
+        async def read_response_hang():
+            await asyncio.Event().wait()
+
         # Create mock asyncio reader that returns successful response
         mock_reader = MagicMock()
         mock_reader.read = AsyncMock(side_effect=read_response)
@@ -28,6 +32,10 @@ class RequestTests(TestCase):
         # Create mock asyncio reader that fails to read response
         mock_reader_fail = MagicMock()
         mock_reader_fail.read = AsyncMock(side_effect=read_response_fail)
+
+        # Create mock asyncio reader that hangs (target node connected, but event loop crashed)
+        mock_reader_hang = MagicMock()
+        mock_reader_hang.read = AsyncMock(side_effect=read_response_hang)
 
         # Create mock asyncio writer that does nothing
         mock_writer = MagicMock()
@@ -43,6 +51,10 @@ class RequestTests(TestCase):
         async def mock_open_connection_fail(*args, **kwargs):
             return mock_reader_fail, mock_writer
 
+        # Mock open_connection to return mock_reader_hang + mock_writer
+        async def mock_open_connection_hang(*args, **kwargs):
+            return mock_reader_hang, mock_writer
+
         # Mock wait_for to return immediately
         async def mock_wait_for(coro, timeout):
             return await coro
@@ -50,6 +62,7 @@ class RequestTests(TestCase):
         # Make accessible in test methods
         self.mock_open_connection = mock_open_connection
         self.mock_open_connection_fail = mock_open_connection_fail
+        self.mock_open_connection_hang = mock_open_connection_hang
         self.mock_wait_for = mock_wait_for
 
     async def test_request_successful(self):
@@ -92,6 +105,18 @@ class RequestTests(TestCase):
             # Make request, verify error
             response = await request('192.168.1.123', ['enable', 'device1'])
             self.assertEqual(response, "Error: Unable to decode response")
+
+    # Original issue: Timeout on open_connection worked for offline nodes, but
+    # not crashed nodes. After event loop crash node remains on wifi, so
+    # connection succeeds but node never responds and read call hangs forever.
+    # Fixed by adding timeout to read call.
+    async def test_regression_crashed_target_node(self):
+        # Simulate hanging read after successful connection (target node event loop crashed)
+        with patch('api.views.asyncio.open_connection', side_effect=self.mock_open_connection_hang):
+            # Send request, verify error
+            # Request wrapped in 6 second timeout to prevent hanging in case of failure
+            response = await asyncio.wait_for(request('192.168.1.123', ['enable', 'device1']), timeout=6)
+            self.assertEqual(response, "Error: Timed out waiting for response")
 
 
 # Test send_command function that bridges frontend HTTP requests to esp32 API calls

@@ -278,7 +278,10 @@ async def request(ip, msg):
     try:
         writer.write('{}\n'.format(json.dumps(msg)).encode())
         await writer.drain()
-        res = await reader.read()
+        # Timeout prevents hang if node event loop crashed
+        res = await asyncio.wait_for(reader.read(), timeout=5)
+    except asyncio.TimeoutError:
+        return "Error: Timed out waiting for response"
     except OSError:
         return "Error: Request failed"
 
