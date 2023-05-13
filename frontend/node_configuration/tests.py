@@ -42,6 +42,12 @@ from .unit_test_helpers import (
 )
 
 
+# Subclass Client, add default for content_type
+class JSONClient(Client):
+    def post(self, path, data=None, content_type='application/json', **extra):
+        return super().post(path, data, content_type, **extra)
+
+
 # Test the Node model
 class NodeTests(TestCase):
     def test_create_node(self):
@@ -1727,42 +1733,57 @@ class ScheduleKeywordTests(TestCase):
         # Create existing keyword
         self.keyword = ScheduleKeyword.objects.create(keyword='first', timestamp='00:00')
 
-        # Create node to upload keyword to
-        self.node = Node.objects.create(friendly_name='Test Node', ip='123.45.67.89', floor='2')
+        # Create nodes to upload keyword to
+        self.node1 = Node.objects.create(friendly_name='Test1', ip='123.45.67.89', floor='2')
+        self.node2 = Node.objects.create(friendly_name='Test2', ip='123.45.67.98', floor='2')
+
+        # Create mock objects to replace keyword api endpoints
+        self.mock_add = MagicMock()
+        self.mock_add.return_value = {"Keyword added": "morning", "time": "08:00"}
+        self.mock_remove = MagicMock()
+        self.mock_remove.return_value = {"Keyword added": "morning", "time": "08:00"}
+        self.mock_save = MagicMock()
+        self.mock_save.return_value = {"Success": "Keywords written to disk"}
+
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
 
     def test_add_schedule_keyword(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
-        with patch('node_configuration.views.add_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_add, \
-             patch('node_configuration.views.save_schedule_keywords', return_value={"Success": "Keywords written to disk"}) as mock_save:
+        # Mock all keyword endpoints, prevent failed network requests
+        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add) as mock_add, \
+             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove) as mock_remove, \
+             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save) as mock_save:
 
             # Send request, confirm response, confirm model created
-            response = self.client.post('/add_schedule_keyword', {'keyword': 'morning', 'timestamp': '08:00'}, content_type='application/json')
+            response = self.client.post('/add_schedule_keyword', {'keyword': 'morning', 'timestamp': '08:00'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword created')
             self.assertEqual(len(ScheduleKeyword.objects.all()), 4)
 
             # Should call add and save once for each node
-            self.assertEqual(mock_add.call_count, 1)
-            self.assertEqual(mock_save.call_count, 1)
+            self.assertEqual(mock_add.call_count, 2)
+            self.assertEqual(mock_remove.call_count, 0)
+            self.assertEqual(mock_save.call_count, 2)
 
     def test_edit_schedule_keyword(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
-        # Change timestamp only, should call add to overwrite existing keyword, should not call remove
-        with patch('node_configuration.views.add_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_add, \
-             patch('node_configuration.views.remove_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_remove, \
-             patch('node_configuration.views.save_schedule_keywords', return_value={"Success": "Keywords written to disk"}) as mock_save:
+        # Mock all keyword endpoints, prevent failed network requests
+        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add) as mock_add, \
+             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove) as mock_remove, \
+             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save) as mock_save:
 
-            # Send request, confirm response, confirm correct methods called
-            response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'}, content_type='application/json')
+            # Send request to change timestamp only, should overwrite existing keyword
+            response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword updated')
 
             # Should call add and save once for each node, should not call remove
-            self.assertEqual(mock_add.call_count, 1)
+            self.assertEqual(mock_add.call_count, 2)
             self.assertEqual(mock_remove.call_count, 0)
-            self.assertEqual(mock_save.call_count, 1)
+            self.assertEqual(mock_save.call_count, 2)
 
             # Confirm no model entry created, existing has new timestamp same keyword
             self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
@@ -1770,22 +1791,21 @@ class ScheduleKeywordTests(TestCase):
             self.assertEqual(self.keyword.keyword, 'first')
             self.assertEqual(self.keyword.timestamp, '01:00')
 
-        # Change keyword, should call add and remove
-        with patch('node_configuration.views.add_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_add, \
-             patch('node_configuration.views.remove_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_remove, \
-             patch('node_configuration.views.save_schedule_keywords', return_value={"Success": "Keywords written to disk"}) as mock_save:
+        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add) as mock_add, \
+             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove) as mock_remove, \
+             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save) as mock_save:
 
-            # Send request, confirm response, confirm correct methods called
-            response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'}, content_type='application/json')
+            # Send request to change keyword, should remove and replace existing keyword
+            response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword updated')
 
             # Should call add, remove, and save once for each node
-            self.assertEqual(mock_add.call_count, 1)
-            self.assertEqual(mock_remove.call_count, 1)
-            self.assertEqual(mock_save.call_count, 1)
+            self.assertEqual(mock_add.call_count, 2)
+            self.assertEqual(mock_remove.call_count, 2)
+            self.assertEqual(mock_save.call_count, 2)
 
-            # Confirm no model entry created, existing has new timestamp same keyword
+            # Confirm same number of model entries, existing has new timestamp same keyword
             self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
             self.keyword.refresh_from_db()
             self.assertEqual(self.keyword.keyword, 'second')
@@ -1795,28 +1815,35 @@ class ScheduleKeywordTests(TestCase):
         # Confirm starting condition
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
-        with patch('node_configuration.views.remove_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_remove:
+        # Mock all keyword endpoints, prevent failed network requests
+        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add) as mock_add, \
+             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove) as mock_remove, \
+             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save) as mock_save:
 
-            # Send request, verify response
-            response = self.client.post('/delete_schedule_keyword', {'keyword': 'first'}, content_type='application/json')
+            # Send request to delete keyword, verify response
+            response = self.client.post('/delete_schedule_keyword', {'keyword': 'first'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword deleted')
 
-            # Confirm model deleted, correct method called
+            # Should call remove and save once for each node, should not call add
+            self.assertEqual(mock_add.call_count, 0)
+            self.assertEqual(mock_remove.call_count, 2)
+            self.assertEqual(mock_save.call_count, 2)
+
+            # Confirm model deleted
             self.assertEqual(len(ScheduleKeyword.objects.all()), 2)
-            self.assertEqual(mock_remove.call_count, 1)
 
     def test_add_invalid_timestamp(self):
         # Send request, confirm error, confirm no model created
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
-        response = self.client.post('/add_schedule_keyword', {'keyword': 'morning', 'timestamp': '8:00'}, content_type='application/json')
+        response = self.client.post('/add_schedule_keyword', {'keyword': 'morning', 'timestamp': '8:00'})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}")
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
     def test_edit_invalid_timestamp(self):
         # Send request, confirm error
-        response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '8:00'}, content_type='application/json')
+        response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '8:00'})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), "Failed to update keyword")
 
