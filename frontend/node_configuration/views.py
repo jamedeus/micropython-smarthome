@@ -10,7 +10,7 @@ from .models import Node, Config, WifiCredentials, ScheduleKeyword
 from .Webrepl import Webrepl
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
-from api.views import add_schedule_keyword, remove_schedule_keyword
+from api.views import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
 
 REPO_DIR = settings.REPO_DIR
 CONFIG_DIR = settings.CONFIG_DIR
@@ -669,6 +669,9 @@ def add_schedule_keyword_config(request):
     with ThreadPoolExecutor(max_workers=20) as executor:
         executor.map(add_schedule_keyword, *zip(*commands))
 
+    # Save keywords on all nodes
+    save_all_schedule_keywords()
+
     return JsonResponse("Keyword created", safe=False, status=200)
 
 
@@ -707,6 +710,9 @@ def edit_schedule_keyword_config(request):
         with ThreadPoolExecutor(max_workers=20) as executor:
             executor.map(add_schedule_keyword, *zip(*commands))
 
+    # Save keywords on all nodes
+    save_all_schedule_keywords()
+
     return JsonResponse("Keyword updated", safe=False, status=200)
 
 
@@ -728,4 +734,14 @@ def delete_schedule_keyword_config(request):
     with ThreadPoolExecutor(max_workers=20) as executor:
         executor.map(remove_schedule_keyword, *zip(*commands))
 
+    # Save keywords on all nodes
+    save_all_schedule_keywords()
+
     return JsonResponse("Keyword deleted", safe=False, status=200)
+
+
+# Call save_schedule_keywords for all nodes in parallel
+def save_all_schedule_keywords():
+    commands = [(node.ip, "") for node in Node.objects.all()]
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        executor.map(save_schedule_keywords, *zip(*commands))

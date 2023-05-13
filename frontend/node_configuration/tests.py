@@ -1733,26 +1733,36 @@ class ScheduleKeywordTests(TestCase):
     def test_add_schedule_keyword(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
-        with patch('node_configuration.views.add_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_add:
+        with patch('node_configuration.views.add_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_add, \
+             patch('node_configuration.views.save_schedule_keywords', return_value={"Success": "Keywords written to disk"}) as mock_save:
+
+            # Send request, confirm response, confirm model created
             response = self.client.post('/add_schedule_keyword', {'keyword': 'morning', 'timestamp': '08:00'}, content_type='application/json')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword created')
             self.assertEqual(len(ScheduleKeyword.objects.all()), 4)
+
+            # Should call add and save once for each node
             self.assertEqual(mock_add.call_count, 1)
+            self.assertEqual(mock_save.call_count, 1)
 
     def test_edit_schedule_keyword(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
         # Change timestamp only, should call add to overwrite existing keyword, should not call remove
         with patch('node_configuration.views.add_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_add, \
-             patch('node_configuration.views.remove_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_remove:
+             patch('node_configuration.views.remove_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_remove, \
+             patch('node_configuration.views.save_schedule_keywords', return_value={"Success": "Keywords written to disk"}) as mock_save:
 
             # Send request, confirm response, confirm correct methods called
             response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'}, content_type='application/json')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword updated')
+
+            # Should call add and save once for each node, should not call remove
             self.assertEqual(mock_add.call_count, 1)
             self.assertEqual(mock_remove.call_count, 0)
+            self.assertEqual(mock_save.call_count, 1)
 
             # Confirm no model entry created, existing has new timestamp same keyword
             self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
@@ -1762,14 +1772,18 @@ class ScheduleKeywordTests(TestCase):
 
         # Change keyword, should call add and remove
         with patch('node_configuration.views.add_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_add, \
-             patch('node_configuration.views.remove_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_remove:
+             patch('node_configuration.views.remove_schedule_keyword', return_value={"Keyword added": "morning", "time": "08:00"}) as mock_remove, \
+             patch('node_configuration.views.save_schedule_keywords', return_value={"Success": "Keywords written to disk"}) as mock_save:
 
             # Send request, confirm response, confirm correct methods called
             response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'}, content_type='application/json')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword updated')
+
+            # Should call add, remove, and save once for each node
             self.assertEqual(mock_add.call_count, 1)
             self.assertEqual(mock_remove.call_count, 1)
+            self.assertEqual(mock_save.call_count, 1)
 
             # Confirm no model entry created, existing has new timestamp same keyword
             self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
