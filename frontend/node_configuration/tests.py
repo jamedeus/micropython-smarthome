@@ -79,23 +79,23 @@ class NodeTests(TestCase):
 
         # Should refuse to create with no arguments, only floor has default
         with self.assertRaises(ValidationError):
-            node = Node.objects.create()
+            Node.objects.create()
 
         # Should refuse to create with invalid IP
         with self.assertRaises(ValidationError):
-            node = Node.objects.create(friendly_name='Unit Test Node', ip='123.456.789.10')
+            Node.objects.create(friendly_name='Unit Test Node', ip='123.456.789.10')
 
         # Should refuse to create negative floor
         with self.assertRaises(ValidationError):
-            node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='-5')
+            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='-5')
 
         # Should refuse to create floor over 999
         with self.assertRaises(ValidationError):
-            node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='9999')
+            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='9999')
 
         # Should refuse to create non-int floor
         with self.assertRaises(ValidationError):
-            node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='upstairs')
+            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='upstairs')
 
         # Should refuse to create with friendly name >50 characters
         with self.assertRaises(ValidationError):
@@ -155,7 +155,10 @@ class ConfigTests(TestCase):
 
         # Should refuse to create with filename >50 characters
         with self.assertRaises(ValidationError):
-            Config.objects.create(config=test_config_1, filename='unrealistically-long-config-name-that-nobody-needs.json')
+            Config.objects.create(
+                config=test_config_1,
+                filename='unrealistically-long-config-name-that-nobody-needs.json'
+            )
 
         # Confirm no configs created in db
         self.assertEqual(len(Config.objects.all()), 0)
@@ -265,8 +268,9 @@ class WebsocketTests(TestCase):
             # Second call: return sz=15 (bytes to iterate in inner loop, evenly divisible by 5 bytes returned by recv)
             # Third call: return sz=16, fl=0x82 (trigger break in second if statement)
             # Fourth call: return 16 characters to final recvexactly statement in function
-            with patch.object(websocket, 'recvexactly', side_effect=[b'\x81\x7E', b'\x00\x0F', b'\x82\x10', b'abcdefghijklmnop']), \
-                patch.object(mock_socket, 'recv', return_value=b'abcde'):
+            recvexactly_side_effect = [b'\x81\x7E', b'\x00\x0F', b'\x82\x10', b'abcdefghijklmnop']
+            with patch.object(websocket, 'recvexactly', side_effect=recvexactly_side_effect), \
+                 patch.object(mock_socket, 'recv', return_value=b'abcde'):
 
                 # Read 16 bytes, confirm expected response
                 data = ws.read(16)
@@ -276,14 +280,21 @@ class WebsocketTests(TestCase):
         # Mock object to replace socket.makefile.write
         mock_cl = MagicMock()
         mock_cl.write = MagicMock()
-        mock_cl.readline = MagicMock(side_effect=[b'HTTP/1.1 101 Switching Protocols\r\n', b'Upgrade: websocket\r\n', b'Connection: Upgrade\r\n', b'\r\n'])
+        mock_cl.readline = MagicMock(
+            side_effect=[
+                b'HTTP/1.1 101 Switching Protocols\r\n',
+                b'Upgrade: websocket\r\n',
+                b'Connection: Upgrade\r\n',
+                b'\r\n'
+            ]
+        )
 
         # Mock socket to do nothing, mock makefile method to return object created above
         with patch.object(socket, 'socket', return_value=MagicMock()) as mock_socket, \
              patch.object(mock_socket, 'makefile', return_value=mock_cl):
 
             # Instantiate, verify correct methods called
-            ws = websocket(mock_socket)
+            websocket(mock_socket)
             mock_cl.write.assert_called_once_with(handshake_message)
             self.assertEqual(mock_cl.readline.call_count, 4)
 
@@ -417,7 +428,7 @@ class WebreplTests(TestCase):
         # Mock read_resp to return bytes indicating valid signature
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(node, 'ws', MagicMock()), \
-             patch.object(node.ws, 'read', side_effect = simulate_failed_read) as mock_read, \
+             patch.object(node.ws, 'read', side_effect=simulate_failed_read) as mock_read, \
              patch.object(node, 'read_resp', side_effect=[0, 0]):
 
             # Both methods should raise OSError when empty buffer returned on second call
@@ -499,6 +510,9 @@ class ConfirmRequiresPostTests(TestCase):
 # Test edit config view
 class EditConfigTests(TestCase):
     def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
         # Create 3 test nodes and configs to edit
         create_test_nodes()
 
@@ -570,7 +584,7 @@ class EditConfigTests(TestCase):
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file', return_value=True):
 
-            response = self.client.post('/edit_config/setup', {'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/edit_config/setup', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Upload complete.')
 
@@ -601,7 +615,8 @@ class ConfigGeneratorTests(TestCase):
         self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
 
         # Confirm context contains credentials + edit_existing set correctly
-        self.assertEqual(response.context['config'], {"TITLE": "Create New Config", 'wifi': {'password': 'hunter2', 'ssid': 'AzureDiamond'}})
+        expected_response = {"TITLE": "Create New Config", 'wifi': {'password': 'hunter2', 'ssid': 'AzureDiamond'}}
+        self.assertEqual(response.context['config'], expected_response)
         self.assertContains(response, 'const edit_existing = false;')
 
         # Confirm wifi fields pre-filled
@@ -676,6 +691,12 @@ class ReuploadAllTests(TestCase):
     def setUp(self):
         create_test_nodes()
 
+        self.failed_to_connect = JsonResponse(
+            "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
+            safe=False,
+            status=404
+        )
+
     def tearDown(self):
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -701,28 +722,51 @@ class ReuploadAllTests(TestCase):
             self.assertEqual(response.json(), {'success': ['Test1', 'Test3'], 'failed': {'Test2': 'Offline'}})
 
     def test_reupload_all_fail(self):
+        # Expected response object
+        all_failed = {
+            "success": [],
+            "failed": {
+                "Test1": "Offline",
+                "Test2": "Offline",
+                "Test3": "Offline"
+            }
+        }
+
         # Mock provision to return failure message without doing anything
-        with patch('node_configuration.views.provision') as mock_provision:
-            mock_provision.return_value = JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
+        with patch('node_configuration.views.provision', return_value=self.failed_to_connect) as mock_provision:
 
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'success': [], 'failed': {'Test1': 'Offline', 'Test2': 'Offline', 'Test3': 'Offline'}})
+            self.assertEqual(response.json(), all_failed)
             self.assertEqual(mock_provision.call_count, 3)
 
     def test_reupload_all_fail_different_reasons(self):
+        # Expected response object
+        all_failed_different_reasons = {
+            "success": [],
+            "failed": {
+                "Test1": "Connection timed out",
+                "Test2": "Offline",
+                "Test3": "Requires setup"
+            }
+        }
+
         # Mock provision to return failure message without doing anything
         with patch('node_configuration.views.provision', new=simulate_reupload_all_fail_for_different_reasons):
 
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'success': [], 'failed': {'Test1': 'Connection timed out', 'Test2': 'Offline', 'Test3': 'Requires setup'}})
+            self.assertEqual(response.json(), all_failed_different_reasons)
 
 
 # Test endpoint that uploads first-time setup script
 class SetupTests(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
     # Verify response in a normal scenario
     # Testing errors is redundant, it just returns the output of provision (already tested)
     def test_setup(self):
@@ -730,7 +774,7 @@ class SetupTests(TestCase):
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file', return_value=True):
 
-            response = self.client.post('/setup', {'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/setup', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Upload complete.')
 
@@ -740,18 +784,22 @@ class SetupTests(TestCase):
         with patch('node_configuration.views.provision') as mock_provision:
 
             mock_provision.return_value = JsonResponse("Upload complete.", safe=False, status=200)
-            response = self.client.post('/setup', {'ip': '123.45.67.89'}, content_type='application/json')
+            self.client.post('/setup', {'ip': '123.45.67.89'})
             mock_provision.assert_called_with("setup.json", '123.45.67.89', {}, {})
 
     # Verify correct error when passed an invalid IP
     def test_invalid_ip(self):
-        response = self.client.post('/setup', {'ip': '123.456.678.90'}, content_type='application/json')
+        response = self.client.post('/setup', {'ip': '123.456.678.90'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': f'Invalid IP 123.456.678.90'})
+        self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
 
 
 # Test endpoint called by frontend upload buttons (calls get_modules and provision)
 class UploadTests(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
     def test_upload_new_node(self):
         # Create test config, confirm database
         Config.objects.create(config=test_config_1, filename='test1.json')
@@ -763,7 +811,7 @@ class UploadTests(TestCase):
              patch.object(Webrepl, 'put_file', return_value=True):
 
             # Upload config, verify response
-            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Upload complete.')
 
@@ -783,7 +831,7 @@ class UploadTests(TestCase):
              patch.object(Webrepl, 'put_file', return_value=True):
 
             # Reupload config (second URL parameter), verify response
-            response = self.client.post('/upload/True', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/upload/True', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Upload complete.')
 
@@ -804,7 +852,7 @@ class UploadTests(TestCase):
              patch.object(Webrepl, 'put_file', return_value=True):
 
             # Reupload config (second URL parameter), verify error
-            response = self.client.post('/upload', {'config': 'fake-config.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/upload', {'config': 'fake-config.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
             self.assertEqual(response.json(), "ERROR: Config file doesn't exist - did you delete it manually?")
 
@@ -822,7 +870,7 @@ class UploadTests(TestCase):
         with patch.object(Webrepl, 'open_connection', return_value=False):
 
             # Upload config, verify error
-            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
             self.assertEqual(response.json(), 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.')
 
@@ -842,7 +890,7 @@ class UploadTests(TestCase):
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file', side_effect=TimeoutError):
 
-            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 408)
             self.assertEqual(response.json(), 'Connection timed out - please press target node reset button, wait 30 seconds, and try again.')
 
@@ -862,7 +910,7 @@ class UploadTests(TestCase):
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file', new=simulate_first_time_upload):
 
-            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 409)
             self.assertEqual(response.json(), 'ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?')
 
@@ -874,9 +922,9 @@ class UploadTests(TestCase):
 
     # Verify correct error when passed an invalid IP
     def test_invalid_ip(self):
-        response = self.client.post('/upload', {'ip': '123.456.678.90'}, content_type='application/json')
+        response = self.client.post('/upload', {'ip': '123.456.678.90'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': f'Invalid IP 123.456.678.90'})
+        self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
 
 
 # Test view that uploads completed configs and dependencies to esp32 nodes
@@ -916,7 +964,7 @@ class ProvisionTests(TestCase):
     def test_provision_first_time_setup(self):
         modules, libs = get_modules(test_config_1)
 
-        # Mock Webrepl.put_file to raise AssertionError for files starting with "/lib/" (simulate uploading to non-existing path)
+        # Simulate uploading to non-existing path (mock put_file to raise AssertionError for files starting with "/lib")
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file', new=simulate_first_time_upload):
 
@@ -938,6 +986,10 @@ class ProvisionTests(TestCase):
 
 # Test view that connects to existing node, downloads config file, writes to database
 class RestoreConfigViewTest(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
     def test_restore_config(self):
         # Database should be empty
         self.assertEqual(len(Config.objects.all()), 0)
@@ -948,7 +1000,7 @@ class RestoreConfigViewTest(TestCase):
              patch.object(Webrepl, 'get_file_mem', return_value=json.dumps(test_config_1).encode('utf-8')):
 
             # Post fake IP to endpoint, confirm output
-            response = self.client.post('/restore_config', {'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Config restored')
 
@@ -967,7 +1019,7 @@ class RestoreConfigViewTest(TestCase):
         with patch.object(Webrepl, 'open_connection', return_value=False):
 
             # Post fake IP to endpoint, confirm weeoe
-            response = self.client.post('/restore_config', {'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
             self.assertEqual(response.json(), 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.')
 
@@ -986,7 +1038,7 @@ class RestoreConfigViewTest(TestCase):
              patch.object(Webrepl, 'get_file_mem', return_value=json.dumps(test_config_1).encode('utf-8')):
 
             # Post fake IP to endpoint, confirm error
-            response = self.client.post('/restore_config', {'ip': '123.45.67.89'}, content_type='application/json')
+            response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 409)
             self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
 
@@ -999,7 +1051,7 @@ class RestoreConfigViewTest(TestCase):
 
     # Verify correct error when passed an invalid IP
     def test_invalid_ip(self):
-        response = self.client.post('/restore_config', {'ip': '123.456.678.90'}, content_type='application/json')
+        response = self.client.post('/restore_config', {'ip': '123.456.678.90'})
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
 
@@ -1015,11 +1067,130 @@ class ApiTargetMenuOptionsTest(TestCase):
         # Create nodes
         create_test_nodes()
 
+        # Options that should be returned for these test nodes
+        expected_options = {
+            "addresses": {
+                "self-target": "127.0.0.1",
+                "Test1": "192.168.1.123",
+                "Test2": "192.168.1.124",
+                "Test3": "192.168.1.125"
+            },
+            "self-target": {},
+            "Test1": {
+                "device1-Cabinet Lights (pwm)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "device2-Overhead Lights (relay)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "sensor1-Motion Sensor (pir)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "trigger_sensor"
+                ]
+            },
+            "Test2": {
+                "device1-Air Conditioner (api-target)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "sensor1-Thermostat (si7021)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule"
+                ],
+                "ir_blaster-Ir Blaster": {
+                    "ac": [
+                        "start",
+                        "stop",
+                        "off"
+                    ]
+                }
+            },
+            "Test3": {
+                "device1-Bathroom LEDs (pwm)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "device2-Bathroom Lights (relay)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "device3-Entry Light (relay)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "sensor1-Motion Sensor (Bath) (pir)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "trigger_sensor"
+                ],
+                "sensor2-Motion Sensor (Entry) (pir)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "trigger_sensor"
+                ]
+            }
+        }
+
         # Request options with no argument (used by Api frontend)
         options = get_api_target_menu_options()
 
         # Should return valid options for each device and sensor of all existing nodes
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'Test1': '192.168.1.123', 'Test2': '192.168.1.124', 'Test3': '192.168.1.125'}, 'self-target': {}, 'Test1': {'device1-Cabinet Lights (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device2-Overhead Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']}, 'Test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule'], 'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}, 'Test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']}})
+        self.assertEqual(options, expected_options)
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -1028,12 +1199,99 @@ class ApiTargetMenuOptionsTest(TestCase):
         # Create nodes
         create_test_nodes()
 
+        # Options that should be returned for these test nodes
+        expected_options = {
+            "addresses": {
+                "self-target": "127.0.0.1",
+                "Test2": "192.168.1.124",
+                "Test3": "192.168.1.125"
+            },
+            "self-target": {},
+            "Test2": {
+                "device1-Air Conditioner (api-target)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "sensor1-Thermostat (si7021)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule"
+                ],
+                "ir_blaster-Ir Blaster": {
+                    "ac": [
+                        "start",
+                        "stop",
+                        "off"
+                    ]
+                }
+            },
+            "Test3": {
+                "device1-Bathroom LEDs (pwm)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "device2-Bathroom Lights (relay)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "device3-Entry Light (relay)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "sensor1-Motion Sensor (Bath) (pir)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "trigger_sensor"
+                ],
+                "sensor2-Motion Sensor (Entry) (pir)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "trigger_sensor"
+                ]
+            }
+        }
+
         # Request options with friendly name as argument (used by edit_config)
         options = get_api_target_menu_options('Test1')
 
         # Should return valid options for each device and sensor of all existing nodes, except Test1
         # Should include Test1's options in self-target section, should not be in main section
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'Test2': '192.168.1.124', 'Test3': '192.168.1.125'}, 'self-target': {}, 'Test2': {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Thermostat (si7021)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule'], 'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}, 'Test3': {'device1-Bathroom LEDs (pwm)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device2-Bathroom Lights (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'device3-Entry Light (relay)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'], 'sensor1-Motion Sensor (Bath) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor'], 'sensor2-Motion Sensor (Entry) (pir)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']}})
+        self.assertEqual(options, expected_options)
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -1041,34 +1299,143 @@ class ApiTargetMenuOptionsTest(TestCase):
     # Original bug: IR Blaster options always included both TV and AC, even if only one configured.
     # Fixed in 8ab9367b, now only includes available options.
     def test_regression_ir_blaster(self):
-        # Configs with all possible combinations of ir blaster targets
-        no_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': []}}
-        ac_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': ['ac']}}
-        tv_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': ['tv']}}
-        both_target_config = {'metadata': {'id': 'ir_test', 'location': 'Bedroom', 'floor': '2'}, 'wifi': {'ssid': 'wifi', 'password': '1234'}, 'ir_blaster': {'pin': '19', 'target': ['ac', 'tv']}}
+        # Base config with no IR Blaster options
+        config = {
+            'metadata': {
+                'id': 'ir_test',
+                'location': 'Bedroom',
+                'floor': '2'
+            },
+            'wifi': {
+                'ssid': 'wifi',
+                'password': '1234'
+            }
+        }
+
+        # IR Blaster configs with all possible combinations of targets
+        no_target_config = {
+            'pin': '19',
+            'target': []
+        }
+        ac_target_config = {
+            'pin': '19',
+            'target': ['ac']
+        }
+        tv_target_config = {
+            'pin': '19',
+            'target': ['tv']
+        }
+        both_target_config = {
+            'pin': '19',
+            'target': ['ac', 'tv']
+        }
 
         # No targets: All options should be removed
-        create_config_and_node_from_json(no_target_config)
+        config['ir_blaster'] = no_target_config
+        expected_options = {'addresses': {'self-target': '127.0.0.1'}, 'self-target': {}}
+
+        # Create, verify options
+        create_config_and_node_from_json(config)
         options = get_api_target_menu_options()
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1'}, 'self-target': {}})
+        self.assertEqual(options, expected_options)
         Node.objects.all()[0].delete()
 
-        # AC only: Should only include AC options
-        create_config_and_node_from_json(ac_target_config)
+        # Correct options for AC-only config
+        config['ir_blaster'] = ac_target_config
+        expected_options = {
+            "addresses": {
+                "self-target": "127.0.0.1",
+                "ir_test": "192.168.1.123"
+            },
+            "self-target": {},
+            "ir_test": {
+                "ir_blaster-Ir Blaster": {
+                    "ac": [
+                        "start",
+                        "stop",
+                        "off"
+                    ]
+                }
+            }
+        }
+
+        # Create AC-only config, verify options
+        create_config_and_node_from_json(config)
         options = get_api_target_menu_options()
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'ac': ['start', 'stop', 'off']}}})
+        self.assertEqual(options, expected_options)
         Node.objects.all()[0].delete()
 
-        # TV only: Should only include TV options
-        create_config_and_node_from_json(tv_target_config)
+        # Correct options for TV-only config
+        config['ir_blaster'] = tv_target_config
+        expected_options = {
+            "addresses": {
+                "self-target": "127.0.0.1",
+                "ir_test": "192.168.1.123"
+            },
+            "self-target": {},
+            "ir_test": {
+                "ir_blaster-Ir Blaster": {
+                    "tv": [
+                        "power",
+                        "vol_up",
+                        "vol_down",
+                        "mute",
+                        "up",
+                        "down",
+                        "left",
+                        "right",
+                        "enter",
+                        "settings",
+                        "exit",
+                        "source"
+                    ]
+                }
+            }
+        }
+
+        # Create TV-only config, verify options
+        create_config_and_node_from_json(config)
         options = get_api_target_menu_options()
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source']}}})
+        self.assertEqual(options, expected_options)
         Node.objects.all()[0].delete()
 
-        # Both: Should include all options, same as before bug fix
-        create_config_and_node_from_json(both_target_config)
+        # Correct options for config with both TV and AC, same as before bug fix
+        config['ir_blaster'] = both_target_config
+        expected_options = {
+            "addresses": {
+                "self-target": "127.0.0.1",
+                "ir_test": "192.168.1.123"
+            },
+            "self-target": {},
+            "ir_test": {
+                "ir_blaster-Ir Blaster": {
+                    "tv": [
+                        "power",
+                        "vol_up",
+                        "vol_down",
+                        "mute",
+                        "up",
+                        "down",
+                        "left",
+                        "right",
+                        "enter",
+                        "settings",
+                        "exit",
+                        "source"
+                    ],
+                    "ac": [
+                        "start",
+                        "stop",
+                        "off"
+                    ]
+                }
+            }
+        }
+
+        # Create config with both TV and AC, verify options
+        create_config_and_node_from_json(config)
         options = get_api_target_menu_options()
-        self.assertEqual(options, {'addresses': {'self-target': '127.0.0.1', 'ir_test': '192.168.1.123'}, 'self-target': {}, 'ir_test': {'ir_blaster-Ir Blaster': {'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'], 'ac': ['start', 'stop', 'off']}}})
+        self.assertEqual(options, expected_options)
         Node.objects.all()[0].delete()
 
     # Original bug: It was possible to set ApiTarget to turn itself on/off, resulting in
@@ -1078,11 +1445,21 @@ class ApiTargetMenuOptionsTest(TestCase):
         # Create nodes
         create_test_nodes()
 
-        # Request options for node with ApiTarget
-        options = get_api_target_menu_options('Test2')
+        # ApiTarget options do not include turn_on or turn_off in self-target section (infinite loop)
+        expected_options = {
+            "device1-Air Conditioner (api-target)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
+            ]
+        }
 
-        # Should not include turn_on or turn_off in self-target section (infinite loop)
-        self.assertEqual(options['self-target'], {'device1-Air Conditioner (api-target)': ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']})
+        # Request options for node with ApiTarget, confirm no turn_on/turn_off
+        options = get_api_target_menu_options('Test2')
+        self.assertEqual(options['self-target'], expected_options)
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -1090,17 +1467,21 @@ class ApiTargetMenuOptionsTest(TestCase):
 
 # Test setting default wifi credentials
 class WifiCredentialsTests(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
     def test_setting_credentials(self):
         # Database should be empty
         self.assertEqual(len(WifiCredentials.objects.all()), 0)
 
         # Set default credentials, verify response + database
-        response = self.client.post('/set_default_credentials', json.dumps({'ssid': 'AzureDiamond', 'password': 'hunter2'}), content_type='application/json')
+        response = self.client.post('/set_default_credentials', {'ssid': 'AzureDiamond', 'password': 'hunter2'})
         self.assertEqual(response.json(), 'Default credentials set')
         self.assertEqual(len(WifiCredentials.objects.all()), 1)
 
         # Overwrite credentials, verify model only contains 1 entry
-        response = self.client.post('/set_default_credentials', json.dumps({'ssid': 'NewWifi', 'password': 'hunter2'}), content_type='application/json')
+        response = self.client.post('/set_default_credentials', {'ssid': 'NewWifi', 'password': 'hunter2'})
         self.assertEqual(response.json(), 'Default credentials set')
         self.assertEqual(len(WifiCredentials.objects.all()), 1)
 
@@ -1111,43 +1492,49 @@ class WifiCredentialsTests(TestCase):
 
 # Test duplicate detection
 class DuplicateDetectionTests(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
     def test_check_duplicate(self):
         # Should accept new name
-        response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test Config'}), content_type='application/json')
+        response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
         self.assertEqual(response.json(), 'Name OK.')
 
         # Create config with same name
-        self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
+        self.client.post('/generate_config_file', request_payload)
 
         # Should now reject (identical name)
-        response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test Config'}), content_type='application/json')
+        response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
         self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
 
         # Should reject regardless of capitalization
-        response = self.client.post('/check_duplicate', json.dumps({'name': 'unit test config'}), content_type='application/json')
+        response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
         self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
 
         # Should accept different name
-        response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test'}), content_type='application/json')
+        response = self.client.post('/check_duplicate', {'name': 'Unit Test'})
         self.assertEqual(response.json(), 'Name OK.')
 
     # Test second conditional in is_duplicate function (unreachable when used as
     # intended, prevents issues if advanced user creates Node from shell/admin)
     def test_duplicate_friendly_name_only(self):
         # Create Node with no matching Config (avoids matching first conditional)
-        node = Node.objects.create(friendly_name="Unit Test Config", ip="123.45.67.89", floor="0")
+        Node.objects.create(friendly_name="Unit Test Config", ip="123.45.67.89", floor="0")
 
         # Should reject, identical friendly name exists
-        response = self.client.post('/check_duplicate', json.dumps({'name': 'Unit Test Config'}), content_type='application/json')
+        response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
         self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
 
 
 # Test delete config
 class DeleteConfigTests(TestCase):
     def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
         # Generate Config, will be deleted below
-        self.client = Client()
-        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
 
@@ -1156,7 +1543,7 @@ class DeleteConfigTests(TestCase):
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Delete the Config created in setUp, confirm response message, confirm removed from database + disk
-        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'), content_type='application/json')
+        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Deleted unit-test-config.json')
         self.assertEqual(len(Config.objects.all()), 0)
@@ -1167,7 +1554,7 @@ class DeleteConfigTests(TestCase):
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Attempt to delete non-existing Config, confirm fails with correct message
-        response = self.client.post('/delete_config', json.dumps('does-not-exist.json'), content_type='application/json')
+        response = self.client.post('/delete_config', json.dumps('does-not-exist.json'))
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), 'Failed to delete does-not-exist.json, does not exist')
 
@@ -1184,7 +1571,7 @@ class DeleteConfigTests(TestCase):
         os.chmod(settings.CONFIG_DIR, 0o554)
 
         # Attempt to delete, confirm fails with permission denied error
-        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'), content_type='application/json')
+        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.json(), 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.')
 
@@ -1199,9 +1586,11 @@ class DeleteConfigTests(TestCase):
 
 class DeleteNodeTests(TestCase):
     def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
         # Generate Config for test Node
-        self.client = Client()
-        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
         self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
 
@@ -1217,7 +1606,7 @@ class DeleteNodeTests(TestCase):
         self.assertEqual(len(Node.objects.all()), 1)
 
         # Delete the Node created in setUp, confirm response message, confirm removed from database + disk
-        response = self.client.post('/delete_node', json.dumps('Test Node'), content_type='application/json')
+        response = self.client.post('/delete_node', json.dumps('Test Node'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Deleted Test Node')
         self.assertEqual(len(Config.objects.all()), 0)
@@ -1230,7 +1619,7 @@ class DeleteNodeTests(TestCase):
         self.assertEqual(len(Node.objects.all()), 1)
 
         # Attempt to delete non-existing Node, confirm fails with correct message
-        response = self.client.post('/delete_node', json.dumps('Wrong Node'), content_type='application/json')
+        response = self.client.post('/delete_node', json.dumps('Wrong Node'))
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), 'Failed to delete Wrong Node, does not exist')
 
@@ -1249,7 +1638,7 @@ class DeleteNodeTests(TestCase):
         os.chmod(settings.CONFIG_DIR, 0o554)
 
         # Attempt to delete, confirm fails with permission denied error
-        response = self.client.post('/delete_node', json.dumps('Test Node'), content_type='application/json')
+        response = self.client.post('/delete_node', json.dumps('Test Node'))
         self.assertEqual(response.status_code, 500)
         self.assertEqual(response.json(), 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.')
 
@@ -1266,6 +1655,9 @@ class DeleteNodeTests(TestCase):
 # Test endpoint used to change an existing node's IP
 class ChangeNodeIpTests(TestCase):
     def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
         # Create 3 test nodes
         create_test_nodes()
 
@@ -1283,7 +1675,7 @@ class ChangeNodeIpTests(TestCase):
 
             # Make request, confirm response
             request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
-            response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+            response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Successfully uploaded to new IP')
 
@@ -1298,7 +1690,7 @@ class ChangeNodeIpTests(TestCase):
 
             # Make request, confirm error
             request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
-            response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+            response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 404)
             self.assertEqual(response.json(), "Error: Unable to connect to node, please make sure it is connected to wifi and try again.")
 
@@ -1311,19 +1703,19 @@ class ChangeNodeIpTests(TestCase):
     def test_invalid_parameters(self):
         # Make request with invalid IP, confirm error
         request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.555'}
-        response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'Error': 'Invalid IP 192.168.1.555'})
 
         # Make request targeting non-existing node, confirm error
         request_payload = {'friendly_name': 'Test9', 'new_ip': '192.168.1.255'}
-        response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), "Unable to change IP, node does not exist")
 
         # Make request with current IP, confirm error
         request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.123'}
-        response = self.client.post('/change_node_ip', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'Error': 'New IP must be different than old'})
 
@@ -1335,9 +1727,38 @@ class GetModulesTests(TestCase):
             self.config = json.load(file)
 
     def test_get_modules_full_config(self):
+
+        expected_modules = {
+            "../sensors/Sensor.py": "Sensor.py",
+            "../sensors/MotionSensor.py": "MotionSensor.py",
+            "../devices/LedStrip.py": "LedStrip.py",
+            "../sensors/Thermostat.py": "Thermostat.py",
+            "../devices/Mosfet.py": "Mosfet.py",
+            "../devices/Device.py": "Device.py",
+            "../devices/Desktop_target.py": "Desktop_target.py",
+            "../sensors/Dummy.py": "Dummy.py",
+            "../sensors/Desktop_trigger.py": "Desktop_trigger.py",
+            "../ir-remote/samsung-codes.json": "samsung-codes.json",
+            "../sensors/Switch.py": "Switch.py",
+            "../ir-remote/whynter-codes.json": "whynter-codes.json",
+            "../devices/Relay.py": "Relay.py",
+            "../devices/IrBlaster.py": "IrBlaster.py",
+            "../devices/DumbRelay.py": "DumbRelay.py",
+            "../devices/Wled.py": "Wled.py",
+            "../devices/Tplink.py": "Tplink.py",
+            "../devices/ApiTarget.py": "ApiTarget.py"
+        }
+
+        expected_libs = {
+            "../lib/logging.py": "lib/logging.py",
+            "../lib/si7021.py": "lib/si7021.py",
+            "../lib/ir_tx/__init__.py": "lib/ir_tx/__init__.py",
+            "../lib/ir_tx/nec.py": "lib/ir_tx/nec.py"
+        }
+
         modules, libs = get_modules(self.config)
-        self.assertEqual(modules, {'../sensors/Sensor.py': 'Sensor.py', '../sensors/MotionSensor.py': 'MotionSensor.py', '../devices/LedStrip.py': 'LedStrip.py', '../sensors/Thermostat.py': 'Thermostat.py', '../devices/Mosfet.py': 'Mosfet.py', '../devices/Device.py': 'Device.py', '../devices/Desktop_target.py': 'Desktop_target.py', '../sensors/Dummy.py': 'Dummy.py', '../sensors/Desktop_trigger.py': 'Desktop_trigger.py', '../ir-remote/samsung-codes.json': 'samsung-codes.json', '../sensors/Switch.py': 'Switch.py', '../ir-remote/whynter-codes.json': 'whynter-codes.json', '../devices/Relay.py': 'Relay.py', '../devices/IrBlaster.py': 'IrBlaster.py', '../devices/DumbRelay.py': 'DumbRelay.py', '../devices/Wled.py': 'Wled.py', '../devices/Tplink.py': 'Tplink.py', '../devices/ApiTarget.py': 'ApiTarget.py'})
-        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py', '../lib/si7021.py': 'lib/si7021.py', '../lib/ir_tx/__init__.py': 'lib/ir_tx/__init__.py', '../lib/ir_tx/nec.py': 'lib/ir_tx/nec.py'})
+        self.assertEqual(modules, expected_modules)
+        self.assertEqual(libs, expected_libs)
 
     def test_get_modules_empty_config(self):
         modules, libs = get_modules({})
@@ -1347,16 +1768,67 @@ class GetModulesTests(TestCase):
     def test_get_modules_no_ir_blaster(self):
         config = self.config.copy()
         del config['ir_blaster']
+
+        expected_modules = {
+            "../sensors/Sensor.py": "Sensor.py",
+            "../sensors/MotionSensor.py": "MotionSensor.py",
+            "../devices/LedStrip.py": "LedStrip.py",
+            "../sensors/Thermostat.py": "Thermostat.py",
+            "../devices/Mosfet.py": "Mosfet.py",
+            "../devices/Device.py": "Device.py",
+            "../devices/Desktop_target.py": "Desktop_target.py",
+            "../sensors/Dummy.py": "Dummy.py",
+            "../sensors/Desktop_trigger.py": "Desktop_trigger.py",
+            "../sensors/Switch.py": "Switch.py",
+            "../devices/Relay.py": "Relay.py",
+            "../devices/DumbRelay.py": "DumbRelay.py",
+            "../devices/Wled.py": "Wled.py",
+            "../devices/Tplink.py": "Tplink.py",
+            "../devices/ApiTarget.py": "ApiTarget.py"
+        }
+
+        expected_libs = {
+            "../lib/logging.py": "lib/logging.py",
+            "../lib/si7021.py": "lib/si7021.py"
+        }
+
         modules, libs = get_modules(config)
-        self.assertEqual(modules, {'../sensors/Sensor.py': 'Sensor.py', '../sensors/MotionSensor.py': 'MotionSensor.py', '../devices/LedStrip.py': 'LedStrip.py', '../sensors/Thermostat.py': 'Thermostat.py', '../devices/Mosfet.py': 'Mosfet.py', '../devices/Device.py': 'Device.py', '../devices/Desktop_target.py': 'Desktop_target.py', '../sensors/Dummy.py': 'Dummy.py', '../sensors/Desktop_trigger.py': 'Desktop_trigger.py', '../sensors/Switch.py': 'Switch.py', '../devices/Relay.py': 'Relay.py', '../devices/DumbRelay.py': 'DumbRelay.py', '../devices/Wled.py': 'Wled.py', '../devices/Tplink.py': 'Tplink.py', '../devices/ApiTarget.py': 'ApiTarget.py'})
-        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py', '../lib/si7021.py': 'lib/si7021.py'})
+        self.assertEqual(modules, expected_modules)
+        self.assertEqual(libs, expected_libs)
 
     def test_get_modules_no_thermostat(self):
         config = self.config.copy()
         del config['sensor5']
+
+        expected_modules = {
+            "../sensors/Sensor.py": "Sensor.py",
+            "../sensors/MotionSensor.py": "MotionSensor.py",
+            "../devices/LedStrip.py": "LedStrip.py",
+            "../devices/Mosfet.py": "Mosfet.py",
+            "../devices/Device.py": "Device.py",
+            "../devices/Desktop_target.py": "Desktop_target.py",
+            "../sensors/Dummy.py": "Dummy.py",
+            "../sensors/Desktop_trigger.py": "Desktop_trigger.py",
+            "../ir-remote/samsung-codes.json": "samsung-codes.json",
+            "../sensors/Switch.py": "Switch.py",
+            "../ir-remote/whynter-codes.json": "whynter-codes.json",
+            "../devices/Relay.py": "Relay.py",
+            "../devices/IrBlaster.py": "IrBlaster.py",
+            "../devices/DumbRelay.py": "DumbRelay.py",
+            "../devices/Wled.py": "Wled.py",
+            "../devices/Tplink.py": "Tplink.py",
+            "../devices/ApiTarget.py": "ApiTarget.py"
+        }
+
+        expected_libs = {
+            "../lib/logging.py": "lib/logging.py",
+            "../lib/ir_tx/__init__.py": "lib/ir_tx/__init__.py",
+            "../lib/ir_tx/nec.py": "lib/ir_tx/nec.py"
+        }
+
         modules, libs = get_modules(config)
-        self.assertEqual(modules, {'../sensors/Sensor.py': 'Sensor.py', '../sensors/MotionSensor.py': 'MotionSensor.py', '../devices/LedStrip.py': 'LedStrip.py', '../devices/Mosfet.py': 'Mosfet.py', '../devices/Device.py': 'Device.py', '../devices/Desktop_target.py': 'Desktop_target.py', '../sensors/Dummy.py': 'Dummy.py', '../sensors/Desktop_trigger.py': 'Desktop_trigger.py', '../ir-remote/samsung-codes.json': 'samsung-codes.json', '../sensors/Switch.py': 'Switch.py', '../ir-remote/whynter-codes.json': 'whynter-codes.json', '../devices/Relay.py': 'Relay.py', '../devices/IrBlaster.py': 'IrBlaster.py', '../devices/DumbRelay.py': 'DumbRelay.py', '../devices/Wled.py': 'Wled.py', '../devices/Tplink.py': 'Tplink.py', '../devices/ApiTarget.py': 'ApiTarget.py'})
-        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py', '../lib/ir_tx/__init__.py': 'lib/ir_tx/__init__.py', '../lib/ir_tx/nec.py': 'lib/ir_tx/nec.py'})
+        self.assertEqual(modules, expected_modules)
+        self.assertEqual(libs, expected_libs)
 
     def test_get_modules_realistic(self):
         config = self.config.copy()
@@ -1367,19 +1839,36 @@ class GetModulesTests(TestCase):
         del config['device4']
         del config['device5']
         del config['device7']
+
+        expected_modules = {
+            "../sensors/Sensor.py": "Sensor.py",
+            "../sensors/MotionSensor.py": "MotionSensor.py",
+            "../devices/LedStrip.py": "LedStrip.py",
+            "../devices/Device.py": "Device.py",
+            "../sensors/Switch.py": "Switch.py",
+            "../devices/Relay.py": "Relay.py",
+            "../devices/Wled.py": "Wled.py",
+            "../devices/Tplink.py": "Tplink.py",
+            "../devices/ApiTarget.py": "ApiTarget.py"
+        }
+
         modules, libs = get_modules(config)
-        self.assertEqual(modules, {'../sensors/Sensor.py': 'Sensor.py', '../sensors/MotionSensor.py': 'MotionSensor.py', '../devices/LedStrip.py': 'LedStrip.py', '../devices/Device.py': 'Device.py', '../sensors/Switch.py': 'Switch.py', '../devices/Relay.py': 'Relay.py', '../devices/Wled.py': 'Wled.py', '../devices/Tplink.py': 'Tplink.py', '../devices/ApiTarget.py': 'ApiTarget.py'})
+        self.assertEqual(modules, expected_modules)
         self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py'})
 
 
 # Test config generator backend function
 class GenerateConfigFileTests(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
     def test_generate_config_file(self):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 0)
 
         # Post frontend config generator payload to view
-        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Config created.')
 
@@ -1394,7 +1883,7 @@ class GenerateConfigFileTests(TestCase):
 
     def test_edit_existing_config_file(self):
         # Create config, confirm 1 exists in database
-        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Copy request payload, change 1 default_rule
@@ -1402,7 +1891,7 @@ class GenerateConfigFileTests(TestCase):
         modified_request_payload['devices']['device6']['default_rule'] = 900
 
         # Send with edit argument (overwrite existing with same name instead of throwing duplicate error)
-        response = self.client.post('/generate_config_file/True', json.dumps(modified_request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file/True', json.dumps(modified_request_payload))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Config created.')
 
@@ -1424,13 +1913,13 @@ class GenerateConfigFileTests(TestCase):
         self.assertEqual(len(Config.objects.all()), 0)
 
         # Post frontend config generator payload to view, confirm response + model created
-        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Config created.')
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Post again, should throw error (duplicate name), should not create model
-        response = self.client.post('/generate_config_file', json.dumps(request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1444,7 +1933,7 @@ class GenerateConfigFileTests(TestCase):
         invalid_request_payload['devices']['device6']['default_rule'] = 9001
 
         # Post invalid payload, confirm rejected with correct error, confirm config not created
-        response = self.client.post('/generate_config_file', json.dumps(invalid_request_payload), content_type='application/json')
+        response = self.client.post('/generate_config_file', json.dumps(invalid_request_payload))
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'Error': 'Cabinet Lights: Invalid default rule 9001'})
         self.assertEqual(len(Config.objects.all()), 0)
@@ -1752,38 +2241,40 @@ class ScheduleKeywordTests(TestCase):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
         # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add) as mock_add, \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove) as mock_remove, \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save) as mock_save:
+        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request, confirm response, confirm model created
-            response = self.client.post('/add_schedule_keyword', {'keyword': 'morning', 'timestamp': '08:00'})
+            data = {'keyword': 'morning', 'timestamp': '08:00'}
+            response = self.client.post('/add_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword created')
             self.assertEqual(len(ScheduleKeyword.objects.all()), 4)
 
             # Should call add and save once for each node
-            self.assertEqual(mock_add.call_count, 2)
-            self.assertEqual(mock_remove.call_count, 0)
-            self.assertEqual(mock_save.call_count, 2)
+            self.assertEqual(self.mock_add.call_count, 2)
+            self.assertEqual(self.mock_remove.call_count, 0)
+            self.assertEqual(self.mock_save.call_count, 2)
 
-    def test_edit_schedule_keyword(self):
+    def test_edit_schedule_keyword_timestamp(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
         # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add) as mock_add, \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove) as mock_remove, \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save) as mock_save:
+        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to change timestamp only, should overwrite existing keyword
-            response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'})
+            data = {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'}
+            response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword updated')
 
             # Should call add and save once for each node, should not call remove
-            self.assertEqual(mock_add.call_count, 2)
-            self.assertEqual(mock_remove.call_count, 0)
-            self.assertEqual(mock_save.call_count, 2)
+            self.assertEqual(self.mock_add.call_count, 2)
+            self.assertEqual(self.mock_remove.call_count, 0)
+            self.assertEqual(self.mock_save.call_count, 2)
 
             # Confirm no model entry created, existing has new timestamp same keyword
             self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
@@ -1791,19 +2282,24 @@ class ScheduleKeywordTests(TestCase):
             self.assertEqual(self.keyword.keyword, 'first')
             self.assertEqual(self.keyword.timestamp, '01:00')
 
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add) as mock_add, \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove) as mock_remove, \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save) as mock_save:
+    def test_edit_schedule_keyword_keyword(self):
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
+        # Mock all keyword endpoints, prevent failed network requests
+        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to change keyword, should remove and replace existing keyword
-            response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'})
+            data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'}
+            response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Keyword updated')
 
             # Should call add, remove, and save once for each node
-            self.assertEqual(mock_add.call_count, 2)
-            self.assertEqual(mock_remove.call_count, 2)
-            self.assertEqual(mock_save.call_count, 2)
+            self.assertEqual(self.mock_add.call_count, 2)
+            self.assertEqual(self.mock_remove.call_count, 2)
+            self.assertEqual(self.mock_save.call_count, 2)
 
             # Confirm same number of model entries, existing has new timestamp same keyword
             self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
@@ -1816,9 +2312,9 @@ class ScheduleKeywordTests(TestCase):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
         # Mock all keyword endpoints, prevent failed network requests
-        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add) as mock_add, \
-             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove) as mock_remove, \
-             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save) as mock_save:
+        with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
+             patch('node_configuration.views.remove_schedule_keyword', side_effect=self.mock_remove), \
+             patch('node_configuration.views.save_schedule_keywords', side_effect=self.mock_save):
 
             # Send request to delete keyword, verify response
             response = self.client.post('/delete_schedule_keyword', {'keyword': 'first'})
@@ -1826,9 +2322,9 @@ class ScheduleKeywordTests(TestCase):
             self.assertEqual(response.json(), 'Keyword deleted')
 
             # Should call remove and save once for each node, should not call add
-            self.assertEqual(mock_add.call_count, 0)
-            self.assertEqual(mock_remove.call_count, 2)
-            self.assertEqual(mock_save.call_count, 2)
+            self.assertEqual(self.mock_add.call_count, 0)
+            self.assertEqual(self.mock_remove.call_count, 2)
+            self.assertEqual(self.mock_save.call_count, 2)
 
             # Confirm model deleted
             self.assertEqual(len(ScheduleKeyword.objects.all()), 2)
@@ -1836,14 +2332,16 @@ class ScheduleKeywordTests(TestCase):
     def test_add_invalid_timestamp(self):
         # Send request, confirm error, confirm no model created
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
-        response = self.client.post('/add_schedule_keyword', {'keyword': 'morning', 'timestamp': '8:00'})
+        data = {'keyword': 'morning', 'timestamp': '8:00'}
+        response = self.client.post('/add_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}")
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
     def test_edit_invalid_timestamp(self):
         # Send request, confirm error
-        response = self.client.post('/edit_schedule_keyword', {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '8:00'})
+        data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '8:00'}
+        response = self.client.post('/edit_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), "Failed to update keyword")
 
