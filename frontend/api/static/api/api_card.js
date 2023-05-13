@@ -248,3 +248,29 @@ async function submit_schedule_toggle() {
     result = await result.json();
     console.log(result);
 };
+
+
+// Handler for Start Fade dropdown menu option on dimmable devices
+function open_fade_modal(el) {
+    const target = el.id.split("-")[0];
+    document.getElementById('start-fade-button').dataset.target = target;
+    fadeModal.show()
+};
+
+
+// Handler for fade modal start button
+function start_fade() {
+    const target = document.getElementById('start-fade-button').dataset.target;
+    const brightness = document.getElementById('fade-target').value;
+    const duration = document.getElementById('fade-duration').value;
+
+    send_command({'command': 'set_rule', 'instance': target, 'rule': `fade/${brightness}/${duration}`});
+};
+
+
+// Start fade with enter key
+document.querySelectorAll('.fade-input').forEach(input => input.addEventListener('keyup', function(e) {
+    if (e.key === 'Enter' || e.keyCode === 13) {
+        document.getElementById("start-fade-button").click();
+    };
+}));

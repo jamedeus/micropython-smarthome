@@ -264,6 +264,9 @@
                                         {% if params.type == "api-target" %}
                                             <li><a id="{{device}}-current_rule-button" class="dropdown-item" onclick="open_rule_modal(this);">Change rule</a></li>
                                         {% endif %}
+                                        {% if params.type in "dimmer,bulb,pwm" %}
+                                            <li><a id="{{device}}-start-fade" class="dropdown-item" onclick="open_fade_modal(this);">Start Fade</a></li>
+                                        {% endif %}
                                         <li><a id="{{device}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
                                     </ul>
                                 </div>
@@ -634,6 +637,34 @@
         </div>
     </div>
 
+     <!-- Start fade modal -->
+    <div class="modal fade" id="start-fade-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <button type="button" class="btn-close" style="visibility:hidden;"></button>
+                    <h5 class="modal-title">Start Fade</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex" id="start-fade-body">
+                    <div id="fade-target-input" class="text-center col mx-1">
+                        <label for="fade-target" class="form-label">Target Brightness</label>
+                        <input type="text" class="form-control fade-input" id="fade-target" name="fade-target" title="Invalid brightness" autocomplete="off">
+                    </div>
+                    <div id="fade-duration-input" class="text-center col mx-1">
+                        <label for="fade-duration" class="form-label">Duration (seconds)</label>
+                        <input type="text" class="form-control fade-input" id="fade-duration" name="fade-duration" title="Invalid duration" autocomplete="off">
+                    </div>
+                </div>
+                <div id="start-fade-footer" class="modal-footer mx-auto">
+                    <div id="rule-buttons">
+                        <button type="button" id="start-fade-button" class="btn btn-success" data-bs-dismiss="modal" onclick="start_fade()">Start</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% if context.api_target_options %}
     <!-- Api-target set rule modal -->
     <div class="modal fade" id="api-rule-modal" tabindex="-1">
@@ -756,6 +787,7 @@
         const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
         const toggleModal = new bootstrap.Modal(document.getElementById('toggle-modal'));
         const ruleModal = new bootstrap.Modal(document.getElementById('schedule-rule-modal'));
+        const fadeModal = new bootstrap.Modal(document.getElementById('start-fade-modal'));
 
         {% if context.metadata.recording %}
         const recording = '{{context.metadata.recording}}';
