@@ -1,4 +1,5 @@
 import json
+from .helper_functions import is_device_or_sensor, is_sensor
 
 
 # Receives full config entry from validateConfig view
@@ -17,7 +18,7 @@ def validate_rules(instance):
     elif instance_type == "pir":
         return validate_all(instance, motion_sensor_validator)
     elif instance_type == "si7021":
-        return validate_all(instance, thermostat_validator)
+        return validate_all(instance, thermostat_validator, instance['tolerance'])
     elif instance_type == "dummy":
         return validate_all(instance, dummy_validator)
     elif instance_type in ["relay", "dumb-relay", "desktop", "mosfet", "switch"]:
@@ -31,14 +32,20 @@ def validate_rules(instance):
 def validate_all(instance, special_validator=False, *args):
     # Check default rule
     valid = universal_validator(instance['default_rule'], special_validator, *args)
-    if valid is not True:
+    if valid is False:
         return f"{instance['nickname']}: Invalid default rule {instance['default_rule']}"
+    # If validator returns own error, return as-is
+    elif valid is not True:
+        return valid
 
     # Check schedule rules
     for time in instance['schedule']:
         valid = universal_validator(instance['schedule'][time], special_validator, *args)
-        if valid is not True:
+        if valid is False:
             return f"{instance['nickname']}: Invalid schedule rule {instance['schedule'][time]}"
+        # If validator returns own error, return as-is
+        elif valid is not True:
+            return valid
 
     return True
 
@@ -73,44 +80,14 @@ def api_target_validator(rule):
     if not len(rule) == 2:
         return False
 
+    # Iterate over each sub-rule
     for i in rule:
         # Index must be "on" or "off"
-        if not i == "on" and not i == "off":
+        if i not in ["on", "off"]:
             return False
 
-        if not isinstance(rule[i], list):
-            return False
-
-        # "ignore" is not a valid command, it allows only using on/off and ignoring the other
-        if rule[i][0] in ['reboot', 'clear_log', 'ignore'] and len(rule[i]) == 1:
-            continue
-
-        elif rule[i][0] in ['enable', 'disable'] and len(rule[i]) == 2 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
-            continue
-
-        elif rule[i][0] in ['condition_met', 'trigger_sensor'] and len(rule[i]) == 2 and rule[i][1].startswith("sensor"):
-            continue
-
-        elif rule[i][0] in ['enable_in', 'disable_in'] and len(rule[i]) == 3 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
-            try:
-                float(rule[i][2])
-                continue
-            except ValueError:
-                return False
-
-        elif rule[i][0] == 'set_rule' and len(rule[i]) == 3 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
-            continue
-
-        elif rule[i][0] == 'ir_key':
-            if len(rule[i]) == 3 and type(rule[i][1]) == str and type(rule[i][2]) == str:
-                continue
-            elif len(rule[i]) == 1 and rule[i][0] == 'ignore':
-                continue
-            else:
-                return False
-
-        else:
-            # Did not match any valid patterns
+        # Check against all valid sub-rule patterns
+        if not is_valid_api_sub_rule(rule[i]):
             return False
 
     else:
@@ -118,8 +95,58 @@ def api_target_validator(rule):
         return True
 
 
+# Takes ApiTarget sub-rule, return True if valid False if invalid
+def is_valid_api_sub_rule(rule):
+    if not isinstance(rule, list):
+        return False
+
+    # "ignore" is not a valid command, it allows only using on/off and ignoring the other
+    if rule[0] in ['reboot', 'clear_log', 'ignore'] and len(rule) == 1:
+        return True
+
+    elif rule[0] in ['enable', 'disable'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
+        return True
+
+    elif rule[0] in ['condition_met', 'trigger_sensor'] and len(rule) == 2 and is_sensor(rule[1]):
+        return True
+
+    elif rule[0] in ['enable_in', 'disable_in'] and len(rule) == 3 and is_device_or_sensor(rule[1]):
+        try:
+            float(rule[2])
+            return True
+        except ValueError:
+            return False
+
+    elif rule[0] == 'set_rule' and len(rule) == 3 and is_device_or_sensor(rule[1]):
+        return True
+
+    elif rule[0] == 'ir_key':
+        if len(rule) == 3 and type(rule[1]) == str and type(rule[2]) == str:
+            return True
+        elif len(rule) == 1 and rule[0] == 'ignore':
+            return True
+        else:
+            return False
+
+    else:
+        # Did not match any valid patterns
+        return False
+
+
 # Requires int between min/max, or fade/<int>/<int>
 def led_strip_validator(rule, min_bright, max_bright):
+    # Validate min/max brightness limits
+    try:
+        if int(min_bright) > int(max_bright):
+            return 'PWM min cannot be greater than max'
+        elif int(min_bright) < 0 or int(max_bright) < 0:
+            return 'PWM limits cannot be less than 0'
+        elif int(min_bright) > 1023 or int(max_bright) > 1023:
+            return 'PWM limits cannot be greater than 1023'
+    except ValueError:
+        return 'Invalid PWM limits, both must be int between 0 and 1023'
+
+    # Validate rule
     try:
         if str(rule).startswith("fade"):
             # Parse parameters from rule
@@ -222,7 +249,15 @@ def motion_sensor_validator(rule):
 
 
 # Requires int or float between 65 and 90 (inclusive)
-def thermostat_validator(rule):
+def thermostat_validator(rule, tolerance):
+    # Validate tolerance
+    try:
+        if not 0.1 <= float(tolerance) <= 10.0:
+            return 'Thermostat tolerance out of range (0.1 - 10.0)'
+    except ValueError:
+        return 'Thermostat tolerance must be int or float'
+
+    # Validate rule
     try:
         # Constrain to range 65-80
         if 65 <= float(rule) <= 80:

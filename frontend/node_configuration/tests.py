@@ -2013,7 +2013,7 @@ class ValidateConfigTests(TestCase):
         config = self.valid_config.copy()
         config['sensor5']['tolerance'] = 'low'
         result = validateConfig(config)
-        self.assertEqual(result, f'Invalid thermostat tolerance {config["sensor5"]["tolerance"]}')
+        self.assertEqual(result, 'Thermostat tolerance must be int or float')
 
     def test_pwm_min_greater_than_max(self):
         config = self.valid_config.copy()
@@ -2132,8 +2132,8 @@ class ValidatorTests(TestCase):
         self.assertFalse(led_strip_validator('fade/50/3600', '500', '1023'))
 
         # Both should reject if target negative
-        self.assertFalse(led_strip_validator('fade/-5/3600', '-500', '1023'))
         self.assertFalse(tplink_validator('fade/-5/3600'))
+        self.assertEqual(led_strip_validator('fade/-5/3600', '-500', '1023'), 'PWM limits cannot be less than 0')
 
         # Both should reject if period negative
         self.assertFalse(led_strip_validator('fade/50/-500', '0', '1023'))
@@ -2202,13 +2202,13 @@ class ValidatorErrorTests(TestCase):
         # Confirm range is enforced for correct types
         self.assertFalse(tplink_validator('-50'))
         self.assertFalse(wled_validator('-50'))
-        self.assertFalse(thermostat_validator('50'))
+        self.assertFalse(thermostat_validator('50', 1))
 
     def test_invalid_noninteger_rules(self):
         # Confirm string is rejected for correct types
         self.assertFalse(wled_validator('max'))
         self.assertFalse(motion_sensor_validator('max'))
-        self.assertFalse(thermostat_validator('max'))
+        self.assertFalse(thermostat_validator('max', 1))
 
     def test_invalid_keyword_rules(self):
         # Confirm wrong keywords are rejected for correct types

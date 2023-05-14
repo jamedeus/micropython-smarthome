@@ -10,6 +10,7 @@ from django.db import IntegrityError
 from .models import Node, Config, WifiCredentials, ScheduleKeyword
 from .Webrepl import Webrepl
 from .validators import validate_rules
+from .helper_functions import is_device_or_sensor, is_device, is_sensor, get_config_param_list
 from .get_api_target_menu_options import get_api_target_menu_options
 from api.views import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
 
@@ -64,8 +65,8 @@ def get_modules(config):
     libs = ['lib/logging.py']
 
     # Get lists of device and sensor types
-    device_types = [config[device]['type'] for device in config.keys() if device.startswith('device')]
-    sensor_types = [config[sensor]['type'] for sensor in config.keys() if sensor.startswith('sensor')]
+    device_types = [config[device]['type'] for device in config.keys() if is_device(device)]
+    sensor_types = [config[sensor]['type'] for sensor in config.keys() if is_sensor(sensor)]
 
     # Get dependencies for all device and sensor types
     for dtype in device_types:
@@ -358,14 +359,14 @@ def edit_config(request, name):
     delete = []
 
     for i in config:
-        if i.startswith("sensor"):
+        if is_sensor(i):
             sensors[i] = config[i]
             delete.append(i)
             instances[i] = {}
             instances[i]["type"] = config[i]["type"]
             instances[i]["nickname"] = config[i]["nickname"]
             instances[i]["schedule"] = config[i]["schedule"]
-        elif i.startswith("device"):
+        elif is_device(i):
             devices[i] = config[i]
             delete.append(i)
             instances[i] = {}
@@ -428,38 +429,15 @@ def check_duplicate(request):
         return JsonResponse("Name OK.", safe=False, status=200)
 
 
-# Accepts completed config, return True if valid, error string if invalid
-def validateConfig(config):
-    # Floor must be integer
-    try:
-        int(config['metadata']['floor'])
-    except ValueError:
-        return 'Invalid floor, must be integer'
-
-    # No duplicate nicknames
-    nicknames = [value['nickname'] for key, value in config.items() if 'nickname' in value]
-    if len(nicknames) != len(set(nicknames)):
-        return 'Contains duplicate nicknames'
-
-    # No duplicate pins
-    pins = [value['pin'] for key, value in config.items() if 'pin' in value]
-    if len(pins) != len(set(pins)):
-        return 'Contains duplicate pins'
-
+# Accepts completed config, returns True if all device and sensor types are valid, error string if invalid
+def validate_instance_types(config):
     # Get device and sensor IDs
-    devices = [key for key in config.keys() if key.startswith('device')]
-    sensors = [key for key in config.keys() if key.startswith('sensor')]
+    devices = [key for key in config.keys() if is_device(key)]
+    sensors = [key for key in config.keys() if is_sensor(key)]
 
     # Get device and sensor types
     device_types = [config[device]['type'] for device in devices]
     sensor_types = [config[sensor]['type'] for sensor in sensors]
-
-    # Get device and sensor pins
-    try:
-        device_pins = [int(val['pin']) for key, val in config.items() if key.startswith('device') and 'pin' in val]
-        sensor_pins = [int(val['pin']) for key, val in config.items() if key.startswith('sensor') and 'pin' in val]
-    except ValueError:
-        return 'Invalid pin (non-integer)'
 
     # Check for invalid device/sensor types
     for dtype in device_types:
@@ -470,6 +448,18 @@ def validateConfig(config):
         if stype not in valid_sensor_types:
             return f'Invalid sensor type {stype} used'
 
+    return True
+
+
+# Accepts completed config, returns True if all device and sensor pins are valid, error string if invalid
+def validate_instance_pins(config):
+    # Get device and sensor pins
+    try:
+        device_pins = [int(val['pin']) for key, val in config.items() if is_device(key) and 'pin' in val]
+        sensor_pins = [int(val['pin']) for key, val in config.items() if is_sensor(key) and 'pin' in val]
+    except ValueError:
+        return 'Invalid pin (non-integer)'
+
     # Check for invalid pins (reserved, input-only, etc)
     for pin in device_pins:
         if pin not in valid_device_pins:
@@ -479,43 +469,46 @@ def validateConfig(config):
         if pin not in valid_sensor_pins:
             return f'Invalid sensor pin {pin} used'
 
-    # Validate IP addresses
+    return True
+
+
+# Accepts completed config, return True if valid, error string if invalid
+def validateConfig(config):
+    # Floor must be integer
+    try:
+        int(config['metadata']['floor'])
+    except ValueError:
+        return 'Invalid floor, must be integer'
+
+    # Get list of all nicknames, check for duplicates
+    nicknames = get_config_param_list(config, 'nickname')
+    if len(nicknames) != len(set(nicknames)):
+        return 'Contains duplicate nicknames'
+
+    # Get list of all pins, check for duplicates
+    pins = get_config_param_list(config, 'pin')
+    if len(pins) != len(set(pins)):
+        return 'Contains duplicate pins'
+
+    # Check if all device and sensor types are valid
+    valid = validate_instance_types(config)
+    if valid is not True:
+        return valid
+
+    # Check if all device and sensor pins are valid
+    valid = validate_instance_pins(config)
+    if valid is not True:
+        return valid
+
+    # Check if all IP addresses are valid
     ips = [value['ip'] for key, value in config.items() if 'ip' in value]
     for ip in ips:
         if not valid_ip(ip):
             return f'Invalid IP {ip}'
 
-    # Validate Thermostat tolerance
-    for sensor in sensors:
-        if config[sensor]['type'] == 'si7021':
-            tolerance = config[sensor]['tolerance']
-            try:
-                if not 0.1 <= float(tolerance) <= 10.0:
-                    return 'Thermostat tolerance out of range (0.1 - 10.0)'
-            except ValueError:
-                return f'Invalid thermostat tolerance {config[sensor]["tolerance"]}'
-
-    # Validate PWM limits
-    for device in devices:
-        if config[device]['type'] == 'pwm':
-            minimum = config[device]['min']
-            maximum = config[device]['max']
-
-            try:
-                if int(minimum) > int(maximum):
-                    return 'PWM min cannot be greater than max'
-                elif int(minimum) < 0 or int(maximum) < 0:
-                    return 'PWM limits cannot be less than 0'
-                elif int(minimum) > 1023 or int(maximum) > 1023:
-                    return 'PWM limits cannot be greater than 1023'
-
-            except ValueError:
-                return 'Invalid PWM limits, both must be int between 0 and 1023'
-
     # Validate rules for all devices and sensors
-    instances = devices + sensors
-    for i in instances:
-        valid = validate_rules(config[i])
+    for instance in [key for key in config.keys() if is_device_or_sensor(key)]:
+        valid = validate_rules(config[instance])
         if valid is not True:
             print(f"\nERROR: {valid}\n")
             return valid
@@ -538,9 +531,8 @@ def generate_config_file(request, edit_existing=False):
     print(f"\nFilename: {filename}\n")
 
     # Prevent overwriting existing config, unless editing existing
-    if not edit_existing:
-        if is_duplicate(filename, data["friendlyName"]):
-            return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+    if not edit_existing and is_duplicate(filename, data["friendlyName"]):
+        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
 
     # Populate metadata and credentials directly from JSON
     config = {
@@ -556,28 +548,22 @@ def generate_config_file(request, edit_existing=False):
         }
     }
 
-    # Add device and sensor sections from JSON
+    # Merge device and sensor sections, remove frontend parameters, add to config
+    data["devices"].update(data["sensors"])
     for i in data["devices"]:
+        del data["devices"][i]["id"]
+        del data["devices"][i]["new"]
+        del data["devices"][i]["modified"]
         config[i] = data["devices"][i]
-
-    for i in data["sensors"]:
-        config[i] = data["sensors"][i]
-
-    # Remove parameters only used by frontend
-    for i in config:
-        if i.startswith("device") or i.startswith("sensor"):
-            del config[i]["id"]
-            del config[i]["new"]
-            del config[i]["modified"]
 
     irblaster = False
 
     for i in config:
-        if i.startswith("device") and config[i]["type"] == "ir-blaster":
+        if is_device(i) and config[i]["type"] == "ir-blaster":
             irblaster = i
 
         # Convert ApiTarget rules to correct format
-        elif i.startswith("device") and config[i]["type"] == "api-target":
+        elif is_device(i) and config[i]["type"] == "api-target":
             config[i]["default_rule"] = json.loads(config[i]["default_rule"])
 
             for rule in config[i]["schedule"]:
