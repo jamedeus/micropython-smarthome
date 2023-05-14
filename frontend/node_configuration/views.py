@@ -143,7 +143,11 @@ def provision(config, ip, modules, libs):
     # Open conection, detect if node connected to network
     node = Webrepl(ip, NODE_PASSWD)
     if not node.open_connection():
-        return JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
+        return JsonResponse(
+            "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
+            safe=False,
+            status=404
+        )
 
     try:
         # Upload all device/sensor modules
@@ -153,7 +157,12 @@ def provision(config, ip, modules, libs):
         try:
             [node.put_file(local, remote) for local, remote in libs.items()]
         except AssertionError:
-            return JsonResponse("ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?", safe=False, status=409)
+            return JsonResponse(
+                "ERROR: Unable to upload libraries, /lib/ does not exist. "
+                "This is normal for new nodes - would you like to upload setup to fix?",
+                safe=False,
+                status=409
+            )
 
         # Upload core dependencies
         [node.put_file(os.path.join(REPO_DIR, i), i) for i in ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py"]]
@@ -171,9 +180,17 @@ def provision(config, ip, modules, libs):
         node.close_connection()
 
     except TimeoutError:
-        return JsonResponse("Connection timed out - please press target node reset button, wait 30 seconds, and try again.", safe=False, status=408)
+        return JsonResponse(
+            "Connection timed out - please press target node reset button, wait 30 seconds, and try again.",
+            safe=False,
+            status=408
+        )
     except AssertionError:
-        return JsonResponse("ERROR: Upload failed due to filesystem problem, please re-flash node.", safe=False, status=409)
+        return JsonResponse(
+            "ERROR: Upload failed due to filesystem problem, please re-flash node.",
+            safe=False,
+            status=409
+        )
 
     return JsonResponse("Upload complete.", safe=False, status=200)
 
@@ -223,7 +240,11 @@ def delete_config(request):
     except Config.DoesNotExist:
         return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
     except PermissionError:
-        return JsonResponse("Failed to delete, permission denied. This will break other features, check your filesystem permissions.", safe=False, status=500)
+        return JsonResponse(
+            "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
+            safe=False,
+            status=500
+        )
 
 
 def delete_node(request):
@@ -242,7 +263,11 @@ def delete_node(request):
     except Node.DoesNotExist:
         return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
     except PermissionError:
-        return JsonResponse("Failed to delete, permission denied. This will break other features, check your filesystem permissions.", safe=False, status=500)
+        return JsonResponse(
+            "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
+            safe=False,
+            status=500
+        )
 
 
 def change_node_ip(request):
@@ -317,6 +342,7 @@ def new_config(request):
 
 
 def edit_config(request, name):
+    # TODO catch does not exist
     target = Node.objects.get(friendly_name=name)
 
     config = target.config.config
@@ -373,14 +399,14 @@ def edit_config(request, name):
 def is_duplicate(filename, friendly_name):
     # Check if filename will conflict with existing configs
     try:
-        duplicate = Config.objects.get(filename=filename)
+        Config.objects.get(filename=filename)
         return True
     except Config.DoesNotExist:
         pass
 
     # Check if friendly name is a duplicate, must be unique for frontend
     try:
-        duplicate = Node.objects.get(friendly_name=friendly_name)
+        Node.objects.get(friendly_name=friendly_name)
         return True
     except Node.DoesNotExist:
         return False
@@ -430,8 +456,8 @@ def validateConfig(config):
 
     # Get device and sensor pins
     try:
-        device_pins = [int(value['pin']) for key, value in config.items() if key.startswith('device') and 'pin' in value]
-        sensor_pins = [int(value['pin']) for key, value in config.items() if key.startswith('sensor') and 'pin' in value]
+        device_pins = [int(val['pin']) for key, val in config.items() if key.startswith('device') and 'pin' in val]
+        sensor_pins = [int(val['pin']) for key, val in config.items() if key.startswith('sensor') and 'pin' in val]
     except ValueError:
         return 'Invalid pin (non-integer)'
 
@@ -573,6 +599,7 @@ def generate_config_file(request, edit_existing=False):
         print(f"\nERROR: {valid}\n")
         return JsonResponse({'Error': valid}, safe=False, status=400)
 
+    # TODO catch does not exist, maybe move write_to_disk to save method
     # If creating new config, add to models + write to disk
     if not edit_existing:
         new = Config(config=config, filename=filename)
@@ -619,7 +646,11 @@ def restore_config(request):
     # Open conection, detect if node connected to network
     node = Webrepl(data["ip"], NODE_PASSWD)
     if not node.open_connection():
-        return JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
+        return JsonResponse(
+            "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
+            safe=False,
+            status=404
+        )
 
     # Download config file from node, parse json
     config = node.get_file_mem("config.json")
