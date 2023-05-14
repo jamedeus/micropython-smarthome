@@ -853,10 +853,10 @@ class TestEndpointErrors(TestCase):
     def test_ir_no_key(self):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['ir', 'tv'])
-        self.assertEqual(response, {"ERROR": "Must speficy one of the following commands: power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source"})
+        self.assertEqual(response, {"ERROR": "Must specify one of the following commands: power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source"})
 
         response = parse_command('192.168.1.123', ['ir', 'ac'])
-        self.assertEqual(response, {"ERROR": "Must speficy one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"})
+        self.assertEqual(response, {"ERROR": "Must specify one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"})
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):

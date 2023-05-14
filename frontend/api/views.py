@@ -4,7 +4,6 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from django.template import loader
 from django.views.decorators.csrf import ensure_csrf_cookie
 from node_configuration.models import Node, ScheduleKeyword
 from node_configuration.get_api_target_menu_options import get_api_target_menu_options
@@ -15,6 +14,12 @@ timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 
 # IPv4 regular expression
 ip_regex = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+
+# Valid IR commands for each target, used in error message
+ir_commands = {
+    "tv": "power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source",
+    "ac": "ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"
+}
 
 
 # Returns all schedule keywords in dict format used by node config files and overview template
@@ -48,14 +53,8 @@ def edit_rule(request):
 
 
 def legacy_api(request):
-    context = []
-
-    for i in Node.objects.all():
-        context.append(i)
-
-    template = loader.get_template('api/legacy_api.html')
-
-    return HttpResponse(template.render({'context': context}, request))
+    context = [node for node in Node.objects.all()]
+    return render(request, 'api/legacy_api.html', {'context': context})
 
 
 def get_status(request, node):
@@ -79,9 +78,10 @@ def api_overview(request, recording=False, start=False):
         else:
             rooms[i.floor] = [i]
 
-    context = {}
-    context['nodes'] = {}
-    context['macros'] = {}
+    context = {
+        'nodes': {},
+        'macros': {}
+    }
 
     floors = list(rooms.keys())
     floors.sort()
@@ -119,8 +119,7 @@ def api(request, node, recording=False):
     # Render connection failed page
     except OSError:
         context = {"ip": target.ip, "id": target.friendly_name}
-        template = loader.get_template('api/unable_to_connect.html')
-        return HttpResponse(template.render({'context': context}, request))
+        return render(request, 'api/unable_to_connect.html', {'context': context})
 
     # If ApiTarget configured, add all valid options for target IP so user can change rule
     if "api-target" in str(status):
@@ -146,8 +145,6 @@ def api(request, node, recording=False):
                 for rule in status['devices'][i]['schedule']:
                     status['devices'][i]['schedule'][rule] = json.dumps(status['devices'][i]['schedule'][rule])
 
-    template = loader.get_template('api/api_card.html')
-
     status["metadata"]["ip"] = target.ip
 
     # Add temp history chart to frontend if temp sensor present
@@ -161,7 +158,7 @@ def api(request, node, recording=False):
 
     print(json.dumps(status, indent=4))
 
-    return HttpResponse(template.render({'context': status}, request))
+    return render(request, 'api/api_card.html', {'context': status})
 
 
 # TODO unused? Climate card updates from status object
@@ -367,11 +364,8 @@ def edit_macro(request, name):
     except Macro.DoesNotExist:
         return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
 
-    template = loader.get_template('api/edit_modal.html')
-
     context = {'name': name, 'actions': json.loads(macro.actions)}
-
-    return HttpResponse(template.render(context, request))
+    return render(request, 'api/edit_modal.html', context)
 
 
 def delete_macro(request, name):
@@ -642,10 +636,7 @@ def ir(ip, params):
         try:
             return asyncio.run(request(ip, ['ir_key', target, params[0]]))
         except IndexError:
-            if target == "tv":
-                return {"ERROR": "Must speficy one of the following commands: power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source"}
-            elif target == "ac":
-                return {"ERROR": "Must speficy one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"}
+            return {"ERROR": f"Must specify one of the following commands: {ir_commands[target]}"}
 
     elif len(params) > 0 and params[0] == "backlight":
         params.pop(0)
