@@ -192,6 +192,12 @@ class SendCommandTests(TestCase):
         # Remove test configs from disk
         clean_up_test_nodes()
 
+    def test_legacy_api_target_does_not_exist(self):
+        payload_disable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'disable'}
+        response = self.client.post('/send_command', payload_disable, content_type='application/json')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {'Error': 'Node named Test1 not found'})
+
 
 # Test HTTP endpoints that make API requests to nodes and return the response
 class HTTPEndpointTests(TestCase):
@@ -216,6 +222,11 @@ class HTTPEndpointTests(TestCase):
             self.assertEqual(response.status_code, 502)
             self.assertEqual(response.json(), "Error: Unable to connect.")
 
+    def test_get_climate_does_not_exist(self):
+        response = self.client.get('/get_climate_data/Fake_Name')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"Error": "Node named Fake_Name not found"})
+
     def test_get_status(self):
         # Mock request to return status object
         with patch('api.views.request', return_value=config1_status_object):
@@ -229,6 +240,18 @@ class HTTPEndpointTests(TestCase):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 502)
             self.assertEqual(response.json(), "Error: Unable to connect.")
+
+    def test_get_status_time_out(self):
+        # Mock request to simulate network connection time out
+        with patch('api.views.request', return_value="Error: Request timed out"):
+            response = self.client.get('/get_status/Test1')
+            self.assertEqual(response.status_code, 502)
+            self.assertEqual(response.json(), "Error: Request timed out")
+
+    def test_get_status_does_not_exist(self):
+        response = self.client.get('/get_status/Fake_Name')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"Error": "Node named Fake_Name not found"})
 
 
 # Test model that stores and plays recorded macros
@@ -1109,6 +1132,12 @@ class ApiCardTests(TestCase):
 
             # Confirm context contains macro name
             self.assertEqual(response.context['context']['metadata']['recording'], 'macro-name')
+
+    def test_node_does_not_exist(self):
+        # Request page, confirm correct template used
+        response = self.client.get('/api/fake-node')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"Error": "Node named fake-node not found"})
 
 
 # Test modal used to edit schedule rules

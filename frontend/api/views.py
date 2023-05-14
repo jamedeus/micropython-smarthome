@@ -58,14 +58,22 @@ def legacy_api(request):
 
 
 def get_status(request, node):
-    ip = Node.objects.get(friendly_name=node).ip
+    try:
+        ip = Node.objects.get(friendly_name=node).ip
+    except Node.DoesNotExist:
+        return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
 
+    # Query status object
     try:
         status = parse_command(ip, ["status"])
     except OSError:
         return JsonResponse("Error: Unable to connect.", safe=False, status=502)
 
-    return JsonResponse(status, safe=False, status=200)
+    # Success if dict, error if string
+    if isinstance(status, dict):
+        return JsonResponse(status, safe=False, status=200)
+    else:
+        return JsonResponse(status, safe=False, status=502)
 
 
 @ensure_csrf_cookie
@@ -109,7 +117,10 @@ def api_overview(request, recording=False, start=False):
 
 @ensure_csrf_cookie
 def api(request, node, recording=False):
-    target = Node.objects.get(friendly_name=node)
+    try:
+        target = Node.objects.get(friendly_name=node)
+    except Node.DoesNotExist:
+        return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
 
     try:
         status = parse_command(target.ip, ["status"])
@@ -163,7 +174,10 @@ def api(request, node, recording=False):
 
 # TODO unused? Climate card updates from status object
 def get_climate_data(request, node):
-    ip = Node.objects.get(friendly_name=node).ip
+    try:
+        ip = Node.objects.get(friendly_name=node).ip
+    except Node.DoesNotExist:
+        return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
 
     try:
         data = parse_command(ip, ["get_climate"])
@@ -232,7 +246,10 @@ def send_command(request):
         ip = data["target"]
     else:
         # Legacy API
-        ip = Node.objects.get(friendly_name=data["target"]).ip
+        try:
+            ip = Node.objects.get(friendly_name=data["target"]).ip
+        except Node.DoesNotExist:
+            return JsonResponse({"Error": f"Node named {data['target']} not found"}, safe=False, status=404)
 
     cmd = data["command"]
     del data["target"], data["command"]

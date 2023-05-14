@@ -30,24 +30,24 @@ class Observer {
 // Also detects offline nodes and shows unable to connect modal
 async function get_new_status() {
     // Get new status object
-    var new_status = await fetch(`/get_status/${target_node_status.metadata.id}`);
-    new_status = await new_status.json();
+    var response = await fetch(`/get_status/${target_node_status.metadata.id}`);
+    new_status = await response.json();
 
     // Unable to connect (first failure)
-    if (selected_node_unreachable == false && String(new_status).startsWith("Error:")) {
+    if (!selected_node_unreachable && !response.ok) {
         errorModal.show();
         console.log("Unable to connect to target, will retry every 5 seconds.");
         selected_node_unreachable = true;
         return;
 
     // Able to connect after failure
-    } else if (selected_node_unreachable == true && !String(new_status).startsWith("Error:")) {
+    } else if (selected_node_unreachable && response.ok) {
         errorModal.hide();
         // Refresh page (node config may have changed, need to get new device/sensor cards)
         location.reload();
 
     // Still unable to connect (not first failure)
-    } else if (selected_node_unreachable == true) {
+    } else if (selected_node_unreachable && !response.ok) {
         return;
     };
 
