@@ -2237,6 +2237,10 @@ class ScheduleKeywordTests(TestCase):
         self.mock_save = MagicMock()
         self.mock_save.return_value = {"Success": "Keywords written to disk"}
 
+    def test_str_method(self):
+        # Should print keyword
+        self.assertEqual(self.keyword.__str__(), 'first')
+
     def test_add_schedule_keyword(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
