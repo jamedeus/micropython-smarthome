@@ -2219,6 +2219,9 @@ class ValidatorErrorTests(TestCase):
 # Test views used to manage schedule keywords from config overview
 class ScheduleKeywordTests(TestCase):
     def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
         # Create existing keyword
         self.keyword = ScheduleKeyword.objects.create(keyword='first', timestamp='00:00')
 
@@ -2233,9 +2236,6 @@ class ScheduleKeywordTests(TestCase):
         self.mock_remove.return_value = {"Keyword added": "morning", "time": "08:00"}
         self.mock_save = MagicMock()
         self.mock_save.return_value = {"Success": "Keywords written to disk"}
-
-        # Set default content_type for post requests (avoid long lines)
-        self.client = JSONClient()
 
     def test_add_schedule_keyword(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
@@ -2329,6 +2329,16 @@ class ScheduleKeywordTests(TestCase):
             # Confirm model deleted
             self.assertEqual(len(ScheduleKeyword.objects.all()), 2)
 
+
+# Confirm schedule keyword management endpoints raise correct errors
+class ScheduleKeywordErrorTests(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
+        # Create existing keyword
+        self.keyword = ScheduleKeyword.objects.create(keyword='first', timestamp='00:00')
+
     def test_add_invalid_timestamp(self):
         # Send request, confirm error, confirm no model created
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
@@ -2338,12 +2348,52 @@ class ScheduleKeywordTests(TestCase):
         self.assertEqual(response.json(), "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}")
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
+    def test_add_duplicate_keyword(self):
+        # Send request, confirm error, confirm no model created
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+        data = {'keyword': 'sunrise', 'timestamp': '08:00'}
+        response = self.client.post('/add_schedule_keyword', data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), "{'keyword': ['Schedule keyword with this Keyword already exists.']}")
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+
     def test_edit_invalid_timestamp(self):
         # Send request, confirm error
         data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '8:00'}
         response = self.client.post('/edit_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "Failed to update keyword")
+        self.assertEqual(response.json(), "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}")
+
+    def test_edit_duplicate_keyword(self):
+        # Send request, confirm error
+        data = {'keyword_old': 'first', 'keyword_new': 'sunrise', 'timestamp_new': '08:00'}
+        response = self.client.post('/edit_schedule_keyword', data)
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), "{'keyword': ['Schedule keyword with this Keyword already exists.']}")
+
+    def test_edit_non_existing_keyword(self):
+        # Send request to edit keyword, verify error
+        data = {'keyword_old': 'fake', 'keyword_new': 'second', 'timestamp_new': '8:00'}
+        response = self.client.post('/edit_schedule_keyword', data)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {'Error': 'Keyword not found'})
+
+    def test_delete_non_existing_keyword(self):
+        # Send request to delete keyword, verify error
+        response = self.client.post('/delete_schedule_keyword', {'keyword': 'fake'})
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {'Error': 'Keyword not found'})
+
+    # Should not be able to delete sunrise or sunset
+    def test_delete_required_keyword(self):
+        # Send request to delete keyword, verify error
+        response = self.client.post('/delete_schedule_keyword', {'keyword': 'sunrise'})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), "sunrise is required and cannot be deleted")
+
+        response = self.client.post('/delete_schedule_keyword', {'keyword': 'sunset'})
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), "sunset is required and cannot be deleted")
 
     def test_invalid_get_request(self):
         # All keyword endpoints require post, confirm errors

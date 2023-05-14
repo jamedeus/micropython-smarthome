@@ -6,6 +6,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 from .models import Node, Config, WifiCredentials, ScheduleKeyword
 from .Webrepl import Webrepl
 from .validators import validate_rules
@@ -681,15 +682,18 @@ def edit_schedule_keyword_config(request):
     else:
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
-    target = ScheduleKeyword.objects.get(keyword=data["keyword_old"])
+    try:
+        target = ScheduleKeyword.objects.get(keyword=data["keyword_old"])
+    except ScheduleKeyword.DoesNotExist:
+        return JsonResponse({'Error': 'Keyword not found'}, safe=False, status=404)
 
     target.keyword = data["keyword_new"]
     target.timestamp = data["timestamp_new"]
 
     try:
         target.save()
-    except:
-        return JsonResponse("Failed to update keyword", safe=False, status=400)
+    except ValidationError as ex:
+        return JsonResponse(str(ex), safe=False, status=400)
 
     # If timestamp changed: Call add to overwrite existing keyword
     if data["keyword_old"] == data["keyword_new"]:
@@ -722,12 +726,15 @@ def delete_schedule_keyword_config(request):
     else:
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
-    target = ScheduleKeyword.objects.get(keyword=data["keyword"])
+    try:
+        target = ScheduleKeyword.objects.get(keyword=data["keyword"])
+    except ScheduleKeyword.DoesNotExist:
+        return JsonResponse({'Error': 'Keyword not found'}, safe=False, status=404)
 
     try:
         target.delete()
-    except:
-        return JsonResponse("Failed to delete keyword", safe=False, status=500)
+    except IntegrityError as ex:
+        return JsonResponse(str(ex), safe=False, status=400)
 
     # Remove keyword from all existing nodes in parallel
     commands = [(node.ip, [data["keyword"]]) for node in Node.objects.all()]
