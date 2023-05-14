@@ -733,12 +733,26 @@ class TestEndpoints(TestCase):
             response = parse_command('192.168.1.123', ['add_rule', 'device2', '10:00', 'disabled'])
             self.assertEqual(response, {'time': '10:00', 'Rule added': 'disabled'})
 
+    def test_add_rule_keyword(self):
+        # Mock request to return expected response
+        with patch('api.views.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['add_rule', 'device2', 'sunrise', 'disabled'])
+            self.assertEqual(response, {'time': 'sunrise', 'Rule added': 'disabled'})
+
     def test_remove_rule(self):
         # Mock request to return expected response
         with patch('api.views.request', return_value={'Deleted': '10:00'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', '10:00'])
             self.assertEqual(response, {'Deleted': '10:00'})
+
+    def test_remove_rule_keyword(self):
+        # Mock request to return expected response
+        with patch('api.views.request', return_value={'Deleted': 'sunrise'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['remove_rule', 'device2', 'sunrise'])
+            self.assertEqual(response, {'Deleted': 'sunrise'})
 
     def test_save_rules(self):
         # Mock request to return expected response
