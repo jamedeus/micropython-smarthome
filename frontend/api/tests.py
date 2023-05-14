@@ -4,7 +4,7 @@ from unittest.mock import patch, MagicMock, AsyncMock
 from django.test import TestCase
 from django.db import IntegrityError
 from .models import Macro
-from .views import parse_command, request
+from .views import parse_command, request, ir_commands
 from .unit_test_helpers import config1_status_object, config1_api_context, config2_status_object, config2_api_context
 from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes
 from node_configuration.models import ScheduleKeyword
@@ -260,6 +260,29 @@ class MacroModelTests(TestCase):
         # Create 3 test nodes
         create_test_nodes()
 
+        # Payloads to macro actions
+        self.set_rule_action = {
+            "command": "set_rule",
+            "instance": "device1",
+            "rule": "248",
+            "target": "192.168.1.123",
+            "friendly_name": "Countertop LEDs"
+        }
+
+        self.turn_on_action = {
+            "command": "turn_on",
+            "instance": "device1",
+            "target": "192.168.1.123",
+            "friendly_name": "Countertop LEDs"
+        }
+
+        self.turn_off_action = {
+            "command": "turn_off",
+            "instance": "device1",
+            "target": "192.168.1.123",
+            "friendly_name": "Countertop LEDs"
+        }
+
     def tearDown(self):
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -306,10 +329,19 @@ class MacroModelTests(TestCase):
         macro = Macro.objects.create(name='New Macro')
 
         # Add action, confirm 1 action exists, confirm value correct
-        macro.add_action({"command": "turn_off", "instance": "device1", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
+        macro.add_action(self.turn_off_action)
         actions = json.loads(macro.actions)
         self.assertEqual(len(actions), 1)
-        self.assertEqual(actions[0], {'ip': '192.168.1.123', 'args': ['turn_off', 'device1'], 'node_name': 'Test1', 'target_name': 'Countertop LEDs', 'action_name': 'Turn Off'})
+        self.assertEqual(actions[0], {
+            "ip": "192.168.1.123",
+            "args": [
+                "turn_off",
+                "device1"
+            ],
+            "node_name": "Test1",
+            "target_name": "Countertop LEDs",
+            "action_name": "Turn Off"
+        })
 
         # Delete the just-created action, confirm removed
         macro.del_action(0)
@@ -329,7 +361,12 @@ class MacroModelTests(TestCase):
 
         # Attempt to add action targeting instance that doesn't exist
         with self.assertRaises(KeyError):
-            macro.add_action({"command": "turn_off", "instance": "device5", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
+            macro.add_action({
+                "command": "turn_off",
+                "instance": "device5",
+                "target": "192.168.1.123",
+                "friendly_name": "Countertop LEDs"
+            })
 
         # Attempt to add ir action to node with no ir blaster
         with self.assertRaises(KeyError):
@@ -338,7 +375,7 @@ class MacroModelTests(TestCase):
     def test_delete_action_invalid(self):
         # Create test macro with 1 action
         macro = Macro.objects.create(name='New Macro')
-        macro.add_action({"command": "set_rule", "instance": "device1", "rule": "248", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
+        macro.add_action(self.set_rule_action)
 
         # Attempt to delete a non-integer index
         with self.assertRaises(SyntaxError):
@@ -354,7 +391,7 @@ class MacroModelTests(TestCase):
         macro = Macro.objects.create(name='New Macro')
 
         # Add action containing set_rule, should change to Set Rule and append value
-        macro.add_action({"command": "set_rule", "instance": "device1", "rule": "248", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
+        macro.add_action(self.set_rule_action)
         self.assertEqual(json.loads(macro.actions)[0]['action_name'], 'Set Rule 248')
 
         # Add action containing ir command, should convert to "{target} {key}" format in frontend
@@ -367,24 +404,37 @@ class MacroModelTests(TestCase):
         macro = Macro.objects.create(name='New Macro')
 
         # Add 2 set_rule actions targeting the same instance with different values
-        macro.add_action({"command": "set_rule", "instance": "device1", "rule": "248", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
-        macro.add_action({"command": "set_rule", "instance": "device1", "rule": "456", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
+        macro.add_action(self.set_rule_action)
+        self.set_rule_action['rule'] = 456
+        self.set_rule_action['target'] = "192.168.1.123"
+        self.set_rule_action['friendly_name'] = "Countertop LEDs"
+        macro.add_action(self.set_rule_action)
 
         # Should only contain 1 action, should have most-recent value (456)
         self.assertEqual(len(json.loads(macro.actions)), 1)
         self.assertEqual(json.loads(macro.actions)[0]['action_name'], 'Set Rule 456')
 
         # Add both enable and disable targeting the same instance
-        macro.add_action({"command": "enable", "instance": "device1", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
-        macro.add_action({"command": "disable", "instance": "device1", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
+        macro.add_action({
+            "command": "enable",
+            "instance": "device1",
+            "target": "192.168.1.123",
+            "friendly_name": "Countertop LEDs"
+        })
+        macro.add_action({
+            "command": "disable",
+            "instance": "device1",
+            "target": "192.168.1.123",
+            "friendly_name": "Countertop LEDs"
+        })
 
         # Should only contain 1 additional rule, should have most-recent value (disable)
         self.assertEqual(len(json.loads(macro.actions)), 2)
         self.assertEqual(json.loads(macro.actions)[1]['action_name'], 'Disable')
 
         # Add both turn_on and turn_off targeting the same instance
-        macro.add_action({"command": "turn_on", "instance": "device1", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
-        macro.add_action({"command": "turn_off", "instance": "device1", "target": "192.168.1.123", "friendly_name": "Countertop LEDs"})
+        macro.add_action(self.turn_on_action)
+        macro.add_action(self.turn_off_action)
 
         # Should only contain 1 additional rule, should have most-recent value (turn_off)
         self.assertEqual(len(json.loads(macro.actions)), 3)
@@ -396,6 +446,26 @@ class MacroTests(TestCase):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
+
+        # Payloads to add macro actions
+        self.action1 = {
+            "name": "First Macro",
+            "action": {
+                "command": "turn_on",
+                "instance": "device1",
+                "target": "192.168.1.123",
+                "friendly_name": "Cabinet Lights"
+            }
+        }
+        self.action2 = {
+            "name": "First Macro",
+            "action": {
+                "command": "enable",
+                "instance": "device1",
+                "target": "192.168.1.123",
+                "friendly_name": "Cabinet Lights"
+            }
+        }
 
     def tearDown(self):
         # Remove test configs from disk
@@ -417,19 +487,15 @@ class MacroTests(TestCase):
         # Confirm no macros
         self.assertEqual(len(Macro.objects.all()), 0)
 
-        # Payload sent by frontend when user turns on node1 device1 in record mode
-        payload = {'name': 'First Macro', 'action': {'command': 'turn_on', 'instance': 'device1', 'target': '192.168.1.123', 'friendly_name': 'Cabinet Lights'}}
-
         # Send request, verify response, verify macro created
-        response = self.client.post('/add_macro_action', payload, content_type='application/json')
+        response = self.client.post('/add_macro_action', self.action1, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Done')
         self.assertEqual(len(Macro.objects.all()), 1)
 
     def test_delete_macro_action(self):
         # Create macro, verify exists
-        payload = {'name': 'First Macro', 'action': {'command': 'turn_on', 'instance': 'device1', 'target': '192.168.1.123', 'friendly_name': 'Cabinet Lights'}}
-        response = self.client.post('/add_macro_action', payload, content_type='application/json')
+        response = self.client.post('/add_macro_action', self.action1, content_type='application/json')
         self.assertEqual(len(Macro.objects.all()), 1)
 
         # Call view to delete just-created action
@@ -455,10 +521,8 @@ class MacroTests(TestCase):
 
     def test_run_macro(self):
         # Create macro with 2 actions, verify exists
-        action1 = {'name': 'First Macro', 'action': {'command': 'turn_on', 'instance': 'device1', 'target': '192.168.1.123', 'friendly_name': 'Cabinet Lights'}}
-        action2 = {'name': 'First Macro', 'action': {'command': 'enable', 'instance': 'device1', 'target': '192.168.1.123', 'friendly_name': 'Cabinet Lights'}}
-        self.client.post('/add_macro_action', action1, content_type='application/json')
-        self.client.post('/add_macro_action', action2, content_type='application/json')
+        self.client.post('/add_macro_action', self.action1, content_type='application/json')
+        self.client.post('/add_macro_action', self.action2, content_type='application/json')
         self.assertEqual(len(Macro.objects.all()), 1)
 
         # Mock parse_command to do nothing
@@ -490,7 +554,15 @@ class InvalidMacroTests(TestCase):
         self.assertEqual(len(Macro.objects.all()), 0)
 
         # Payload containing non-existing device5
-        payload = {'name': 'First Macro', 'action': {'command': 'turn_on', 'instance': 'device5', 'target': '192.168.1.123', 'friendly_name': 'Not Real'}}
+        payload = {
+            "name": "First Macro",
+            "action": {
+                "command": "turn_on",
+                "instance": "device5",
+                "target": "192.168.1.123",
+                "friendly_name": "Not Real"
+            }
+        }
 
         # Send request, verify response, verify macro not created
         response = self.client.post('/add_macro_action', payload, content_type='application/json')
@@ -500,7 +572,15 @@ class InvalidMacroTests(TestCase):
 
     def test_delete_invalid_macro_action(self):
         # Create macro, verify exists
-        payload = {'name': 'First Macro', 'action': {'command': 'turn_on', 'instance': 'device1', 'target': '192.168.1.123', 'friendly_name': 'Cabinet Lights'}}
+        payload = {
+            "name": "First Macro",
+            "action": {
+                "command": "turn_on",
+                "instance": "device1",
+                "target": "192.168.1.123",
+                "friendly_name": "Cabinet Lights"
+            }
+        }
         response = self.client.post('/add_macro_action', payload, content_type='application/json')
         self.assertEqual(len(Macro.objects.all()), 1)
 
@@ -539,7 +619,8 @@ class TestGlobalCommands(TestCase):
 
     def test_reset_all(self):
         # Mock request to return expected response for each node
-        with patch('api.views.request', return_value={'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}):
+        expected_response = {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}
+        with patch('api.views.request', return_value=expected_response):
             # Create 3 test nodes
             response = self.client.get('/reset_all')
             self.assertEqual(response.status_code, 200)
@@ -624,17 +705,19 @@ class TestEndpoints(TestCase):
 
     def test_reset_rule(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value={'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}):
+        expected_response = {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}
+        with patch('api.views.request', return_value=expected_response):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['reset_rule', 'device1'])
-            self.assertEqual(response, {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'})
+            self.assertEqual(response, expected_response)
 
     def test_reset_all_rules(self):
         # Mock request to return expected response
-        with patch('api.views.request', return_value={'New rules': {'device1': 'disabled', 'sensor1': 2.0, 'device2': 'enabled'}}):
+        expected_response = {'New rules': {'device1': 'disabled', 'sensor1': 2.0, 'device2': 'enabled'}}
+        with patch('api.views.request', return_value=expected_response):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['reset_all_rules'])
-            self.assertEqual(response, {'New rules': {'device1': 'disabled', 'sensor1': 2.0, 'device2': 'enabled'}})
+            self.assertEqual(response, expected_response)
 
     def test_get_schedule_rules(self):
         # Mock request to return expected response
@@ -665,7 +748,30 @@ class TestEndpoints(TestCase):
             self.assertEqual(response, {'Success': 'Rules written to disk'})
 
     def test_get_attributes(self):
-        attributes = {'min_bright': 0, 'nickname': 'Cabinet Lights', 'bright': 0, 'scheduled_rule': 'disabled', 'current_rule': 'disabled', 'default_rule': 1023, 'enabled': False, 'rule_queue': ['1023', 'fade/256/7140', 'fade/32/7200', 'Disabled', '1023', 'fade/256/7140'], 'state': False, 'name': 'device1', 'triggered_by': ['sensor1'], 'max_bright': 1023, 'device_type': 'pwm', 'group': 'group1', 'fading': False}
+        attributes = {
+            'min_bright': 0,
+            'nickname': 'Cabinet Lights',
+            'bright': 0,
+            'scheduled_rule': 'disabled',
+            'current_rule': 'disabled',
+            'default_rule': 1023,
+            'enabled': False,
+            'rule_queue': [
+                "1023",
+                "fade/256/7140",
+                "fade/32/7200",
+                "Disabled",
+                "1023",
+                "fade/256/7140"
+            ],
+            'state': False,
+            'name': 'device1',
+            'triggered_by': ['sensor1'],
+            'max_bright': 1023,
+            'device_type': 'pwm',
+            'group': 'group1',
+            'fading': False
+        }
 
         # Mock request to return expected response
         with patch('api.views.request', return_value=attributes):
@@ -758,8 +864,22 @@ class TestEndpointErrors(TestCase):
         self.assertEqual(response, "Error: Command not found")
 
     def test_missing_required_argument(self):
+        required_arg_endpoints = [
+            "disable",
+            "enable",
+            "disable_in",
+            "enable_in",
+            "set_rule",
+            "reset_rule",
+            "get_schedule_rules",
+            "add_rule",
+            "remove_rule",
+            "get_attributes",
+            "ir"
+        ]
+
         # Test endpoints with same missing arg error in loop
-        for endpoint in ['disable', 'enable', 'disable_in', 'enable_in', 'set_rule', 'reset_rule', 'get_schedule_rules', 'add_rule', 'remove_rule', 'get_attributes', 'ir']:
+        for endpoint in required_arg_endpoints:
             response = parse_command('192.168.1.123', [endpoint])
             self.assertEqual(response, {"ERROR": "Please fill out all fields"})
 
@@ -876,10 +996,10 @@ class TestEndpointErrors(TestCase):
     def test_ir_no_key(self):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['ir', 'tv'])
-        self.assertEqual(response, {"ERROR": "Must specify one of the following commands: power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source"})
+        self.assertEqual(response, {"ERROR": f"Must specify one of the following commands: {ir_commands['tv']}"})
 
         response = parse_command('192.168.1.123', ['ir', 'ac'])
-        self.assertEqual(response, {"ERROR": "Must specify one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"})
+        self.assertEqual(response, {"ERROR": f"Must specify one of the following commands: {ir_commands['ac']}"})
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):
@@ -925,9 +1045,25 @@ class EditModalTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/edit_modal.html')
 
+        expected_context = {
+            'name': 'Test1',
+            'actions': [
+                {
+                    "ip": "192.168.1.123",
+                    "args": [
+                        "turn_on",
+                        "device1"
+                    ],
+                    "node_name": "Test1",
+                    "target_name": "Cabinet Lights",
+                    "action_name": "Turn On"
+                }
+            ]
+        }
+
         # Confirm correct context
-        self.assertEqual(response.context['name'], 'Test1')
-        self.assertEqual(response.context['actions'], [{'ip': '192.168.1.123', 'args': ['turn_on', 'device1'], 'node_name': 'Test1', 'target_name': 'Cabinet Lights', 'action_name': 'Turn On'}])
+        self.assertEqual(response.context['name'], expected_context['name'])
+        self.assertEqual(response.context['actions'], expected_context['actions'])
 
     def test_edit_non_existing_macro(self):
         # Request a macro that does not exist, confirm error
@@ -1018,7 +1154,40 @@ class OverviewPageTests(TestCase):
         create_test_nodes()
 
         # Expected macro context object
-        test_macro_context = {'test macro': [{'ip': '192.168.1.123', 'args': ['trigger_sensor', 'sensor1'], 'node_name': 'Test1', 'target_name': 'Motion Sensor', 'action_name': 'Trigger Sensor'}, {'ip': '192.168.1.123', 'args': ['disable', 'device1'], 'node_name': 'Test1', 'target_name': 'Cabinet Lights', 'action_name': 'Disable'}, {'ip': '192.168.1.123', 'args': ['enable', 'device2'], 'node_name': 'Test1', 'target_name': 'Overhead Lights', 'action_name': 'Enable'}]}
+        test_macro_context = {
+            "test macro": [
+                {
+                    "ip": "192.168.1.123",
+                    "args": [
+                        "trigger_sensor",
+                        "sensor1"
+                    ],
+                    "node_name": "Test1",
+                    "target_name": "Motion Sensor",
+                    "action_name": "Trigger Sensor"
+                },
+                {
+                    "ip": "192.168.1.123",
+                    "args": [
+                        "disable",
+                        "device1"
+                    ],
+                    "node_name": "Test1",
+                    "target_name": "Cabinet Lights",
+                    "action_name": "Disable"
+                },
+                {
+                    "ip": "192.168.1.123",
+                    "args": [
+                        "enable",
+                        "device2"
+                    ],
+                    "node_name": "Test1",
+                    "target_name": "Overhead Lights",
+                    "action_name": "Enable"
+                }
+            ]
+        }
 
         # Create macro with same actions as expected context
         Macro.objects.create(name='Test Macro', actions=json.dumps(test_macro_context['test macro']))
@@ -1158,7 +1327,16 @@ class RuleModalTests(TestCase):
 
     def test_edit_schedule_rule(self):
         # Send post request, confirm status and template used
-        payload = {'timestamp': '14:00', 'rule': 'enabled', 'type': 'switch', 'target': 'sensor3', 'schedule_keywords': {'sunrise': '05:55', 'sunset': '20:20'}}
+        payload = {
+            "timestamp": "14:00",
+            "rule": "enabled",
+            "type": "switch",
+            "target": "sensor3",
+            "schedule_keywords": {
+                "sunrise": "05:55",
+                "sunset": "20:20"
+            }
+        }
         response = self.client.post('/edit_rule', payload, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/rule_modal.html')
@@ -1172,7 +1350,16 @@ class RuleModalTests(TestCase):
 
     def test_edit_fade_rule(self):
         # Send post request, confirm status and template used
-        payload = {'timestamp': '14:00', 'rule': 'fade/50/3600', 'type': 'dimmer', 'target': 'device1', 'schedule_keywords': {'sunrise': '05:55', 'sunset': '20:20'}}
+        payload = {
+            "timestamp": "14:00",
+            "rule": "fade/50/3600",
+            "type": "dimmer",
+            "target": "device1",
+            "schedule_keywords": {
+                "sunrise": "05:55",
+                "sunset": "20:20"
+            }
+        }
         response = self.client.post('/edit_rule', payload, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/rule_modal.html')
@@ -1188,7 +1375,16 @@ class RuleModalTests(TestCase):
 
     def test_edit_keyword_rule(self):
         # Send post request, confirm status and template used
-        payload = {'timestamp': 'morning', 'rule': 'enabled', 'type': 'switch', 'target': 'sensor3', 'schedule_keywords': {'sunrise': '05:55', 'sunset': '20:20'}}
+        payload = {
+            "timestamp": "morning",
+            "rule": "enabled",
+            "type": "switch",
+            "target": "sensor3",
+            "schedule_keywords": {
+                "sunrise": "05:55",
+                "sunset": "20:20"
+            }
+        }
         response = self.client.post('/edit_rule', payload, content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/rule_modal.html')
@@ -1250,14 +1446,13 @@ class ScheduleKeywordTests(TestCase):
         payload = {
             'ip': '192.168.1.123',
             'existing_keywords': {
-                    'sunrise': '05:49',
-                    'sunset': '20:26',
-                    'Test1': '12:34',
-                    'Test2': '23:45',
-                    'Test3': '04:56'
-                }
+                'sunrise': '05:49',
+                'sunset': '20:26',
+                'Test1': '12:34',
+                'Test2': '23:45',
+                'Test3': '04:56'
+            }
         }
-
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
             # Send request, verify response
