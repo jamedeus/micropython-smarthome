@@ -115,6 +115,32 @@ def api_overview(request, recording=False, start=False):
     return render(request, 'api/overview.html', context)
 
 
+# Takes Node, returns options for all api-target instances
+def get_api_target_instance_options(node, status):
+    # Get object containing all valid options for all nodes
+    options = get_api_target_menu_options(node.friendly_name)
+
+    # Get target IP(s) of each api-target instance from config file
+    # Used as keys in options['addresses'] (above)
+    config = node.config.config
+
+    # Find all api-target instances, find same instance in options object, add options to output
+    for i in config:
+        if i.startswith("device") and config[i]['type'] == 'api-target':
+            # Find section in options object with matching IP, add to context
+            for node in options['addresses']:
+                if options['addresses'][node] == config[i]['ip']:
+                    status["api_target_options"][i] = options[node]
+                    break
+
+            # JSON-encode rule dicts
+            status['devices'][i]['current_rule'] = json.dumps(status['devices'][i]['current_rule'])
+            for rule in status['devices'][i]['schedule']:
+                status['devices'][i]['schedule'][rule] = json.dumps(status['devices'][i]['schedule'][rule])
+
+    return status
+
+
 @ensure_csrf_cookie
 def api(request, node, recording=False):
     try:
@@ -132,31 +158,13 @@ def api(request, node, recording=False):
         context = {"ip": target.ip, "id": target.friendly_name}
         return render(request, 'api/unable_to_connect.html', {'context': context})
 
-    # If ApiTarget configured, add all valid options for target IP so user can change rule
+    # Add IP, parsed into target_node var on frontend
+    status["metadata"]["ip"] = target.ip
+
+    # If ApiTarget configured, add options for all valid API commands for current target IP
     if "api-target" in str(status):
         status["api_target_options"] = {}
-
-        # Get object containing all valid options for all nodes
-        options = get_api_target_menu_options(target.friendly_name)
-
-        # Get target IP(s) from config file, use to find correct options in object above
-        config = target.config.config
-
-        for i in config:
-            if i.startswith("device") and config[i]['type'] == 'api-target':
-                # ApiTarget found, find section in options object with matching IP, add to context
-                for node in options['addresses']:
-                    if options['addresses'][node] == config[i]['ip']:
-                        status["api_target_options"][i] = options[node]
-                        break
-
-                # JSON-encode rule dicts
-                status['devices'][i]['current_rule'] = json.dumps(status['devices'][i]['current_rule'])
-
-                for rule in status['devices'][i]['schedule']:
-                    status['devices'][i]['schedule'][rule] = json.dumps(status['devices'][i]['schedule'][rule])
-
-    status["metadata"]["ip"] = target.ip
+        status = get_api_target_instance_options(target, status)
 
     # Add temp history chart to frontend if temp sensor present
     for i in status["sensors"]:
