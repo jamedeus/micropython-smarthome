@@ -530,6 +530,13 @@ def generate_config_file(request, edit_existing=False):
 
     print(f"\nFilename: {filename}\n")
 
+    # Confirm config exists when editing existing
+    if edit_existing:
+        try:
+            model_entry = Config.objects.get(filename=filename)
+        except Config.DoesNotExist:
+            return JsonResponse({'Error': 'Config not found'}, safe=False, status=404)
+
     # Prevent overwriting existing config, unless editing existing
     if not edit_existing and is_duplicate(filename, data["friendlyName"]):
         return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
@@ -585,19 +592,16 @@ def generate_config_file(request, edit_existing=False):
         print(f"\nERROR: {valid}\n")
         return JsonResponse({'Error': valid}, safe=False, status=400)
 
-    # TODO catch does not exist, maybe move write_to_disk to save method
     # If creating new config, add to models + write to disk
     if not edit_existing:
-        new = Config(config=config, filename=filename)
-        new.save()
+        new = Config.objects.create(config=config, filename=filename)
         new.write_to_disk()
 
     # If modifying old config, update JSON object and write to disk
     else:
-        old = Config.objects.get(filename=filename)
-        old.config = config
-        old.save()
-        old.write_to_disk()
+        model_entry.config = config
+        model_entry.save()
+        model_entry.write_to_disk()
 
     return JsonResponse("Config created.", safe=False, status=200)
 

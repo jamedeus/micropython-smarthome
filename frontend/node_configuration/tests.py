@@ -1938,6 +1938,15 @@ class GenerateConfigFileTests(TestCase):
         self.assertEqual(response.json(), {'Error': 'Cabinet Lights: Invalid default rule 9001'})
         self.assertEqual(len(Config.objects.all()), 0)
 
+    # Original bug: Did not catch DoesNotExist error, leading to traceback
+    # if target config was deleted by another client while editing
+    def test_regression_edit_non_existing_config(self):
+        # Attempt to edit non-existing config file, verify error, confirm not created
+        response = self.client.post('/generate_config_file/True', request_payload)
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {'Error': 'Config not found'})
+        self.assertEqual(len(Config.objects.all()), 0)
+
 
 # Test the validateConfig function called when user submits config generator form
 class ValidateConfigTests(TestCase):
