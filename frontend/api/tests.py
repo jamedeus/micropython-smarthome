@@ -1,6 +1,6 @@
 import json
 import asyncio
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock, AsyncMock, call
 from django.test import TestCase
 from django.db import IntegrityError
 from .models import Macro
@@ -1449,63 +1449,6 @@ class ScheduleKeywordTests(TestCase):
             response = parse_command('192.168.1.123', ['save_schedule_keywords'])
             self.assertEqual(response, {"Success": "Keywords written to disk"})
 
-    def test_sync_keywords(self):
-        # Create 3 test keywords, confirm 5 total (sunrise + sunset already exist)
-        ScheduleKeyword.objects.create(keyword='Test1', timestamp='12:34')
-        ScheduleKeyword.objects.create(keyword='Test2', timestamp='23:45')
-        ScheduleKeyword.objects.create(keyword='Test3', timestamp='04:56')
-        self.assertEqual(len(ScheduleKeyword.objects.all()), 5)
-
-        # Simulated request from node that already has all keywords
-        payload = {
-            'ip': '192.168.1.123',
-            'existing_keywords': {
-                'sunrise': '05:49',
-                'sunset': '20:26',
-                'Test1': '12:34',
-                'Test2': '23:45',
-                'Test3': '04:56'
-            }
-        }
-        # Mock parse_command to do nothing
-        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
-            # Send request, verify response
-            response = self.client.post('/sync_schedule_keywords', payload, content_type='application/json')
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
-
-            # Should not be called, no keywords to upload
-            self.assertEqual(mock_parse_command.call_count, 0)
-
-        # Delete 2 keywords, test again
-        del payload['existing_keywords']['Test1']
-        del payload['existing_keywords']['sunset']
-
-        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
-            response = self.client.post('/sync_schedule_keywords', payload, content_type='application/json')
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
-
-            # Should be called 3 times - once for each keyword, once for save_schedule_keywords
-            self.assertEqual(mock_parse_command.call_count, 3)
-
-        # Delete all keywords, test again
-        payload['existing_keywords'] = {}
-
-        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
-            response = self.client.post('/sync_schedule_keywords', payload, content_type='application/json')
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
-
-            # Should be called 6 times - once for each keyword, once for save_schedule_keywords
-            self.assertEqual(mock_parse_command.call_count, 6)
-
-    def test_sync_keywords_errors(self):
-        # Make invalid get request (requires post), confirm error
-        response = self.client.get('/sync_schedule_keywords')
-        self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
-
     def test_add_errors(self):
         # Send request with no args, verify error
         response = parse_command('192.168.1.123', ['add_schedule_keyword'])
@@ -1527,3 +1470,157 @@ class ScheduleKeywordTests(TestCase):
             # Send request, should receive error instead of mock response
             response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test', '5:00'])
             self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
+
+
+class SyncScheduleKeywordTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes
+        create_test_nodes()
+
+        # Create 3 test keywords, confirm 5 total (sunrise + sunset already exist)
+        ScheduleKeyword.objects.create(keyword='Test1', timestamp='12:34')
+        ScheduleKeyword.objects.create(keyword='Test2', timestamp='23:45')
+        ScheduleKeyword.objects.create(keyword='Test3', timestamp='04:56')
+        self.assertEqual(len(ScheduleKeyword.objects.all()), 5)
+
+        # Simulated request from node that already has all keywords
+        self.payload = {
+            'ip': '192.168.1.123',
+            'existing_keywords': {
+                'sunrise': '06:00',
+                'sunset': '18:00',
+                'Test1': '12:34',
+                'Test2': '23:45',
+                'Test3': '04:56'
+            }
+        }
+
+    def test_sync_keywords(self):
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
+            # Send request, verify response
+            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Should not be called, no keywords to upload
+            self.assertFalse(mock_parse_command.called)
+
+        # Delete 2 keywords, test again
+        del self.payload['existing_keywords']['Test1']
+        del self.payload['existing_keywords']['sunset']
+
+        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
+            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Should be called 3 times: add 2 missing keywords, save
+            self.assertEqual(mock_parse_command.call_count, 3)
+            self.assertEqual(
+                mock_parse_command.call_args_list,
+                [
+                    call('192.168.1.123', ['add_schedule_keyword', 'sunset', '18:00']),
+                    call('192.168.1.123', ['add_schedule_keyword', 'Test1', '12:34']),
+                    call('192.168.1.123', ['save_schedule_keywords'])
+                ]
+            )
+
+            # Delete all keywords, test again
+            self.payload['existing_keywords'] = {}
+            mock_parse_command.reset_mock()
+
+            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Should be called 6 times: add 5 missing keywords, save
+            self.assertEqual(mock_parse_command.call_count, 6)
+            self.assertEqual(
+                mock_parse_command.call_args_list,
+                [
+                    call('192.168.1.123', ['add_schedule_keyword', 'sunrise', '06:00']),
+                    call('192.168.1.123', ['add_schedule_keyword', 'sunset', '18:00']),
+                    call('192.168.1.123', ['add_schedule_keyword', 'Test1', '12:34']),
+                    call('192.168.1.123', ['add_schedule_keyword', 'Test2', '23:45']),
+                    call('192.168.1.123', ['add_schedule_keyword', 'Test3', '04:56']),
+                    call('192.168.1.123', ['save_schedule_keywords'])
+                ]
+            )
+
+    def test_sync_keywords_update_timestamp(self):
+        # Change keyword timestamp
+        self.payload['existing_keywords']['Test1'] = '10:00'
+        self.payload['existing_keywords']['Test3'] = '20:00'
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
+            # Send request, verify response
+            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Should be called 3 times: overwrite each keyword, save
+            self.assertEqual(mock_parse_command.call_count, 3)
+            self.assertEqual(
+                mock_parse_command.call_args_list,
+                [
+                    call('192.168.1.123', ['add_schedule_keyword', 'Test1', '12:34']),
+                    call('192.168.1.123', ['add_schedule_keyword', 'Test3', '04:56']),
+                    call('192.168.1.123', ['save_schedule_keywords'])
+                ]
+            )
+
+    def test_sync_keywords_update_keyword(self):
+        # Change keyword without changing timestamp
+        self.payload['existing_keywords']['New'] = '12:34'
+        del self.payload['existing_keywords']['Test1']
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
+            # Send request, verify response
+            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Should be called 3 times: Add new keyword, delete old keyword, save
+            self.assertEqual(mock_parse_command.call_count, 3)
+            self.assertEqual(
+                mock_parse_command.call_args_list,
+                [
+                    call('192.168.1.123', ['add_schedule_keyword', 'Test1', '12:34']),
+                    call('192.168.1.123', ['remove_schedule_keyword', 'New']),
+                    call('192.168.1.123', ['save_schedule_keywords'])
+                ]
+            )
+
+    def test_sync_keywords_delete(self):
+        # Delete all keywords except sunrise/sunset
+        ScheduleKeyword.objects.get(keyword='Test1').delete()
+        ScheduleKeyword.objects.get(keyword='Test2').delete()
+        ScheduleKeyword.objects.get(keyword='Test3').delete()
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
+            # Send request for Node with all 5, should delete same keywords deleted above
+            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Should be called 4 times: Delete 3 keywords no longer in database, save
+            self.assertEqual(mock_parse_command.call_count, 4)
+            self.assertEqual(
+                mock_parse_command.call_args_list,
+                [
+                    call('192.168.1.123', ['remove_schedule_keyword', 'Test1']),
+                    call('192.168.1.123', ['remove_schedule_keyword', 'Test2']),
+                    call('192.168.1.123', ['remove_schedule_keyword', 'Test3']),
+                    call('192.168.1.123', ['save_schedule_keywords'])
+                ]
+            )
+
+    def test_sync_keywords_errors(self):
+        # Make invalid get request (requires post), confirm error
+        response = self.client.get('/sync_schedule_keywords')
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.json(), {'Error': 'Must post data'})
