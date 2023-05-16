@@ -255,20 +255,26 @@ def delete_node(request):
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     try:
-        # Get model entry, delete from disk + database
+        # Get model entry
         node = Node.objects.get(friendly_name=data)
-        os.remove(f'{CONFIG_DIR}/{node.config.filename}')
-        node.delete()
-        return JsonResponse(f"Deleted {data}", safe=False, status=200)
-
     except Node.DoesNotExist:
         return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
+
+    try:
+        # Delete from disk
+        os.remove(f'{CONFIG_DIR}/{node.config.filename}')
     except PermissionError:
         return JsonResponse(
             "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
             safe=False,
             status=500
         )
+    except FileNotFoundError:
+        pass
+
+    # Delete from database
+    node.delete()
+    return JsonResponse(f"Deleted {data}", safe=False, status=200)
 
 
 def change_node_ip(request):
