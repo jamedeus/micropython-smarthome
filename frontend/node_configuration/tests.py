@@ -2245,9 +2245,23 @@ class ScheduleKeywordTests(TestCase):
         # Create existing keyword
         self.keyword = ScheduleKeyword.objects.create(keyword='first', timestamp='00:00')
 
+        # Config template, new keywords should be added/removed in tests
+        test_config = {
+            'metadata': {
+                'id': 'Test1',
+                'floor': '2',
+                'schedule_keywords': {
+                    "sunrise": "06:00",
+                    "sunset": "18:00",
+                    "first": "00:00"
+                }
+            }
+        }
+
         # Create nodes to upload keyword to
-        self.node1 = Node.objects.create(friendly_name='Test1', ip='123.45.67.89', floor='2')
-        self.node2 = Node.objects.create(friendly_name='Test2', ip='123.45.67.98', floor='2')
+        self.config1, self.node1 = create_config_and_node_from_json(test_config, '123.45.67.89')
+        test_config['metadata']['id'] = 'Test2'
+        self.config2, self.node2 = create_config_and_node_from_json(test_config, '123.45.67.98')
 
         # Create mock objects to replace keyword api endpoints
         self.mock_add = MagicMock()
@@ -2262,7 +2276,16 @@ class ScheduleKeywordTests(TestCase):
         self.assertEqual(self.keyword.__str__(), 'first')
 
     def test_add_schedule_keyword(self):
+        # Confirm starting conditions
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+        self.assertEqual(
+            self.node1.config.config['metadata']['schedule_keywords'],
+            {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
+        )
+        self.assertEqual(
+            self.config2.config['metadata']['schedule_keywords'],
+            {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
+        )
 
         # Mock all keyword endpoints, prevent failed network requests
         with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
@@ -2281,8 +2304,22 @@ class ScheduleKeywordTests(TestCase):
             self.assertEqual(self.mock_remove.call_count, 0)
             self.assertEqual(self.mock_save.call_count, 2)
 
+        # All configs should contain new keyword
+        self.node1.refresh_from_db()
+        self.config2.refresh_from_db()
+        self.assertEqual(self.node1.config.config['metadata']['schedule_keywords']['morning'], '08:00')
+        self.assertEqual(self.config2.config['metadata']['schedule_keywords']['morning'], '08:00')
+
     def test_edit_schedule_keyword_timestamp(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
+        self.assertEqual(
+            self.node1.config.config['metadata']['schedule_keywords'],
+            {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
+        )
+        self.assertEqual(
+            self.config2.config['metadata']['schedule_keywords'],
+            {'sunrise': '06:00', 'sunset': '18:00', 'first': '00:00'}
+        )
 
         # Mock all keyword endpoints, prevent failed network requests
         with patch('node_configuration.views.add_schedule_keyword', side_effect=self.mock_add), \
@@ -2305,6 +2342,12 @@ class ScheduleKeywordTests(TestCase):
             self.keyword.refresh_from_db()
             self.assertEqual(self.keyword.keyword, 'first')
             self.assertEqual(self.keyword.timestamp, '01:00')
+
+        # All configs should contain new keyword
+        self.node1.refresh_from_db()
+        self.config2.refresh_from_db()
+        self.assertEqual(self.node1.config.config['metadata']['schedule_keywords']['first'], '01:00')
+        self.assertEqual(self.config2.config['metadata']['schedule_keywords']['first'], '01:00')
 
     def test_edit_schedule_keyword_keyword(self):
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
@@ -2331,6 +2374,14 @@ class ScheduleKeywordTests(TestCase):
             self.assertEqual(self.keyword.keyword, 'second')
             self.assertEqual(self.keyword.timestamp, '08:00')
 
+        # Keyword should update on all existing configs
+        self.node1.refresh_from_db()
+        self.config2.refresh_from_db()
+        self.assertNotIn('first', self.node1.config.config['metadata']['schedule_keywords'].keys())
+        self.assertNotIn('first', self.config2.config['metadata']['schedule_keywords'].keys())
+        self.assertEqual(self.node1.config.config['metadata']['schedule_keywords']['second'], '08:00')
+        self.assertEqual(self.config2.config['metadata']['schedule_keywords']['second'], '08:00')
+
     def test_delete_schedule_keyword(self):
         # Confirm starting condition
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
@@ -2352,6 +2403,12 @@ class ScheduleKeywordTests(TestCase):
 
             # Confirm model deleted
             self.assertEqual(len(ScheduleKeyword.objects.all()), 2)
+
+        # Should be removed from all existing configs
+        self.node1.refresh_from_db()
+        self.config2.refresh_from_db()
+        self.assertNotIn('first', self.node1.config.config['metadata']['schedule_keywords'].keys())
+        self.assertNotIn('first', self.config2.config['metadata']['schedule_keywords'].keys())
 
 
 # Confirm schedule keyword management endpoints raise correct errors

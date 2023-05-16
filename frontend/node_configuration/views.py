@@ -696,6 +696,13 @@ def add_schedule_keyword_config(request):
     # Save keywords on all nodes
     save_all_schedule_keywords()
 
+    # Add new keyword to all configs in database and on disk
+    all_keywords = get_schedule_keywords_dict()
+    for node in Node.objects.all():
+        node.config.config['metadata']['schedule_keywords'] = all_keywords
+        node.config.save()
+        node.config.write_to_disk()
+
     return JsonResponse("Keyword created", safe=False, status=200)
 
 
@@ -740,6 +747,13 @@ def edit_schedule_keyword_config(request):
     # Save keywords on all nodes
     save_all_schedule_keywords()
 
+    # Update keywords for all configs in database and on disk
+    all_keywords = get_schedule_keywords_dict()
+    for node in Node.objects.all():
+        node.config.config['metadata']['schedule_keywords'] = all_keywords
+        node.config.save()
+        node.config.write_to_disk()
+
     return JsonResponse("Keyword updated", safe=False, status=200)
 
 
@@ -766,6 +780,13 @@ def delete_schedule_keyword_config(request):
 
     # Save keywords on all nodes
     save_all_schedule_keywords()
+
+    # Remove keyword from all configs in database and from disk
+    all_keywords = get_schedule_keywords_dict()
+    for node in Node.objects.all():
+        node.config.config['metadata']['schedule_keywords'] = all_keywords
+        node.config.save()
+        node.config.write_to_disk()
 
     return JsonResponse("Keyword deleted", safe=False, status=200)
 
