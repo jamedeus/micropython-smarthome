@@ -23,6 +23,10 @@ valid_device_pins = (4, 13, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33)
 valid_sensor_pins = (4, 5, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39)
 valid_device_types = ('dimmer', 'bulb', 'relay', 'dumb-relay', 'desktop', 'pwm', 'mosfet', 'api-target', 'wled')
 valid_sensor_types = ('pir', 'desktop', 'si7021', 'dummy', 'switch')
+valid_config_keys = {
+    "metadata": {"id": "", "location": "", "floor": "", "schedule_keywords": ""},
+    "wifi": {"ssid": "", "password": ""}
+}
 
 # Dependency relative paths for all device and sensor types, used by get_modules
 dependencies = {
@@ -480,8 +484,25 @@ def validate_instance_pins(config):
     return True
 
 
+# Accepts complete config + template with correct keys
+# Recursively checks that each template key also exists in config
+def validate_config_keys(config, valid_config_keys):
+    for key in valid_config_keys:
+        if key not in config:
+            return f"Missing required top-level {key} key"
+        elif isinstance(valid_config_keys[key], dict):
+            if validate_config_keys(config[key], valid_config_keys[key]) is not True:
+                return f"Missing required key in {key} section"
+    return True
+
+
 # Accepts completed config, return True if valid, error string if invalid
-def validateConfig(config):
+def validate_full_config(config):
+    # Confirm config has all required keys (see valid_config_keys)
+    valid = validate_config_keys(config, valid_config_keys)
+    if valid is not True:
+        return valid
+
     # Floor must be integer
     try:
         int(config['metadata']['floor'])
@@ -595,7 +616,7 @@ def generate_config_file(request, edit_existing=False):
     print(json.dumps(config, indent=4))
 
     # Validate completed config, return error if invalid
-    valid = validateConfig(config)
+    valid = validate_full_config(config)
     if valid is not True:
         print(f"\nERROR: {valid}\n")
         return JsonResponse({'Error': valid}, safe=False, status=400)
