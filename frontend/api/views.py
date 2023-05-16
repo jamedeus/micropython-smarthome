@@ -1,6 +1,7 @@
 import json
 import asyncio
 import re
+import itertools
 from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
@@ -227,17 +228,38 @@ def sync_schedule_keywords(request):
     else:
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
-    # Get all schedule keywords missing from target node
-    existing = data['existing_keywords'].keys()
-    missing = ScheduleKeyword.objects.exclude(keyword__in=existing)
+    # Get current keywords from database, target node
+    database = get_schedule_keywords_dict()
+    node = data['existing_keywords']
 
-    # Add each missing keyword to target node
-    for keyword in missing:
+    # Get all schedule keywords missing from target node
+    missing = list(ScheduleKeyword.objects.exclude(keyword__in=node.keys()))
+
+    # Get all schedule keywords deleted from database that still exist on target node
+    deleted = [keyword for keyword in node.keys() if keyword not in database.keys()]
+
+    # Get all schedule keywords with different timestamps
+    modified = [keyword for keyword in node if keyword not in deleted and database[keyword] != node[keyword]]
+    modified = [ScheduleKeyword.objects.get(keyword=i) for i in modified if i not in ['sunrise', 'sunset']]
+
+    # Add all missing keywords, overwrite all modified keywords
+    for keyword in itertools.chain(missing, modified):
         parse_command(data['ip'], ['add_schedule_keyword', keyword.keyword, keyword.timestamp])
 
-    # Save schedule keywords to disk on target node
+    # Remove all deleted keywords
+    for keyword in deleted:
+        parse_command(data['ip'], ['remove_schedule_keyword', keyword])
+
+    # Print status messages
     if len(missing):
         print(f"Added {len(missing)} missing schedule keywords")
+    if len(modified):
+        print(f"Updated {len(modified)} outdated schedule keywords")
+    if len(deleted):
+        print(f"Deleted {len(deleted)} schedule keywords that no longer exist in database")
+
+    # Save changes (if any) to disk on target node
+    if len(missing) or len(modified) or len(deleted):
         parse_command(data['ip'], ['save_schedule_keywords'])
 
     return JsonResponse("Done", safe=False, status=200)
