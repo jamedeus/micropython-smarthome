@@ -1822,8 +1822,7 @@ class GetModulesTests(TestCase):
         self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py'})
 
     def test_get_modules_no_ir_blaster(self):
-        config = self.config.copy()
-        del config['ir_blaster']
+        del self.config['ir_blaster']
 
         expected_modules = {
             "../sensors/Sensor.py": "Sensor.py",
@@ -1848,13 +1847,12 @@ class GetModulesTests(TestCase):
             "../lib/si7021.py": "lib/si7021.py"
         }
 
-        modules, libs = get_modules(config)
+        modules, libs = get_modules(self.config)
         self.assertEqual(modules, expected_modules)
         self.assertEqual(libs, expected_libs)
 
     def test_get_modules_no_thermostat(self):
-        config = self.config.copy()
-        del config['sensor5']
+        del self.config['sensor5']
 
         expected_modules = {
             "../sensors/Sensor.py": "Sensor.py",
@@ -1882,19 +1880,18 @@ class GetModulesTests(TestCase):
             "../lib/ir_tx/nec.py": "lib/ir_tx/nec.py"
         }
 
-        modules, libs = get_modules(config)
+        modules, libs = get_modules(self.config)
         self.assertEqual(modules, expected_modules)
         self.assertEqual(libs, expected_libs)
 
     def test_get_modules_realistic(self):
-        config = self.config.copy()
-        del config['ir_blaster']
-        del config['sensor3']
-        del config['sensor4']
-        del config['sensor5']
-        del config['device4']
-        del config['device5']
-        del config['device7']
+        del self.config['ir_blaster']
+        del self.config['sensor3']
+        del self.config['sensor4']
+        del self.config['sensor5']
+        del self.config['device4']
+        del self.config['device5']
+        del self.config['device7']
 
         expected_modules = {
             "../sensors/Sensor.py": "Sensor.py",
@@ -1908,7 +1905,7 @@ class GetModulesTests(TestCase):
             "../devices/ApiTarget.py": "ApiTarget.py"
         }
 
-        modules, libs = get_modules(config)
+        modules, libs = get_modules(self.config)
         self.assertEqual(modules, expected_modules)
         self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py'})
 
@@ -2028,113 +2025,96 @@ class ValidateConfigTests(TestCase):
         self.assertEqual(result, 'Missing required top-level metadata key')
 
     def test_invalid_floor(self):
-        config = self.valid_config.copy()
-        config['metadata']['floor'] = 'top'
-        result = validate_full_config(config)
+        self.valid_config['metadata']['floor'] = 'top'
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Invalid floor, must be integer')
 
     def test_duplicate_nicknames(self):
-        config = self.valid_config.copy()
-        config['device4']['nickname'] = config['device1']['nickname']
-        result = validate_full_config(config)
+        self.valid_config['device4']['nickname'] = self.valid_config['device1']['nickname']
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Contains duplicate nicknames')
 
     def test_duplicate_pins(self):
-        config = self.valid_config.copy()
-        config['sensor2']['pin'] = config['sensor1']['pin']
-        result = validate_full_config(config)
+        self.valid_config['sensor2']['pin'] = self.valid_config['sensor1']['pin']
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Contains duplicate pins')
 
     def test_invalid_device_pin(self):
-        config = self.valid_config.copy()
-        config['device1']['pin'] = '14'
-        result = validate_full_config(config)
-        self.assertEqual(result, f'Invalid device pin {config["device1"]["pin"]} used')
+        self.valid_config['device1']['pin'] = '14'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid device pin {self.valid_config["device1"]["pin"]} used')
 
     def test_invalid_sensor_pin(self):
-        config = self.valid_config.copy()
-        config['sensor1']['pin'] = '3'
-        result = validate_full_config(config)
-        self.assertEqual(result, f'Invalid sensor pin {config["sensor1"]["pin"]} used')
+        self.valid_config['sensor1']['pin'] = '3'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid sensor pin {self.valid_config["sensor1"]["pin"]} used')
 
     def test_noninteger_pin(self):
-        config = self.valid_config.copy()
-        config['sensor1']['pin'] = 'three'
-        result = validate_full_config(config)
+        self.valid_config['sensor1']['pin'] = 'three'
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Invalid pin (non-integer)')
 
     def test_invalid_device_type(self):
-        config = self.valid_config.copy()
-        config['device1']['type'] = 'nuclear'
-        result = validate_full_config(config)
-        self.assertEqual(result, f'Invalid device type {config["device1"]["type"]} used')
+        self.valid_config['device1']['type'] = 'nuclear'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid device type {self.valid_config["device1"]["type"]} used')
 
     def test_invalid_sensor_type(self):
-        config = self.valid_config.copy()
-        config['sensor1']['type'] = 'ozone-sensor'
-        result = validate_full_config(config)
-        self.assertEqual(result, f'Invalid sensor type {config["sensor1"]["type"]} used')
+        self.valid_config['sensor1']['type'] = 'ozone-sensor'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid sensor type {self.valid_config["sensor1"]["type"]} used')
 
     def test_invalid_ip(self):
-        config = self.valid_config.copy()
-        config['device1']['ip'] = '192.168.1.500'
-        result = validate_full_config(config)
-        self.assertEqual(result, f'Invalid IP {config["device1"]["ip"]}')
+        self.valid_config['device1']['ip'] = '192.168.1.500'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid IP {self.valid_config["device1"]["ip"]}')
 
     def test_thermostat_tolerance_out_of_range(self):
-        config = self.valid_config.copy()
-        config['sensor5']['tolerance'] = 12.5
-        result = validate_full_config(config)
+        self.valid_config['sensor5']['tolerance'] = 12.5
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Thermostat tolerance out of range (0.1 - 10.0)')
 
     def test_invalid_thermostat_tolerance(self):
-        config = self.valid_config.copy()
-        config['sensor5']['tolerance'] = 'low'
-        result = validate_full_config(config)
+        self.valid_config['sensor5']['tolerance'] = 'low'
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Thermostat tolerance must be int or float')
 
     def test_pwm_min_greater_than_max(self):
-        config = self.valid_config.copy()
-        config['device6']['min'] = 1023
-        config['device6']['max'] = 500
-        config['device6']['default_rule'] = 700
-        result = validate_full_config(config)
+        self.valid_config['device6']['min'] = 1023
+        self.valid_config['device6']['max'] = 500
+        self.valid_config['device6']['default_rule'] = 700
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'PWM min cannot be greater than max')
 
     def test_pwm_limits_negative(self):
-        config = self.valid_config.copy()
-        config['device6']['min'] = -50
-        config['device6']['max'] = -5
-        result = validate_full_config(config)
+        self.valid_config['device6']['min'] = -50
+        self.valid_config['device6']['max'] = -5
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'PWM limits cannot be less than 0')
 
     def test_pwm_limits_over_max(self):
-        config = self.valid_config.copy()
-        config['device6']['min'] = 1023
-        config['device6']['max'] = 4096
-        result = validate_full_config(config)
+        self.valid_config['device6']['min'] = 1023
+        self.valid_config['device6']['max'] = 4096
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'PWM limits cannot be greater than 1023')
 
     def test_pwm_invalid_default_rule(self):
-        config = self.valid_config.copy()
-        config['device6']['min'] = 500
-        config['device6']['max'] = 1000
-        config['device6']['default_rule'] = 1100
-        result = validate_full_config(config)
+        self.valid_config['device6']['min'] = 500
+        self.valid_config['device6']['max'] = 1000
+        self.valid_config['device6']['default_rule'] = 1100
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Cabinet Lights: Invalid default rule 1100')
 
     def test_pwm_invalid_schedule_rule(self):
-        config = self.valid_config.copy()
-        config['device6']['min'] = 500
-        config['device6']['max'] = 1000
-        config['device6']['schedule']['01:00'] = 1023
-        result = validate_full_config(config)
+        self.valid_config['device6']['min'] = 500
+        self.valid_config['device6']['max'] = 1000
+        self.valid_config['device6']['schedule']['01:00'] = 1023
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Cabinet Lights: Invalid schedule rule 1023')
 
     def test_pwm_noninteger_limit(self):
-        config = self.valid_config.copy()
-        config['device6']['min'] = 'off'
-        result = validate_full_config(config)
+        self.valid_config['device6']['min'] = 'off'
+        result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Invalid PWM limits, both must be int between 0 and 1023')
 
 
