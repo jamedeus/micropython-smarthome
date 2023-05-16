@@ -343,8 +343,10 @@ def new_config(request):
 
 
 def edit_config(request, name):
-    # TODO catch does not exist
-    target = Node.objects.get(friendly_name=name)
+    try:
+        target = Node.objects.get(friendly_name=name)
+    except Node.DoesNotExist:
+        return JsonResponse({'Error': f'{name} node not found'}, safe=False, status=404)
 
     config = target.config.config
 

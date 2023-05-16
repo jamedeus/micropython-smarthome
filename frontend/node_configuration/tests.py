@@ -523,6 +523,7 @@ class EditConfigTests(TestCase):
     def test_edit_config_1(self):
         # Request page, confirm correct template used
         response = self.client.get('/edit_config/Test1')
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
 
         # Confirm correct context + api target menu options
@@ -541,6 +542,7 @@ class EditConfigTests(TestCase):
     def test_edit_config_2(self):
         # Request page, confirm correct template used
         response = self.client.get('/edit_config/Test2')
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
 
         # Confirm correct context + api target menu options
@@ -560,6 +562,7 @@ class EditConfigTests(TestCase):
     def test_edit_config_3(self):
         # Request page, confirm correct template used
         response = self.client.get('/edit_config/Test3')
+        self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
 
         # Confirm correct context + api target menu options
@@ -587,6 +590,14 @@ class EditConfigTests(TestCase):
             response = self.client.post('/edit_config/setup', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Upload complete.')
+
+    # Original bug: Did not catch DoesNotExist error, leading to traceback
+    # if target config was deleted by another client before clicking edit
+    def test_regression_edit_non_existing_config(self):
+        # Attempt to edit non-existing node, verify error
+        response = self.client.get('/edit_config/Fake')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {'Error': 'Fake node not found'})
 
 
 # Test config generation page
