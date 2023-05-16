@@ -1662,6 +1662,23 @@ class DeleteNodeTests(TestCase):
         os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o664)
         os.chmod(settings.CONFIG_DIR, 0o775)
 
+    # Original bug: Impossible to delete node if config file deleted
+    # from disk, traceback when file not found. Fixed in 1af01a00.
+    def test_regression_delete_node_config_not_on_disk(self):
+        # Delete config from disk but not database, confirm removed
+        os.remove(f'{settings.CONFIG_DIR}/unit-test-config.json')
+        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertEqual(len(Config.objects.all()), 1)
+        self.assertEqual(len(Node.objects.all()), 1)
+
+        # Delete Node, should ignore missing file on disk
+        response = self.client.post('/delete_node', json.dumps('Test Node'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'Deleted Test Node')
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
+        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
 
 # Test endpoint used to change an existing node's IP
 class ChangeNodeIpTests(TestCase):
