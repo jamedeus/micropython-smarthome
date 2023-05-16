@@ -1073,6 +1073,27 @@ class RestoreConfigViewTest(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
 
+    # Should refuse to create in database if invalid config received
+    def test_invalid_config_format(self):
+        # Database should be empty
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Delete required key from config
+        invalid_config = deepcopy(test_config_1)
+        del invalid_config['metadata']['floor']
+
+        # Mock Webrepl to return byte-encoded invalid config
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'get_file_mem', return_value=json.dumps(invalid_config).encode('utf-8')):
+
+            # Post fake IP to endpoint, confirm error, confirm no models created
+            response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
+            self.assertEqual(response.status_code, 500)
+            self.assertEqual(response.json(), 'ERROR: Config format invalid, possibly outdated version.')
+            self.assertEqual(len(Config.objects.all()), 0)
+            self.assertEqual(len(Node.objects.all()), 0)
+
 
 # Test function that generates JSON used to populate API target set_rule menu
 class ApiTargetMenuOptionsTest(TestCase):
@@ -1992,6 +2013,19 @@ class ValidateConfigTests(TestCase):
     def test_valid_config(self):
         result = validate_full_config(self.valid_config)
         self.assertTrue(result)
+
+    def test_missing_keys(self):
+        del self.valid_config['wifi']['ssid']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Missing required key in wifi section')
+
+        del self.valid_config['metadata']['id']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Missing required key in metadata section')
+
+        del self.valid_config['metadata']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Missing required top-level metadata key')
 
     def test_invalid_floor(self):
         config = self.valid_config.copy()

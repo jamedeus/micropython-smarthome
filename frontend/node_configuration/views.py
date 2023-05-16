@@ -685,6 +685,11 @@ def restore_config(request):
     # Overwrite schedule keywords with keywords from database
     config['metadata']['schedule_keywords'] = get_schedule_keywords_dict()
 
+    # Confirm received config is valid
+    valid = validate_full_config(config)
+    if valid is not True:
+        return JsonResponse("ERROR: Config format invalid, possibly outdated version.", safe=False, status=500)
+
     # Write file to disk
     with open(CONFIG_DIR + filename, 'w') as file:
         json.dump(config, file)
