@@ -661,6 +661,9 @@ def restore_config(request):
     if is_duplicate(filename, config['metadata']['id']):
         return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
 
+    # Overwrite schedule keywords with keywords from database
+    config['metadata']['schedule_keywords'] = get_schedule_keywords_dict()
+
     # Write file to disk
     with open(CONFIG_DIR + filename, 'w') as file:
         json.dump(config, file)

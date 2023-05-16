@@ -1015,11 +1015,18 @@ class RestoreConfigViewTest(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Config restored')
 
-        # Config and Node should now exist, should be able to find with test_config_1
+        # Config and Node should now exist
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
-        self.assertTrue(Config.objects.get(config=test_config_1))
+        self.assertTrue(Config.objects.get(filename='test1.json'))
         self.assertTrue(Node.objects.get(friendly_name='Test1'))
+
+        # Config should not be identical to input object (schedule keywords added)
+        config = Config.objects.get(filename='test1.json').config
+        self.assertNotEqual(config, test_config_1)
+        self.assertEqual(len(config['metadata']['schedule_keywords']), 2)
+        self.assertIn('sunrise', config['metadata']['schedule_keywords'].keys())
+        self.assertIn('sunset', config['metadata']['schedule_keywords'].keys())
 
     def test_target_offline(self):
         # Database should be empty
