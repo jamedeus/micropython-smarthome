@@ -3,7 +3,14 @@ import json
 import struct
 from django.conf import settings
 from django.http import JsonResponse
+from django.test import Client
 from .models import Config, Node
+
+
+# Subclass Client, add default for content_type arg
+class JSONClient(Client):
+    def post(self, path, data=None, content_type='application/json', **extra):
+        return super().post(path, data, content_type, **extra)
 
 
 # Binary contents of test config file, used as payload in simulated Webrepl connections

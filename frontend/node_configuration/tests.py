@@ -3,7 +3,7 @@ import os
 import socket
 from copy import deepcopy
 from unittest.mock import patch, MagicMock
-from django.test import TestCase, Client
+from django.test import TestCase
 from django.conf import settings
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
@@ -23,6 +23,7 @@ from .validators import (
 
 # Large JSON objects, helper functions
 from .unit_test_helpers import (
+    JSONClient,
     request_payload,
     create_test_nodes,
     clean_up_test_nodes,
@@ -40,12 +41,6 @@ from .unit_test_helpers import (
     simulate_read_file_over_webrepl,
     simulated_read_position,
 )
-
-
-# Subclass Client, add default for content_type
-class JSONClient(Client):
-    def post(self, path, data=None, content_type='application/json', **extra):
-        return super().post(path, data, content_type, **extra)
 
 
 # Test the Node model

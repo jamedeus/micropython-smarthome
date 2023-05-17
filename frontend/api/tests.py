@@ -6,7 +6,7 @@ from django.db import IntegrityError
 from .models import Macro
 from .views import parse_command, request, ir_commands
 from .unit_test_helpers import config1_status_object, config1_api_context, config2_status_object, config2_api_context
-from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes
+from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes, JSONClient
 from node_configuration.models import ScheduleKeyword
 
 
@@ -121,6 +121,9 @@ class RequestTests(TestCase):
 
 # Test send_command function that bridges frontend HTTP requests to esp32 API calls
 class SendCommandTests(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
 
     # Simulate send_command call from new Api frontend
     def test_send_command_api_cards(self):
@@ -129,7 +132,7 @@ class SendCommandTests(TestCase):
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value={"On": "device1"}) as mock_parse_command:
             # Make API call, confirm response, confirm parse_command called once
-            response = self.client.post('/send_command', payload, content_type='application/json')
+            response = self.client.post('/send_command', payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {"On": "device1"})
             self.assertEqual(mock_parse_command.call_count, 1)
@@ -142,7 +145,7 @@ class SendCommandTests(TestCase):
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value={"On": "device1"}) as mock_parse_command:
             # Make API call, confirm response, confirm parse_command called once
-            response = self.client.post('/send_command', payload, content_type='application/json')
+            response = self.client.post('/send_command', payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {"On": "device1"})
             self.assertEqual(mock_parse_command.call_count, 1)
@@ -162,7 +165,7 @@ class SendCommandTests(TestCase):
         # Mock parse_command to simulate failed connection to node
         with patch('api.views.parse_command', side_effect=OSError) as mock_parse_command:
             # Make API call, confirm response, confirm parse_command called once
-            response = self.client.post('/send_command', payload, content_type='application/json')
+            response = self.client.post('/send_command', payload)
             self.assertEqual(response.status_code, 502)
             self.assertEqual(response.json(), "Error: Unable to connect.")
             self.assertEqual(mock_parse_command.call_count, 1)
@@ -176,7 +179,7 @@ class SendCommandTests(TestCase):
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value={'Disabled': 'device1'}) as mock_parse_command:
             # Make API call, confirm response, confirm parse_command called twice
-            response = self.client.post('/send_command', payload_disable, content_type='application/json')
+            response = self.client.post('/send_command', payload_disable)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {'Disabled': 'device1'})
             self.assertEqual(mock_parse_command.call_count, 2)
@@ -184,7 +187,7 @@ class SendCommandTests(TestCase):
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value={'Enabled': 'device1'}) as mock_parse_command:
             # Make API call, confirm response, confirm parse_command called twice
-            response = self.client.post('/send_command', payload_enable, content_type='application/json')
+            response = self.client.post('/send_command', payload_enable)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {'Enabled': 'device1'})
             self.assertEqual(mock_parse_command.call_count, 2)
@@ -194,7 +197,7 @@ class SendCommandTests(TestCase):
 
     def test_legacy_api_target_does_not_exist(self):
         payload_disable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'disable'}
-        response = self.client.post('/send_command', payload_disable, content_type='application/json')
+        response = self.client.post('/send_command', payload_disable)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {'Error': 'Node named Test1 not found'})
 
@@ -444,6 +447,9 @@ class MacroModelTests(TestCase):
 # Test endpoints used to record and edit macros
 class MacroTests(TestCase):
     def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
         # Create 3 test nodes
         create_test_nodes()
 
@@ -488,14 +494,14 @@ class MacroTests(TestCase):
         self.assertEqual(len(Macro.objects.all()), 0)
 
         # Send request, verify response, verify macro created
-        response = self.client.post('/add_macro_action', self.action1, content_type='application/json')
+        response = self.client.post('/add_macro_action', self.action1)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Done')
         self.assertEqual(len(Macro.objects.all()), 1)
 
     def test_delete_macro_action(self):
         # Create macro, verify exists
-        response = self.client.post('/add_macro_action', self.action1, content_type='application/json')
+        response = self.client.post('/add_macro_action', self.action1)
         self.assertEqual(len(Macro.objects.all()), 1)
 
         # Call view to delete just-created action
@@ -521,8 +527,8 @@ class MacroTests(TestCase):
 
     def test_run_macro(self):
         # Create macro with 2 actions, verify exists
-        self.client.post('/add_macro_action', self.action1, content_type='application/json')
-        self.client.post('/add_macro_action', self.action2, content_type='application/json')
+        self.client.post('/add_macro_action', self.action1)
+        self.client.post('/add_macro_action', self.action2)
         self.assertEqual(len(Macro.objects.all()), 1)
 
         # Mock parse_command to do nothing
@@ -536,6 +542,9 @@ class MacroTests(TestCase):
 
 class InvalidMacroTests(TestCase):
     def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
         # Create 3 test nodes
         create_test_nodes()
 
@@ -565,7 +574,7 @@ class InvalidMacroTests(TestCase):
         }
 
         # Send request, verify response, verify macro not created
-        response = self.client.post('/add_macro_action', payload, content_type='application/json')
+        response = self.client.post('/add_macro_action', payload)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), 'Invalid action')
         self.assertEqual(len(Macro.objects.all()), 0)
@@ -581,7 +590,7 @@ class InvalidMacroTests(TestCase):
                 "friendly_name": "Cabinet Lights"
             }
         }
-        response = self.client.post('/add_macro_action', payload, content_type='application/json')
+        response = self.client.post('/add_macro_action', payload)
         self.assertEqual(len(Macro.objects.all()), 1)
 
         # Attempt to delete non-existing macro action, verify response
@@ -1338,6 +1347,9 @@ class ApiCardTests(TestCase):
 # Test modal used to edit schedule rules
 class RuleModalTests(TestCase):
     def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
         # Create 3 test nodes
         create_test_nodes()
 
@@ -1363,7 +1375,7 @@ class RuleModalTests(TestCase):
                 "sunset": "20:20"
             }
         }
-        response = self.client.post('/edit_rule', payload, content_type='application/json')
+        response = self.client.post('/edit_rule', payload)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/rule_modal.html')
 
@@ -1386,7 +1398,7 @@ class RuleModalTests(TestCase):
                 "sunset": "20:20"
             }
         }
-        response = self.client.post('/edit_rule', payload, content_type='application/json')
+        response = self.client.post('/edit_rule', payload)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/rule_modal.html')
 
@@ -1411,7 +1423,7 @@ class RuleModalTests(TestCase):
                 "sunset": "20:20"
             }
         }
-        response = self.client.post('/edit_rule', payload, content_type='application/json')
+        response = self.client.post('/edit_rule', payload)
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/rule_modal.html')
 
@@ -1486,6 +1498,9 @@ class ScheduleKeywordTests(TestCase):
 
 class SyncScheduleKeywordTests(TestCase):
     def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
         # Create 3 test nodes
         create_test_nodes()
 
@@ -1511,7 +1526,7 @@ class SyncScheduleKeywordTests(TestCase):
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
             # Send request, verify response
-            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
@@ -1523,7 +1538,7 @@ class SyncScheduleKeywordTests(TestCase):
         del self.payload['existing_keywords']['sunset']
 
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
-            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
@@ -1542,7 +1557,7 @@ class SyncScheduleKeywordTests(TestCase):
             self.payload['existing_keywords'] = {}
             mock_parse_command.reset_mock()
 
-            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
@@ -1568,7 +1583,7 @@ class SyncScheduleKeywordTests(TestCase):
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
             # Send request, verify response
-            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
@@ -1591,7 +1606,7 @@ class SyncScheduleKeywordTests(TestCase):
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
             # Send request, verify response
-            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
@@ -1615,7 +1630,7 @@ class SyncScheduleKeywordTests(TestCase):
         # Mock parse_command to do nothing
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
             # Send request for Node with all 5, should delete same keywords deleted above
-            response = self.client.post('/sync_schedule_keywords', self.payload, content_type='application/json')
+            response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), "Done")
 
