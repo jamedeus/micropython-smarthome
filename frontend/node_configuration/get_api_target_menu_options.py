@@ -25,13 +25,39 @@ def convert_config_to_api_target_options(config):
 
             # All devices have same options
             if i.startswith("device"):
-                result[instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off']
+                result[instance_string] = [
+                    'enable',
+                    'disable',
+                    'enable_in',
+                    'disable_in',
+                    'set_rule',
+                    'reset_rule',
+                    'turn_on',
+                    'turn_off'
+                ]
 
             # All sensors have same options except thermostat and switch (trigger unsupported)
-            elif i.startswith("sensor") and not (config[i]["type"] == "si7021" or config[i]["type"] == "switch"):
-                result[instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']
+            elif i.startswith("sensor") and config[i]["type"] not in ["si7021", "switch"]:
+                result[instance_string] = [
+                    'enable',
+                    'disable',
+                    'enable_in',
+                    'disable_in',
+                    'set_rule',
+                    'reset_rule',
+                    'trigger_sensor'
+                ]
+
             else:
-                result[instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
+                result[instance_string] = [
+                    'enable',
+                    'disable',
+                    'enable_in',
+                    'disable_in',
+                    'set_rule',
+                    'reset_rule'
+                ]
+
         else:
             # Add options for all configured IR Blaster targets
             entry = {target: options for target, options in ir_blaster_options.items() if target in config[i]['target']}
@@ -41,8 +67,8 @@ def convert_config_to_api_target_options(config):
     return result
 
 
-# Return dict with all configured nodes, their devices and sensors, and API commands which target each device/sensor type
-# If friendly name of existing node passed as arg, name and IP are replaced with "self-target" and "127.0.0.1" respectively
+# Return dict with all existing nodes, their devices and sensors, and all API commands valid for each device/sensor type
+# If friendly name of node passed as arg, name and IP are replaced with "self-target" and "127.0.0.1" respectively
 # Used to populate cascading dropdown menu in frontend
 def get_api_target_menu_options(editing_node=False):
     dropdownObject = {
