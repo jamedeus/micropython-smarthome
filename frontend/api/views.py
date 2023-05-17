@@ -1,6 +1,5 @@
 import json
 import asyncio
-import re
 import itertools
 from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
@@ -8,24 +7,21 @@ from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from node_configuration.models import Node, ScheduleKeyword
 from node_configuration.get_api_target_menu_options import get_api_target_menu_options
+from node_configuration.helper_functions import (
+    get_schedule_keywords_dict,
+    valid_ip,
+    valid_timestamp,
+    is_device_or_sensor,
+    is_device,
+    is_sensor
+)
 from api.models import Macro
-
-# Used to determine if keyword or timestamp schedule rule
-timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
-
-# IPv4 regular expression
-ip_regex = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 
 # Valid IR commands for each target, used in error message
 ir_commands = {
     "tv": "power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source",
     "ac": "ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"
 }
-
-
-# Returns all schedule keywords in dict format used by node config files and overview template
-def get_schedule_keywords_dict():
-    return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
 
 
 # Receives schedule params in post, renders rule_modal template
@@ -40,7 +36,7 @@ def edit_rule(request):
         data['duration'] = data['rule'].split('/')[2]
         data['rule'] = data['rule'].split('/')[1]
 
-    if len(data['timestamp']) == 0 or re.match(timestamp_regex, data['timestamp']):
+    if len(data['timestamp']) == 0 or valid_timestamp(data['timestamp']):
         data['show_timestamp'] = True
     else:
         data['show_timestamp'] = False
@@ -127,7 +123,7 @@ def get_api_target_instance_options(node, status):
 
     # Find all api-target instances, find same instance in options object, add options to output
     for i in config:
-        if i.startswith("device") and config[i]['type'] == 'api-target':
+        if is_device(i) and config[i]['type'] == 'api-target':
             # Find section in options object with matching IP, add to context
             for node in options['addresses']:
                 if options['addresses'][node] == config[i]['ip']:
@@ -271,7 +267,7 @@ def send_command(request):
     else:
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
-    if re.match(ip_regex, data["target"]):
+    if valid_ip(data["target"]):
         # New API Card interface
         ip = data["target"]
     else:
@@ -481,7 +477,7 @@ def disable(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         return asyncio.run(request(ip, ['disable', params[0]]))
     else:
         return {"ERROR": "Can only disable devices and sensors"}
@@ -492,7 +488,7 @@ def disable_in(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
             period = float(params[0])
@@ -508,7 +504,7 @@ def enable(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         return asyncio.run(request(ip, ['enable', params[0]]))
     else:
         return {"ERROR": "Can only enable devices and sensors"}
@@ -519,7 +515,7 @@ def enable_in(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
             period = float(params[0])
@@ -535,7 +531,7 @@ def set_rule(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
             return asyncio.run(request(ip, ['set_rule', target, params[0]]))
@@ -550,7 +546,7 @@ def reset_rule(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         return asyncio.run(request(ip, ['reset_rule', target]))
     else:
@@ -567,7 +563,7 @@ def get_schedule_rules(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         return asyncio.run(request(ip, ['get_schedule_rules', target]))
     else:
@@ -579,12 +575,12 @@ def add_schedule_rule(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    if len(params) > 0 and re.match(timestamp_regex, params[0]):
+    if len(params) > 0 and valid_timestamp(params[0]):
         timestamp = params.pop(0)
     elif len(params) > 0 and params[0] in ScheduleKeyword.objects.values_list('keyword', flat=True):
         timestamp = params.pop(0)
@@ -608,12 +604,12 @@ def remove_rule(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    if len(params) > 0 and re.match(timestamp_regex, params[0]):
+    if len(params) > 0 and valid_timestamp(params[0]):
         timestamp = params.pop(0)
     elif len(params) > 0 and params[0] in ScheduleKeyword.objects.values_list('keyword', flat=True):
         timestamp = params.pop(0)
@@ -640,7 +636,7 @@ def add_schedule_keyword(ip, params):
 
     keyword = params.pop(0)
 
-    if len(params) > 0 and re.match(timestamp_regex, params[0]):
+    if len(params) > 0 and valid_timestamp(params[0]):
         timestamp = params.pop(0)
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
@@ -669,7 +665,7 @@ def get_attributes(ip, params):
     if len(params) == 0:
         return {"ERROR": "Please fill out all fields"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         return asyncio.run(request(ip, ['get_attributes', target]))
     else:
@@ -721,7 +717,7 @@ def clear_log(ip, params):
 @add_endpoint("condition_met")
 def condition_met(ip, params):
     try:
-        if params[0].startswith("sensor"):
+        if is_sensor(params[0]):
             return asyncio.run(request(ip, ['condition_met', params[0]]))
         else:
             raise IndexError
@@ -732,7 +728,7 @@ def condition_met(ip, params):
 @add_endpoint("trigger_sensor")
 def trigger_sensor(ip, params):
     try:
-        if params[0].startswith("sensor"):
+        if is_sensor(params[0]):
             return asyncio.run(request(ip, ['trigger_sensor', params[0]]))
         else:
             raise IndexError
@@ -743,7 +739,7 @@ def trigger_sensor(ip, params):
 @add_endpoint("turn_on")
 def turn_on(ip, params):
     try:
-        if params[0].startswith("device"):
+        if is_device(params[0]):
             return asyncio.run(request(ip, ['turn_on', params[0]]))
         else:
             raise IndexError
@@ -754,7 +750,7 @@ def turn_on(ip, params):
 @add_endpoint("turn_off")
 def turn_off(ip, params):
     try:
-        if params[0].startswith("device"):
+        if is_device(params[0]):
             return asyncio.run(request(ip, ['turn_off', params[0]]))
         else:
             raise IndexError

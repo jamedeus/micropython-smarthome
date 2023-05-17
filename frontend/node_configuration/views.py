@@ -1,6 +1,5 @@
 import json
 import os
-import re
 from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -10,9 +9,16 @@ from django.db import IntegrityError
 from .models import Node, Config, WifiCredentials, ScheduleKeyword
 from .Webrepl import Webrepl
 from .validators import validate_rules
-from .helper_functions import is_device_or_sensor, is_device, is_sensor, get_config_param_list
 from .get_api_target_menu_options import get_api_target_menu_options
 from api.views import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
+from .helper_functions import (
+    is_device_or_sensor,
+    is_device,
+    is_sensor,
+    get_config_param_list,
+    get_schedule_keywords_dict,
+    valid_ip
+)
 
 # Env var constants
 REPO_DIR = settings.REPO_DIR
@@ -50,16 +56,6 @@ dependencies = {
         'desktop': ["sensors/Desktop_trigger.py", "sensors/Sensor.py"],
     }
 }
-
-
-# Returns True if param matches IPv4 regex, otherwise False
-def valid_ip(ip):
-    return bool(re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip))
-
-
-# Returns all schedule keywords in dict format used by node config files and overview template
-def get_schedule_keywords_dict():
-    return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
 
 
 # Takes full config file, returns all dependencies in 2 lists:
