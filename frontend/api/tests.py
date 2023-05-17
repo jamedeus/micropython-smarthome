@@ -1110,9 +1110,18 @@ class LegacyApiTests(TestCase):
         self.assertEqual(len(response.context['context']), 3)
 
         # Confirm one button for each node
-        self.assertContains(response, '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test1">Test1</button>')
-        self.assertContains(response, '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test2">Test2</button>')
-        self.assertContains(response, '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test3">Test3</button>')
+        self.assertContains(
+            response,
+            '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test1">Test1'
+        )
+        self.assertContains(
+            response,
+            '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test2">Test2'
+        )
+        self.assertContains(
+            response,
+            '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test3">Test3'
+        )
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -1284,7 +1293,10 @@ class ApiCardTests(TestCase):
             self.assertEqual(response.context['context']['metadata'], config2_api_context['metadata'])
             self.assertEqual(response.context['context']['sensors'], config2_api_context['sensors'])
             self.assertEqual(response.context['context']['devices'], config2_api_context['devices'])
-            self.assertEqual(response.context['context']['api_target_options'], config2_api_context['api_target_options'])
+            self.assertEqual(
+                response.context['context']['api_target_options'],
+                config2_api_context['api_target_options']
+            )
 
     def test_failed_connection(self):
         # Mock request to simulate offline target node

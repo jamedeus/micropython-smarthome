@@ -14,6 +14,7 @@ from .helper_functions import is_device_or_sensor, is_device, is_sensor, get_con
 from .get_api_target_menu_options import get_api_target_menu_options
 from api.views import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
 
+# Env var constants
 REPO_DIR = settings.REPO_DIR
 CONFIG_DIR = settings.CONFIG_DIR
 NODE_PASSWD = settings.NODE_PASSWD
