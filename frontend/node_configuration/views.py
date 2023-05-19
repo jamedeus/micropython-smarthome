@@ -314,7 +314,8 @@ def config_overview(request):
     context = {
         "not_uploaded": [],
         "uploaded": [],
-        "schedule_keywords": get_schedule_keywords_dict()
+        "schedule_keywords": get_schedule_keywords_dict(),
+        "client_ip": request.META.get('REMOTE_ADDR')
     }
 
     # Don't show sunrise or sunset (prevent editing time, overwrites on nodes)
