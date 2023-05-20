@@ -54,7 +54,6 @@ async function add_rule() {
 
         // Change text for api-target
         if (type === "api-target") {
-            console.log('overwriting api-target innerHTML')
             document.getElementById(`${target}-rule${num}`).innerHTML = "click to view";
         };
     };

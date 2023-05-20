@@ -663,7 +663,10 @@ class OverviewPageTests(TestCase):
 
         # Confirm table with all 3 nodes present
         self.assertContains(response, '<tr id="Test1">')
-        self.assertContains(response, '<td class="align-middle"><span class="form-control keyword text-center">Test2</span></td>')
+        self.assertContains(
+            response,
+            '<td class="align-middle"><span class="form-control keyword text-center">Test2</span></td>'
+        )
         self.assertContains(response, 'onclick="window.location.href = \'/edit_config/Test3\'"')
         self.assertContains(response, 'onclick="del_node(\'Test1\')"')
 
@@ -878,7 +881,10 @@ class UploadTests(TestCase):
             # Upload config, verify error
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
-            self.assertEqual(response.json(), 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.')
+            self.assertEqual(
+                response.json(),
+                'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
+            )
 
         # Should not create Node or Config
         self.assertEqual(len(Config.objects.all()), 1)
@@ -898,7 +904,10 @@ class UploadTests(TestCase):
 
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 408)
-            self.assertEqual(response.json(), 'Connection timed out - please press target node reset button, wait 30 seconds, and try again.')
+            self.assertEqual(
+                response.json(),
+                'Connection timed out - please press target node reset button, wait 30 seconds, and try again.'
+            )
 
         # Should not create Node or Config
         self.assertEqual(len(Config.objects.all()), 1)
@@ -918,7 +927,12 @@ class UploadTests(TestCase):
 
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 409)
-            self.assertEqual(response.json(), 'ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?')
+            self.assertEqual(
+                response.json(), (
+                    'ERROR: Unable to upload libraries, /lib/ does not exist. '
+                    'This is normal for new nodes - would you like to upload setup to fix?'
+                )
+            )
 
         # Should not create Node or Config
         self.assertEqual(len(Config.objects.all()), 1)
@@ -954,7 +968,10 @@ class ProvisionTests(TestCase):
 
             response = provision('test1.json', '123.45.67.89', modules, libs)
             self.assertEqual(response.status_code, 404)
-            self.assertEqual(response.content.decode(), '"Error: Unable to connect to node, please make sure it is connected to wifi and try again."')
+            self.assertEqual(
+                response.content.decode(),
+                '"Error: Unable to connect to node, please make sure it is connected to wifi and try again."'
+            )
 
     def test_provision_connection_timeout(self):
         modules, libs = get_modules(test_config_1)
@@ -965,7 +982,10 @@ class ProvisionTests(TestCase):
 
             response = provision('test1.json', '123.45.67.89', modules, libs)
             self.assertEqual(response.status_code, 408)
-            self.assertEqual(response.content.decode(), '"Connection timed out - please press target node reset button, wait 30 seconds, and try again."')
+            self.assertEqual(
+                response.content.decode(),
+                '"Connection timed out - please press target node reset button, wait 30 seconds, and try again."'
+            )
 
     def test_provision_first_time_setup(self):
         modules, libs = get_modules(test_config_1)
@@ -976,7 +996,12 @@ class ProvisionTests(TestCase):
 
             response = provision('test1.json', '123.45.67.89', modules, libs)
             self.assertEqual(response.status_code, 409)
-            self.assertEqual(response.content.decode(), '"ERROR: Unable to upload libraries, /lib/ does not exist. This is normal for new nodes - would you like to upload setup to fix?"')
+            self.assertEqual(
+                response.content.decode(), (
+                    '"ERROR: Unable to upload libraries, /lib/ does not exist. '
+                    'This is normal for new nodes - would you like to upload setup to fix?"'
+                )
+            )
 
     def test_provision_corrupt_filesystem(self):
         modules, libs = get_modules(test_config_1)
@@ -987,7 +1012,10 @@ class ProvisionTests(TestCase):
 
             response = provision('test1.json', '123.45.67.89', modules, libs)
             self.assertEqual(response.status_code, 409)
-            self.assertEqual(response.content.decode(), '"ERROR: Upload failed due to filesystem problem, please re-flash node."')
+            self.assertEqual(
+                response.content.decode(),
+                '"ERROR: Upload failed due to filesystem problem, please re-flash node."'
+            )
 
 
 # Test view that connects to existing node, downloads config file, writes to database
@@ -1034,7 +1062,10 @@ class RestoreConfigViewTest(TestCase):
             # Post fake IP to endpoint, confirm weeoe
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
-            self.assertEqual(response.json(), 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.')
+            self.assertEqual(
+                response.json(),
+                'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
+            )
 
         # Database should still be empty
         self.assertEqual(len(Config.objects.all()), 0)
@@ -1618,7 +1649,10 @@ class DeleteConfigTests(TestCase):
         # Attempt to delete, confirm fails with permission denied error
         response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.json(), 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.')
+        self.assertEqual(
+            response.json(),
+            'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
+        )
 
         # Confirm Config still exists
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1685,7 +1719,10 @@ class DeleteNodeTests(TestCase):
         # Attempt to delete, confirm fails with permission denied error
         response = self.client.post('/delete_node', json.dumps('Test Node'))
         self.assertEqual(response.status_code, 500)
-        self.assertEqual(response.json(), 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.')
+        self.assertEqual(
+            response.json(),
+            'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
+        )
 
         # Confirm Node and Config still exist
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1748,13 +1785,20 @@ class ChangeNodeIpTests(TestCase):
     def test_target_ip_offline(self):
         # Mock provision to return failure message without doing anything
         with patch('node_configuration.views.provision') as mock_provision:
-            mock_provision.return_value = JsonResponse("Error: Unable to connect to node, please make sure it is connected to wifi and try again.", safe=False, status=404)
+            mock_provision.return_value = JsonResponse(
+                "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
+                safe=False,
+                status=404
+            )
 
             # Make request, confirm error
             request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
             response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 404)
-            self.assertEqual(response.json(), "Error: Unable to connect to node, please make sure it is connected to wifi and try again.")
+            self.assertEqual(
+                response.json(),
+                "Error: Unable to connect to node, please make sure it is connected to wifi and try again."
+            )
 
     def test_invalid_get_request(self):
         # Requires post, confirm errors
