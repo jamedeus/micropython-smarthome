@@ -33,6 +33,7 @@ function submit_api_rule(el) {
     value["instance-off"] = value["instance-off"].split("-")[0]
     // Convert form object to correct format, set value of hidden rule field
     document.getElementById(el.dataset.target).value = convert_api_target_rule(value);
+    // Trigger change listener, sends set_rule API call
     var event = new Event('change');
     document.getElementById(el.dataset.target).dispatchEvent(event);
 };
@@ -240,7 +241,7 @@ function open_rule_modal(el) {
 
     // Re-populate dropdowns from existing rule (if present)
     try {
-        var restore = JSON.parse(document.getElementById(el.id.replace("-button", "")).value);
+        var restore = JSON.parse(el.dataset.original);
         reload_rule(target, restore);
     } catch(err) {
         console.log("No existing rule");
@@ -355,14 +356,16 @@ function convert_api_target_rule(input) {
     return JSON.stringify(output);
 };
 
-// Handler for change rule option in Api frontend
+// Called by change listener when submit_api_rule changes value of current_rule input
 async function change_api_target_rule(el) {
     console.log("Changing rule");
-
     const target = el.id.split("-")[0];
 
-    var rule = document.getElementById(`${target}-current_rule`).value;
+    // Get rule, copy to dataset attribute (pre-populate modal next time opened)
+    const rule = document.getElementById(`${target}-current_rule`).value;
+    document.getElementById(`${target}-current_rule-button`).dataset.original = rule
 
+    // API call
     var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': rule});
     result = await result.json();
 

@@ -378,7 +378,7 @@ async function load_device_section(select) {
 
                     <div class="mb-2 text-center">
                         <label for="device${index}-default_rule" class="device${index}" style="display:none;"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control device${index}" id="device${index}-default_rule" placeholder="" style="display:none;" required>
+                        <input type="default_rule" class="form-control device${index}" id="device${index}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('device${index}-default_rule-button').dataset.original = this.value;" required>
                     </div>`
 
     } else if (selected == "ir-blaster") {
