@@ -168,9 +168,11 @@ function add_new_row(target, timestamp, rule, type) {
     };
 
     // Populate template with received parameters
+    // NOTE: Inconsistent quotes on data-original are important, attribute may contain
+    // string representation of dict containing double quotes, breaks if double quoted
     var template = `<tr id="${target}-row-${row}">
     <td><span class="form-control schedule-rule time ${target}" id="${target}-rule${row}-time" data-original="${timestamp}" data-type="${type}" onclick="edit_existing_rule(this);">${format12h(timestamp)}</span></td>
-    <td><span class="form-control schedule-rule rule ${target}" id="${target}-rule${row}" data-original="${rule}" data-type="${type}" onclick="edit_existing_rule(this);">${rule}</span></td>
+    <td><span class="form-control schedule-rule rule ${target}" id="${target}-rule${row}" data-original='${rule}' data-type="${type}" onclick="edit_existing_rule(this);">${rule}</span></td>
     <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="${target}-edit${row}" data-type="${type}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
     </tr>`
 
