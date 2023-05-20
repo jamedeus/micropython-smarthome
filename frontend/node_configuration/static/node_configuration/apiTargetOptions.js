@@ -433,3 +433,19 @@ function get_self_target_options() {
         };
     };
 };
+
+
+// Focus api rule modal when opened, allows closing with esc key
+// When schedule rule modal open, time field focus causes esc to close lower modal
+apiRuleModal._element.addEventListener('shown.bs.modal', function (event) {
+    event.target.focus();
+});
+
+
+// Focus schedule rule modal (if open) when api rule modal closed
+// Allows closing with esc key (default: focus body when any modal closes)
+apiRuleModal._element.addEventListener('hidden.bs.modal', function () {
+    if (getComputedStyle(ruleModal._element).display !== 'none') {
+        ruleModal._element.focus();
+    }
+});
