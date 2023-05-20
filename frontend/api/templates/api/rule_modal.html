@@ -33,15 +33,16 @@
     {% if type in "dimmer,bulb,wled,pwm,pir,si7021" %}
         <div class="text-center">
             <label for="rule-input" class="form-label">Rule</label>
-            <input type="text" class="form-control" id="rule-input" name="rule-input" value="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+            <input type="text" class="form-control" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
         </div>
 
+    {% if type in "dimmer,bulb,pwm" %}
+        <!-- Fade duration input -->
         <div id="duration-input" class="text-center {% if not fade %} d-none {% endif %}">
             <label for="duration" class="form-label mt-2">Duration (seconds)</label>
             <input type="text" class="form-control" id="duration" name="duration" {% if duration %}value="{{duration}}"{% endif %} data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
         </div>
 
-    {% if type in "dimmer,bulb,pwm" %}
         <!-- Fade mode toggle -->
         <div class="d-flex mt-2">
             <div class="form-check form-switch d-inline-block">
@@ -54,7 +55,7 @@
     {% elif type in "relay,dumb-relay,desktop,mosfet,switch" %}
         <div class="text-center">
             <label for="rule-input" class="form-label">Keyword</label>
-            <select class="form-select" id="rule-input" name="rule-input" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+            <select class="form-select" id="rule-input" name="rule-input" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
                 <option disabled {% if rule == "" %}selected{% endif %}>Select rule</option>
                 <option value="enabled" {% if rule == "Enabled" %}selected{% endif %}>Enabled</option>
                 <option value="disabled" {% if rule == "Disabled" %}selected{% endif %}>Disabled</option>
@@ -64,7 +65,7 @@
     {% elif type == "dummy" %}
         <div class="text-center">
             <label for="rule-input" class="form-label">Keyword</label>
-            <select class="form-select" id="rule-input" name="rule-input" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+            <select class="form-select" id="rule-input" name="rule-input" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
                 <option disabled {% if rule == "" %}selected{% endif %}>Select rule</option>
                 <option value="enabled" {% if rule == "Enabled" %}selected{% endif %}>Enabled</option>
                 <option value="disabled" {% if rule == "Disabled" %}selected{% endif %}>Disabled</option>
@@ -76,11 +77,11 @@
     {% elif type == "api-target" %}
         <div class="text-center">
             {# Hidden input with expected rule ID #}
-            <input type="text" id="rule-input" value="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" style="display:none;">
+            <input type="text" id="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" style="display:none;">
 
             {# Button has id expected by open_rule_modal, data-target sets output destination when submitted #}
             <label for="{{target}}-button" class="form-label">Rule</label>
-            <button class="form-control" id="{{target}}-button" name="{{target}}-button" value="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" data-target="rule-input" title="Invalid rule" onclick="open_rule_modal(this);">Set Rule</button>
+            <button class="form-control" id="{{target}}-button" name="{{target}}-button" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" data-target="rule-input" title="Invalid rule" onclick="open_rule_modal(this);">Set Rule</button>
         </div>
 
     {% endif %}

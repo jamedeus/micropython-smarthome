@@ -44,7 +44,7 @@ async function add_rule() {
         add_new_row(target, timestamp, rule, type);
 
     // Modified existing rule
-    } else if (original_timestamp != timestamp) {
+    } else if (original_timestamp != timestamp || rule_field.dataset.original != rule) {
         // Modify rule in rule field
         const num = delete_button.dataset.number;
         document.getElementById(`${target}-rule${num}`).dataset.original = rule;
