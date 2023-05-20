@@ -687,7 +687,8 @@
     <script>
         // Disable upload buttons if input contains invalid IP
         document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('input', function(e) {
-            const id = event.target.id.split('-')[0];
+            const id = event.target.id.replace("-ip", "");
+            console.log(id)
 
             if (!event.target.validity.valid) {
                 document.getElementById(`upload-${id}`).disabled = true;
@@ -699,7 +700,7 @@
         // Click upload button if enter pressed in field with valid IP
         document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('keyup', function(e) {
             if (e.key === 'Enter' || e.keyCode === 13) {
-                const id = e.target.id.split('-')[0];
+                const id = e.target.id.replace("-ip", "");
                 const uploadButton = document.getElementById(`upload-${id}`);
 
                 if (!uploadButton.disabled) {uploadButton.click()};
