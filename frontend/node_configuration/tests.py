@@ -2160,12 +2160,26 @@ class ValidatorTests(TestCase):
         valid['on'] = ['disable_in', 'device1', 'five minutes']
         self.assertFalse(api_target_validator(valid))
 
+    def test_api_target_turn_on_turn_off(self):
+        # Should accept turn_on/off if arg is device
+        valid = self.config['device10']['default_rule']
+        valid['on'] = ['turn_on', 'device1']
+        self.assertTrue(api_target_validator(valid))
+        valid['on'] = ['turn_off', 'device1']
+        self.assertTrue(api_target_validator(valid))
+
     def test_api_target_set_rule(self):
         # Should accept set_rule if args are sensor/device and rule
         valid = self.config['device10']['default_rule']
         valid['on'] = ['set_rule', 'sensor1', '50']
         self.assertTrue(api_target_validator(valid))
         valid['on'] = ['set_rule', 'device1', '50']
+        self.assertTrue(api_target_validator(valid))
+
+        # Should accept reset_rule if arg is sensor or device
+        valid['on'] = ['reset_rule', 'sensor1']
+        self.assertTrue(api_target_validator(valid))
+        valid['on'] = ['reset_rule', 'device1']
         self.assertTrue(api_target_validator(valid))
 
     def test_api_target_ir_key(self):

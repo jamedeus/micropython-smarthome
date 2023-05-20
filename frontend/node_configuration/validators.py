@@ -104,10 +104,13 @@ def is_valid_api_sub_rule(rule):
     if rule[0] in ['reboot', 'clear_log', 'ignore'] and len(rule) == 1:
         return True
 
-    elif rule[0] in ['enable', 'disable'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
+    elif rule[0] in ['enable', 'disable', 'reset_rule'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
         return True
 
     elif rule[0] in ['condition_met', 'trigger_sensor'] and len(rule) == 2 and is_sensor(rule[1]):
+        return True
+
+    elif rule[0] in ['turn_on', 'turn_off'] and len(rule) == 2 and rule[1].startswith("device"):
         return True
 
     elif rule[0] in ['enable_in', 'disable_in'] and len(rule) == 3 and is_device_or_sensor(rule[1]):
@@ -122,8 +125,6 @@ def is_valid_api_sub_rule(rule):
 
     elif rule[0] == 'ir_key':
         if len(rule) == 3 and type(rule[1]) == str and type(rule[2]) == str:
-            return True
-        elif len(rule) == 1 and rule[0] == 'ignore':
             return True
         else:
             return False
