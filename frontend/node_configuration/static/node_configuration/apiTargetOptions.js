@@ -11,7 +11,7 @@ if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').match
     Array.from(modal.querySelectorAll('label')).forEach(function(button) {
         if (button.classList.contains("btn-outline-secondary")) {
             button.classList.remove("btn-outline-secondary");
-            button.classList.add("btn-outline-dark");
+            button.classList.add("btn-dark");
         };
     });
 };

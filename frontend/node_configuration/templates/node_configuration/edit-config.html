@@ -901,10 +901,10 @@
 
                         <div class="btn-group mx-auto" role="group" aria-label="Basic radio toggle button group">
                             <input type="radio" class="btn-check" name="btnradio" id="on-button" autocomplete="off" onclick="switch_page(this)" checked>
-                            <label class="btn btn-outline-secondary ms-auto" for="on-button">On Action</label>
+                            <label class="btn btn-outline-secondary ms-auto api-subrule" for="on-button">On Action</label>
 
                             <input type="radio" class="btn-check" name="btnradio" id="off-button" autocomplete="off" onclick="switch_page(this)">
-                            <label class="btn btn-outline-secondary me-auto" for="off-button">Off Action</label>
+                            <label class="btn btn-outline-secondary me-auto api-subrule" for="off-button">Off Action</label>
                         </div>
 
                     </div>
@@ -1038,7 +1038,7 @@
                 modal.querySelectorAll('label').forEach(function(button) {
                     if (button.classList.contains("btn-outline-secondary")) {
                         button.classList.remove("btn-outline-secondary");
-                        button.classList.add("btn-outline-dark");
+                        button.classList.add("btn-dark");
                     };
                 });
 
@@ -1057,8 +1057,8 @@
                     };
                 });
                 modal.querySelectorAll('label').forEach(function(button) {
-                    if (button.classList.contains("btn-outline-dark")   ) {
-                        button.classList.remove("btn-outline-dark");
+                    if (button.classList.contains("btn-dark")   ) {
+                        button.classList.remove("btn-dark");
                         button.classList.add("btn-outline-secondary");
                     };
                 });

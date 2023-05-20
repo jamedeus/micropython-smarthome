@@ -140,6 +140,7 @@ td:last-child {
   /* Increase contrast for disabled items */
   /* Force bold white text on buttons (readability) */
   /* Fix slight annoying color difference between radio button and submit button */
+  /* ApiTarget rule modal On/Off toggle */
   --bs-body-color: #eee;
   --bs-body-bg: #1b1e1f;
   /* Prevent color change on focus (not enough contrast with body bg) */
@@ -168,6 +169,14 @@ td:last-child {
 .dark .btn-check:active + .btn-outline-primary, .dark .btn-check:checked + .btn-outline-primary, .dark .btn-outline-primary.active, .dark .btn-outline-primary.dropdown-toggle.show, .dark .btn-outline-primary:active {
   background-color: #0550b8;
   border-color: #0550b8;
+}
+.dark .btn-check + .btn-dark {
+  background-color: #282d32;
+  border-color: #282d32;
+}
+.dark .btn-check:active + .btn-dark, .dark .btn-check:checked + .btn-dark {
+  background-color: #1B1E1F;
+  border-color: #1B1E1F;
 }
 .dark .btn-dark:hover, .dark .btn-dark:focus, .dark .btn-dark:active {
   background-color: #212529 !important;
