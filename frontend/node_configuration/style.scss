@@ -11,6 +11,11 @@
     }
 }
 
+/* Remove border around disabled buttons */
+.btn:disabled, .btn:active {
+    border-color: transparent !important
+}
+
 /* Set table column to minimum width with class */
 td {
     width: auto;
