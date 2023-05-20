@@ -48,10 +48,13 @@ class ApiTarget(Device):
             if rule[i][0] in ['reboot', 'clear_log', 'ignore'] and len(rule[i]) == 1:
                 continue
 
-            elif rule[i][0] in ['enable', 'disable'] and len(rule[i]) == 2 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
+            elif rule[i][0] in ['enable', 'disable', 'reset_rule'] and len(rule[i]) == 2 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
                 continue
 
             elif rule[i][0] in ['condition_met', 'trigger_sensor'] and len(rule[i]) == 2 and rule[i][1].startswith("sensor"):
+                continue
+
+            elif rule[i][0] in ['turn_on', 'turn_off'] and len(rule[i]) == 2 and rule[i][1].startswith("device"):
                 continue
 
             elif rule[i][0] in ['enable_in', 'disable_in'] and len(rule[i]) == 3 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
@@ -66,8 +69,6 @@ class ApiTarget(Device):
 
             elif rule[i][0] == 'ir_key':
                 if len(rule[i]) == 3 and type(rule[i][1]) == str and type(rule[i][2]) == str:
-                    continue
-                elif len(rule[i]) == 1 and rule[i][0] == 'ignore':
                     continue
                 else:
                     return False
@@ -123,6 +124,7 @@ class ApiTarget(Device):
         try:
             writer.write('{}\n'.format(json.dumps(msg)).encode())
             await writer.drain()
+            # TODO change this limit?
             res = await reader.read(1000)
         except OSError:
             pass

@@ -8,7 +8,7 @@ default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
 class TestApiTarget(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_enable_by_rule_change", "test_disable_by_rule_change", "test_rule_change_to_enabled_regression", "test_regression_invalid_default_rule"]
+        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_enable_by_rule_change", "test_disable_by_rule_change", "test_rule_change_to_enabled_regression", "test_regression_invalid_default_rule", "test_regression_rejects_valid_rules"]
 
     def test_instantiation(self):
         self.instance = ApiTarget("device1", "device1", "api-target", True, None, default_rule, "192.168.1.223")
@@ -91,3 +91,16 @@ class TestApiTarget(unittest.TestCase):
         except AttributeError:
             # Should raise exception, test passed
             self.assertTrue(True)
+
+    # Original bug: Rejected turn_on, turn_off, reset_rule commands (all valid)
+    def test_regression_rejects_valid_rules(self):
+        # Should accept turn_on/turn_off targeting device
+        self.assertTrue(self.instance.set_rule({'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']}))
+        self.assertEqual(self.instance.current_rule, {'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']})
+
+        # Should accept reset_rule targetting device or sensor
+        self.assertTrue(self.instance.set_rule({'on': ['reset_rule', 'device2'], 'off': ['reset_rule', 'sensor2']}))
+        self.assertEqual(self.instance.current_rule, {'on': ['reset_rule', 'device2'], 'off': ['reset_rule', 'sensor2']})
+
+        # Should reject turn_on/turn_off for sensors
+        self.assertFalse(self.instance.rule_validator({'on': ['turn_on', 'sensor1'], 'off': ['turn_off', 'sensor2']}))
