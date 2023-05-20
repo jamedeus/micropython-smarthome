@@ -197,8 +197,8 @@ function open_rule_modal(el) {
         target = document.getElementById(`${target}-ip`).selectedOptions[0].innerText;
     };
 
-    // Store ID of hidden rule field in submit button data attribute. User selection is copied to this field on submit
-    document.getElementById('submit-api-rule').dataset.target = el.id.replace("-button", "");
+    // Copy ID of hidden rule field to submit button (output destination for finished rule)
+    document.getElementById('submit-api-rule').dataset.target = el.dataset.target;
 
     // Clear all options from last time menu was opened
     instance_select_on.length = 1;

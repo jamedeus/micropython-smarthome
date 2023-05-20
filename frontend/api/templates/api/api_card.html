@@ -262,7 +262,7 @@
                                         <li><a id="{{device}}-schedule-toggle" class="dropdown-item" onclick="open_schedule_toggle(this);">Schedule Toggle</a></li>
                                         <li><a id="{{device}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
                                         {% if params.type == "api-target" %}
-                                            <li><a id="{{device}}-current_rule-button" class="dropdown-item" onclick="open_rule_modal(this);">Change rule</a></li>
+                                            <li><a id="{{device}}-current_rule-button" class="dropdown-item" data-target="{{device}}-current_rule" onclick="open_rule_modal(this);">Change rule</a></li>
                                         {% endif %}
                                         {% if params.type in "dimmer,bulb,pwm" %}
                                             <li><a id="{{device}}-start-fade" class="dropdown-item" onclick="open_fade_modal(this);">Start Fade</a></li>

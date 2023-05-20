@@ -78,12 +78,9 @@
             {# Hidden input with expected rule ID #}
             <input type="text" id="rule-input" value="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" style="display:none;">
 
-            {# Hidden input receives rule from submit_api_rule, immediately passes to rule-input #}
-            <input type="text" id="{{target}}" value="{{rule}}" style="display:none;" onchange="document.getElementById('rule-input').value = this.value;">
-
-            {# Button has id expected by open_rule_modal,  #}
+            {# Button has id expected by open_rule_modal, data-target sets output destination when submitted #}
             <label for="{{target}}-button" class="form-label">Rule</label>
-            <button class="form-control" id="{{target}}-button" name="{{target}}-button" value="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" onclick="open_rule_modal(this);">Set Rule</button>
+            <button class="form-control" id="{{target}}-button" name="{{target}}-button" value="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" data-target="rule-input" title="Invalid rule" onclick="open_rule_modal(this);">Set Rule</button>
         </div>
 
     {% endif %}
