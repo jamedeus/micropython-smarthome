@@ -51,6 +51,12 @@ async function add_rule() {
         document.getElementById(`${target}-rule${num}`).innerHTML = rule;
         document.getElementById(`${target}-rule${num}-time`).dataset.original = timestamp;
         document.getElementById(`${target}-rule${num}-time`).innerHTML = timestamp;
+
+        // Change text for api-target
+        if (type === "api-target") {
+            console.log('overwriting api-target innerHTML')
+            document.getElementById(`${target}-rule${num}`).innerHTML = "click to view";
+        };
     };
 
     // Hide modal

@@ -181,7 +181,6 @@ function add_new_row(target, timestamp, rule, type) {
 
     // Change text for api-target
     if (type === "api-target") {
-        console.log('overwriting api-target innerHTML')
         document.getElementById(`${target}-rule${row}`).innerHTML = "click to view";
     };
 };

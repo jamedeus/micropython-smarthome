@@ -111,7 +111,10 @@ async function add_rule() {
             // Modify rule in rule field
             const num = delete_button.dataset.number;
             document.getElementById(`${target}-rule${num}`).dataset.original = rule;
-            document.getElementById(`${target}-rule${num}`).innerHTML = rule;
+            // Add rule to innerHTML for all instances except api-target
+            if (type != "api-target") {
+                document.getElementById(`${target}-rule${num}`).innerHTML = rule;
+            };
         };
 
         // Resume status updates
