@@ -1027,41 +1027,11 @@
                 document.body.classList.add("dark");
                 document.body.classList.remove("light");
 
-                // Buttons in ApiTarget rule modal
-                modal = document.getElementById('api-rule-modal');
-                modal.querySelectorAll('button').forEach(function(button) {
-                    if (button.classList.contains("btn-secondary")) {
-                        button.classList.remove("btn-secondary");
-                        button.classList.add("btn-dark");
-                    };
-                });
-                modal.querySelectorAll('label').forEach(function(button) {
-                    if (button.classList.contains("btn-outline-secondary")) {
-                        button.classList.remove("btn-outline-secondary");
-                        button.classList.add("btn-dark");
-                    };
-                });
-
                 // Modal close buttons
                 document.querySelectorAll('.btn-close').forEach(button => button.classList.add("btn-close-white"));
             } else {
                 document.body.classList.remove("dark");
                 document.body.classList.add("light");
-
-                // Buttons in ApiTarget rule modal
-                modal = document.getElementById('api-rule-modal');
-                modal.querySelectorAll('button').forEach(function(button) {
-                    if (button.classList.contains("btn-dark")) {
-                        button.classList.remove("btn-dark");
-                        button.classList.add("btn-secondary");
-                    };
-                });
-                modal.querySelectorAll('label').forEach(function(button) {
-                    if (button.classList.contains("btn-dark")   ) {
-                        button.classList.remove("btn-dark");
-                        button.classList.add("btn-outline-secondary");
-                    };
-                });
 
                 // Modal close buttons
                 document.querySelectorAll('.btn-close').forEach(button => button.classList.remove("btn-close-white"));

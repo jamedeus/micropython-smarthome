@@ -849,17 +849,6 @@
                 // Modal close buttons
                 document.querySelectorAll('.btn-close').forEach(el => el.classList.add('btn-close-white'));
 
-                {% if context.api_target_options %}
-                // Buttons in ApiTarget rule modal
-                modal = document.getElementById('api-rule-modal');
-                modal.querySelectorAll('button').forEach(function(button) {
-                    if (button.classList.contains("btn-secondary")) {
-                        button.classList.remove("btn-secondary");
-                        button.classList.add("btn-dark");
-                    };
-                });
-                {% endif %}
-
             } else {
                 document.body.classList.remove("dark");
                 document.getElementById("back_button").classList.remove("btn-dark");
@@ -876,17 +865,6 @@
 
                 // Modal close buttons
                 document.querySelectorAll('.btn-close').forEach(el => el.classList.remove('btn-close-white'));
-
-                {% if context.api_target_options %}
-                // Buttons in ApiTarget rule modal
-                modal = document.getElementById('api-rule-modal');
-                modal.querySelectorAll('button').forEach(function(button) {
-                    if (button.classList.contains("btn-dark")) {
-                        button.classList.remove("btn-dark");
-                        button.classList.add("btn-secondary");
-                    };
-                });
-                {% endif %}
             }
         });
 
