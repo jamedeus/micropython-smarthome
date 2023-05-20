@@ -94,9 +94,15 @@ def get_api_target_menu_options(editing_node=False):
 
             dropdownObject["self-target"] = entries
 
+            # Add ignore option
+            dropdownObject["self-target"]['ignore'] = {}
+
         # Otherwise add to main section, add IP to addresses
         else:
             dropdownObject[node.friendly_name] = entries
             dropdownObject['addresses'][node.friendly_name] = node.ip
+
+            # Add ignore option
+            dropdownObject[node.friendly_name]['ignore'] = {}
 
     return dropdownObject

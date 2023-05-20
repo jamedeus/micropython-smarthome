@@ -16,43 +16,6 @@ if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').match
     });
 };
 
-// Listen for system theme changes
-window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
-    if (e.matches) { // Returns True for dark mode, False otherwise
-        // Buttons in ApiTarget rule modal
-        modal = document.getElementById('api-rule-modal');
-        modal.querySelectorAll('button').forEach(function(button) {
-            if (button.classList.contains("btn-secondary")) {
-                button.classList.remove("btn-secondary");
-                button.classList.add("btn-dark");
-            };
-        });
-        modal.querySelectorAll('label').forEach(function(button) {
-            if (button.classList.contains("btn-outline-secondary")) {
-                button.classList.remove("btn-outline-secondary");
-                button.classList.add("btn-dark");
-            };
-        });
-    } else {
-        // Buttons in ApiTarget rule modal
-        modal = document.getElementById('api-rule-modal');
-        modal.querySelectorAll('button').forEach(function(button) {
-            if (button.classList.contains("btn-dark")) {
-                button.classList.remove("btn-dark");
-                button.classList.add("btn-secondary");
-            };
-        });
-        modal.querySelectorAll('label').forEach(function(button) {
-            if (button.classList.contains("btn-dark")   ) {
-                button.classList.remove("btn-dark");
-                button.classList.add("btn-outline-secondary");
-            };
-        });
-    }
-})
-
-
-
 function switch_page(el) {
     if (el.id == "on-button") {
         document.getElementById("on-action").style.display = "initial";
@@ -104,10 +67,20 @@ function populate_command_on(target) {
     sub_command_select_on.disabled = true;
     sub_command_select_on.style.display = "none";
 
-    // empty command dropdown
+    // Empty command dropdown
     command_select_on.length = 1;
 
     var selected = instance_select_on.value;
+
+    // Hide all other options if ignore selected
+    if (selected == "ignore") {
+        command_select_on.disabled = true;
+        command_select_on.style.display = "none";
+        return;
+    } else {
+        command_select_on.disabled = false;
+        command_select_on.style.display = "initial";
+    };
 
     var y = ApiTargetOptions[target][selected];
 
@@ -141,6 +114,16 @@ function populate_command_off(target) {
     command_select_off.length = 1;
 
     var selected = instance_select_off.value;
+
+    // Hide all other options if ignore selected
+    if (selected == "ignore") {
+        command_select_off.disabled = true;
+        command_select_off.style.display = "none";
+        return;
+    } else {
+        command_select_off.disabled = false;
+        command_select_off.style.display = "initial";
+    };
 
     var y = ApiTargetOptions[target][selected];
 
@@ -368,6 +351,8 @@ function convert_api_target_rule(input) {
         output['on'].push('ir_key');
         output['on'].push(input['command-on']);
         output['on'].push(input['sub-command-on']);
+    } else if (input['instance-on'] == 'ignore') {
+        output['on'].push('ignore');
     } else {
         output['on'].push(input['command-on']);
         output['on'].push(input['instance-on']);
@@ -381,6 +366,8 @@ function convert_api_target_rule(input) {
         output['off'].push('ir_key');
         output['off'].push(input['command-off']);
         output['off'].push(input['sub-command-off']);
+    } else if (input['instance-off'] == 'ignore') {
+        output['off'].push('ignore');
     } else {
         output['off'].push(input['command-off']);
         output['off'].push(input['instance-off']);
@@ -486,3 +473,39 @@ apiRuleModal._element.addEventListener('hidden.bs.modal', function () {
         ruleModal._element.focus();
     }
 });
+
+
+// Listen for system theme changes
+window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+    if (e.matches) { // Returns True for dark mode, False otherwise
+        // Buttons in ApiTarget rule modal
+        modal = document.getElementById('api-rule-modal');
+        modal.querySelectorAll('button').forEach(function(button) {
+            if (button.classList.contains("btn-secondary")) {
+                button.classList.remove("btn-secondary");
+                button.classList.add("btn-dark");
+            };
+        });
+        modal.querySelectorAll('label').forEach(function(button) {
+            if (button.classList.contains("btn-outline-secondary")) {
+                button.classList.remove("btn-outline-secondary");
+                button.classList.add("btn-dark");
+            };
+        });
+    } else {
+        // Buttons in ApiTarget rule modal
+        modal = document.getElementById('api-rule-modal');
+        modal.querySelectorAll('button').forEach(function(button) {
+            if (button.classList.contains("btn-dark")) {
+                button.classList.remove("btn-dark");
+                button.classList.add("btn-secondary");
+            };
+        });
+        modal.querySelectorAll('label').forEach(function(button) {
+            if (button.classList.contains("btn-dark")   ) {
+                button.classList.remove("btn-dark");
+                button.classList.add("btn-outline-secondary");
+            };
+        });
+    }
+})

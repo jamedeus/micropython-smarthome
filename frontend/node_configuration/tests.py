@@ -1139,7 +1139,8 @@ class ApiTargetMenuOptionsTest(TestCase):
                     "set_rule",
                     "reset_rule",
                     "trigger_sensor"
-                ]
+                ],
+                "ignore": {}
             },
             "Test2": {
                 "device1-Air Conditioner (api-target)": [
@@ -1166,7 +1167,8 @@ class ApiTargetMenuOptionsTest(TestCase):
                         "stop",
                         "off"
                     ]
-                }
+                },
+                "ignore": {}
             },
             "Test3": {
                 "device1-Bathroom LEDs (pwm)": [
@@ -1216,7 +1218,8 @@ class ApiTargetMenuOptionsTest(TestCase):
                     "set_rule",
                     "reset_rule",
                     "trigger_sensor"
-                ]
+                ],
+                "ignore": {}
             }
         }
 
@@ -1240,7 +1243,9 @@ class ApiTargetMenuOptionsTest(TestCase):
                 "Test2": "192.168.1.124",
                 "Test3": "192.168.1.125"
             },
-            "self-target": {},
+            "self-target": {
+                "ignore": {}
+            },
             "Test2": {
                 "device1-Air Conditioner (api-target)": [
                     "enable",
@@ -1266,7 +1271,8 @@ class ApiTargetMenuOptionsTest(TestCase):
                         "stop",
                         "off"
                     ]
-                }
+                },
+                "ignore": {}
             },
             "Test3": {
                 "device1-Bathroom LEDs (pwm)": [
@@ -1316,7 +1322,8 @@ class ApiTargetMenuOptionsTest(TestCase):
                     "set_rule",
                     "reset_rule",
                     "trigger_sensor"
-                ]
+                ],
+                "ignore": {}
             }
         }
 
@@ -1383,6 +1390,7 @@ class ApiTargetMenuOptionsTest(TestCase):
             },
             "self-target": {},
             "ir_test": {
+                "ignore": {},
                 "ir_blaster-Ir Blaster": {
                     "ac": [
                         "start",
@@ -1408,6 +1416,7 @@ class ApiTargetMenuOptionsTest(TestCase):
             },
             "self-target": {},
             "ir_test": {
+                "ignore": {},
                 "ir_blaster-Ir Blaster": {
                     "tv": [
                         "power",
@@ -1442,6 +1451,7 @@ class ApiTargetMenuOptionsTest(TestCase):
             },
             "self-target": {},
             "ir_test": {
+                "ignore": {},
                 "ir_blaster-Ir Blaster": {
                     "tv": [
                         "power",
@@ -1488,7 +1498,8 @@ class ApiTargetMenuOptionsTest(TestCase):
                 "disable_in",
                 "set_rule",
                 "reset_rule"
-            ]
+            ],
+            "ignore": {}
         }
 
         # Request options for node with ApiTarget, confirm no turn_on/turn_off

@@ -262,7 +262,8 @@ config2_api_context = {
                 'disable_in',
                 'set_rule',
                 'reset_rule'
-            ]
+            ],
+            "ignore": {}
         }
     }
 }

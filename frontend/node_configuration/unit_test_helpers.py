@@ -160,9 +160,7 @@ request_payload = {
                 'device4',
                 'device7'
             ],
-            'schedule': {
-
-            }
+            'schedule': {}
         },
         'sensor3': {
             'id': 'sensor3',
@@ -265,9 +263,7 @@ request_payload = {
             'type': 'dumb-relay',
             'pin': '18',
             'default_rule': 'disabled',
-            'schedule': {
-
-            }
+            'schedule': {}
         },
         'device5': {
             'id': 'device5',
@@ -292,9 +288,7 @@ request_payload = {
             'min': '0',
             'max': '1023',
             'default_rule': 721,
-            'schedule': {
-
-            }
+            'schedule': {}
         },
         'device7': {
             'id': 'device7',
@@ -330,9 +324,7 @@ request_payload = {
             'target': [
                 'tv'
             ],
-            'schedule': {
-
-            }
+            'schedule': {}
         },
         'device10': {
             'id': 'device10',
@@ -357,9 +349,7 @@ test_config_1 = {
         "id": "Test1",
         "location": "Inside cabinet above microwave",
         "floor": "1",
-        "schedule_keywords": {
-
-        }
+        "schedule_keywords": {}
     },
     "wifi": {
         "ssid": "jamnet",
@@ -411,9 +401,7 @@ test_config_2 = {
         "id": "Test2",
         "location": "Bedroom",
         "floor": "2",
-        "schedule_keywords": {
-
-        }
+        "schedule_keywords": {}
     },
     "wifi": {
         "ssid": "jamnet",
@@ -471,9 +459,7 @@ test_config_2 = {
         "targets": [
             "device1"
         ],
-        "schedule": {
-
-        }
+        "schedule": {}
     },
     "ir_blaster": {
         "nickname": "",
@@ -490,9 +476,7 @@ test_config_3 = {
         "id": "Test3",
         "location": "Inside cabinet under sink",
         "floor": "1",
-        "schedule_keywords": {
-
-        }
+        "schedule_keywords": {}
     },
     "wifi": {
         "ssid": "jamnet",
@@ -568,9 +552,7 @@ test_config_1_edit_context = {
             'id': 'Test1',
             'location': 'Inside cabinet above microwave',
             'floor': '1',
-            'schedule_keywords': {
-
-            }
+            'schedule_keywords': {}
         },
         'wifi': {
             'ssid': 'jamnet',
@@ -658,7 +640,7 @@ test_config_1_edit_context = {
             'Test3': '192.168.1.125'
         },
         'self-target': {
-
+            'ignore': {}
         },
         'Test2': {
             'device1-Air Conditioner (api-target)': [
@@ -685,7 +667,8 @@ test_config_1_edit_context = {
                     'stop',
                     'off'
                 ]
-            }
+            },
+            'ignore': {},
         },
         'Test3': {
             'device1-Bathroom LEDs (pwm)': [
@@ -735,7 +718,8 @@ test_config_1_edit_context = {
                 'set_rule',
                 'reset_rule',
                 'trigger_sensor'
-            ]
+            ],
+            'ignore': {},
         }
     }
 }
@@ -747,9 +731,7 @@ test_config_2_edit_context = {
             'id': 'Test2',
             'location': 'Bedroom',
             'floor': '2',
-            'schedule_keywords': {
-
-            }
+            'schedule_keywords': {}
         },
         'wifi': {
             'ssid': 'jamnet',
@@ -776,9 +758,7 @@ test_config_2_edit_context = {
                 'targets': [
                     'device1'
                 ],
-                'schedule': {
-
-                }
+                'schedule': {}
             }
         },
         'devices': {
@@ -805,9 +785,7 @@ test_config_2_edit_context = {
             'sensor1': {
                 'type': 'si7021',
                 'nickname': 'Thermostat',
-                'schedule': {
-
-                }
+                'schedule': {}
             }
         }
     },
@@ -825,7 +803,8 @@ test_config_2_edit_context = {
                 'disable_in',
                 'set_rule',
                 'reset_rule'
-            ]
+            ],
+            'ignore': {}
         },
         'Test1': {
             'device1-Cabinet Lights (pwm)': [
@@ -856,7 +835,8 @@ test_config_2_edit_context = {
                 'set_rule',
                 'reset_rule',
                 'trigger_sensor'
-            ]
+            ],
+            'ignore': {},
         },
         'Test3': {
             'device1-Bathroom LEDs (pwm)': [
@@ -906,7 +886,8 @@ test_config_2_edit_context = {
                 'set_rule',
                 'reset_rule',
                 'trigger_sensor'
-            ]
+            ],
+            'ignore': {},
         }
     }
 }
@@ -918,9 +899,7 @@ test_config_3_edit_context = {
             'id': 'Test3',
             'location': 'Inside cabinet under sink',
             'floor': '1',
-            'schedule_keywords': {
-
-            }
+            'schedule_keywords': {}
         },
         'wifi': {
             'ssid': 'jamnet',
@@ -1045,7 +1024,7 @@ test_config_3_edit_context = {
             'Test2': '192.168.1.124'
         },
         'self-target': {
-
+            'ignore': {}
         },
         'Test1': {
             'device1-Cabinet Lights (pwm)': [
@@ -1076,7 +1055,8 @@ test_config_3_edit_context = {
                 'set_rule',
                 'reset_rule',
                 'trigger_sensor'
-            ]
+            ],
+            'ignore': {},
         },
         'Test2': {
             'device1-Air Conditioner (api-target)': [
@@ -1103,7 +1083,8 @@ test_config_3_edit_context = {
                     'stop',
                     'off'
                 ]
-            }
+            },
+            'ignore': {},
         }
     }
 }
