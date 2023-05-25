@@ -10,33 +10,44 @@ from colorama import Fore, Style
 timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 ip_regex = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 
-def error():
-    print()
-    print(Fore.RED + "Error: please pass one of the following commands as argument:" + Fore.RESET + "\n")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "status" + Style.RESET_ALL + "                            Get dict containing status of the node (including names of sensors)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "disable [target]" + Style.RESET_ALL + "                  Disable [target], can be device or sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "disable_in [target] [minutes]" + Style.RESET_ALL + "     Create timer to disable [target] in [minutes]")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "enable [target]" + Style.RESET_ALL + "                   Enable [target], can be device or sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "enable_in [target] [minutes]" + Style.RESET_ALL + "      Create timer to enable [target] in [minutes]")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [target]" + Style.RESET_ALL + "                 Change [target]'s current rule, can be device or sensor, lasts until next rule change")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "reset_rule [target]" + Style.RESET_ALL + "               Replace [target]'s current rule with scheduled rule, used to undo a set_rule request")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "reset_all_rules" + Style.RESET_ALL + "                   Replace current rules of all devices and sensors with their scheduled rule")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "get_schedule_rules [target]" + Style.RESET_ALL + "       View scheduled rule changes for [target], can be device or sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "add_rule [target] [HH:MM] [rule]" + Style.RESET_ALL + "  Add scheduled rule change, will persist until next reboot")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "remove_rule [target] [HH:MM]" + Style.RESET_ALL + "      Delete an existing schedule (does not delete from config, will come back next reboot)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "save_rules" + Style.RESET_ALL + "                        Write current schedule rules to disk, persists after reboot")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "get_attributes [target]" + Style.RESET_ALL + "           View all of [target]'s attributes, can be device or sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "condition_met [sensor]" + Style.RESET_ALL + "            Check if [sensor]'s condition is met (turns on target devices)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "trigger_sensor [sensor]" + Style.RESET_ALL + "           Simulates the sensor being triggered (turns on target devices)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "turn_on [device]" + Style.RESET_ALL + "                  Turn the device on (note: loop may undo this in some situations, disable sensor to prevent)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "turn_off [device]" + Style.RESET_ALL + "                 Turn the device off (note: loop may undo this in some situations, disable sensor to prevent)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "                  Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac)")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "get_temp" + Style.RESET_ALL + "                          Get current reading from temp sensor in Farenheit")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "get_humid" + Style.RESET_ALL + "                         Get current relative humidity from temp sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "get_climate" + Style.RESET_ALL + "                       Get current temp and humidity from sensor")
-    print("- " + Fore.YELLOW + Style.BRIGHT + "clear_log" + Style.RESET_ALL + "                         Delete node's log file\n")
-    raise SystemExit
+# Valid IR commands for each target, used in error message
+ir_commands = {
+    "tv": "power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source",
+    "ac": "ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"
+}
 
+usage_examples = {
+    "status":                           "Get dict containing status of all devices and sensors",
+    "disable [target]":                 "Disable [target], can be device or sensor",
+    "disable_in [target] [minutes]":    "Create timer to disable [target] in [minutes]",
+    "enable [target]":                  "Enable [target], can be device or sensor",
+    "enable_in [target] [minutes]":     "Create timer to enable [target] in [minutes]",
+    "set_rule [target]":                "Change [target]'s current rule, can be device or sensor, lasts until next rule change",
+    "reset_rule [target]":              "Replace [target]'s current rule with scheduled rule, used to undo set_rule",
+    "reset_all_rules":                  "Replace current rules of all devices and sensors with their scheduled rule",
+    "get_schedule_rules [target]":      "View schedule rules for [target], can be device or sensor",
+    "add_rule [target] [HH:MM] [rule]": "Add schedule rule, will persist until next reboot",
+    "remove_rule [target] [HH:MM]":     "Remove an existing schedule rule until next reboot",
+    "save_rules":                       "Write current schedule rules to disk, persists after reboot",
+    "get_attributes [target]":          "View all of [target]'s attributes, can be device or sensor",
+    "condition_met [sensor]":           "Check if [sensor]'s condition is met (turns on target devices)",
+    "trigger_sensor [sensor]":          "Simulates the sensor being triggered (turns on target devices)",
+    "turn_on [device]":                 "Turn the device on (note: loop may undo in some situations, disable sensor to prevent)",
+    "turn_off [device]":                "Turn the device off (note: loop may undo in some situations, disable sensor to prevent)",
+    "ir [target||key]":                 "Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac)",
+    "get_temp":                         "Get current reading from temp sensor in Farenheit",
+    "get_humid":                        "Get current relative humidity from temp sensor",
+    "get_climate":                      "Get current temp and humidity from sensor",
+    "clear_log":                        "Delete node's log file"
+}
+
+
+def error():
+    print("\n" + Fore.RED + "Error: please pass one of the following commands as argument:" + Fore.RESET + "\n")
+    for command in usage_examples:
+        print("- " + Fore.YELLOW + Style.BRIGHT + command.ljust(35) + Style.RESET_ALL + usage_examples[command])
+    print()
+    raise SystemExit
 
 
 async def request(ip, msg):
@@ -55,7 +66,6 @@ async def request(ip, msg):
     await writer.wait_closed()
 
     return response
-
 
 
 def parse_ip(args):
@@ -106,7 +116,6 @@ def parse_ip(args):
         raise SystemExit
 
 
-
 def parse_command(ip, args):
     if len(args) == 0:
         error()
@@ -122,9 +131,9 @@ def parse_command(ip, args):
         error()
 
 
-
 # Populated with endpoint:handler pairs by decorators below
 endpoints = []
+
 
 def add_endpoint(url):
     def _add_endpoint(func):
@@ -132,28 +141,32 @@ def add_endpoint(url):
         return func
     return _add_endpoint
 
+
 @add_endpoint("status")
 def status(ip, params):
     return asyncio.run(request(ip, ['status']))
+
 
 @add_endpoint("reboot")
 def reboot(ip, params):
     return asyncio.run(request(ip, ['reboot']))
 
+
 @add_endpoint("disable")
 def disable(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py disable [device|sensor]"}
+        return {"Example usage": "./api_client.py disable [device|sensor]"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         return asyncio.run(request(ip, ['disable', params[0]]))
     else:
-        return {"ERROR" : "Can only disable devices and sensors"}
+        return {"ERROR": "Can only disable devices and sensors"}
+
 
 @add_endpoint("disable_in")
 def disable_in(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py disable_in [device|sensor] [minutes]"}
+        return {"Example usage": "./api_client.py disable_in [device|sensor] [minutes]"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -165,20 +178,22 @@ def disable_in(ip, params):
     else:
         return {"ERROR": "Can only disable devices and sensors"}
 
+
 @add_endpoint("enable")
-def disable(ip, params):
+def enable(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py enable [device|sensor]"}
+        return {"Example usage": "./api_client.py enable [device|sensor]"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         return asyncio.run(request(ip, ['enable', params[0]]))
     else:
-        return {"ERROR" : "Can only enable devices and sensors"}
+        return {"ERROR": "Can only enable devices and sensors"}
+
 
 @add_endpoint("enable_in")
 def enable_in(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py enable_in [device|sensor] [minutes]"}
+        return {"Example usage": "./api_client.py enable_in [device|sensor] [minutes]"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -190,10 +205,11 @@ def enable_in(ip, params):
     else:
         return {"ERROR": "Can only enable devices and sensors"}
 
+
 @add_endpoint("set_rule")
 def set_rule(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py set_rule [device|sensor] [rule]"}
+        return {"Example usage": "./api_client.py set_rule [device|sensor] [rule]"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -204,10 +220,11 @@ def set_rule(ip, params):
     else:
         return {"ERROR": "Can only set rules for devices and sensors"}
 
+
 @add_endpoint("reset_rule")
 def reset_rule(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py reset_rule [device|sensor]"}
+        return {"Example usage": "./api_client.py reset_rule [device|sensor]"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -215,14 +232,16 @@ def reset_rule(ip, params):
     else:
         return {"ERROR": "Can only set rules for devices and sensors"}
 
+
 @add_endpoint("reset_all_rules")
 def reset_all_rules(ip, params):
     return asyncio.run(request(ip, ['reset_all_rules']))
 
+
 @add_endpoint("get_schedule_rules")
 def get_schedule_rules(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py get_schedule_rules [device|sensor]"}
+        return {"Example usage": "./api_client.py get_schedule_rules [device|sensor]"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -230,10 +249,11 @@ def get_schedule_rules(ip, params):
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
+
 @add_endpoint("add_rule")
 def add_schedule_rule(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py add_rule [device|sensor] [HH:MM] [rule] <overwrite>"}
+        return {"Example usage": "./api_client.py add_rule [device|sensor] [HH:MM] [rule] <overwrite>"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -253,10 +273,11 @@ def add_schedule_rule(ip, params):
 
     return asyncio.run(request(ip, cmd))
 
+
 @add_endpoint("remove_rule")
 def remove_rule(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py remove_rule [device|sensor] [HH:MM]"}
+        return {"Example usage": "./api_client.py remove_rule [device|sensor] [HH:MM]"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
@@ -270,18 +291,21 @@ def remove_rule(ip, params):
 
     return asyncio.run(request(ip, ['remove_rule', target, timestamp]))
 
+
 @add_endpoint("save_rules")
 def save_rules(ip, params):
     return asyncio.run(request(ip, ['save_rules']))
+
 
 @add_endpoint("get_schedule_keywords")
 def get_schedule_keywords(ip, params):
     return asyncio.run(request(ip, ['get_schedule_keywords']))
 
+
 @add_endpoint("add_schedule_keyword")
 def add_schedule_keyword(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py add_schedule_keyword [keyword] [HH:MM]"}
+        return {"Example usage": "./api_client.py add_schedule_keyword [keyword] [HH:MM]"}
 
     keyword = params.pop(0)
 
@@ -294,28 +318,32 @@ def add_schedule_keyword(ip, params):
 
     return asyncio.run(request(ip, cmd))
 
+
 @add_endpoint("remove_schedule_keyword")
 def remove_schedule_keyword(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py remove_schedule_keyword [keyword]"}
+        return {"Example usage": "./api_client.py remove_schedule_keyword [keyword]"}
 
     cmd = ['remove_schedule_keyword', params.pop(0)]
     return asyncio.run(request(ip, cmd))
 
+
 @add_endpoint("save_schedule_keywords")
-def save_rules(ip, params):
+def save_schedule_keywords(ip, params):
     return asyncio.run(request(ip, ['save_schedule_keywords']))
+
 
 @add_endpoint("get_attributes")
 def get_attributes(ip, params):
     if len(params) == 0:
-        return {"Example usage" : "./api_client.py get_attributes [device|sensor]"}
+        return {"Example usage": "./api_client.py get_attributes [device|sensor]"}
 
     if params[0].startswith("sensor") or params[0].startswith("device"):
         target = params.pop(0)
         return asyncio.run(request(ip, ['get_attributes', target]))
     else:
         return {"ERROR": "Must specify device or sensor"}
+
 
 @add_endpoint("ir")
 def ir(ip, params):
@@ -324,10 +352,7 @@ def ir(ip, params):
         try:
             return asyncio.run(request(ip, ['ir_key', target, params[0]]))
         except IndexError:
-            if target == "tv":
-                return {"ERROR": "Must speficy one of the following commands: power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source"}
-            elif target == "ac":
-                return {"ERROR": "Must speficy one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START"}
+            return {"ERROR": f"Must speficy one of the following commands: {ir_commands[target]}"}
 
     elif len(params) > 0 and params[0] == "backlight":
         params.pop(0)
@@ -341,21 +366,26 @@ def ir(ip, params):
     else:
         return {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"}
 
+
 @add_endpoint("get_temp")
 def get_temp(ip, params):
     return asyncio.run(request(ip, ['get_temp']))
+
 
 @add_endpoint("get_humid")
 def get_humid(ip, params):
     return asyncio.run(request(ip, ['get_humid']))
 
+
 @add_endpoint("get_climate")
 def get_climate(ip, params):
     return asyncio.run(request(ip, ['get_climate_data']))
 
+
 @add_endpoint("clear_log")
 def clear_log(ip, params):
     return asyncio.run(request(ip, ['clear_log']))
+
 
 @add_endpoint("condition_met")
 def condition_met(ip, params):
@@ -367,6 +397,7 @@ def condition_met(ip, params):
     except IndexError:
         return {"ERROR": "Must specify sensor"}
 
+
 @add_endpoint("trigger_sensor")
 def trigger_sensor(ip, params):
     try:
@@ -376,6 +407,7 @@ def trigger_sensor(ip, params):
             raise IndexError
     except IndexError:
         return {"ERROR": "Must specify sensor"}
+
 
 @add_endpoint("turn_on")
 def turn_on(ip, params):
@@ -387,8 +419,9 @@ def turn_on(ip, params):
     except IndexError:
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
+
 @add_endpoint("turn_off")
-def turn_on(ip, params):
+def turn_off(ip, params):
     try:
         if params[0].startswith("device"):
             return asyncio.run(request(ip, ['turn_off', params[0]]))
@@ -396,7 +429,6 @@ def turn_on(ip, params):
             raise IndexError
     except IndexError:
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
-
 
 
 if __name__ == "__main__":

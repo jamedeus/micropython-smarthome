@@ -1,43 +1,46 @@
 #!/usr/bin/python3
 
+import re
+import json
+
 templates = {
-    "device" : {
-        "Dimmer" : {
+    "device": {
+        "Dimmer": {
             "type": "dimmer",
             "ip": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
-        "Bulb" : {
+        "Bulb": {
             "type": "bulb",
             "ip": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
-        "Relay" : {
+        "Relay": {
             "type": "relay",
             "ip": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
-        "DumbRelay" : {
+        "DumbRelay": {
             "type": "dumb-relay",
             "default_rule": "placeholder",
             "pin": "placeholder",
             "schedule": {}
         },
 
-        "DesktopTarget" : {
+        "DesktopTarget": {
             "type": "desktop",
             "ip": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
-        "LedStrip" : {
+        "LedStrip": {
             "type": "pwm",
             "default_rule": "placeholder",
             "min": 0,
@@ -46,21 +49,21 @@ templates = {
             "schedule": {}
         },
 
-        "Mosfet" : {
+        "Mosfet": {
             "type": "mosfet",
             "default_rule": "placeholder",
             "pin": "placeholder",
             "schedule": {}
         },
 
-        "ApiTarget" : {
+        "ApiTarget": {
             "type": "api-target",
             "ip": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
-        "Wled" : {
+        "Wled": {
             "type": "wled",
             "ip": "placeholder",
             "default_rule": "placeholder",
@@ -68,8 +71,8 @@ templates = {
         },
     },
 
-    "sensor" : {
-        "MotionSensor" : {
+    "sensor": {
+        "MotionSensor": {
             "type": "pir",
             "pin": "placeholder",
             "default_rule": "placeholder",
@@ -77,7 +80,7 @@ templates = {
             "schedule": {}
         },
 
-        "DesktopTrigger" : {
+        "DesktopTrigger": {
             "type": "desktop",
             "pin": "placeholder",
             "default_rule": "placeholder",
@@ -85,21 +88,21 @@ templates = {
             "schedule": {}
         },
 
-        "Thermostat" : {
+        "Thermostat": {
             "type": "si7021",
             "default_rule": "placeholder",
             "targets": [],
             "schedule": {}
         },
 
-        "Dummy" : {
+        "Dummy": {
             "type": "dummy",
             "default_rule": "placeholder",
             "targets": [],
             "schedule": {}
         },
 
-        "Switch" : {
+        "Switch": {
             "type": "switch",
             "pin": "placeholder",
             "default_rule": "placeholder",
@@ -108,7 +111,6 @@ templates = {
         }
     }
 }
-
 
 
 def initial_prompt():
@@ -126,7 +128,6 @@ def initial_prompt():
 
         else:
             print("\nERROR: Please enter a number and press enter.\n")
-
 
 
 def select_type(category):
@@ -154,7 +155,6 @@ def select_type(category):
             print("\nERROR: Please enter a number and press enter.\n")
 
 
-
 def configure(category, module):
     config = templates[category][module]
 
@@ -177,8 +177,6 @@ def configure(category, module):
             return config
         else:
             print("\nERROR: Please enter a number and press enter.\n")
-
-    import re
 
     while True:
         print("Rule time (HH:MM): ", end='')
@@ -209,10 +207,8 @@ def configure(category, module):
         continue
 
 
-
 category = initial_prompt()
 module = select_type(category)
 config = configure(category, module)
 
-import json
 print(json.dumps(config, indent=4))

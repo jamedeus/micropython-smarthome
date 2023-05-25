@@ -1,24 +1,22 @@
 #!/usr/bin/python3
 
-from flask import Flask, request, jsonify
-import subprocess
-import time
 import re
 import os
+import subprocess
+from flask import Flask
 
 app = Flask(__name__)
-
 
 
 @app.get("/state")
 def get_dpms_state():
     # Query DPMS state (monitors on/off/standby etc)
     try:
-        current = str(subprocess.check_output('xset -q | tail -1 | cut -d " " -f 5', shell=True, stderr=subprocess.STDOUT))[2:-3]
+        current = subprocess.check_output('xset -q | tail -1 | cut -d " " -f 5', shell=True, stderr=subprocess.STDOUT)
+        current = str(current)[2:-3]
         return {'state': current}, 200
     except Exception as ex:
         return {'Error': ex}, 500
-
 
 
 @app.get("/idle_time")
@@ -30,7 +28,6 @@ def get_idle_time():
         return {'Error': ex}, 500
 
 
-
 @app.get("/on")
 def monitor_on():
     try:
@@ -40,7 +37,6 @@ def monitor_on():
         return {'Error': ex}, 500
 
 
-
 @app.get("/off")
 def monitor_off():
     try:
@@ -48,7 +44,6 @@ def monitor_off():
         return {'state': 'off'}, 200
     except Exception as ex:
         return {'Error': ex}, 500
-
 
 
 if __name__ == '__main__':
