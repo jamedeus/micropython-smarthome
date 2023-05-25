@@ -1,9 +1,7 @@
-import uasyncio as asyncio
 import logging
 
 # Set name for module's log lines
 log = logging.getLogger("Group")
-
 
 
 class Group():
@@ -16,7 +14,7 @@ class Group():
         # List of instances for all devices in group (don't need to iterate, all triggers have same targets)
         self.targets = self.triggers[0].targets
 
-        # Changes to same state as targets after successful on/off command, lets main loop skip group until change needed
+        # Changes to same state as targets after successful on/off command, main loop skips group until change needed
         self.state = None
 
         # Some sensor types run routines after turning their targets on/off
@@ -25,17 +23,14 @@ class Group():
 
         log.info(f"Instantiated Group named {self.name}")
 
-
     def reset_state(self):
         self.state = None
-
 
     # Called by decorators in some sensor's add_routines method, appends functions to self.post_action_routines
     def add_post_action_routine(self):
         def _add_post_action_routine(func):
             self.post_action_routines.append(func)
         return _add_post_action_routine
-
 
     def check_sensor_conditions(self):
         # Store return value from each sensor in group
@@ -47,7 +42,6 @@ class Group():
                 conditions.append(sensor.condition_met())
 
         return conditions
-
 
     def determine_correct_action(self, conditions):
         # Determine action to apply to target devices: True = turn on, False = turn off, None = do nothing
@@ -65,7 +59,6 @@ class Group():
             return action
         else:
             return None
-
 
     def apply_action(self, action):
         # No action needed if group state already matches desired state

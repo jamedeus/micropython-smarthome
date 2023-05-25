@@ -4,10 +4,14 @@ import uasyncio as asyncio
 import logging
 
 # Set log file and syntax
-logging.basicConfig(level=logging.DEBUG, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+logging.basicConfig(
+    level=logging.DEBUG,
+    filename='app.log',
+    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+    style='%'
+)
 log = logging.getLogger("Main")
 log.info("Booted")
-
 
 
 async def disk_monitor():
@@ -25,7 +29,7 @@ async def disk_monitor():
             # If file changed (new code received from webrepl), reboot
             print("\nReceived new code from webrepl, rebooting...\n")
             log.info("Received new code from webrepl, rebooting...")
-            await asyncio.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+            await asyncio.sleep(1)  # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             from Config import reboot
             reboot()
 
@@ -50,8 +54,7 @@ async def disk_monitor():
             # Allow logger to write new log file to disk before loop checks size again (crashes if doesn't exist yet)
             await asyncio.sleep(1)
         else:
-            await asyncio.sleep(1) # Only check once per second
-
+            await asyncio.sleep(1)  # Only check once per second
 
 
 # Main loop - monitor sensors, apply actions if conditions met
@@ -67,16 +70,16 @@ async def main(config):
 
             await asyncio.sleep(0)
 
-            if action == None:
+            if action is None:
                 # Skip to next group if no action required
                 continue
             else:
                 # Otherwise apply actions
                 group.apply_action(action)
 
-        # Must be >0 to avoid blocking webrepl. Low values bottleneck webrepl speed, but this is acceptable since only used in maintenance
+        # Must be >0 to avoid blocking webrepl.
+        # Low values bottleneck webrepl speed, but this is acceptable since only used in maintenance
         await asyncio.sleep_ms(1)
-
 
 
 if __name__ == "__main__":

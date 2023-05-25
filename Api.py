@@ -15,12 +15,12 @@ lock = Lock()
 # Matches HH:MM
 timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 
+
 async def reboot():
     # Lock released when API finishes sending reply
     await lock.acquire()
     from Config import reboot
     reboot()
-
 
 
 class Api:
@@ -34,14 +34,10 @@ class Api:
         # Key = endpoint, value = function
         self.url_map = {}
 
-
-
     def route(self, url):
         def _route(func):
             self.url_map[url] = func
         return _route
-
-
 
     async def run(self):
         self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
@@ -50,15 +46,14 @@ class Api:
         while True:
             await asyncio.sleep(25)
 
-
-
     async def run_client(self, sreader, swriter):
         try:
             # Read client request
             req = await asyncio.wait_for(sreader.readline(), self.timeout)
 
             # Receives null when client closes write stream - break and close read stream
-            if not req: raise OSError
+            if not req:
+                raise OSError
 
             # Determine if request is HTTP (browser) or raw JSON (much faster, used by api_client.py and other nodes)
             if req.startswith("GET"):
@@ -147,9 +142,7 @@ class Api:
             pass
 
 
-
 app = Api()
-
 
 
 @app.route("reboot")
@@ -158,11 +151,9 @@ def index(args):
     return "Rebooting"
 
 
-
 @app.route("status")
 def status(args):
     return app.config.get_status()
-
 
 
 @app.route("enable")
@@ -179,7 +170,6 @@ def enable(args):
         return {"Enabled": target.name}
 
 
-
 @app.route("enable_in")
 def enable_for(args):
     if not len(args) >= 2:
@@ -193,8 +183,7 @@ def enable_for(args):
     else:
         period = float(period) * 60000
         SoftwareTimer.timer.create(period, target.enable, "API")
-        return {"Enabled": target.name, "Enable_in_seconds": period/1000}
-
+        return {"Enabled": target.name, "Enable_in_seconds": period / 1000}
 
 
 @app.route("disable")
@@ -211,7 +200,6 @@ def disable(args):
         return {"Disabled": target.name}
 
 
-
 @app.route("disable_in")
 def disable_for(args):
     if not len(args) >= 2:
@@ -225,8 +213,7 @@ def disable_for(args):
     else:
         period = float(period) * 60000
         SoftwareTimer.timer.create(period, target.disable, "API")
-        return {"Disabled": target.name, "Disable_in_seconds": period/1000}
-
+        return {"Disabled": target.name, "Disable_in_seconds": period / 1000}
 
 
 @app.route("set_rule")
@@ -245,10 +232,9 @@ def set_rule(args):
         return {"ERROR": "Instance not found, use status to see options"}
 
     if target.set_rule(rule):
-        return {target.name : rule}
+        return {target.name: rule}
     else:
         return {"ERROR": "Invalid rule"}
-
 
 
 @app.route("reset_rule")
@@ -263,8 +249,7 @@ def reset_rule(args):
 
     target.set_rule(target.scheduled_rule)
 
-    return {target.name : "Reverted to scheduled rule", "current_rule" : target.current_rule}
-
+    return {target.name: "Reverted to scheduled rule", "current_rule": target.current_rule}
 
 
 @app.route("reset_all_rules")
@@ -283,7 +268,6 @@ def reset_all_rules(args):
     return response
 
 
-
 @app.route("get_schedule_rules")
 def get_schedule_rules(args):
     if not len(args) == 1:
@@ -295,7 +279,6 @@ def get_schedule_rules(args):
         return {"ERROR": "Instance not found, use status to see options"}
 
     return rules
-
 
 
 @app.route("add_schedule_rule")
@@ -322,15 +305,14 @@ def add_schedule_rule(args):
     if str(valid) == "False":
         return {"ERROR": "Invalid rule"}
 
-    if timestamp in rules and (not len(args) >=4 or not args[3] == "overwrite"):
+    if timestamp in rules and (not len(args) >= 4 or not args[3] == "overwrite"):
         return {"ERROR": "Rule already exists at {}, add 'overwrite' arg to replace".format(timestamp)}
     else:
         rules[timestamp] = valid
         app.config.schedule[args[0]] = rules
         # Schedule queue rebuild after connection closes (blocks for several seconds)
         SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
-        return {"Rule added" : valid, "time" : timestamp}
-
+        return {"Rule added": valid, "time": timestamp}
 
 
 @app.route("remove_rule")
@@ -363,7 +345,6 @@ def remove_rule(args):
     return {"Deleted": timestamp}
 
 
-
 @app.route("save_rules")
 def save_rules(args):
     with open('config.json', 'r') as file:
@@ -379,11 +360,9 @@ def save_rules(args):
     return {"Success": "Rules written to disk"}
 
 
-
 @app.route("get_schedule_keywords")
 def get_schedule_keywords(args):
     return app.config.schedule_keywords
-
 
 
 @app.route("add_schedule_keyword")
@@ -456,20 +435,8 @@ def get_attributes(args):
     # Make dict json-compatible
     for i in attributes.keys():
         # Remove module references
-        if i == "pwm":
-            del attributes["pwm"]
-        if i == "i2c":
-            del attributes["i2c"]
-        if i == "temp_sensor":
-            del attributes["temp_sensor"]
-        if i == "mosfet":
-            del attributes["mosfet"]
-        if i == "relay":
-            del attributes["relay"]
-        if i == "sensor":
-            del attributes["sensor"]
-        if i == "switch":
-            del attributes["switch"]
+        if i in ("pwm", "i2c", "temp_sensor", "mosfet", "relay", "sensor", "switch"):
+            del attributes[i]
 
         # Replace instances with instance.name attribute
         elif i == "triggered_by":
@@ -481,7 +448,7 @@ def get_attributes(args):
             for i in target.targets:
                 attributes["targets"].append(i.name)
         elif i == "desktop_target":
-            if not attributes["desktop_target"] == None:
+            if attributes["desktop_target"] is not None:
                 attributes["desktop_target"] = attributes["desktop_target"].name
 
     # Replace group object with group name (JSON compatibility)
@@ -489,7 +456,6 @@ def get_attributes(args):
         attributes["group"] = target.group.name
 
     return attributes
-
 
 
 @app.route("condition_met")
@@ -506,7 +472,6 @@ def condition_met(args):
         return {"ERROR": "Instance not found, use status to see options"}
     else:
         return {"Condition": target.condition_met()}
-
 
 
 @app.route("trigger_sensor")
@@ -527,7 +492,6 @@ def trigger_sensor(args):
         return {"Triggered": target.name}
     else:
         return {"ERROR": "Cannot trigger {} sensor type".format(target.sensor_type)}
-
 
 
 @app.route("turn_on")
@@ -554,7 +518,6 @@ def turn_on(args):
         return {"ERROR": "Unable to turn on {}".format(target.name)}
 
 
-
 @app.route("turn_off")
 def turn_off(args):
     if not len(args) >= 1:
@@ -576,7 +539,6 @@ def turn_off(args):
         return {"ERROR": "Unable to turn off {}".format(target.name)}
 
 
-
 @app.route("get_temp")
 def get_temp(args):
     for sensor in app.config.sensors:
@@ -586,7 +548,6 @@ def get_temp(args):
         return {"ERROR": "No temperature sensor configured"}
 
 
-
 @app.route("get_humid")
 def get_humid(args):
     for sensor in app.config.sensors:
@@ -594,7 +555,6 @@ def get_humid(args):
             return {"Humidity": sensor.temp_sensor.relative_humidity}
     else:
         return {"ERROR": "No temperature sensor configured"}
-
 
 
 @app.route("get_climate_data")
@@ -607,7 +567,6 @@ def get_climate_data(args):
             return data
     else:
         return {"ERROR": "No temperature sensor configured"}
-
 
 
 @app.route("clear_log")
@@ -632,7 +591,6 @@ def clear_log(args):
         return {"ERROR": "no log file found"}
 
 
-
 @app.route("ir_key")
 def ir_key(args):
     if not len(args) >= 2:
@@ -646,7 +604,7 @@ def ir_key(args):
     target = args[0]
     key = args[1]
 
-    if not target in blaster.codes:
+    if target not in blaster.codes:
         return {"ERROR": 'No codes found for target "{}"'.format(target)}
 
     if not key.lower() in blaster.codes[target]:
@@ -655,7 +613,6 @@ def ir_key(args):
     else:
         blaster.send(target, key.lower())
         return {target: key}
-
 
 
 @app.route("backlight")
