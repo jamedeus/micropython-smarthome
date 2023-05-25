@@ -17,35 +17,39 @@ ir_commands = {
 }
 
 usage_examples = {
-    "status":                           "Get dict containing status of all devices and sensors",
-    "disable [target]":                 "Disable [target], can be device or sensor",
-    "disable_in [target] [minutes]":    "Create timer to disable [target] in [minutes]",
-    "enable [target]":                  "Enable [target], can be device or sensor",
-    "enable_in [target] [minutes]":     "Create timer to enable [target] in [minutes]",
-    "set_rule [target]":                "Change [target]'s current rule, can be device or sensor, lasts until next rule change",
-    "reset_rule [target]":              "Replace [target]'s current rule with scheduled rule, used to undo set_rule",
-    "reset_all_rules":                  "Replace current rules of all devices and sensors with their scheduled rule",
-    "get_schedule_rules [target]":      "View schedule rules for [target], can be device or sensor",
-    "add_rule [target] [HH:MM] [rule]": "Add schedule rule, will persist until next reboot",
-    "remove_rule [target] [HH:MM]":     "Remove an existing schedule rule until next reboot",
-    "save_rules":                       "Write current schedule rules to disk, persists after reboot",
-    "get_attributes [target]":          "View all of [target]'s attributes, can be device or sensor",
-    "condition_met [sensor]":           "Check if [sensor]'s condition is met (turns on target devices)",
-    "trigger_sensor [sensor]":          "Simulates the sensor being triggered (turns on target devices)",
-    "turn_on [device]":                 "Turn the device on (note: loop may undo in some situations, disable sensor to prevent)",
-    "turn_off [device]":                "Turn the device off (note: loop may undo in some situations, disable sensor to prevent)",
-    "ir [target||key]":                 "Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac)",
-    "get_temp":                         "Get current reading from temp sensor in Farenheit",
-    "get_humid":                        "Get current relative humidity from temp sensor",
-    "get_climate":                      "Get current temp and humidity from sensor",
-    "clear_log":                        "Delete node's log file"
+    "status":                                "Get dict containing status of all devices and sensors",
+    "disable [target]":                      "Disable [target], can be device or sensor",
+    "disable_in [target] [minutes]":         "Create timer to disable [target] in [minutes]",
+    "enable [target]":                       "Enable [target], can be device or sensor",
+    "enable_in [target] [minutes]":          "Create timer to enable [target] in [minutes]",
+    "set_rule [target]":                     "Change [target]'s current rule (until next rule change), can be device or sensor",
+    "reset_rule [target]":                   "Replace [target]'s current rule with scheduled rule, used to undo set_rule",
+    "reset_all_rules":                       "Replace current rules of all devices and sensors with their scheduled rule",
+    "get_schedule_rules [target]":           "View schedule rules for [target], can be device or sensor",
+    "add_rule [target] [HH:MM] [rule]":      "Add schedule rule, will persist until next reboot",
+    "remove_rule [target] [HH:MM]":          "Remove an existing schedule rule until next reboot",
+    "save_rules":                            "Write current schedule rules to disk, persists after reboot",
+    "get_schedule_keywords ":                "View schedule keywords and the timestamps they represent",
+    "add_schedule_keyword [keyword] [HH:MM]":"Add [keyword] representing timestamp, can be used in schedule rules",
+    "remove_schedule_keyword [keyword]":     "Remove [keyword], deletes all associated schedule rules from queue",
+    "save_schedule_keywords":                "Write current schedule keywords to disk, persists after reboot",
+    "get_attributes [target]":               "View all of [target]'s attributes, can be device or sensor",
+    "condition_met [sensor]":                "Check if [sensor]'s condition is met (turns on target devices)",
+    "trigger_sensor [sensor]":               "Simulates the sensor being triggered (turns on target devices)",
+    "turn_on [device]":                      "Turn the device on (loop may undo in some situations, disable sensor to prevent)",
+    "turn_off [device]":                     "Turn the device off (loop may undo in some situations, disable sensor to prevent)",
+    "ir [target||key]":                      "Simulate 'key' being pressed on remote control for 'target' (can be tv or ac)",
+    "get_temp":                              "Get current reading from temp sensor in Farenheit",
+    "get_humid":                             "Get current relative humidity from temp sensor",
+    "get_climate":                           "Get current temp and humidity from sensor",
+    "clear_log":                             "Delete node's log file"
 }
 
 
 def error():
     print("\n" + Fore.RED + "Error: please pass one of the following commands as argument:" + Fore.RESET + "\n")
     for command in usage_examples:
-        print("- " + Fore.YELLOW + Style.BRIGHT + command.ljust(35) + Style.RESET_ALL + usage_examples[command])
+        print("- " + Fore.YELLOW + Style.BRIGHT + command.ljust(40) + Style.RESET_ALL + usage_examples[command])
     print()
     raise SystemExit
 
