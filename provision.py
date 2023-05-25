@@ -15,7 +15,7 @@ import struct
 import json
 import socket
 import re
-from colorama import Fore, Style
+from colorama import Fore
 
 DEBUG = 0
 
@@ -24,6 +24,7 @@ WEBREPL_PUT_FILE = 1
 WEBREPL_GET_FILE = 2
 WEBREPL_GET_VER  = 3
 
+ip_regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
 
 
 def debugmsg(msg):
@@ -31,9 +32,7 @@ def debugmsg(msg):
         print(msg)
 
 
-
 class websocket:
-
     def __init__(self, s):
         self.s = s
         self.buf = b""
@@ -90,7 +89,6 @@ class websocket:
         assert req == 9 and val == 2
 
 
-
 def login(ws, passwd):
     while True:
         c = ws.read(1, text_ok=True)
@@ -100,13 +98,11 @@ def login(ws, passwd):
     ws.write(passwd.encode("utf-8") + b"\r")
 
 
-
 def read_resp(ws):
     data = ws.read(4)
     sig, code = struct.unpack("<2sH", data)
     assert sig == b"WB"
     return code
-
 
 
 def put_file(ws, local_file, remote_file):
@@ -131,7 +127,6 @@ def put_file(ws, local_file, remote_file):
     assert read_resp(ws) == 0
 
 
-
 # Very simplified client handshake, works for MicroPython's
 # websocket server implementation, but probably not for other
 # servers.
@@ -152,9 +147,7 @@ Sec-WebSocket-Key: foo\r
             break
 
 
-
 #####################################################################################################
-
 
 
 class Provisioner():
@@ -197,7 +190,7 @@ class Provisioner():
             # Get config file and target IP from cli arguments
             self.passwd = "password"
             for i in args:
-                if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", i):
+                if re.match(ip_regex, i):
                     self.host = i
                     break
             else:
@@ -246,8 +239,6 @@ class Provisioner():
             # Get config file and target IP from cli arguments
             self.passwd, self.config, self.host = self.arg_parse(args)
 
-
-
     def arg_parse(self, args):
         if len(args) < 5:
             print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
@@ -278,7 +269,7 @@ class Provisioner():
             if args[i] == '-ip' or args[i] == '-t' or args[i] == '--node':
                 args.pop(i)
                 ip = args.pop(i)
-                if not re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip):
+                if not re.match(ip_regex, ip):
                     print("ERROR: Invalid IP address.")
                     raise SystemExit
                 break
@@ -287,8 +278,6 @@ class Provisioner():
             raise SystemExit
 
         return passwd, config, ip
-
-
 
     def provision(self):
         # Read config file, determine which device/sensor modules need to be uploaded
@@ -302,7 +291,7 @@ class Provisioner():
         # Upload all device/sensor modules
         for i in modules:
             src_file = i
-            dst_file = i.rsplit("/", 1)[-1] # Remove path from filename
+            dst_file = i.rsplit("/", 1)[-1]  # Remove path from filename
 
             self.upload(src_file, dst_file)
 
@@ -328,7 +317,7 @@ class Provisioner():
         # Upload API module
         self.upload("Api.py", "Api.py")
 
-        if not "setup.json" in self.config:
+        if "setup.json" not in self.config:
             # Upload main code last (triggers automatic reboot)
             self.upload("boot.py", "boot.py")
         else:
@@ -337,11 +326,8 @@ class Provisioner():
 
         self.close_connection()
 
-
-
     # Takes loaded config file as arg, returns list of required device/sensor/library modules
     def get_modules(self, conf):
-
         # Used for initial setup, uploads code that automatically creates required subdirs
         if self.config == "setup.json":
             return [], []
@@ -353,7 +339,8 @@ class Provisioner():
 
         for i in conf:
             if i == "ir_blaster":
-                print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
+                print(Fore.YELLOW + "WARNING" + Fore.RESET, end="")
+                print(": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
 
                 modules.append("devices/IrBlaster.py")
                 modules.append("ir-remote/samsung-codes.json")
@@ -401,7 +388,8 @@ class Provisioner():
                 modules.append("sensors/Sensor.py")
 
             elif conf[i]["type"] == "si7021":
-                print(Fore.YELLOW + "WARNING"  + Fore.RESET + ": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
+                print(Fore.YELLOW + "WARNING" + Fore.RESET, end="")
+                print(": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
 
                 modules.append("sensors/Thermostat.py")
                 modules.append("sensors/Sensor.py")
@@ -423,8 +411,6 @@ class Provisioner():
         modules = set(modules)
 
         return modules, libs
-
-
 
     def open_connection(self):
         try:
@@ -451,8 +437,6 @@ class Provisioner():
             self.s.close()
             return False
 
-
-
     # Modified from webrepl_cli.py main() function
     def upload(self, src_file, dst_file):
         print(f"{src_file} -> {self.host}:/{dst_file}")
@@ -463,11 +447,13 @@ class Provisioner():
 
             if src_file.startswith("lib/"):
                 print(Fore.RED + "\nERROR: Unable to upload libraries, /lib/ does not exist" + Fore.RESET)
-                print("This is normal for new nodes - would you like to upload setup to fix? " + Fore.CYAN + "[Y/n]" + Fore.RESET)
+                print("This is normal for new nodes - would you like to upload setup to fix? ", end="")
+                print(Fore.CYAN + "[Y/n]" + Fore.RESET)
 
                 x = input()
                 if x == "n":
-                    print(Fore.YELLOW + "\nWARNING" + Fore.RESET + ": Skipping " + src_file + " library, node may fail to boot after upload.\n")
+                    print(Fore.YELLOW + "\nWARNING" + Fore.RESET, end="")
+                    print(": Skipping " + src_file + " library, node may fail to boot after upload.\n")
                     pass
                 else:
                     # Connection was broken by error, close and re-open
@@ -488,14 +474,12 @@ class Provisioner():
                     self.upload(src_file, dst_file)
 
             else:
-                print(Fore.RED + "ERROR"  + Fore.RESET + ": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
+                print(Fore.RED + "ERROR" + Fore.RESET, end="")
+                print(": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
                 pass
-
-
 
     def close_connection(self):
         self.s.close()
-
 
 
 if __name__ == "__main__":
