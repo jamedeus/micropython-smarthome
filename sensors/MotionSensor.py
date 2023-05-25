@@ -7,7 +7,6 @@ import SoftwareTimer
 log = logging.getLogger("MotionSensor")
 
 
-
 class MotionSensor(Sensor):
     def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets, pin):
         super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
@@ -20,8 +19,6 @@ class MotionSensor(Sensor):
 
         log.info(f"Instantiated MotionSensor named {self.name} on pin {pin}")
 
-
-
     def enable(self):
         super().enable()
 
@@ -29,8 +26,6 @@ class MotionSensor(Sensor):
 
         # Create hardware interrupt
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
-
-
 
     def disable(self):
         super().disable()
@@ -41,12 +36,8 @@ class MotionSensor(Sensor):
         # Stop any reset timer that may be running
         SoftwareTimer.timer.cancel(self.name)
 
-
-
     def condition_met(self):
         return self.motion
-
-
 
     def validator(self, rule):
         try:
@@ -60,8 +51,6 @@ class MotionSensor(Sensor):
         except (ValueError, TypeError):
             return False
 
-
-
     def next_rule(self):
         super().next_rule()
 
@@ -72,10 +61,7 @@ class MotionSensor(Sensor):
                 if off > 0:
                     SoftwareTimer.timer.create(off, self.resetTimer, self.name)
             except ValueError:
-                pass # Prevent crash when rule changes to "disabled"
-
-
-
+                pass  # Prevent crash when rule changes to "disabled"
 
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin=""):
@@ -96,8 +82,6 @@ class MotionSensor(Sensor):
         else:
             # Stop any reset timer that may be running from before delay = None
             SoftwareTimer.timer.cancel(self.name)
-
-
 
     def resetTimer(self, timer="optional"):
         log.info(f"{self.name}: resetTimer interrupt")

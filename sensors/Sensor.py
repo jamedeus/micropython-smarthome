@@ -4,7 +4,6 @@ import logging
 log = logging.getLogger("Sensor")
 
 
-
 class Sensor():
     def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets):
 
@@ -25,7 +24,7 @@ class Sensor():
         self.scheduled_rule = current_rule
 
         # The fallback rule used when no other valid rules are available
-        # Can happen if config file contains invalid rules, or if enabled through API while both current and schedule rule are "disabled"
+        # Examples: Config file contains invalid rules, enabled while both current + scheduled rules are "disabled"
         self.default_rule = default_rule
 
         # Prevent instantiating with invalid default_rule
@@ -39,8 +38,6 @@ class Sensor():
         # List of instances
         self.targets = targets
 
-
-
     def enable(self):
         self.enabled = True
 
@@ -53,12 +50,8 @@ class Sensor():
             else:
                 self.current_rule = self.default_rule
 
-
-
     def disable(self):
         self.enabled = False
-
-
 
     # Base validator for universal rules, can be extended in subclass validator method
     def rule_validator(self, rule):
@@ -67,13 +60,9 @@ class Sensor():
         else:
             return self.validator(rule)
 
-
-
     # Placeholder function, intended to be overwritten by subclass validator method
     def validator(self, rule):
         return False
-
-
 
     def set_rule(self, rule):
         # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
@@ -92,7 +81,7 @@ class Sensor():
                 self.current_rule = self.default_rule
                 self.enable()
             # Sensor was previously disabled, enable now that rule has changed
-            elif self.enabled == False:
+            elif self.enabled is False:
                 self.enable()
 
             return True
@@ -102,16 +91,12 @@ class Sensor():
             print(f"{self.name}: Failed to change rule to {rule}")
             return False
 
-
-
     def next_rule(self):
         log.debug(f"{self.name}: Scheduled rule change")
         print(f"{self.name}: Scheduled rule change")
         if self.set_rule(self.rule_queue.pop(0)):
             # If new rule is valid, also change scheduled_rule
             self.scheduled_rule = self.current_rule
-
-
 
     # Allow API commands to simulate the sensor being triggered
     def trigger(self):
@@ -132,8 +117,6 @@ class Sensor():
 
         elif self.sensor_type == "switch":
             return False
-
-
 
     # Called by Config after adding Sensor to Group. Appends functions to Group's post_action_routines list
     # Placeholder function for subclasses with no post-routines, overwritten if they do

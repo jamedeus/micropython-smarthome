@@ -5,14 +5,11 @@ from Sensor import Sensor
 log = logging.getLogger("Dummy_Sensor")
 
 
-
 class Dummy(Sensor):
     def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets):
         super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
 
         log.info(f"Instantiated dummy sensor named {self.name}")
-
-
 
     # Accepts additional rules because they are the only factor determining if condition is met
     # With only enabled/disabled it would never turn targets off (condition not checked while disabled)
@@ -24,8 +21,6 @@ class Dummy(Sensor):
                 return False
         except AttributeError:
             return False
-
-
 
     def condition_met(self):
         if self.current_rule == "on":

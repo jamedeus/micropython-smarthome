@@ -8,7 +8,6 @@ import SoftwareTimer
 log = logging.getLogger("Thermostat")
 
 
-
 class Thermostat(Sensor):
     def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, mode, tolerance, targets):
         super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
@@ -35,8 +34,6 @@ class Thermostat(Sensor):
 
         log.info(f"Instantiated Thermostat named {self.name}")
 
-
-
     # Recalculate on/off threshold temperatures after changing set temperature (current_rule)
     def get_threshold(self):
         if self.current_rule == "disabled":
@@ -50,8 +47,6 @@ class Thermostat(Sensor):
             self.on_threshold = self.current_rule - self.tolerance
             self.off_threshold = self.current_rule + self.tolerance
 
-
-
     def set_rule(self, rule):
         valid = super().set_rule(rule)
 
@@ -61,12 +56,8 @@ class Thermostat(Sensor):
         else:
             return False
 
-
-
     def fahrenheit(self):
         return si7021.convert_celcius_to_fahrenheit(self.temp_sensor.temperature)
-
-
 
     def condition_met(self):
         current = self.fahrenheit()
@@ -86,8 +77,6 @@ class Thermostat(Sensor):
         # No action needed if temperature between on/off thresholds
         return None
 
-
-
     # Receive rule from API, validate, set and return True if valid, otherwise return False
     def validator(self, rule):
         try:
@@ -98,8 +87,6 @@ class Thermostat(Sensor):
                 return False
         except (ValueError, TypeError):
             return False
-
-
 
     # Detects when thermostat fails to turn targets on/off (common with infrared remote)
     # Takes reading every 30 seconds, keeps 3 most recent. Failure detected when all 3 trend in wrong direction
@@ -116,26 +103,26 @@ class Thermostat(Sensor):
 
             # If 3 most recent readings trend in incorrect direction, assume command was not successful
             if self.recent_temps[0] < self.recent_temps[1] < self.recent_temps[2]:
-                if self.mode == "cool" and self.condition_met() == True:
+                if self.mode == "cool" and self.condition_met() is True:
                     print("Failed to start cooling - turning AC on again")
                     log.info(f"Failed to start cooling (recent_temps: {self.recent_temps}). Turning AC on again")
                     action = False
 
-                elif self.mode == "heat" and self.condition_met() == False:
+                elif self.mode == "heat" and self.condition_met() is False:
                     log.info(f"Failed to stop heating (recent_temps: {self.recent_temps}). Turning heater off again")
                     action = True
 
             elif self.recent_temps[0] > self.recent_temps[1] > self.recent_temps[2]:
-                if self.mode == "cool" and self.condition_met() == False:
+                if self.mode == "cool" and self.condition_met() is False:
                     log.info(f"Failed to stop cooling (recent_temps: {self.recent_temps}). Turning AC off again")
                     action = True
 
-                elif self.mode == "heat" and self.condition_met() == True:
+                elif self.mode == "heat" and self.condition_met() is True:
                     log.info(f"Failed to start heating (recent_temps: {self.recent_temps}). Turning heater on again")
                     action = False
 
             # Override all targets' state attr, allows group to turn on/off again
-            if action != None:
+            if action is not None:
                 for i in self.targets:
                     i.state = action
 
@@ -144,8 +131,6 @@ class Thermostat(Sensor):
 
         # Run again in 30 seconds
         SoftwareTimer.timer.create(30000, self.audit, self.name)
-
-
 
     # Called by Config after adding Sensor to Group. Appends functions to Group's post_action_routines list
     # All functions in this list will be called each time the group turns its targets on or off
@@ -156,6 +141,6 @@ class Thermostat(Sensor):
             self.recent_temps = []
 
             # Cancel and re-create callback, ensures 30 seconds pass before first reading
-            # (if old callback runs 1 second after change, false positive becomes likely since only 2 readings are meaningful)
+            # False positive becomes likely if callback runs shortly after change, since only 2 readings are meaningful
             SoftwareTimer.timer.cancel(self.name)
             SoftwareTimer.timer.create(30000, self.audit, self.name)
