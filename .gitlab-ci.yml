@@ -1,0 +1,52 @@
+before_script:
+  - docker info
+
+stages:
+  - test
+  - build
+  - deploy
+
+# Run unit tests
+test:
+  stage: test
+  tags:
+    - arm64
+  script:
+    - pip3 install pipenv
+    - export PATH=$PATH:/home/gitlab-runner/.local/bin
+    - pipenv install
+    - cd frontend/
+    - pipenv run coverage run --source='.' --omit='*manage.py,*wsgi.py,*asgi.py,*/tests.py,*unit_test_helpers.py,*/migrations/*.py' manage.py test
+    - pipenv run coverage report -m --precision=1
+  coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
+  only:
+    - master
+    - frontend
+
+# Build new container, increment most-recent tag
+build:
+  stage: build
+  tags:
+    - arm64
+  script:
+    - 'export IMAGE_NAME="micropython-smarthome"'
+    - 'export LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
+    - "export NEW_TAG=$(echo $LAST_TAG | awk -F. '{$NF = $NF + 1;} 1' OFS=.)"
+    - 'docker build --platform linux/arm64 -t $IMAGE_NAME:$NEW_TAG . -f docker/Dockerfile'
+  only:
+    - master
+    - frontend
+
+# Deploy most-recent container
+deploy:
+  stage: deploy
+  tags:
+    - arm64
+  script:
+    - 'export IMAGE_NAME="micropython-smarthome"'
+    - 'export LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
+    - 'sed -i "s|$IMAGE_NAME:[0-9]*\.[0-9]*|$IMAGE_NAME:$LAST_TAG|g" /home/pi/docker/docker-compose.yaml'
+    - 'docker compose -f /home/pi/docker/docker-compose.yaml up -d'
+  only:
+    - master
+    - frontend

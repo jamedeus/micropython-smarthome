@@ -58,7 +58,14 @@ templates = {
             "ip": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
-        }
+        },
+
+        "Wled" : {
+            "type": "wled",
+            "ip": "placeholder",
+            "default_rule": "placeholder",
+            "schedule": {}
+        },
     },
 
     "sensor" : {

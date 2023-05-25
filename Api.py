@@ -12,6 +12,9 @@ log = logging.getLogger("API")
 
 lock = Lock()
 
+# Matches HH:MM
+timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+
 async def reboot():
     # Lock released when API finishes sending reply
     await lock.acquire()
@@ -137,7 +140,11 @@ class Api:
         await sreader.wait_closed()
 
         # Allow reboot (if reboot endpoint was called)
-        lock.release()
+        try:
+            lock.release()
+        except RuntimeError:
+            # Prevent crash if connection timed out before lock acquired
+            pass
 
 
 
@@ -230,6 +237,10 @@ def set_rule(args):
     target = app.config.find(args[0])
     rule = args[1]
 
+    # Replace url-encoded forward slashes (fade rules)
+    if "%2F" in rule:
+        rule = rule.replace("%2F", "/")
+
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
 
@@ -253,6 +264,23 @@ def reset_rule(args):
     target.set_rule(target.scheduled_rule)
 
     return {target.name : "Reverted to scheduled rule", "current_rule" : target.current_rule}
+
+
+
+@app.route("reset_all_rules")
+def reset_all_rules(args):
+    response = {}
+    response["New rules"] = {}
+
+    for device in app.config.devices:
+        device.set_rule(device.scheduled_rule)
+        response["New rules"][device.name] = device.current_rule
+
+    for sensor in app.config.sensors:
+        sensor.set_rule(sensor.scheduled_rule)
+        response["New rules"][sensor.name] = sensor.current_rule
+
+    return response
 
 
 
@@ -282,21 +310,26 @@ def add_schedule_rule(args):
 
     rules = app.config.schedule[args[0]]
 
-    if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args[1]):
+    if re.match(timestamp_regex, args[1]):
+        timestamp = args[1]
+    elif args[1] in app.config.schedule_keywords.keys():
         timestamp = args[1]
     else:
-        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"}
 
-    if not target.rule_validator(args[2]):
+    valid = target.rule_validator(args[2])
+
+    if str(valid) == "False":
         return {"ERROR": "Invalid rule"}
 
     if timestamp in rules and (not len(args) >=4 or not args[3] == "overwrite"):
         return {"ERROR": "Rule already exists at {}, add 'overwrite' arg to replace".format(timestamp)}
     else:
-        rules[timestamp] = args[2]
+        rules[timestamp] = valid
         app.config.schedule[args[0]] = rules
-        app.config.build_queue()
-        return {"Rule added" : args[2], "time" : timestamp}
+        # Schedule queue rebuild after connection closes (blocks for several seconds)
+        SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
+        return {"Rule added" : valid, "time" : timestamp}
 
 
 
@@ -312,20 +345,100 @@ def remove_rule(args):
 
     rules = app.config.schedule[args[0]]
 
-    if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", args[1]):
+    if re.match(timestamp_regex, args[1]):
+        timestamp = args[1]
+    elif args[1] in app.config.schedule_keywords.keys():
         timestamp = args[1]
     else:
-        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"}
 
     try:
         del rules[timestamp]
         app.config.schedule[args[0]] = rules
-        app.config.build_queue()
+        # Schedule queue rebuild after connection closes (blocks for several seconds)
+        SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
     except KeyError:
         return {"ERROR": "No rule exists at that time"}
 
     return {"Deleted": timestamp}
 
+
+
+@app.route("save_rules")
+def save_rules(args):
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+
+    for i in config:
+        if i.startswith("sensor") or i.startswith("device"):
+            config[i]["schedule"] = app.config.schedule[i]
+
+    with open('config.json', 'w') as file:
+        json.dump(config, file)
+
+    return {"Success": "Rules written to disk"}
+
+
+
+@app.route("get_schedule_keywords")
+def get_schedule_keywords(args):
+    return app.config.schedule_keywords
+
+
+
+@app.route("add_schedule_keyword")
+def add_schedule_keyword(args):
+    if not len(args) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    if not isinstance(args[0], dict):
+        return {"ERROR": "Requires dict with keyword and timestamp"}
+
+    keyword, timestamp = args[0].popitem()
+
+    if re.match(timestamp_regex, timestamp):
+        app.config.schedule_keywords[keyword] = timestamp
+        # Schedule queue rebuild after connection closes (blocks for several seconds)
+        SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
+        return {"Keyword added": keyword, "time": timestamp}
+    else:
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+
+
+@app.route("remove_schedule_keyword")
+def remove_schedule_keyword(args):
+    if not len(args) == 1:
+        return {"ERROR": "Invalid syntax"}
+
+    if args[0] in ['sunrise', 'sunset']:
+        return {"ERROR": "Cannot delete sunrise or sunset"}
+    elif args[0] in app.config.schedule_keywords.keys():
+        keyword = args[0]
+    else:
+        return {"ERROR": "Keyword does not exist"}
+
+    # Remove all existing rules using keyword
+    for i in app.config.schedule:
+        if keyword in app.config.schedule[i].keys():
+            del app.config.schedule[i][keyword]
+
+    del app.config.schedule_keywords[keyword]
+    # Schedule queue rebuild after connection closes (blocks for several seconds)
+    SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
+    return {"Keyword removed": args[0]}
+
+
+@app.route("save_schedule_keywords")
+def save_schedule_keywords(args):
+    with open('config.json', 'r') as file:
+        config = json.load(file)
+
+    config['metadata']['schedule_keywords'] = app.config.schedule_keywords
+
+    with open('config.json', 'w') as file:
+        json.dump(config, file)
+
+    return {"Success": "Keywords written to disk"}
 
 
 @app.route("get_attributes")
@@ -355,6 +468,8 @@ def get_attributes(args):
             del attributes["relay"]
         if i == "sensor":
             del attributes["sensor"]
+        if i == "switch":
+            del attributes["switch"]
 
         # Replace instances with instance.name attribute
         elif i == "triggered_by":
@@ -365,6 +480,13 @@ def get_attributes(args):
             attributes["targets"] = []
             for i in target.targets:
                 attributes["targets"].append(i.name)
+        elif i == "desktop_target":
+            if not attributes["desktop_target"] == None:
+                attributes["desktop_target"] = attributes["desktop_target"].name
+
+    # Replace group object with group name (JSON compatibility)
+    if "group" in attributes.keys():
+        attributes["group"] = target.group.name
 
     return attributes
 
@@ -421,6 +543,9 @@ def turn_on(args):
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
 
+    if not target.enabled:
+        return {"ERROR": f"{target.name} is disabled, please enable before turning on"}
+
     result = target.send(1)
     if result:
         target.state = True
@@ -431,7 +556,7 @@ def turn_on(args):
 
 
 @app.route("turn_off")
-def turn_on(args):
+def turn_off(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
@@ -463,10 +588,23 @@ def get_temp(args):
 
 
 @app.route("get_humid")
-def get_temp(args):
+def get_humid(args):
     for sensor in app.config.sensors:
         if sensor.sensor_type == "si7021":
             return {"Humidity": sensor.temp_sensor.relative_humidity}
+    else:
+        return {"ERROR": "No temperature sensor configured"}
+
+
+
+@app.route("get_climate_data")
+def get_climate_data(args):
+    for sensor in app.config.sensors:
+        if sensor.sensor_type == "si7021":
+            data = {}
+            data["temp"] = sensor.fahrenheit()
+            data["humid"] = sensor.temp_sensor.relative_humidity
+            return data
     else:
         return {"ERROR": "No temperature sensor configured"}
 

@@ -1,7 +1,3 @@
-# This file is executed on every boot (including wake-boot from deepsleep)
-#import esp
-#esp.osdebug(None)
-
 import webrepl
 import network
 import time
@@ -20,7 +16,13 @@ async def disk_monitor():
     print("Disk Monitor Started\n")
 
     # Get filesize/modification time (to detect upload in future)
-    old = os.stat("boot.py")
+    try:
+        old = os.stat("boot.py")
+    except OSError:
+        # If doesn't exist, create
+        with open('boot.py', 'w') as file:
+            file.write("")
+        old = os.stat("boot.py")
 
     while True:
         # Check if file changed on disk

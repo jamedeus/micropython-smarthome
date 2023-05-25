@@ -10,15 +10,18 @@ log = logging.getLogger("LedStrip")
 
 
 class LedStrip(Device):
-    def __init__(self, name, device_type, enabled, current_rule, scheduled_rule, pin, min_bright, max_bright):
-        super().__init__(name, device_type, enabled, current_rule, scheduled_rule)
+    def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule, pin, min_bright, max_bright):
+        super().__init__(name, nickname, device_type, enabled, current_rule, default_rule)
 
         # TODO - Find optimal PWM freq. Default (5 KHz) causes very noticable coil whine in downstairs bathroom at 128 duty cycle.
         # Raising significantly reduces max brightness (exceeded MOSFET switching time), may just need different power supply?
         self.pwm = PWM(Pin(pin), duty=0)
 
-        # Hardware bug workaround, occasionally 100% brightness on boot despite reading 0% in software
-        self.pwm.duty(0)
+        # Firmware bug workaround, occasionally instantiates with 512 duty cycle despite duty=0. Immediately calling
+        # pwm.duty(0) does nothing, but for some reason calling pwm.duty() with no argument fixes the issue. Works
+        # whether called in print statement or conditional, tested 100+ times.
+        if self.pwm.duty() != 0:
+            self.pwm.duty(0)
 
         self.bright = 0 # Store current brightness, allows smooth transition when rule changes
 
@@ -55,7 +58,7 @@ class LedStrip(Device):
                 print(f"{self.name}: fading to {target} in {period} seconds")
                 log.info(f"{self.name}: fading to {target} in {period} seconds")
 
-                if not self.current_rule == "Disabled":
+                if not self.current_rule == "disabled":
                     # Get current brightness
                     brightness = int(self.current_rule)
                 else:
@@ -93,11 +96,19 @@ class LedStrip(Device):
             print(f"{self.name}: Rule changed to {self.current_rule}")
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
 
+            # If fade in progress when rule changed, abort
+            if self.fading:
+                self.fading = False
+
             # Rule just changed to disabled
-            if self.current_rule == "Disabled":
+            if self.current_rule == "disabled":
                 self.send(0)
                 self.disable()
-            # Sensor was previously disabled, enable now that rule has changed
+            # Rule just changed to enabled, replace with usable rule (default) and enable
+            elif self.current_rule == "enabled":
+                self.current_rule = self.default_rule
+                self.enable()
+            # Device was previously disabled, enable now that rule has changed
             elif self.enabled == False:
                 self.enable()
             # Device is currently on, run send so new rule can take effect
@@ -108,7 +119,7 @@ class LedStrip(Device):
 
 
 
-    def rule_validator(self, rule):
+    def validator(self, rule):
         try:
             if str(rule).startswith("fade"):
                 # Parse parameters from rule
@@ -121,9 +132,6 @@ class LedStrip(Device):
                     return rule
                 else:
                     return False
-
-            elif rule == "Disabled":
-                return rule
 
             elif isinstance(rule, bool):
                 return False
@@ -140,8 +148,11 @@ class LedStrip(Device):
 
 
     def send(self, state=1):
-        if not self.enabled:
-            return False
+        # Refuse to turn disabled device on, but allow turning off
+        if not self.enabled and state:
+            # Return True causes group to flip state to True, even though device is off
+            # This allows turning off (would be skipped if state already == False)
+            return True
 
         if state:
             target = self.current_rule
@@ -204,7 +215,11 @@ class LedStrip(Device):
                 if new_rule < self.fading["target"]:
                     new_rule = self.fading["target"]
 
-            self.set_rule(new_rule)
+            # Set new rule without calling set_rule method (would abort fade)
+            self.current_rule = int(new_rule)
+            self.scheduled_rule = int(new_rule)
+            if self.state == True:
+                self.send(1)
 
         # Check if fade complete after step
         if self.fading["target"] == int(self.current_rule):

@@ -6,9 +6,13 @@ log = logging.getLogger("Sensor")
 
 
 class Sensor():
-    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets):
+    def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets):
 
+        # Unique, sequential name (sensor1, sensor2, ...) used in backend
         self.name = name
+
+        # User-configurable name used in frontend, not necesarily unique
+        self.nickname = nickname
 
         self.sensor_type = sensor_type
 
@@ -18,7 +22,16 @@ class Sensor():
         self.current_rule = current_rule
 
         # The rule that should be followed at the current time (used to undo API changes to current_rule)
-        self.scheduled_rule = scheduled_rule
+        self.scheduled_rule = current_rule
+
+        # The fallback rule used when no other valid rules are available
+        # Can happen if config file contains invalid rules, or if enabled through API while both current and schedule rule are "disabled"
+        self.default_rule = default_rule
+
+        # Prevent instantiating with invalid default_rule
+        if self.sensor_type in ("pir", "si7021", "dummy") and str(self.default_rule).lower() in ("enabled", "disabled"):
+            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            raise AttributeError
 
         # Will hold sequential schedule rules so they can be quickly changed when interrupt runs
         self.rule_queue = []
@@ -31,10 +44,34 @@ class Sensor():
     def enable(self):
         self.enabled = True
 
+        # Replace "disabled" with usable rule
+        if self.current_rule == "disabled":
+            # Revert to scheduled rule unless it is also "disabled"
+            if not str(self.scheduled_rule).lower() == "disabled":
+                self.current_rule = self.scheduled_rule
+            # Last resort: revert to default_rule
+            else:
+                self.current_rule = self.default_rule
+
 
 
     def disable(self):
         self.enabled = False
+
+
+
+    # Base validator for universal rules, can be extended in subclass validator method
+    def rule_validator(self, rule):
+        if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
+            return str(rule).lower()
+        else:
+            return self.validator(rule)
+
+
+
+    # Placeholder function, intended to be overwritten by subclass validator method
+    def validator(self, rule):
+        return False
 
 
 
@@ -47,9 +84,13 @@ class Sensor():
             print(f"{self.name}: Rule changed to {self.current_rule}")
 
             # Rule just changed to disabled
-            if self.current_rule == "Disabled":
+            if self.current_rule == "disabled":
                 # TODO there are probably scenarios where lights can get stuck on here
                 self.disable()
+            # Rule just changed to enabled, replace with usable rule (default) and enable
+            elif self.current_rule == "enabled":
+                self.current_rule = self.default_rule
+                self.enable()
             # Sensor was previously disabled, enable now that rule has changed
             elif self.enabled == False:
                 self.enable()
@@ -91,3 +132,10 @@ class Sensor():
 
         elif self.sensor_type == "switch":
             return False
+
+
+
+    # Called by Config after adding Sensor to Group. Appends functions to Group's post_action_routines list
+    # Placeholder function for subclasses with no post-routines, overwritten if they do
+    def add_routines(self):
+        return

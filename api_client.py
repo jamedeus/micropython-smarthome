@@ -2,10 +2,13 @@
 
 import os
 import sys
-from colorama import Fore, Style
 import json
 import asyncio
 import re
+from colorama import Fore, Style
+
+timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+ip_regex = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
 
 def error():
     print()
@@ -17,9 +20,11 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "enable_in [target] [minutes]" + Style.RESET_ALL + "      Create timer to enable [target] in [minutes]")
     print("- " + Fore.YELLOW + Style.BRIGHT + "set_rule [target]" + Style.RESET_ALL + "                 Change [target]'s current rule, can be device or sensor, lasts until next rule change")
     print("- " + Fore.YELLOW + Style.BRIGHT + "reset_rule [target]" + Style.RESET_ALL + "               Replace [target]'s current rule with scheduled rule, used to undo a set_rule request")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "reset_all_rules" + Style.RESET_ALL + "                   Replace current rules of all devices and sensors with their scheduled rule")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_schedule_rules [target]" + Style.RESET_ALL + "       View scheduled rule changes for [target], can be device or sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "add_rule [target] [HH:MM] [rule]" + Style.RESET_ALL + "  Add scheduled rule change, will persist until next reboot")
     print("- " + Fore.YELLOW + Style.BRIGHT + "remove_rule [target] [HH:MM]" + Style.RESET_ALL + "      Delete an existing schedule (does not delete from config, will come back next reboot)")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "save_rules" + Style.RESET_ALL + "                        Write current schedule rules to disk, persists after reboot")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_attributes [target]" + Style.RESET_ALL + "           View all of [target]'s attributes, can be device or sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "condition_met [sensor]" + Style.RESET_ALL + "            Check if [sensor]'s condition is met (turns on target devices)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "trigger_sensor [sensor]" + Style.RESET_ALL + "           Simulates the sensor being triggered (turns on target devices)")
@@ -28,6 +33,7 @@ def error():
     print("- " + Fore.YELLOW + Style.BRIGHT + "ir [target||key]" + Style.RESET_ALL + "                  Simulate 'key' being pressed on remote control for 'target' (target can be tv or ac)")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_temp" + Style.RESET_ALL + "                          Get current reading from temp sensor in Farenheit")
     print("- " + Fore.YELLOW + Style.BRIGHT + "get_humid" + Style.RESET_ALL + "                         Get current relative humidity from temp sensor")
+    print("- " + Fore.YELLOW + Style.BRIGHT + "get_climate" + Style.RESET_ALL + "                       Get current temp and humidity from sensor")
     print("- " + Fore.YELLOW + Style.BRIGHT + "clear_log" + Style.RESET_ALL + "                         Delete node's log file\n")
     raise SystemExit
 
@@ -38,7 +44,7 @@ async def request(ip, msg):
     try:
         writer.write('{}\n'.format(json.dumps(msg)).encode())
         await writer.drain()
-        res = await reader.read(1000)
+        res = await reader.read()
     except OSError:
         return "Error: Request failed"
     try:
@@ -83,13 +89,13 @@ def parse_ip(args):
         elif args[i] == "-ip":
             args.pop(i)
             ip = args.pop(i)
-            if re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", ip):
+            if re.match(ip_regex, ip):
                 return parse_command(ip, args)
             else:
                 print("Error: Invalid IP format")
                 raise SystemExit
 
-        elif re.match("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", args[i]):
+        elif re.match(ip_regex, args[i]):
             ip = args.pop(i)
             return parse_command(ip, args)
 
@@ -209,6 +215,10 @@ def reset_rule(ip, params):
     else:
         return {"ERROR": "Can only set rules for devices and sensors"}
 
+@add_endpoint("reset_all_rules")
+def reset_all_rules(ip, params):
+    return asyncio.run(request(ip, ['reset_all_rules']))
+
 @add_endpoint("get_schedule_rules")
 def get_schedule_rules(ip, params):
     if len(params) == 0:
@@ -230,13 +240,10 @@ def add_schedule_rule(ip, params):
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
-        timestamp = params.pop(0)
+    if len(params) < 2:
+        return {"ERROR": "Must specify timestamp/keyword followed by rule"}
     else:
-        return {"ERROR": "Must specify time (HH:MM) followed by rule"}
-
-    if len(params) == 0:
-        return {"ERROR": "Must specify new rule"}
+        timestamp = params.pop(0)
 
     cmd = ['add_schedule_rule', target, timestamp]
 
@@ -256,12 +263,48 @@ def remove_rule(ip, params):
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    if len(params) > 0 and re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", params[0]):
-        timestamp = params.pop(0)
+    if len(params) < 1:
+        return {"ERROR": "Must specify timestamp/keyword followed by rule"}
     else:
-        return {"ERROR": "Must specify time (HH:MM) followed by rule"}
+        timestamp = params.pop(0)
 
     return asyncio.run(request(ip, ['remove_rule', target, timestamp]))
+
+@add_endpoint("save_rules")
+def save_rules(ip, params):
+    return asyncio.run(request(ip, ['save_rules']))
+
+@add_endpoint("get_schedule_keywords")
+def get_schedule_keywords(ip, params):
+    return asyncio.run(request(ip, ['get_schedule_keywords']))
+
+@add_endpoint("add_schedule_keyword")
+def add_schedule_keyword(ip, params):
+    if len(params) == 0:
+        return {"Example usage" : "./api_client.py add_schedule_keyword [keyword] [HH:MM]"}
+
+    keyword = params.pop(0)
+
+    if len(params) > 0 and re.match(timestamp_regex, params[0]):
+        timestamp = params.pop(0)
+    else:
+        return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
+
+    cmd = ['add_schedule_keyword', {keyword: timestamp}]
+
+    return asyncio.run(request(ip, cmd))
+
+@add_endpoint("remove_schedule_keyword")
+def remove_schedule_keyword(ip, params):
+    if len(params) == 0:
+        return {"Example usage" : "./api_client.py remove_schedule_keyword [keyword]"}
+
+    cmd = ['remove_schedule_keyword', params.pop(0)]
+    return asyncio.run(request(ip, cmd))
+
+@add_endpoint("save_schedule_keywords")
+def save_rules(ip, params):
+    return asyncio.run(request(ip, ['save_schedule_keywords']))
 
 @add_endpoint("get_attributes")
 def get_attributes(ip, params):
@@ -305,6 +348,10 @@ def get_temp(ip, params):
 @add_endpoint("get_humid")
 def get_humid(ip, params):
     return asyncio.run(request(ip, ['get_humid']))
+
+@add_endpoint("get_climate")
+def get_climate(ip, params):
+    return asyncio.run(request(ip, ['get_climate_data']))
 
 @add_endpoint("clear_log")
 def clear_log(ip, params):

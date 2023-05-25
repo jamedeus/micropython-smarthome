@@ -9,17 +9,14 @@ log = logging.getLogger("MotionSensor")
 
 
 class MotionSensor(Sensor):
-    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets, pin):
-        super().__init__(name, sensor_type, enabled, current_rule, scheduled_rule, targets)
+    def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets, pin):
+        super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
 
         # Pin setup
-        self.sensor = Pin(pin, Pin.IN, Pin.PULL_DOWN)
+        self.sensor = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 
         # Create hardware interrupt
         self.enable()
-
-        # Remember target state, don't turn on/off if already on/off
-        self.state = None
 
         log.info(f"Instantiated MotionSensor named {self.name} on pin {pin}")
 
@@ -51,12 +48,11 @@ class MotionSensor(Sensor):
 
 
 
-    def rule_validator(self, rule):
+    def validator(self, rule):
         try:
-            if rule == "Disabled":
-                return rule
-            elif rule is None:
-                return rule
+            if rule is None:
+                return 0
+            # Prevent incorrectly accepting True and False (next condition casts to 1.0, 0.0 respectively)
             elif isinstance(rule, bool):
                 return False
             else:
@@ -73,11 +69,10 @@ class MotionSensor(Sensor):
         if self.motion:
             try:
                 off = float(self.current_rule) * 60000
-                SoftwareTimer.timer.create(off, self.resetTimer, self.name)
-            except TypeError:
-                pass # Prevent crash when rule changed to "None" (no timeout)
+                if off > 0:
+                    SoftwareTimer.timer.create(off, self.resetTimer, self.name)
             except ValueError:
-                pass # Prevent crash when rule changes to "Enabled" or "Disabled"
+                pass # Prevent crash when rule changes to "disabled"
 
 
 
@@ -90,8 +85,8 @@ class MotionSensor(Sensor):
 
         self.motion = True
 
-        # Set reset timer
-        if not ("None" in str(self.current_rule) or "Enabled" in str(self.current_rule) or "Disabled" in str(self.current_rule)):
+        # Set reset timer unless current rule is 0 (no reset timer) or sensor is disabled
+        if not (self.current_rule == 0 or self.current_rule == "disabled"):
             try:
                 off = float(self.current_rule) * 60000
                 SoftwareTimer.timer.create(off, self.resetTimer, self.name)

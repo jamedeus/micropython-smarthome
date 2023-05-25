@@ -1,0 +1,68 @@
+
+.current-rule-slider {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+/* Slider bar size */
+.rangeslider--horizontal {
+    height: 10px;
+    width: 100%;
+}
+/* Applies to entire slider background */
+.rangeslider,
+.rangeslider__fill {
+    display: block;
+    border-radius: 10px;
+}
+
+/* Slider background right of handle (values larger than current selection) */
+.rangeslider {
+    background: #cccccc;
+    position: relative;
+}
+
+body.dark .rangeslider {
+    background: #1B1E1F;
+}
+
+/* Slider background left of handle (values smaller than current selection) */
+.rangeslider__fill {
+    position: absolute;
+    background: #0D6EFD;
+}
+
+/* Controls how much of the slider bar is filled in with bg color */
+.rangeslider--horizontal .rangeslider__fill {
+    top: 0;
+    height: 100%;
+}
+
+/* Circle with current value */
+.rangeslider__handle {
+    border-radius: 22px;
+    line-height: 2.3rem;
+    text-align: center;
+    font-weight: bold;
+    background: white;
+    border: 6px solid #0D6EFD;
+    cursor: pointer;
+    display: inline-block;
+    width: 3rem;
+    height: 3rem;
+    position: absolute;
+    -moz-border-radius: 50%;
+    -webkit-border-radius: 50%;
+    border-radius: 50%;
+}
+
+body.dark .rangeslider__handle {
+    background: #202428;
+}
+
+/* Handle vertical positioning */
+.rangeslider--horizontal .rangeslider__handle {
+    top: -1rem;
+    touch-action: pan-y;
+    -ms-touch-action: pan-y;
+}

@@ -1,0 +1,49 @@
+version: "3.5"
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - /home/pi/docker/nginx:/etc/nginx/certs
+    restart: unless-stopped
+    networks:
+      - reverse_proxy
+
+  smarthome:
+    image: micropython-smarthome:1.0
+    container_name: smarthome
+    hostname: smarthome
+    environment:
+      # Reverse proxy domain name
+      - VIRTUAL_HOST=smarthome.lan
+      # Comma-seperated list, access on all others will be blocked
+      # Defaults to * if omitted (not recommended)
+      - ALLOWED_HOSTS=smarthome.lan,localhost
+      # Optional: Persistent key between sessions
+      # If blank a new key will be generated each time
+      - SECRET_KEY="xxxxxxxxxxxxxxxxxxxxxx"
+      # Optional: set webrepl password used by nodes
+      # If blank defaults to "password"
+      - NODE_PASSWD=password
+    volumes:
+      # Persistent storage between sessions
+      - smarthome-data:/repo
+      # Optional: Generated config files will be written here if present
+      - /home/pi/docker/smarthome/config:/repo/config
+    ports:
+      - 8456:8456
+    networks:
+      - reverse_proxy
+    restart: unless-stopped
+
+networks:
+  reverse_proxy:
+    name: reverse_proxy
+    driver: bridge
+
+volumes:
+  smarthome-data:

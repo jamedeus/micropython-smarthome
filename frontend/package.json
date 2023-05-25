@@ -1,0 +1,34 @@
+{
+  "name": "micropython-smarthome-frontend",
+  "version": "1.0.0",
+  "description": "Django PWA for configuring and controlling micropython-smarthome nodes",
+  "repository": {
+    "type": "git",
+    "url": "git+https://gitlab.com/jamedeus/micropython-smarthome.git"
+  },
+  "keywords": [
+    "micropython",
+    "python",
+    "esp32",
+    "iot",
+    "home",
+    "automation",
+    "scheduling",
+    "pwa",
+    "webapp",
+    "django"
+  ],
+  "author": "Josh Medeiros",
+  "bugs": {
+    "url": "https://gitlab.com/jamedeus/micropython-smarthome/issues"
+  },
+  "homepage": "https://gitlab.com/jamedeus/micropython-smarthome#readme",
+  "dependencies": {
+    "bootstrap": "^5.2.3",
+    "bootstrap-icons": "^1.10.4",
+    "jquery": "^3.6.4",
+    "rangeslider.js": "^2.3.3",
+    "smoothscroll-polyfill": "^0.4.4",
+    "spinkit": "^2.0.1"
+  }
+}

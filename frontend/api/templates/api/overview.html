@@ -1,0 +1,390 @@
+{% load static %}
+{% load pwa %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Micropython Smarthome API</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% progressive_web_app_meta %}
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'api/style.css' %}">
+    <link rel="stylesheet" href="{% static 'api/overview.css' %}">
+    <link rel="stylesheet" href="{% static 'api/loading.css' %}">
+    <script src="{% static 'bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'smoothscroll.min.js' %}"></script>
+    <script>
+        function openNode(node) {
+            // Show loading animation, redirect to selected node
+            document.getElementById('loading_overlay').classList.add('d-flex');
+            {% if recording %}
+            window.location.href = '/api/' + node + '/{{recording}}';
+            {% else %}
+            window.location.href = '/api/' + node;
+            {% endif %}
+        };
+    </script>
+</head>
+<body>
+    <div id="container" class="container d-flex flex-column vh-100">
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn my-auto" id="back_button" style="visibility:hidden"><i class="bi-chevron-left"></i></button>
+            {% if recording %}
+            <h1 class="my-3 glow">Recording Macro</h1>
+            {% else %}
+            <h1 class="my-3">Api Overview</h1>
+            {% endif %}
+            <div class="dropdown my-auto">
+                <button type="button" class="btn" id="settings_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                <ul id="settings_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings_button">
+                    <li><a class="dropdown-item" onclick='fetch("/reboot_all")'>Reboot all</a></li>
+                    <li><a class="dropdown-item" onclick='fetch("/reset_all")'>Reset all rules</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            // Check if user is in dark mode, change theme (runs once on page load)
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add("dark");
+                document.getElementById("settings_button").classList.add("btn-dark");
+                document.querySelectorAll(".dropdown-menu").forEach(menu => menu.classList.add("dropdown-menu-dark"));
+                console.log("Dark mode");
+            } else {
+                document.getElementById("settings_button").classList.add("btn-light");
+            };
+        </script>
+
+        {% if nodes %}
+            <div id="container" class="text-center">
+                {% for floor, nodes in nodes.items %}
+                    <div id="floor{{floor}}" class="section mt-3 mb-4 p-3">
+                        <h5 class="mb-3"><b>Floor {{floor}}</b></h5>
+
+                        {% for node in nodes %}
+                            <button onclick="openNode(this.id);" type="button" class="select_node btn btn-primary m-1" id="{{node.friendly_name}}">{{node.friendly_name}}</button>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+
+            <h1 class="text-center mt-5">Macros</h1>
+
+            {% if not recording %}
+                {% if not macros %}
+                    <div id="macros" class="text-center section p-3 mx-auto mb-5">
+                        <div class="p-3">
+                            <div class="form-floating mb-3">
+                                <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
+                                <label for="new-macro-name">New macro name</label>
+                                <div id="invalid-name" class="invalid-feedback">Name already in use</div>
+                            </div>
+                            <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
+                        </div>
+                    </div>
+                {% else %}
+                    <div id="macros" class="text-center section p-3 mx-auto mb-5">
+                        {% for macro in macros %}
+                            {% if not macro == recording %}
+                            <div id="{{macro}}" class="d-flex mb-3">
+                                <h3 class="mx-auto my-auto">{{macro|title}}</h3>
+                                <button id="run-{{macro}}" type="button" class="btn btn-primary btn-macro mx-3" onclick="runMacro('{{macro}}')">Run</button>
+                                <button id="edit-{{macro}}" type="button" class="btn-primary btn btn-macro mx-3" onclick="editMacro('{{macro}}')">Edit</button>
+                                <button id="delete-{{macro}}" type="button" class="btn-danger btn btn-macro mx-3" onclick="deleteMacro('{{macro}}')"><i class="bi-trash"></i></button>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        <button class="btn btn-secondary mt-3 mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#record-macro-menu" aria-expanded="false" aria-controls="record-macro-menu" onclick="openNewMacro(this)"><i class="bi-plus-lg"></i></button>
+                        <div class="collapse" id="record-macro-menu">
+                            <div class="p-3">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
+                                    <label for="new-macro-name">New macro name</label>
+                                    <div id="invalid-name" class="invalid-feedback">Name already in use</div>
+                                </div>
+                                <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                        // Track collapse open/close state, determine when to focus input
+                        let collapseOpen = false;
+                        const collapse = document.getElementById('record-macro-menu');
+                        collapse.addEventListener('show.bs.collapse', () => { collapseOpen = true });
+                        collapse.addEventListener('hide.bs.collapse', () => { collapseOpen = false });
+
+                        // Focus input + scrollIntoView when opening collapse, but not when closing
+                        // Mobile keyboard only opens for click event, must call .focus() here (not show.bs.collapse)
+                        function openNewMacro(button) {
+                            if (collapseOpen) {
+                                document.getElementById('new-macro-name').focus();
+                                button.scrollIntoView({behavior: 'smooth'});
+                            };
+                        };
+                    </script>
+                {% endif %}
+                <script>
+                    /* Start recording by pressing enter in input */
+                    document.getElementById("new-macro-name").addEventListener("keypress", function(event) {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            document.getElementById("start-recording").click();
+                        };
+                    });
+                </script>
+            {% else %}
+                <button class="btn btn-danger mb-5 mx-auto" type="button" onclick="window.location.href = '/api'">Finish Recording</button>
+            {% endif %}
+
+        {# No nodes configured #}
+        {% else %}
+            <div class="my-auto text-center">
+                <h2>No Nodes Configured</h2>
+                <p>Click <a href="/new_config">here</a> to create</p>
+            </div>
+            <script>
+                document.getElementById('settings_button').disabled = true
+            </script>
+        {% endif %}
+
+        <div class="d-flex align-items-center flex-column mt-auto">
+            <button class="btn btn-secondary mt-auto mb-3" type="button" onclick="window.location.href = '/config_overview'">Manage</button>
+        </div>
+    </div>
+
+    {% if start_recording and not skip_instructions %}
+    <!-- Recording macro instructions modal -->
+    <div class="modal fade" id="instructions-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-fit-contents">
+            <div class="modal-content">
+                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                    <h3 class="mx-auto mb-0" id="error-modal-title">Macro Instructions</h3>
+                </div>
+                <div class="modal-body mx-auto" id="instructions-modal-body">
+                    <div class="section p-3">
+                        <p class="text-center">Use the interface as you normally would</br>to record actions.</p>
+                        <ul>
+                            <li>Change rules, turn devices on/off,</br>and enable/disable things</li>
+                            <li>Don't worry about conflicts, only</br>the last change will be saved</li>
+                            <li>Example: If a light is turned off, then</br>turned on, only on is saved</li>
+                        </ul>
+                        <p class="text-center">When you're done, return to the</br>overview and click "Finish Recording".</p>
+                        <p class="text-center">You can always click the edit button</br>later to delete actions or record more.</p>
+                    </div>
+                    <div class="d-flex flex-column pt-3 pb-2">
+                        <div class="form-check mx-auto pb-2">
+                            <input class="form-check-input" type="checkbox" value="" id="dontShowAgain" autocomplete="off">
+                            <label class="form-check-label" for="dontShowAgain">Don't show again</label>
+                        </div>
+                        <button type="button" id="ok-button" class="btn btn-success mx-auto" data-bs-dismiss="modal" onclick="closeModal();">OK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Show modal on page load
+        var modal = new bootstrap.Modal(document.getElementById('instructions-modal'))
+        modal.show()
+
+        async function closeModal() {
+            // Get cookie if box checked
+            if (document.getElementById('dontShowAgain').checked) {
+                var result = await fetch('/skip_instructions');
+            };
+        };
+    </script>
+    {% endif %}
+
+    <!-- Contents loaded from edit_modal template, loaded by editMacro() -->
+    <div class="modal fade" id="edit-macro-modal" tabindex="-1">
+    </div>
+
+    <!-- Page load animation-->
+    <div id="loading_overlay">
+        <div id="loading_spinner" class="spinner"><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    <script>
+        // If only 1 floor, remove label and background
+        if ({{nodes|length}} == 1) {
+            let floor1 = document.getElementById('floor1');
+            floor1.children[0].remove();
+            floor1.classList.remove("section");
+
+        // If exactly 2 floors, change labels to Upstairs/Downstairs, move Upstairs to top
+        } else if ({{nodes|length}} == 2) {
+            let floor1 = document.getElementById('floor1');
+            let floor2 = document.getElementById('floor2');
+
+            floor1.children[0].innerHTML = "<b>Downstairs</b>";
+            floor2.children[0].innerHTML = "<b>Upstairs</b>";
+
+            floor2.after(floor1);
+        };
+
+        /* Enable start recording button once new macro name entered */
+        function macroNameHandler() {
+            /* Remove invalid highlight if present */
+            document.getElementById('new-macro-name').classList.remove('is-invalid');
+            document.getElementById('invalid-name').classList.remove('d-flex');
+
+            const name = document.getElementById('new-macro-name').value;
+            if (name.length < 1) {
+                document.getElementById('start-recording').disabled = true;
+            } else {
+                document.getElementById('start-recording').disabled = false;
+            };
+        };
+
+        /* Handler for start recording button */
+        async function startRecording() {
+            const name = document.getElementById('new-macro-name').value;
+
+            /* Check if name is available */
+            var result = await fetch(`/macro_name_available/${name}`);
+            result = await result.status;
+
+            /* If available start recording */
+            if (result == 200) {
+                window.location.href = `/api/recording/${name}/start`;
+            /* If not show invalid field highlight */
+            } else {
+                document.getElementById('new-macro-name').classList.add('is-invalid');
+                document.getElementById('invalid-name').classList.add('d-flex');
+            };
+        };
+
+        /* Handler for run macro button */
+        async function runMacro(name) {
+            /* Replace run with loading spinner */
+            document.getElementById(`run-${name}`).innerHTML = `<div id="spinner" class="loading-animation loading-animation-show m-auto"><div></div><div></div><div></div><div></div></div>`
+
+            /* Start macro, await result */
+            var result = await fetch(`/run_macro/${name}`);
+            result = await result.status;
+
+            /* Checkmark animation, then fade back to original text */
+            if (result == 200) {
+                document.getElementById(`run-${name}`).innerHTML = `<svg id="checkmark" class="checkmark m-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                                                                        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+                                                                        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+                                                                    </svg>`;
+                await sleep(2000);
+                document.getElementById(`checkmark`).classList.add('fade-out');
+                await sleep(200);
+                document.getElementById(`run-${name}`).innerHTML = "<span class='fade-in'>Run</span>";
+            };
+        };
+
+        /* Open modal with table of existing actions within macro */
+        async function editMacro(name) {
+            const editMacroModal = document.getElementById('edit-macro-modal');
+
+            // Fetch template containing modal body
+            var template = await fetch(`/edit_macro/${name}`);
+            editMacroModal.innerHTML = await template.text();
+
+            // Get existing modal instance or create, show modal
+            let macroModal = bootstrap.Modal.getInstance(editMacroModal);
+            if (!macroModal) {macroModal = new bootstrap.Modal(editMacroModal)};
+            macroModal.show();
+
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.getElementById('edit-close').classList.add('btn-close-white');
+            };
+        };
+
+        /* Delete an individual action from a macro, called from edit macro modal */
+        async function deleteMacroAction(name, index) {
+            /* Delete, await result */
+            var result = await fetch(`/delete_macro_action/${name}/${index}`);
+            result = await result.status;
+
+            /* Fade out macro row, then remove */
+            if (result == 200) {
+                /* Fade out row */
+                const editMacroModal = document.getElementById('edit-macro-modal');
+                const row = document.getElementById(`action${index}`);
+                row.classList.add('fade-out');
+                await sleep(200);
+
+                /* Reload whole menu (indices of subsequent actions now changed) */
+                var template = await fetch(`/edit_macro/${name}`);
+                editMacroModal.innerHTML = await template.text();
+
+                /* If last action removed, delete entire macro and reload */
+                if (document.getElementById('macro-actions').children[0].childElementCount == 1) {
+                    // Get existing modal instance or create, hide modal
+                    let macroModal = bootstrap.Modal.getInstance(editMacroModal);
+                    if (!macroModal) {macroModal = new bootstrap.Modal(editMacroModal)};
+                    macroModal.hide();
+
+                    await deleteMacro(name);
+                    location.reload();
+                };
+            };
+        };
+
+        /* Delete an entire macro, called by delete button in macro section */
+        async function deleteMacro(name) {
+            /* Replace trash icon with loading spinner */
+            document.getElementById(`delete-${name}`).innerHTML = `<div id="spinner" class="loading-animation loading-animation-show m-auto"><div></div><div></div><div></div><div></div></div>`
+
+            /* Delete, await result */
+            var result = await fetch(`/delete_macro/${name}`);
+            result = await result.status;
+
+            /* Fade out macro row, then remove */
+            if (result == 200) {
+                const row = document.getElementById(name);
+                row.classList.add('fade-out');
+                await sleep(200);
+                row.remove();
+            };
+
+            /* Last macro deleted, replace section */
+            if (document.getElementById('macros').childElementCount == 2) {
+                document.getElementById('macros').innerHTML = `<div class="p-3">
+                                                                   <div class="form-floating mb-3">
+                                                                       <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off' oninput="macroNameHandler()">
+                                                                       <label for="new-macro-name">New macro name</label>
+                                                                   </div>
+                                                                   <button id="start-recording" class="btn btn-success" type="button" autocomplete="off" onclick="startRecording()" disabled>Start Recording</button>
+                                                               </div>`
+            };
+        };
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        };
+
+        // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
+        window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+            if (e.matches) { // Returns True for dark mode, False otherwise
+                document.body.classList.add("dark");
+                document.getElementById("settings_button").classList.remove("btn-light");
+                document.getElementById("settings_button").classList.add("btn-dark");
+                document.querySelectorAll(".dropdown-menu").forEach(menu => menu.classList.add("dropdown-menu-dark"));
+                document.querySelectorAll('.btn-close').forEach(el => el.classList.add('btn-close-white'));
+            } else {
+                document.body.classList.remove("dark");
+                document.getElementById("settings_button").classList.remove("btn-dark");
+                document.getElementById("settings_button").classList.add("btn-light");
+                document.querySelectorAll(".dropdown-menu").forEach(menu => menu.classList.remove("dropdown-menu-dark"));
+                document.querySelectorAll('.btn-close').forEach(el => el.classList.remove('btn-close-white'));
+            };
+        });
+
+        // Remove loading overlay when navigated to with browser back button
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                document.getElementById('loading_overlay').classList.remove('d-flex');
+            };
+        };
+    </script>
+</body>
+</html>

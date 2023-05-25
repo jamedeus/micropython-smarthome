@@ -7,7 +7,9 @@ from random import randrange
 import uasyncio as asyncio
 import logging
 import gc
+import re
 import SoftwareTimer
+from Group import Group
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -36,14 +38,18 @@ class Config():
         self.location = conf["metadata"]["location"]
         self.floor = conf["metadata"]["floor"]
 
-        # Call function to connect to wifi + hit APIs
-        self.api_calls()
-
         # Tells loop when it is time to re-run API calls + build schedule rule queue
         self.reload_rules = False
 
         # Dictionairy holds schedule rules for all devices and sensors
         self.schedule = {}
+
+        # Dictionairy of keyword-timestamp pairs, used for schedule rules
+        self.schedule_keywords = {'sunrise': '00:00', 'sunset': '00:00'}
+        self.schedule_keywords.update(conf["metadata"]["schedule_keywords"])
+
+        # Call function to connect to wifi + hit APIs
+        self.api_calls()
 
         # Create empty list, will contain instances for each device
         self.devices = []
@@ -55,43 +61,52 @@ class Config():
             # Add device's schedule rules to dict
             self.schedule[device] = conf[device]["schedule"]
 
-            # Instantiate each device as appropriate class
-            if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
-                from Tplink import Tplink
-                instance = Tplink( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+            try:
+                # Instantiate each device as appropriate class
+                if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
+                    from Tplink import Tplink
+                    instance = Tplink( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
-            elif conf[device]["type"] == "relay":
-                from Relay import Relay
-                instance = Relay( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                elif conf[device]["type"] == "relay":
+                    from Relay import Relay
+                    instance = Relay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
-            elif conf[device]["type"] == "dumb-relay":
-                from DumbRelay import DumbRelay
-                instance = DumbRelay( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"] )
+                elif conf[device]["type"] == "dumb-relay":
+                    from DumbRelay import DumbRelay
+                    instance = DumbRelay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
 
-            elif conf[device]["type"] == "desktop":
-                from Desktop_target import Desktop_target
-                instance = Desktop_target( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                elif conf[device]["type"] == "desktop":
+                    from Desktop_target import Desktop_target
+                    instance = Desktop_target( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
-            elif conf[device]["type"] == "pwm":
-                from LedStrip import LedStrip
-                instance = LedStrip( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"], conf[device]["min"], conf[device]["max"] )
+                elif conf[device]["type"] == "pwm":
+                    from LedStrip import LedStrip
+                    instance = LedStrip( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]), conf[device]["min"], conf[device]["max"] )
 
-            elif conf[device]["type"] == "mosfet":
-                from Mosfet import Mosfet
-                instance = Mosfet( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["pin"] )
+                elif conf[device]["type"] == "mosfet":
+                    from Mosfet import Mosfet
+                    instance = Mosfet( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
 
-            elif conf[device]["type"] == "api-target":
-                from ApiTarget import ApiTarget
-                instance = ApiTarget( device, conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                elif conf[device]["type"] == "api-target":
+                    from ApiTarget import ApiTarget
+                    instance = ApiTarget( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
 
-            # Add instance to config.devices
-            self.devices.append(instance)
+                elif conf[device]["type"] == "wled":
+                    from Wled import Wled
+                    instance = Wled( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+
+                # Add instance to config.devices
+                self.devices.append(instance)
+            except AttributeError:
+                log.critical(f"Failed to instantiate {device}: type = {conf[device]['type']}, default_rule = {conf[device]['default_rule']}")
+                print(f"Failed to instantiate {device}: type = {conf[device]['type']}, default_rule = {conf[device]['default_rule']}")
+                pass
 
         # Can only have 1 instance (driver limitation)
         # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
         if "ir_blaster" in conf:
             from IrBlaster import IrBlaster
-            self.ir_blaster = IrBlaster( conf["ir_blaster"]["pin"], conf["ir_blaster"]["target"] )
+            self.ir_blaster = IrBlaster( int(conf["ir_blaster"]["pin"]), conf["ir_blaster"]["target"] )
 
         log.debug("Finished creating device instances")
 
@@ -104,38 +119,46 @@ class Config():
             # Add sensor's schedule rules to dict
             self.schedule[sensor] = conf[sensor]["schedule"]
 
-            # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
-            targets = []
-            for target in conf[sensor]["targets"]:
-                targets.append(self.find(target))
+            try:
+                # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
+                targets = []
+                for target in conf[sensor]["targets"]:
+                    t = self.find(target)
+                    # Only add if instance found (instantiation may have failed due to invalid config params)
+                    if t:
+                        targets.append(t)
 
-            # Instantiate sensor as appropriate class
-            if conf[sensor]["type"] == "pir":
-                from MotionSensor import MotionSensor
-                instance = MotionSensor(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["pin"])
+                # Instantiate sensor as appropriate class
+                if conf[sensor]["type"] == "pir":
+                    from MotionSensor import MotionSensor
+                    instance = MotionSensor(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
 
-            elif conf[sensor]["type"] == "desktop":
-                from Desktop_trigger import Desktop_trigger
-                instance = Desktop_trigger(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["ip"])
+                elif conf[sensor]["type"] == "desktop":
+                    from Desktop_trigger import Desktop_trigger
+                    instance = Desktop_trigger(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, conf[sensor]["ip"])
 
-            elif conf[sensor]["type"] == "si7021":
-                from Thermostat import Thermostat
-                instance = Thermostat(sensor, conf[sensor]["type"], True, int(conf[sensor]["default_rule"]), conf[sensor]["default_rule"], targets)
+                elif conf[sensor]["type"] == "si7021":
+                    from Thermostat import Thermostat
+                    instance = Thermostat(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, conf[sensor]["default_rule"], conf[sensor]["default_rule"], conf[sensor]["mode"], conf[sensor]["tolerance"], targets)
 
-            elif conf[sensor]["type"] == "dummy":
-                from Dummy import Dummy
-                instance = Dummy(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets)
+                elif conf[sensor]["type"] == "dummy":
+                    from Dummy import Dummy
+                    instance = Dummy(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets)
 
-            elif conf[sensor]["type"] == "switch":
-                from Switch import Switch
-                instance = Switch(sensor, conf[sensor]["type"], True, None, conf[device]["default_rule"], targets, conf[sensor]["pin"])
+                elif conf[sensor]["type"] == "switch":
+                    from Switch import Switch
+                    instance = Switch(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
 
-            # Add the sensor instance to each of it's target's "triggered_by" list
-            for t in targets:
-                t.triggered_by.append(instance)
+                # Add the sensor instance to each of it's target's "triggered_by" list
+                for t in targets:
+                    t.triggered_by.append(instance)
 
-            # Add instance to config.sensors
-            self.sensors.append(instance)
+                # Add instance to config.sensors
+                self.sensors.append(instance)
+            except AttributeError:
+                log.critical(f"Failed to instantiate {sensor}: type = {conf[sensor]['type']}, default_rule = {conf[sensor]['default_rule']}")
+                print(f"Failed to instantiate {sensor}: type = {conf[sensor]['type']}, default_rule = {conf[sensor]['default_rule']}")
+                pass
 
         log.debug("Finished creating sensor instances")
 
@@ -171,23 +194,46 @@ class Config():
         status_dict["metadata"]["id"] = self.identifier
         status_dict["metadata"]["floor"] = self.floor
         status_dict["metadata"]["location"] = self.location
+        status_dict["metadata"]["schedule_keywords"] = self.schedule_keywords
+        if "ir_blaster" in self.__dict__:
+            status_dict["metadata"]["ir_blaster"] = True
+        else:
+            status_dict["metadata"]["ir_blaster"] = False
 
         status_dict["devices"] = {}
         for i in self.devices:
             status_dict["devices"][i.name] = {}
+            status_dict["devices"][i.name]["nickname"] = i.nickname
             status_dict["devices"][i.name]["type"] = i.device_type
+            status_dict["devices"][i.name]["enabled"] = i.enabled
             status_dict["devices"][i.name]["current_rule"] = i.current_rule
+            status_dict["devices"][i.name]["scheduled_rule"] = i.scheduled_rule
             status_dict["devices"][i.name]["turned_on"] = i.state
+            status_dict["devices"][i.name]["schedule"] = self.schedule[i.name]
+
+            # If device is PWM, add min/max
+            if i.device_type == "pwm":
+                status_dict["devices"][i.name]["min"] = i.min_bright
+                status_dict["devices"][i.name]["max"] = i.max_bright
 
         status_dict["sensors"] = {}
         for i in self.sensors:
             status_dict["sensors"][i.name] = {}
+            status_dict["sensors"][i.name]["nickname"] = i.nickname
             status_dict["sensors"][i.name]["type"] = i.sensor_type
             status_dict["sensors"][i.name]["enabled"] = i.enabled
             status_dict["sensors"][i.name]["current_rule"] = i.current_rule
+            status_dict["sensors"][i.name]["condition_met"] = i.condition_met()
+            status_dict["sensors"][i.name]["scheduled_rule"] = i.scheduled_rule
             status_dict["sensors"][i.name]["targets"] = []
             for t in i.targets:
                 status_dict["sensors"][i.name]["targets"].append(t.name)
+            status_dict["sensors"][i.name]["schedule"] = self.schedule[i.name]
+
+            # If node has temp sensor, add climate data
+            if i.sensor_type == "si7021":
+                status_dict["sensors"][i.name]["temp"] = i.fahrenheit()
+                status_dict["sensors"][i.name]["humid"] = i.temp_sensor.relative_humidity
 
         return status_dict
 
@@ -258,8 +304,8 @@ class Config():
             try:
                 response = urequests.get("https://api.ipgeolocation.io/astronomy?apiKey=ddcf9be5a455453e99d84de3dfe825bc&lat=45.524722&long=-122.6771891")
                 # Parse out sunrise/sunset, convert to 24h format
-                self.sunrise = response.json()["sunrise"]
-                self.sunset = response.json()["sunset"]
+                self.schedule_keywords["sunrise"] = response.json()["sunrise"]
+                self.schedule_keywords["sunset"] = response.json()["sunset"]
                 response.close()
                 break # Break loop once request succeeds
             except:
@@ -290,13 +336,12 @@ class Config():
         # Create empty dict to store new schedule rules
         result = {}
 
-        # Check for sunrise/sunet rules, replace "sunrise"/"sunset" with today's timestamps (converted to epoch time in loop below)
-        if "sunrise" in rules:
-            rules[self.sunrise] = rules["sunrise"]
-            del rules["sunrise"]
-        if "sunset" in rules:
-            rules[self.sunset] = rules["sunset"]
-            del rules["sunset"]
+        # Replace keywords with timestamp from dict, timestamps convert to epoch below
+        for keyword in self.schedule_keywords:
+            if keyword in rules:
+                keyword_time = self.schedule_keywords[keyword]
+                rules[keyword_time] = rules[keyword]
+                del rules[keyword]
 
         # Get rule start times, sort chronologically
         schedule = list(rules)
@@ -308,6 +353,10 @@ class Config():
         now = time.localtime(epoch)
 
         for rule in schedule:
+            # Skip unconverted keywords
+            if not re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", rule):
+                continue
+
             # Returns epoch time of rule, uses all current parameters but substitutes hour + min from schedule and 0 for seconds
             trigger_time = time.mktime((now[0], now[1], now[2], int(rule.split(":")[0]), int(rule.split(":")[1]), 0, now[6], now[7]))
 
@@ -348,14 +397,26 @@ class Config():
         SoftwareTimer.timer.cancel("scheduler")
 
         for i in self.schedule:
-            rules = self.convert_rules(self.schedule[i])
+            # Convert copy (preserve sunrise/sunset keywords in original)
+            rules = self.convert_rules(self.schedule[i].copy())
 
             # Get target instance
             instance = self.find(i)
+            # Skip if unable to find instance
+            if not instance: continue
 
-            # If no schedule rules, set default_rule as current and skip to next
+            # If no schedule rules, use default_rule and skip to next instance
             if len(rules) == 0:
-                instance.current_rule = instance.scheduled_rule
+                # If default is valid, also set as scheduled_rule
+                if instance.set_rule(instance.default_rule):
+                    instance.scheduled_rule = instance.current_rule
+                # If default rule is invalid, disable instance to prevent unpredictable behavior
+                else:
+                    log.critical(f"{instance.name} default rule ({instance.default_rule}) failed validation, instance will be disabled")
+                    instance.current_rule = "disabled"
+                    instance.scheduled_rule = "disabled"
+                    instance.default_rule = "disabled"
+                    instance.disable()
                 continue
 
             # Get list of timestamps, sort chronologically
@@ -366,13 +427,22 @@ class Config():
 
             # Set target's current_rule (set_rule method passes to syntax validator, returns True if valid, False if not)
             if instance.set_rule(rules[queue.pop(0)]):
-                # If rule valid, overwrite scheduled_rule placeholder (default_rule)
+                # If rule valid, set as scheduled_rule
                 instance.scheduled_rule = instance.current_rule
             else:
-                # If rule not valid, use default_rule as current_rule
-                instance.current_rule = instance.scheduled_rule
+                # If rule is invalid, fall back to default rule
+                log.error(f"{instance.name} scheduled rule failed validation, falling back to default rule")
+                if instance.set_rule(instance.default_rule):
+                    instance.scheduled_rule = instance.current_rule
+                else:
+                    # If both scheduled and default rules are invalid, disable instance to prevent unpredictable behavior
+                    log.critical(f"{instance.name} default rule ({instance.default_rule}) failed validation, instance will be disabled")
+                    instance.current_rule = "disabled"
+                    instance.scheduled_rule = "disabled"
+                    instance.default_rule = "disabled"
 
-            if instance.current_rule == "Disabled":
+            # TODO rely on set_rule method to disable?
+            if str(instance.current_rule).lower() == "disabled":
                 instance.disable()
 
             # Clear target's queue
@@ -397,48 +467,40 @@ class Config():
 
 
     def build_groups(self):
-
         # Stores relationships between sensors ("triggers") and devices ("targets"), iterated by main loop
-        self.groups = {}
+        self.groups = []
 
-        for sensor in self.sensors:
+        sensor_list = self.sensors.copy()
 
-            # First iteration
-            if not len(self.groups) > 0:
-                self.new_group(sensor)
+        while len(sensor_list) > 0:
+            # Get first sensor in sensor_list, add to group list
+            s = sensor_list.pop(0)
+            group = [s]
 
-            else:
-                match_found = False
+            # Find all sensors with identical targets, add to group list
+            for i in sensor_list:
+                if i.targets == s.targets:
+                    group.append(i)
 
-                # If another group with same targets exists, add sensor to group's triggers
-                for group in self.groups:
-                    # Check if lists contain same elements (instances aren't sortable, use set to ignore order)
-                    if set(sensor.targets) == set(self.groups[group]["targets"]):
-                        self.groups[group]["triggers"].append(sensor)
-                        match_found = True
+            # Delete all sensors in group from sensor_list
+            for i in group:
+                try:
+                    del sensor_list[sensor_list.index(i)]
+                except ValueError:
+                    pass
 
-                # If no group matches, create new group
-                if not match_found:
-                    self.new_group(sensor)
+            # Instantiate group object from list of sensors
+            instance = Group("group" + str(len(self.groups) + 1), group)
+            self.groups.append(instance)
 
+            # Pass instance to all members' group attributes, allows group members to access group methods
+            for sensor in instance.triggers:
+                sensor.group = instance
+                # Add Sensor's post-action routines (if any), will run after group turns targets on/off
+                sensor.add_routines()
 
-
-    def new_group(self, sensor):
-        # Generate sequential names (group1, group2 ...)
-        name = "group" + str(len(self.groups) + 1)
-        self.groups[name] = {}
-
-        # Records whether targets are turned ON or OFF
-        self.groups[name]["state"] = None
-
-        # List of sensor instances
-        self.groups[name]["triggers"] = []
-        self.groups[name]["triggers"].append(sensor)
-
-        # List of devices that are turned on by sensor's in triggers
-        self.groups[name]["targets"] = []
-        for target in sensor.targets:
-            self.groups[name]["targets"].append(target)
+            for device in instance.targets:
+                device.group = instance
 
 
 

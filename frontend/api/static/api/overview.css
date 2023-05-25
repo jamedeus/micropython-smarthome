@@ -1,0 +1,148 @@
+/* Prevent horizontal margins on modal */
+/* Margin keeps centerd on mobile */
+.modal-fit-contents {
+    max-width: fit-content !important;
+    margin: auto !important;
+}
+
+/* Default + min class (overrides to make narrowest-possible cell) */
+td {
+    width: auto;
+}
+
+td.min {
+    width: 1%;
+}
+
+/* Vertically center contents of table row */
+tr {
+    vertical-align: middle;
+}
+
+/* Macro buttons */
+.btn-macro {
+    height: 3rem;
+    width: 3rem;
+    padding: 0px !important;
+}
+
+/* Macro running spinner */
+.loading-animation {
+    width: 2rem;
+    height: 2rem;
+}
+
+.loading-animation div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    margin: auto;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    animation: loading-animation 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #fff transparent transparent transparent;
+}
+
+.loading-animation div:nth-child(1) {
+    animation-delay: -0.45s;
+}
+
+.loading-animation div:nth-child(2) {
+    animation-delay: -0.3s;
+}
+
+.loading-animation div:nth-child(3) {
+    animation-delay: -0.15s;
+}
+
+@keyframes loading-animation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Macro finished running animation */
+.checkmark__circle {
+    stroke-dasharray: 166;
+    stroke-dashoffset: 166;
+    stroke-width: 6;
+    stroke-miterlimit: 10;
+    stroke: #fff;
+    fill: none;
+    animation: stroke 0.6s cubic-bezier(0.65, 0, 0.45, 1) forwards;
+}
+
+.checkmark {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    display: block;
+    stroke-width: 5;
+    stroke: #fff;
+    stroke-miterlimit: 10;
+    box-shadow: inset 0px 0px 0px #fff;
+    animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+}
+
+.checkmark__check {
+    transform-origin: 50% 50%;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: stroke 0.3s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
+}
+
+@keyframes stroke {
+    100% {
+        stroke-dashoffset: 0;
+    }
+}
+
+
+@keyframes scale {
+    0%, 100% {
+        transform: none;
+    }
+    50% {
+        transform: scale3d(1.1, 1.1, 1);
+    }
+}
+
+@keyframes fill {
+    100% {
+        box-shadow: inset 0px 0px 0px 30px var(--success);
+    }
+}
+
+/* Fade animations */
+.fade-out {
+    opacity: 100%;
+    animation: fade-out 0.2s forwards;
+}
+
+.fade-in {
+    opacity: 0%;
+    animation: fade-in 0.2s forwards;
+}
+
+@keyframes fade-out {
+    0% {
+        opacity: 100%
+    }
+    100% {
+        opacity: 0%
+    }
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0%
+    }
+    100% {
+        opacity: 100%
+    }
+}

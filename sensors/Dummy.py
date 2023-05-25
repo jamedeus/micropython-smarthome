@@ -7,16 +7,23 @@ log = logging.getLogger("Dummy_Sensor")
 
 
 class Dummy(Sensor):
-    def __init__(self, name, sensor_type, enabled, current_rule, scheduled_rule, targets):
-        super().__init__(name, sensor_type, enabled, current_rule, scheduled_rule, targets)
+    def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets):
+        super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
 
         log.info(f"Instantiated dummy sensor named {self.name}")
 
 
 
-    def rule_validator(self, rule):
-        if rule == "on" or rule == "off" or rule == "Disabled":
-            return rule
+    # Accepts additional rules because they are the only factor determining if condition is met
+    # With only enabled/disabled it would never turn targets off (condition not checked while disabled)
+    def validator(self, rule):
+        try:
+            if rule.lower() == "on" or rule.lower() == "off":
+                return rule.lower()
+            else:
+                return False
+        except AttributeError:
+            return False
 
 
 

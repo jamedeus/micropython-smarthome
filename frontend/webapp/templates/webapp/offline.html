@@ -1,0 +1,58 @@
+{% load static %}
+{% load pwa %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Offline</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% progressive_web_app_meta %}
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
+    <link rel="stylesheet" href="{% static 'api/animations.css' %}">
+    <script src="{% static 'bootstrap.min.js' %}"></script>
+    <script src="{% static 'jquery.min.js' %}"></script>
+</head>
+
+<body>
+    <!-- Check if user is in dark mode, change theme (runs here to prevent visual flash) -->
+    <script>
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add("dark");
+        };
+    </script>
+
+    <div class="container d-flex flex-column text-center vh-100">
+        <h1 class="text-center my-3">Offline Mode</h1>
+        <p class="text-center ">Please check your internet/VPN connection</p>
+
+        <div class="my-auto">
+            <div class="d-flex justify-content-center mb-3">
+                <div id="spinner" class="loading-animation loading-animation-show my-2"><div></div><div></div><div></div><div></div></div>
+            </div>
+            <p class="text-center">This page will reload automatically</p>
+        </div>
+
+        <button type="button" class="btn btn-success mx-auto mb-3 mt-auto" onclick="attemptReconnect();">Retry</button>
+    </div>
+
+    <script>
+        function attemptReconnect() {
+            if (navigator.onLine) {
+                location.reload();
+            };
+        };
+        setInterval(attemptReconnect, 15000);
+
+        // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
+        window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+            if (e.matches) { // Returns True for dark mode, False otherwise
+                document.body.classList.add("dark");
+            } else {
+                document.body.classList.remove("dark");
+            };
+        });
+    </script>
+</body>
+</html>

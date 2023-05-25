@@ -18,17 +18,11 @@ class IrBlaster():
 
         self.codes = {}
 
-        if self.target == "tv":
+        if "tv" in self.target:
             with open('samsung-codes.json', 'r') as file:
                 self.codes["tv"] = json.load(file)
 
-        elif self.target == "ac":
-            with open('whynter-codes.json', 'r') as file:
-                self.codes["ac"] = json.load(file)
-
-        elif self.target == "both":
-            with open('samsung-codes.json', 'r') as file:
-                self.codes["tv"] = json.load(file)
+        if "ac" in self.target:
             with open('whynter-codes.json', 'r') as file:
                 self.codes["ac"] = json.load(file)
 

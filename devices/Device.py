@@ -6,9 +6,13 @@ log = logging.getLogger("Device")
 
 
 class Device():
-    def __init__(self, name, device_type, enabled, current_rule, scheduled_rule):
+    def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule):
 
+        # Unique, sequential name (device1, device2, ...) used in backend
         self.name = name
+
+        # User-configurable name used in frontend, not necesarily unique
+        self.nickname = nickname
 
         self.device_type = device_type
 
@@ -21,7 +25,16 @@ class Device():
         self.current_rule = current_rule
 
         # The rule that should be followed at the current time (used to undo API changes to current_rule)
-        self.scheduled_rule = scheduled_rule
+        self.scheduled_rule = current_rule
+
+        # The fallback rule used when no other valid rules are available
+        # Can happen if config file contains invalid rules, or if enabled through API while both current and schedule rule are "disabled"
+        self.default_rule = default_rule
+
+        # Prevent instantiating with invalid default_rule
+        if self.device_type in ("dimmer", "bulb", "pwm", "api-target") and str(self.default_rule).lower() in ("enabled", "disabled"):
+            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            raise AttributeError
 
         # Will hold sequential schedule rules so they can be quickly changed when interrupt runs
         self.rule_queue = []
@@ -34,21 +47,53 @@ class Device():
     def enable(self):
         self.enabled = True
 
-        # Enable self in sensor's targets dict
-        for sensor in self.triggered_by:
+        # Replace "disabled" with usable rule
+        if self.current_rule == "disabled":
+            # Revert to scheduled rule unless it is also "disabled"
+            if not str(self.scheduled_rule).lower() == "disabled":
+                self.current_rule = self.scheduled_rule
+            # Last resort: revert to default_rule
+            else:
+                self.current_rule = self.default_rule
 
-            # Run loop again immediately so newly-enabled device acquires same on/off state as other devices
-            if sensor.sensor_type == "pir":
-                if sensor.motion:
-                    self.state = False
-                else:
+        # If other devices in group are on, turn on to match state
+        try:
+            if self.group.state == True:
+                success = self.send(1)
+                if success:
                     self.state = True
+                else:
+                    # Forces group to turn on again, retrying until successful (send command above likely failed due to temporary network error)
+                    # Only used as last resort due to side effects - if user previously turned OFF a device in this group through API, then
+                    # re-enables this device, group will turn BOTH on (but user only wanted to turn this one on)
+                    self.group.state = False
+        except AttributeError:
+            pass
 
 
 
     def disable(self):
+        # Turn off before disabling
+        if self.state:
+            self.send(0)
+            self.state = False
+
         self.enabled = False
-        self.state = False
+
+
+
+    # Base validator for universal rules, can be extended in subclass validator method
+    def rule_validator(self, rule):
+        if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
+            return str(rule).lower()
+        else:
+            return self.validator(rule)
+
+
+
+    # Placeholder function, intended to be overwritten by subclass validator method
+    def validator(self, rule):
+        return False
 
 
 
@@ -61,10 +106,14 @@ class Device():
             print(f"{self.name}: Rule changed to {self.current_rule}")
 
             # Rule just changed to disabled
-            if self.current_rule == "Disabled":
+            if self.current_rule == "disabled":
                 self.send(0)
                 self.disable()
-            # Sensor was previously disabled, enable now that rule has changed
+            # Rule just changed to enabled, replace with usable rule (default) and enable
+            elif self.current_rule == "enabled":
+                self.current_rule = self.default_rule
+                self.enable()
+            # Device was previously disabled, enable now that rule has changed
             elif self.enabled == False:
                 self.enable()
             # Device is currently on, run send so new rule can take effect

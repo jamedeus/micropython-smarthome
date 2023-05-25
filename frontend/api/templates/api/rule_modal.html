@@ -1,0 +1,90 @@
+<div class="row">
+    <!-- Time Input -->
+    <div class="col-12 col-md-6 mb-3">
+        <div id="timestamp-input" class="text-center {% if not show_timestamp %} d-none {% endif %}">
+            <label for="timestamp" class="form-label">Time</label>
+            <input type="time" class="form-control" id="timestamp" name="timestamp" value="{{timestamp}}" data-original="{{timestamp}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists">
+        </div>
+
+        <div id="keyword-input" class="text-center {% if show_timestamp %} d-none {% endif %}">
+            <label for="keyword" class="form-label">Keyword</label>
+            <select class="form-select" id="keyword" name="keyword" data-original="{{timestamp}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Rule at this time already exists">
+                <option disabled {% if timestamp == "" %}selected{% endif %}>Select a keyword</option>
+                {% for keyword in schedule_keywords %}
+                <option value="{{keyword}}" {% if timestamp == keyword %}selected{% endif %}>{{keyword|title}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Time mode toggle -->
+        <div class="d-flex mt-2">
+            <div class="form-check form-switch d-inline-block">
+                <input class="form-check-input" type="checkbox" id="toggle-time-mode" onchange="toggle_time_mode(event)" {% if not show_timestamp %} checked {% endif %}>
+            </div>
+            <label class="me-auto form-check-label" for="toggle-time-mode">Keyword</label>
+        </div>
+    </div>
+
+
+
+    <!-- Rule Input -->
+    <div class="col-12 col-md-6">
+
+    {% if type in "dimmer,bulb,wled,pwm,pir,si7021" %}
+        <div class="text-center">
+            <label for="rule-input" class="form-label">Rule</label>
+            <input type="text" class="form-control" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+        </div>
+
+    {% if type in "dimmer,bulb,pwm" %}
+        <!-- Fade duration input -->
+        <div id="duration-input" class="text-center {% if not fade %} d-none {% endif %}">
+            <label for="duration" class="form-label mt-2">Duration (seconds)</label>
+            <input type="text" class="form-control" id="duration" name="duration" {% if duration %}value="{{duration}}"{% endif %} data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+        </div>
+
+        <!-- Fade mode toggle -->
+        <div class="d-flex mt-2">
+            <div class="form-check form-switch d-inline-block">
+                <input class="form-check-input" type="checkbox" id="toggle-rule-mode" onchange="toggle_fade_mode(event)" {% if fade %} checked {% endif %} data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+            </div>
+            <label class="me-auto form-check-label" for="toggle-rule-mode">Fade</label>
+        </div>
+    {% endif %}
+
+    {% elif type in "relay,dumb-relay,desktop,mosfet,switch" %}
+        <div class="text-center">
+            <label for="rule-input" class="form-label">Keyword</label>
+            <select class="form-select" id="rule-input" name="rule-input" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+                <option disabled {% if rule == "" %}selected{% endif %}>Select rule</option>
+                <option value="enabled" {% if rule == "Enabled" %}selected{% endif %}>Enabled</option>
+                <option value="disabled" {% if rule == "Disabled" %}selected{% endif %}>Disabled</option>
+            </select>
+        </div>
+
+    {% elif type == "dummy" %}
+        <div class="text-center">
+            <label for="rule-input" class="form-label">Keyword</label>
+            <select class="form-select" id="rule-input" name="rule-input" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+                <option disabled {% if rule == "" %}selected{% endif %}>Select rule</option>
+                <option value="enabled" {% if rule == "Enabled" %}selected{% endif %}>Enabled</option>
+                <option value="disabled" {% if rule == "Disabled" %}selected{% endif %}>Disabled</option>
+                <option value="on" {% if rule == "On" %}selected{% endif %}>On</option>
+                <option value="off" {% if rule == "Off" %}selected{% endif %}>Off</option>
+            </select>
+        </div>
+
+    {% elif type == "api-target" %}
+        <div class="text-center">
+            {# Hidden input with expected rule ID #}
+            <input type="text" id="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" style="display:none;">
+
+            {# Button has id expected by open_rule_modal, data-target sets output destination when submitted #}
+            <label for="{{target}}-button" class="form-label">Rule</label>
+            <button class="form-control" id="{{target}}-button" name="{{target}}-button" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" data-target="rule-input" title="Invalid rule" onclick="open_rule_modal(this);">Set Rule</button>
+        </div>
+
+    {% endif %}
+
+    </div>
+</div>

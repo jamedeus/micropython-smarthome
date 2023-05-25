@@ -1,0 +1,902 @@
+{% load static %}
+{% load pwa %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{ context.metadata.id }} - Micropython Smarthome API</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% progressive_web_app_meta %}
+    <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
+    <link rel="stylesheet" href="{% static 'spinkit.min.css' %}">
+    <link rel="stylesheet" href="{% static 'api/style.css' %}">
+    <link rel="stylesheet" href="{% static 'api/sliders.css' %}">
+    <link rel="stylesheet" href="{% static 'api/animations.css' %}">
+    <link rel="stylesheet" href="{% static 'api/loading.css' %}">
+    {% if context.metadata.ir_blaster == True %}
+    <link rel="stylesheet" href="{% static 'api/remote.css' %}">
+    {% endif %}
+    <script src="{% static 'bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'jquery.min.js' %}"></script>
+    <script src="{% static 'rangeslider.min.js' %}"></script>
+    <script src="{% static 'smoothscroll.min.js' %}"></script>
+    <script>
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        };
+    </script>
+</head>
+
+<body>
+    <div id="container" class="container fade-in">
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn my-auto" id="back_button" onclick="back();"><i class="bi-chevron-left"></i></button>
+            {% if context.metadata.recording %}
+            <h1 class="my-3 glow">{{context.metadata.id}}</h1>
+            {% else %}
+            <h1 class="my-3">{{context.metadata.id}}</h1>
+            {% endif %}
+            <div class="dropdown my-auto">
+                <button type="button" class="btn" id="more_options_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                <ul id="more_options_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="more_options_button">
+                    <li><a class="dropdown-item" onclick="send_command({'command': 'reboot'});">Reboot</a></li>
+                    <li><a class="dropdown-item" onclick="send_command({'command': 'clear_log'});">Clear Log</a></li>
+                    <li><a class="dropdown-item" onclick="send_command({'command': 'reset_all_rules'});">Reset all rules</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Check if user is in dark mode, change theme (runs here to prevent visual flash) -->
+        <script>
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.body.classList.add("dark");
+                document.getElementById("back_button").classList.add("btn-dark");
+                document.getElementById("more_options_button").classList.add("btn-dark");
+                console.log("Dark mode");
+            } else {
+                document.getElementById("back_button").classList.add("btn-light");
+                document.getElementById("more_options_button").classList.add("btn-light");
+            };
+        </script>
+
+        <div class="row">
+
+<!--      SENSORS      -->
+            <div id="sensor-cards" class="col-sm">
+
+                {% for sensor, params in context.sensors.items %}
+
+                    <div id="{{sensor}}-card" class="card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between">
+                                {% if not params.type in "pir,desktop,dummy" %}
+                                <button class="btn btn-outline-secondary trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
+                                {% elif params.condition_met %}
+                                <button class="btn btn-outline-secondary trigger-button my-auto me-auto trigger-on" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
+                                {% else %}
+                                <button class="btn btn-outline-secondary trigger-button my-auto me-auto" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
+                                {% endif %}
+<!--                                     <button type="button" class="btn btn-primary my-auto"><i class="bi-exclamation-lg"></i></button> -->
+                                <h4 class="card-title mx-auto my-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
+                                <div class="dropdown ms-auto my-auto">
+                                    <button type="button" class="btn btn-outline-secondary menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                    <ul id="{{sensor}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{sensor}}-menu-button">
+                                        {% if params.enabled %}
+                                            <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
+                                        {% else %}
+                                            <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
+                                        {% endif %}
+                                        <li><a id="{{sensor}}-schedule-toggle" class="dropdown-item" onclick="open_schedule_toggle(this);">Schedule Toggle</a></li>
+                                        <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
+                                        <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
+                                        <li><a id="{{sensor}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {% if params.enabled %}
+                                <div class="collapse show" id="{{sensor}}-body">
+                            {% else %}
+                                <div class="collapse" id="{{sensor}}-body">
+                            {% endif %}
+
+                            <!-- Rule slider -->
+                            {% if params.type == "pir" %}
+
+                                <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
+                                    <button id="{{sensor}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                                    <input id="{{sensor}}-rule" type="range" class="current-rule-slider mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{params.current_rule}}" autocomplete="off">
+                                    <button id="{{sensor}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                                </div>
+
+                            {% elif params.type == "si7021" %}
+                                <table class="table table-borderless mt-3">
+                                    <tbody>
+                                        <tr>
+                                            <th class="text-center w-50 pb-0">Temperature</th>
+                                            <th class="text-center w-50 pb-0">Humidity</th>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-center fs-5" id="temperature">{{params.temp|floatformat:"2"}}</td>
+                                            <td class="text-center fs-5" id="humidity">{{params.humid|floatformat:"2"}}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                <!-- Close climate data card, start new card for thermostat -->
+                                </div></div></div></br>
+
+                                <script>
+                                    // Change previous card title to "Climate Data", old title will be reused in new card below
+                                    document.getElementById("{{sensor}}-title").innerHTML = "Climate Data";
+
+                                    // Prevent collapsed climate data card if page loaded while thermostat disabled
+                                    document.getElementById("{{sensor}}-body").classList.add("show");
+
+                                    // Prevent collapsing climate data card when disabling sensor
+                                    document.getElementById("{{sensor}}-body").id = "climate-data-body";
+                                    document.getElementById("{{sensor}}-card").id = "climate-data-card";
+
+                                    // Remove enable/disable toggle, will be moved to new card below
+                                    document.getElementById("{{sensor}}-trigger").remove();
+                                    document.getElementById("{{sensor}}-menu-button").parentElement.remove();
+                                </script>
+
+                                <div id="{{sensor}}-card" class="card">
+                                    <div class="card-body d-flex flex-column">
+                                        <div class="d-flex justify-content-between">
+                                            <button class="btn btn-outline-secondary trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
+                                            <h4 class="card-title mx-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
+
+                                            <div class="dropdown ms-auto my-auto">
+                                                <button type="button" class="btn btn-outline-secondary menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                                <ul id="{{sensor}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{sensor}}-menu-button">
+                                                    {% if params.enabled %}
+                                                        <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
+                                                    {% else %}
+                                                        <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
+                                                    {% endif %}
+                                                    <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
+                                                    <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
+                                                    <li><a class="dropdown-item" onclick="chartModal.show();">View history</a></li>
+                                                    <li><a id="{{sensor}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
+                                                </ul>
+                                            </div>
+                                        </div>
+
+                                        {% if params.enabled %}
+                                            <div class="collapse show" id="{{sensor}}-body">
+                                        {% else %}
+                                            <div class="collapse" id="{{sensor}}-body">
+                                        {% endif %}
+
+                                        <!-- Range slider -->
+                                        <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
+                                            <button id="{{sensor}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                                            <input id="{{sensor}}-rule" type="range" class="current-rule-slider mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.1" value="{{params.current_rule}}" autocomplete="off">
+                                            <button id="{{sensor}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+                                        </div>
+
+                            {% endif %}
+                            <!-- End rule slider -->
+
+                            <!-- Schedule rules section, collapsed by default -->
+                            <p class="text-center mt-3">
+                                <button id="{{sensor}}-open-rules" class="btn btn-sm btn-primary open-rules" type="button" data-bs-toggle="collapse" data-bs-target="#{{sensor}}-schedule-rules" aria-expanded="false" aria-controls="{{sensor}}-schedule-rules" onclick="open_rules(this)">
+                                    Schedule rules
+                                </button>
+                            </p>
+                            <div class="collapse text-center" id="{{sensor}}-schedule-rules">
+
+                                <!-- Hide table if no rules exist (just see headings, confusing) -->
+                                <table id="{{sensor}}-rules" class="table table-borderless {% if params.schedule.items|length == 0 %} d-none {% endif %}">
+                                    <tr>
+                                        <th class="w-50">Time</th>
+                                        <th class="w-50">Rule</th>
+                                    </tr>
+
+                                    {% if params.schedule.items|length > 0 %}
+                                        {% for time, rule in params.schedule.items %}
+                                            <tr id="{{sensor}}-row-{{forloop.counter}}">
+                                                {# Add time field #}
+                                                <td><span class="form-control schedule-rule time" id="{{sensor}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{params.type}}"  onclick="edit_existing_rule(this);">{{time}}</span></td>
+
+                                                {# Add rule field #}
+                                                <td><span class="form-control schedule-rule" id="{{sensor}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{rule}}</span></td>
+
+                                                {# Add edit/delete button #}
+                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{sensor}}-edit{{forloop.counter}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                </table>
+
+                                <div class="text-center mx-3 mb-3">
+                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{sensor}}-add-rule" data-type="{{params.type}}" onclick="add_new_rule(this)"><i class="bi-plus-lg"></i></button>
+                                </div>
+                            </div>
+                            <!-- End schedule rules section -->
+                        </div>
+                    </div>
+                    </div></br>
+                {% endfor %}
+            </div>
+
+<!--      DEVICES      -->
+            <div id="device-cards" class="col-sm">
+
+                {% for device, params in context.devices.items %}
+
+                    <div id="{{device}}-card" class="card">
+                        <div class="card-body d-flex flex-column">
+                            <div class="d-flex justify-content-between">
+                                {% if params.turned_on %}
+                                    <button class="btn btn-outline-secondary power-button my-auto me-auto toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
+                                {% else %}
+                                    <button class="btn btn-outline-secondary power-button my-auto me-auto" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
+                                {% endif %}
+                                <h4 class="card-title mx-auto my-auto" id="{{device}}-title">{{ params.nickname }}</h4>
+
+                                <div class="dropdown my-auto ms-auto">
+                                    <button type="button" class="btn btn-outline-secondary menu-button" id="{{device}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
+                                    <ul id="{{device}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{device}}-menu-button">
+                                        {% if params.enabled %}
+                                            <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
+                                        {% else %}
+                                            <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
+                                        {% endif %}
+                                        <li><a id="{{device}}-schedule-toggle" class="dropdown-item" onclick="open_schedule_toggle(this);">Schedule Toggle</a></li>
+                                        <li><a id="{{device}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
+                                        {% if params.type == "api-target" %}
+                                            <li><a id="{{device}}-current_rule-button" class="dropdown-item" data-target="{{device}}-current_rule" data-original="{{params.current_rule}}" onclick="open_rule_modal(this);">Change rule</a></li>
+                                        {% endif %}
+                                        {% if params.type in "dimmer,bulb,pwm" %}
+                                            <li><a id="{{device}}-start-fade" class="dropdown-item" onclick="open_fade_modal(this);">Start Fade</a></li>
+                                        {% endif %}
+                                        <li><a id="{{device}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {% if params.enabled %}
+                                <div class="collapse show" id="{{device}}-body">
+                            {% else %}
+                                <div class="collapse" id="{{device}}-body">
+                            {% endif %}
+
+                            <!-- Rule slider -->
+                            {% if params.type in "dimmer,bulb" %}
+
+                                <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
+                                    <button id="{{device}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                                    <input id="{{device}}-rule" type="range" class="current-rule-slider mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" value="{{params.current_rule}}" autocomplete="off">
+                                    <button id="{{device}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                                </div>
+
+                            {% elif params.type == "wled" %}
+
+                                <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
+                                    <button id="{{device}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                                    <input id="{{device}}-rule" type="range" class="current-rule-slider mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" value="{{params.current_rule}}" autocomplete="off">
+                                    <button id="{{device}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                                </div>
+
+                            {% elif params.type == "pwm" %}
+
+                                <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
+                                    <button id="{{device}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-dash-lg"></i></button>
+                                    <input id="{{device}}-rule" type="range" class="current-rule-slider mx-auto" min="{{params.min}}" max="{{params.max}}" data-displaymin="0" data-displaymax="100" data-displaytype="int" value="{{params.current_rule}}" autocomplete="off">
+                                    <button id="{{device}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-plus-lg"></i></button>
+                                </div>
+
+                            {% endif %}
+
+                            <!-- End rule slider -->
+
+                            {% if params.type == "api-target" %}
+                                <div style="display:none;">
+                                    <input id="{{device}}-current_rule" type="text" autocomplete="off" value="{{params.current_rule}}" onchange="change_api_target_rule(this);">
+                                </div>
+                            {% endif %}
+
+                            <!-- Schedule rules section, collapsed by default -->
+                            <p class="text-center mt-3">
+                                <button id="{{device}}-open-rules" class="btn btn-sm btn-primary open-rules" type="button" data-bs-toggle="collapse" data-bs-target="#{{device}}-schedule-rules" aria-expanded="false" aria-controls="{{device}}-schedule-rules" onclick="open_rules(this)">
+                                    Schedule rules
+                                </button>
+                            </p>
+                            <div class="collapse text-center" id="{{device}}-schedule-rules">
+
+                                <table id="{{device}}-rules" class="table table-borderless {% if params.schedule.items|length == 0 %} d-none {% endif %}">
+                                    <tr>
+                                        <th class="w-50">Time</th>
+                                        <th class="w-50">Rule</th>
+                                    </tr>
+
+                                    {% if params.schedule.items|length > 0 %}
+                                        {% for time, rule in params.schedule.items %}
+                                            <tr id="{{device}}-row-{{forloop.counter}}">
+                                                {# Add time field #}
+                                                <td><span class="form-control schedule-rule time" id="{{device}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{time}}</span></td>
+
+                                                {# Add rule field #}
+                                                {% if params.type == "api-target" %}
+                                                    <td><span class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}-button" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">click to view</span>
+                                                    <input type="text" class="form-control" id="{{device}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}" style="display:none;"></td>
+                                                {% else %}
+                                                    <td><span class="form-control schedule-rule" id="{{device}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}"  onclick="edit_existing_rule(this);">{{rule}}</span></td>
+                                                {% endif %}
+
+                                                {# Add edit button #}
+                                                <td class="min"><button type="button" class="btn btn-sm btn-primary mt-1" id="{{device}}-edit{{forloop.counter}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button></td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                </table>
+
+                                {# Add new rule button #}
+                                <div class="text-center mx-3 mb-3">
+                                    <button type="button" class="btn btn-secondary btn-sm add" id="{{device}}-add-rule" data-type="{{params.type}}" onclick="add_new_rule(this)"><i class="bi-plus-lg"></i></button>
+                                </div>
+
+                            </div>
+                            <!-- End schedule rules section -->
+
+                            </div>
+
+                        </div>
+                    </div></br>
+
+                {% endfor %}
+
+                {% if context.metadata.ir_blaster == True %}
+
+                    {% if context.sensors|length == 0 and context.devices|length == 0 %}
+                        <!-- If target node ONLY has IR blaster, close device column, start new column for remotes -->
+                        </div>
+                        <div id="remote-cards">
+                    {% endif %}
+
+                    <div class="d-flex flex-column pb-4">
+                        <div class="row text-center remote remote-top mx-auto" style="position: relative;">
+                            <!-- Title is narrower than body due to mx-auto - add invisible buttons to reserve correct width -->
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;height: 0px;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;height: 0px;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;height: 0px;"><i class="bi-question"></i></button>
+                            <!-- Position title on top of invisible buttons -->
+                            <h4 class="mt-2" style="position: absolute;">TV Remote</h4>
+                        </div>
+                        <div class="row pb-3 remote mx-auto" id="width-test" style="position: relative;">
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'power'});" title="Power"><i class="bi-power"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'source'});" title="Source"><i class="bi-upload"></i></button>
+                        </div>
+                        <div class="row remote mx-auto" style="width: auto;">
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'up'});" title="Up"><i class="bi bi-arrow-up"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                        </div>
+                        <div class="row remote mx-auto" style="width: auto;">
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'left'});" title="Left"><i class="bi bi-arrow-left"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'enter'});" title="Enter"><i class="bi bi-app"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'right'});" title="right"><i class="bi bi-arrow-right"></i></button>
+                        </div>
+                        <div class="row pb-3 remote mx-auto" style="width: auto;">
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'down'});" title="Down"><i class="bi bi-arrow-down"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                        </div>
+                        <div class="row remote mx-auto" style="width: auto;">
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'vol_down'});" title="Volume Down"><i class="bi-volume-down-fill"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'mute'});" title="Mute"><i class="bi-volume-mute-fill"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'vol_up'});" title="Volume Up"><i class="bi-volume-up-fill"></i></button>
+                        </div>
+                        <div class="row remote remote-bottom mx-auto" style="width: auto;">
+                            <button class="col m-3 btn btn-lg btn-secondary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'settings'});" title="Settings"><i class="bi-gear-fill"></i></button>
+                            <button class="col m-3 btn btn-lg btn-secondary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-secondary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'exit'});" title="Exit"><i class="bi-arrow-return-left"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column" style="width: auto;">
+                        <div class="row text-center remote remote-top mx-auto" style="position: relative;">
+                            <!-- Title is narrower than body due to mx-auto - add invisible buttons to reserve correct width -->
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;height: 1px;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;height: 1px;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;height: 1px;"><i class="bi-question"></i></button>
+                            <!-- Position title on top of invisible buttons -->
+                            <h4 class="mt-2" style="position: absolute;">AC Remote</h4>
+                        </div>
+                        <div class="row mb-3 py-2 remote remote-bottom mx-auto">
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'stop'});" title="Stop cooling"><i class="bi-wind"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'off'});" title="Turn off fan"><i class="bi-x-octagon-fill"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'start'});" title="Start cooling"><i class="bi-snow"></i></i></button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if context.metadata.thermostat %}
+        <!-- Modal for viewing temperature history chart -->
+        <div class="modal fade" id="chart-modal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+                <div class="modal-content">
+                    <div class='d-flex m-3'>
+                        <button type="button" class="btn-close" style="visibility:hidden"></button>
+                        <h3 class="mx-auto mb-0" id="chart-modal-title">Temperature History</h3>
+                        <button type="button" class="btn-close my-auto" id="chart-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <canvas id="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- TODO npm dependencies -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-moment"></script>
+        <script>
+            // Create arrays to store temp readings, timestamps
+            var temp_history = [];
+            var temp_history_labels = [];
+
+            // Create chart, displayed in modal created above
+            const temp_history_chart = new Chart(document.getElementById('chart'), {
+                type: 'line',
+                data: {
+                    labels: temp_history_labels,
+                    datasets: [{
+                        data: temp_history,
+                        label: "Temp",
+                        borderColor: '#eee',
+                        color: '#eee',
+                        fill: true
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: {
+                            display: false,
+    //                                                         labels: {
+    //                                                             color: "#eee",
+    //                                                             usePointStyle: true,
+    //                                                             pointStyle: "rectRounded"
+    //                                                         }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'timeseries',
+                            time: {
+                                unit: 'minute',
+                                displayFormats: {
+                                    minute: 'H:mm:ss'
+                                }
+                            },
+                            ticks:{
+                                source: 'data',
+                                color: "#eee"
+                            },
+                        },
+                        y: {
+                            suggestedMin: 70,
+                            suggestedMax: 75,
+                            ticks:{
+                                color: "#eee",
+                                stepSize: 1,
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Create modal object
+            const chartModal = new bootstrap.Modal(document.getElementById('chart-modal'));
+        </script>
+    {% endif %}
+
+    <!-- Debug modal, opened from menu on each card -->
+
+    <div class="modal fade" id="debug-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                    <h3 class="mx-auto mb-0" id="debug-modal-title">Debug</h3>
+                    <button type="button" class="btn-close position-absolute my-auto" id="debug-close" data-bs-dismiss="modal" aria-label="Close" style="right:5%;"></button>
+                </div>
+                <div class="modal-body text-center" id="debug-modal-body">
+                    <pre class='d-inline-block text-start section p-3' id="debug-json"></pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error modal displayed when unable to connect to target node -->
+
+    <div class="modal fade" id="error-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                    <h3 class="mx-auto mb-0" id="error-modal-title">Connection Error</h3>
+                </div>
+                <div class="modal-body" id="error-modal-body">
+                    <p class="text-center mb-0">Attempting to reestablish connection...</p>
+                    <div class="d-flex justify-content-center">
+                        <div id="spinner" class="loading-animation loading-animation-show"><div></div><div></div><div></div><div></div></div>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal" onclick="window.location.href = '/api'">Back to Overview</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toggle modal used for enable_in, disable_in endpoints -->
+
+    <div class="modal fade" id="toggle-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header pb-0" style="border-bottom: 0px;">
+                    <h3 class="mx-auto mb-0" id="toggle-modal-title">Schedule Toggle</h3>
+                    <button type="button" class="btn-close position-absolute my-auto" id="toggle-close" data-bs-dismiss="modal" aria-label="Close" style="right:5%;"></button>
+                </div>
+                <div class="modal-body text-center" id="toggle-modal-body">
+                    <p>Enable or disable after a delay.</p>
+                    <p>Replaces existing timer if present.</p>
+                    <div class="input-group mb-3 py-2">
+                        <select class="form-select text-center" id="command_select">
+                            <option value="enable_in">Enable</option>
+                            <option value="disable_in">Disable</option>
+                        </select>
+                        <span class="input-group-text text-center"> in </span>
+                        <input id="delay_input" type="text" class="form-control text-center" autocomplete="off" value="15"></input>
+                        <select class="form-select text-center" id="unit_select">
+                            <option value="seconds">Seconds</option>
+                            <option value="minutes" selected>Minutes</option>
+                            <option value="hours">Hours</option>
+                        </select>
+                    </div>
+                    <div class="d-flex justify-content-center">
+                        <button type="button" id="schedule-button" class="btn btn-success" data-bs-dismiss="modal" onclick="submit_schedule_toggle();">Schedule</button>
+                    </div>
+                    <script>
+                        // Focus delay input when modal opens
+                        document.getElementById('toggle-modal').addEventListener('shown.bs.modal', async function() {
+                            document.getElementById('delay_input').focus();
+                        });
+
+                        // Block non-numeric characters in delay input, limit length
+                        document.getElementById('delay_input').addEventListener('input', function(event) {
+                            const unit = document.getElementById('unit_select').value;
+
+                            // Remove all non-numeric characters, limit delay to (very) roughly 1 day
+                            if (unit === 'seconds') {
+                                event.target.value = event.target.value.replace(/\D/g,'').substring(0,5);
+                            } else if (unit === 'minutes') {
+                                event.target.value = event.target.value.replace(/\D/g,'').substring(0,4);
+                            } else if (unit === 'hours') {
+                                event.target.value = event.target.value.replace(/\D/g,'').substring(0,2);
+                            };
+
+                            if (event.target.value.length == 0) {
+                                document.getElementById('schedule-button').disabled = true;
+                            } else {
+                                document.getElementById('schedule-button').disabled = false;
+                            };
+                        });
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Schedule rule modal -->
+    <div class="modal fade" id="schedule-rule-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <button type="button" class="btn-close" style="visibility:hidden;"></button>
+                    <h5 class="modal-title">Schedule Rule</h5>
+                    <button type="button" class="btn-close" id="schedule-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column" id="rule-modal-body">
+                <!-- Populated by template when opened -->
+                </div>
+                <div id="rule-footer" class="modal-footer mx-auto">
+                    <div id="rule-buttons">
+                        <button type="button" id="add-rule" class="btn btn-success" onclick="add_rule()">Submit</button>
+                        <button type="button" id="del-rule" class="btn btn-danger" onclick="delete_rule()">Delete</button>
+                    </div>
+                    <div id="rule-loading" class="m-0 d-none">
+                        <div class="sk-flow">
+                            <div class="sk-flow-dot my-auto"></div>
+                            <div class="sk-flow-dot my-auto"></div>
+                            <div class="sk-flow-dot my-auto"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <!-- Start fade modal -->
+    <div class="modal fade" id="start-fade-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <button type="button" class="btn-close" style="visibility:hidden;"></button>
+                    <h5 class="modal-title">Start Fade</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex" id="start-fade-body">
+                    <div id="fade-target-input" class="text-center col mx-1">
+                        <label for="fade-target" class="form-label">Target Brightness</label>
+                        <input type="text" class="form-control fade-input" id="fade-target" name="fade-target" title="Invalid brightness" autocomplete="off">
+                    </div>
+                    <div id="fade-duration-input" class="text-center col mx-1">
+                        <label for="fade-duration" class="form-label">Duration (seconds)</label>
+                        <input type="text" class="form-control fade-input" id="fade-duration" name="fade-duration" title="Invalid duration" autocomplete="off">
+                    </div>
+                </div>
+                <div id="start-fade-footer" class="modal-footer mx-auto">
+                    <div id="rule-buttons">
+                        <button type="button" id="start-fade-button" class="btn btn-success" data-bs-dismiss="modal" onclick="start_fade()">Start</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if context.api_target_options %}
+    <!-- Api-target set rule modal -->
+    <div class="modal fade" id="api-rule-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+            <div class="modal-content">
+                <div class="modal-header justify-content-between">
+                    <button type="button" class="btn-close" style="visibility:hidden;"></button>
+                    <h5 class="modal-title">Api Target Rule</h5>
+                    <button type="button" class="btn-close" id="api-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body d-flex flex-column">
+
+                    <button class="btn btn-sm btn-secondary mx-auto mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                        Help
+                    </button>
+
+                    <div class="collapse" id="api-rule-modal-help">
+                        <p class="text-center">Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.</p>
+
+                        <p class="text-center">Commands are sent to the target node, which is selected when creating a config file. This can only be changed by <a href="/edit_config/{{context.metadata.id}}">editing</a> the config file.</p>
+
+                        <p class="text-center">The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.</p>
+
+                        <p class="text-center">
+                            <button class="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-examples" aria-expanded="false" aria-controls="api-rule-modal-examples">
+                                Examples
+                            </button>
+                        </p>
+
+                        <div class="collapse" id="api-rule-modal-examples">
+                            <ul>
+                                <li>Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the <b>trigger_sensor</b> option.</li>
+                                <li>The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and <b>set_rule</b> command below.</li>
+                                <li>Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an <b>Ir Blaster</b>.</li>
+                            </ul>
+
+                            <p class="text-center">
+                                <button class="btn btn-sm btn-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                                    Close
+                                </button>
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <form name="api_rule_form" id="api_rule_form">
+                        <div id="on-action">
+                            <select name="instance-on" id="instance-on" class="form-select mb-3 modal-dropdown api-instance" required>
+                                <option value="" selected="selected">Select target instance</option>
+                            </select>
+
+                            <select name="command-on" id="command-on" class="form-select mb-3 modal-dropdown api-command" required>
+                                <option value="" selected="selected">Please select instance first</option>
+                            </select>
+
+                            <select name="sub-command-on" id="sub-command-on" class="form-select mb-3 modal-dropdown api-command" style="display:none" required disabled>
+                                <option value="" selected="selected">Please select command first</option>
+                            </select>
+
+                            <input name="command-arg-on" id="command-arg-on" class="form-control mb-3 modal-input api-command-arg" style="display:none" disabled>
+                        </div>
+
+                        <div id="off-action" style="display:none;">
+                            <select name="instance-off" id="instance-off" class="form-select mb-3 modal-dropdown api-instance" required>
+                                <option value="" selected="selected">Select target instance</option>
+                            </select>
+
+                            <select name="command-off" id="command-off" class="form-select mb-3 modal-dropdown api-command" required>
+                                <option value="" selected="selected">Please select instance first</option>
+                            </select>
+
+                            <select name="sub-command-off" id="sub-command-off" class="form-select mb-3 modal-dropdown api-command" style="display:none" required disabled>
+                                <option value="" selected="selected">Please select command first</option>
+                            </select>
+
+                            <input name="command-arg-off" id="command-arg-off" class="form-control mb-3 modal-input api-command-arg" style="display:none" disabled>
+                        </div>
+                    </form>
+
+                    <div class="btn-group mx-auto" role="group" aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check api-subrule" name="btnradio" id="on-button" autocomplete="off" onclick="switch_page(this)" checked>
+                        <label class="btn btn-outline-secondary ms-auto" for="on-button">On Action</label>
+
+                        <input type="radio" class="btn-check api-subrule" name="btnradio" id="off-button" autocomplete="off" onclick="switch_page(this)">
+                        <label class="btn btn-outline-secondary me-auto" for="off-button">Off Action</label>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="submit-api-rule" class="btn btn-success mx-auto" data-bs-dismiss="modal" onclick="submit_api_rule(this)">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{% static 'node_configuration/apiTargetOptions.js' %}"></script>
+    {% endif %}
+
+    <!-- Toast notification shown when schedule rules added/removed -->
+    <div class="fixed-bottom">
+        <div id="save_rules_toast" class="toast text-center mx-auto mb-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="10000">
+            <div class="toast-body">
+                <div id="toast-text" class="mb-2">Should this rule change persist after reboot?</div>
+                <button class="btn btn-sm btn-primary me-2" data-bs-dismiss="toast" onclick="send_command({'command': 'save_rules'});">Yes</button>
+                <button class="btn btn-sm btn-secondary" data-bs-dismiss="toast">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page load animation-->
+    <div id="loading_overlay">
+        <div id="loading_spinner" class="spinner"><div></div><div></div><div></div><div></div></div>
+    </div>
+
+    {# Save context as JSON object, load into target_node_status below #}
+    {{ context|json_script:"context" }}
+
+    <script>
+        // Create modal objects
+        const debugModal = new bootstrap.Modal(document.getElementById('debug-modal'));
+        const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
+        const toggleModal = new bootstrap.Modal(document.getElementById('toggle-modal'));
+        const ruleModal = new bootstrap.Modal(document.getElementById('schedule-rule-modal'));
+        const fadeModal = new bootstrap.Modal(document.getElementById('start-fade-modal'));
+
+        {% if context.metadata.recording %}
+        const recording = '{{context.metadata.recording}}';
+        document.querySelectorAll('.open-rules').forEach(btn => btn.disabled = true)
+        {% endif %}
+
+        const target_node = "{{ context.metadata.ip }}";
+
+        var target_node_status = JSON.parse(document.getElementById("context").textContent);
+
+        if (target_node_status["api_target_options"]) {
+            var ApiTargetOptions = target_node_status["api_target_options"];
+        };
+
+        // Initial value, used to detect change (lose connection, re-establish connection)
+        selected_node_unreachable = false;
+
+        // Prevent multiple functions modifying status object at the same time
+        var status_lock = false;
+
+        // Takes instance ID and attribute, returns current value from status object
+        function get_status_attribute(id, attr) {
+            // Either 'devices' or 'sensors'
+            const category = id.replace(/[0-9]/g, '') + "s";
+            return target_node_status[category][id][attr];
+        };
+
+        // Darkmode for elements generated after initial check
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            // Dropdown menus
+            document.querySelectorAll(".dropdown-menu").forEach(menu => menu.classList.add("dropdown-menu-dark"));
+
+            // Top-right menu buttons
+            document.querySelectorAll(".btn-outline-secondary").forEach(function(button) {
+                button.classList.remove('btn-outline-secondary');
+                button.classList.add('btn-outline-dark');
+            });
+
+            // Modal close buttons
+            document.querySelectorAll('.btn-close').forEach(el => el.classList.add('btn-close-white'));
+        };
+
+        // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
+        window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
+            if (e.matches) { // Returns True for dark mode, False otherwise
+                document.body.classList.add("dark");
+                document.getElementById("back_button").classList.remove("btn-light");
+                document.getElementById("back_button").classList.add("btn-dark");
+                document.getElementById("more_options_button").classList.remove("btn-light");
+                document.getElementById("more_options_button").classList.add("btn-dark");
+                document.querySelectorAll(".dropdown-menu").forEach(menu => menu.classList.add("dropdown-menu-dark"));
+
+                // Top-right menu buttons + ApiTarget rule modal tab buttons
+                document.querySelectorAll(".btn-outline-secondary").forEach(function(button) {
+                    button.classList.remove('btn-outline-secondary');
+                    button.classList.add('btn-outline-dark');
+                });
+
+                // Modal close buttons
+                document.querySelectorAll('.btn-close').forEach(el => el.classList.add('btn-close-white'));
+
+            } else {
+                document.body.classList.remove("dark");
+                document.getElementById("back_button").classList.remove("btn-dark");
+                document.getElementById("back_button").classList.add("btn-light");
+                document.getElementById("more_options_button").classList.remove("btn-dark");
+                document.getElementById("more_options_button").classList.add("btn-light");
+                document.querySelectorAll(".dropdown-menu").forEach(menu => menu.classList.remove("dropdown-menu-dark"));
+
+                // Top-right menu buttons + ApiTarget rule modal tab buttons
+                document.querySelectorAll(".btn-outline-dark").forEach(function(button) {
+                    button.classList.remove('btn-outline-dark');
+                    button.classList.add('btn-outline-secondary');
+                });
+
+                // Modal close buttons
+                document.querySelectorAll('.btn-close').forEach(el => el.classList.remove('btn-close-white'));
+            }
+        });
+
+        // Undo animation when navigated to with browser back button
+        window.onpageshow = function(event) {
+            if (event.persisted) {
+                document.getElementById('container').classList.add('fade-in');
+                document.getElementById('container').classList.remove('fade-out');
+            };
+        };
+
+        // Sync schedule keywords from backend to node when page loads
+        fetch('/sync_schedule_keywords', {
+            method: 'POST',
+            body: JSON.stringify({
+                'ip': target_node,
+                'existing_keywords': target_node_status['metadata']['schedule_keywords']
+            }),
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                "X-CSRFToken": getCookie('csrftoken')
+            }
+        });
+    </script>
+    <script src="{% static 'api/rule_sliders.js' %}"></script>
+    <script src="{% static 'api/schedule_rules.js' %}"></script>
+    <script src="{% static 'api/schedule_rule_modal.js' %}"></script>
+    <script src="{% static 'api/api_card.js' %}"></script>
+    {% if context.metadata.recording %}
+    <script src="{% static 'api/record_macro.js' %}"></script>
+    {% else %}
+    <script src="{% static 'api/update_status.js' %}"></script>
+    {% endif %}
+</body>
+</html>

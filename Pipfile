@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+colorama = "~=0.4.3"
+django = "~=4.0"
+django-pwa = ">=1.1"
+flask = "~=2.0"
+ipython = "*"
+coverage = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.10"
