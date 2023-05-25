@@ -429,12 +429,12 @@ class WebreplTests(TestCase):
             # Both methods should raise OSError when empty buffer returned on second call
             with self.assertRaises(OSError):
                 node.get_file("test.json", "/path/to/remote")
-                self.assertEqual(mock_read.call_count, 2)
-                os.remove("test.json")
+            self.assertEqual(mock_read.call_count, 2)
+            os.remove("test.json")
 
             with self.assertRaises(OSError):
                 node.get_file_mem("/path/to/remote")
-                self.assertEqual(mock_read.call_count, 2)
+            self.assertEqual(mock_read.call_count, 4)
 
     def test_put_file(self):
         node = Webrepl('123.45.67.89', 'password')
