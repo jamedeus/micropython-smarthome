@@ -4,7 +4,6 @@ import logging
 log = logging.getLogger("Device")
 
 
-
 class Device():
     def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule):
 
@@ -28,7 +27,7 @@ class Device():
         self.scheduled_rule = current_rule
 
         # The fallback rule used when no other valid rules are available
-        # Can happen if config file contains invalid rules, or if enabled through API while both current and schedule rule are "disabled"
+        # Examples: Config file contains invalid rules, enabled while both current + scheduled rules are "disabled"
         self.default_rule = default_rule
 
         # Prevent instantiating with invalid default_rule
@@ -41,8 +40,6 @@ class Device():
 
         # Will be populated with instances of all triggering sensors later
         self.triggered_by = []
-
-
 
     def enable(self):
         self.enabled = True
@@ -58,19 +55,17 @@ class Device():
 
         # If other devices in group are on, turn on to match state
         try:
-            if self.group.state == True:
+            if self.group.state is True:
                 success = self.send(1)
                 if success:
                     self.state = True
                 else:
-                    # Forces group to turn on again, retrying until successful (send command above likely failed due to temporary network error)
-                    # Only used as last resort due to side effects - if user previously turned OFF a device in this group through API, then
-                    # re-enables this device, group will turn BOTH on (but user only wanted to turn this one on)
+                    # Force group to turn on again, retrying until successful (recover from failed send command above)
+                    # Used as last resort due to side effects - if user previously turned OFF another device in group,
+                    # then re-enables this device, group will turn BOTH on (but user only wanted to turn this one on)
                     self.group.state = False
         except AttributeError:
             pass
-
-
 
     def disable(self):
         # Turn off before disabling
@@ -80,8 +75,6 @@ class Device():
 
         self.enabled = False
 
-
-
     # Base validator for universal rules, can be extended in subclass validator method
     def rule_validator(self, rule):
         if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
@@ -89,13 +82,9 @@ class Device():
         else:
             return self.validator(rule)
 
-
-
     # Placeholder function, intended to be overwritten by subclass validator method
     def validator(self, rule):
         return False
-
-
 
     def set_rule(self, rule):
         # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
@@ -114,10 +103,10 @@ class Device():
                 self.current_rule = self.default_rule
                 self.enable()
             # Device was previously disabled, enable now that rule has changed
-            elif self.enabled == False:
+            elif self.enabled is False:
                 self.enable()
             # Device is currently on, run send so new rule can take effect
-            elif self.state == True:
+            elif self.state is True:
                 self.send(1)
 
             return True
@@ -126,8 +115,6 @@ class Device():
             log.error(f"{self.name}: Failed to change rule to {rule}")
             print(f"{self.name}: Failed to change rule to {rule}")
             return False
-
-
 
     def next_rule(self):
         log.debug(f"{self.name}: Scheduled rule change")

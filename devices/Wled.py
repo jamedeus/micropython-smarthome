@@ -6,7 +6,6 @@ from Device import Device
 log = logging.getLogger("WLED")
 
 
-
 # Used for WLED instances, originally intended for monitor bias lights
 class Wled(Device):
     def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule, ip):
@@ -15,8 +14,6 @@ class Wled(Device):
         self.ip = ip
 
         log.info(f"Instantiated Wled named {self.name}: ip = {self.ip}")
-
-
 
     def validator(self, rule):
         try:
@@ -32,8 +29,6 @@ class Wled(Device):
 
         except (ValueError, TypeError):
             return False
-
-
 
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")

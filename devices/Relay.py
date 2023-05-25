@@ -6,7 +6,6 @@ from Device import Device
 log = logging.getLogger("Relay")
 
 
-
 # Used for Sonoff relays running Tasmota
 class Relay(Device):
     def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule, ip):
@@ -16,15 +15,11 @@ class Relay(Device):
 
         log.info(f"Instantiated Relay named {self.name}: ip = {self.ip}")
 
-
-
     def check_state(self):
         try:
             return urequests.get('http://' + str(self.ip) + '/cm?cmnd=Power').json()["POWER"]
         except OSError:
             return "Network Error"
-
-
 
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")

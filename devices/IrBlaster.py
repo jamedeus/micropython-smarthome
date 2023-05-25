@@ -8,10 +8,9 @@ import logging
 log = logging.getLogger("IrBlaster")
 
 
-
 class IrBlaster():
     def __init__(self, pin, target):
-        led = Pin(pin, Pin.OUT, value = 0)
+        led = Pin(pin, Pin.OUT, value=0)
         self.ir = Player(led)
         self.target = target
         self.device_type = "ir_blaster"
@@ -28,16 +27,12 @@ class IrBlaster():
 
         log.info(f"Instantiated IrBlaster on pin {pin}")
 
-
-
     def send(self, dev, key):
         try:
             self.ir.play(self.codes[dev.lower()][key.lower()])
             return True
         except (KeyError, AttributeError):
             return False
-
-
 
     def backlight(self, state):
         self.send("tv", "settings")

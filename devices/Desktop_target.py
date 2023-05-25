@@ -7,7 +7,6 @@ import SoftwareTimer
 log = logging.getLogger("Desktop_target")
 
 
-
 class Desktop_target(Device):
     def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule, ip):
         super().__init__(name, nickname, device_type, enabled, current_rule, default_rule)
@@ -15,8 +14,6 @@ class Desktop_target(Device):
         self.ip = ip
 
         log.info(f"Instantiated Desktop named {self.name}: ip = {self.ip}")
-
-
 
     def off(self):
         try:
@@ -40,8 +37,6 @@ class Desktop_target(Device):
                 log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
                 self.disable()
 
-
-
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
 
@@ -61,7 +56,7 @@ class Desktop_target(Device):
                 print(f"{self.name}: Turned screen on")
                 log.debug(f"{self.name}: Turned ON")
             except OSError:
-                # TODO make possible for timer to accept callback with args, then add to timer queue instead of going back to main loop
+                # TODO make timer accept callback with args, then add to timer queue instead of going back to main loop
                 #SoftwareTimer.timer.create(5000, self.send, self.name)
                 # Wifi interruption, send failed
                 return False

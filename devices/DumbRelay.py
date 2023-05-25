@@ -6,7 +6,6 @@ from Device import Device
 log = logging.getLogger("DumbRelay")
 
 
-
 # Used for relay breakout board
 class DumbRelay(Device):
     def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule, pin):
@@ -15,8 +14,6 @@ class DumbRelay(Device):
         self.relay = Pin(pin, Pin.OUT)
 
         log.info(f"Instantiated Relay named {self.name} on pin {pin}")
-
-
 
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")

@@ -8,13 +8,12 @@ import SoftwareTimer
 log = logging.getLogger("LedStrip")
 
 
-
 class LedStrip(Device):
     def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule, pin, min_bright, max_bright):
         super().__init__(name, nickname, device_type, enabled, current_rule, default_rule)
 
-        # TODO - Find optimal PWM freq. Default (5 KHz) causes very noticable coil whine in downstairs bathroom at 128 duty cycle.
-        # Raising significantly reduces max brightness (exceeded MOSFET switching time), may just need different power supply?
+        # TODO - Find optimal PWM freq. Default (5 KHz) causes coil whine in downstairs bathroom at 128 duty cycle.
+        # Raising significantly reduces max brightness (exceed MOSFET switching time), may need different power supply?
         self.pwm = PWM(Pin(pin), duty=0)
 
         # Firmware bug workaround, occasionally instantiates with 512 duty cycle despite duty=0. Immediately calling
@@ -23,7 +22,8 @@ class LedStrip(Device):
         if self.pwm.duty() != 0:
             self.pwm.duty(0)
 
-        self.bright = 0 # Store current brightness, allows smooth transition when rule changes
+        # Store current brightness, allows smooth transition when rule changes
+        self.bright = 0
 
         self.min_bright = int(min_bright)
         self.max_bright = int(max_bright)
@@ -32,8 +32,6 @@ class LedStrip(Device):
         self.fading = False
 
         log.info(f"Instantiated LedStrip named {self.name} on pin {pin}")
-
-
 
     def set_rule(self, rule):
         # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
@@ -44,52 +42,59 @@ class LedStrip(Device):
             return False
 
         elif str(valid_rule).startswith("fade"):
-                # Parse parameters from rule
-                cmd, target, period = valid_rule.split("/")
+            # Parse parameters from rule
+            cmd, target, period = valid_rule.split("/")
 
-                # If first rule on boot is fade, set target as current_rule (animation probably overdue)
-                if self.current_rule == None:
-                    self.current_rule = int(target)
-                    print(f"{self.name}: Rule changed to {self.current_rule}")
-                    log.info(f"{self.name}: Rule changed to {self.current_rule}")
-                    return True
-
-                # If rule changes to fade after boot, start fade and return first step as current_rule
-                print(f"{self.name}: fading to {target} in {period} seconds")
-                log.info(f"{self.name}: fading to {target} in {period} seconds")
-
-                if not self.current_rule == "disabled":
-                    # Get current brightness
-                    brightness = int(self.current_rule)
-                else:
-                    # Default to 0 if device disabled when fade starts
-                    brightness = 0
-
-                if int(target) == brightness:
-                    print("Already at target brightness, skipping fade")
-                    log.info("Already at target brightness, skipping fade")
-                    return True
-
-                # Find fade direction, get number of steps, period between steps
-                if int(target) > brightness:
-                    steps = int(target) - brightness
-                    fade_period = int(period) / steps * 1000
-
-                elif int(target) < brightness:
-                    steps = brightness - int(target)
-                    fade_period = int(period) / steps * 1000
-
-                # Ensure device is enabled
-                self.enabled = True
-
-                # Create fade timer
-                SoftwareTimer.timer.create(fade_period, self.fade, self.name + "_fade")
-
-                # Store fade parameters in dict, used by fade method below
-                self.fading = {"started": SoftwareTimer.timer.epoch_now(), "starting_brightness": brightness, "target": int(target), "period": fade_period}
-
-                # Return starting point (will be set as current rule by device.set_rule)
+            # If first rule on boot is fade, set target as current_rule (animation probably overdue)
+            if self.current_rule is None:
+                self.current_rule = int(target)
+                print(f"{self.name}: Rule changed to {self.current_rule}")
+                log.info(f"{self.name}: Rule changed to {self.current_rule}")
                 return True
+
+            # If rule changes to fade after boot, start fade and return first step as current_rule
+            print(f"{self.name}: fading to {target} in {period} seconds")
+            log.info(f"{self.name}: fading to {target} in {period} seconds")
+
+            if not self.current_rule == "disabled":
+                # Get current brightness
+                brightness = int(self.current_rule)
+            else:
+                # Default to 0 if device disabled when fade starts
+                brightness = 0
+
+            if int(target) == brightness:
+                print("Already at target brightness, skipping fade")
+                log.info("Already at target brightness, skipping fade")
+                return True
+
+            # Find fade direction, get number of steps, period between steps
+            if int(target) > brightness:
+                steps = int(target) - brightness
+                fade_period = int(period) / steps * 1000
+
+            elif int(target) < brightness:
+                steps = brightness - int(target)
+                fade_period = int(period) / steps * 1000
+
+            # Ensure device is enabled
+            self.enabled = True
+
+            # Create fade timer
+            SoftwareTimer.timer.create(fade_period, self.fade, self.name + "_fade")
+
+            # Store fade parameters in dict, used by fade method below
+            self.fading = {
+                "started": SoftwareTimer.timer.epoch_now(),
+                "starting_brightness": brightness,
+                "target": int(
+                    target
+                ),
+                "period": fade_period
+            }
+
+            # Return starting point (will be set as current rule by device.set_rule)
+            return True
 
         else:
             self.current_rule = valid_rule
@@ -109,15 +114,13 @@ class LedStrip(Device):
                 self.current_rule = self.default_rule
                 self.enable()
             # Device was previously disabled, enable now that rule has changed
-            elif self.enabled == False:
+            elif self.enabled is False:
                 self.enable()
             # Device is currently on, run send so new rule can take effect
-            elif self.state == True:
+            elif self.state is True:
                 self.send(1)
 
             return True
-
-
 
     def validator(self, rule):
         try:
@@ -144,8 +147,6 @@ class LedStrip(Device):
 
         except (ValueError, TypeError):
             return False
-
-
 
     def send(self, state=1):
         # Refuse to turn disabled device on, but allow turning off
@@ -188,9 +189,7 @@ class LedStrip(Device):
 
             print(f"{self.name}: Faded up to {target}")
 
-        return True # Tell calling function that request succeeded
-
-
+        return True  # Tell calling function that request succeeded
 
     # Called by SoftwareTimer during fade animation, initialized in rule_validator above
     def fade(self):
@@ -202,7 +201,7 @@ class LedStrip(Device):
         # Fade to next step (unless fade already complete)
         if not self.fading["target"] == int(self.current_rule):
 
-            # Use starting time, current time, and period (time for each step) to determine how many steps should have been taken
+            # Use starting time, current time, period (time per step) to determine how many steps should have been taken
             steps = (SoftwareTimer.timer.epoch_now() - self.fading["started"]) // self.fading["period"]
 
             if self.fading["target"] > int(self.current_rule):
@@ -218,7 +217,7 @@ class LedStrip(Device):
             # Set new rule without calling set_rule method (would abort fade)
             self.current_rule = int(new_rule)
             self.scheduled_rule = int(new_rule)
-            if self.state == True:
+            if self.state is True:
                 self.send(1)
 
         # Check if fade complete after step

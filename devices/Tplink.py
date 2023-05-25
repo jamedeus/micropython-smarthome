@@ -8,7 +8,6 @@ import SoftwareTimer
 log = logging.getLogger("Tplink")
 
 
-
 # Used to control TP-Link Kasa dimmers + smart bulbs
 class Tplink(Device):
     def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule, ip):
@@ -21,8 +20,6 @@ class Tplink(Device):
 
         log.info(f"Instantiated Tplink device named {self.name}: ip = {self.ip}, type = {self.device_type}")
 
-
-
     def set_rule(self, rule):
         # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)
@@ -32,58 +29,65 @@ class Tplink(Device):
             return False
 
         elif str(valid_rule).startswith("fade"):
-                # Parse parameters from rule
-                cmd, target, period = valid_rule.split("/")
+            # Parse parameters from rule
+            cmd, target, period = valid_rule.split("/")
 
-                # If first rule on boot is fade, set target as current_rule (animation probably overdue)
-                if self.current_rule == None:
-                    self.current_rule = int(target)
-                    print(f"{self.name}: Rule changed to {self.current_rule}")
-                    log.info(f"{self.name}: Rule changed to {self.current_rule}")
-                    return True
-
-                # If rule changes to fade after boot, start fade and return first step as current_rule
-                print(f"{self.name}: fading to {target} in {period} seconds")
-                log.info(f"{self.name}: fading to {target} in {period} seconds")
-
-                if not self.current_rule == "disabled":
-                    # Get current brightness
-                    brightness = int(self.current_rule)
-                else:
-                    # Default to 0 if device disabled when fade starts
-                    brightness = 0
-
-                if int(target) == brightness:
-                    print("Already at target brightness, skipping fade")
-                    log.info("Already at target brightness, skipping fade")
-                    return True
-
-                # Find fade direction, get number of steps, period between steps
-                if int(target) > brightness:
-                    steps = int(target) - brightness
-                    fade_period = int(period) / steps * 1000
-
-                elif int(target) < brightness:
-                    steps = brightness - int(target)
-                    fade_period = int(period) / steps * 1000
-
-                # Ensure device is enabled
-                self.enabled = True
-
-                # Create fade timer
-                SoftwareTimer.timer.create(fade_period, self.fade, self.name + "_fade")
-
-                # Store fade parameters in dict, used by fade method below
-                self.fading = {"started": SoftwareTimer.timer.epoch_now(), "starting_brightness": brightness, "target": int(target), "period": fade_period}
-
-                # Store fade direction, determines if fade aborts when user changes brightness
-                if self.fading["target"] < self.fading["starting_brightness"]:
-                    self.fading["down"] = True
-                else:
-                    self.fading["down"] = False
-
-                # Return starting point (will be set as current rule by device.set_rule)
+            # If first rule on boot is fade, set target as current_rule (animation probably overdue)
+            if self.current_rule is None:
+                self.current_rule = int(target)
+                print(f"{self.name}: Rule changed to {self.current_rule}")
+                log.info(f"{self.name}: Rule changed to {self.current_rule}")
                 return True
+
+            # If rule changes to fade after boot, start fade and return first step as current_rule
+            print(f"{self.name}: fading to {target} in {period} seconds")
+            log.info(f"{self.name}: fading to {target} in {period} seconds")
+
+            if not self.current_rule == "disabled":
+                # Get current brightness
+                brightness = int(self.current_rule)
+            else:
+                # Default to 0 if device disabled when fade starts
+                brightness = 0
+
+            if int(target) == brightness:
+                print("Already at target brightness, skipping fade")
+                log.info("Already at target brightness, skipping fade")
+                return True
+
+            # Find fade direction, get number of steps, period between steps
+            if int(target) > brightness:
+                steps = int(target) - brightness
+                fade_period = int(period) / steps * 1000
+
+            elif int(target) < brightness:
+                steps = brightness - int(target)
+                fade_period = int(period) / steps * 1000
+
+            # Ensure device is enabled
+            self.enabled = True
+
+            # Create fade timer
+            SoftwareTimer.timer.create(fade_period, self.fade, self.name + "_fade")
+
+            # Store fade parameters in dict, used by fade method below
+            self.fading = {
+                "started": SoftwareTimer.timer.epoch_now(),
+                "starting_brightness": brightness,
+                "target": int(
+                    target
+                ),
+                "period": fade_period
+            }
+
+            # Store fade direction, determines if fade aborts when user changes brightness
+            if self.fading["target"] < self.fading["starting_brightness"]:
+                self.fading["down"] = True
+            else:
+                self.fading["down"] = False
+
+            # Return starting point (will be set as current rule by device.set_rule)
+            return True
 
         else:
             # Abort fade if user changed brightness in opposite direction
@@ -109,15 +113,13 @@ class Tplink(Device):
                 self.current_rule = self.default_rule
                 self.enable()
             # Device was previously disabled, enable now that rule has changed
-            elif self.enabled == False:
+            elif self.enabled is False:
                 self.enable()
             # Device is currently on, run send so new rule can take effect
-            elif self.state == True:
+            elif self.state is True:
                 self.send(1)
 
             return True
-
-
 
     # TODO Maybe add a 3rd param "init=False" - will be omitted except by Config. If True, and rule is fade,
     # then check Config.schedule, see when fade was supposed to start, and calculate current position in fade
@@ -148,8 +150,6 @@ class Tplink(Device):
         except (ValueError, TypeError):
             return False
 
-
-
     # Encrypt messages to tp-link smarthome devices
     def encrypt(self, string):
         key = 171
@@ -160,8 +160,6 @@ class Tplink(Device):
             result += bytes([a])
         return result
 
-
-
     # Decrypt messages from tp-link smarthome devices
     def decrypt(self, string):
         key = 171
@@ -171,8 +169,6 @@ class Tplink(Device):
             key = i
             result += chr(a)
         return result
-
-
 
     def send(self, state=1):
         log.info(f"{self.name}: send method called, brightness={self.current_rule}, state={state}")
@@ -196,28 +192,29 @@ class Tplink(Device):
 
             # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
             if self.device_type == "dimmer":
-                sock_tcp.send(self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}')) # Set on/off state before brightness
-                data = sock_tcp.recv(2048) # Dimmer wont listen for next command until it's reply is received
+                # Set on/off state, read response (dimmer wont listen for next command until reply read)
+                sock_tcp.send(self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}'))
+                data = sock_tcp.recv(2048)
 
             # Set brightness
             sock_tcp.send(self.encrypt(cmd))
             data = sock_tcp.recv(2048)
             sock_tcp.close()
 
-            decrypted = self.decrypt(data[4:]) # Remove in final version (or put in debug conditional)
+            decrypted = self.decrypt(data[4:])  # Remove in final version (or put in debug conditional)
 
             print(f"{self.name}: brightness = {self.current_rule}, state = {state}")
             log.debug(f"{self.name}: Success")
 
-            return True # Tell calling function that request succeeded
+            # Tell calling function that request succeeded
+            return True
 
-        except Exception as ex: # Failed
+        except Exception as ex:
             print(f"Could not connect to host {self.ip}, exception: {ex}")
             log.info(f"{self.name}: Could not connect to host {self.ip}")
 
-            return False # Tell calling function that request failed
-
-
+            # Tell calling function that request failed
+            return False
 
     # Cleanup and return True if fade is complete, return False if not
     # Fade is complete when current_rule matches or exceeds fade target
@@ -248,13 +245,11 @@ class Tplink(Device):
         else:
             return False
 
-
-
     # Called by SoftwareTimer during fade animation, initialized in rule_validator above
     def fade(self):
         # Fade to next step (unless fade already complete)
         if not self.fade_complete():
-            # Use starting time, current time, and period (time for each step) to determine how many steps should have been taken
+            # Use starting time, current time, period (time per step) to determine how many steps should have been taken
             steps = (SoftwareTimer.timer.epoch_now() - self.fading["started"]) // self.fading["period"]
 
             # Fading up
@@ -275,7 +270,7 @@ class Tplink(Device):
             if (self.fading["down"] and int(new_rule) < self.current_rule) or (not self.fading["down"] and int(new_rule) > self.current_rule):
                 # Set new rule without calling set_rule method (would abort fade)
                 self.current_rule = int(new_rule)
-                if self.state == True:
+                if self.state is True:
                     self.send(1)
 
         # Start timer for next step (unless fade already complete)

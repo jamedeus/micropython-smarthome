@@ -1,12 +1,10 @@
 import logging
 from Device import Device
-import SoftwareTimer
 import uasyncio as asyncio
 import json
 
 # Set name for module's log lines
 log = logging.getLogger("ApiTarget")
-
 
 
 class ApiTarget(Device):
@@ -15,8 +13,6 @@ class ApiTarget(Device):
 
         # IP that API command is sent to
         self.ip = ip
-
-
 
     # Takes dict containing 2 entries named "on" and "off"
     # Both entries are lists containing a full API request
@@ -81,13 +77,11 @@ class ApiTarget(Device):
             # Iteration finished without a return False, rule is valid
             return rule
 
-
-
     def set_rule(self, rule):
         # Check if rule is valid - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)
 
-        # Turn off target (using old rule) before changing rule to disabled (cannot call send after changing, requires dict not string)
+        # Turn off target before changing rule to disabled (cannot call send after changing, requires dict)
         if valid_rule == "disabled":
             self.send(0)
 
@@ -104,10 +98,10 @@ class ApiTarget(Device):
                 self.current_rule = self.default_rule
                 self.enable()
             # Sensor was previously disabled, enable now that rule has changed
-            elif self.enabled == False:
+            elif self.enabled is False:
                 self.enable()
             # Device is currently on, run send so new rule can take effect
-            elif self.state == True:
+            elif self.state is True:
                 self.send(1)
 
             return True
@@ -117,21 +111,17 @@ class ApiTarget(Device):
             print(f"{self.name}: Failed to change rule to {rule}")
             return False
 
-
-
     async def request(self, msg):
         reader, writer = await asyncio.open_connection(self.ip, 8123)
         try:
             writer.write('{}\n'.format(json.dumps(msg)).encode())
             await writer.drain()
             # TODO change this limit?
-            res = await reader.read(1000)
+            await reader.read(1000)
         except OSError:
             pass
         writer.close()
         await writer.wait_closed()
-
-
 
     def send(self, state=1):
         # Refuse to turn disabled device on, but allow turning off
