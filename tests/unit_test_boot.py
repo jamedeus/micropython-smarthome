@@ -7,12 +7,16 @@ import json
 import network
 
 # Set level to prevent logging from slowing down tests, using memory, etc
-logging.basicConfig(level=logging.CRITICAL, filename='app.log', format='%(asctime)s - %(levelname)s - %(name)s - %(message)s', style='%')
+logging.basicConfig(
+    level=logging.CRITICAL,
+    filename='app.log',
+    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+    style='%'
+)
 log = logging.getLogger("Main")
 
 # Add tests to path
 sys.path.insert(len(sys.path), '/tests')
-
 
 
 async def run_tests():
@@ -160,7 +164,6 @@ async def run_tests():
             print("\nERROR: Please enter a number and press enter.\n")
 
 
-
 def print_report(results):
     total_tests = 0
     total_failed = 0
@@ -177,7 +180,6 @@ def print_report(results):
     print(f"Total:  {total_tests}\nFailed: {total_failed}\n")
 
 
-
 async def disk_monitor():
     from machine import reset
     # Get filesize/modification time (to detect upload in future)
@@ -188,11 +190,10 @@ async def disk_monitor():
     while True:
         # Reboot if file changed on disk
         if not os.stat("boot.py") == old:
-            await asyncio.sleep(1) # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
+            await asyncio.sleep(1)  # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             reset()
         else:
-            await asyncio.sleep(1) # Only check once per second
-
+            await asyncio.sleep(1)  # Only check once per second
 
 
 if __name__ == "__main__":
@@ -216,7 +217,6 @@ if __name__ == "__main__":
         import upip, machine
         upip.install("unittest")
         machine.reset()
-
 
     # Import SoftwareTimer instance, add to async loop
     from SoftwareTimer import timer

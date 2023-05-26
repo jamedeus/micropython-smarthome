@@ -1,5 +1,5 @@
-import micropython
 import time
+import micropython
 
 
 # Pass callable as call, no ()

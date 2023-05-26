@@ -16,7 +16,6 @@ code = int("0x" + argv[1], 16)
 inverse_code = int("0x" + argv[2], 16)
 
 
-
 # Takes hex int as arg
 def convert(code):
     if not type(code) == int:
@@ -39,7 +38,6 @@ def convert(code):
             pulses.append(567)
 
     return pulses
-
 
 
 # Create array with starting pulse/space (4.5ms each)
