@@ -1,14 +1,14 @@
-import unittest
-from Config import Config
-import SoftwareTimer
-import uasyncio as asyncio
-import json
 import os
+import json
 import network
+import unittest
+import uasyncio as asyncio
+import SoftwareTimer
+from Config import Config
+from Api import app
 
 # Get IP address
 ip = network.WLAN(network.STA_IF).ifconfig()[0]
-
 
 
 config_file = {
@@ -85,14 +85,10 @@ config_file = {
 
 # Instantiate config object, pass to API
 config = Config(config_file)
-
-from Api import app
 app.config = config
 
 
-
 class TestApi(unittest.TestCase):
-
     def __init__(self):
         self.device1 = config.find("device1")
         self.sensor1 = config.find("sensor1")
@@ -184,7 +180,13 @@ class TestApi(unittest.TestCase):
         self.device1.set_rule(1)
         # Call reset API command
         response = self.send_command(['reset_rule', 'device1'])
-        self.assertEqual(response, {'device1': 'Reverted to scheduled rule', 'current_rule': self.device1.scheduled_rule})
+        self.assertEqual(
+            response,
+            {
+                'device1': 'Reverted to scheduled rule',
+                'current_rule': self.device1.scheduled_rule
+            }
+        )
         self.assertEqual(self.device1.current_rule, self.device1.scheduled_rule)
 
     def test_reset_all_rules(self):
@@ -194,7 +196,18 @@ class TestApi(unittest.TestCase):
         self.sensor2.set_rule(78)
         # Call API command
         response = self.send_command(['reset_all_rules'])
-        self.assertEqual(response, {"New rules": {"device1": self.device1.scheduled_rule, "sensor1": self.sensor1.scheduled_rule, "sensor2": self.sensor2.scheduled_rule, "sensor3": self.sensor3.scheduled_rule, "sensor4": self.sensor4.scheduled_rule}})
+        self.assertEqual(
+            response,
+            {
+                "New rules": {
+                    "device1": self.device1.scheduled_rule,
+                    "sensor1": self.sensor1.scheduled_rule,
+                    "sensor2": self.sensor2.scheduled_rule,
+                    "sensor3": self.sensor3.scheduled_rule,
+                    "sensor4": self.sensor4.scheduled_rule
+                }
+            }
+        )
         self.assertEqual(self.device1.current_rule, self.device1.scheduled_rule)
         self.assertEqual(self.sensor1.current_rule, self.sensor1.scheduled_rule)
         self.assertEqual(self.sensor2.current_rule, self.sensor2.scheduled_rule)
@@ -530,9 +543,40 @@ class TestApi(unittest.TestCase):
     # this for some classes, breaking get_attributes and resulting in an "unable to decode" error.
     def test_regression_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor3'])
-        self.assertEqual(response, {'sensor_type': 'switch', 'nickname': 'Test', 'enabled': True, 'targets': [], 'group': 'group2', 'name': 'sensor3', 'rule_queue': [], 'default_rule': 'enabled', 'scheduled_rule': 'enabled', 'current_rule': 'enabled'})
+        self.assertEqual(
+            response,
+            {
+                'sensor_type': 'switch',
+                'nickname': 'Test',
+                'enabled': True,
+                'targets': [],
+                'group': 'group2',
+                'name': 'sensor3',
+                'rule_queue': [],
+                'default_rule': 'enabled',
+                'scheduled_rule': 'enabled',
+                'current_rule': 'enabled'
+            }
+        )
 
         response = self.send_command(['get_attributes', 'sensor4'])
         # Prevent false positive if real-world monitor state differs (not important for test)
         response['current'] = 'On'
-        self.assertEqual(response, {'ip': '192.168.1.216', 'nickname': 'test', 'scheduled_rule': 'enabled', 'group': 'group2', 'current': 'On', 'name': 'sensor4', 'enabled': True, 'rule_queue': [], 'default_rule': 'enabled', 'targets': [], 'current_rule': 'enabled', 'desktop_target': None, 'sensor_type': 'desktop'})
+        self.assertEqual(
+            response,
+            {
+                'ip': '192.168.1.216',
+                'nickname': 'test',
+                'scheduled_rule': 'enabled',
+                'group': 'group2',
+                'current': 'On',
+                'name': 'sensor4',
+                'enabled': True,
+                'rule_queue': [],
+                'default_rule': 'enabled',
+                'targets': [],
+                'current_rule': 'enabled',
+                'desktop_target': None,
+                'sensor_type': 'desktop'
+            }
+        )

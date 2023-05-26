@@ -2,7 +2,6 @@ import unittest
 from Config import Config
 
 
-
 config_file = {
     "wifi": {
         "ssid": "jamnet",
@@ -74,7 +73,6 @@ config_file = {
 }
 
 
-
 def determine_correct_action(conditions):
     # Determine action to apply to target devices: True = turn on, False = turn off, None = do nothing
     # Turn on: Requires only 1 sensor to return True
@@ -88,7 +86,6 @@ def determine_correct_action(conditions):
         action = False
 
     return action
-
 
 
 class TestMainLoop(unittest.TestCase):

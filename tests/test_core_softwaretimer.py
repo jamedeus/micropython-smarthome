@@ -2,7 +2,6 @@ import unittest
 import SoftwareTimer
 
 
-
 class TestSoftwareTimer(unittest.TestCase):
 
     def test_create(self):
