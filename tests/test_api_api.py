@@ -26,20 +26,18 @@ config_file = {
         "targets": [
             "device1"
         ],
-        "type": "si7021",
+        "sensor_type": "si7021",
         "schedule": {
             "10:00": 74,
             "22:00": 74
         },
-        "pin": 15,
         "default_rule": 70,
-        "default_setting": 74,
         "mode": "cool",
         "tolerance": 1,
         "nickname": "sensor1"
     },
     "sensor2": {
-        "type": "pir",
+        "sensor_type": "pir",
         "targets": [
             "device1"
         ],
@@ -49,7 +47,7 @@ config_file = {
         "nickname": "sensor2"
     },
     "sensor3": {
-        "type": "switch",
+        "sensor_type": "switch",
         "nickname": "Test",
         "pin": "18",
         "default_rule": "enabled",
@@ -57,7 +55,7 @@ config_file = {
         "schedule": {}
     },
     "sensor4": {
-        "type": "desktop",
+        "sensor_type": "desktop",
         "nickname": "test",
         "ip": "192.168.1.216",
         "default_rule": "enabled",

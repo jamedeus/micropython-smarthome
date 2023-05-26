@@ -34,6 +34,15 @@ device_classes = {
     "wled": "Wled"
 }
 
+# Used to dynamically import correct class for each sensor type
+sensor_classes = {
+    "pir": "MotionSensor",
+    "desktop": "Desktop_trigger",
+    "dummy": "Dummy",
+    "si7021": "Thermostat",
+    "switch": "Switch"
+}
+
 
 # Takes name (device1 etc) and config entry, returns class instance
 def instantiate_device(name, **kwargs):
@@ -45,6 +54,20 @@ def instantiate_device(name, **kwargs):
 
     # Import correct module, instantiate class
     module = __import__(device_classes[kwargs['device_type']])
+    cls = getattr(module, module.__name__)
+    return cls(name, **kwargs)
+
+
+# Takes name (sensor1 etc) and config entry, returns class instance
+def instantiate_sensor(name, **kwargs):
+    if kwargs['sensor_type'] not in sensor_classes:
+        raise ValueError(f'Unsupported sensor type "{kwargs["sensor_type"]}"')
+
+    # Remove schedule rules (unexpected arg)
+    del kwargs['schedule']
+
+    # Import correct module, instantiate class
+    module = __import__(sensor_classes[kwargs['sensor_type']])
     cls = getattr(module, module.__name__)
     return cls(name, **kwargs)
 
@@ -126,26 +149,9 @@ class Config():
                     if t:
                         targets.append(t)
 
-                # Instantiate sensor as appropriate class
-                if conf[sensor]["type"] == "pir":
-                    from MotionSensor import MotionSensor
-                    instance = MotionSensor(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
-
-                elif conf[sensor]["type"] == "desktop":
-                    from Desktop_trigger import Desktop_trigger
-                    instance = Desktop_trigger(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, conf[sensor]["ip"])
-
-                elif conf[sensor]["type"] == "si7021":
-                    from Thermostat import Thermostat
-                    instance = Thermostat(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, conf[sensor]["default_rule"], conf[sensor]["default_rule"], conf[sensor]["mode"], conf[sensor]["tolerance"], targets)
-
-                elif conf[sensor]["type"] == "dummy":
-                    from Dummy import Dummy
-                    instance = Dummy(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets)
-
-                elif conf[sensor]["type"] == "switch":
-                    from Switch import Switch
-                    instance = Switch(sensor, conf[sensor]["nickname"], conf[sensor]["type"], True, None, conf[sensor]["default_rule"], targets, int(conf[sensor]["pin"]))
+                # Instantiate sensor with appropriate class, overwrite targets
+                instance = instantiate_sensor(sensor, **conf[sensor])
+                instance.targets = targets
 
                 # Add the sensor instance to each of it's target's "triggered_by" list
                 for t in targets:
@@ -154,9 +160,12 @@ class Config():
                 # Add instance to config.sensors
                 self.sensors.append(instance)
             except AttributeError:
-                log.critical(f"Failed to instantiate {sensor}: type = {conf[sensor]['type']}, default_rule = {conf[sensor]['default_rule']}")
-                print(f"Failed to instantiate {sensor}: type = {conf[sensor]['type']}, default_rule = {conf[sensor]['default_rule']}")
+                log.critical(f"Failed to instantiate {sensor}: type = {conf[sensor]['sensor_type']}, default_rule = {conf[sensor]['default_rule']}")
+                print(f"Failed to instantiate {sensor}: type = {conf[sensor]['sensor_type']}, default_rule = {conf[sensor]['default_rule']}")
                 pass
+            except ValueError:
+                log.critical(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['sensor_type']}")
+                print(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['sensor_type']}")
 
         log.debug("Finished creating sensor instances")
 

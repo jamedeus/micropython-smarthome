@@ -17,7 +17,7 @@ class TestDesktopTrigger(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = Desktop_trigger("sensor1", "sensor1", "desktop", True, None, "enabled", [], "192.168.1.216")
+        self.instance = Desktop_trigger("sensor1", "sensor1", "desktop", "enabled", [], "192.168.1.216")
         self.assertIsInstance(self.instance, Desktop_trigger)
         self.assertTrue(self.instance.enabled)
 

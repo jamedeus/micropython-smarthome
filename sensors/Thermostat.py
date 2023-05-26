@@ -9,8 +9,8 @@ log = logging.getLogger("Thermostat")
 
 
 class Thermostat(Sensor):
-    def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, mode, tolerance, targets):
-        super().__init__(name, nickname, sensor_type, enabled, current_rule, default_rule, targets)
+    def __init__(self, name, nickname, sensor_type, default_rule, mode, tolerance, targets):
+        super().__init__(name, nickname, sensor_type, True, default_rule, default_rule, targets)
 
         # Setup I2C interface
         self.i2c = SoftI2C(Pin(22), Pin(21))

@@ -15,7 +15,7 @@ class TestSwitch(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = Switch("sensor1", "sensor1", "switch", True, None, "enabled", [], 19)
+        self.instance = Switch("sensor1", "sensor1", "switch", "enabled", [], 19)
         self.assertIsInstance(self.instance, Switch)
         self.assertTrue(self.instance.enabled)
 

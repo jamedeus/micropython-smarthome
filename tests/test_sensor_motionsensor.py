@@ -21,7 +21,7 @@ class TestMotionSensor(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = MotionSensor("sensor1", "sensor1", "pir", True, None, None, [], 15)
+        self.instance = MotionSensor("sensor1", "sensor1", "pir", None, [], 15)
         self.assertIsInstance(self.instance, MotionSensor)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.motion)
@@ -91,7 +91,7 @@ class TestMotionSensor(unittest.TestCase):
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            MotionSensor("sensor1", "sensor1", "pir", True, None, "disabled", [], 15)
+            MotionSensor("sensor1", "sensor1", "pir", "disabled", [], 15)
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -99,7 +99,7 @@ class TestMotionSensor(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            MotionSensor("sensor1", "sensor1", "pir", True, None, "enabled", [], 15)
+            MotionSensor("sensor1", "sensor1", "pir", "enabled", [], 15)
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:

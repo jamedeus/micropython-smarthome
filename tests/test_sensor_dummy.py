@@ -19,7 +19,7 @@ class TestDummySensor(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = Dummy("sensor1", "sensor1", "dummy", True, None, "on", [])
+        self.instance = Dummy("sensor1", "sensor1", "dummy", "on", [])
         self.assertIsInstance(self.instance, Dummy)
         self.assertTrue(self.instance.enabled)
 
@@ -86,7 +86,7 @@ class TestDummySensor(unittest.TestCase):
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            Dummy("sensor1", "sensor1", "dummy", True, None, "disabled", [])
+            Dummy("sensor1", "sensor1", "dummy", "disabled", [])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -94,7 +94,7 @@ class TestDummySensor(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            Dummy("sensor1", "sensor1", "dummy", True, None, "enabled", [])
+            Dummy("sensor1", "sensor1", "dummy", "enabled", [])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:

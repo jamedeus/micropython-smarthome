@@ -17,7 +17,7 @@ config_file = {
         "targets": [
             "device2"
         ],
-        "type": "si7021",
+        "sensor_type": "si7021",
         "schedule": {
             "10:00": 74,
             "22:00": 74
@@ -29,7 +29,7 @@ config_file = {
         "nickname": "sensor1"
     },
     "sensor2": {
-        "type": "pir",
+        "sensor_type": "pir",
         "targets": [
             "device1"
         ],
@@ -39,7 +39,7 @@ config_file = {
         "nickname": "sensor2"
     },
     "sensor3": {
-        "type": "pir",
+        "sensor_type": "pir",
         "targets": [
             "device1"
         ],

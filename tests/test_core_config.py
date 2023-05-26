@@ -52,7 +52,7 @@ class TestConfig(unittest.TestCase):
                 'targets': [
                     'device1'
                 ],
-                'type': 'pir',
+                'sensor_type': 'pir',
                 'default_rule': 5
             },
             'device1': {
@@ -339,7 +339,7 @@ class TestConfig(unittest.TestCase):
                     "password": "cjZY8PTa4ZQ6S83A"
                 },
                 "sensor1": {
-                    "type": "pir",
+                    "sensor_type": "pir",
                     "nickname": "Motion Sensor",
                     "pin": 15,
                     "default_rule": 5,
@@ -388,7 +388,7 @@ class TestConfig(unittest.TestCase):
                     "password": "cjZY8PTa4ZQ6S83A"
                 },
                 "sensor1": {
-                    "type": "pir",
+                    "sensor_type": "pir",
                     "nickname": "Motion Sensor",
                     "pin": 15,
                     "default_rule": "enabled",

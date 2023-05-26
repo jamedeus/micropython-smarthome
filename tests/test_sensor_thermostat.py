@@ -23,7 +23,7 @@ class TestThermostat(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = Thermostat("sensor1", "sensor1", "si7021", True, 74, 74, "cool", 1, [])
+        self.instance = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [])
         self.assertIsInstance(self.instance, Thermostat)
         self.assertTrue(self.instance.enabled)
 
@@ -126,7 +126,7 @@ class TestThermostat(unittest.TestCase):
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            Thermostat("sensor1", "sensor1", "si7021", True, "enabled", "enabled", "cool", 1, [])
+            Thermostat("sensor1", "sensor1", "si7021", "enabled", "cool", 1, [])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -134,7 +134,7 @@ class TestThermostat(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            Thermostat("sensor1", "sensor1", "si7021", True, "disabled", "disabled", "cool", 1, [])
+            Thermostat("sensor1", "sensor1", "si7021", "disabled", "cool", 1, [])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
