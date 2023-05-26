@@ -2,11 +2,26 @@ import unittest
 from LedStrip import LedStrip
 
 
-
 class TestLedStrip(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off", "test_turn_off_when_disabled", "test_enable_regression_test", "test_regression_rule_change_to_enabled", "test_regression_invalid_default_rule", "test_regression_turn_off_while_disabled", "test_regression_rule_change_while_fading"]
+        return [
+            "test_instantiation",
+            "test_rule_validation_valid",
+            "test_rule_validation_invalid",
+            "test_rule_change",
+            "test_enable_disable",
+            "test_disable_by_rule_change",
+            "test_enable_by_rule_change",
+            "test_turn_on",
+            "test_turn_off",
+            "test_turn_off_when_disabled",
+            "test_enable_regression_test",
+            "test_regression_rule_change_to_enabled",
+            "test_regression_invalid_default_rule",
+            "test_regression_turn_off_while_disabled",
+            "test_regression_rule_change_while_fading"
+        ]
 
     def test_instantiation(self):
         self.instance = LedStrip("device1", "device1", "pwm", True, None, 512, 4, 0, 1023)
@@ -32,7 +47,7 @@ class TestLedStrip(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator("-42"))
         self.assertFalse(self.instance.rule_validator(1337))
         self.assertFalse(self.instance.rule_validator([500]))
-        self.assertFalse(self.instance.rule_validator({500:500}))
+        self.assertFalse(self.instance.rule_validator({500: 500}))
         self.assertFalse(self.instance.rule_validator(["fade", "500", "1200"]))
         self.assertFalse(self.instance.rule_validator("fade/2000/15"))
         self.assertFalse(self.instance.rule_validator("fade/-512/600"))
@@ -110,13 +125,13 @@ class TestLedStrip(unittest.TestCase):
         # Attempt to reproduce crash, should not crash
         self.assertTrue(self.instance.send(1))
 
-    # Original bug: Device types that use current_rule in send() payload would crash if default_rule was "enabled" or "disabled"
-    # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception in init
-    # method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
+    # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
+    # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
+    # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            test = LedStrip("device1", "device1", "pwm", True, None, "disabled", 4, 0, 1023)
+            LedStrip("device1", "device1", "pwm", True, None, "disabled", 4, 0, 1023)
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -124,7 +139,7 @@ class TestLedStrip(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            test = LedStrip("device1", "device1", "pwm", True, None, "enabled", 4, 0, 1023)
+            LedStrip("device1", "device1", "pwm", True, None, "enabled", 4, 0, 1023)
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:

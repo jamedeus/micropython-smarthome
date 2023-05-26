@@ -2,11 +2,14 @@ import unittest
 from IrBlaster import IrBlaster
 
 
-
 class TestIrBlaster(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_send_valid", "test_send_invalid"]
+        return [
+            "test_instantiation",
+            "test_send_valid",
+            "test_send_invalid"
+        ]
 
     def test_instantiation(self):
         self.instance = IrBlaster(4, ["tv", "ac"])

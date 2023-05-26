@@ -2,11 +2,20 @@ import unittest
 from Relay import Relay
 
 
-
 class TestRelay(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_turn_on", "test_turn_off"]
+        return [
+            "test_instantiation",
+            "test_rule_validation_valid",
+            "test_rule_validation_invalid",
+            "test_rule_change",
+            "test_enable_disable",
+            "test_disable_by_rule_change",
+            "test_enable_by_rule_change",
+            "test_turn_on",
+            "test_turn_off"
+        ]
 
     def test_instantiation(self):
         self.instance = Relay("device1", "device1", "relay", True, "enabled", "enabled", "192.168.1.202")
@@ -27,7 +36,7 @@ class TestRelay(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator("on"))
         self.assertFalse(self.instance.rule_validator("off"))
         self.assertFalse(self.instance.rule_validator(["enabled"]))
-        self.assertFalse(self.instance.rule_validator({"disabled":"disabled"}))
+        self.assertFalse(self.instance.rule_validator({"disabled": "disabled"}))
 
     def test_rule_change(self):
         self.assertTrue(self.instance.set_rule("disabled"))
