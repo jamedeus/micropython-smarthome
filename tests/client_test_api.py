@@ -1,9 +1,9 @@
-import unittest
-from api_client import *
 import time
+import unittest
+from api_client import parse_ip, parse_command, ir_commands
+from frontend.node_configuration.Webrepl import Webrepl
 
 target_ip = '192.168.1.213'
-
 
 
 class TestParseIP(unittest.TestCase):
@@ -32,7 +32,6 @@ class TestParseIP(unittest.TestCase):
         self.assertIsInstance(response, dict)
         self.assertEqual(len(response), 3)
         self.assertEqual(response["metadata"]["id"], 'unit testing config')
-
 
 
 class TestParseIPInvalid(unittest.TestCase):
@@ -125,11 +124,15 @@ class TestParseIPInvalid(unittest.TestCase):
             parse_ip(args)
 
 
-
 class TestParseCommand(unittest.TestCase):
 
     # Test reboot first for predictable initial state (replace schedule rules deleted by last test etc)
     def test_1(self):
+        # Re-upload config file (modified by save methods, breaks next test)
+        node = Webrepl(target_ip)
+        node.put_file('tests/config.json', 'config.json')
+        node.close_connection()
+
         response = parse_command(target_ip, ['reboot'])
         self.assertEqual(response, "Rebooting")
 
@@ -170,7 +173,18 @@ class TestParseCommand(unittest.TestCase):
 
     def test_reset_all_rules(self):
         response = parse_command(target_ip, ['reset_all_rules'])
-        self.assertEqual(response, {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "disabled", "device3": "disabled"}})
+        self.assertEqual(
+            response,
+            {
+                "New rules": {
+                    "device1": 1023,
+                    "sensor2": 72.0,
+                    "sensor1": 5.0,
+                    "device2": "disabled",
+                    "device3": "disabled"
+                }
+            }
+        )
 
     def test_get_schedule_rules(self):
         response = parse_command(target_ip, ['get_schedule_rules', 'sensor1'])
@@ -189,7 +203,7 @@ class TestParseCommand(unittest.TestCase):
         response = parse_command(target_ip, ['add_rule', 'device1', '04:00', '512', 'overwrite'])
         self.assertEqual(response, {'time': '04:00', 'Rule added': 512})
 
-        # Add a rule (0) which is equivalent to False in conditional (regression test for bug causing incorrect rejection)
+        # Add rule (0) which is equivalent to False in conditional (regression test for bug causing incorrect rejection)
         response = parse_command(target_ip, ['add_rule', 'device1', '02:52', '0'])
         self.assertEqual(response, {'time': '02:52', 'Rule added': 0})
 
@@ -199,8 +213,8 @@ class TestParseCommand(unittest.TestCase):
 
     def test_remove_rule(self):
         # Delete a rule by timestamp
-        response = parse_command(target_ip, ['remove_rule', 'device1', '01:00'])
-        self.assertEqual(response, {'Deleted': '01:00'})
+        response = parse_command(target_ip, ['remove_rule', 'device1', '04:00'])
+        self.assertEqual(response, {'Deleted': '04:00'})
 
         # Delete a rule by keyword
         response = parse_command(target_ip, ['remove_rule', 'device1', 'sunrise'])
@@ -370,7 +384,6 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['fading'], False)
 
 
-
 class TestParseCommandInvalid(unittest.TestCase):
 
     def test_disable_invalid(self):
@@ -454,7 +467,10 @@ class TestParseCommandInvalid(unittest.TestCase):
 
     def test_add_rule_invalid(self):
         response = parse_command(target_ip, ['add_rule'])
-        self.assertEqual(response, {'Example usage': './api_client.py add_rule [device|sensor] [HH:MM] [rule] <overwrite>'})
+        self.assertEqual(
+            response,
+            {'Example usage': './api_client.py add_rule [device|sensor] [HH:MM] [rule] <overwrite>'}
+        )
 
         response = parse_command(target_ip, ['add_rule', 'notdevice'])
         self.assertEqual(response, {'ERROR': 'Only devices and sensors have schedule rules'})
@@ -518,7 +534,7 @@ class TestParseCommandInvalid(unittest.TestCase):
 
     def test_add_schedule_keyword_invalid(self):
         response = parse_command(target_ip, ['add_schedule_keyword'])
-        self.assertEqual(response, {"Example usage" : "./api_client.py add_schedule_keyword [keyword] [HH:MM]"})
+        self.assertEqual(response, {"Example usage": "./api_client.py add_schedule_keyword [keyword] [HH:MM]"})
 
         response = parse_command(target_ip, ['add_schedule_keyword', 'new_keyword'])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
@@ -528,7 +544,7 @@ class TestParseCommandInvalid(unittest.TestCase):
 
     def test_remove_schedule_keyword_invalid(self):
         response = parse_command(target_ip, ['remove_schedule_keyword'])
-        self.assertEqual(response, {"Example usage" : "./api_client.py remove_schedule_keyword [keyword]"})
+        self.assertEqual(response, {"Example usage": "./api_client.py remove_schedule_keyword [keyword]"})
 
         response = parse_command(target_ip, ['remove_schedule_keyword', 'sunrise'])
         self.assertEqual(response, {"ERROR": "Cannot delete sunrise or sunset"})
@@ -554,13 +570,13 @@ class TestParseCommandInvalid(unittest.TestCase):
         self.assertEqual(response, {'Example usage': './api_client.py ir [tv|ac|backlight] [command]'})
 
         response = parse_command(target_ip, ['ir', 'ac'])
-        self.assertEqual(response, {'ERROR': 'Must speficy one of the following commands: ON, OFF, UP, DOWN, FAN, TIMER, UNITS, MODE, STOP, START'})
+        self.assertEqual(response, {'ERROR': f'Must speficy one of the following commands: {ir_commands["ac"]}'})
 
         response = parse_command(target_ip, ['ir', 'ac', 'power'])
         self.assertEqual(response, {'ERROR': 'Target "ac" has no key power'})
 
         response = parse_command(target_ip, ['ir', 'tv'])
-        self.assertEqual(response, {'ERROR': 'Must speficy one of the following commands: power, vol_up, vol_down, mute, up, down, left, right, enter, settings, exit, source'})
+        self.assertEqual(response, {'ERROR': f'Must speficy one of the following commands: {ir_commands["tv"]}'})
 
         response = parse_command(target_ip, ['ir', 'tv', 'START'])
         self.assertEqual(response, {'ERROR': 'Target "tv" has no key START'})

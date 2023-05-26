@@ -3,7 +3,6 @@ from provision import Provisioner
 import json
 
 
-
 class TestInstantiation(unittest.TestCase):
 
     def test_node_names(self):
@@ -26,7 +25,17 @@ class TestInstantiation(unittest.TestCase):
         self.assertEqual(app.host, '192.168.1.224')
 
         # Use long flags
-        app = Provisioner(['', '--password', 'fasdjkljfsa34', '--config', 'config/bedroom.json', '--node', '192.168.1.224'])
+        app = Provisioner(
+            [
+                '',
+                '--password',
+                'fasdjkljfsa34',
+                '--config',
+                'config/bedroom.json',
+                '--node',
+                '192.168.1.224'
+            ]
+        )
         self.assertEqual(app.passwd, 'fasdjkljfsa34')
         self.assertEqual(app.config, 'config/bedroom.json')
         self.assertEqual(app.host, '192.168.1.224')
@@ -60,7 +69,6 @@ class TestInstantiation(unittest.TestCase):
             app = Provisioner(['', '-c', 'config/bedroom.json', '-ip', '999.000.999.000'])
 
 
-
 class TestGetModules(unittest.TestCase):
 
     @classmethod
@@ -69,43 +77,255 @@ class TestGetModules(unittest.TestCase):
 
     def test_all(self):
         # Config containing all device and sensor types
-        config = {'device1': {'type': 'bulb'}, 'device2': {'type': 'dimmer'}, 'device3': {'type': 'relay'}, 'device4': {'type': 'dumb-relay'}, 'device5': {'type': 'desktop'}, 'device6': {'type': 'pwm'}, 'device7': {'type': 'mosfet'}, 'device8': {'type': 'api-target'}, 'sensor1': {'type': 'pir'}, 'sensor2': {'type': 'si7021'}, 'sensor3': {'type': 'dummy'}, 'sensor4': {'type': 'desktop'}, 'ir_blaster': {}}
+        config = {
+            'device1': {
+                'type': 'bulb'
+            },
+            'device2': {
+                'type': 'dimmer'
+            },
+            'device3': {
+                'type': 'relay'
+            },
+            'device4': {
+                'type': 'dumb-relay'
+            },
+            'device5': {
+                'type': 'desktop'
+            },
+            'device6': {
+                'type': 'pwm'
+            },
+            'device7': {
+                'type': 'mosfet'
+            },
+            'device8': {
+                'type': 'api-target'
+            },
+            'sensor1': {
+                'type': 'pir'
+            },
+            'sensor2': {
+                'type': 'si7021'
+            },
+            'sensor3': {
+                'type': 'dummy'
+            },
+            'sensor4': {
+                'type': 'desktop'
+            },
+            'ir_blaster': {}
+        }
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'devices/DumbRelay.py', 'devices/Tplink.py', 'ir-remote/samsung-codes.json', 'ir-remote/whynter-codes.json', 'devices/ApiTarget.py', 'devices/Desktop_target.py', 'devices/IrBlaster.py', 'devices/Mosfet.py', 'sensors/Sensor.py', 'devices/Relay.py', 'sensors/Desktop_trigger.py', 'devices/Device.py', 'sensors/Thermostat.py', 'devices/LedStrip.py', 'sensors/MotionSensor.py', 'sensors/Dummy.py'})
+        self.assertEqual(
+            modules,
+            {
+                'devices/DumbRelay.py',
+                'devices/Tplink.py',
+                'ir-remote/samsung-codes.json',
+                'ir-remote/whynter-codes.json',
+                'devices/ApiTarget.py',
+                'devices/Desktop_target.py',
+                'devices/IrBlaster.py',
+                'devices/Mosfet.py',
+                'sensors/Sensor.py',
+                'devices/Relay.py',
+                'sensors/Desktop_trigger.py',
+                'devices/Device.py',
+                'sensors/Thermostat.py',
+                'devices/LedStrip.py',
+                'sensors/MotionSensor.py',
+                'sensors/Dummy.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py', 'lib/si7021.py', 'lib/ir_tx/__init__.py', 'lib/ir_tx/nec.py'])
-
 
     def test_no_ir_blaster(self):
         # Config containing all devices and sensors except ir_blaster
-        config = {'device1': {'type': 'bulb'}, 'device2': {'type': 'dimmer'}, 'device3': {'type': 'relay'}, 'device4': {'type': 'dumb-relay'}, 'device5': {'type': 'desktop'}, 'device6': {'type': 'pwm'}, 'device7': {'type': 'mosfet'}, 'device8': {'type': 'api-target'}, 'sensor1': {'type': 'pir'}, 'sensor2': {'type': 'si7021'}, 'sensor3': {'type': 'dummy'}, 'sensor4': {'type': 'desktop'}}
+        config = {
+            'device1': {
+                'type': 'bulb'
+            },
+            'device2': {
+                'type': 'dimmer'
+            },
+            'device3': {
+                'type': 'relay'
+            },
+            'device4': {
+                'type': 'dumb-relay'
+            },
+            'device5': {
+                'type': 'desktop'
+            },
+            'device6': {
+                'type': 'pwm'
+            },
+            'device7': {
+                'type': 'mosfet'
+            },
+            'device8': {
+                'type': 'api-target'
+            },
+            'sensor1': {
+                'type': 'pir'
+            },
+            'sensor2': {
+                'type': 'si7021'
+            },
+            'sensor3': {
+                'type': 'dummy'
+            },
+            'sensor4': {
+                'type': 'desktop'
+            }
+        }
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'devices/DumbRelay.py', 'devices/Tplink.py', 'devices/ApiTarget.py', 'devices/Desktop_target.py', 'devices/Mosfet.py', 'sensors/Sensor.py', 'devices/Relay.py', 'sensors/Desktop_trigger.py', 'devices/Device.py', 'sensors/Thermostat.py', 'devices/LedStrip.py', 'sensors/MotionSensor.py', 'sensors/Dummy.py'})
+        self.assertEqual(
+            modules,
+            {
+                'devices/DumbRelay.py',
+                'devices/Tplink.py',
+                'devices/ApiTarget.py',
+                'devices/Desktop_target.py',
+                'devices/Mosfet.py',
+                'sensors/Sensor.py',
+                'devices/Relay.py',
+                'sensors/Desktop_trigger.py',
+                'devices/Device.py',
+                'sensors/Thermostat.py',
+                'devices/LedStrip.py',
+                'sensors/MotionSensor.py',
+                'sensors/Dummy.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py', 'lib/si7021.py'])
-
 
     def test_no_temp_sensor(self):
         # Config containing all devices and sensors except si7021
-        config = {'device1': {'type': 'bulb'}, 'device2': {'type': 'dimmer'}, 'device3': {'type': 'relay'}, 'device4': {'type': 'dumb-relay'}, 'device5': {'type': 'desktop'}, 'device6': {'type': 'pwm'}, 'device7': {'type': 'mosfet'}, 'device8': {'type': 'api-target'}, 'sensor1': {'type': 'pir'}, 'sensor3': {'type': 'dummy'}, 'sensor4': {'type': 'desktop'}, 'ir_blaster': {}}
+        config = {
+            'device1': {
+                'type': 'bulb'
+            },
+            'device2': {
+                'type': 'dimmer'
+            },
+            'device3': {
+                'type': 'relay'
+            },
+            'device4': {
+                'type': 'dumb-relay'
+            },
+            'device5': {
+                'type': 'desktop'
+            },
+            'device6': {
+                'type': 'pwm'
+            },
+            'device7': {
+                'type': 'mosfet'
+            },
+            'device8': {
+                'type': 'api-target'
+            },
+            'sensor1': {
+                'type': 'pir'
+            },
+            'sensor3': {
+                'type': 'dummy'
+            },
+            'sensor4': {
+                'type': 'desktop'
+            },
+            'ir_blaster': {}
+        }
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'devices/DumbRelay.py', 'devices/Tplink.py', 'ir-remote/samsung-codes.json', 'ir-remote/whynter-codes.json', 'devices/ApiTarget.py', 'devices/Desktop_target.py', 'devices/IrBlaster.py', 'devices/Mosfet.py', 'sensors/Sensor.py', 'devices/Relay.py', 'sensors/Desktop_trigger.py', 'devices/Device.py', 'devices/LedStrip.py', 'sensors/MotionSensor.py', 'sensors/Dummy.py'})
+        self.assertEqual(
+            modules,
+            {
+                'devices/DumbRelay.py',
+                'devices/Tplink.py',
+                'ir-remote/samsung-codes.json',
+                'ir-remote/whynter-codes.json',
+                'devices/ApiTarget.py',
+                'devices/Desktop_target.py',
+                'devices/IrBlaster.py',
+                'devices/Mosfet.py',
+                'sensors/Sensor.py',
+                'devices/Relay.py',
+                'sensors/Desktop_trigger.py',
+                'devices/Device.py',
+                'devices/LedStrip.py',
+                'sensors/MotionSensor.py',
+                'sensors/Dummy.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py', 'lib/ir_tx/__init__.py', 'lib/ir_tx/nec.py'])
-
 
     def test_no_sensors_with_libraries(self):
         # Config containing all devices and sensors that don't require libraries (excludes si7021 and ir_blaster)
-        config = {'device1': {'type': 'bulb'}, 'device2': {'type': 'dimmer'}, 'device3': {'type': 'relay'}, 'device4': {'type': 'dumb-relay'}, 'device5': {'type': 'desktop'}, 'device6': {'type': 'pwm'}, 'device7': {'type': 'mosfet'}, 'device8': {'type': 'api-target'}, 'sensor1': {'type': 'pir'}, 'sensor3': {'type': 'dummy'}, 'sensor4': {'type': 'desktop'}}
+        config = {
+            'device1': {
+                'type': 'bulb'
+            },
+            'device2': {
+                'type': 'dimmer'
+            },
+            'device3': {
+                'type': 'relay'
+            },
+            'device4': {
+                'type': 'dumb-relay'
+            },
+            'device5': {
+                'type': 'desktop'
+            },
+            'device6': {
+                'type': 'pwm'
+            },
+            'device7': {
+                'type': 'mosfet'
+            },
+            'device8': {
+                'type': 'api-target'
+            },
+            'sensor1': {
+                'type': 'pir'
+            },
+            'sensor3': {
+                'type': 'dummy'
+            },
+            'sensor4': {
+                'type': 'desktop'
+            }
+        }
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'devices/DumbRelay.py', 'devices/Tplink.py', 'devices/ApiTarget.py', 'devices/Desktop_target.py', 'devices/Mosfet.py', 'sensors/Sensor.py', 'devices/Relay.py', 'sensors/Desktop_trigger.py', 'devices/Device.py', 'devices/LedStrip.py', 'sensors/MotionSensor.py', 'sensors/Dummy.py'})
+        self.assertEqual(
+            modules,
+            {
+                'devices/DumbRelay.py',
+                'devices/Tplink.py',
+                'devices/ApiTarget.py',
+                'devices/Desktop_target.py',
+                'devices/Mosfet.py',
+                'sensors/Sensor.py',
+                'devices/Relay.py',
+                'sensors/Desktop_trigger.py',
+                'devices/Device.py',
+                'devices/LedStrip.py',
+                'sensors/MotionSensor.py',
+                'sensors/Dummy.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py'])
-
 
     def test_pir_and_smart_bulb(self):
         # Config containing device/sensor combo used in multiple rooms
@@ -113,9 +333,16 @@ class TestGetModules(unittest.TestCase):
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'sensors/MotionSensor.py', 'devices/Tplink.py', 'devices/Device.py', 'sensors/Sensor.py'})
+        self.assertEqual(
+            modules,
+            {
+                'sensors/MotionSensor.py',
+                'devices/Tplink.py',
+                'devices/Device.py',
+                'sensors/Sensor.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py'])
-
 
     def test_pir_and_smart_bulb_and_dimmer(self):
         # Config containing device/sensor pair combo in multiple rooms
@@ -123,9 +350,16 @@ class TestGetModules(unittest.TestCase):
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'sensors/MotionSensor.py', 'devices/Tplink.py', 'devices/Device.py', 'sensors/Sensor.py'})
+        self.assertEqual(
+            modules,
+            {
+                'sensors/MotionSensor.py',
+                'devices/Tplink.py',
+                'devices/Device.py',
+                'sensors/Sensor.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py'])
-
 
     def test_pir_and_led_strip(self):
         # Config containing device/sensor combo used in multiple rooms
@@ -133,9 +367,16 @@ class TestGetModules(unittest.TestCase):
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'devices/LedStrip.py', 'sensors/MotionSensor.py', 'devices/Device.py', 'sensors/Sensor.py'})
+        self.assertEqual(
+            modules,
+            {
+                'devices/LedStrip.py',
+                'sensors/MotionSensor.py',
+                'devices/Device.py',
+                'sensors/Sensor.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py'])
-
 
     def test_pir_and_led_strip_and_dumbrelay(self):
         # Config containing device/sensor combo used in multiple rooms
@@ -143,9 +384,17 @@ class TestGetModules(unittest.TestCase):
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'devices/DumbRelay.py', 'sensors/Sensor.py', 'devices/Device.py', 'devices/LedStrip.py', 'sensors/MotionSensor.py'})
+        self.assertEqual(
+            modules,
+            {
+                'devices/DumbRelay.py',
+                'sensors/Sensor.py',
+                'devices/Device.py',
+                'devices/LedStrip.py',
+                'sensors/MotionSensor.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py'])
-
 
     def test_pir_and_led_strip_and_relay(self):
         # Config containing device/sensor combo used in kitchen
@@ -153,9 +402,17 @@ class TestGetModules(unittest.TestCase):
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'sensors/Sensor.py', 'devices/Relay.py', 'devices/Device.py', 'devices/LedStrip.py', 'sensors/MotionSensor.py'})
+        self.assertEqual(
+            modules,
+            {
+                'sensors/Sensor.py',
+                'devices/Relay.py',
+                'devices/Device.py',
+                'devices/LedStrip.py',
+                'sensors/MotionSensor.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py'])
-
 
     def test_thermostat_and_relay(self):
         # Config containing device/sensor pair used for thermostat
@@ -163,19 +420,55 @@ class TestGetModules(unittest.TestCase):
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'devices/Relay.py', 'sensors/Sensor.py', 'devices/Device.py', 'sensors/Thermostat.py'})
+        self.assertEqual(
+            modules,
+            {
+                'devices/Relay.py',
+                'sensors/Sensor.py',
+                'devices/Device.py',
+                'sensors/Thermostat.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py', 'lib/si7021.py'])
-
 
     def test_bedroom(self):
         # Config containing all devices/sensors currently used in bedroom
-        config = {'device1': {'type': 'dimmer'}, 'device2': {'type': 'desktop'}, 'sensor1': {'type': 'pir'}, 'sensor2': {'type': 'pir'}, 'sensor3': {'type': 'desktop'}, 'sensor4': {'type': 'dummy'}}
+        config = {
+            'device1': {
+                'type': 'dimmer'
+            },
+            'device2': {
+                'type': 'desktop'
+            },
+            'sensor1': {
+                'type': 'pir'
+            },
+            'sensor2': {
+                'type': 'pir'
+            },
+            'sensor3': {
+                'type': 'desktop'
+            },
+            'sensor4': {
+                'type': 'dummy'
+            }
+        }
 
         modules, libs = self.app.get_modules(config)
 
-        self.assertEqual(modules, {'sensors/MotionSensor.py', 'sensors/Sensor.py', 'devices/Device.py', 'sensors/Desktop_trigger.py', 'devices/Tplink.py', 'sensors/Dummy.py', 'devices/Desktop_target.py'})
+        self.assertEqual(
+            modules,
+            {
+                'sensors/MotionSensor.py',
+                'sensors/Sensor.py',
+                'devices/Device.py',
+                'sensors/Desktop_trigger.py',
+                'devices/Tplink.py',
+                'sensors/Dummy.py',
+                'devices/Desktop_target.py'
+            }
+        )
         self.assertEqual(libs, ['lib/logging.py'])
-
 
     def test_empty_config(self):
         config = {}
@@ -185,13 +478,6 @@ class TestGetModules(unittest.TestCase):
         # Should still return logging module which is always used
         self.assertEqual(modules, set())
         self.assertEqual(libs, ['lib/logging.py'])
-
-
-
-
-
-
-
 
 
 #def gen_config(conf, which, type):

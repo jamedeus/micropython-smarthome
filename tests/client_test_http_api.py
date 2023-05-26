@@ -1,15 +1,20 @@
+import time
 import unittest
 import requests
-import time
+from frontend.node_configuration.Webrepl import Webrepl
 
 target_ip = '192.168.1.213'
-
 
 
 class TestEndpoint(unittest.TestCase):
 
     # Test reboot first for predictable initial state (replace schedule rules deleted by last test etc)
     def test_1(self):
+        # Re-upload config file (modified by save methods, breaks next test)
+        node = Webrepl(target_ip)
+        node.put_file('tests/config.json', 'config.json')
+        node.close_connection()
+
         response = requests.get(f'http://{target_ip}:8123/reboot')
         self.assertEqual(response.json(), "Rebooting")
 
@@ -50,7 +55,18 @@ class TestEndpoint(unittest.TestCase):
 
     def test_reset_all_rules(self):
         response = requests.get(f'http://{target_ip}:8123/reset_all_rules')
-        self.assertEqual(response.json(), {"New rules": {"device1": 1023, "sensor2": 72.0, "sensor1": 5.0, "device2": "disabled", "device3": "disabled"}})
+        self.assertEqual(
+            response.json(),
+            {
+                "New rules": {
+                    "device1": 1023,
+                    "sensor2": 72.0,
+                    "sensor1": 5.0,
+                    "device2": "disabled",
+                    "device3": "disabled"
+                }
+            }
+        )
 
     def test_get_schedule_rules(self):
         response = requests.get(f'http://{target_ip}:8123/get_schedule_rules?sensor1')
@@ -69,7 +85,7 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/04:00/512/overwrite')
         self.assertEqual(response.json(), {'time': '04:00', 'Rule added': 512})
 
-        # Add a rule (0) which is equivalent to False in conditional (regression test for bug causing incorrect rejection)
+        # Add rule (0) which is equivalent to False in conditional (regression test for bug causing incorrect rejection)
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/02:52/0')
         self.assertEqual(response.json(), {'time': '02:52', 'Rule added': 0})
 
@@ -79,8 +95,8 @@ class TestEndpoint(unittest.TestCase):
 
     def test_remove_rule(self):
         # Delete a rule by timestamp
-        response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/01:00')
-        self.assertEqual(response.json(), {'Deleted': '01:00'})
+        response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/04:00')
+        self.assertEqual(response.json(), {'Deleted': '04:00'})
 
         # Delete a rule by keyword
         response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/sunrise')
@@ -248,7 +264,6 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/get_attributes?device3')
         self.assertEqual(response.json()['current_rule'], 400)
         self.assertEqual(response.json()['fading'], False)
-
 
 
 class TestEndpointInvalid(unittest.TestCase):
