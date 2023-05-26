@@ -349,63 +349,65 @@ class Provisioner():
                 libs.append("lib/ir_tx/nec.py")
                 continue
 
-            if not i.startswith("device") and not i.startswith("sensor"): continue
+            if i.startswith("device"):
+                if conf[i]["device_type"] == "dimmer" or conf[i]["device_type"] == "bulb":
+                    modules.append("devices/Tplink.py")
+                    modules.append("devices/Device.py")
 
-            if conf[i]["type"] == "dimmer" or conf[i]["type"] == "bulb":
-                modules.append("devices/Tplink.py")
-                modules.append("devices/Device.py")
+                elif conf[i]["device_type"] == "relay":
+                    modules.append("devices/Relay.py")
+                    modules.append("devices/Device.py")
 
-            elif conf[i]["type"] == "relay":
-                modules.append("devices/Relay.py")
-                modules.append("devices/Device.py")
+                elif conf[i]["device_type"] == "dumb-relay":
+                    modules.append("devices/DumbRelay.py")
+                    modules.append("devices/Device.py")
 
-            elif conf[i]["type"] == "dumb-relay":
-                modules.append("devices/DumbRelay.py")
-                modules.append("devices/Device.py")
-
-            elif conf[i]["type"] == "desktop":
-                if i.startswith("device"):
+                elif conf[i]["device_type"] == "desktop":
                     modules.append("devices/Desktop_target.py")
                     modules.append("devices/Device.py")
-                elif i.startswith("sensor"):
+
+                elif conf[i]["device_type"] == "pwm":
+                    modules.append("devices/LedStrip.py")
+                    modules.append("devices/Device.py")
+
+                elif conf[i]["device_type"] == "mosfet":
+                    modules.append("devices/Mosfet.py")
+                    modules.append("devices/Device.py")
+
+                elif conf[i]["device_type"] == "api-target":
+                    modules.append("devices/ApiTarget.py")
+                    modules.append("devices/Device.py")
+
+                elif conf[i]["device_type"] == "wled":
+                    modules.append("devices/Wled.py")
+                    modules.append("devices/Device.py")
+
+            elif i.startswith("sensor"):
+                if conf[i]["sensor_type"] == "desktop":
                     modules.append("sensors/Desktop_trigger.py")
                     modules.append("sensors/Sensor.py")
 
-            elif conf[i]["type"] == "pwm":
-                modules.append("devices/LedStrip.py")
-                modules.append("devices/Device.py")
+                elif conf[i]["sensor_type"] == "pir":
+                    modules.append("sensors/MotionSensor.py")
+                    modules.append("sensors/Sensor.py")
 
-            elif conf[i]["type"] == "mosfet":
-                modules.append("devices/Mosfet.py")
-                modules.append("devices/Device.py")
+                elif conf[i]["sensor_type"] == "si7021":
+                    print(Fore.YELLOW + "WARNING" + Fore.RESET, end="")
+                    print(": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
 
-            elif conf[i]["type"] == "api-target":
-                modules.append("devices/ApiTarget.py")
-                modules.append("devices/Device.py")
+                    modules.append("sensors/Thermostat.py")
+                    modules.append("sensors/Sensor.py")
+                    libs.append("lib/si7021.py")
 
-            elif conf[i]["type"] == "pir":
-                modules.append("sensors/MotionSensor.py")
-                modules.append("sensors/Sensor.py")
+                elif conf[i]["sensor_type"] == "dummy":
+                    modules.append("sensors/Dummy.py")
+                    modules.append("sensors/Sensor.py")
 
-            elif conf[i]["type"] == "si7021":
-                print(Fore.YELLOW + "WARNING" + Fore.RESET, end="")
-                print(": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
+                elif conf[i]["sensor_type"] == "switch":
+                    modules.append("sensors/Switch.py")
+                    modules.append("sensors/Sensor.py")
 
-                modules.append("sensors/Thermostat.py")
-                modules.append("sensors/Sensor.py")
-                libs.append("lib/si7021.py")
-
-            elif conf[i]["type"] == "dummy":
-                modules.append("sensors/Dummy.py")
-                modules.append("sensors/Sensor.py")
-
-            elif conf[i]["type"] == "switch":
-                modules.append("sensors/Switch.py")
-                modules.append("sensors/Sensor.py")
-
-            elif conf[i]["type"] == "wled":
-                modules.append("devices/Wled.py")
-                modules.append("devices/Device.py")
+            else: continue
 
         # Remove duplicates
         modules = set(modules)
