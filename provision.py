@@ -184,7 +184,6 @@ class Provisioner():
             raise SystemExit
 
         # If user selected unit tests
-        # TODO this fails with unhelpful errors when target dirs (/tests/) don't exist, should offer to upload setup
         elif args[1] == "--test":
             # Get config file and target IP from cli arguments
             self.passwd = "password"
@@ -457,15 +456,15 @@ class Provisioner():
             put_file(self.ws, self.basepath + "/" + src_file, dst_file)
         except AssertionError:
 
-            if src_file.startswith("lib/"):
-                print(Fore.RED + "\nERROR: Unable to upload libraries, /lib/ does not exist" + Fore.RESET)
+            if src_file.startswith("lib/") or src_file.startswith("tests/"):
+                print(Fore.RED + f"\nERROR: Unable to upload {src_file}, directory does not exist" + Fore.RESET)
                 print("This is normal for new nodes - would you like to upload setup to fix? ", end="")
                 print(Fore.CYAN + "[Y/n]" + Fore.RESET)
 
                 x = input()
                 if x == "n":
                     print(Fore.YELLOW + "\nWARNING" + Fore.RESET, end="")
-                    print(": Skipping " + src_file + " library, node may fail to boot after upload.\n")
+                    print(": Skipping " + src_file + ", node may fail to boot after upload.\n")
                     pass
                 else:
                     # Connection was broken by error, close and re-open
@@ -480,7 +479,9 @@ class Provisioner():
                     self.close_connection()
 
                     # Resume upload once user restarts node
-                    print(Fore.CYAN + "Please reboot target node and wait 30 seconds, then press enter to resume upload." + Fore.RESET)
+                    print(Fore.CYAN)
+                    print("Please reboot target node and wait 30 seconds, then press enter to resume upload.")
+                    print(Fore.RESET)
                     x = input()
                     self.open_connection()
                     self.upload(src_file, dst_file)

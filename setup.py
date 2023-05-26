@@ -15,11 +15,13 @@ wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
 while not wlan.isconnected():
     continue
 
-try:
-    os.mkdir('lib')
-    os.mkdir('lib/ir_tx')
-except OSError:
-    pass
+# Create directories
+# Loop ensures all statements run, otherwise would fail to create tests if lib already exists
+for directory in ['lib', 'lib/ir_tx', 'tests']:
+    try:
+        os.mkdir(directory)
+    except OSError:
+        pass
 
 webrepl.start()
 
