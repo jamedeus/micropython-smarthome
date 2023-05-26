@@ -2,11 +2,21 @@ import unittest
 from Dummy import Dummy
 
 
-
 class TestDummySensor(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_condition_met", "test_trigger", "test_regression_invalid_default_rule"]
+        return [
+            "test_instantiation",
+            "test_rule_validation_valid",
+            "test_rule_validation_invalid",
+            "test_rule_change",
+            "test_enable_disable",
+            "test_disable_by_rule_change",
+            "test_enable_by_rule_change",
+            "test_condition_met",
+            "test_trigger",
+            "test_regression_invalid_default_rule"
+        ]
 
     def test_instantiation(self):
         self.instance = Dummy("sensor1", "sensor1", "dummy", True, None, "on", [])
@@ -29,7 +39,7 @@ class TestDummySensor(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator("string"))
         self.assertFalse(self.instance.rule_validator(42))
         self.assertFalse(self.instance.rule_validator(["on"]))
-        self.assertFalse(self.instance.rule_validator({"on":"on"}))
+        self.assertFalse(self.instance.rule_validator({"on": "on"}))
 
     def test_rule_change(self):
         self.assertTrue(self.instance.set_rule("off"))
@@ -70,13 +80,13 @@ class TestDummySensor(unittest.TestCase):
         self.assertTrue(self.instance.trigger())
         self.assertTrue(self.instance.condition_met())
 
-    # Original bug: Some sensor types would crash or behave unexpectedly if default_rule was "enabled" or "disabled" in various
-    # situations. These classes now raise exception in init method to prevent this.
+    # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
+    # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            test = Dummy("sensor1", "sensor1", "dummy", True, None, "disabled", [])
+            Dummy("sensor1", "sensor1", "dummy", True, None, "disabled", [])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -84,7 +94,7 @@ class TestDummySensor(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            test = Dummy("sensor1", "sensor1", "dummy", True, None, "enabled", [])
+            Dummy("sensor1", "sensor1", "dummy", True, None, "enabled", [])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:

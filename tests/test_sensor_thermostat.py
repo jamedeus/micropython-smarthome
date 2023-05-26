@@ -2,11 +2,25 @@ import unittest
 from Thermostat import Thermostat
 
 
-
 class TestThermostat(unittest.TestCase):
 
     def __dir__(self):
-        return ["test_instantiation", "test_rule_validation_valid", "test_rule_validation_invalid", "test_rule_change", "test_enable_disable", "", "test_disable_by_rule_change", "test_enable_by_rule_change", "test_sensor", "test_condition_met", "test_condition_met_heat", "test_condition_met_tolerance", "test_trigger", "test_regression_invalid_default_rule"]
+        return [
+            "test_instantiation",
+            "test_rule_validation_valid",
+            "test_rule_validation_invalid",
+            "test_rule_change",
+            "test_enable_disable",
+            "",
+            "test_disable_by_rule_change",
+            "test_enable_by_rule_change",
+            "test_sensor",
+            "test_condition_met",
+            "test_condition_met_heat",
+            "test_condition_met_tolerance",
+            "test_trigger",
+            "test_regression_invalid_default_rule"
+        ]
 
     def test_instantiation(self):
         self.instance = Thermostat("sensor1", "sensor1", "si7021", True, 74, 74, "cool", 1, [])
@@ -23,7 +37,7 @@ class TestThermostat(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator(64))
         self.assertFalse(self.instance.rule_validator(81))
         self.assertFalse(self.instance.rule_validator([72]))
-        self.assertFalse(self.instance.rule_validator({72:72}))
+        self.assertFalse(self.instance.rule_validator({72: 72}))
         self.assertFalse(self.instance.rule_validator(True))
         self.assertFalse(self.instance.rule_validator(None))
         self.assertFalse(self.instance.rule_validator("string"))
@@ -57,10 +71,10 @@ class TestThermostat(unittest.TestCase):
         self.instance.set_rule(current)
         self.assertEqual(self.instance.condition_met(), None)
 
-        self.instance.set_rule(current+2)
+        self.instance.set_rule(current + 2)
         self.assertFalse(self.instance.condition_met())
 
-        self.instance.set_rule(current-2)
+        self.instance.set_rule(current - 2)
         self.assertTrue(self.instance.condition_met())
 
     def test_condition_met_heat(self):
@@ -71,10 +85,10 @@ class TestThermostat(unittest.TestCase):
         self.instance.set_rule(current)
         self.assertEqual(self.instance.condition_met(), None)
 
-        self.instance.set_rule(current-2)
+        self.instance.set_rule(current - 2)
         self.assertFalse(self.instance.condition_met())
 
-        self.instance.set_rule(current+2)
+        self.instance.set_rule(current + 2)
         self.assertTrue(self.instance.condition_met())
 
     def test_condition_met_tolerance(self):
@@ -86,34 +100,33 @@ class TestThermostat(unittest.TestCase):
         self.assertEqual(self.instance.condition_met(), None)
 
         # With tolerance set to 5 degrees, should not turn on OR off at +- 2 degrees
-        self.instance.set_rule(current-2)
+        self.instance.set_rule(current - 2)
         self.assertEqual(self.instance.condition_met(), None)
 
-        self.instance.set_rule(current+2)
+        self.instance.set_rule(current + 2)
         self.assertEqual(self.instance.condition_met(), None)
 
         self.instance.tolerance = 0.1
         current = self.instance.fahrenheit()
 
         # With tolerance set to 0.1 degrees, should turn on/off with very slight temperature change
-        self.instance.set_rule(current-0.2)
+        self.instance.set_rule(current - 0.2)
         self.assertFalse(self.instance.condition_met())
 
-        self.instance.set_rule(current+0.2)
+        self.instance.set_rule(current + 0.2)
         self.assertTrue(self.instance.condition_met())
-
 
     def test_trigger(self):
         # Should not be able to trigger this sensor type
         self.assertFalse(self.instance.trigger())
 
-    # Original bug: Some sensor types would crash or behave unexpectedly if default_rule was "enabled" or "disabled" in various
-    # situations. These classes now raise exception in init method to prevent this.
+    # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
+    # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            test = Thermostat("sensor1", "sensor1", "si7021", True, "enabled", "enabled", "cool", 1, [])
+            Thermostat("sensor1", "sensor1", "si7021", True, "enabled", "enabled", "cool", 1, [])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -121,7 +134,7 @@ class TestThermostat(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            test = Thermostat("sensor1", "sensor1", "si7021", True, "disabled", "disabled", "cool", 1, [])
+            Thermostat("sensor1", "sensor1", "si7021", True, "disabled", "disabled", "cool", 1, [])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
