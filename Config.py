@@ -21,53 +21,46 @@ reboot_timer = Timer(2)
 # Turn onboard LED on, indicates setup in progress
 led = Pin(2, Pin.OUT, value=1)
 
-# Used to dynamically import correct class for each device type
-device_classes = {
-    "dimmer": "Tplink",
-    "bulb": "Tplink",
-    "relay": "Relay",
-    "dumb-relay": "DumbRelay",
-    "desktop": "Desktop_target",
-    "pwm": "LedStrip",
-    "mosfet": "Mosfet",
-    "api-target": "ApiTarget",
-    "wled": "Wled"
-}
-
-# Used to dynamically import correct class for each sensor type
-sensor_classes = {
-    "pir": "MotionSensor",
-    "desktop": "Desktop_trigger",
-    "dummy": "Dummy",
-    "si7021": "Thermostat",
-    "switch": "Switch"
+# Used to dynamically import correct class for each device/sensor type
+hardware_classes = {
+    "devices": {
+        "dimmer": "Tplink",
+        "bulb": "Tplink",
+        "relay": "Relay",
+        "dumb-relay": "DumbRelay",
+        "desktop": "Desktop_target",
+        "pwm": "LedStrip",
+        "mosfet": "Mosfet",
+        "api-target": "ApiTarget",
+        "wled": "Wled"
+    },
+    "sensors": {
+        "pir": "MotionSensor",
+        "desktop": "Desktop_trigger",
+        "dummy": "Dummy",
+        "si7021": "Thermostat",
+        "switch": "Switch"
+    }
 }
 
 
 # Takes name (device1 etc) and config entry, returns class instance
-def instantiate_device(name, **kwargs):
-    if kwargs['device_type'] not in device_classes:
+def instantiate_hardware(name, **kwargs):
+    if name.startswith('device') and kwargs['device_type'] not in hardware_classes['devices']:
         raise ValueError(f'Unsupported device type "{kwargs["device_type"]}"')
-
-    # Remove schedule rules (unexpected arg)
-    del kwargs['schedule']
-
-    # Import correct module, instantiate class
-    module = __import__(device_classes[kwargs['device_type']])
-    cls = getattr(module, module.__name__)
-    return cls(name, **kwargs)
-
-
-# Takes name (sensor1 etc) and config entry, returns class instance
-def instantiate_sensor(name, **kwargs):
-    if kwargs['sensor_type'] not in sensor_classes:
+    elif name.startswith('sensor') and kwargs['sensor_type'] not in hardware_classes['sensors']:
         raise ValueError(f'Unsupported sensor type "{kwargs["sensor_type"]}"')
+    elif not name.startswith('device') and not name.startswith('sensor'):
+        raise ValueError(f'Invalid name "{name}", must start with "device" or "sensor"')
 
     # Remove schedule rules (unexpected arg)
     del kwargs['schedule']
 
     # Import correct module, instantiate class
-    module = __import__(sensor_classes[kwargs['sensor_type']])
+    if name.startswith('device'):
+        module = __import__(hardware_classes['devices'][kwargs['device_type']])
+    else:
+        module = __import__(hardware_classes['sensors'][kwargs['sensor_type']])
     cls = getattr(module, module.__name__)
     return cls(name, **kwargs)
 
@@ -111,7 +104,7 @@ class Config():
 
             try:
                 # Instantiate device with appropriate class
-                instance = instantiate_device(device, **conf[device])
+                instance = instantiate_hardware(device, **conf[device])
 
                 # Add instance to config.devices
                 self.devices.append(instance)
@@ -150,7 +143,7 @@ class Config():
                         targets.append(t)
 
                 # Instantiate sensor with appropriate class, overwrite targets
-                instance = instantiate_sensor(sensor, **conf[sensor])
+                instance = instantiate_hardware(sensor, **conf[sensor])
                 instance.targets = targets
 
                 # Add the sensor instance to each of it's target's "triggered_by" list
