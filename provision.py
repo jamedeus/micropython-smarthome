@@ -185,7 +185,6 @@ class Provisioner():
 
         # If user selected unit tests
         # TODO this fails with unhelpful errors when target dirs (/tests/) don't exist, should offer to upload setup
-        # This also doesn't upload libs (si7021)
         elif args[1] == "--test":
             # Get config file and target IP from cli arguments
             self.passwd = "password"
@@ -214,6 +213,14 @@ class Provisioner():
             for i in os.listdir('/home/jamedeus/git/micropython-smarthome/sensors'):
                 self.upload("sensors/" + i, i)
 
+            # Upload libs
+            self.upload("lib/logging.py", "lib/logging.py")
+            self.upload("lib/si7021.py", "lib/si7021.py")
+            self.upload("lib/ir_tx/__init__.py", "lib/ir_tx/__init__.py")
+            self.upload("lib/ir_tx/nec.py", "lib/ir_tx/nec.py")
+            self.upload("ir-remote/samsung-codes.json", "samsung-codes.json")
+            self.upload("ir-remote/whynter-codes.json", "whynter-codes.json")
+
             # Upload Config module
             self.upload("Config.py", "Config.py")
 
@@ -225,6 +232,9 @@ class Provisioner():
 
             # Upload API module
             self.upload("Api.py", "Api.py")
+
+            # Upload config file
+            self.upload("tests/unit_test_config.json", "config.json")
 
             # Upload boot.py (unit test version automatically runs all tests on boot)
             self.upload("tests/unit_test_boot.py", "boot.py")
