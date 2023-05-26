@@ -21,6 +21,33 @@ reboot_timer = Timer(2)
 # Turn onboard LED on, indicates setup in progress
 led = Pin(2, Pin.OUT, value=1)
 
+# Used to dynamically import correct class for each device type
+device_classes = {
+    "dimmer": "Tplink",
+    "bulb": "Tplink",
+    "relay": "Relay",
+    "dumb-relay": "DumbRelay",
+    "desktop": "Desktop_target",
+    "pwm": "LedStrip",
+    "mosfet": "Mosfet",
+    "api-target": "ApiTarget",
+    "wled": "Wled"
+}
+
+
+# Takes name (device1 etc) and config entry, returns class instance
+def instantiate_device(name, **kwargs):
+    if kwargs['device_type'] not in device_classes:
+        raise ValueError(f'Unsupported device type "{kwargs["device_type"]}"')
+
+    # Remove schedule rules (unexpected arg)
+    del kwargs['schedule']
+
+    # Import correct module, instantiate class
+    module = __import__(device_classes[kwargs['device_type']])
+    cls = getattr(module, module.__name__)
+    return cls(name, **kwargs)
+
 
 class Config():
     def __init__(self, conf):
@@ -52,7 +79,7 @@ class Config():
         # Create empty list, will contain instances for each device
         self.devices = []
 
-        # Iterate json
+        # Iterate json, instantiate devices
         for device in conf:
             if not device.startswith("device"): continue
 
@@ -60,45 +87,18 @@ class Config():
             self.schedule[device] = conf[device]["schedule"]
 
             try:
-                # Instantiate each device as appropriate class
-                if conf[device]["type"] == "dimmer" or conf[device]["type"] == "bulb":
-                    from Tplink import Tplink
-                    instance = Tplink( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
-
-                elif conf[device]["type"] == "relay":
-                    from Relay import Relay
-                    instance = Relay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
-
-                elif conf[device]["type"] == "dumb-relay":
-                    from DumbRelay import DumbRelay
-                    instance = DumbRelay( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
-
-                elif conf[device]["type"] == "desktop":
-                    from Desktop_target import Desktop_target
-                    instance = Desktop_target( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
-
-                elif conf[device]["type"] == "pwm":
-                    from LedStrip import LedStrip
-                    instance = LedStrip( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]), conf[device]["min"], conf[device]["max"] )
-
-                elif conf[device]["type"] == "mosfet":
-                    from Mosfet import Mosfet
-                    instance = Mosfet( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], int(conf[device]["pin"]) )
-
-                elif conf[device]["type"] == "api-target":
-                    from ApiTarget import ApiTarget
-                    instance = ApiTarget( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
-
-                elif conf[device]["type"] == "wled":
-                    from Wled import Wled
-                    instance = Wled( device, conf[device]["nickname"], conf[device]["type"], True, None, conf[device]["default_rule"], conf[device]["ip"] )
+                # Instantiate device with appropriate class
+                instance = instantiate_device(device, **conf[device])
 
                 # Add instance to config.devices
                 self.devices.append(instance)
             except AttributeError:
-                log.critical(f"Failed to instantiate {device}: type = {conf[device]['type']}, default_rule = {conf[device]['default_rule']}")
-                print(f"Failed to instantiate {device}: type = {conf[device]['type']}, default_rule = {conf[device]['default_rule']}")
+                log.critical(f"Failed to instantiate {device}: type = {conf[device]['device_type']}, default_rule = {conf[device]['default_rule']}")
+                print(f"Failed to instantiate {device}: type = {conf[device]['device_type']}, default_rule = {conf[device]['default_rule']}")
                 pass
+            except ValueError:
+                log.critical(f"Failed to instantiate {device}, unsupported device type {conf[device]['device_type']}")
+                print(f"Failed to instantiate {device}, unsupported device type {conf[device]['device_type']}")
 
         # Can only have 1 instance (driver limitation)
         # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices

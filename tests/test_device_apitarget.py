@@ -21,7 +21,7 @@ class TestApiTarget(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = ApiTarget("device1", "device1", "api-target", True, None, default_rule, "192.168.1.223")
+        self.instance = ApiTarget("device1", "device1", "api-target", default_rule, "192.168.1.223")
         self.assertIsInstance(self.instance, ApiTarget)
         self.assertTrue(self.instance.enabled)
 
@@ -104,7 +104,7 @@ class TestApiTarget(unittest.TestCase):
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            ApiTarget("device1", "device1", "api-target", True, None, "disabled", "192.168.1.223")
+            ApiTarget("device1", "device1", "api-target", "disabled", "192.168.1.223")
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -112,7 +112,7 @@ class TestApiTarget(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            ApiTarget("device1", "device1", "api-target", True, None, "enabled", "192.168.1.223")
+            ApiTarget("device1", "device1", "api-target", "enabled", "192.168.1.223")
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:

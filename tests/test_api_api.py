@@ -66,14 +66,14 @@ config_file = {
     },
     "device1": {
         "pin": 4,
-        "type": "pwm",
+        "device_type": "pwm",
         "schedule": {
             "09:00": 734,
             "11:00": 345,
             "20:00": 915
         },
-        "min": 0,
-        "max": 1023,
+        "min_bright": 0,
+        "max_bright": 1023,
         "default_rule": 512,
         "nickname": "device1"
     },

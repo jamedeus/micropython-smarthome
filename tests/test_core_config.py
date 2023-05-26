@@ -56,14 +56,14 @@ class TestConfig(unittest.TestCase):
                 'default_rule': 5
             },
             'device1': {
-                'max': 1023,
-                'min': '0',
+                'max_bright': 1023,
+                'min_bright': '0',
                 'nickname': 'device1',
                 'schedule': {
                     'sunrise': 0,
                     'sunset': 32
                 },
-                'type': 'pwm',
+                'device_type': 'pwm',
                 'pin': 4,
                 'default_rule': 32
             }
@@ -179,12 +179,12 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'type': 'pwm',
+                    'device_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': 50,
-                    'min': 0,
-                    'max': 1023,
+                    'min_bright': 0,
+                    'max_bright': 1023,
                     'schedule': {
                         '10:00': 50
                     }
@@ -211,12 +211,12 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'type': 'pwm',
+                    'device_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': 50,
-                    'min': 0,
-                    'max': 1023,
+                    'min_bright': 0,
+                    'max_bright': 1023,
                     'schedule': {
                         '10:00': '9999'
                     }
@@ -243,12 +243,12 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'type': 'pwm',
+                    'device_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': '9999',
-                    'min': 0,
-                    'max': 1023,
+                    'min_bright': 0,
+                    'max_bright': 1023,
                     'schedule': {
                         '10:00': '9999'
                     }
@@ -276,12 +276,12 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'type': 'pwm',
+                    'device_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': '50',
-                    'min': 0,
-                    'max': 1023,
+                    'min_bright': 0,
+                    'max_bright': 1023,
                     'schedule': {}
                 }
             }
@@ -306,12 +306,12 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'type': 'pwm',
+                    'device_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': '9999',
-                    'min': 0,
-                    'max': 1023,
+                    'min_bright': 0,
+                    'max_bright': 1023,
                     'schedule': {}
                 }
             }
@@ -352,11 +352,11 @@ class TestConfig(unittest.TestCase):
                     ]
                 },
                 "device1": {
-                    "type": "pwm",
+                    "device_type": "pwm",
                     "nickname": "Countertop LEDs",
                     "pin": 19,
-                    "min": 0,
-                    "max": 1023,
+                    "min_bright": 0,
+                    "max_bright": 1023,
                     "default_rule": "enabled",
                     "schedule": {
                         "sunrise": "0",
@@ -401,11 +401,11 @@ class TestConfig(unittest.TestCase):
                     ]
                 },
                 "device1": {
-                    "type": "pwm",
+                    "device_type": "pwm",
                     "nickname": "Countertop LEDs",
                     "pin": 19,
-                    "min": 0,
-                    "max": 1023,
+                    "min_bright": 0,
+                    "max_bright": 1023,
                     "default_rule": 512,
                     "schedule": {
                         "sunrise": "0",

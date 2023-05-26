@@ -19,7 +19,7 @@ class TestWled(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = Wled("device1", "device1", "wled", True, None, 50, "192.168.1.211")
+        self.instance = Wled("device1", "device1", "wled", 50, "192.168.1.211")
         self.assertIsInstance(self.instance, Wled)
         print(f'Instance type: {type(self.instance)}')
         self.assertTrue(self.instance.enabled)
@@ -81,7 +81,7 @@ class TestWled(unittest.TestCase):
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            Wled("device1", "device1", "dimmer", True, None, "disabled", "192.168.1.211")
+            Wled("device1", "device1", "dimmer", "disabled", "192.168.1.211")
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -89,7 +89,7 @@ class TestWled(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            Wled("device1", "device1", "dimmer", True, None, "enabled", "192.168.1.211")
+            Wled("device1", "device1", "dimmer", "enabled", "192.168.1.211")
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:

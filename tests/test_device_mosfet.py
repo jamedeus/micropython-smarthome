@@ -20,7 +20,7 @@ class TestMosfet(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = Mosfet("device1", "device1", "mosfet", True, "enabled", "enabled", 4)
+        self.instance = Mosfet("device1", "device1", "mosfet", "enabled", 4)
         self.assertIsInstance(self.instance, Mosfet)
         self.assertFalse(self.instance.mosfet.value())
         self.assertTrue(self.instance.enabled)

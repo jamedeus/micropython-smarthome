@@ -18,7 +18,7 @@ class TestDesktopTarget(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = Desktop_target("device1", "device1", "desktop", True, "enabled", "enabled", "192.168.1.216")
+        self.instance = Desktop_target("device1", "device1", "desktop", "enabled", "192.168.1.216")
         self.assertIsInstance(self.instance, Desktop_target)
         self.assertTrue(self.instance.enabled)
 

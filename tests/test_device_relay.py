@@ -18,7 +18,7 @@ class TestRelay(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = Relay("device1", "device1", "relay", True, "enabled", "enabled", "192.168.1.202")
+        self.instance = Relay("device1", "device1", "relay", "enabled", "192.168.1.202")
         self.assertIsInstance(self.instance, Relay)
         self.assertTrue(self.instance.enabled)
 
