@@ -21,7 +21,7 @@ def convert_config_to_api_target_options(config):
             # Instance string format: id-nickname (type)
             # Frontend splits, uses "nickname (type)" for dropdown option innerHTML, uses "id" for value
             # Backend only receives values (id) for config generation
-            instance_string = f'{i}-{config[i]["nickname"]} ({config[i]["type"]})'
+            instance_string = f'{i}-{config[i]["nickname"]} ({config[i]["_type"]})'
 
             # All devices have same options
             if i.startswith("device"):
@@ -37,7 +37,7 @@ def convert_config_to_api_target_options(config):
                 ]
 
             # All sensors have same options except thermostat and switch (trigger unsupported)
-            elif i.startswith("sensor") and config[i]["type"] not in ["si7021", "switch"]:
+            elif i.startswith("sensor") and config[i]["_type"] not in ["si7021", "switch"]:
                 result[instance_string] = [
                     'enable',
                     'disable',

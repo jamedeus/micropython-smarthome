@@ -123,7 +123,7 @@ def get_api_target_instance_options(node, status):
 
     # Find all api-target instances, find same instance in options object, add options to output
     for i in config:
-        if is_device(i) and config[i]['type'] == 'api-target':
+        if is_device(i) and config[i]['_type'] == 'api-target':
             # Find section in options object with matching IP, add to context
             for node in options['addresses']:
                 if options['addresses'][node] == config[i]['ip']:

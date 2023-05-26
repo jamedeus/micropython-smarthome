@@ -14,7 +14,7 @@
     },
     "device1": {
         "nickname": "Overhead",
-        "type": "dimmer",
+        "_type": "dimmer",
         "ip": "192.168.1.105",
         "default_rule": 100,
         "schedule": {
@@ -24,7 +24,7 @@
     },
     "device2": {
         "nickname": "Lamp",
-        "type": "bulb",
+        "_type": "bulb",
         "ip": "192.168.1.106",
         "default_rule": 75,
         "schedule": {
@@ -34,7 +34,7 @@
     },
     "device3": {
         "nickname": "Porch Light",
-        "type": "relay",
+        "_type": "relay",
         "ip": "192.168.1.107",
         "default_rule": "enabled",
         "schedule": {
@@ -44,7 +44,7 @@
     },
     "device4": {
         "nickname": "Fan",
-        "type": "dumb-relay",
+        "_type": "dumb-relay",
         "pin": "18",
         "default_rule": "disabled",
         "schedule": {
@@ -53,7 +53,7 @@
     },
     "device5": {
         "nickname": "Screen",
-        "type": "desktop",
+        "_type": "desktop",
         "ip": "192.168.1.150",
         "default_rule": "enabled",
         "schedule": {
@@ -63,10 +63,10 @@
     },
     "device6": {
         "nickname": "Cabinet Lights",
-        "type": "pwm",
+        "_type": "pwm",
         "pin": "26",
-        "min": "0",
-        "max": "1023",
+        "min_bright": "0",
+        "max_bright": "1023",
         "default_rule": 721,
         "schedule": {
 
@@ -74,7 +74,7 @@
     },
     "device7": {
         "nickname": "Humidifier",
-        "type": "mosfet",
+        "_type": "mosfet",
         "pin": "19",
         "default_rule": "disabled",
         "schedule": {
@@ -83,7 +83,7 @@
     },
     "device8": {
         "nickname": "TV Bias Lights",
-        "type": "wled",
+        "_type": "wled",
         "ip": "192.168.1.110",
         "default_rule": 128,
         "schedule": {
@@ -92,7 +92,7 @@
     },
     "device10": {
         "nickname": "Remote Control",
-        "type": "api-target",
+        "_type": "api-target",
         "ip": "127.0.0.1",
         "default_rule": {
             "on": [
@@ -122,7 +122,7 @@
         }
     },
     "sensor1": {
-        "type": "pir",
+        "_type": "pir",
         "nickname": "Motion",
         "pin": "4",
         "default_rule": 5,
@@ -138,7 +138,7 @@
         }
     },
     "sensor2": {
-        "type": "switch",
+        "_type": "switch",
         "nickname": "Switch",
         "pin": "5",
         "default_rule": "enabled",
@@ -151,7 +151,7 @@
         }
     },
     "sensor3": {
-        "type": "dummy",
+        "_type": "dummy",
         "nickname": "Override",
         "default_rule": "on",
         "targets": [
@@ -163,7 +163,7 @@
         }
     },
     "sensor4": {
-        "type": "desktop",
+        "_type": "desktop",
         "nickname": "Activity",
         "ip": "192.168.1.150",
         "default_rule": "enabled",
@@ -179,7 +179,7 @@
         }
     },
     "sensor5": {
-        "type": "si7021",
+        "_type": "si7021",
         "nickname": "Temperature",
         "mode": "cool",
         "tolerance": "3",

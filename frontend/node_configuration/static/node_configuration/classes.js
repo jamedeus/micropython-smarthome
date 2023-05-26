@@ -25,7 +25,7 @@ class Device {
 
     // Create property for each field in addDevice section
     getParams() {
-        this.type = document.getElementById(`${this.id.replace("device", "deviceType")}`).value;
+        this._type = document.getElementById(`${this.id.replace("device", "deviceType")}`).value;
 
         var params = document.getElementById(`add${this.id.replace("device", "DeviceOptions")}`).children;
 
@@ -37,12 +37,12 @@ class Device {
             } catch(err) {};
         };
 
-        if (this.type == "ir-blaster") {
+        if (this._type == "ir-blaster") {
             // Remove empty property (checkbox inputs don't have value)
             delete this.undefined;
             // Get checkbox inputs selections
             this.getIrTargets();
-        } else if (this.type == "dimmer" || this.type == "bulb" || this.type == "pwm" || this.type == "wled") {
+        } else if (this._type == "dimmer" || this._type == "bulb" || this._type == "pwm" || this._type == "wled") {
             this['default_rule'] = parseInt(document.getElementById(this.id + "-default_rule").value);
         };
     };
@@ -73,7 +73,7 @@ class Device {
 
     // Get array containing all selected virtual IR remotes (first page)
     getIrTargets() {
-        if (this.type != "ir-blaster") { return };
+        if (this._type != "ir-blaster") { return };
 
         var checks = document.getElementsByClassName('ir-target');
 
@@ -115,7 +115,7 @@ class Sensor {
 
     // Create property for each field in addDevice section
     getParams() {
-        this.type = document.getElementById(`${this.id.replace("sensor", "sensorType")}`).value;
+        this._type = document.getElementById(`${this.id.replace("sensor", "sensorType")}`).value;
 
         var params = document.getElementById(`add${this.id.replace("sensor", "SensorOptions")}`).children;
 
@@ -125,7 +125,7 @@ class Sensor {
             this[name] = input.children[1].value;
         };
 
-        if (this.type == "pir" || this.type == "si7021") {
+        if (this._type == "pir" || this._type == "si7021") {
             this['default_rule'] = parseFloat(document.getElementById(this.id + "-default_rule").value);
         };
     };

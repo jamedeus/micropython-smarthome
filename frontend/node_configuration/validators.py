@@ -6,11 +6,11 @@ from .helper_functions import is_device_or_sensor, is_sensor
 # Determines correct validator and passes to validate_all
 def validate_rules(instance):
     print(f"Validating {instance['nickname']} rules...")
-    instance_type = instance['type']
+    instance_type = instance['_type']
     if instance_type == "dimmer" or instance_type == "bulb":
         return validate_all(instance, tplink_validator)
     elif instance_type == "pwm":
-        return validate_all(instance, led_strip_validator, instance['min'], instance['max'])
+        return validate_all(instance, led_strip_validator, instance['min_bright'], instance['max_bright'])
     elif instance_type == "api-target":
         return validate_all(instance, api_target_validator)
     elif instance_type == "wled":
@@ -24,7 +24,7 @@ def validate_rules(instance):
     elif instance_type in ["relay", "dumb-relay", "desktop", "mosfet", "switch"]:
         return validate_all(instance)
     else:
-        return f"Invalid type {instance['type']}"
+        return f"Invalid type {instance['_type']}"
 
 
 # Receives full config entry + type-specific validator

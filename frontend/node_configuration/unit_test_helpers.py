@@ -14,7 +14,7 @@ class JSONClient(Client):
 
 
 # Binary contents of test config file, used as payload in simulated Webrepl connections
-binary_unit_test_config = b'{"metadata": {"id": "Unit Test Config", "location": "build pipeline", "floor": "0", "schedule_keywords": {}}, "wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "device1": {"nickname": "Overhead", "type": "dimmer", "ip": "192.168.1.105", "default_rule": 100, "schedule": {"08:00": "100", "22:00": "35"}}, "device2": {"nickname": "Lamp", "type": "bulb", "ip": "192.168.1.106", "default_rule": 75, "schedule": {"08:00": "100", "22:00": "35"}}, "device3": {"nickname": "Porch Light", "type": "relay", "ip": "192.168.1.107", "default_rule": "enabled", "schedule": {"06:00": "disabled", "18:00": "enabled"}}, "device4": {"nickname": "Fan", "type": "dumb-relay", "pin": "18", "default_rule": "disabled", "schedule": {}}, "device5": {"nickname": "Screen", "type": "desktop", "ip": "192.168.1.150", "default_rule": "enabled", "schedule": {"08:00": "enabled", "22:00": "disabled"}}, "device6": {"nickname": "Cabinet Lights", "type": "pwm", "pin": "26", "min": "0", "max": "1023", "default_rule": 721, "schedule": {}}, "device7": {"nickname": "Humidifier", "type": "mosfet", "pin": "19", "default_rule": "disabled", "schedule": {}}, "device8": {"nickname": "TV Bias Lights", "type": "wled", "ip": "192.168.1.110", "default_rule": 128, "schedule": {"08:00": "100"}}, "device10": {"nickname": "Remote Control", "type": "api-target", "ip": "127.0.0.1", "default_rule": {"on": ["ir_key", "tv", "power"], "off": ["ir_key", "tv", "power"]}, "schedule": {"22:00": {"on": ["ir_key", "tv", "power"], "off": ["ir_key", "tv", "power"]}}}, "sensor1": {"type": "pir", "nickname": "Motion", "pin": "4", "default_rule": 5, "targets": ["device1", "device2", "device5", "device6"], "schedule": {"08:00": "5", "22:00": "1"}}, "sensor2": {"type": "switch", "nickname": "Switch", "pin": "5", "default_rule": "enabled", "targets": ["device4", "device7"], "schedule": {}}, "sensor3": {"type": "dummy", "nickname": "Override", "default_rule": "on", "targets": ["device3"], "schedule": {"06:00": "on", "18:00": "off"}}, "sensor4": {"type": "desktop", "nickname": "Activity", "ip": "192.168.1.150", "default_rule": "enabled", "targets": ["device1", "device2", "device5", "device6"], "schedule": {"08:00": "enabled", "22:00": "disabled"}}, "sensor5": {"type": "si7021", "nickname": "Temperature", "mode": "cool", "tolerance": "3", "default_rule": 71, "targets": ["device4", "device7"], "schedule": {"08:00": "73", "22:00": "69"}}, "ir_blaster": {"nickname": "", "pin": "23", "target": ["tv"]}}'
+binary_unit_test_config = b'{"metadata": {"id": "Unit Test Config", "location": "build pipeline", "floor": "0", "schedule_keywords": {}}, "wifi": {"ssid": "jamnet", "password": "cjZY8PTa4ZQ6S83A"}, "device1": {"nickname": "Overhead", "_type": "dimmer", "ip": "192.168.1.105", "default_rule": 100, "schedule": {"08:00": "100", "22:00": "35"}}, "device2": {"nickname": "Lamp", "_type": "bulb", "ip": "192.168.1.106", "default_rule": 75, "schedule": {"08:00": "100", "22:00": "35"}}, "device3": {"nickname": "Porch Light", "_type": "relay", "ip": "192.168.1.107", "default_rule": "enabled", "schedule": {"06:00": "disabled", "18:00": "enabled"}}, "device4": {"nickname": "Fan", "_type": "dumb-relay", "pin": "18", "default_rule": "disabled", "schedule": {}}, "device5": {"nickname": "Screen", "_type": "desktop", "ip": "192.168.1.150", "default_rule": "enabled", "schedule": {"08:00": "enabled", "22:00": "disabled"}}, "device6": {"nickname": "Cabinet Lights", "_type": "pwm", "pin": "26", "min_bright": "0", "max_bright": "1023", "default_rule": 721, "schedule": {}}, "device7": {"nickname": "Humidifier", "_type": "mosfet", "pin": "19", "default_rule": "disabled", "schedule": {}}, "device8": {"nickname": "TV Bias Lights", "_type": "wled", "ip": "192.168.1.110", "default_rule": 128, "schedule": {"08:00": "100"}}, "device10": {"nickname": "Remote Control", "_type": "api-target", "ip": "127.0.0.1", "default_rule": {"on": ["ir_key", "tv", "power"], "off": ["ir_key", "tv", "power"]}, "schedule": {"22:00": {"on": ["ir_key", "tv", "power"], "off": ["ir_key", "tv", "power"]}}}, "sensor1": {"_type": "pir", "nickname": "Motion", "pin": "4", "default_rule": 5, "targets": ["device1", "device2", "device5", "device6"], "schedule": {"08:00": "5", "22:00": "1"}}, "sensor2": {"_type": "switch", "nickname": "Switch", "pin": "5", "default_rule": "enabled", "targets": ["device4", "device7"], "schedule": {}}, "sensor3": {"_type": "dummy", "nickname": "Override", "default_rule": "on", "targets": ["device3"], "schedule": {"06:00": "on", "18:00": "off"}}, "sensor4": {"_type": "desktop", "nickname": "Activity", "ip": "192.168.1.150", "default_rule": "enabled", "targets": ["device1", "device2", "device5", "device6"], "schedule": {"08:00": "enabled", "22:00": "disabled"}}, "sensor5": {"_type": "si7021", "nickname": "Temperature", "mode": "cool", "tolerance": "3", "default_rule": 71, "targets": ["device4", "device7"], "schedule": {"08:00": "73", "22:00": "69"}}, "ir_blaster": {"nickname": "", "pin": "23", "target": ["tv"]}}'
 
 # Used to track current position in binary_unit_test_config (read function called multiple times)
 # A mutable object must be used for scope reasons, can't use int (would reset each call)
@@ -133,7 +133,7 @@ request_payload = {
             'id': 'sensor1',
             'new': False,
             'modified': False,
-            'type': 'pir',
+            '_type': 'pir',
             'nickname': 'Motion',
             'pin': '4',
             'default_rule': 5,
@@ -152,7 +152,7 @@ request_payload = {
             'id': 'sensor2',
             'new': False,
             'modified': False,
-            'type': 'switch',
+            '_type': 'switch',
             'nickname': 'Switch',
             'pin': '5',
             'default_rule': 'enabled',
@@ -166,7 +166,7 @@ request_payload = {
             'id': 'sensor3',
             'new': False,
             'modified': False,
-            'type': 'dummy',
+            '_type': 'dummy',
             'nickname': 'Override',
             'default_rule': 'on',
             'targets': [
@@ -181,7 +181,7 @@ request_payload = {
             'id': 'sensor4',
             'new': False,
             'modified': False,
-            'type': 'desktop',
+            '_type': 'desktop',
             'nickname': 'Activity',
             'ip': '192.168.1.150',
             'default_rule': 'enabled',
@@ -200,7 +200,7 @@ request_payload = {
             'id': 'sensor5',
             'new': False,
             'modified': False,
-            'type': 'si7021',
+            '_type': 'si7021',
             'nickname': 'Temperature',
             'mode': 'cool',
             'tolerance': '3',
@@ -221,7 +221,7 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': 'Overhead',
-            'type': 'dimmer',
+            '_type': 'dimmer',
             'ip': '192.168.1.105',
             'default_rule': 100,
             'schedule': {
@@ -234,7 +234,7 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': 'Lamp',
-            'type': 'bulb',
+            '_type': 'bulb',
             'ip': '192.168.1.106',
             'default_rule': 75,
             'schedule': {
@@ -247,7 +247,7 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': 'Porch Light',
-            'type': 'relay',
+            '_type': 'relay',
             'ip': '192.168.1.107',
             'default_rule': 'enabled',
             'schedule': {
@@ -260,7 +260,7 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': 'Fan',
-            'type': 'dumb-relay',
+            '_type': 'dumb-relay',
             'pin': '18',
             'default_rule': 'disabled',
             'schedule': {}
@@ -270,7 +270,7 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': 'Screen',
-            'type': 'desktop',
+            '_type': 'desktop',
             'ip': '192.168.1.150',
             'default_rule': 'enabled',
             'schedule': {
@@ -283,10 +283,10 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': 'Cabinet Lights',
-            'type': 'pwm',
+            '_type': 'pwm',
             'pin': '26',
-            'min': '0',
-            'max': '1023',
+            'min_bright': '0',
+            'max_bright': '1023',
             'default_rule': 721,
             'schedule': {}
         },
@@ -295,7 +295,7 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': 'Humidifier',
-            'type': 'mosfet',
+            '_type': 'mosfet',
             'pin': '19',
             'default_rule': 'disabled',
             'schedule': {
@@ -307,7 +307,7 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': 'TV Bias Lights',
-            'type': 'wled',
+            '_type': 'wled',
             'ip': '192.168.1.110',
             'default_rule': 128,
             'schedule': {
@@ -319,7 +319,7 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': '',
-            'type': 'ir-blaster',
+            '_type': 'ir-blaster',
             'pin': '23',
             'target': [
                 'tv'
@@ -331,7 +331,7 @@ request_payload = {
             'new': False,
             'modified': False,
             'nickname': 'Remote Control',
-            'type': 'api-target',
+            '_type': 'api-target',
             'ip': '127.0.0.1',
             'default_rule': '{"on":["ir_key","tv","power"],"off":["ir_key","tv","power"]}',
             'schedule': {
@@ -356,11 +356,11 @@ test_config_1 = {
         "password": "cjZY8PTa4ZQ6S83A"
     },
     "device1": {
-        "type": "pwm",
+        "_type": "pwm",
         "nickname": "Cabinet Lights",
         "pin": "4",
-        "min": "0",
-        "max": "1023",
+        "min_bright": "0",
+        "max_bright": "1023",
         "default_rule": 1023,
         "schedule": {
             "22:00": "1023",
@@ -370,7 +370,7 @@ test_config_1 = {
         }
     },
     "device2": {
-        "type": "relay",
+        "_type": "relay",
         "nickname": "Overhead Lights",
         "ip": "192.168.1.217",
         "default_rule": "enabled",
@@ -380,7 +380,7 @@ test_config_1 = {
         }
     },
     "sensor1": {
-        "type": "pir",
+        "_type": "pir",
         "nickname": "Motion Sensor",
         "pin": "15",
         "default_rule": "2",
@@ -409,7 +409,7 @@ test_config_2 = {
     },
     "device1": {
         "nickname": "Air Conditioner",
-        "type": "api-target",
+        "_type": "api-target",
         "ip": "127.0.0.1",
         "default_rule": {
             "on": [
@@ -451,7 +451,7 @@ test_config_2 = {
         }
     },
     "sensor1": {
-        "type": "si7021",
+        "_type": "si7021",
         "nickname": "Thermostat",
         "mode": "cool",
         "tolerance": "0.5",
@@ -483,11 +483,11 @@ test_config_3 = {
         "password": "cjZY8PTa4ZQ6S83A"
     },
     "device1": {
-        "type": "pwm",
+        "_type": "pwm",
         "nickname": "Bathroom LEDs",
         "pin": "4",
-        "min": "0",
-        "max": "1023",
+        "min_bright": "0",
+        "max_bright": "1023",
         "default_rule": 0,
         "schedule": {
             "22:00": "1023",
@@ -497,7 +497,7 @@ test_config_3 = {
         }
     },
     "device2": {
-        "type": "relay",
+        "_type": "relay",
         "nickname": "Bathroom Lights",
         "ip": "192.168.1.239",
         "default_rule": "enabled",
@@ -507,7 +507,7 @@ test_config_3 = {
         }
     },
     "device3": {
-        "type": "relay",
+        "_type": "relay",
         "nickname": "Entry Light",
         "ip": "192.168.1.202",
         "default_rule": "enabled",
@@ -517,7 +517,7 @@ test_config_3 = {
         }
     },
     "sensor1": {
-        "type": "pir",
+        "_type": "pir",
         "nickname": "Motion Sensor (Bath)",
         "pin": "15",
         "default_rule": "2",
@@ -531,7 +531,7 @@ test_config_3 = {
         }
     },
     "sensor2": {
-        "type": "pir",
+        "_type": "pir",
         "nickname": "Motion Sensor (Entry)",
         "pin": "16",
         "default_rule": "1",
@@ -583,8 +583,8 @@ test_config_1_edit_context = {
                 'type': 'pwm',
                 'nickname': 'Cabinet Lights',
                 'pin': '4',
-                'min': '0',
-                'max': '1023',
+                'min_bright': '0',
+                'max_bright': '1023',
                 'default_rule': 1023,
                 'schedule': {
                     '22:00': '1023',
@@ -942,8 +942,8 @@ test_config_3_edit_context = {
                 'type': 'pwm',
                 'nickname': 'Bathroom LEDs',
                 'pin': '4',
-                'min': '0',
-                'max': '1023',
+                'min_bright': '0',
+                'max_bright': '1023',
                 'default_rule': 0,
                 'schedule': {
                     '22:00': '1023',

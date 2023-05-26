@@ -572,7 +572,7 @@ class EditConfigTests(TestCase):
         # Confirm all devices and sensors present
         self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor (Bath)"')
         self.assertContains(response, '<input type="text" class="form-control sensor2 nickname" id="sensor2-nickname" placeholder="" value="Motion Sensor (Entry)"')
-        self.assertContains(response, '<input type="text" class="form-control device1 pwm-limits" id="device1-max" placeholder="1023" value="1023" required>')
+        self.assertContains(response, '<input type="text" class="form-control device1 pwm-limits" id="device1-max_bright" placeholder="1023" value="1023" required>')
         self.assertContains(response, '<input type="text" class="form-control device2 ip-input" id="device2-ip" placeholder="" value="192.168.1.239"')
         self.assertContains(response, '<input type="text" class="form-control device3 nickname" id="device3-nickname" placeholder="" value="Entry Light" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>')
 
@@ -2105,14 +2105,14 @@ class ValidateConfigTests(TestCase):
         self.assertEqual(result, 'Invalid pin (non-integer)')
 
     def test_invalid_device_type(self):
-        self.valid_config['device1']['type'] = 'nuclear'
+        self.valid_config['device1']['_type'] = 'nuclear'
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, f'Invalid device type {self.valid_config["device1"]["type"]} used')
+        self.assertEqual(result, f'Invalid device type {self.valid_config["device1"]["_type"]} used')
 
     def test_invalid_sensor_type(self):
-        self.valid_config['sensor1']['type'] = 'ozone-sensor'
+        self.valid_config['sensor1']['_type'] = 'ozone-sensor'
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, f'Invalid sensor type {self.valid_config["sensor1"]["type"]} used')
+        self.assertEqual(result, f'Invalid sensor type {self.valid_config["sensor1"]["_type"]} used')
 
     def test_invalid_ip(self):
         self.valid_config['device1']['ip'] = '192.168.1.500'
@@ -2130,40 +2130,40 @@ class ValidateConfigTests(TestCase):
         self.assertEqual(result, 'Thermostat tolerance must be int or float')
 
     def test_pwm_min_greater_than_max(self):
-        self.valid_config['device6']['min'] = 1023
-        self.valid_config['device6']['max'] = 500
+        self.valid_config['device6']['min_bright'] = 1023
+        self.valid_config['device6']['max_bright'] = 500
         self.valid_config['device6']['default_rule'] = 700
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'PWM min cannot be greater than max')
 
     def test_pwm_limits_negative(self):
-        self.valid_config['device6']['min'] = -50
-        self.valid_config['device6']['max'] = -5
+        self.valid_config['device6']['min_bright'] = -50
+        self.valid_config['device6']['max_bright'] = -5
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'PWM limits cannot be less than 0')
 
     def test_pwm_limits_over_max(self):
-        self.valid_config['device6']['min'] = 1023
-        self.valid_config['device6']['max'] = 4096
+        self.valid_config['device6']['min_bright'] = 1023
+        self.valid_config['device6']['max_bright'] = 4096
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'PWM limits cannot be greater than 1023')
 
     def test_pwm_invalid_default_rule(self):
-        self.valid_config['device6']['min'] = 500
-        self.valid_config['device6']['max'] = 1000
+        self.valid_config['device6']['min_bright'] = 500
+        self.valid_config['device6']['max_bright'] = 1000
         self.valid_config['device6']['default_rule'] = 1100
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Cabinet Lights: Invalid default rule 1100')
 
     def test_pwm_invalid_schedule_rule(self):
-        self.valid_config['device6']['min'] = 500
-        self.valid_config['device6']['max'] = 1000
+        self.valid_config['device6']['min_bright'] = 500
+        self.valid_config['device6']['max_bright'] = 1000
         self.valid_config['device6']['schedule']['01:00'] = 1023
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Cabinet Lights: Invalid schedule rule 1023')
 
     def test_pwm_noninteger_limit(self):
-        self.valid_config['device6']['min'] = 'off'
+        self.valid_config['device6']['min_bright'] = 'off'
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Invalid PWM limits, both must be int between 0 and 1023')
 
@@ -2280,7 +2280,7 @@ class ValidatorErrorTests(TestCase):
     def test_invalid_type(self):
         # Verify error when type is unsupported
         invalid = self.config['device1']
-        invalid['type'] = 'foobar'
+        invalid['_type'] = 'foobar'
         self.assertEqual(validate_rules(invalid), 'Invalid type foobar')
 
     def test_invalid_rule_no_special_validator(self):

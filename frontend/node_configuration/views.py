@@ -66,8 +66,8 @@ def get_modules(config):
     libs = ['lib/logging.py']
 
     # Get lists of device and sensor types
-    device_types = [config[device]['type'] for device in config.keys() if is_device(device)]
-    sensor_types = [config[sensor]['type'] for sensor in config.keys() if is_sensor(sensor)]
+    device_types = [config[device]['_type'] for device in config.keys() if is_device(device)]
+    sensor_types = [config[sensor]['_type'] for sensor in config.keys() if is_sensor(sensor)]
 
     # Get dependencies for all device and sensor types
     for dtype in device_types:
@@ -370,21 +370,37 @@ def edit_config(request, name):
 
     for i in config:
         if is_sensor(i):
-            sensors[i] = config[i]
-            delete.append(i)
+            # Add to instances
             instances[i] = {}
-            instances[i]["type"] = config[i]["type"]
-            instances[i]["nickname"] = config[i]["nickname"]
-            instances[i]["schedule"] = config[i]["schedule"]
-        elif is_device(i):
-            devices[i] = config[i]
-            delete.append(i)
-            instances[i] = {}
-            instances[i]["type"] = config[i]["type"]
+            instances[i]["type"] = config[i]["_type"]
             instances[i]["nickname"] = config[i]["nickname"]
             instances[i]["schedule"] = config[i]["schedule"]
 
-            if config[i]["type"] == "api-target":
+            # Add to sensors, change _type to type (django template limitation)
+            sensors[i] = config[i]
+            sensors[i]["type"] = config[i]["_type"]
+            del sensors[i]["_type"]
+
+            # Add to delete list
+            delete.append(i)
+
+        elif is_device(i):
+            # Add to instances
+            instances[i] = {}
+            instances[i]["type"] = config[i]["_type"]
+            instances[i]["nickname"] = config[i]["nickname"]
+            instances[i]["schedule"] = config[i]["schedule"]
+
+            # Add to delete list
+            delete.append(i)
+
+            # Add to devices, change _type to type (django template limitation)
+            devices[i] = config[i]
+            devices[i]["type"] = config[i]["_type"]
+            del devices[i]["_type"]
+
+            # Correct ApiTarget rule syntax
+            if devices[i]["type"] == "api-target":
                 devices[i]["default_rule"] = json.dumps(devices[i]["default_rule"])
 
                 for rule in instances[i]["schedule"]:
@@ -446,8 +462,8 @@ def validate_instance_types(config):
     sensors = [key for key in config.keys() if is_sensor(key)]
 
     # Get device and sensor types
-    device_types = [config[device]['type'] for device in devices]
-    sensor_types = [config[sensor]['type'] for sensor in sensors]
+    device_types = [config[device]['_type'] for device in devices]
+    sensor_types = [config[sensor]['_type'] for sensor in sensors]
 
     # Check for invalid device/sensor types
     for dtype in device_types:
@@ -593,11 +609,11 @@ def generate_config_file(request, edit_existing=False):
     irblaster = False
 
     for i in config:
-        if is_device(i) and config[i]["type"] == "ir-blaster":
+        if is_device(i) and config[i]["_type"] == "ir-blaster":
             irblaster = i
 
         # Convert ApiTarget rules to correct format
-        elif is_device(i) and config[i]["type"] == "api-target":
+        elif is_device(i) and config[i]["_type"] == "api-target":
             config[i]["default_rule"] = json.loads(config[i]["default_rule"])
 
             for rule in config[i]["schedule"]:
@@ -607,7 +623,7 @@ def generate_config_file(request, edit_existing=False):
     if irblaster:
         config["ir_blaster"] = config[irblaster]
         del config[irblaster]
-        del config["ir_blaster"]["type"]
+        del config["ir_blaster"]["_type"]
         del config["ir_blaster"]["schedule"]
 
     print("Output:")
