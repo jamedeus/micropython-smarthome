@@ -13,7 +13,7 @@ class IrBlaster():
         led = Pin(pin, Pin.OUT, value=0)
         self.ir = Player(led)
         self.target = target
-        self.device_type = "ir_blaster"
+        self._type = "ir_blaster"
 
         self.codes = {}
 

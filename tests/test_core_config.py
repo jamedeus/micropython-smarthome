@@ -52,7 +52,7 @@ class TestConfig(unittest.TestCase):
                 'targets': [
                     'device1'
                 ],
-                'sensor_type': 'pir',
+                '_type': 'pir',
                 'default_rule': 5
             },
             'device1': {
@@ -63,7 +63,7 @@ class TestConfig(unittest.TestCase):
                     'sunrise': 0,
                     'sunset': 32
                 },
-                'device_type': 'pwm',
+                '_type': 'pwm',
                 'pin': 4,
                 'default_rule': 32
             }
@@ -97,7 +97,7 @@ class TestConfig(unittest.TestCase):
     def test_device_instantiation(self):
         # Confirm correct devices were instantiated
         self.assertEqual(len(self.config.devices), 1)
-        self.assertEqual(self.config.devices[0].device_type, 'pwm')
+        self.assertEqual(self.config.devices[0]._type, 'pwm')
         self.assertTrue(self.config.devices[0].enabled)
         self.assertEqual(self.config.devices[0].triggered_by[0], self.config.sensors[0])
         self.assertEqual(self.config.devices[0].default_rule, 32)
@@ -105,12 +105,12 @@ class TestConfig(unittest.TestCase):
     def test_for_unexpected_devices(self):
         # Should only be one device
         with self.assertRaises(IndexError):
-            self.config.devices[1].device_type
+            self.config.devices[1]._type
 
     def test_sensor_instantiation(self):
         # Confirm correct sensors were instantiated
         self.assertEqual(len(self.config.sensors), 1)
-        self.assertEqual(self.config.sensors[0].sensor_type, 'pir')
+        self.assertEqual(self.config.sensors[0]._type, 'pir')
         self.assertTrue(self.config.sensors[0].enabled)
         self.assertEqual(self.config.sensors[0].targets[0], self.config.devices[0])
         self.assertEqual(self.config.sensors[0].default_rule, 5)
@@ -118,7 +118,7 @@ class TestConfig(unittest.TestCase):
     def test_for_unexpected_sensors(self):
         # Should only be one sensor
         with self.assertRaises(IndexError):
-            self.config.sensors[1].sensor_type
+            self.config.sensors[1]._type
 
     def test_group_instantiation(self):
         # Confirm group created correctly
@@ -179,7 +179,7 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'device_type': 'pwm',
+                    '_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': 50,
@@ -211,7 +211,7 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'device_type': 'pwm',
+                    '_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': 50,
@@ -243,7 +243,7 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'device_type': 'pwm',
+                    '_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': '9999',
@@ -276,7 +276,7 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'device_type': 'pwm',
+                    '_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': '50',
@@ -306,7 +306,7 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    'device_type': 'pwm',
+                    '_type': 'pwm',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': '9999',
@@ -339,7 +339,7 @@ class TestConfig(unittest.TestCase):
                     "password": "cjZY8PTa4ZQ6S83A"
                 },
                 "sensor1": {
-                    "sensor_type": "pir",
+                    "_type": "pir",
                     "nickname": "Motion Sensor",
                     "pin": 15,
                     "default_rule": 5,
@@ -352,7 +352,7 @@ class TestConfig(unittest.TestCase):
                     ]
                 },
                 "device1": {
-                    "device_type": "pwm",
+                    "_type": "pwm",
                     "nickname": "Countertop LEDs",
                     "pin": 19,
                     "min_bright": 0,
@@ -388,7 +388,7 @@ class TestConfig(unittest.TestCase):
                     "password": "cjZY8PTa4ZQ6S83A"
                 },
                 "sensor1": {
-                    "sensor_type": "pir",
+                    "_type": "pir",
                     "nickname": "Motion Sensor",
                     "pin": 15,
                     "default_rule": "enabled",
@@ -401,7 +401,7 @@ class TestConfig(unittest.TestCase):
                     ]
                 },
                 "device1": {
-                    "device_type": "pwm",
+                    "_type": "pwm",
                     "nickname": "Countertop LEDs",
                     "pin": 19,
                     "min_bright": 0,

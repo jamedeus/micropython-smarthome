@@ -46,10 +46,10 @@ hardware_classes = {
 
 # Takes name (device1 etc) and config entry, returns class instance
 def instantiate_hardware(name, **kwargs):
-    if name.startswith('device') and kwargs['device_type'] not in hardware_classes['devices']:
-        raise ValueError(f'Unsupported device type "{kwargs["device_type"]}"')
-    elif name.startswith('sensor') and kwargs['sensor_type'] not in hardware_classes['sensors']:
-        raise ValueError(f'Unsupported sensor type "{kwargs["sensor_type"]}"')
+    if name.startswith('device') and kwargs['_type'] not in hardware_classes['devices']:
+        raise ValueError(f'Unsupported device type "{kwargs["_type"]}"')
+    elif name.startswith('sensor') and kwargs['_type'] not in hardware_classes['sensors']:
+        raise ValueError(f'Unsupported sensor type "{kwargs["_type"]}"')
     elif not name.startswith('device') and not name.startswith('sensor'):
         raise ValueError(f'Invalid name "{name}", must start with "device" or "sensor"')
 
@@ -58,9 +58,9 @@ def instantiate_hardware(name, **kwargs):
 
     # Import correct module, instantiate class
     if name.startswith('device'):
-        module = __import__(hardware_classes['devices'][kwargs['device_type']])
+        module = __import__(hardware_classes['devices'][kwargs['_type']])
     else:
-        module = __import__(hardware_classes['sensors'][kwargs['sensor_type']])
+        module = __import__(hardware_classes['sensors'][kwargs['_type']])
     cls = getattr(module, module.__name__)
     return cls(name, **kwargs)
 
@@ -109,12 +109,12 @@ class Config():
                 # Add instance to config.devices
                 self.devices.append(instance)
             except AttributeError:
-                log.critical(f"Failed to instantiate {device}: type = {conf[device]['device_type']}, default_rule = {conf[device]['default_rule']}")
-                print(f"Failed to instantiate {device}: type = {conf[device]['device_type']}, default_rule = {conf[device]['default_rule']}")
+                log.critical(f"Failed to instantiate {device}: type = {conf[device]['_type']}, default_rule = {conf[device]['default_rule']}")
+                print(f"Failed to instantiate {device}: type = {conf[device]['_type']}, default_rule = {conf[device]['default_rule']}")
                 pass
             except ValueError:
-                log.critical(f"Failed to instantiate {device}, unsupported device type {conf[device]['device_type']}")
-                print(f"Failed to instantiate {device}, unsupported device type {conf[device]['device_type']}")
+                log.critical(f"Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
+                print(f"Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
 
         # Can only have 1 instance (driver limitation)
         # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
@@ -153,12 +153,12 @@ class Config():
                 # Add instance to config.sensors
                 self.sensors.append(instance)
             except AttributeError:
-                log.critical(f"Failed to instantiate {sensor}: type = {conf[sensor]['sensor_type']}, default_rule = {conf[sensor]['default_rule']}")
-                print(f"Failed to instantiate {sensor}: type = {conf[sensor]['sensor_type']}, default_rule = {conf[sensor]['default_rule']}")
+                log.critical(f"Failed to instantiate {sensor}: type = {conf[sensor]['_type']}, default_rule = {conf[sensor]['default_rule']}")
+                print(f"Failed to instantiate {sensor}: type = {conf[sensor]['_type']}, default_rule = {conf[sensor]['default_rule']}")
                 pass
             except ValueError:
-                log.critical(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['sensor_type']}")
-                print(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['sensor_type']}")
+                log.critical(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
+                print(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
 
         log.debug("Finished creating sensor instances")
 
@@ -204,7 +204,7 @@ class Config():
         for i in self.devices:
             status_dict["devices"][i.name] = {}
             status_dict["devices"][i.name]["nickname"] = i.nickname
-            status_dict["devices"][i.name]["type"] = i.device_type
+            status_dict["devices"][i.name]["type"] = i._type
             status_dict["devices"][i.name]["enabled"] = i.enabled
             status_dict["devices"][i.name]["current_rule"] = i.current_rule
             status_dict["devices"][i.name]["scheduled_rule"] = i.scheduled_rule
@@ -212,7 +212,7 @@ class Config():
             status_dict["devices"][i.name]["schedule"] = self.schedule[i.name]
 
             # If device is PWM, add min/max
-            if i.device_type == "pwm":
+            if i._type == "pwm":
                 status_dict["devices"][i.name]["min"] = i.min_bright
                 status_dict["devices"][i.name]["max"] = i.max_bright
 
@@ -220,7 +220,7 @@ class Config():
         for i in self.sensors:
             status_dict["sensors"][i.name] = {}
             status_dict["sensors"][i.name]["nickname"] = i.nickname
-            status_dict["sensors"][i.name]["type"] = i.sensor_type
+            status_dict["sensors"][i.name]["type"] = i._type
             status_dict["sensors"][i.name]["enabled"] = i.enabled
             status_dict["sensors"][i.name]["current_rule"] = i.current_rule
             status_dict["sensors"][i.name]["condition_met"] = i.condition_met()
@@ -231,7 +231,7 @@ class Config():
             status_dict["sensors"][i.name]["schedule"] = self.schedule[i.name]
 
             # If node has temp sensor, add climate data
-            if i.sensor_type == "si7021":
+            if i._type == "si7021":
                 status_dict["sensors"][i.name]["temp"] = i.fahrenheit()
                 status_dict["sensors"][i.name]["humid"] = i.temp_sensor.relative_humidity
 

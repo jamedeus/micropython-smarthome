@@ -791,7 +791,7 @@ class TestEndpoints(TestCase):
             'name': 'device1',
             'triggered_by': ['sensor1'],
             'max_bright': 1023,
-            'device_type': 'pwm',
+            '_type': 'pwm',
             'group': 'group1',
             'fading': False
         }

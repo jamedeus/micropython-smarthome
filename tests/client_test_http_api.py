@@ -12,7 +12,7 @@ class TestEndpoint(unittest.TestCase):
     def test_1(self):
         # Re-upload config file (modified by save methods, breaks next test)
         node = Webrepl(target_ip)
-        node.put_file('tests/config.json', 'config.json')
+        node.put_file('tests/client_test_config.json', 'config.json')
         node.close_connection()
 
         response = requests.get(f'http://{target_ip}:8123/reboot')
@@ -132,7 +132,7 @@ class TestEndpoint(unittest.TestCase):
     def test_get_attributes(self):
         response = requests.get(f'http://{target_ip}:8123/get_attributes?sensor1')
         keys = response.json().keys()
-        self.assertIn('sensor_type', keys)
+        self.assertIn('_type', keys)
         self.assertIn('rule_queue', keys)
         self.assertIn('enabled', keys)
         self.assertIn('targets', keys)
@@ -144,7 +144,7 @@ class TestEndpoint(unittest.TestCase):
         self.assertIn('nickname', keys)
         self.assertIn('group', keys)
         self.assertEqual(len(keys), 11)
-        self.assertEqual(response.json()['sensor_type'], 'pir')
+        self.assertEqual(response.json()['_type'], 'pir')
         self.assertEqual(response.json()['default_rule'], 5)
         self.assertEqual(response.json()['name'], 'sensor1')
         self.assertEqual(response.json()['nickname'], 'sensor1')

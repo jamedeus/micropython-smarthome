@@ -26,7 +26,7 @@ config_file = {
         "targets": [
             "device1"
         ],
-        "sensor_type": "si7021",
+        "_type": "si7021",
         "schedule": {
             "10:00": 74,
             "22:00": 74
@@ -37,7 +37,7 @@ config_file = {
         "nickname": "sensor1"
     },
     "sensor2": {
-        "sensor_type": "pir",
+        "_type": "pir",
         "targets": [
             "device1"
         ],
@@ -47,7 +47,7 @@ config_file = {
         "nickname": "sensor2"
     },
     "sensor3": {
-        "sensor_type": "switch",
+        "_type": "switch",
         "nickname": "Test",
         "pin": "18",
         "default_rule": "enabled",
@@ -55,7 +55,7 @@ config_file = {
         "schedule": {}
     },
     "sensor4": {
-        "sensor_type": "desktop",
+        "_type": "desktop",
         "nickname": "test",
         "ip": "192.168.1.216",
         "default_rule": "enabled",
@@ -64,7 +64,7 @@ config_file = {
     },
     "device1": {
         "pin": 4,
-        "device_type": "pwm",
+        "_type": "pwm",
         "schedule": {
             "09:00": 734,
             "11:00": 345,
@@ -289,7 +289,7 @@ class TestApi(unittest.TestCase):
     def test_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor1'])
         self.assertIsInstance(response, dict)
-        self.assertEqual(response["sensor_type"], "si7021")
+        self.assertEqual(response["_type"], "si7021")
         self.assertEqual(response["targets"], ['device1'])
 
     def test_trigger_sensor_condition_met(self):
@@ -544,7 +544,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(
             response,
             {
-                'sensor_type': 'switch',
+                '_type': 'switch',
                 'nickname': 'Test',
                 'enabled': True,
                 'targets': [],
@@ -575,6 +575,6 @@ class TestApi(unittest.TestCase):
                 'targets': [],
                 'current_rule': 'enabled',
                 'desktop_target': None,
-                'sensor_type': 'desktop'
+                '_type': 'desktop'
             }
         )

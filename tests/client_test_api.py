@@ -130,7 +130,7 @@ class TestParseCommand(unittest.TestCase):
     def test_1(self):
         # Re-upload config file (modified by save methods, breaks next test)
         node = Webrepl(target_ip)
-        node.put_file('tests/config.json', 'config.json')
+        node.put_file('tests/client_test_config.json', 'config.json')
         node.close_connection()
 
         response = parse_command(target_ip, ['reboot'])
@@ -249,7 +249,7 @@ class TestParseCommand(unittest.TestCase):
     def test_get_attributes(self):
         response = parse_command(target_ip, ['get_attributes', 'sensor1'])
         keys = response.keys()
-        self.assertIn('sensor_type', keys)
+        self.assertIn('_type', keys)
         self.assertIn('rule_queue', keys)
         self.assertIn('enabled', keys)
         self.assertIn('targets', keys)
@@ -261,7 +261,7 @@ class TestParseCommand(unittest.TestCase):
         self.assertIn('nickname', keys)
         self.assertIn('group', keys)
         self.assertEqual(len(response.keys()), 11)
-        self.assertEqual(response['sensor_type'], 'pir')
+        self.assertEqual(response['_type'], 'pir')
         self.assertEqual(response['default_rule'], 5)
         self.assertEqual(response['name'], 'sensor1')
         self.assertEqual(response['nickname'], 'sensor1')

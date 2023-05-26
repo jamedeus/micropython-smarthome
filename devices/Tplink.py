@@ -10,15 +10,15 @@ log = logging.getLogger("Tplink")
 
 # Used to control TP-Link Kasa dimmers + smart bulbs
 class Tplink(Device):
-    def __init__(self, name, nickname, device_type, default_rule, ip):
-        super().__init__(name, nickname, device_type, True, None, default_rule)
+    def __init__(self, name, nickname, _type, default_rule, ip):
+        super().__init__(name, nickname, _type, True, None, default_rule)
 
         self.ip = ip
 
         # Stores parameters in dict when fade in progress
         self.fading = False
 
-        log.info(f"Instantiated Tplink device named {self.name}: ip = {self.ip}, type = {self.device_type}")
+        log.info(f"Instantiated Tplink device named {self.name}: ip = {self.ip}, type = {self._type}")
 
     def set_rule(self, rule):
         # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
@@ -179,7 +179,7 @@ class Tplink(Device):
             # This allows turning off (would be skipped if state already == False)
             return True
 
-        if self.device_type == "dimmer":
+        if self._type == "dimmer":
             cmd = '{"smartlife.iot.dimmer":{"set_brightness":{"brightness":' + str(self.current_rule) + '}}}'
         else:
             cmd = '{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"ignore_default":1,"on_off":' + str(state) + ',"transition_period":0,"brightness":' + str(self.current_rule) + '}}}'
@@ -191,7 +191,7 @@ class Tplink(Device):
             sock_tcp.connect((self.ip, 9999))
 
             # Dimmer has seperate brightness and on/off commands, bulb combines into 1 command
-            if self.device_type == "dimmer":
+            if self._type == "dimmer":
                 # Set on/off state, read response (dimmer wont listen for next command until reply read)
                 sock_tcp.send(self.encrypt('{"system":{"set_relay_state":{"state":' + str(state) + '}}}'))
                 data = sock_tcp.recv(2048)

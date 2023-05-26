@@ -8,8 +8,8 @@ log = logging.getLogger("Desktop_sensor")
 
 
 class Desktop_trigger(Sensor):
-    def __init__(self, name, nickname, sensor_type, default_rule, targets, ip):
-        super().__init__(name, nickname, sensor_type, True, None, default_rule, targets)
+    def __init__(self, name, nickname, _type, default_rule, targets, ip):
+        super().__init__(name, nickname, _type, True, None, default_rule, targets)
 
         self.ip = ip
 
@@ -18,7 +18,7 @@ class Desktop_trigger(Sensor):
 
         # Find desktop target so monitor loop (below) can update target's state attribute when screen turn on/off
         for i in self.targets:
-            if i.device_type == "desktop" and i.ip == self.ip:
+            if i._type == "desktop" and i.ip == self.ip:
                 self.desktop_target = i
                 break
         else:
@@ -94,7 +94,7 @@ class Desktop_trigger(Sensor):
                 if self.current == "Off":
                     # Override motion sensors to False, devices will turn off unless dummy/switch/thermostat present
                     for sensor in self.group.triggers:
-                        if sensor.sensor_type == "pir":
+                        if sensor._type == "pir":
                             sensor.motion = False
 
                     # Update target's state. This enables loop to turn screen back on if needed (dummy/switch present)

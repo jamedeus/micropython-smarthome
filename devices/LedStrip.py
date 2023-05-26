@@ -9,8 +9,8 @@ log = logging.getLogger("LedStrip")
 
 
 class LedStrip(Device):
-    def __init__(self, name, nickname, device_type, default_rule, pin, min_bright, max_bright):
-        super().__init__(name, nickname, device_type, True, None, default_rule)
+    def __init__(self, name, nickname, _type, default_rule, pin, min_bright, max_bright):
+        super().__init__(name, nickname, _type, True, None, default_rule)
 
         # TODO - Find optimal PWM freq. Default (5 KHz) causes coil whine in downstairs bathroom at 128 duty cycle.
         # Raising significantly reduces max brightness (exceed MOSFET switching time), may need different power supply?

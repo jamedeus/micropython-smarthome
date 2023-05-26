@@ -5,7 +5,7 @@ log = logging.getLogger("Sensor")
 
 
 class Sensor():
-    def __init__(self, name, nickname, sensor_type, enabled, current_rule, default_rule, targets):
+    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule, targets):
 
         # Unique, sequential name (sensor1, sensor2, ...) used in backend
         self.name = name
@@ -13,7 +13,7 @@ class Sensor():
         # User-configurable name used in frontend, not necesarily unique
         self.nickname = nickname
 
-        self.sensor_type = sensor_type
+        self._type = _type
 
         self.enabled = enabled
 
@@ -28,7 +28,7 @@ class Sensor():
         self.default_rule = default_rule
 
         # Prevent instantiating with invalid default_rule
-        if self.sensor_type in ("pir", "si7021", "dummy") and str(self.default_rule).lower() in ("enabled", "disabled"):
+        if self._type in ("pir", "si7021", "dummy") and str(self.default_rule).lower() in ("enabled", "disabled"):
             log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
             raise AttributeError
 
@@ -100,22 +100,22 @@ class Sensor():
 
     # Allow API commands to simulate the sensor being triggered
     def trigger(self):
-        if self.sensor_type == "pir":
+        if self._type == "pir":
             self.motion_detected()
             return True
 
-        elif self.sensor_type == "desktop":
+        elif self._type == "desktop":
             self.current = "On"
             return True
 
-        elif self.sensor_type == "si7021":
+        elif self._type == "si7021":
             return False
 
-        elif self.sensor_type == "dummy":
+        elif self._type == "dummy":
             self.current_rule = "on"
             return True
 
-        elif self.sensor_type == "switch":
+        elif self._type == "switch":
             return False
 
     # Called by Config after adding Sensor to Group. Appends functions to Group's post_action_routines list

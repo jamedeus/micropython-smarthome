@@ -491,7 +491,7 @@ def trigger_sensor(args):
     if result:
         return {"Triggered": target.name}
     else:
-        return {"ERROR": "Cannot trigger {} sensor type".format(target.sensor_type)}
+        return {"ERROR": f"Cannot trigger {target._type} sensor type"}
 
 
 @app.route("turn_on")
@@ -542,7 +542,7 @@ def turn_off(args):
 @app.route("get_temp")
 def get_temp(args):
     for sensor in app.config.sensors:
-        if sensor.sensor_type == "si7021":
+        if sensor._type == "si7021":
             return {"Temp": sensor.fahrenheit()}
     else:
         return {"ERROR": "No temperature sensor configured"}
@@ -551,7 +551,7 @@ def get_temp(args):
 @app.route("get_humid")
 def get_humid(args):
     for sensor in app.config.sensors:
-        if sensor.sensor_type == "si7021":
+        if sensor._type == "si7021":
             return {"Humidity": sensor.temp_sensor.relative_humidity}
     else:
         return {"ERROR": "No temperature sensor configured"}
@@ -560,7 +560,7 @@ def get_humid(args):
 @app.route("get_climate_data")
 def get_climate_data(args):
     for sensor in app.config.sensors:
-        if sensor.sensor_type == "si7021":
+        if sensor._type == "si7021":
             data = {}
             data["temp"] = sensor.fahrenheit()
             data["humid"] = sensor.temp_sensor.relative_humidity

@@ -8,8 +8,8 @@ log = logging.getLogger("ApiTarget")
 
 
 class ApiTarget(Device):
-    def __init__(self, name, nickname, device_type, default_rule, ip):
-        super().__init__(name, nickname, device_type, True, None, default_rule)
+    def __init__(self, name, nickname, _type, default_rule, ip):
+        super().__init__(name, nickname, _type, True, None, default_rule)
 
         # IP that API command is sent to
         self.ip = ip
@@ -141,7 +141,7 @@ class ApiTarget(Device):
             # Reset motion sensor to allow retriggering the remote motion sensor (restarts reset timer)
             # Retrigger when motion = True only restarts sensor's own resetTimer, but does not send another API command
             for sensor in self.triggered_by:
-                if sensor.sensor_type == "pir":
+                if sensor._type == "pir":
                     sensor.motion = False
 
         # "Off" rule

@@ -17,7 +17,7 @@ config_file = {
         "targets": [
             "device2"
         ],
-        "sensor_type": "si7021",
+        "_type": "si7021",
         "schedule": {
             "10:00": 74,
             "22:00": 74
@@ -29,7 +29,7 @@ config_file = {
         "nickname": "sensor1"
     },
     "sensor2": {
-        "sensor_type": "pir",
+        "_type": "pir",
         "targets": [
             "device1"
         ],
@@ -39,7 +39,7 @@ config_file = {
         "nickname": "sensor2"
     },
     "sensor3": {
-        "sensor_type": "pir",
+        "_type": "pir",
         "targets": [
             "device1"
         ],
@@ -50,7 +50,7 @@ config_file = {
     },
     "device1": {
         "pin": 4,
-        "device_type": "pwm",
+        "_type": "pwm",
         "schedule": {
             "09:00": 734,
             "11:00": 345,
@@ -63,7 +63,7 @@ config_file = {
     },
     "device2": {
         "pin": 18,
-        "device_type": "dumb-relay",
+        "_type": "dumb-relay",
         "schedule": {
             "09:00": "enabled"
         },
@@ -95,7 +95,7 @@ class TestMainLoop(unittest.TestCase):
     def test_check_sensor_state(self):
         # Make sure state is False for all motion sensors
         for i in self.config.sensors:
-            if i.sensor_type == "pir":
+            if i._type == "pir":
                 i.motion = False
 
         # Confirm state is correct
@@ -104,7 +104,7 @@ class TestMainLoop(unittest.TestCase):
 
         # Trigger only 1 sensor
         for i in self.config.sensors:
-            if i.sensor_type == "pir":
+            if i._type == "pir":
                 i.motion = True
                 break
 

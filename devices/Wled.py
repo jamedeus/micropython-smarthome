@@ -8,8 +8,8 @@ log = logging.getLogger("WLED")
 
 # Used for WLED instances, originally intended for monitor bias lights
 class Wled(Device):
-    def __init__(self, name, nickname, device_type, default_rule, ip):
-        super().__init__(name, nickname, device_type, True, None, default_rule)
+    def __init__(self, name, nickname, _type, default_rule, ip):
+        super().__init__(name, nickname, _type, True, None, default_rule)
 
         self.ip = ip
 

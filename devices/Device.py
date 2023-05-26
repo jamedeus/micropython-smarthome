@@ -5,7 +5,7 @@ log = logging.getLogger("Device")
 
 
 class Device():
-    def __init__(self, name, nickname, device_type, enabled, current_rule, default_rule):
+    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule):
 
         # Unique, sequential name (device1, device2, ...) used in backend
         self.name = name
@@ -13,7 +13,7 @@ class Device():
         # User-configurable name used in frontend, not necesarily unique
         self.nickname = nickname
 
-        self.device_type = device_type
+        self._type = _type
 
         self.enabled = enabled
 
@@ -31,7 +31,7 @@ class Device():
         self.default_rule = default_rule
 
         # Prevent instantiating with invalid default_rule
-        if self.device_type in ("dimmer", "bulb", "pwm", "api-target") and str(self.default_rule).lower() in ("enabled", "disabled"):
+        if self._type in ("dimmer", "bulb", "pwm", "api-target") and str(self.default_rule).lower() in ("enabled", "disabled"):
             log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
             raise AttributeError
 

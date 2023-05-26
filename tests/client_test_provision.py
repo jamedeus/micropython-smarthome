@@ -79,40 +79,40 @@ class TestGetModules(unittest.TestCase):
         # Config containing all device and sensor types
         config = {
             'device1': {
-                'type': 'bulb'
+                '_type': 'bulb'
             },
             'device2': {
-                'type': 'dimmer'
+                '_type': 'dimmer'
             },
             'device3': {
-                'type': 'relay'
+                '_type': 'relay'
             },
             'device4': {
-                'type': 'dumb-relay'
+                '_type': 'dumb-relay'
             },
             'device5': {
-                'type': 'desktop'
+                '_type': 'desktop'
             },
             'device6': {
-                'type': 'pwm'
+                '_type': 'pwm'
             },
             'device7': {
-                'type': 'mosfet'
+                '_type': 'mosfet'
             },
             'device8': {
-                'type': 'api-target'
+                '_type': 'api-target'
             },
             'sensor1': {
-                'type': 'pir'
+                '_type': 'pir'
             },
             'sensor2': {
-                'type': 'si7021'
+                '_type': 'si7021'
             },
             'sensor3': {
-                'type': 'dummy'
+                '_type': 'dummy'
             },
             'sensor4': {
-                'type': 'desktop'
+                '_type': 'desktop'
             },
             'ir_blaster': {}
         }
@@ -146,40 +146,40 @@ class TestGetModules(unittest.TestCase):
         # Config containing all devices and sensors except ir_blaster
         config = {
             'device1': {
-                'type': 'bulb'
+                '_type': 'bulb'
             },
             'device2': {
-                'type': 'dimmer'
+                '_type': 'dimmer'
             },
             'device3': {
-                'type': 'relay'
+                '_type': 'relay'
             },
             'device4': {
-                'type': 'dumb-relay'
+                '_type': 'dumb-relay'
             },
             'device5': {
-                'type': 'desktop'
+                '_type': 'desktop'
             },
             'device6': {
-                'type': 'pwm'
+                '_type': 'pwm'
             },
             'device7': {
-                'type': 'mosfet'
+                '_type': 'mosfet'
             },
             'device8': {
-                'type': 'api-target'
+                '_type': 'api-target'
             },
             'sensor1': {
-                'type': 'pir'
+                '_type': 'pir'
             },
             'sensor2': {
-                'type': 'si7021'
+                '_type': 'si7021'
             },
             'sensor3': {
-                'type': 'dummy'
+                '_type': 'dummy'
             },
             'sensor4': {
-                'type': 'desktop'
+                '_type': 'desktop'
             }
         }
 
@@ -209,37 +209,37 @@ class TestGetModules(unittest.TestCase):
         # Config containing all devices and sensors except si7021
         config = {
             'device1': {
-                'type': 'bulb'
+                '_type': 'bulb'
             },
             'device2': {
-                'type': 'dimmer'
+                '_type': 'dimmer'
             },
             'device3': {
-                'type': 'relay'
+                '_type': 'relay'
             },
             'device4': {
-                'type': 'dumb-relay'
+                '_type': 'dumb-relay'
             },
             'device5': {
-                'type': 'desktop'
+                '_type': 'desktop'
             },
             'device6': {
-                'type': 'pwm'
+                '_type': 'pwm'
             },
             'device7': {
-                'type': 'mosfet'
+                '_type': 'mosfet'
             },
             'device8': {
-                'type': 'api-target'
+                '_type': 'api-target'
             },
             'sensor1': {
-                'type': 'pir'
+                '_type': 'pir'
             },
             'sensor3': {
-                'type': 'dummy'
+                '_type': 'dummy'
             },
             'sensor4': {
-                'type': 'desktop'
+                '_type': 'desktop'
             },
             'ir_blaster': {}
         }
@@ -272,37 +272,37 @@ class TestGetModules(unittest.TestCase):
         # Config containing all devices and sensors that don't require libraries (excludes si7021 and ir_blaster)
         config = {
             'device1': {
-                'type': 'bulb'
+                '_type': 'bulb'
             },
             'device2': {
-                'type': 'dimmer'
+                '_type': 'dimmer'
             },
             'device3': {
-                'type': 'relay'
+                '_type': 'relay'
             },
             'device4': {
-                'type': 'dumb-relay'
+                '_type': 'dumb-relay'
             },
             'device5': {
-                'type': 'desktop'
+                '_type': 'desktop'
             },
             'device6': {
-                'type': 'pwm'
+                '_type': 'pwm'
             },
             'device7': {
-                'type': 'mosfet'
+                '_type': 'mosfet'
             },
             'device8': {
-                'type': 'api-target'
+                '_type': 'api-target'
             },
             'sensor1': {
-                'type': 'pir'
+                '_type': 'pir'
             },
             'sensor3': {
-                'type': 'dummy'
+                '_type': 'dummy'
             },
             'sensor4': {
-                'type': 'desktop'
+                '_type': 'desktop'
             }
         }
 
@@ -329,7 +329,14 @@ class TestGetModules(unittest.TestCase):
 
     def test_pir_and_smart_bulb(self):
         # Config containing device/sensor combo used in multiple rooms
-        config = {'sensor1': {'type': 'pir'}, 'device1': {'type': 'bulb'}}
+        config = {
+            'sensor1': {
+                '_type': 'pir'
+            },
+            'device1': {
+                '_type': 'bulb'
+            }
+        }
 
         modules, libs = self.app.get_modules(config)
 
@@ -346,7 +353,17 @@ class TestGetModules(unittest.TestCase):
 
     def test_pir_and_smart_bulb_and_dimmer(self):
         # Config containing device/sensor pair combo in multiple rooms
-        config = {'sensor1': {'type': 'pir'}, 'device1': {'type': 'bulb'}, 'device2': {'type': 'dimmer'}}
+        config = {
+            'sensor1': {
+                '_type': 'pir'
+            },
+            'device1': {
+                '_type': 'bulb'
+            },
+            'device2': {
+                '_type': 'dimmer'
+            }
+        }
 
         modules, libs = self.app.get_modules(config)
 
@@ -363,7 +380,14 @@ class TestGetModules(unittest.TestCase):
 
     def test_pir_and_led_strip(self):
         # Config containing device/sensor combo used in multiple rooms
-        config = {'sensor1': {'type': 'pir'}, 'device1': {'type': 'pwm'}}
+        config = {
+            'sensor1': {
+                '_type': 'pir'
+            },
+            'device1': {
+                '_type': 'pwm'
+            }
+        }
 
         modules, libs = self.app.get_modules(config)
 
@@ -380,7 +404,17 @@ class TestGetModules(unittest.TestCase):
 
     def test_pir_and_led_strip_and_dumbrelay(self):
         # Config containing device/sensor combo used in multiple rooms
-        config = {'sensor1': {'type': 'pir'}, 'device1': {'type': 'pwm'}, 'device2': {'type': 'dumb-relay'}}
+        config = {
+            'sensor1': {
+                '_type': 'pir'
+            },
+            'device1': {
+                '_type': 'pwm'
+            },
+            'device2': {
+                '_type': 'dumb-relay'
+            }
+        }
 
         modules, libs = self.app.get_modules(config)
 
@@ -398,7 +432,17 @@ class TestGetModules(unittest.TestCase):
 
     def test_pir_and_led_strip_and_relay(self):
         # Config containing device/sensor combo used in kitchen
-        config = {'sensor1': {'type': 'pir'}, 'device1': {'type': 'pwm'}, 'device2': {'type': 'relay'}}
+        config = {
+            'sensor1': {
+                '_type': 'pir'
+            },
+            'device1': {
+                '_type': 'pwm'
+            },
+            'device2': {
+                '_type': 'relay'
+            }
+        }
 
         modules, libs = self.app.get_modules(config)
 
@@ -416,7 +460,14 @@ class TestGetModules(unittest.TestCase):
 
     def test_thermostat_and_relay(self):
         # Config containing device/sensor pair used for thermostat
-        config = {'sensor1': {'type': 'si7021'}, 'device1': {'type': 'relay'}}
+        config = {
+            'sensor1': {
+                '_type': 'si7021'
+            },
+            'device1': {
+                '_type': 'relay'
+            }
+        }
 
         modules, libs = self.app.get_modules(config)
 
@@ -435,22 +486,22 @@ class TestGetModules(unittest.TestCase):
         # Config containing all devices/sensors currently used in bedroom
         config = {
             'device1': {
-                'type': 'dimmer'
+                '_type': 'dimmer'
             },
             'device2': {
-                'type': 'desktop'
+                '_type': 'desktop'
             },
             'sensor1': {
-                'type': 'pir'
+                '_type': 'pir'
             },
             'sensor2': {
-                'type': 'pir'
+                '_type': 'pir'
             },
             'sensor3': {
-                'type': 'desktop'
+                '_type': 'desktop'
             },
             'sensor4': {
-                'type': 'dummy'
+                '_type': 'dummy'
             }
         }
 
