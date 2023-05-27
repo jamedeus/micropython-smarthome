@@ -10,7 +10,7 @@ log = logging.getLogger("IrBlaster")
 
 class IrBlaster():
     def __init__(self, pin, target):
-        led = Pin(pin, Pin.OUT, value=0)
+        led = Pin(int(pin), Pin.OUT, value=0)
         self.ir = Player(led)
         self.target = target
         self._type = "ir_blaster"

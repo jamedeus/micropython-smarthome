@@ -1,4 +1,5 @@
 import unittest
+from machine import PWM
 from LedStrip import LedStrip
 
 
@@ -20,7 +21,8 @@ class TestLedStrip(unittest.TestCase):
             "test_regression_rule_change_to_enabled",
             "test_regression_invalid_default_rule",
             "test_regression_turn_off_while_disabled",
-            "test_regression_rule_change_while_fading"
+            "test_regression_rule_change_while_fading",
+            "test_regression_string_pin_number"
         ]
 
     def test_instantiation(self):
@@ -179,3 +181,13 @@ class TestLedStrip(unittest.TestCase):
         # Change rule, fade should stop
         self.instance.set_rule(98)
         self.assertFalse(self.instance.fading)
+
+    # Original bug: Config.__init__ formerly contained a conditional to instantiate devices
+    # in the appropriate class, which cast pin arguments to int. When this was replaced with a
+    # factory pattern in c9a8eae9 the type casting was lost, leading to a crash when config
+    # file contained a string pin. Fixed by casting to int in device init methods.
+    def test_regression_string_pin_number(self):
+        # Attempt to instantiate with a string pin number
+        self.instance = LedStrip("device1", "device1", "pwm", 512, "4", 0, 1023)
+        self.assertIsInstance(self.instance, LedStrip)
+        self.assertIsInstance(self.instance.pwm, PWM)

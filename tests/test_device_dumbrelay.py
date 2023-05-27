@@ -1,4 +1,5 @@
 import unittest
+from machine import Pin
 from DumbRelay import DumbRelay
 
 
@@ -15,7 +16,8 @@ class TestDumbRelay(unittest.TestCase):
             "test_enable_by_rule_change",
             "test_turn_on",
             "test_turn_off",
-            "test_regression_turn_off_while_disabled"
+            "test_regression_turn_off_while_disabled",
+            "test_regression_string_pin_number"
         ]
 
     def test_instantiation(self):
@@ -90,3 +92,13 @@ class TestDumbRelay(unittest.TestCase):
         # On command should also return True, but shouldn't cause any action
         self.assertTrue(self.instance.send(1))
         self.assertEqual(self.instance.relay.value(), 0)
+
+    # Original bug: Config.__init__ formerly contained a conditional to instantiate devices
+    # in the appropriate class, which cast pin arguments to int. When this was replaced with a
+    # factory pattern in c9a8eae9 the type casting was lost, leading to a crash when config
+    # file contained a string pin. Fixed by casting to int in device init methods.
+    def test_regression_string_pin_number(self):
+        # Attempt to instantiate with a string pin number
+        self.instance = DumbRelay("device1", "device1", "dumb-relay", "enabled", "4")
+        self.assertIsInstance(self.instance, DumbRelay)
+        self.assertIsInstance(self.instance.relay, Pin)

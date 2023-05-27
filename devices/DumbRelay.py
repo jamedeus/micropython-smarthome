@@ -11,7 +11,7 @@ class DumbRelay(Device):
     def __init__(self, name, nickname, _type, default_rule, pin):
         super().__init__(name, nickname, _type, True, None, default_rule)
 
-        self.relay = Pin(pin, Pin.OUT)
+        self.relay = Pin(int(pin), Pin.OUT)
 
         log.info(f"Instantiated Relay named {self.name} on pin {pin}")
 

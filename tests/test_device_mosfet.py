@@ -1,4 +1,5 @@
 import unittest
+from machine import Pin
 from Mosfet import Mosfet
 
 
@@ -16,7 +17,8 @@ class TestMosfet(unittest.TestCase):
             "test_turn_on",
             "test_turn_off",
             "test_enable_after_disable_by_rule_change",
-            "test_regression_turn_off_while_disabled"
+            "test_regression_turn_off_while_disabled",
+            "test_regression_string_pin_number"
         ]
 
     def test_instantiation(self):
@@ -98,3 +100,13 @@ class TestMosfet(unittest.TestCase):
         # On command should also return True, but shouldn't cause any action
         self.assertTrue(self.instance.send(1))
         self.assertEqual(self.instance.mosfet.value(), 0)
+
+    # Original bug: Config.__init__ formerly contained a conditional to instantiate devices
+    # in the appropriate class, which cast pin arguments to int. When this was replaced with a
+    # factory pattern in c9a8eae9 the type casting was lost, leading to a crash when config
+    # file contained a string pin. Fixed by casting to int in device init methods.
+    def test_regression_string_pin_number(self):
+        # Attempt to instantiate with a string pin number
+        self.instance = Mosfet("device1", "device1", "mosfet", "enabled", "4")
+        self.assertIsInstance(self.instance, Mosfet)
+        self.assertIsInstance(self.instance.mosfet, Pin)

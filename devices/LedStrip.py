@@ -14,7 +14,7 @@ class LedStrip(Device):
 
         # TODO - Find optimal PWM freq. Default (5 KHz) causes coil whine in downstairs bathroom at 128 duty cycle.
         # Raising significantly reduces max brightness (exceed MOSFET switching time), may need different power supply?
-        self.pwm = PWM(Pin(pin), duty=0)
+        self.pwm = PWM(Pin(int(pin)), duty=0)
 
         # Firmware bug workaround, occasionally instantiates with 512 duty cycle despite duty=0. Immediately calling
         # pwm.duty(0) does nothing, but for some reason calling pwm.duty() with no argument fixes the issue. Works
@@ -25,6 +25,7 @@ class LedStrip(Device):
         # Store current brightness, allows smooth transition when rule changes
         self.bright = 0
 
+        # TODO validate min/max (limits, max > min, etc)
         self.min_bright = int(min_bright)
         self.max_bright = int(max_bright)
 

@@ -10,7 +10,7 @@ class Mosfet(Device):
     def __init__(self, name, nickname, _type, default_rule, pin):
         super().__init__(name, nickname, _type, True, None, default_rule)
 
-        self.mosfet = Pin(pin, Pin.OUT, Pin.PULL_DOWN)
+        self.mosfet = Pin(int(pin), Pin.OUT, Pin.PULL_DOWN)
 
         log.info(f"Instantiated Mosfet named {self.name} on pin {pin}")
 

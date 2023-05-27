@@ -1,4 +1,5 @@
 import unittest
+from ir_tx import Player
 from IrBlaster import IrBlaster
 
 
@@ -12,8 +13,9 @@ class TestIrBlaster(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = IrBlaster(4, ["tv", "ac"])
+        self.instance = IrBlaster("4", ["tv", "ac"])
         self.assertIsInstance(self.instance, IrBlaster)
+        self.assertIsInstance(self.instance.ir, Player)
         self.assertEqual(len(self.instance.codes), 2)
         self.assertEqual(len(self.instance.codes['ac']), 10)
         self.assertEqual(len(self.instance.codes['tv']), 12)
