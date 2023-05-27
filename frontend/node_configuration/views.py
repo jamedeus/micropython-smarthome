@@ -167,7 +167,8 @@ def provision(config, ip, modules, libs):
             )
 
         # Upload core dependencies
-        [node.put_file(os.path.join(REPO_DIR, i), i) for i in ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py"]]
+        core = ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py"]
+        [node.put_file(os.path.join(REPO_DIR, i), i) for i in core]
 
         # Upload config file
         node.put_file(os.path.join(CONFIG_DIR, config), "config.json")

@@ -220,6 +220,9 @@ class Provisioner():
             self.upload("ir-remote/samsung-codes.json", "samsung-codes.json")
             self.upload("ir-remote/whynter-codes.json", "whynter-codes.json")
 
+            # Upload utils
+            self.upload("util.py", "util.py")
+
             # Upload Config module
             self.upload("Config.py", "Config.py")
 
@@ -313,6 +316,9 @@ class Provisioner():
 
         # Upload config file
         self.upload(self.config, "config.json")
+
+        # Upload utils
+        self.upload("util.py", "util.py")
 
         # Upload Config module
         self.upload("Config.py", "Config.py")
