@@ -9,6 +9,7 @@ import gc
 import re
 import SoftwareTimer
 from Group import Group
+from util import is_device, is_sensor, is_device_or_sensor
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -46,18 +47,18 @@ hardware_classes = {
 
 # Takes name (device1 etc) and config entry, returns class instance
 def instantiate_hardware(name, **kwargs):
-    if name.startswith('device') and kwargs['_type'] not in hardware_classes['devices']:
+    if is_device(name) and kwargs['_type'] not in hardware_classes['devices']:
         raise ValueError(f'Unsupported device type "{kwargs["_type"]}"')
-    elif name.startswith('sensor') and kwargs['_type'] not in hardware_classes['sensors']:
+    elif is_sensor(name) and kwargs['_type'] not in hardware_classes['sensors']:
         raise ValueError(f'Unsupported sensor type "{kwargs["_type"]}"')
-    elif not name.startswith('device') and not name.startswith('sensor'):
+    elif not is_device_or_sensor(name):
         raise ValueError(f'Invalid name "{name}", must start with "device" or "sensor"')
 
     # Remove schedule rules (unexpected arg)
     del kwargs['schedule']
 
     # Import correct module, instantiate class
-    if name.startswith('device'):
+    if is_device(name):
         module = __import__(hardware_classes['devices'][kwargs['_type']])
     else:
         module = __import__(hardware_classes['sensors'][kwargs['_type']])
@@ -97,7 +98,7 @@ class Config():
 
         # Iterate json, instantiate devices
         for device in conf:
-            if not device.startswith("device"): continue
+            if not is_device(device): continue
 
             # Add device's schedule rules to dict
             self.schedule[device] = conf[device]["schedule"]
@@ -128,7 +129,7 @@ class Config():
         self.sensors = []
 
         for sensor in conf:
-            if not sensor.startswith("sensor"): continue
+            if not is_sensor(sensor): continue
 
             # Add sensor's schedule rules to dict
             self.schedule[sensor] = conf[sensor]["schedule"]
@@ -498,7 +499,7 @@ class Config():
                 device.group = instance
 
     def find(self, target):
-        if target.startswith("device"):
+        if is_device(target):
             for i in self.devices:
                 if i.name == target:
                     return i
@@ -506,7 +507,7 @@ class Config():
                 log.debug(f"Config.find: Unable to find {target}")
                 return False
 
-        elif target.startswith("sensor"):
+        elif is_sensor(target):
             for i in self.sensors:
                 if i.name == target:
                     return i
