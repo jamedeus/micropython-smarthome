@@ -6,6 +6,7 @@ import gc
 import SoftwareTimer
 import re
 from uasyncio import Lock
+from util import is_device, is_sensor, is_device_or_sensor
 
 # Set name for module's log lines
 log = logging.getLogger("API")
@@ -351,7 +352,7 @@ def save_rules(args):
         config = json.load(file)
 
     for i in config:
-        if i.startswith("sensor") or i.startswith("device"):
+        if is_device_or_sensor(i):
             config[i]["schedule"] = app.config.schedule[i]
 
     with open('config.json', 'w') as file:
@@ -463,7 +464,7 @@ def condition_met(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
-    if not str(args[0]).startswith("sensor"):
+    if not is_sensor(str(args[0])):
         return {"ERROR": "Must specify sensor"}
 
     target = app.config.find(args[0])
@@ -479,7 +480,7 @@ def trigger_sensor(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
-    if not str(args[0]).startswith("sensor"):
+    if not is_sensor(str(args[0])):
         return {"ERROR": "Must specify sensor"}
 
     target = app.config.find(args[0])
@@ -499,7 +500,7 @@ def turn_on(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
-    if not str(args[0]).startswith("device"):
+    if not is_device(str(args[0])):
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
     target = app.config.find(args[0])
@@ -523,7 +524,7 @@ def turn_off(args):
     if not len(args) >= 1:
         return {"ERROR": "Invalid syntax"}
 
-    if not str(args[0]).startswith("device"):
+    if not is_device(str(args[0])):
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
     target = app.config.find(args[0])
