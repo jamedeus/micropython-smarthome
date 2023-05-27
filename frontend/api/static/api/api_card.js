@@ -3,14 +3,14 @@ async function send_command(value) {
     // Add target and selected command to request body
     value["target"] = target_node
 
-    let csrftoken = getCookie('csrftoken');
-
     var result = await fetch('/send_command', {
         method: 'POST',
         body: JSON.stringify(value),
-                             headers: { 'Accept': 'application/json, text/plain, */*',
-                                 'Content-Type': 'application/json',
-                             "X-CSRFToken": csrftoken }
+        headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+            "X-CSRFToken": getCookie('csrftoken')
+        }
     });
 
     return result

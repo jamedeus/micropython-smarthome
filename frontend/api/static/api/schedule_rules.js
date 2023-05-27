@@ -167,3 +167,19 @@ async function delete_rule() {
     await sleep(468);
     loading_animation(false);
 };
+
+
+// Handler for yes button in save rules toast, gets updated config from node and saves in database
+async function sync_schedule_rules() {
+    var result = await fetch('/sync_schedule_rules', {
+        method: 'POST',
+        body: JSON.stringify({"ip": target_node}),
+        headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+            "X-CSRFToken": getCookie('csrftoken')
+        }
+    });
+    result = await result.json();
+    console.log(result);
+};

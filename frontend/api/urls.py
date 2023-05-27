@@ -12,6 +12,7 @@ urlpatterns = [
     path('reboot_all', views.reboot_all, name='reboot_all'),
     path('reset_all', views.reset_all, name='reset_all'),
     path('sync_schedule_keywords', views.sync_schedule_keywords, name='sync_schedule_keywords'),
+    path('sync_schedule_rules', views.sync_schedule_rules, name='sync_schedule_rules'),
 
     # Macro views
     path('run_macro/<str:name>', views.run_macro, name='run_macro'),

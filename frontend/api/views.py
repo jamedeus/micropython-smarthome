@@ -15,6 +15,7 @@ from node_configuration.helper_functions import (
     is_device,
     is_sensor
 )
+from node_configuration.Webrepl import Webrepl
 from api.models import Macro
 
 # Valid IR commands for each target, used in error message
@@ -259,6 +260,38 @@ def sync_schedule_keywords(request):
         parse_command(data['ip'], ['save_schedule_keywords'])
 
     return JsonResponse("Done", safe=False, status=200)
+
+
+# Receives node IP, overwrites node config with current schedule rules, updates config in backend database
+# Called when user clicks yes on toast notification after modifying schedule rules
+def sync_schedule_rules(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+
+    try:
+        node = Node.objects.get(ip=data['ip'])
+    except Node.DoesNotExist:
+        return JsonResponse({"Error": f"Node with IP {data['ip']} not found"}, safe=False, status=404)
+
+    # Save schedule rules to disk on node
+    response = parse_command(node.ip, ['save_rules'])
+    if isinstance(response, dict):
+        # Open webrepl connection, download config.json
+        webrepl = Webrepl(node.ip)
+        webrepl.open_connection()
+        config_file = webrepl.get_file_mem('config.json')
+        webrepl.close_connection()
+
+        # Overwrite config in database, write config to disk
+        node.config.config = json.loads(config_file)
+        node.config.save()
+        node.config.write_to_disk()
+
+        return JsonResponse("Done syncing schedule rules", safe=False, status=200)
+    else:
+        return JsonResponse({"Error": "Failed to save rules"}, safe=False, status=500)
 
 
 def send_command(request):
