@@ -33,6 +33,7 @@ COPY Api.py /repo/Api.py
 COPY Config.py /repo/Config.py
 COPY Group.py /repo/Group.py
 COPY SoftwareTimer.py /repo/SoftwareTimer.py
+COPY util.py /repo/util.py
 
 # Peripheral modules + dependencies
 COPY lib /repo/lib
