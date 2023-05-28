@@ -1,13 +1,16 @@
 import json
 import asyncio
+from copy import deepcopy
 from unittest.mock import patch, MagicMock, AsyncMock, call
 from django.test import TestCase
 from django.db import IntegrityError
+from django.urls import reverse
 from .models import Macro
 from .views import parse_command, request, ir_commands
 from .unit_test_helpers import config1_status_object, config1_api_context, config2_status_object, config2_api_context
-from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes, JSONClient
-from node_configuration.models import ScheduleKeyword
+from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes, JSONClient, test_config_1
+from node_configuration.models import ScheduleKeyword, Node
+from node_configuration.Webrepl import Webrepl
 
 
 # Test function that makes async API calls to esp32 nodes (called by send_command)
@@ -1651,3 +1654,60 @@ class SyncScheduleKeywordTests(TestCase):
         response = self.client.get('/sync_schedule_keywords')
         self.assertEqual(response.status_code, 405)
         self.assertEqual(response.json(), {'Error': 'Must post data'})
+
+
+# Test endpoint that syncs config file from node to database when user modifies schedule rules
+class SyncScheduleRulesTests(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
+        # Create 3 test nodes
+        create_test_nodes()
+        self.node = Node.objects.get(ip='192.168.1.123')
+
+    def test_sync_schedule_rules(self):
+        # Confirm node config is unmodified
+        self.assertEqual(self.node.config.config, test_config_1)
+
+        # Create modified config, convert to format returned by Webrepl.get_file_mem
+        mock_config = deepcopy(test_config_1)
+        del mock_config['device1']['schedule']['05:00']
+        encoded_mock_config = json.dumps(mock_config).encode()
+
+        # Mock Webrepl.get_file_mem to return the modified config
+        # Mock parse_command to return expected response for save_rules endpoint
+        with patch.object(Webrepl, 'open_connection', return_value=True) as mock_open_connection, \
+             patch.object(Webrepl, 'get_file_mem', return_value=encoded_mock_config) as mock_get_file, \
+             patch('api.views.parse_command', return_value={"Success": "Rules written to disk"}):
+
+            # Send request, verify response + function calls
+            response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.123'})
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done syncing schedule rules")
+            self.assertTrue(mock_open_connection.called)
+            self.assertTrue(mock_get_file.called_with('config.json'))
+
+            # Verify that node config was replaced with the modified config
+            self.node.refresh_from_db()
+            self.assertEqual(self.node.config.config, mock_config)
+
+    def test_invalid_get_request(self):
+        # Send get request (requires post), verify error
+        response = self.client.get('/sync_schedule_rules')
+        self.assertEqual(response.status_code, 405)
+        self.assertEqual(response.json(), {'Error': 'Must post data'})
+
+    def test_invalid_node(self):
+        # Send request with IP that does not exist in database, verify error
+        response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.100'})
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json(), {"Error": "Node with IP 192.168.1.100 not found"})
+
+    def test_failed_to_save_rules(self):
+        # Mock parse_command to return request timeout error
+        with patch('api.views.parse_command', return_value="Error: Request timed out"):
+            # Send request, verify error
+            response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.123'})
+            self.assertEqual(response.status_code, 500)
+            self.assertEqual(response.json(), {"Error": "Failed to save rules"})
