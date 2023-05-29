@@ -137,15 +137,19 @@ class Config():
             try:
                 # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
                 targets = []
+
+                # Find instances for each device ID in targets list
                 for target in conf[sensor]["targets"]:
                     t = self.find(target)
                     # Only add if instance found (instantiation may have failed due to invalid config params)
                     if t:
                         targets.append(t)
 
-                # Instantiate sensor with appropriate class, overwrite targets
+                # Replace targets list with list of instances
+                conf[sensor]['targets'] = targets
+
+                # Instantiate sensor with appropriate class
                 instance = instantiate_hardware(sensor, **conf[sensor])
-                instance.targets = targets
 
                 # Add the sensor instance to each of it's target's "triggered_by" list
                 for t in targets:

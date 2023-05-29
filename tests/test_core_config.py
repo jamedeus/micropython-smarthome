@@ -30,7 +30,8 @@ class TestConfig(unittest.TestCase):
             "test_no_schedule_rules",
             "test_no_schedule_rules_invalid_default_rule",
             "test_regression_instantiate_with_invalid_default_rule",
-            "test_regression_instantiate_with_invalid_default_rule_sensor"
+            "test_regression_instantiate_with_invalid_default_rule_sensor",
+            "test_regression_instantiate_with_desktop_trigger"
         ]
 
     def test_initialization(self):
@@ -417,3 +418,43 @@ class TestConfig(unittest.TestCase):
 
         # Should have no sensor instances
         self.assertEqual(len(config.sensors), 0)
+
+    # Original bug: desktop_trigger was broken by 9aa2a7f4, which instantiated sensors with their
+    # config parameters (including target ID list), then replaced instance.targets with a list of
+    # device instances. Desktop_trigger __init__ expects targets list to contain device instances
+    # and checks their _type, raising an exception when the list contained strings.
+    def test_regression_instantiate_with_desktop_trigger(self):
+        config = Config(
+            {
+                "metadata": {
+                    "id": "Upstairs Bathroom",
+                    "location": "Under counter",
+                    "floor": "2",
+                    "schedule_keywords": {}
+                },
+                "wifi": {
+                    "ssid": "jamnet",
+                    "password": "cjZY8PTa4ZQ6S83A"
+                },
+                "sensor1": {
+                    "_type": "desktop",
+                    "nickname": "Computer Screen",
+                    "ip": "192.168.1.123",
+                    "default_rule": "enabled",
+                    "schedule": {},
+                    "targets": [
+                        "device1"
+                    ]
+                },
+                "device1": {
+                    "_type": "mosfet",
+                    "nickname": "Countertop LEDs",
+                    "pin": 19,
+                    "default_rule": "enabled",
+                    "schedule": {}
+                }
+            }
+        )
+
+        # Should have 1 sensor (instantiated successfully)
+        self.assertEqual(len(config.sensors), 1)
