@@ -121,23 +121,24 @@ class Config():
         # Groups iterated by main loop in boot.py, methods used to check conditions and apply actions
         self.build_groups()
 
-        # Get epoch time of next 3:00 am (re-build schedule rule queue for next 24 hours)
+        # Start timer to re-build schedule rule queue for next 24 hours around 3 am
+        self.start_reload_schedule_rules_timer()
+
+        log.info("Finished instantiating config")
+
+    def start_reload_schedule_rules_timer(self):
+        # Get epoch time of 3:00 am tomorrow
         epoch = time.mktime(time.localtime())
         now = time.localtime(epoch)
-        if now[3] < 2:
-            next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
-        else:
-            # In testing, only needed to increment day - other parameters roll over correctly
-            next_reset = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7]))
+        # Only needed to increment day, other parameters roll over correctly in testing
+        next_reset = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7]))
 
         # Reload schedule rules at random time between 3-4 am (prevent multiple nodes hitting API at same second)
         adjust = randrange(3600)
+        reset_epoch = (next_reset - epoch + adjust) * 1000
         reset_timestamp = f"{time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]}"
         log.debug(f"Reload_schedule_rules callback scheduled for {reset_timestamp} am")
-        next_reset = (next_reset - epoch + adjust) * 1000
-        config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
-
-        log.info("Finished instantiating config")
+        config_timer.init(period=reset_epoch, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
 
     # Takes config dict (devices only), instantiates each with appropriate class, adds to self.devices
     def instantiate_devices(self, conf):
@@ -543,14 +544,7 @@ class Config():
                 self.reload_rules = False
 
                 # Set timer to run again tomorrow between 3-4 am
-                epoch = time.mktime(time.localtime())
-                now = time.localtime(epoch)
-                next_reset = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7]))
-                adjust = randrange(3600)
-                callback_time = f"{time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]}"
-                log.debug(f"Reload_schedule_rules callback scheduled for {callback_time} am")
-                next_reset = (next_reset - epoch + adjust) * 1000
-                config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
+                self.start_reload_schedule_rules_timer()
 
             else:
                 # Check every minute
