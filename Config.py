@@ -153,12 +153,12 @@ class Config():
                 # Add instance to config.devices
                 self.devices.append(instance)
             except AttributeError:
-                log.critical(f"Failed to instantiate {device}: type = {conf[device]['_type']}, default_rule = {conf[device]['default_rule']}")
-                print(f"Failed to instantiate {device}: type = {conf[device]['_type']}, default_rule = {conf[device]['default_rule']}")
+                log.critical(f"Failed to instantiate {device} ({conf[device]['_type']}), params: {conf[device]}")
+                print(f"ERROR: Failed to instantiate {device} ({conf[device]['_type']}")
                 pass
             except ValueError:
                 log.critical(f"Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
-                print(f"Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
+                print(f"ERROR: Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
 
         log.debug("Finished creating device instances")
 
@@ -185,12 +185,12 @@ class Config():
                 # Add instance to config.sensors
                 self.sensors.append(instance)
             except AttributeError:
-                log.critical(f"Failed to instantiate {sensor}: type = {conf[sensor]['_type']}, default_rule = {conf[sensor]['default_rule']}")
-                print(f"Failed to instantiate {sensor}: type = {conf[sensor]['_type']}, default_rule = {conf[sensor]['default_rule']}")
+                log.critical(f"Failed to instantiate {sensor} ({conf[sensor]['_type']}, params: {conf[sensor]}")
+                print(f"ERROR: Failed to instantiate {sensor} ({conf[sensor]['_type']}")
                 pass
             except ValueError:
                 log.critical(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
-                print(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
+                print(f"ERROR: Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
 
         log.debug("Finished creating sensor instances")
 
@@ -415,7 +415,7 @@ class Config():
                     instance.scheduled_rule = instance.current_rule
                 # If default rule is invalid, disable instance to prevent unpredictable behavior
                 else:
-                    log.critical(f"{instance.name} default rule ({instance.default_rule}) failed validation, instance will be disabled")
+                    log.critical(f"{instance.name} invalid default rule ({instance.default_rule}), disabling instance")
                     instance.current_rule = "disabled"
                     instance.scheduled_rule = "disabled"
                     instance.default_rule = "disabled"
@@ -439,7 +439,7 @@ class Config():
                     instance.scheduled_rule = instance.current_rule
                 else:
                     # If both scheduled and default rules invalid, disable instance to prevent unpredictable behavior
-                    log.critical(f"{instance.name} default rule ({instance.default_rule}) failed validation, instance will be disabled")
+                    log.critical(f"{instance.name} invalid default rule ({instance.default_rule}), disabling instance")
                     instance.current_rule = "disabled"
                     instance.scheduled_rule = "disabled"
                     instance.default_rule = "disabled"
