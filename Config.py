@@ -96,10 +96,52 @@ class Config():
         # Create empty list, will contain instances for each device
         self.devices = []
 
-        # Iterate json, instantiate devices
-        for device in conf:
-            if not is_device(device): continue
+        # Create empty list, will contain instances for each sensor
+        self.sensors = []
 
+        # Pass all device entries to instantiate_devices, populates self.devices
+        devices = {device: config for device, config in conf.items() if is_device(device)}
+        self.instantiate_devices(devices)
+
+        # Pass all sensors entries to instantiate_sensors, populates self.sensors
+        sensors = {sensor: config for sensor, config in conf.items() if is_sensor(sensor)}
+        self.instantiate_sensors(sensors)
+
+        # Can only have 1 instance (driver limitation)
+        # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
+        if "ir_blaster" in conf:
+            from IrBlaster import IrBlaster
+            self.ir_blaster = IrBlaster(int(conf["ir_blaster"]["pin"]), conf["ir_blaster"]["target"])
+
+        # Create timers for all schedule rules expiring in next 24 hours
+        self.build_queue()
+
+        # Map relationships between sensors ("triggers") and devices ("targets")
+        # Multiple sensors with identical targets are merged into groups (or 1 sensor per group if unique targets)
+        # Groups iterated by main loop in boot.py, methods used to check conditions and apply actions
+        self.build_groups()
+
+        # Get epoch time of next 3:00 am (re-build schedule rule queue for next 24 hours)
+        epoch = time.mktime(time.localtime())
+        now = time.localtime(epoch)
+        if now[3] < 2:
+            next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
+        else:
+            # In testing, only needed to increment day - other parameters roll over correctly
+            next_reset = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7]))
+
+        # Reload schedule rules at random time between 3-4 am (prevent multiple nodes hitting API at same second)
+        adjust = randrange(3600)
+        reset_timestamp = f"{time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]}"
+        log.debug(f"Reload_schedule_rules callback scheduled for {reset_timestamp} am")
+        next_reset = (next_reset - epoch + adjust) * 1000
+        config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
+
+        log.info("Finished instantiating config")
+
+    # Takes config dict (devices only), instantiates each with appropriate class, adds to self.devices
+    def instantiate_devices(self, conf):
+        for device in conf:
             # Add device's schedule rules to dict
             self.schedule[device] = conf[device]["schedule"]
 
@@ -117,20 +159,11 @@ class Config():
                 log.critical(f"Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
                 print(f"Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
 
-        # Can only have 1 instance (driver limitation)
-        # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
-        if "ir_blaster" in conf:
-            from IrBlaster import IrBlaster
-            self.ir_blaster = IrBlaster(int(conf["ir_blaster"]["pin"]), conf["ir_blaster"]["target"])
-
         log.debug("Finished creating device instances")
 
-        # Create empty list, will contain instances for each sensor
-        self.sensors = []
-
+    # Takes config dict (sensors only), instantiates each with appropriate class, adds to self.sensors
+    def instantiate_sensors(self, conf):
         for sensor in conf:
-            if not is_sensor(sensor): continue
-
             # Add sensor's schedule rules to dict
             self.schedule[sensor] = conf[sensor]["schedule"]
 
@@ -159,32 +192,6 @@ class Config():
                 print(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
 
         log.debug("Finished creating sensor instances")
-
-        # Create timers for all schedule rules expiring in next 24 hours
-        self.build_queue()
-
-        # Map relationships between sensors ("triggers") and devices ("targets")
-        # Multiple sensors with identical targets are merged into groups (or 1 sensor per group if unique targets)
-        # Groups iterated by main loop in boot.py, methods used to check conditions and apply actions
-        self.build_groups()
-
-        # Get epoch time of next 3:00 am (re-build schedule rule queue for next 24 hours)
-        epoch = time.mktime(time.localtime())
-        now = time.localtime(epoch)
-        if now[3] < 2:
-            next_reset = time.mktime((now[0], now[1], now[2], 3, 0, 0, now[6], now[7]))
-        else:
-            # In testing, only needed to increment day - other parameters roll over correctly
-            next_reset = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7]))
-
-        # Reload schedule rules at random time between 3-4 am (prevent multiple nodes hitting API at same second)
-        adjust = randrange(3600)
-        reset_timestamp = f"{time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]}"
-        log.debug(f"Reload_schedule_rules callback scheduled for {reset_timestamp} am")
-        next_reset = (next_reset - epoch + adjust) * 1000
-        config_timer.init(period=next_reset, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
-
-        log.info("Finished instantiating config")
 
     def get_status(self):
         status_dict = {}
