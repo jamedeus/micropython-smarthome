@@ -212,11 +212,7 @@ class Provisioner():
             for i in os.listdir('/home/jamedeus/git/micropython-smarthome/sensors'):
                 self.upload("sensors/" + i, i)
 
-            # Upload libs
-            self.upload("lib/logging.py", "lib/logging.py")
-            self.upload("lib/si7021.py", "lib/si7021.py")
-            self.upload("lib/ir_tx/__init__.py", "lib/ir_tx/__init__.py")
-            self.upload("lib/ir_tx/nec.py", "lib/ir_tx/nec.py")
+            # Upload IR Codes
             self.upload("ir-remote/samsung-codes.json", "samsung-codes.json")
             self.upload("ir-remote/whynter-codes.json", "whynter-codes.json")
 
@@ -294,7 +290,7 @@ class Provisioner():
     def provision(self):
         # Read config file, determine which device/sensor modules need to be uploaded
         with open(self.basepath + "/" + self.config, 'r') as file:
-            modules, libs = self.get_modules(json.load(file))
+            modules = self.get_modules(json.load(file))
 
         if not self.open_connection():
             print(f"Error: {self.host} not connected to network or not accepting webrepl connections.\n")
@@ -304,13 +300,6 @@ class Provisioner():
         for i in modules:
             src_file = i
             dst_file = i.rsplit("/", 1)[-1]  # Remove path from filename
-
-            self.upload(src_file, dst_file)
-
-        # Upload all libraries
-        for i in libs:
-            src_file = i
-            dst_file = i
 
             self.upload(src_file, dst_file)
 
@@ -349,9 +338,6 @@ class Provisioner():
 
         modules = []
 
-        libs = []
-        libs.append('lib/logging.py')
-
         for i in conf:
             if i == "ir_blaster":
                 print(Fore.YELLOW + "WARNING" + Fore.RESET, end="")
@@ -360,8 +346,6 @@ class Provisioner():
                 modules.append("devices/IrBlaster.py")
                 modules.append("ir-remote/samsung-codes.json")
                 modules.append("ir-remote/whynter-codes.json")
-                libs.append("lib/ir_tx/__init__.py")
-                libs.append("lib/ir_tx/nec.py")
                 continue
 
             if not i.startswith("device") and not i.startswith("sensor"): continue
@@ -412,7 +396,6 @@ class Provisioner():
 
                 modules.append("sensors/Thermostat.py")
                 modules.append("sensors/Sensor.py")
-                libs.append("lib/si7021.py")
 
             elif conf[i]["_type"] == "dummy":
                 modules.append("sensors/Dummy.py")
@@ -425,7 +408,7 @@ class Provisioner():
         # Remove duplicates
         modules = set(modules)
 
-        return modules, libs
+        return modules
 
     def open_connection(self):
         try:
