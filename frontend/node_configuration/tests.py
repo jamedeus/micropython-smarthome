@@ -794,7 +794,7 @@ class SetupTests(TestCase):
 
             mock_provision.return_value = JsonResponse("Upload complete.", safe=False, status=200)
             self.client.post('/setup', {'ip': '123.45.67.89'})
-            mock_provision.assert_called_with("setup.json", '123.45.67.89', {}, {})
+            mock_provision.assert_called_with("setup.json", '123.45.67.89', {})
 
     # Verify correct error when passed an invalid IP
     def test_invalid_ip(self):
@@ -915,31 +915,6 @@ class UploadTests(TestCase):
         with self.assertRaises(Node.DoesNotExist):
             Node.objects.get(friendly_name='Test1')
 
-    def test_upload_first_time_setup(self):
-        # Create test config, confirm database
-        Config.objects.create(config=test_config_1, filename='test1.json')
-        self.assertEqual(len(Config.objects.all()), 1)
-        self.assertEqual(len(Node.objects.all()), 0)
-
-        # Mock Webrepl.put_file to raise AssertionError (raised when uploading to non-existing path)
-        with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', new=simulate_first_time_upload):
-
-            response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
-            self.assertEqual(response.status_code, 409)
-            self.assertEqual(
-                response.json(), (
-                    'ERROR: Unable to upload libraries, /lib/ does not exist. '
-                    'This is normal for new nodes - would you like to upload setup to fix?'
-                )
-            )
-
-        # Should not create Node or Config
-        self.assertEqual(len(Config.objects.all()), 1)
-        self.assertEqual(len(Node.objects.all()), 0)
-        with self.assertRaises(Node.DoesNotExist):
-            Node.objects.get(friendly_name='Test1')
-
     # Verify correct error when passed an invalid IP
     def test_invalid_ip(self):
         response = self.client.post('/upload', {'ip': '123.456.678.90'})
@@ -950,23 +925,23 @@ class UploadTests(TestCase):
 # Test view that uploads completed configs and dependencies to esp32 nodes
 class ProvisionTests(TestCase):
     def test_provision(self):
-        modules, libs = get_modules(test_config_1)
+        modules = get_modules(test_config_1)
 
         # Mock Webrepl to return True without doing anything
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file', return_value=True):
 
-            response = provision('test1.json', '123.45.67.89', modules, libs)
+            response = provision('test1.json', '123.45.67.89', modules)
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.content.decode(), '"Upload complete."')
 
     def test_provision_offline_node(self):
-        modules, libs = get_modules(test_config_1)
+        modules = get_modules(test_config_1)
 
         # Mock Webrepl to fail to connect
         with patch.object(Webrepl, 'open_connection', return_value=False):
 
-            response = provision('test1.json', '123.45.67.89', modules, libs)
+            response = provision('test1.json', '123.45.67.89', modules)
             self.assertEqual(response.status_code, 404)
             self.assertEqual(
                 response.content.decode(),
@@ -974,43 +949,27 @@ class ProvisionTests(TestCase):
             )
 
     def test_provision_connection_timeout(self):
-        modules, libs = get_modules(test_config_1)
+        modules = get_modules(test_config_1)
 
         # Mock Webrepl.put_file to raise TimeoutError
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file', side_effect=TimeoutError):
 
-            response = provision('test1.json', '123.45.67.89', modules, libs)
+            response = provision('test1.json', '123.45.67.89', modules)
             self.assertEqual(response.status_code, 408)
             self.assertEqual(
                 response.content.decode(),
                 '"Connection timed out - please press target node reset button, wait 30 seconds, and try again."'
             )
 
-    def test_provision_first_time_setup(self):
-        modules, libs = get_modules(test_config_1)
-
-        # Simulate uploading to non-existing path (mock put_file to raise AssertionError for files starting with "/lib")
-        with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', new=simulate_first_time_upload):
-
-            response = provision('test1.json', '123.45.67.89', modules, libs)
-            self.assertEqual(response.status_code, 409)
-            self.assertEqual(
-                response.content.decode(), (
-                    '"ERROR: Unable to upload libraries, /lib/ does not exist. '
-                    'This is normal for new nodes - would you like to upload setup to fix?"'
-                )
-            )
-
     def test_provision_corrupt_filesystem(self):
-        modules, libs = get_modules(test_config_1)
+        modules = get_modules(test_config_1)
 
         # Mock Webrepl.put_file to raise AssertionError for non-library files (simulate failing to upload to root dir)
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file', new=simulate_corrupt_filesystem_upload):
 
-            response = provision('test1.json', '123.45.67.89', modules, libs)
+            response = provision('test1.json', '123.45.67.89', modules)
             self.assertEqual(response.status_code, 409)
             self.assertEqual(
                 response.content.decode(),
@@ -1835,104 +1794,76 @@ class GetModulesTests(TestCase):
     def test_get_modules_full_config(self):
 
         expected_modules = {
-            "../sensors/Sensor.py": "Sensor.py",
-            "../sensors/MotionSensor.py": "MotionSensor.py",
-            "../devices/LedStrip.py": "LedStrip.py",
-            "../sensors/Thermostat.py": "Thermostat.py",
-            "../devices/Mosfet.py": "Mosfet.py",
-            "../devices/Device.py": "Device.py",
-            "../devices/Desktop_target.py": "Desktop_target.py",
-            "../sensors/Dummy.py": "Dummy.py",
-            "../sensors/Desktop_trigger.py": "Desktop_trigger.py",
-            "../ir-remote/samsung-codes.json": "samsung-codes.json",
-            "../sensors/Switch.py": "Switch.py",
-            "../ir-remote/whynter-codes.json": "whynter-codes.json",
-            "../devices/Relay.py": "Relay.py",
-            "../devices/IrBlaster.py": "IrBlaster.py",
-            "../devices/DumbRelay.py": "DumbRelay.py",
-            "../devices/Wled.py": "Wled.py",
-            "../devices/Tplink.py": "Tplink.py",
-            "../devices/ApiTarget.py": "ApiTarget.py"
+            '../devices/ApiTarget.py': 'ApiTarget.py',
+            '../devices/Wled.py': 'Wled.py',
+            '../devices/Mosfet.py': 'Mosfet.py',
+            '../devices/Relay.py': 'Relay.py',
+            '../sensors/MotionSensor.py': 'MotionSensor.py',
+            '../sensors/Dummy.py': 'Dummy.py',
+            '../devices/Device.py': 'Device.py',
+            '../sensors/Switch.py': 'Switch.py',
+            '../sensors/Desktop_trigger.py': 'Desktop_trigger.py',
+            '../devices/DumbRelay.py': 'DumbRelay.py',
+            '../devices/Tplink.py': 'Tplink.py',
+            '../devices/Desktop_target.py': 'Desktop_target.py',
+            '../sensors/Thermostat.py': 'Thermostat.py',
+            '../sensors/Sensor.py': 'Sensor.py',
+            '../devices/LedStrip.py': 'LedStrip.py'
         }
 
-        expected_libs = {
-            "../lib/logging.py": "lib/logging.py",
-            "../lib/si7021.py": "lib/si7021.py",
-            "../lib/ir_tx/__init__.py": "lib/ir_tx/__init__.py",
-            "../lib/ir_tx/nec.py": "lib/ir_tx/nec.py"
-        }
-
-        modules, libs = get_modules(self.config)
+        modules = get_modules(self.config)
         self.assertEqual(modules, expected_modules)
-        self.assertEqual(libs, expected_libs)
 
     def test_get_modules_empty_config(self):
-        modules, libs = get_modules({})
+        modules = get_modules({})
         self.assertEqual(modules, {})
-        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py'})
 
     def test_get_modules_no_ir_blaster(self):
         del self.config['ir_blaster']
 
         expected_modules = {
-            "../sensors/Sensor.py": "Sensor.py",
-            "../sensors/MotionSensor.py": "MotionSensor.py",
-            "../devices/LedStrip.py": "LedStrip.py",
-            "../sensors/Thermostat.py": "Thermostat.py",
-            "../devices/Mosfet.py": "Mosfet.py",
-            "../devices/Device.py": "Device.py",
-            "../devices/Desktop_target.py": "Desktop_target.py",
-            "../sensors/Dummy.py": "Dummy.py",
-            "../sensors/Desktop_trigger.py": "Desktop_trigger.py",
-            "../sensors/Switch.py": "Switch.py",
-            "../devices/Relay.py": "Relay.py",
-            "../devices/DumbRelay.py": "DumbRelay.py",
-            "../devices/Wled.py": "Wled.py",
-            "../devices/Tplink.py": "Tplink.py",
-            "../devices/ApiTarget.py": "ApiTarget.py"
+            '../devices/ApiTarget.py': 'ApiTarget.py',
+            '../devices/Wled.py': 'Wled.py',
+            '../devices/Mosfet.py': 'Mosfet.py',
+            '../devices/Relay.py': 'Relay.py',
+            '../sensors/MotionSensor.py': 'MotionSensor.py',
+            '../sensors/Dummy.py': 'Dummy.py',
+            '../devices/Device.py': 'Device.py',
+            '../sensors/Switch.py': 'Switch.py',
+            '../sensors/Desktop_trigger.py': 'Desktop_trigger.py',
+            '../devices/DumbRelay.py': 'DumbRelay.py',
+            '../devices/Tplink.py': 'Tplink.py',
+            '../devices/Desktop_target.py': 'Desktop_target.py',
+            '../sensors/Thermostat.py': 'Thermostat.py',
+            '../sensors/Sensor.py': 'Sensor.py',
+            '../devices/LedStrip.py': 'LedStrip.py'
         }
 
-        expected_libs = {
-            "../lib/logging.py": "lib/logging.py",
-            "../lib/si7021.py": "lib/si7021.py"
-        }
-
-        modules, libs = get_modules(self.config)
+        modules = get_modules(self.config)
         self.assertEqual(modules, expected_modules)
-        self.assertEqual(libs, expected_libs)
 
     def test_get_modules_no_thermostat(self):
         del self.config['sensor5']
 
         expected_modules = {
-            "../sensors/Sensor.py": "Sensor.py",
-            "../sensors/MotionSensor.py": "MotionSensor.py",
-            "../devices/LedStrip.py": "LedStrip.py",
-            "../devices/Mosfet.py": "Mosfet.py",
-            "../devices/Device.py": "Device.py",
-            "../devices/Desktop_target.py": "Desktop_target.py",
-            "../sensors/Dummy.py": "Dummy.py",
-            "../sensors/Desktop_trigger.py": "Desktop_trigger.py",
-            "../ir-remote/samsung-codes.json": "samsung-codes.json",
-            "../sensors/Switch.py": "Switch.py",
-            "../ir-remote/whynter-codes.json": "whynter-codes.json",
-            "../devices/Relay.py": "Relay.py",
-            "../devices/IrBlaster.py": "IrBlaster.py",
-            "../devices/DumbRelay.py": "DumbRelay.py",
-            "../devices/Wled.py": "Wled.py",
-            "../devices/Tplink.py": "Tplink.py",
-            "../devices/ApiTarget.py": "ApiTarget.py"
+            '../devices/ApiTarget.py': 'ApiTarget.py',
+            '../devices/Wled.py': 'Wled.py',
+            '../devices/Mosfet.py': 'Mosfet.py',
+            '../devices/Relay.py': 'Relay.py',
+            '../sensors/MotionSensor.py': 'MotionSensor.py',
+            '../sensors/Dummy.py': 'Dummy.py',
+            '../devices/Device.py': 'Device.py',
+            '../sensors/Switch.py': 'Switch.py',
+            '../sensors/Desktop_trigger.py': 'Desktop_trigger.py',
+            '../devices/DumbRelay.py': 'DumbRelay.py',
+            '../devices/Tplink.py': 'Tplink.py',
+            '../devices/Desktop_target.py': 'Desktop_target.py',
+            '../sensors/Sensor.py': 'Sensor.py',
+            '../devices/LedStrip.py': 'LedStrip.py'
         }
 
-        expected_libs = {
-            "../lib/logging.py": "lib/logging.py",
-            "../lib/ir_tx/__init__.py": "lib/ir_tx/__init__.py",
-            "../lib/ir_tx/nec.py": "lib/ir_tx/nec.py"
-        }
-
-        modules, libs = get_modules(self.config)
+        modules = get_modules(self.config)
         self.assertEqual(modules, expected_modules)
-        self.assertEqual(libs, expected_libs)
 
     def test_get_modules_realistic(self):
         del self.config['ir_blaster']
@@ -1944,20 +1875,19 @@ class GetModulesTests(TestCase):
         del self.config['device7']
 
         expected_modules = {
-            "../sensors/Sensor.py": "Sensor.py",
-            "../sensors/MotionSensor.py": "MotionSensor.py",
-            "../devices/LedStrip.py": "LedStrip.py",
-            "../devices/Device.py": "Device.py",
-            "../sensors/Switch.py": "Switch.py",
-            "../devices/Relay.py": "Relay.py",
-            "../devices/Wled.py": "Wled.py",
-            "../devices/Tplink.py": "Tplink.py",
-            "../devices/ApiTarget.py": "ApiTarget.py"
+            '../devices/ApiTarget.py': 'ApiTarget.py',
+            '../devices/Relay.py': 'Relay.py',
+            '../sensors/MotionSensor.py': 'MotionSensor.py',
+            '../devices/Device.py': 'Device.py',
+            '../sensors/Switch.py': 'Switch.py',
+            '../devices/Tplink.py': 'Tplink.py',
+            '../devices/Wled.py': 'Wled.py',
+            '../sensors/Sensor.py': 'Sensor.py',
+            '../devices/LedStrip.py': 'LedStrip.py'
         }
 
-        modules, libs = get_modules(self.config)
+        modules = get_modules(self.config)
         self.assertEqual(modules, expected_modules)
-        self.assertEqual(libs, {'../lib/logging.py': 'lib/logging.py'})
 
 
 # Test config generator backend function

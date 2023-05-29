@@ -58,12 +58,9 @@ dependencies = {
 }
 
 
-# Takes full config file, returns all dependencies in 2 lists:
-# - modules: classes for all configured devices and sensors
-# - libs: libraries required by configured devices and sensors
+# Takes full config file, returns list of classes for each device and sensor type
 def get_modules(config):
     modules = []
-    libs = ['lib/logging.py']
 
     # Get lists of device and sensor types
     device_types = [config[device]['_type'] for device in config.keys() if is_device(device)]
@@ -75,22 +72,14 @@ def get_modules(config):
     for stype in sensor_types:
         modules.extend(dependencies['sensors'][stype])
 
-    # Add libs if thermostat or ir_blaster configured
-    if 'si7021' in sensor_types:
-        libs.append("lib/si7021.py")
-    if 'ir_blaster' in config.keys():
-        modules.extend(["devices/IrBlaster.py", "ir-remote/samsung-codes.json", "ir-remote/whynter-codes.json"])
-        libs.extend(["lib/ir_tx/__init__.py", "lib/ir_tx/nec.py"])
-
     # Remove duplicates
     modules = set(modules)
 
     # Convert to dict containing pairs of local:remote filesystem paths
     # Local path is uploaded to remote path on target ESP32
     modules = {os.path.join(REPO_DIR, i): i.split("/")[1] for i in modules}
-    libs = {os.path.join(REPO_DIR, i): i for i in libs}
 
-    return modules, libs
+    return modules
 
 
 def setup(request):
@@ -104,7 +93,7 @@ def setup(request):
         return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
 
     # Upload
-    return provision("setup.json", data["ip"], {}, {})
+    return provision("setup.json", data["ip"], {})
 
 
 def upload(request, reupload=False):
@@ -122,8 +111,8 @@ def upload(request, reupload=False):
         return JsonResponse("ERROR: Config file doesn't exist - did you delete it manually?", safe=False, status=404)
 
     # Get dependencies, upload
-    modules, libs = get_modules(config.config)
-    response = provision(data["config"], data["ip"], modules, libs)
+    modules = get_modules(config.config)
+    response = provision(data["config"], data["ip"], modules)
 
     # If uploaded for the first time, update models
     if response.status_code == 200 and not reupload:
@@ -139,9 +128,9 @@ def upload(request, reupload=False):
     return response
 
 
-# Takes path to config file, target ip, and modules + libs dicts from get_modules()
-# Uploads config, modules, libs, and core to target IP
-def provision(config, ip, modules, libs):
+# Takes path to config file, target ip, and modules list from get_modules()
+# Uploads config, modules, and core to target IP
+def provision(config, ip, modules):
     # Open conection, detect if node connected to network
     node = Webrepl(ip, NODE_PASSWD)
     if not node.open_connection():
@@ -154,17 +143,6 @@ def provision(config, ip, modules, libs):
     try:
         # Upload all device/sensor modules
         [node.put_file(local, remote) for local, remote in modules.items()]
-
-        # Upload all libraries
-        try:
-            [node.put_file(local, remote) for local, remote in libs.items()]
-        except AssertionError:
-            return JsonResponse(
-                "ERROR: Unable to upload libraries, /lib/ does not exist. "
-                "This is normal for new nodes - would you like to upload setup to fix?",
-                safe=False,
-                status=409
-            )
 
         # Upload core dependencies
         core = ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py"]
@@ -206,10 +184,10 @@ def reupload_all(request):
     report = {'success': [], 'failed': {}}
 
     for node in nodes:
-        modules, libs = get_modules(node.config.config)
+        modules = get_modules(node.config.config)
 
         print(f"\nReuploading {node.friendly_name}...")
-        response = provision(node.config.filename, node.ip, modules, libs)
+        response = provision(node.config.filename, node.ip, modules)
 
         # Add result to report
         if response.status_code == 200:
@@ -298,8 +276,8 @@ def change_node_ip(request):
         return JsonResponse({'Error': 'New IP must be different than old'}, safe=False, status=400)
 
     # Get dependencies, upload to new IP
-    modules, libs = get_modules(node.config.config)
-    response = provision(node.config.filename, data["new_ip"], modules, libs)
+    modules = get_modules(node.config.config)
+    response = provision(node.config.filename, data["new_ip"], modules)
 
     if response.status_code == 200:
         # Update model
