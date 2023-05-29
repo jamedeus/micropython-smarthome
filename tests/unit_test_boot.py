@@ -1,10 +1,11 @@
 import os
-import sys
 import gc
-import uasyncio as asyncio
-import logging
+import sys
 import json
 import network
+import uasyncio as asyncio
+import logging
+import unittest
 
 # Set level to prevent logging from slowing down tests, using memory, etc
 logging.basicConfig(
@@ -201,7 +202,6 @@ if __name__ == "__main__":
     wlan = network.WLAN()
     wlan.active(True)
     if not wlan.isconnected():
-        import json
         with open('config.json', 'r') as file:
             config = json.load(file)
         wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
@@ -209,14 +209,6 @@ if __name__ == "__main__":
     # Wait until connected
     while not wlan.isconnected():
         continue
-
-    try:
-        import unittest
-    except ImportError:
-        # If not found, install and reboot
-        import upip, machine
-        upip.install("unittest")
-        machine.reset()
 
     # Import SoftwareTimer instance, add to async loop
     from SoftwareTimer import timer
