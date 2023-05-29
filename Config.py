@@ -135,15 +135,8 @@ class Config():
             self.schedule[sensor] = conf[sensor]["schedule"]
 
             try:
-                # Add class instance as dict key, enabled bool as value (allows sensor to skip disabled targets)
-                targets = []
-
-                # Find instances for each device ID in targets list
-                for target in conf[sensor]["targets"]:
-                    t = self.find(target)
-                    # Only add if instance found (instantiation may have failed due to invalid config params)
-                    if t:
-                        targets.append(t)
+                # Find device instances for each ID in targets list
+                targets = [t for t in (self.find(target) for target in conf[sensor]["targets"]) if t]
 
                 # Replace targets list with list of instances
                 conf[sensor]['targets'] = targets

@@ -349,7 +349,8 @@ class TestConfig(unittest.TestCase):
                         "22:00": "5"
                     },
                     "targets": [
-                        "device1"
+                        "device1",
+                        "device2"
                     ]
                 },
                 "device1": {
@@ -363,14 +364,23 @@ class TestConfig(unittest.TestCase):
                         "sunrise": "0",
                         "sunset": "enabled"
                     }
+                },
+                "device2": {
+                    "_type": "mosfet",
+                    "nickname": "Countertop LEDs",
+                    "pin": 19,
+                    "default_rule": "enabled",
+                    "schedule": {}
                 }
             }
         )
 
-        # Should have no device instances
-        self.assertEqual(len(config.devices), 0)
-        # Sensor should have no targets
-        self.assertEqual(len(config.sensors[0].targets), 0)
+        # Should only have 1 device (mosfet)
+        self.assertEqual(len(config.devices), 1)
+        self.assertEqual(config.devices[0]._type, "mosfet")
+        # Sensor should only have 1 target
+        self.assertEqual(len(config.sensors[0].targets), 1)
+        self.assertEqual(config.sensors[0].targets[0]._type, "mosfet")
 
     # Original bug: Some sensor types would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
