@@ -75,15 +75,17 @@ class Config():
         # Load wifi credentials tuple
         self.credentials = (conf["wifi"]["ssid"], conf["wifi"]["password"])
 
-        # Load metadata parameters - (unused so far)
+        # Load metadata parameters (included in status object used by frontend)
         self.identifier = conf["metadata"]["id"]
         self.location = conf["metadata"]["location"]
         self.floor = conf["metadata"]["floor"]
 
-        # Tells loop when it is time to re-run API calls + build schedule rule queue
+        # Toggled by callback around 3:00am
+        # Loop checks this and rebuilds schedule rule queue, re-runs API calls when True
         self.reload_rules = False
 
-        # Dictionairy holds schedule rules for all devices and sensors
+        # Nested dict of schedule rules, 1 entry for each device and sensor
+        # Keys are IDs (device1, sensor2, etc), values are dict of timestamp-rule pairs
         self.schedule = {}
 
         # Dictionairy of keyword-timestamp pairs, used for schedule rules
@@ -91,12 +93,11 @@ class Config():
         self.schedule_keywords.update(conf["metadata"]["schedule_keywords"])
 
         # Call function to connect to wifi + hit APIs
+        # Connect to wifi, hit APIs for current time, sunrise/sunset timestamps
         self.api_calls()
 
-        # Create empty list, will contain instances for each device
+        # Create lists for device, sensor instances
         self.devices = []
-
-        # Create empty list, will contain instances for each sensor
         self.sensors = []
 
         # Pass all device entries to instantiate_devices, populates self.devices
@@ -107,8 +108,8 @@ class Config():
         sensors = {sensor: config for sensor, config in conf.items() if is_sensor(sensor)}
         self.instantiate_sensors(sensors)
 
-        # Can only have 1 instance (driver limitation)
-        # Since IR has no schedule and is only triggered by API, doesn't make sense to subclass or add to self.devices
+        # Instantiate IR Blaster if configured (can only have 1, driver limitation)
+        # IR Blaster is not a Device subclass, has no schedule rules, and is only triggered by API calls
         if "ir_blaster" in conf:
             from IrBlaster import IrBlaster
             self.ir_blaster = IrBlaster(int(conf["ir_blaster"]["pin"]), conf["ir_blaster"]["target"])
@@ -118,7 +119,7 @@ class Config():
 
         # Map relationships between sensors ("triggers") and devices ("targets")
         # Multiple sensors with identical targets are merged into groups (or 1 sensor per group if unique targets)
-        # Groups iterated by main loop in boot.py, methods used to check conditions and apply actions
+        # Main loop iterates Groups, calls Group methods to check sensor conditions and apply device actions
         self.build_groups()
 
         # Start timer to re-build schedule rule queue for next 24 hours around 3 am
@@ -194,6 +195,8 @@ class Config():
 
         log.debug("Finished creating sensor instances")
 
+    # Called by status API endpoint, frontend polls every 5 seconds while viewing node
+    # Returns object with metadata + current status info for all devices and sensors
     def get_status(self):
         status_dict = {}
         status_dict["metadata"] = {}
@@ -243,6 +246,7 @@ class Config():
 
         return status_dict
 
+    # Connect to wifi (if not connected), set system time from API, get sunrise/sunset times from API
     def api_calls(self):
         # Auto-reboot if startup doesn't complete in 1 min (prevents API calls hanging, canceled at bottom of function)
         reboot_timer.init(period=60000, mode=Timer.ONE_SHOT, callback=reboot)
@@ -395,6 +399,7 @@ class Config():
         # Return the finished dictionairy
         return result
 
+    # Add callbacks for all schedule rules to SoftwareTimer queue
     def build_queue(self):
         # Delete all existing schedule rule timers to avoid conflicts
         SoftwareTimer.timer.cancel("scheduler")
@@ -503,6 +508,7 @@ class Config():
             for device in instance.targets:
                 device.group = instance
 
+    # Takes ID (device1, sensor2, etc), returns instance or False
     def find(self, target):
         if is_device(target):
             for i in self.devices:
