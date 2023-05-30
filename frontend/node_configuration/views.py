@@ -168,7 +168,7 @@ def provision(config, ip, modules):
         )
     except AssertionError:
         return JsonResponse(
-            "ERROR: Upload failed due to filesystem problem, please re-flash node.",
+            "Failed due to filesystem error, please re-flash firmware.",
             safe=False,
             status=409
         )
@@ -197,7 +197,7 @@ def reupload_all(request):
         elif response.status_code == 408:
             report['failed'][node.friendly_name] = 'Connection timed out'
         elif response.status_code == 409:
-            report['failed'][node.friendly_name] = 'Requires setup'
+            report['failed'][node.friendly_name] = 'Filesystem error'
 
     print('\nreupload_all results:')
     print(json.dumps(report, indent=4))

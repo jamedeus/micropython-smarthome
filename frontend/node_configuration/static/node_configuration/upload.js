@@ -75,7 +75,8 @@ async function upload() {
     // Unable to upload because node has not run setup
     } else if (response.status == 409) {
         const error = await response.text();
-        run_setup_prompt(error);
+        const footer = `<button type="button" class="btn btn-success mx-auto" data-bs-dismiss="modal">OK</button>`
+        show_modal(errorModal, "Upload Failed", `<div class="text-center">${error}</div>`, footer);
 
     // Unable to upload because node is unreachable
     } else if (response.status == 404) {
@@ -88,47 +89,6 @@ async function upload() {
         // Hide modal allowing user to access page again
         uploadModal.hide();
     };
-};
-
-// Shown when unable to upload because target node has not run setup yet
-async function run_setup_prompt(error) {
-    const footer = `<button type="button" id="yes-button" class="btn btn-secondary" data-bs-dismiss="modal">Yes</button>
-                    <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>`
-
-    // Replace loading modal with error modal, ask if user wants to run setup routine
-    uploadModal.hide();
-    show_modal(errorModal, "Error", `${error}`, footer);
-
-    document.getElementById('yes-button').addEventListener('click', async function() {
-        // Show loading again, upload setup file
-        errorModal.hide();
-        show_modal(uploadModal);
-        var result = await send_post_request("setup", {ip: target_ip});
-
-        if (result.ok) {
-            // After uploading config, tell user to reboot node then click OK
-            uploadModal.hide();
-            const footer = `<button type="button" id="ok-button" class="btn btn-success" data-bs-dismiss="modal">OK</button>`
-            show_modal(errorModal, "Success", "Please reboot node, then press OK to resume upload", footer);
-
-            // When user clicks OK, resubmit form (setup has finished running, should now be able to upload)
-            document.getElementById('ok-button').addEventListener('click', function() {
-                errorModal.hide();
-                upload();
-            }, { once: true });
-        } else {
-            alert(await result.text());
-
-            // Re-enable submit button so user can try again
-            try{ document.getElementById("submit-button").disabled = false; }catch(err){};
-        };
-    }, { once: true });
-
-    document.getElementById('no-button').addEventListener('click', function() {
-        errorModal.hide();
-        uploadModal.hide();
-        try{ document.getElementById("submit-button").disabled = false; }catch(err){};
-    }, { once: true });
 };
 
 // Shown when unable to upload because target node unreachable

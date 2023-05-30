@@ -757,7 +757,7 @@ class ReuploadAllTests(TestCase):
             "failed": {
                 "Test1": "Connection timed out",
                 "Test2": "Offline",
-                "Test3": "Requires setup"
+                "Test3": "Filesystem error"
             }
         }
 
@@ -973,7 +973,7 @@ class ProvisionTests(TestCase):
             self.assertEqual(response.status_code, 409)
             self.assertEqual(
                 response.content.decode(),
-                '"ERROR: Upload failed due to filesystem problem, please re-flash node."'
+                '"Failed due to filesystem error, please re-flash firmware."'
             )
 
 
