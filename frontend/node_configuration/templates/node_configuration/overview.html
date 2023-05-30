@@ -43,7 +43,7 @@
                         {% for config in not_uploaded %}
                             <tr id="{{config}}">
                                 <td class="min align-middle"><span class="form-control text-center">{{config}}</span></td>
-                                <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" class="form-control ip-input text-center" required></td>
+                                <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" class="form-control ip-input text-center" data-submit="upload-{{config}}" required></td>
                                 <td class="min align-middle"><button type="button" class="btn-primary btn btn-sm" id="upload-{{config}}" onclick="set_upload_target(this);" disabled>Upload</button></td>
                                 <td class="min align-middle"><button type="button" class="btn-danger btn btn-sm" onclick="del_config('{{config}}');"><i class="bi-trash"></i></button></td>
                             </tr>
@@ -308,7 +308,7 @@
 
                     <div id="change-ip-prompt">
                         <label for="new-ip"><b>New IP:</b></label>
-                        <input type="text" class="form-control modal-input ip-input text-center" id="new_ip-input" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
+                        <input type="text" class="form-control modal-input ip-input text-center" id="new_ip-input" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" data-submit="upload-new_ip" required>
                     </div>
                     <div id="change-ip-loading" class="d-none mx-auto">
                         <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
@@ -687,22 +687,17 @@
     <script>
         // Disable upload buttons if input contains invalid IP
         document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('input', function(e) {
-            const id = event.target.id.replace("-ip", "");
-            console.log(id)
-
             if (!event.target.validity.valid) {
-                document.getElementById(`upload-${id}`).disabled = true;
+                document.getElementById(event.target.dataset.submit).disabled = true;
             } else {
-                document.getElementById(`upload-${id}`).disabled = false;
+                document.getElementById(event.target.dataset.submit).disabled = false;
             };
         }));
 
         // Click upload button if enter pressed in field with valid IP
         document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('keyup', function(e) {
             if (e.key === 'Enter' || e.keyCode === 13) {
-                const id = e.target.id.replace("-ip", "");
-                const uploadButton = document.getElementById(`upload-${id}`);
-
+                const uploadButton = document.getElementById(event.target.dataset.submit);
                 if (!uploadButton.disabled) {uploadButton.click()};
             };
         }));
