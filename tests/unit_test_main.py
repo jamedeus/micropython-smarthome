@@ -47,7 +47,7 @@ async def run_tests():
     detailed_results = {}
 
     # Import all modules under /tests
-    for test in os.listdir('tests'):
+    for test in os.listdir():
         # Only run tests if they are in correct category (core, device, sensor)
         if test.startswith("test_" + target):
             module = __import__(test.split(".")[0])
@@ -184,20 +184,20 @@ def print_report(results):
 async def disk_monitor():
     from machine import reset
     # Get filesize/modification time (to detect upload in future)
-    old = os.stat("boot.py")
+    old = os.stat("main.py")
 
     print("Waiting for new code...")
 
     while True:
         # Reboot if file changed on disk
-        if not os.stat("boot.py") == old:
+        if not os.stat("main.py") == old:
             await asyncio.sleep(1)  # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
             reset()
         else:
             await asyncio.sleep(1)  # Only check once per second
 
 
-if __name__ == "__main__":
+def start_loop():
     # Connect to wifi
     wlan = network.WLAN()
     wlan.active(True)

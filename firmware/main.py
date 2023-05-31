@@ -26,11 +26,11 @@ async def disk_monitor():
     log.debug("Disk Monitor Started")
 
     # Get filesize/modification time (to detect upload in future)
-    old = os.stat("boot.py")
+    old = os.stat("main.py")
 
     while True:
         # Check if file changed on disk
-        if not os.stat("boot.py") == old:
+        if not os.stat("main.py") == old:
             # If file changed (new code received from webrepl), reboot
             print("\nReceived new code from webrepl, rebooting...\n")
             log.info("Received new code from webrepl, rebooting...")

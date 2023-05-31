@@ -138,7 +138,7 @@ def provision(config, ip, modules):
         node.put_file(os.path.join(CONFIG_DIR, config), "config.json")
 
         # Upload boot file last (triggers automatic reboot)
-        node.put_file(os.path.join(REPO_DIR, "boot.py"), "boot.py")
+        node.put_file(os.path.join(REPO_DIR, "firmware/main.py"), "main.py")
 
         node.close_connection()
 

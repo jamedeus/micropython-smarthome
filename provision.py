@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Upload config file + boot.py + all required modules and libraries in a single step
+# Upload config file + main.py + all required modules and libraries in a single step
 
 # Usage: ./provision.py -c path/to/config.json -ip <target>
 # Usage: ./provision.py <friendly-name-from-nodes.json>
@@ -202,7 +202,7 @@ class Provisioner():
             # Upload all tests
             for i in os.listdir('/home/jamedeus/git/micropython-smarthome/tests'):
                 if i.startswith("test_"):
-                    self.upload("tests/" + i, "tests/" + i)
+                    self.upload("tests/" + i, i)
 
             # Upload all device classes
             for i in os.listdir('/home/jamedeus/git/micropython-smarthome/devices'):
@@ -234,8 +234,8 @@ class Provisioner():
             # Upload config file
             self.upload("tests/unit_test_config.json", "config.json")
 
-            # Upload boot.py (unit test version automatically runs all tests on boot)
-            self.upload("tests/unit_test_boot.py", "boot.py")
+            # Upload main.py (unit test version automatically runs all tests on boot)
+            self.upload("tests/unit_test_main.py", "main.py")
 
             self.close_connection()
 
@@ -322,7 +322,7 @@ class Provisioner():
         self.upload("Api.py", "Api.py")
 
         # Upload main code last (triggers automatic reboot)
-        self.upload("boot.py", "boot.py")
+        self.upload("firmware/main.py", "main.py")
 
         self.close_connection()
 
