@@ -25,10 +25,10 @@ ENV NODE_PASSWD="password"
 # Create dir for repo, copy in modules
 WORKDIR /repo
 RUN mkdir /repo/config
+RUN mkdir /repo/firmware
 
 # Smarthome core modules
-COPY boot.py /repo/boot.py
-COPY setup.py /repo/setup.py
+COPY firmware/main.py /repo/firmware/main.py
 COPY Api.py /repo/Api.py
 COPY Config.py /repo/Config.py
 COPY Group.py /repo/Group.py
