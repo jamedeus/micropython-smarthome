@@ -6,7 +6,7 @@ import gc
 import SoftwareTimer
 import re
 from uasyncio import Lock
-from util import is_device, is_sensor, is_device_or_sensor
+from util import is_device, is_sensor, is_device_or_sensor, reboot
 
 # Set name for module's log lines
 log = logging.getLogger("API")
@@ -17,10 +17,9 @@ lock = Lock()
 timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 
 
-async def reboot():
-    # Lock released when API finishes sending reply
+# Ensure API call complete, connection closed before rebooting (reboot endpoint)
+async def reboot_task():
     await lock.acquire()
-    from Config import reboot
     reboot()
 
 
@@ -148,7 +147,7 @@ app = Api()
 
 @app.route("reboot")
 def index(args):
-    asyncio.create_task(reboot())
+    asyncio.create_task(reboot_task())
     return "Rebooting"
 
 

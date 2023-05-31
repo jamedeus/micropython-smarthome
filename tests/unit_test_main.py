@@ -6,6 +6,7 @@ import network
 import uasyncio as asyncio
 import logging
 import unittest
+from util import disk_monitor
 
 # Set level to prevent logging from slowing down tests, using memory, etc
 logging.basicConfig(
@@ -179,22 +180,6 @@ def print_report(results):
         total_failed += results[i]["failed"]
 
     print(f"Total:  {total_tests}\nFailed: {total_failed}\n")
-
-
-async def disk_monitor():
-    from machine import reset
-    # Get filesize/modification time (to detect upload in future)
-    old = os.stat("main.py")
-
-    print("Waiting for new code...")
-
-    while True:
-        # Reboot if file changed on disk
-        if not os.stat("main.py") == old:
-            await asyncio.sleep(1)  # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
-            reset()
-        else:
-            await asyncio.sleep(1)  # Only check once per second
 
 
 def start_loop():

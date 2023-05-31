@@ -1,14 +1,10 @@
 import json
 import network
 import uasyncio as asyncio
-from machine import Timer, reset
+from machine import Timer
+from util import reboot
 
 reboot_timer = Timer(1)
-
-
-# Must accept arg (called by timer, passes self)
-def reboot(timer="ignore"):
-    reset()
 
 
 def create_config_file(data):

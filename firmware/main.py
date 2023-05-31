@@ -1,4 +1,3 @@
-import os
 import gc
 import json
 import webrepl
@@ -7,6 +6,7 @@ import uasyncio as asyncio
 from Config import Config
 from SoftwareTimer import timer
 from Api import app
+from util import disk_monitor
 
 print("--------Booted--------")
 
@@ -21,58 +21,15 @@ log = logging.getLogger("Main")
 log.info("Booted")
 
 
-async def disk_monitor():
-    print("Disk Monitor Started\n")
-    log.debug("Disk Monitor Started")
-
-    # Get filesize/modification time (to detect upload in future)
-    old = os.stat("main.py")
-
-    while True:
-        # Check if file changed on disk
-        if not os.stat("main.py") == old:
-            # If file changed (new code received from webrepl), reboot
-            print("\nReceived new code from webrepl, rebooting...\n")
-            log.info("Received new code from webrepl, rebooting...")
-            await asyncio.sleep(1)  # Prevents webrepl_cli.py from hanging after upload (esp reboots too fast)
-            from Config import reboot
-            reboot()
-
-        # Don't let the log exceed 500 KB, full disk hangs system + can't pull log via webrepl
-        elif os.stat('app.log')[6] > 100000:
-            print("\nLog exceeded 100 KB, clearing...\n")
-
-            # Close file, remove
-            logging.root.handlers[0].close()
-            os.remove('app.log')
-
-            # Create new handler, set format
-            h = logging.FileHandler('app.log')
-            h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
-
-            # Replace old handler with new
-            logging.root.handlers.clear()
-            logging.root.addHandler(h)
-
-            log.info("Deleted old log (exceeded 100 KB size limit)")
-
-            # Allow logger to write new log file to disk before loop checks size again (crashes if doesn't exist yet)
-            await asyncio.sleep(1)
-        else:
-            await asyncio.sleep(1)  # Only check once per second
-
-
 # Main loop - monitor sensors, apply actions if conditions met
 async def main(config):
     while True:
         for group in config.groups:
 
             conditions = group.check_sensor_conditions()
-
             await asyncio.sleep(0)
 
             action = group.determine_correct_action(conditions)
-
             await asyncio.sleep(0)
 
             if action is None:
@@ -88,24 +45,28 @@ async def main(config):
 
 
 def start_loop():
-    # Instantiate config object
+    # Instantiate config object (connects to wifi)
     with open('config.json', 'r') as file:
         config = Config(json.load(file))
-
     gc.collect()
 
+    # Start webrepl (OTA updates)
     webrepl.start()
 
     # Pass config object to API instance
     app.config = config
 
-    # SoftwareTimer loop checks if timers have expired, applies actions
+    # SoftwareTimer loop runs callbacks when timers expire (schedule rules, API, etc)
     asyncio.create_task(timer.loop())
-    # Disk_monitor deletes log when size limit exceeded, reboots when new code upload received
+
+    # Disk_monitor deletes log when size limit exceeded, reboots when new code uploaded
     asyncio.create_task(disk_monitor())
+
     # Config loop rebuilds schedule rules when config_timer expires around 3am every day
     asyncio.create_task(config.loop())
+
     # Start API server, await requests
     asyncio.create_task(app.run())
 
+    # Run main loop, controls device/sensor instances in config object
     asyncio.run(main(config))

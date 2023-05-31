@@ -9,7 +9,7 @@ import gc
 import re
 import SoftwareTimer
 from Group import Group
-from util import is_device, is_sensor, is_device_or_sensor
+from util import is_device, is_sensor, is_device_or_sensor, reboot
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -555,10 +555,3 @@ class Config():
             else:
                 # Check every minute
                 await asyncio.sleep(60)
-
-
-def reboot(arg="unused"):
-    print("Reboot function called, rebooting...")
-    log.info("Reboot function called, rebooting...\n")
-    from machine import reset
-    reset()
