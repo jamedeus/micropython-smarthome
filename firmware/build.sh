@@ -47,7 +47,7 @@ copy_repo() {
     \cp -f devices/* sensors/* $target
 
     # Copy libraries
-    \cp -rf lib $target
+    \cp -f lib/* $target
 
     cd firmware/
 }
@@ -83,7 +83,6 @@ fi
 # Copy project source to build modules dir, set env vars
 copy_repo
 source_esp_idf
-
 
 # Update existing build unless user passed fresh arg
 if [[ $1 == "f" || $1 == "--f" || $1 == "fresh" ]]; then
