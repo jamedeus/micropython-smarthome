@@ -1,0 +1,5 @@
+config/*
+nodes.json
+firmware/esp-idf/
+firmware/micropython/
+firmware/*.bin

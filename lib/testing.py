@@ -1,5 +1,7 @@
 import time
-import micropython
+
+# Development tools used in place of timeit (no micropython equivalent)
+# Useful to measure performance changes while refactoring
 
 
 # Pass callable as call, no ()
