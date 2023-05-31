@@ -480,9 +480,6 @@ class ConfirmRequiresPostTests(TestCase):
     def test_get_request(self):
         # All endpoints requiring POST requests
         endpoints = [
-            '/setup',
-            '/new_config/setup',
-            '/edit_config/setup',
             '/upload',
             '/upload/reupload',
             '/edit_config/upload',
@@ -575,16 +572,6 @@ class EditConfigTests(TestCase):
         self.assertContains(response, '<input type="text" class="form-control device1 pwm-limits" id="device1-max_bright" placeholder="1023" value="1023" required>')
         self.assertContains(response, '<input type="text" class="form-control device2 ip-input" id="device2-ip" placeholder="" value="192.168.1.239"')
         self.assertContains(response, '<input type="text" class="form-control device3 nickname" id="device3-nickname" placeholder="" value="Entry Light" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>')
-
-    # Verify setup can be reached from suburl, used when upload fails due to missing /lib on target node
-    def test_setup(self):
-        # Mock Webrepl to return True without doing anything
-        with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', return_value=True):
-
-            response = self.client.post('/edit_config/setup', {'ip': '123.45.67.89'})
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Upload complete.')
 
     # Original bug: Did not catch DoesNotExist error, leading to traceback
     # if target config was deleted by another client before clicking edit
@@ -768,39 +755,6 @@ class ReuploadAllTests(TestCase):
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), all_failed_different_reasons)
-
-
-# Test endpoint that uploads first-time setup script
-class SetupTests(TestCase):
-    def setUp(self):
-        # Set default content_type for post requests (avoid long lines)
-        self.client = JSONClient()
-
-    # Verify response in a normal scenario
-    # Testing errors is redundant, it just returns the output of provision (already tested)
-    def test_setup(self):
-        # Mock Webrepl to return True without doing anything
-        with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', return_value=True):
-
-            response = self.client.post('/setup', {'ip': '123.45.67.89'})
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Upload complete.')
-
-    # Verify the provision function is called with correct arguments
-    def test_function_call(self):
-        # Mock provision to return expected output without doing anything
-        with patch('node_configuration.views.provision') as mock_provision:
-
-            mock_provision.return_value = JsonResponse("Upload complete.", safe=False, status=200)
-            self.client.post('/setup', {'ip': '123.45.67.89'})
-            mock_provision.assert_called_with("setup.json", '123.45.67.89', {})
-
-    # Verify correct error when passed an invalid IP
-    def test_invalid_ip(self):
-        response = self.client.post('/setup', {'ip': '123.456.678.90'})
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
 
 
 # Test endpoint called by frontend upload buttons (calls get_modules and provision)

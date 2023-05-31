@@ -82,20 +82,6 @@ def get_modules(config):
     return modules
 
 
-def setup(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-        print(json.dumps(data, indent=4))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
-    if not valid_ip(data["ip"]):
-        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
-
-    # Upload
-    return provision("setup.json", data["ip"], {})
-
-
 def upload(request, reupload=False):
     if request.method == "POST":
         data = json.loads(request.body.decode("utf-8"))
@@ -152,11 +138,7 @@ def provision(config, ip, modules):
         node.put_file(os.path.join(CONFIG_DIR, config), "config.json")
 
         # Upload boot file last (triggers automatic reboot)
-        if not config == "setup.json":
-            node.put_file(os.path.join(REPO_DIR, "boot.py"), "boot.py")
-        else:
-            # First-time setup, creates /lib/ and subdirs
-            node.put_file(os.path.join(REPO_DIR, "setup.py"), "boot.py")
+        node.put_file(os.path.join(REPO_DIR, "boot.py"), "boot.py")
 
         node.close_connection()
 

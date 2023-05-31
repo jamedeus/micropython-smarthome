@@ -21,11 +21,6 @@ urlpatterns = [
     path('delete_node', views.delete_node, name='delete_node'),
     path('change_node_ip', views.change_node_ip, name='change_node_ip'),
 
-    # Uploads setup script to new node (accessible from relative path)
-    path('setup', views.setup, name='setup'),
-    path('new_config/setup', views.setup, name='setup'),
-    path('edit_config/setup', views.setup, name='setup'),
-
     # Uploads config to node (accessible from relative path)
     # Optional reupload arg prevents creating new model entry
     path('upload', views.upload, name='upload'),

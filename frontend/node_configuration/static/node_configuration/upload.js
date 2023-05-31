@@ -34,7 +34,7 @@ async function send_post_request(url, body) {
 };
 
 // Show the modal with id modal, optionally change title/body/footer
-function show_modal(modal, title=false, body=false, footer=false) {
+function show_modal(modal, title=false, body=false, footer=false) {show_modal
     if (title) {
         document.getElementById(modal._element.id + "-title").innerHTML = title;
     };
@@ -72,7 +72,7 @@ async function upload() {
         await sleep(1200);
         window.location.replace("/config_overview");
 
-    // Unable to upload because node has not run setup
+    // Unable to upload because of filesystem error on node
     } else if (response.status == 409) {
         const error = await response.text();
         const footer = `<button type="button" class="btn btn-success mx-auto" data-bs-dismiss="modal">OK</button>`

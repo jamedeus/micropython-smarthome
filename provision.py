@@ -321,28 +321,17 @@ class Provisioner():
         # Upload API module
         self.upload("Api.py", "Api.py")
 
-        if "setup.json" not in self.config:
-            # Upload main code last (triggers automatic reboot)
-            self.upload("boot.py", "boot.py")
-        else:
-            # Upload code to install dependencies
-            self.upload("setup.py", "boot.py")
+        # Upload main code last (triggers automatic reboot)
+        self.upload("boot.py", "boot.py")
 
         self.close_connection()
 
     # Takes loaded config file as arg, returns list of required device/sensor/library modules
     def get_modules(self, conf):
-        # Used for initial setup, uploads code that automatically creates required subdirs
-        if self.config == "setup.json":
-            return [], []
-
         modules = []
 
         for i in conf:
             if i == "ir_blaster":
-                print(Fore.YELLOW + "WARNING" + Fore.RESET, end="")
-                print(": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
-
                 modules.append("devices/IrBlaster.py")
                 modules.append("ir-remote/samsung-codes.json")
                 modules.append("ir-remote/whynter-codes.json")
@@ -391,9 +380,6 @@ class Provisioner():
                 modules.append("sensors/Sensor.py")
 
             elif conf[i]["_type"] == "si7021":
-                print(Fore.YELLOW + "WARNING" + Fore.RESET, end="")
-                print(": If this is a new ESP32, upload config/setup.json first to install dependencies\n")
-
                 modules.append("sensors/Thermostat.py")
                 modules.append("sensors/Sensor.py")
 
@@ -442,38 +428,6 @@ class Provisioner():
         try:
             put_file(self.ws, self.basepath + "/" + src_file, dst_file)
         except AssertionError:
-
-            if src_file.startswith("lib/") or src_file.startswith("tests/"):
-                print(Fore.RED + f"\nERROR: Unable to upload {src_file}, directory does not exist" + Fore.RESET)
-                print("This is normal for new nodes - would you like to upload setup to fix? ", end="")
-                print(Fore.CYAN + "[Y/n]" + Fore.RESET)
-
-                x = input()
-                if x == "n":
-                    print(Fore.YELLOW + "\nWARNING" + Fore.RESET, end="")
-                    print(": Skipping " + src_file + ", node may fail to boot after upload.\n")
-                    pass
-                else:
-                    # Connection was broken by error, close and re-open
-                    self.close_connection()
-                    self.open_connection()
-
-                    # Upload setup config and boot file (creates required directory structure then waits for upload_
-                    self.upload('config/setup.json', 'config.json')
-                    self.upload('setup.py', 'boot.py')
-
-                    # Close connection (node rebooted)
-                    self.close_connection()
-
-                    # Resume upload once user restarts node
-                    print(Fore.CYAN)
-                    print("Please reboot target node and wait 30 seconds, then press enter to resume upload.")
-                    print(Fore.RESET)
-                    x = input()
-                    self.open_connection()
-                    self.upload(src_file, dst_file)
-
-            else:
                 print(Fore.RED + "ERROR" + Fore.RESET, end="")
                 print(": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
                 pass
