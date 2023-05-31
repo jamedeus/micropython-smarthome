@@ -1,7 +1,14 @@
-print("--------Booted--------")
-
-import uasyncio as asyncio
+import os
+import gc
+import json
+import webrepl
 import logging
+import uasyncio as asyncio
+from Config import Config
+from SoftwareTimer import timer
+from Api import app
+
+print("--------Booted--------")
 
 # Set log file and syntax
 logging.basicConfig(
@@ -15,8 +22,6 @@ log.info("Booted")
 
 
 async def disk_monitor():
-    import os
-
     print("Disk Monitor Started\n")
     log.debug("Disk Monitor Started")
 
@@ -82,13 +87,7 @@ async def main(config):
         await asyncio.sleep_ms(1)
 
 
-if __name__ == "__main__":
-    import webrepl
-    import json
-    from Config import Config
-    from SoftwareTimer import timer
-    from Api import app
-
+def start_loop():
     # Instantiate config object
     with open('config.json', 'r') as file:
         config = Config(json.load(file))
