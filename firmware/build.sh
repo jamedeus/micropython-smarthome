@@ -53,6 +53,28 @@ copy_repo() {
 }
 
 
+# Recompile tailwind stylesheet, insert into html, convert to python module
+# Module frozen into firmware, contains single variable with page contents
+package_setup_page() {
+    # Working copy (do not modify source)
+    cp setup.html setup.html.tmp
+
+    # Recompile tailwind stylesheet
+    npx tailwindcss -o tailwind.css --minify
+
+    # Insert tailwind.css into setup.html.tmp after <style> opening tag
+    sed -i "/<style>/r tailwind.css" setup.html.tmp
+    rm tailwind.css
+
+    # Prepend variable declaration + opening quotes, append closing quotes
+    sed -i.old '1s;^;setup_page = """;' setup.html.tmp
+    echo "\"\"\"" >> setup.html.tmp
+
+    # Rename, move to build modules
+    mv setup.html.tmp micropython/ports/esp32/modules/setup_page.py
+}
+
+
 # Compile micropython firmware
 # Append to existing build if present
 build() {
@@ -80,9 +102,11 @@ if [[ ! -d micropython ]]; then
 fi
 
 
-# Copy project source to build modules dir, set env vars
+# Copy project source to build modules dir, set env vars, build setup page
 copy_repo
 source_esp_idf
+package_setup_page
+
 
 # Update existing build unless user passed fresh arg
 if [[ $1 == "f" || $1 == "--f" || $1 == "fresh" ]]; then

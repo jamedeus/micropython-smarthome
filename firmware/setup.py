@@ -3,6 +3,7 @@ import network
 import uasyncio as asyncio
 from machine import Timer
 from util import reboot
+from setup_page import setup_page
 
 reboot_timer = Timer(1)
 
@@ -58,52 +59,8 @@ async def handle_client(reader, writer):
 
     # GET: Serve setup page
     else:
-        response = """HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WiFi Connection Page</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="flex items-center justify-center h-screen bg-gray-200">
-    <form class="text-center" action="" id="configuration" method="post">
-        <div class="bg-white p-8 rounded-lg shadow-md w-96 mb-6">
-            <h1 class="text-2xl font-bold mb-6 text-center text-gray-700">WiFi Credentials</h1>
-
-            <div class="mb-4">
-                <input class="text-center shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="ssid" name="ssid" type="text" placeholder="SSID">
-            </div>
-            <div class="mb-6">
-                <input class="text-center shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" id="password" name="password" type="password" placeholder="Password">
-            </div>
-        </div>
-
-        <div class="flex items-center justify-between mb-6">
-            <input class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mx-auto rounded focus:outline-none focus:shadow-outline" type="submit" value="Connect">
-        </div>
-    </form>
-    <script>
-        document.getElementById('configuration').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            var formData = {};
-            new FormData(e.target).forEach(function(value, name) {
-                formData[name] = value;
-            });
-
-            fetch('', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(formData)
-            });
-        });
-    </script>
-</body>
-</html>
-"""
+        # Build script creates setup_page.py (single variable containing contents of setup.html)
+        response = f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n{setup_page}"
         await writer.awrite(response)
 
     await writer.aclose()
