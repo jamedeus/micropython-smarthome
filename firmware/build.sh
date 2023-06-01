@@ -66,9 +66,22 @@ package_setup_page() {
     sed -i "/<style>/r tailwind.css" setup.html.tmp
     rm tailwind.css
 
+    # Minify HTML - single line, remove comments, etc
+    npx html-minifier \
+        --collapse-whitespace \
+        --remove-comments \
+        --remove-optional-tags \
+        --remove-redundant-attributes \
+        --remove-script-type-attributes \
+        --remove-tag-whitespace \
+        --use-short-doctype \
+        --minify-js true \
+        setup.html.tmp -o setup.html.tmp
+
     # Prepend variable declaration + opening quotes, append closing quotes
     sed -i.old '1s;^;setup_page = """;' setup.html.tmp
     echo "\"\"\"" >> setup.html.tmp
+    rm setup.html.tmp.old
 
     # Rename, move to build modules
     mv setup.html.tmp micropython/ports/esp32/modules/setup_page.py
