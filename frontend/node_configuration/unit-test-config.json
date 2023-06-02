@@ -3,6 +3,7 @@
         "id": "Unit Test Config",
         "location": "build pipeline",
         "floor": "0",
+        "timezone": "America/Los_Angeles",
         "schedule_keywords": {
             "sunrise": "06:00",
             "sunset": "18:00"

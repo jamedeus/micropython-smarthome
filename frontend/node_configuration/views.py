@@ -551,6 +551,7 @@ def generate_config_file(request, edit_existing=False):
             "id": data["friendlyName"],
             "location": data["location"],
             "floor": data["floor"],
+            "timezone": settings.TIME_ZONE,
             "schedule_keywords": get_schedule_keywords_dict()
         },
         "wifi": {

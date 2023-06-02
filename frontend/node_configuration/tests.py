@@ -3,6 +3,7 @@ import os
 import socket
 from copy import deepcopy
 from unittest.mock import patch, MagicMock
+import tzlocal
 from django.test import TestCase
 from django.conf import settings
 from django.http import JsonResponse
@@ -29,7 +30,6 @@ from .unit_test_helpers import (
     clean_up_test_nodes,
     test_config_1,
     test_config_2,
-    simulate_first_time_upload,
     simulate_reupload_all_partial_success,
     create_config_and_node_from_json,
     test_config_1_edit_context,
@@ -1924,6 +1924,19 @@ class GenerateConfigFileTests(TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json(), {'Error': 'Cabinet Lights: Invalid default rule 9001'})
         self.assertEqual(len(Config.objects.all()), 0)
+
+    def test_config_timezone(self):
+        # Generate config file, confirm timezone matches user local timezone
+        self.client.post('/generate_config_file', request_payload)
+        config = Config.objects.all()[0]
+        self.assertEqual(config.config['metadata']['timezone'], tzlocal.get_localzone_name())
+
+        # Override timezone, generate again, confirm matches new timezone
+        settings.TIME_ZONE = "Asia/Tokyo"
+        config.delete()
+        self.client.post('/generate_config_file', request_payload)
+        config = Config.objects.all()[0]
+        self.assertEqual(config.config['metadata']['timezone'], "Asia/Tokyo")
 
     # Original bug: Did not catch DoesNotExist error, leading to traceback
     # if target config was deleted by another client while editing
