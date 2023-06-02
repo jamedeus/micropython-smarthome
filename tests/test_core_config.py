@@ -44,6 +44,7 @@ class TestConfig(unittest.TestCase):
                 'id': 'Upstairs bathroom',
                 'location': 'Under counter',
                 'floor': '2',
+                'timezone': 'America/Los_Angeles',
                 "schedule_keywords": {}
             },
             'sensor1': {
@@ -173,6 +174,7 @@ class TestConfig(unittest.TestCase):
                     'id': 'test',
                     'location': 'test',
                     'floor': '0',
+                    'timezone': 'America/Los_Angeles',
                     "schedule_keywords": {}
                 },
                 'wifi': {
@@ -205,6 +207,7 @@ class TestConfig(unittest.TestCase):
                     'id': 'test',
                     'location': 'test',
                     'floor': '0',
+                    'timezone': 'America/Los_Angeles',
                     "schedule_keywords": {}
                 },
                 'wifi': {
@@ -237,6 +240,7 @@ class TestConfig(unittest.TestCase):
                     'id': 'test',
                     'location': 'test',
                     'floor': '0',
+                    'timezone': 'America/Los_Angeles',
                     "schedule_keywords": {}
                 },
                 'wifi': {
@@ -270,6 +274,7 @@ class TestConfig(unittest.TestCase):
                     'id': 'test',
                     'location': 'test',
                     'floor': '0',
+                    'timezone': 'America/Los_Angeles',
                     "schedule_keywords": {}
                 },
                 'wifi': {
@@ -300,6 +305,7 @@ class TestConfig(unittest.TestCase):
                     'id': 'test',
                     'location': 'test',
                     'floor': '0',
+                    'timezone': 'America/Los_Angeles',
                     "schedule_keywords": {}
                 },
                 'wifi': {
@@ -333,6 +339,7 @@ class TestConfig(unittest.TestCase):
                     "id": "Upstairs Bathroom",
                     "location": "Under counter",
                     "floor": "2",
+                    "timezone": "America/Los_Angeles",
                     "schedule_keywords": {}
                 },
                 "wifi": {
@@ -392,6 +399,7 @@ class TestConfig(unittest.TestCase):
                     "id": "Upstairs Bathroom",
                     "location": "Under counter",
                     "floor": "2",
+                    "timezone": "America/Los_Angeles",
                     "schedule_keywords": {}
                 },
                 "wifi": {
@@ -440,6 +448,7 @@ class TestConfig(unittest.TestCase):
                     "id": "Upstairs Bathroom",
                     "location": "Under counter",
                     "floor": "2",
+                    "timezone": "America/Los_Angeles",
                     "schedule_keywords": {}
                 },
                 "wifi": {

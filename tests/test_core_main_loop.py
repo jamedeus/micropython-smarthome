@@ -11,6 +11,7 @@ config_file = {
         "id": "unit-testing",
         "location": "test environment",
         "floor": "0",
+        "timezone": "America/Los_Angeles",
         "schedule_keywords": {}
     },
     "sensor1": {

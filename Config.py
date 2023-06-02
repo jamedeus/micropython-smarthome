@@ -80,6 +80,9 @@ class Config():
         self.location = conf["metadata"]["location"]
         self.floor = conf["metadata"]["floor"]
 
+        # Load metadata parameters used for API calls (not shown in frontend)
+        self.timezone = conf["metadata"]["timezone"]
+
         # Toggled by callback around 3:00am
         # Loop checks this and rebuilds schedule rule queue, re-runs API calls when True
         self.reload_rules = False
@@ -277,7 +280,7 @@ class Config():
         # Set time from internet in correct timezone, retry until successful (ntptime easier but no timezone support)
         while True:
             try:
-                response = urequests.get("https://api.ipgeolocation.io/timezone?apiKey=ddcf9be5a455453e99d84de3dfe825bc&tz=America/Los_Angeles")
+                response = urequests.get(f"https://api.ipgeolocation.io/timezone?apiKey=ddcf9be5a455453e99d84de3dfe825bc&tz={self.timezone}")
 
                 # Convert epoch (seconds since 01/01/1970 GMT) to micropython epoch (since 01/01/2000)
                 # -946684800 for 30 years, -28800 for PST timezone)
