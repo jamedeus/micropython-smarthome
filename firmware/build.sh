@@ -47,7 +47,7 @@ copy_repo() {
     \cp -f devices/* sensors/* $target
 
     # Copy libraries
-    \cp -f lib/* $target
+    \cp -r -f lib/* $target
 
     cd firmware/
 }
@@ -79,9 +79,8 @@ package_setup_page() {
         setup.html.tmp -o setup.html.tmp
 
     # Prepend variable declaration + opening quotes, append closing quotes
-    sed -i.old '1s;^;setup_page = """;' setup.html.tmp
+    sed -i '1s;^;setup_page = """;' setup.html.tmp
     echo "\"\"\"" >> setup.html.tmp
-    rm setup.html.tmp.old
 
     # Rename, move to build modules
     mv setup.html.tmp micropython/ports/esp32/modules/setup_page.py
