@@ -16,6 +16,7 @@ def create_config_file(data):
                 "id": "",
                 "location": "",
                 "floor": "",
+                "timezone": data["timezone"],
                 "schedule_keywords": {}
             },
             "wifi": {
