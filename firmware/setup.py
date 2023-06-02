@@ -1,3 +1,4 @@
+import os
 import json
 import network
 import uasyncio as asyncio
@@ -28,6 +29,9 @@ def create_config_file(data):
         # Write to disk
         with open('config.json', 'w') as file:
             json.dump(config, file)
+
+        with open('webrepl_cfg.py', 'w') as file:
+            file.write(f"PASS = '{data['webrepl']}'")
 
         return True
 
