@@ -1931,12 +1931,18 @@ class GenerateConfigFileTests(TestCase):
         config = Config.objects.all()[0]
         self.assertEqual(config.config['metadata']['timezone'], tzlocal.get_localzone_name())
 
-        # Override timezone, generate again, confirm matches new timezone
+        # Override timezone
+        original = settings.TIME_ZONE
         settings.TIME_ZONE = "Asia/Tokyo"
+
+        # Generate again, confirm matches new timezone
         config.delete()
         self.client.post('/generate_config_file', request_payload)
         config = Config.objects.all()[0]
         self.assertEqual(config.config['metadata']['timezone'], "Asia/Tokyo")
+
+        # Revert timezone
+        settings.TIME_ZONE = original
 
     # Original bug: Did not catch DoesNotExist error, leading to traceback
     # if target config was deleted by another client while editing
