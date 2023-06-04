@@ -1,5 +1,5 @@
-import os
 import json
+import time
 import network
 import uasyncio as asyncio
 from machine import Timer
@@ -8,8 +8,30 @@ from setup_page import setup_page
 
 reboot_timer = Timer(1)
 
+ap = network.WLAN(network.AP_IF)
+wlan = network.WLAN(network.STA_IF)
+
+
+def test_connection(ssid, password):
+    wlan.connect(ssid, password)
+
+    # Try to connect for up to 5 seconds
+    fails = 0
+    while not wlan.isconnected():
+        if fails > 5:
+            wlan.disconnect()
+            return False
+        fails += 1
+        time.sleep(1)
+
+    return True
+
 
 def create_config_file(data):
+    if not test_connection(data["ssid"], data["password"]):
+        print("Unable to connect to wifi with provided credentials")
+        return False
+
     try:
         # Populate template from received dict keys
         config = {
@@ -57,10 +79,12 @@ async def handle_client(reader, writer):
         if create_config_file(data):
             print("Config file created, rebooting...")
             reboot_timer.init(period=1000, mode=Timer.ONE_SHOT, callback=reboot)
+            await writer.awrite('HTTP/1.1 200 OK\r\n\r\n')
+
+        # Return 400 if unable to generate
         else:
             print("ERROR: Failed to create config file")
-
-        await writer.awrite('HTTP/1.1 200 OK\r\n\r\n')
+            await writer.awrite('HTTP/1.1 400 Bad Request\r\n\r\n')
 
     # GET: Serve setup page
     else:
@@ -80,6 +104,6 @@ async def start_server():
 
 # Create access point, listen for connections
 def serve_setup_page():
-    ap = network.WLAN(network.AP_IF)
+    wlan.active(True)
     ap.active(True)
     asyncio.run(start_server())
