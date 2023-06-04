@@ -10,6 +10,8 @@
     </style>
 </head>
 <body class="flex justify-center h-screen bg-sky-950">
+    <div id="overlay" class="fixed top-[50%] z-[99] w-0 h-0 rounded-full bg-teal-500 duration-[800ms] ease-in"></div>
+    <h1 id="complete" class="fixed top-0 z-[100] text-white text-4xl opacity-0 duration-500 delay-300 ease-out font-semibold">Setup Complete</h1>
     <form class="text-center" action="" id="configuration" method="post">
         <div class="bg-white p-8 rounded-lg shadow-xl m-6">
             <h1 class="text-2xl font-bold mb-6 text-center tracking-wide text-stone-800">WiFi Credentials</h1>
@@ -72,26 +74,56 @@
             </div>
         </div>
 
-        <div class="flex items-center justify-between m-6">
-            <input class="bg-slate-500 hover:scale-110 transition ease-in-out duration-300 text-white font-bold py-2 px-4 mb-6 mx-auto rounded focus:outline-none focus:shadow-outline" type="submit" value="Connect">
+        <div class="flex m-6">
+            <button class="z-50 flex items-center bg-slate-500 hover:scale-110 transition ease-in-out duration-300 text-white font-bold py-2 px-4 mb-6 mx-auto rounded focus:outline-none focus:shadow-outline" type="submit" id="submit-button">
+                <span id="default-text">Connect</span>
+                <svg id="loading-spin" class="z-55 hidden animate-spin align-middle h-5 w-5 mr-3" viewBox="0 0 24 24">
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span id="loading-text" class="hidden align-middle">Loading...</span>
+            </button>
         </div>
     </form>
     <script>
-        document.getElementById('configuration').addEventListener('submit', function(e) {
+        // Loading button constants
+        const button = document.getElementById('submit-button');
+        const defaultText = document.getElementById('default-text');
+        const loadingText = document.getElementById('loading-text');
+        const loadingSpin = document.getElementById('loading-spin');
+
+        document.getElementById('configuration').addEventListener('submit', async function(e) {
             e.preventDefault();
+
+            // Start loading animation, disable button
+            defaultText.classList.add('hidden');
+            loadingText.classList.remove('hidden');
+            document.getElementById('loading-spin').classList.remove('hidden');
+            button.disabled = true;
 
             var formData = {};
             new FormData(e.target).forEach(function(value, name) {
                 formData[name] = value;
             });
 
-            fetch('', {
+            var response = await fetch('', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
             });
+
+            if (response.ok) {
+                document.getElementById('overlay').classList.remove("w-0", "h-0", "opacity-0", "top-[50%]");
+                document.getElementById('overlay').classList.add("h-250", "aspect-square", "-top-[50%]");
+                document.getElementById('complete').classList.remove("opacity-0", "top-0")
+                document.getElementById('complete').classList.add("top-[50%]")
+            } else {
+                defaultText.classList.remove('hidden');
+                loadingText.classList.add('hidden');
+                loadingSpin.classList.add('hidden');
+                button.disabled = false;
+            };
         });
     </script>
 </body>

@@ -4,7 +4,11 @@ module.exports = {
     './setup.html'
   ],
   theme: {
-    extend: {},
+    extend: {
+      height: {
+        '250': '250vh',
+      },
+    },
   },
   plugins: [],
 }
