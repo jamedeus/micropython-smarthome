@@ -10,6 +10,7 @@ import re
 import SoftwareTimer
 from Group import Group
 from util import is_device, is_sensor, is_device_or_sensor, reboot
+from api_keys import ipgeo_key
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -280,7 +281,7 @@ class Config():
         # Set time from internet in correct timezone, retry until successful (ntptime easier but no timezone support)
         while True:
             try:
-                response = urequests.get(f"https://api.ipgeolocation.io/timezone?apiKey=ddcf9be5a455453e99d84de3dfe825bc&tz={self.timezone}")
+                response = urequests.get(f"https://api.ipgeolocation.io/timezone?apiKey={ipgeo_key}&tz={self.timezone}")
 
                 # Convert epoch (seconds since 01/01/1970 GMT) to micropython epoch (since 01/01/2000)
                 # -946684800 for 30 years, -28800 for PST timezone)
@@ -315,7 +316,9 @@ class Config():
         # Get sunrise/sunset time, retry until successful
         while True:
             try:
-                response = urequests.get("https://api.ipgeolocation.io/astronomy?apiKey=ddcf9be5a455453e99d84de3dfe825bc&lat=45.524722&long=-122.6771891")
+                response = urequests.get(
+                    f"https://api.ipgeolocation.io/astronomy?apiKey={ipgeo_key}&lat=45.524722&long=-122.6771891"
+                )
                 # Parse out sunrise/sunset, convert to 24h format
                 self.schedule_keywords["sunrise"] = response.json()["sunrise"]
                 self.schedule_keywords["sunset"] = response.json()["sunset"]
