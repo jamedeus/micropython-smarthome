@@ -7,6 +7,7 @@ import uasyncio as asyncio
 import logging
 import gc
 import re
+import ntptime
 import SoftwareTimer
 from Group import Group
 from util import is_device, is_sensor, is_device_or_sensor, reboot
@@ -281,28 +282,45 @@ class Config():
         # Set time from internet in correct timezone, retry until successful (ntptime easier but no timezone support)
         while True:
             try:
+                # Set time (UTC)
+                ntptime.settime()
+
+                # Get offset hours for current timezone, adjust for daylight savings if needed
                 response = urequests.get(f"https://api.ipgeolocation.io/timezone?apiKey={ipgeo_key}&tz={self.timezone}")
-
-                # Convert epoch (seconds since 01/01/1970 GMT) to micropython epoch (since 01/01/2000)
-                # -946684800 for 30 years, -28800 for PST timezone)
-                mepoch = int(response.json()["date_time_unix"]) - 946713600
-
-                # Epoch does not include daylight savings - adjust if needed
                 if response.json()["is_dst"]:
-                    mepoch += 3600
-
-                # Get datetime object, set system clock
-                now = time.localtime(mepoch)
-                # RTC uses different parameter order
-                RTC().datetime((now[0], now[1], now[2], now[6], now[3], now[4], now[5], 0))
+                    offset = response.json()['timezone_offset'] + 1
+                else:
+                    offset = response.json()['timezone_offset']
                 response.close()
+
+                # Current time tuple (UTC)
+                now = time.localtime()
+
+                # Set system clock to correct timezone
+                # RTC uses different parameter order, day rolls over if hour+offset outside 0-23 range
+                RTC().datetime((now[0], now[1], now[2], now[6], now[3] + offset, now[4], now[5], 0))
                 break
-            except:
-                print("Failed setting system time, retrying...")
-                log.debug("Failed setting system time, retrying...")
+
+            # Issue with response object
+            except KeyError:
+                if response.json()["message"] == f"Provided time zone '{self.timezone}' is not valid.":
+                    print(f"Configured timezone ({self.timezone}) is invalid")
+                    log.error(f"Configured timezone ({self.timezone}) is invalid")
+                elif response.json()["message"].startswith("Provided API key is not valid"):
+                    print("Invalid API key (ipgeolocation.io)")
+                    log.error("Invalid API key (ipgeolocation.io)")
+                elif response.json()["message"].startswith("Internal server error"):
+                    print("ipgeolocation.io: Internal server error")
+                    log.error("ipgeolocation.io: Internal server error")
+                reboot()
+
+            # Network issue
+            except OSError:
+                print("Failed to set system time, retrying...")
+                log.debug("Failed to set system time, retrying...")
                 failed_attempts += 1
                 if failed_attempts > 5:
-                    log.info("Failed to get system time 5 times, reboot triggered")
+                    log.info("Failed to set system time 5 times, reboot triggered")
                     reboot()
                 time.sleep_ms(1500)  # If failed, wait 1.5 seconds before retrying
                 gc.collect()  # Free up memory before retrying
