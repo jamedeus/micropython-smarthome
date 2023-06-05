@@ -81,8 +81,7 @@ class Config():
         self.location = conf["metadata"]["location"]
         self.floor = conf["metadata"]["floor"]
 
-        # Load metadata parameters used for API calls (not shown in frontend)
-        self.timezone = conf["metadata"]["timezone"]
+        # Load GPS coordinates (used for timezone + sunrise/sunset times, not shown in frontend)
         try:
             self.gps = conf["metadata"]["gps"]
         except KeyError:
@@ -310,10 +309,7 @@ class Config():
 
             # Issue with response object
             except KeyError:
-                if response.json()["message"] == f"Provided time zone '{self.timezone}' is not valid.":
-                    print(f"Configured timezone ({self.timezone}) is invalid")
-                    log.error(f"Configured timezone ({self.timezone}) is invalid")
-                elif response.json()["message"].startswith("Provided API key is not valid"):
+                if response.json()["message"].startswith("Provided API key is not valid"):
                     print("Invalid API key (ipgeolocation.io)")
                     log.error("Invalid API key (ipgeolocation.io)")
                 elif response.json()["message"].startswith("Internal server error"):
