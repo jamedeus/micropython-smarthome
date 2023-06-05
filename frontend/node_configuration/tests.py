@@ -1880,6 +1880,9 @@ class GenerateConfigFileTests(TestCase):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
 
+        # Set default GPS coordinates
+        GpsCoordinates.objects.create(display='Portland', lat='45.689122409097', lon='-122.63675124859863')
+
     def test_generate_config_file(self):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 0)

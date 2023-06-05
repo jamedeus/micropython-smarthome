@@ -287,7 +287,7 @@ class Config():
                 # Use GPS coordinates if present, otherwise rely on IP lookup
                 url = f"https://api.ipgeolocation.io/astronomy?apiKey={ipgeo_key}"
                 if self.gps:
-                    url += f"&lat={self.gps['lat']}&long={self.gps['long']}"
+                    url += f"&lat={self.gps['lat']}&long={self.gps['lon']}"
 
                 response = urequests.get(url)
 

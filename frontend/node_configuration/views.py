@@ -559,6 +559,11 @@ def generate_config_file(request, edit_existing=False):
         }
     }
 
+    # If default location set, add coordinates to config
+    if len(GpsCoordinates.objects.all()) > 0:
+        location = GpsCoordinates.objects.all()[0]
+        config["metadata"]["gps"] = {"lat": str(location.lat), "lon": str(location.lon)}
+
     # Merge device and sensor sections, remove frontend parameters, add to config
     data["devices"].update(data["sensors"])
     for i in data["devices"]:
