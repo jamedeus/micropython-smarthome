@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from .models import Node, Config, WifiCredentials, ScheduleKeyword
+from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates
 from .Webrepl import Webrepl
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
@@ -625,6 +625,21 @@ def set_default_credentials(request):
     new.save()
 
     return JsonResponse("Default credentials set", safe=False, status=200)
+
+
+def set_default_location(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode("utf-8"))
+    else:
+        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+
+    # If default already set, overwrite
+    if len(GpsCoordinates.objects.all()) > 0:
+        for i in GpsCoordinates.objects.all():
+            i.delete()
+
+    GpsCoordinates.objects.create(display=data["name"], lat=data["lat"], lon=data["lon"])
+    return JsonResponse("Location set", safe=False, status=200)
 
 
 # Downloads config file from an existing node and saves to database + disk

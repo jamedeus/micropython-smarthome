@@ -22,6 +22,7 @@
                 <button type="button" class="btn" id="settings_button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-gear-fill"></i></button>
                 <ul id="settings_menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="settings_button">
                     <li><a class="dropdown-item" onclick='wifiModal.show();'>Set WIFI credentials</a></li>
+                    <li><a class="dropdown-item" onclick='gpsModal.show();'>Set GPS coordinates</a></li>
                     <li><a class="dropdown-item" onclick='reupload_all()'>Re-upload all</a></li>
                     <li><a class="dropdown-item" onclick='restoreModal.show();'>Restore config</a></li>
                     <li><a class="dropdown-item" onclick='integrationModal.show();'>Desktop integration</a></li>
@@ -230,6 +231,28 @@
         </div>
     </div>
 
+    <!-- GPS modal, used to set coordinates for sunrise/sunset lookup -->
+
+    <div class="modal fade" id="gps-modal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered" >
+            <div class="modal-content">
+                <div class="modal-header justify-content-between pb-0">
+                    <button type="button" class="btn-close" style="visibility:hidden"></button>
+                    <h5 id="gps-modal-title" class="modal-title">Set Default Location</h5>
+                    <button id="gps-modal-close" type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="gps-modal-body">
+                    <p class="text-center">Approximate GPS coordinates are used to determine sunrise and sunset times. This is looked up from your IP by default.</p>
+                    <p class="text-center">If your sunrise and sunset times are incorrect, type a city/state below and click the closest suggestion.</p>
+
+                    <input type="text" class="form-control modal-input text-center" id="location" placeholder="Location Search" name="location" autocomplete="off" required>
+                    <ul class="list-group mt-2 text-center" id="suggestions">
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Restore modal, used to populate models from existing nodes after database lost -->
 
     <div class="modal fade" id="restore-modal" tabindex="-1">
@@ -343,6 +366,7 @@
         const uploadModal = new bootstrap.Modal(document.getElementById('upload-modal'));
         const errorModal = new bootstrap.Modal(document.getElementById('error-modal'));
         const wifiModal = new bootstrap.Modal(document.getElementById('wifi-modal'));
+        const gpsModal = new bootstrap.Modal(document.getElementById('gps-modal'));
         const restoreModal = new bootstrap.Modal(document.getElementById('restore-modal'));
         const integrationModal = new bootstrap.Modal(document.getElementById('integration-modal'));
         const changeIpModal = new bootstrap.Modal(document.getElementById('change-ip-modal'));
@@ -680,6 +704,7 @@
             document.querySelectorAll('.btn-close').forEach(button => button.classList.add("btn-close-white"));
         };
     </script>
+    <script src="{% static 'node_configuration/location_search.js' %}"></script>
     <script src="{% static 'node_configuration/upload.js' %}"></script>
     {# Must import validate.js first so formatIp runs before listeners below #}
     {# Otherwise upload button can be disabled by an invalid key which is then removed #}

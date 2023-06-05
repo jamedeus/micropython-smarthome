@@ -263,6 +263,16 @@ td:last-child{
         background-color: #212529;
     }
 
+    /* List group (location suggestions) */
+    $list-group-bg: #212529;
+    $list-group-hover-bg: #1B1E1F;
+    $list-group-active-bg: #1B1E1F;
+    $list-group-action-active-bg: #1B1E1F;
+    $list-group-color: #dddddd;
+    $list-group-hover-color: #ffffff;
+    $list-group-action-hover-color: #ffffff;
+    $list-group-action-active-color: #ffffff;
+
     @import "../node_modules/bootstrap/scss/_card";
     @import "../node_modules/bootstrap/scss/_modal";
     @import "../node_modules/bootstrap/scss/_forms";
@@ -270,4 +280,5 @@ td:last-child{
     @import "../node_modules/bootstrap/scss/_tables";
     @import "../node_modules/bootstrap/scss/_dropdown";
     @import "../node_modules/bootstrap/scss/_toasts";
+    @import "../node_modules/bootstrap/scss/_list-group";
 }

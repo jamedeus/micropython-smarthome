@@ -72,6 +72,15 @@ class WifiCredentials(models.Model):
     password = models.TextField()
 
 
+class GpsCoordinates(models.Model):
+    def __str__(self):
+        return self.display
+
+    display = models.TextField()
+    lat = models.DecimalField(max_digits=8, decimal_places=5)
+    lon = models.DecimalField(max_digits=8, decimal_places=5)
+
+
 class ScheduleKeyword(models.Model):
     def __str__(self):
         return self.keyword
