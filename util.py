@@ -1,4 +1,5 @@
 import os
+import json
 import logging
 import uasyncio as asyncio
 
@@ -24,6 +25,19 @@ def is_device_or_sensor(string):
         return (string.startswith("device") or string.startswith("sensor"))
     except AttributeError:
         return False
+
+
+def read_config_from_disk():
+    with open('config.json', 'r') as file:
+        return json.load(file)
+
+
+def write_config_to_disk(conf):
+    if not isinstance(conf, dict):
+        return False
+    with open('config.json', 'w') as file:
+        json.dump(conf, file)
+    return True
 
 
 # Must accept arg (hardware Timer passes self as arg)

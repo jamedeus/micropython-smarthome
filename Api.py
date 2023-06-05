@@ -6,7 +6,14 @@ import gc
 import SoftwareTimer
 import re
 from uasyncio import Lock
-from util import is_device, is_sensor, is_device_or_sensor, reboot
+from util import (
+    is_device,
+    is_sensor,
+    is_device_or_sensor,
+    reboot,
+    read_config_from_disk,
+    write_config_to_disk
+)
 
 # Set name for module's log lines
 log = logging.getLogger("API")
@@ -347,16 +354,13 @@ def remove_rule(args):
 
 @app.route("save_rules")
 def save_rules(args):
-    with open('config.json', 'r') as file:
-        config = json.load(file)
+    config = read_config_from_disk()
 
     for i in config:
-        if is_device_or_sensor(i):
+        if is_device_or_sensor(i) and i in app.config.schedule:
             config[i]["schedule"] = app.config.schedule[i]
 
-    with open('config.json', 'w') as file:
-        json.dump(config, file)
-
+    write_config_to_disk(config)
     return {"Success": "Rules written to disk"}
 
 
@@ -409,14 +413,9 @@ def remove_schedule_keyword(args):
 
 @app.route("save_schedule_keywords")
 def save_schedule_keywords(args):
-    with open('config.json', 'r') as file:
-        config = json.load(file)
-
+    config = read_config_from_disk()
     config['metadata']['schedule_keywords'] = app.config.schedule_keywords
-
-    with open('config.json', 'w') as file:
-        json.dump(config, file)
-
+    write_config_to_disk(config)
     return {"Success": "Keywords written to disk"}
 
 

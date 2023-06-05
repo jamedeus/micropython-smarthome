@@ -6,7 +6,7 @@ import uasyncio as asyncio
 from Config import Config
 from SoftwareTimer import timer
 from Api import app
-from util import disk_monitor
+from util import disk_monitor, read_config_from_disk
 
 print("--------Booted--------")
 
@@ -45,9 +45,8 @@ async def main(config):
 
 
 def start_loop():
-    # Instantiate config object (connects to wifi)
-    with open('config.json', 'r') as file:
-        config = Config(json.load(file))
+    # Instantiate config object (connects to wifi, sets up hardware, etc)
+    config = Config(read_config_from_disk())
     gc.collect()
 
     # Start webrepl (OTA updates)
