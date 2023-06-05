@@ -7,7 +7,6 @@ import uasyncio as asyncio
 import logging
 import gc
 import re
-import ntptime
 import SoftwareTimer
 from Group import Group
 from util import is_device, is_sensor, is_device_or_sensor, reboot
@@ -84,6 +83,10 @@ class Config():
 
         # Load metadata parameters used for API calls (not shown in frontend)
         self.timezone = conf["metadata"]["timezone"]
+        try:
+            self.gps = conf["metadata"]["gps"]
+        except KeyError:
+            self.gps = ""
 
         # Toggled by callback around 3:00am
         # Loop checks this and rebuilds schedule rule queue, re-runs API calls when True
@@ -282,23 +285,27 @@ class Config():
         # Set time from internet in correct timezone, retry until successful (ntptime easier but no timezone support)
         while True:
             try:
-                # Set time (UTC)
-                ntptime.settime()
+                # Use GPS coordinates if present, otherwise rely on IP lookup
+                url = f"https://api.ipgeolocation.io/astronomy?apiKey={ipgeo_key}"
+                if self.gps:
+                    url += f"&lat={self.gps['lat']}&long={self.gps['long']}"
 
-                # Get offset hours for current timezone, adjust for daylight savings if needed
-                response = urequests.get(f"https://api.ipgeolocation.io/timezone?apiKey={ipgeo_key}&tz={self.timezone}")
-                if response.json()["is_dst"]:
-                    offset = response.json()['timezone_offset'] + 1
-                else:
-                    offset = response.json()['timezone_offset']
+                response = urequests.get(url)
+
+                # Parse time parameters
+                hour, minute, second = response.json()["current_time"].split(":")
+                second, milisecond = second.split(".")
+
+                # Parse date parameters
+                year, month, day = map(int, response.json()["date"].split("-"))
+
+                # Set RTC (uses different parameter order than time.localtime)
+                RTC().datetime((year, month, day, 0, int(hour), int(minute), int(second), int(milisecond)))
+
+                # Set sunrise/sunset times
+                self.schedule_keywords["sunrise"] = response.json()["sunrise"]
+                self.schedule_keywords["sunset"] = response.json()["sunset"]
                 response.close()
-
-                # Current time tuple (UTC)
-                now = time.localtime()
-
-                # Set system clock to correct timezone
-                # RTC uses different parameter order, day rolls over if hour+offset outside 0-23 range
-                RTC().datetime((now[0], now[1], now[2], now[6], now[3] + offset, now[4], now[5], 0))
                 break
 
             # Issue with response object
@@ -325,33 +332,6 @@ class Config():
                 time.sleep_ms(1500)  # If failed, wait 1.5 seconds before retrying
                 gc.collect()  # Free up memory before retrying
                 pass
-
-        log.debug("Successfully set system time")
-
-        # Prevent no-mem error when API response received
-        gc.collect()
-
-        # Get sunrise/sunset time, retry until successful
-        while True:
-            try:
-                response = urequests.get(
-                    f"https://api.ipgeolocation.io/astronomy?apiKey={ipgeo_key}&lat=45.524722&long=-122.6771891"
-                )
-                # Parse out sunrise/sunset, convert to 24h format
-                self.schedule_keywords["sunrise"] = response.json()["sunrise"]
-                self.schedule_keywords["sunset"] = response.json()["sunset"]
-                response.close()
-                break  # Break loop once request succeeds
-            except:
-                print("Failed getting sunrise/sunset time, retrying...")
-                log.debug("Failed getting sunrise/sunset time, retrying...")
-                failed_attempts += 1
-                if failed_attempts > 5:
-                    log.info("Failed to get sunrise/sunset time 5 times, reboot triggered")
-                    reboot()
-                time.sleep_ms(1500)  # If failed, wait 1.5 seconds before retrying
-                gc.collect()  # Free up memory before retrying
-                pass  # Allow loop to continue
 
         log.info("Finished API calls (timestamp may look weird due to system clock change)")
 
