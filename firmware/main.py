@@ -1,5 +1,4 @@
 import gc
-import json
 import webrepl
 import logging
 import uasyncio as asyncio

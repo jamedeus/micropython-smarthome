@@ -428,9 +428,9 @@ class Provisioner():
         try:
             put_file(self.ws, self.basepath + "/" + src_file, dst_file)
         except AssertionError:
-                print(Fore.RED + "ERROR" + Fore.RESET, end="")
-                print(": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
-                pass
+            print(Fore.RED + "ERROR" + Fore.RESET, end="")
+            print(": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
+            pass
 
     def close_connection(self):
         self.s.close()
