@@ -8,7 +8,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from .views import validate_full_config, get_modules, get_api_target_menu_options, provision
-from .models import Config, Node, WifiCredentials, ScheduleKeyword
+from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinates
 from .Webrepl import websocket, Webrepl, handshake_message
 from .validators import (
     validate_rules,
@@ -488,6 +488,7 @@ class ConfirmRequiresPostTests(TestCase):
             '/check_duplicate',
             '/generate_config_file',
             '/set_default_credentials',
+            '/set_default_location',
             '/restore_config'
         ]
 
@@ -1476,6 +1477,36 @@ class WifiCredentialsTests(TestCase):
     def test_print_method(self):
         credentials = WifiCredentials.objects.create(ssid='testnet', password='hunter2')
         self.assertEqual(credentials.__str__(), 'testnet')
+
+
+class GpsCoordinatesTests(TestCase):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
+    def test_setting_coordinates(self):
+        # Database should be empty
+        self.assertEqual(len(GpsCoordinates.objects.all()), 0)
+
+        # Set default credentials, verify response + database
+        response = self.client.post(
+            '/set_default_location',
+            {'name': 'Portland', 'lat': '45.689122409097', 'lon': '-122.63675124859863'}
+        )
+        self.assertEqual(response.json(), 'Location set')
+        self.assertEqual(len(GpsCoordinates.objects.all()), 1)
+
+        # Overwrite credentials, verify model only contains 1 entry
+        response = self.client.post(
+            '/set_default_location',
+            {'name': 'Dallas', 'lat': '32.99171902655', 'lon': '-96.77213361367663'}
+        )
+        self.assertEqual(response.json(), 'Location set')
+        self.assertEqual(len(GpsCoordinates.objects.all()), 1)
+
+    def test_print_method(self):
+        gps = GpsCoordinates.objects.create(display='Portland', lat='45.689122409097', lon='-122.63675124859863')
+        self.assertEqual(gps.__str__(), 'Portland')
 
 
 # Test duplicate detection
