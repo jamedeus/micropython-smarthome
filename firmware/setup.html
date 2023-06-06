@@ -17,19 +17,21 @@
             <h1 class="text-2xl font-bold mb-6 text-center tracking-wide text-stone-800">WiFi Credentials</h1>
 
             <div class="mb-4">
-                <input class="text-center appearance-none border-2 rounded-lg w-full p-2 px-3 text-stone-800 leading-normal focus:outline-none focus:ring focus:ring-sky-500 focus:border-transparent focus:bg-neutral-100" id="ssid" name="ssid" type="text" placeholder="SSID">
+                <input class="text-center appearance-none border-2 rounded-lg w-full p-2 px-3 text-stone-800 leading-normal focus:outline-none focus:ring focus:ring-sky-500 focus:border-transparent focus:bg-neutral-100" id="ssid" name="ssid" type="text" placeholder="SSID" required>
             </div>
-            <div class="mb-6">
-                <input class="text-center appearance-none border-2 rounded-lg w-full py-2 px-3 text-stone-800 leading-normal focus:outline-none focus:ring focus:ring-sky-500 focus:border-transparent focus:bg-neutral-100" id="password" name="password" type="password" placeholder="Password">
+            <div>
+                <input class="text-center appearance-none border-2 rounded-lg w-full py-2 px-3 text-stone-800 leading-normal focus:outline-none focus:ring focus:ring-sky-500 focus:border-transparent focus:bg-neutral-100" id="password" name="password" type="password" placeholder="Password" required>
             </div>
+            <span id="wifi_error" class="invisible text-center text-red-500 text-sm">Failed to connect</span>
         </div>
 
         <div class="bg-white p-8 rounded-lg shadow-xl m-6">
             <h1 class="text-2xl font-bold mb-6 text-center tracking-wide text-stone-800">Webrepl Password</h1>
 
-            <div class="mb-4">
-                <input class="text-center appearance-none border-2 rounded-lg w-full p-2 px-3 text-stone-800 leading-normal focus:outline-none focus:ring focus:ring-sky-500 focus:border-transparent focus:bg-neutral-100" id="webrepl" name="webrepl" type="text" placeholder="password">
+            <div>
+                <input class="text-center appearance-none border-2 rounded-lg w-full p-2 px-3 text-stone-800 leading-normal focus:outline-none focus:ring focus:ring-sky-500 focus:border-transparent focus:bg-neutral-100" id="webrepl" name="webrepl" type="text" placeholder="password" minlength="4" maxlength="9" required>
             </div>
+            <span class="text-center text-stone-400 text-sm">4-9 characters</span>
         </div>
 
         <div class="flex m-6">
@@ -49,6 +51,21 @@
         const loadingText = document.getElementById('loading-text');
         const loadingSpin = document.getElementById('loading-spin');
 
+        // Input constants
+        const ssid = document.getElementById('ssid');
+        const password = document.getElementById('password');
+        const wifi_error = document.getElementById('wifi_error');
+
+        // Remove error highlight and message when wifi inputs focused
+        function reset_error() {
+            ssid.classList.remove('border-red-500');
+            password.classList.remove('border-red-500');
+            wifi_error.classList.add('invisible');
+        };
+        ssid.addEventListener('focus', reset_error);
+        password.addEventListener('focus', reset_error);
+
+        // Submit form
         document.getElementById('configuration').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -72,15 +89,22 @@
             });
 
             if (response.ok) {
+                // Show setup complete animation
                 document.getElementById('overlay').classList.remove("w-0", "h-0", "opacity-0", "top-[50%]");
                 document.getElementById('overlay').classList.add("h-250", "aspect-square", "-top-[50%]");
                 document.getElementById('complete').classList.remove("opacity-0", "top-0")
                 document.getElementById('complete').classList.add("top-[50%]")
             } else {
+                // Revert loading animation, enable button
                 defaultText.classList.remove('hidden');
                 loadingText.classList.add('hidden');
                 loadingSpin.classList.add('hidden');
                 button.disabled = false;
+
+                // Show error highlight + message
+                ssid.classList.add('border-red-500');
+                password.classList.add('border-red-500');
+                wifi_error.classList.remove('invisible');
             };
         });
     </script>
