@@ -72,10 +72,11 @@ package_setup_page() {
         --remove-comments \
         --remove-optional-tags \
         --remove-redundant-attributes \
+        --remove-empty-attributes \
         --remove-script-type-attributes \
         --remove-tag-whitespace \
         --use-short-doctype \
-        --minify-js true \
+        --minify-js "{\"mangle\": {\"toplevel\": true}}" \
         setup.html.tmp -o setup.html.tmp
 
     # Prepend variable declaration + opening quotes, append closing quotes
