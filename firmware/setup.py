@@ -1,5 +1,7 @@
+import gc
 import json
 import time
+import socket
 import network
 import uasyncio as asyncio
 from machine import Timer
@@ -51,6 +53,7 @@ def create_config_file(data):
         with open('config.json', 'w') as file:
             json.dump(config, file)
 
+        # Write webrepl password to disk
         with open('webrepl_cfg.py', 'w') as file:
             file.write(f"PASS = '{data['webrepl']}'")
 
@@ -94,15 +97,57 @@ async def handle_client(reader, writer):
     await writer.aclose()
 
 
-# Listen for connections on port 80
-async def start_server():
-    await asyncio.start_server(handle_client, '0.0.0.0', 80, 5)
+# Respond to all DNS queries with setup page IP
+async def run_captive_portal():
+    # Create non-blocking UDP socket (avoid blocking event loop)
+    udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    udps.setblocking(False)
+    udps.bind(('0.0.0.0', 53))
+
+    while True:
+        try:
+            gc.collect()
+            data, addr = udps.recvfrom(4096)
+            response = dns_redirect(data, '192.168.4.1')
+            udps.sendto(response, addr)
+            await asyncio.sleep_ms(100)
+
+        # Raises "[Errno 11] EAGAIN" if timed out with no connection
+        except:
+            await asyncio.sleep_ms(3000)
+
+
+# Takes DNS query + arbitrary IP address, returns DNS response pointing to IP
+def dns_redirect(query, ip):
+    # Copy transaction ID, add response flags
+    response = query[:2] + b'\x81\x80'
+    # Copy QDCOUNT, ANCOUNT, NSCOUNT, ARCOUNT, add placeholder bytes
+    response += query[4:6] + query[4:6] + b'\x00\x00\x00\x00'
+    # Copy remaining bytes from original query
+    response += query[12:]
+    # Response: Add pointer to domain name, A record, IN class, 60 sec TTL
+    response += b'\xc0\x0c\x00\x01\x00\x01\x00\x00\x00\x3c'
+    # Set response length to 4 bytes, add IP address
+    response += b'\x00\x04'
+    response += bytes(map(int, ip.split('.')))
+    return response
+
+
+async def keep_alive():
     while True:
         await asyncio.sleep(25)
 
 
-# Create access point, listen for connections
 def serve_setup_page():
+    # Power on wifi + access point interfaces
     wlan.active(True)
     ap.active(True)
-    asyncio.run(start_server())
+
+    # Set IP, subnet, gateway, DNS
+    ap.ifconfig(('192.168.4.1', '255.255.255.0', '192.168.4.1', '192.168.4.1'))
+
+    # Listen for TCP connections on port 80, serve setup page
+    # Listen for DNS queries on port 53, redirect to setup page
+    asyncio.create_task(asyncio.start_server(handle_client, "0.0.0.0", 80, 5))
+    asyncio.create_task(run_captive_portal())
+    asyncio.run(keep_alive())
