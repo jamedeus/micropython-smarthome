@@ -1,5 +1,15 @@
 #!/bin/sh
 
+# This script pushes a new firmware release if any files included in the
+# firmware have changed. It is recommended to run in the background by
+# adding this statement to .git/hooks/post-commit:
+#
+# nohup frontend/hooks/post-commit &>/dev/null &
+#
+# A gitlab access token must be added to .env with the following syntax:
+# SMARTHOME_ACCESS_TOKEN="your-access-token"
+
+
 # Check if firmware files are includes in commit
 FIRMWARE_FILES=$(git diff --name-only HEAD^ HEAD | grep -E "^(firmware/|devices/|sensors/|lib/|Api.py|Config.py|Group.py|SoftwareTimer.py|util.py)")
 
@@ -7,6 +17,9 @@ if [ ! -z "$FIRMWARE_FILES" ]; then
     # Increment most-recent tag
     export LAST_TAG=$(git tag | tail -n 1)
     export NEW_TAG=$(echo $LAST_TAG | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
+
+    # Tag new commit
+    git tag $NEW_TAG
 
     # Get hash of last commit
     export HASH=$(git log -1 --format=format:"%H")
