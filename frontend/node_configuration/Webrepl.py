@@ -4,6 +4,7 @@ import os
 import struct
 import socket
 import io
+import json
 
 handshake_message = b"""\
 GET / HTTP/1.1\r
@@ -258,6 +259,52 @@ class Webrepl():
 
         count = 0
         with open(local_file, "rb") as source_file:
+            while True:
+                # Overwrite previous progress report
+                sys.stdout.write("Sent %d of %d bytes\r" % (count, sz))
+                sys.stdout.flush()
+
+                # Read next chunk
+                buf = source_file.read(1024)
+
+                # End of file reached
+                if not buf:
+                    break
+
+                # Send chunk
+                self.ws.write(buf)
+                count += len(buf)
+        print()
+        assert self.read_resp() == 0
+
+    # Takes string instead of
+    def put_file_mem(self, file_contents, remote_file):
+        if self.ws is None:
+            if not self.open_connection():
+                raise OSError
+
+        # Convert input to bytes
+        if type(file_contents) is str:
+            file_contents = file_contents.encode()
+        elif type(file_contents) is dict or type(file_contents) is list:
+            file_contents = json.dumps(file_contents).encode()
+        elif type(file_contents) is bytes:
+            pass
+        else:
+            raise ValueError
+
+        # Create request: webrepl protocol, operation code 1 (write), payload size, encoded filename
+        sz = len(file_contents)
+        remote_file = (remote_file).encode("utf-8")
+        request = struct.pack("<2sBBQLH64s", b"WA", 1, 0, 0, sz, len(remote_file), remote_file)
+
+        # Send first 10 bytes of request, then all remaining bytes (no response = success)
+        self.ws.write(request[:10])
+        self.ws.write(request[10:])
+        assert self.read_resp() == 0
+
+        count = 0
+        with io.BytesIO(file_contents) as source_file:
             while True:
                 # Overwrite previous progress report
                 sys.stdout.write("Sent %d of %d bytes\r" % (count, sz))

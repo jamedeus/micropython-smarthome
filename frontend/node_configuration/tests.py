@@ -355,6 +355,9 @@ class WebreplTests(TestCase):
             self.assertRaises(OSError, node.put_file, 'app.log', 'app.log')
             self.assertTrue(mock_open_connection.called)
 
+            self.assertRaises(OSError, node.put_file_mem, 'app.log', 'app.log')
+            self.assertTrue(mock_open_connection.called)
+
     def test_get_file(self):
         node = Webrepl('123.45.67.89', 'password')
         local_file = "test_get_file_output.json"
@@ -446,6 +449,46 @@ class WebreplTests(TestCase):
             node.put_file('node_configuration/unit-test-config.json', 'config.json')
             self.assertTrue(mock_websocket.write.called)
             self.assertTrue(mock_read_resp.called)
+
+    def test_put_file_mem(self):
+        node = Webrepl('123.45.67.89', 'password')
+
+        # Read file into variable
+        with open('node_configuration/unit-test-config.json', 'r') as file:
+            config = json.load(file)
+
+        # Mock websocket and read_resp to allow send to complete
+        with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
+             patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
+
+            # Send as dict, confirm correct methods called
+            node.put_file_mem(config, 'config.json')
+            self.assertTrue(mock_websocket.write.called)
+            self.assertTrue(mock_read_resp.called)
+
+        # Should also accept string
+        with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
+             patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
+
+            # Send as string
+            node.put_file_mem(str(json.dumps(config)), 'config.json')
+            self.assertTrue(mock_websocket.write.called)
+            self.assertTrue(mock_read_resp.called)
+
+        # Should also accept bytes
+        with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
+             patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
+
+            # Send as bytes
+            node.put_file_mem(json.dumps(config).encode(), 'config.json')
+            self.assertTrue(mock_websocket.write.called)
+            self.assertTrue(mock_read_resp.called)
+
+        # Should raise error for other types
+        with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
+             self.assertRaises(ValueError):
+
+            node.put_file_mem(420, 'config.json')
 
     def test_login(self):
         node = Webrepl('123.45.67.89', 'password')
