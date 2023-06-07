@@ -814,7 +814,8 @@ class UploadTests(TestCase):
 
         # Mock Webrepl to return True without doing anything
         with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', return_value=True):
+             patch.object(Webrepl, 'put_file', return_value=True), \
+             patch.object(Webrepl, 'put_file_mem', return_value=True):
 
             # Upload config, verify response
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
@@ -834,7 +835,8 @@ class UploadTests(TestCase):
 
         # Mock Webrepl to return True without doing anything
         with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', return_value=True):
+             patch.object(Webrepl, 'put_file', return_value=True), \
+             patch.object(Webrepl, 'put_file_mem', return_value=True):
 
             # Reupload config (second URL parameter), verify response
             response = self.client.post('/upload/True', {'config': 'test1.json', 'ip': '123.45.67.89'})
@@ -926,7 +928,8 @@ class ProvisionTests(TestCase):
 
         # Mock Webrepl to return True without doing anything
         with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', return_value=True):
+             patch.object(Webrepl, 'put_file', return_value=True), \
+             patch.object(Webrepl, 'put_file_mem', return_value=True):
 
             response = provision('test1.json', '123.45.67.89', modules)
             self.assertEqual(response.status_code, 200)

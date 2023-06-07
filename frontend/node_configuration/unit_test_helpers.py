@@ -76,7 +76,7 @@ def clean_up_test_nodes():
 
 # Replaces provision view to simulate partially successful reupload_all
 def simulate_reupload_all_partial_success(config, ip, modules):
-    if config == "test2.json":
+    if config == test_config_2:
         return JsonResponse(
             "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
             safe=False,
@@ -88,19 +88,19 @@ def simulate_reupload_all_partial_success(config, ip, modules):
 
 # Replaces provision view to simulate one node failing for each possible reason in reupload_all
 def simulate_reupload_all_fail_for_different_reasons(config, ip, modules):
-    if config == "test1.json":
+    if config == test_config_1:
         return JsonResponse(
             "Connection timed out - please press target node reset button, wait 30 seconds, and try again.",
             safe=False,
             status=408
         )
-    if config == "test2.json":
+    if config == test_config_2:
         return JsonResponse(
             "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
             safe=False,
             status=404
         )
-    if config == "test3.json":
+    if config == test_config_3:
         return JsonResponse(
             "ERROR: Upload failed due to filesystem problem, please re-flash node.",
             safe=False,

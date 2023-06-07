@@ -98,7 +98,7 @@ def upload(request, reupload=False):
 
     # Get dependencies, upload
     modules = get_modules(config.config)
-    response = provision(data["config"], data["ip"], modules)
+    response = provision(config.config, data["ip"], modules)
 
     # If uploaded for the first time, update models
     if response.status_code == 200 and not reupload:
@@ -114,7 +114,7 @@ def upload(request, reupload=False):
     return response
 
 
-# Takes path to config file, target ip, and modules list from get_modules()
+# Takes config file dict, target ip, and modules list from get_modules()
 # Uploads config, modules, and core to target IP
 def provision(config, ip, modules):
     # Open conection, detect if node connected to network
@@ -135,7 +135,7 @@ def provision(config, ip, modules):
         [node.put_file(os.path.join(REPO_DIR, i), i) for i in core]
 
         # Upload config file
-        node.put_file(os.path.join(CONFIG_DIR, config), "config.json")
+        node.put_file_mem(config, "config.json")
 
         # Upload boot file last (triggers automatic reboot)
         node.put_file(os.path.join(REPO_DIR, "firmware/main.py"), "main.py")
@@ -169,7 +169,7 @@ def reupload_all(request):
         modules = get_modules(node.config.config)
 
         print(f"\nReuploading {node.friendly_name}...")
-        response = provision(node.config.filename, node.ip, modules)
+        response = provision(node.config.config, node.ip, modules)
 
         # Add result to report
         if response.status_code == 200:
@@ -259,7 +259,7 @@ def change_node_ip(request):
 
     # Get dependencies, upload to new IP
     modules = get_modules(node.config.config)
-    response = provision(node.config.filename, data["new_ip"], modules)
+    response = provision(node.config.config, data["new_ip"], modules)
 
     if response.status_code == 200:
         # Update model
