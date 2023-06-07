@@ -106,11 +106,20 @@ fresh_build() {
 }
 
 
+# Get path to firmware dir
+FIRMWARE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Must be in firmware dir
+if [[ $(pwd) != $FIRMWARE_DIR ]]; then
+    START_DIR=$(pwd)
+    cd $FIRMWARE_DIR
+fi
+
 # Clone dependencies if they don't exist
-if [[ ! -d esp-idf ]]; then
+if [[ ! -d $FIRMWARE_DIR/esp-idf ]]; then
     clone_esp_idf
 fi
-if [[ ! -d micropython ]]; then
+if [[ ! -d $FIRMWARE_DIR/micropython ]]; then
     clone_micropython
 fi
 
@@ -126,4 +135,9 @@ if [[ $1 == "f" || $1 == "--f" || $1 == "fresh" ]]; then
     fresh_build
 else
     build
+fi
+
+# Return to starting dir
+if [[ $START_DIR ]]; then
+    cd $START_DIR
 fi
