@@ -1472,6 +1472,9 @@ class ApiTargetMenuOptionsTest(TestCase):
         self.assertEqual(options, expected_options)
         Node.objects.all()[0].delete()
 
+        # Clean up
+        os.remove(f"{settings.CONFIG_DIR}/ir_test.json")
+
     # Original bug: It was possible to set ApiTarget to turn itself on/off, resulting in
     # an infinite loop. These commands are no longer included for api-target instances
     # while self-targeting. Fixed in b8b8b0bf.
@@ -1928,6 +1931,12 @@ class GenerateConfigFileTests(TestCase):
 
         # Set default GPS coordinates
         GpsCoordinates.objects.create(display='Portland', lat='45.689122409097', lon='-122.63675124859863')
+
+    def tearDown(self):
+        try:
+            os.remove(f"{settings.CONFIG_DIR}/unit-test-config.json")
+        except FileNotFoundError:
+            pass
 
     def test_generate_config_file(self):
         # Confirm starting condition

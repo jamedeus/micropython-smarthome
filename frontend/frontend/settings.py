@@ -47,9 +47,12 @@ NODE_PASSWD = os.environ.get('NODE_PASSWD')
 if not REPO_DIR:
     REPO_DIR = '../'
 if not CONFIG_DIR:
-    CONFIG_DIR = '../config/'
+    CONFIG_DIR = 'config_files/'
 if not NODE_PASSWD:
     NODE_PASSWD = 'password'
+
+if not os.path.exists(CONFIG_DIR):
+    os.mkdir(CONFIG_DIR)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

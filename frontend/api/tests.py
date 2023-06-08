@@ -4,7 +4,6 @@ from copy import deepcopy
 from unittest.mock import patch, MagicMock, AsyncMock, call
 from django.test import TestCase
 from django.db import IntegrityError
-from django.urls import reverse
 from .models import Macro
 from .views import parse_command, request, ir_commands
 from .unit_test_helpers import config1_status_object, config1_api_context, config2_status_object, config2_api_context
