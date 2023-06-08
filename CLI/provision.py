@@ -159,9 +159,12 @@ class Provisioner():
         # Location of provision.py, used to get relative path to other modules if run from outside dir
         self.basepath = os.path.dirname(os.path.realpath(__file__))
 
+        # Root of git repo
+        self.repo = os.path.split(self.basepath)[0]
+
         # Load config file
         try:
-            with open(self.basepath + "/" + '/nodes.json', 'r') as file:
+            with open(os.path.join(self.basepath, 'nodes.json'), 'r') as file:
                 self.nodes = json.load(file)
         except FileNotFoundError:
             print("Warning: Unable to find nodes.json, friendly names will not work")
@@ -200,42 +203,31 @@ class Provisioner():
                 raise SystemExit
 
             # Upload all tests
-            for i in os.listdir('/home/jamedeus/git/micropython-smarthome/tests'):
+            for i in os.listdir(os.path.join(self.repo, "tests")):
                 if i.startswith("test_"):
-                    self.upload("tests/" + i, i)
+                    self.upload(os.path.join(self.repo, "tests", i), i)
 
             # Upload all device classes
-            for i in os.listdir('/home/jamedeus/git/micropython-smarthome/devices'):
-                self.upload("devices/" + i, i)
+            for i in os.listdir(os.path.join(self.repo, "devices")):
+                self.upload(os.path.join(self.repo, "devices", i), i)
 
             # Upload all sensor classes
-            for i in os.listdir('/home/jamedeus/git/micropython-smarthome/sensors'):
-                self.upload("sensors/" + i, i)
+            for i in os.listdir(os.path.join(self.repo, "sensors")):
+                self.upload(os.path.join(self.repo, "sensors", i), i)
 
             # Upload IR Codes
-            self.upload("ir-remote/samsung-codes.json", "samsung-codes.json")
-            self.upload("ir-remote/whynter-codes.json", "whynter-codes.json")
-
-            # Upload utils
-            self.upload("util.py", "util.py")
-
-            # Upload Config module
-            self.upload("Config.py", "Config.py")
-
-            # Upload Group module
-            self.upload("Group.py", "Group.py")
-
-            # Upload SoftwareTimer module
-            self.upload("SoftwareTimer.py", "SoftwareTimer.py")
-
-            # Upload API module
-            self.upload("Api.py", "Api.py")
+            self.upload(os.path.join(self.repo, "lib", "samsung-codes.json"), "samsung-codes.json")
+            self.upload(os.path.join(self.repo, "lib", "whynter-codes.json"), "whynter-codes.json")
 
             # Upload config file
-            self.upload("tests/unit_test_config.json", "config.json")
+            self.upload(os.path.join(self.repo, "tests", "unit_test_config.json"), "config.json")
+
+            # Upload core dependencies (except main.py, triggers reboot)
+            core = ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py"]
+            [self.upload(os.path.join(self.repo, "core", i), i) for i in core]
 
             # Upload main.py (unit test version automatically runs all tests on boot)
-            self.upload("tests/unit_test_main.py", "main.py")
+            self.upload(os.path.join(self.repo, "tests", "unit_test_main.py"), "main.py")
 
             self.close_connection()
 
@@ -264,7 +256,7 @@ class Provisioner():
         for i in range(len(args)):
             if args[i] == '-c' or args[i] == '--config':
                 args.pop(i)
-                config = args.pop(i)
+                config = os.path.realpath(args.pop(i))
                 if not config.endswith('.json'):
                     print("ERROR: Config file must be json.")
                     raise SystemExit
@@ -289,7 +281,7 @@ class Provisioner():
 
     def provision(self):
         # Read config file, determine which device/sensor modules need to be uploaded
-        with open(self.basepath + "/" + self.config, 'r') as file:
+        with open(os.path.join(self.repo, self.config), 'r') as file:
             modules = self.get_modules(json.load(file))
 
         if not self.open_connection():
@@ -301,29 +293,14 @@ class Provisioner():
             src_file = i
             dst_file = i.rsplit("/", 1)[-1]  # Remove path from filename
 
-            self.upload(src_file, dst_file)
+            self.upload(os.path.join(self.repo, src_file), dst_file)
 
         # Upload config file
-        self.upload(self.config, "config.json")
+        self.upload(os.path.join(self.repo, self.config), "config.json")
 
-        # Upload utils
-        self.upload("util.py", "util.py")
-
-        # Upload Config module
-        self.upload("Config.py", "Config.py")
-
-        # Upload Group module
-        self.upload("Group.py", "Group.py")
-
-        # Upload SoftwareTimer module
-        self.upload("SoftwareTimer.py", "SoftwareTimer.py")
-
-        # Upload API module
-        self.upload("Api.py", "Api.py")
-
-        # Upload main code last (triggers automatic reboot)
-        self.upload("firmware/main.py", "main.py")
-
+        # Upload core dependencies (must upload main.py last, triggers reboot)
+        core = ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py", "main.py"]
+        [self.upload(os.path.join(self.repo, "core", i), i) for i in core]
         self.close_connection()
 
     # Takes loaded config file as arg, returns list of required device/sensor/library modules
@@ -426,7 +403,7 @@ class Provisioner():
         print(f"{src_file} -> {self.host}:/{dst_file}")
 
         try:
-            put_file(self.ws, self.basepath + "/" + src_file, dst_file)
+            put_file(self.ws, src_file, dst_file)
         except AssertionError:
             print(Fore.RED + "ERROR" + Fore.RESET, end="")
             print(": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
