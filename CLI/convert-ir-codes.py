@@ -1,10 +1,21 @@
 #!/usr/bin/python3
 
-# Tool for converting IR hex codes (easily found from LIRC config files) to array of pulse/space lengths
-# Address, start pulse, and end pulse are added automatically
+# Tool for converting IR hex codes to array of pulse/space durations (microseconds).
+# Address, start pulse, and end pulse are added automatically.
 #
-# Example usage: code = 0x40BF
-#   ./convert-code.py 40 BF
+# Hex codes can be recorded from any remote using LIRC + IR receiver on a raspberry pi.
+# Record each key and pass the hex code to this script as an argument.
+#
+# See lib/samsung-codes.json for example output.
+
+# Usage: To convert the code 0x40BF:
+# ./convert-ir-codes.py 40 BF
+#
+# Output:
+# [4500, 4500, 547, 1687, 547, 1687, 547, 1687, 547, 567, 547, 567, 547, 567, 547, 567, 547, 567, 547,
+# 1687, 547, 1687, 547, 1687, 547, 567, 547, 567, 547, 567, 547, 567, 547, 567, 547, 567, 547, 1687,
+# 547, 567, 547, 567, 547, 567, 547, 567, 547, 567, 547, 567, 547, 1687, 547, 567, 547, 1687, 547,
+# 1687, 547, 1687, 547, 1687, 547, 1687, 547, 1687, 545]
 
 from sys import argv
 
