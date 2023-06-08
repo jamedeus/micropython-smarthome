@@ -1,6 +1,5 @@
 import gc
 import json
-import time
 import socket
 import network
 import ubinascii
@@ -11,6 +10,8 @@ from setup_page import setup_page
 
 reboot_timer = Timer(1)
 
+# Access point interface broadcasts setup network, serves captive portal
+# Wlan interface verifies ssid + password received from setup (attempt connection)
 ap = network.WLAN(network.AP_IF)
 wlan = network.WLAN(network.STA_IF)
 
@@ -18,16 +19,14 @@ wlan = network.WLAN(network.STA_IF)
 def test_connection(ssid, password):
     wlan.connect(ssid, password)
 
-    # Try to connect for up to 5 seconds
-    fails = 0
-    while not wlan.isconnected():
-        if fails > 5:
-            wlan.disconnect()
-            return False
-        fails += 1
-        time.sleep(1)
+    while wlan.status() == network.STAT_CONNECTING:
+        pass
 
-    return True
+    if wlan.status() == network.STAT_GOT_IP:
+        return True
+    else:
+        wlan.disconnect()
+        return False
 
 
 def create_config_file(data):
@@ -150,6 +149,9 @@ def serve_setup_page():
     # Power on wifi + access point interfaces
     wlan.active(True)
     ap.active(True)
+
+    # Do not retry failed connection (slows down connection test)
+    wlan.config(reconnects=0)
 
     # Listen for TCP connections on port 80, serve setup page
     # Listen for DNS queries on port 53, redirect to setup page
