@@ -6,8 +6,8 @@
 #
 # nohup frontend/hooks/post-commit &>/dev/null &
 #
-# A gitlab access token must be added to .env with the following syntax:
-# SMARTHOME_ACCESS_TOKEN="your-access-token"
+# A gitlab access token must be added to .env with this syntax (no quotes):
+# SMARTHOME_ACCESS_TOKEN=your-access-token
 
 
 # Check if firmware files are includes in commit
@@ -20,6 +20,7 @@ if [ ! -z "$FIRMWARE_FILES" ]; then
 
     # Tag new commit
     git tag $NEW_TAG
+    printf "$(date -Iseconds): Tagged new commit $NEW_TAG\n" >> firmware/release.log
 
     # Get hash of last commit
     export HASH=$(git log -1 --format=format:"%H")
@@ -31,12 +32,15 @@ if [ ! -z "$FIRMWARE_FILES" ]; then
     bash firmware/build.sh fresh
     mv firmware/firmware.bin firmware/firmware_$NEW_TAG.bin
     filename="firmware_$NEW_TAG.bin"
+    printf "$(date -Iseconds): Built new firmware: firmware/$filename\n" >> firmware/release.log
 
     # Upload firmware to gitlab, parse URL from response
     output=$(curl --request POST --header "PRIVATE-TOKEN: $SMARTHOME_ACCESS_TOKEN" \
               --form "file=@$HOME/git/micropython-smarthome/firmware/firmware_$NEW_TAG.bin" \
               "https://gitlab.com/api/v4/projects/30373611/uploads")
     url=$(echo "$output" | jq -r '.full_path')
+    printf "$(date -Iseconds): Uploaded firmware to gitlab, response:\n" >> firmware/release.log
+    printf "$output\n" >> firmware/release.log
 
     # Build payload for new release
     json_payload=$(jq -n \
@@ -49,10 +53,13 @@ if [ ! -z "$FIRMWARE_FILES" ]; then
         | jq --arg name "$NEW_TAG" \
         --arg url "$url"
     )
+    printf "$(date -Iseconds): Built release payload: $json_payload\n" >> firmware/release.log
 
     # Push new release
-    curl --header 'Content-Type: application/json' \
+    output=$(curl --header 'Content-Type: application/json' \
          --header "PRIVATE-TOKEN: $SMARTHOME_ACCESS_TOKEN" \
          --data "$json_payload" \
-         --request POST "https://gitlab.com/api/v4/projects/30373611/releases"
+         --request POST "https://gitlab.com/api/v4/projects/30373611/releases")
+    printf "$(date -Iseconds): Pushed new release to gitlab, response:\n" >> firmware/release.log
+    printf "$output\n\n" >> firmware/release.log
 fi
