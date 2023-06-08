@@ -130,15 +130,12 @@ def provision(config, ip, modules):
         # Upload all device/sensor modules
         [node.put_file(local, remote) for local, remote in modules.items()]
 
-        # Upload core dependencies
-        core = ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py"]
-        [node.put_file(os.path.join(REPO_DIR, i), i) for i in core]
-
         # Upload config file
         node.put_file_mem(config, "config.json")
 
-        # Upload boot file last (triggers automatic reboot)
-        node.put_file(os.path.join(REPO_DIR, "firmware/main.py"), "main.py")
+        # Upload core dependencies - main.py must be last (triggers automatic reboot)
+        core = ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py", "main.py"]
+        [node.put_file(os.path.join(REPO_DIR, "core", i), i) for i in core]
 
         node.close_connection()
 

@@ -4,14 +4,14 @@
 # firmware have changed. It is recommended to run in the background by
 # adding this statement to .git/hooks/post-commit:
 #
-# nohup frontend/hooks/post-commit &>/dev/null &
+# nohup hooks/post-commit &>/dev/null &
 #
 # A gitlab access token must be added to .env with this syntax (no quotes):
 # SMARTHOME_ACCESS_TOKEN=your-access-token
 
 
 # Check if firmware files are includes in commit
-FIRMWARE_FILES=$(git diff --name-only HEAD^ HEAD | grep -E "^(firmware/|devices/|sensors/|lib/|Api.py|Config.py|Group.py|SoftwareTimer.py|util.py)")
+FIRMWARE_FILES=$(git diff --name-only HEAD^ HEAD | grep -E "^(devices/|sensors/|lib/|core/|firmware/setup.html)")
 
 if [ ! -z "$FIRMWARE_FILES" ]; then
     # Increment most-recent tag
