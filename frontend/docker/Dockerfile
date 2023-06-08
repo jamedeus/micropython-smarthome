@@ -9,7 +9,7 @@ RUN npm install
 # Python dependencies build stage
 FROM python:3.10-slim-buster as py_build
 
-COPY docker/requirements.txt .
+COPY frontend/docker/requirements.txt .
 RUN pip install --no-cache-dir -r /requirements.txt
 
 # Final build stage
@@ -27,19 +27,11 @@ WORKDIR /repo
 RUN mkdir /repo/config
 RUN mkdir /repo/firmware
 
-# Smarthome core modules
-COPY firmware/main.py /repo/firmware/main.py
-COPY Api.py /repo/Api.py
-COPY Config.py /repo/Config.py
-COPY Group.py /repo/Group.py
-COPY SoftwareTimer.py /repo/SoftwareTimer.py
-COPY util.py /repo/util.py
-
-# Peripheral modules + dependencies
-COPY lib /repo/lib
+# Smarthome core modules, peripheral modules, dependencies
+COPY core /repo/core/
 COPY devices /repo/devices
 COPY sensors /repo/sensors
-COPY ir-remote /repo/ir-remote
+COPY lib /repo/lib
 
 # Frontend
 COPY frontend/manage.py /repo/frontend/manage.py
@@ -62,5 +54,5 @@ COPY --from=node_build node_modules/rangeslider.js/dist/rangeslider.min.js /repo
 COPY --from=py_build /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
 
 # Run migrations, start dev server
-COPY docker/entrypoint.sh /repo/entrypoint.sh
+COPY frontend/docker/entrypoint.sh /repo/entrypoint.sh
 CMD ["/repo/entrypoint.sh"]

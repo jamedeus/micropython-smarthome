@@ -35,13 +35,10 @@ clone_micropython() {
 # Compiled to mpy and frozen into firmware
 copy_repo() {
     target="`pwd`/micropython/ports/esp32/modules/"
-
-    # Copy dependencies from firmware dir
-    \cp _boot.py main.py setup.py $target
-
-    # Copy dependencies from main dir
     cd ..
-    \cp -f Api.py Config.py Group.py SoftwareTimer.py util.py $target
+
+    # Copy core dependencies (Api, _boot, Config, Group, main, setup, SoftwareTimer, util)
+    \cp core/*.py $target
 
     # Copy device and sensor classes
     \cp -f devices/* sensors/* $target
