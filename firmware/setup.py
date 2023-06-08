@@ -3,6 +3,7 @@ import json
 import time
 import socket
 import network
+import ubinascii
 import uasyncio as asyncio
 from machine import Timer
 from util import reboot
@@ -80,7 +81,7 @@ async def handle_client(reader, writer):
         # Create config from form data, reboot after 1 second if successful
         if create_config_file(data):
             print("Config file created, rebooting...")
-            reboot_timer.init(period=1000, mode=Timer.ONE_SHOT, callback=reboot)
+            reboot_timer.init(period=5000, mode=Timer.ONE_SHOT, callback=reboot)
             await writer.awrite('HTTP/1.1 200 OK\r\n\r\n')
 
         # Return 400 if unable to generate
@@ -139,12 +140,16 @@ async def keep_alive():
 
 
 def serve_setup_page():
-    # Power on wifi + access point interfaces
-    wlan.active(True)
-    ap.active(True)
+    # Append last byte of access point mac address to SSID
+    mac_address = ubinascii.hexlify(ap.config('mac')).decode()
+    ap.config(ssid=f'Smarthome_Setup_{mac_address.upper()[-4:]}')
 
     # Set IP, subnet, gateway, DNS
     ap.ifconfig(('192.168.4.1', '255.255.255.0', '192.168.4.1', '192.168.4.1'))
+
+    # Power on wifi + access point interfaces
+    wlan.active(True)
+    ap.active(True)
 
     # Listen for TCP connections on port 80, serve setup page
     # Listen for DNS queries on port 53, redirect to setup page
