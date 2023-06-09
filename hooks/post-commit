@@ -4,7 +4,7 @@
 # firmware have changed. It is recommended to run in the background by
 # adding this statement to .git/hooks/post-commit:
 #
-# nohup hooks/post-commit &>/dev/null &
+# nohup hooks/post-commit >/dev/null 2>&1 &
 #
 # A gitlab access token must be added to .env with this syntax (no quotes):
 # SMARTHOME_ACCESS_TOKEN=your-access-token

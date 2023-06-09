@@ -3,3 +3,6 @@ nodes.json
 firmware/esp-idf/
 firmware/micropython/
 firmware/*.bin
+*.coverage
+.env
+*release.log
