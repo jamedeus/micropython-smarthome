@@ -9,7 +9,7 @@ from .views import parse_command, request, ir_commands
 from .unit_test_helpers import config1_status_object, config1_api_context, config2_status_object, config2_api_context
 from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes, JSONClient, test_config_1
 from node_configuration.models import ScheduleKeyword, Node
-from node_configuration.Webrepl import Webrepl
+from Webrepl import Webrepl
 
 
 # Test function that makes async API calls to esp32 nodes (called by send_command)

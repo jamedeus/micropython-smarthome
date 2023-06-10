@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates
-from .Webrepl import Webrepl
+from Webrepl import Webrepl
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
 from api.views import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords

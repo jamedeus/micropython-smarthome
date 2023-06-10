@@ -15,7 +15,7 @@ from node_configuration.helper_functions import (
     is_device,
     is_sensor
 )
-from node_configuration.Webrepl import Webrepl
+from Webrepl import Webrepl
 from api.models import Macro
 
 # Valid IR commands for each target, used in error message

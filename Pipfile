@@ -10,6 +10,7 @@ django-pwa = ">=1.1"
 flask = "~=2.0"
 ipython = "*"
 coverage = "*"
+util = {editable = true, path = "util"}
 
 [dev-packages]
 
