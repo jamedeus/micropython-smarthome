@@ -32,6 +32,10 @@ COPY core /repo/core/
 COPY devices /repo/devices
 COPY sensors /repo/sensors
 COPY lib /repo/lib
+COPY util /repo/util
+
+# Add utils to global path
+ENV PYTHONPATH=/repo/util
 
 # Frontend
 COPY frontend/manage.py /repo/frontend/manage.py
