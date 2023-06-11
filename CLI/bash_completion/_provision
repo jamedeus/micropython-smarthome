@@ -4,15 +4,21 @@ _provision()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
+    # Get directory containing provision.py and nodes.json
+    script_path=$(which "${COMP_WORDS[0]}")
+    script_dir="$(dirname "$script_path")"
+
     # Get all node friendly names in space-seperated list
-    opts=$(cat nodes.json | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+    opts=$(cat "$script_dir/nodes.json" | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
 
     # Options grouped by category to allow different options per category
-    ip_opts="-ip --node"
+    ip_opts="--ip"
 
-    password_opts="-p --password"
+    password_opts="--password"
 
-    config_opts="-c --config"
+    config_opts="--config"
+
+    mgmt_opts="--all --test"
 
     # Takes options list as arg
     # Returns 0 if ANY used args are in options list
@@ -63,7 +69,17 @@ _provision()
         all+=" "
     fi
 
-    # Set result of above checks as current command completion options (this may be overriden in loops below)
+    # Check if management options have been used
+    option_used $mgmt_opts
+    result=$?
+
+    # If management options have not been used, add to "all" options list
+    if [[ $result == 1 ]]; then
+        all+=$mgmt_opts
+        all+=" "
+    fi
+
+    # Set all unused options from above checks as current command completion options (may be overriden in loops below)
     # stderr is redirected to /dev/null due to error when completing words that start with -- on Ubuntu (bug in default config)
     COMPREPLY=( $(compgen -W "${all}" ${cur} 2>/dev/null) )
 
@@ -84,7 +100,7 @@ _provision()
     # Display config files if prev is a config flag (user must select a config file before other adding options)
     for i in $config_opts; do
         if [[ $i == $prev ]]; then
-            config_files=$(ls -CF config/*.json)
+            config_files=$(ls -CF $script_dir/../config/*.json)
             COMPREPLY=( $(compgen -W "${config_files}" ${cur}) )
         fi
     done
@@ -96,6 +112,13 @@ _provision()
         COMPREPLY=( $(compgen -W "" ${cur}) )
     fi
 
+    # Display nothing if a management option has been used (--all requires no args, --test requires IP)
+    option_used $mgmt_opts
+    opts_result=$?
+    if [[ $opts_result == 0 ]]; then
+        COMPREPLY=( $(compgen -W "" ${cur}) )
+    fi
+
     return 0
 }
-complete -F _provision ./provision.py
+complete -F _provision provision.py
