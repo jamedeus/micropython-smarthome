@@ -10,7 +10,7 @@ from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinat
 from Webrepl import Webrepl
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
-from api.views import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
+from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
 from helper_functions import is_device_or_sensor, is_device, is_sensor, get_config_param_list, valid_ip
 
 # Env var constants
