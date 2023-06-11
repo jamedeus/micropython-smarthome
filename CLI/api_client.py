@@ -5,7 +5,14 @@ import sys
 import json
 import asyncio
 from colorama import Fore, Style
-from helper_functions import valid_ip, valid_timestamp, is_device, is_sensor, is_device_or_sensor
+from helper_functions import (
+    valid_ip,
+    valid_timestamp,
+    is_device,
+    is_sensor,
+    is_device_or_sensor,
+    get_schedule_keywords_dict
+)
 
 # Valid IR commands for each target, used in error message
 ir_commands = {
@@ -261,10 +268,15 @@ def add_schedule_rule(ip, params):
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    if len(params) < 2:
-        return {"ERROR": "Must specify timestamp/keyword followed by rule"}
-    else:
+    if len(params) > 0 and valid_timestamp(params[0]):
         timestamp = params.pop(0)
+    elif len(params) > 0 and params[0] in get_schedule_keywords_dict().keys():
+        timestamp = params.pop(0)
+    else:
+        return {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"}
+
+    if len(params) == 0:
+        return {"ERROR": "Must specify new rule"}
 
     cmd = ['add_schedule_rule', target, timestamp]
 
@@ -285,10 +297,12 @@ def remove_rule(ip, params):
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
 
-    if len(params) < 1:
-        return {"ERROR": "Must specify timestamp/keyword followed by rule"}
-    else:
+    if len(params) > 0 and valid_timestamp(params[0]):
         timestamp = params.pop(0)
+    elif len(params) > 0 and params[0] in get_schedule_keywords_dict().keys():
+        timestamp = params.pop(0)
+    else:
+        return {"ERROR": "Must specify timestamp (HH:MM) or keyword of rule to remove"}
 
     return asyncio.run(request(ip, ['remove_rule', target, timestamp]))
 
@@ -353,7 +367,7 @@ def ir(ip, params):
         try:
             return asyncio.run(request(ip, ['ir_key', target, params[0]]))
         except IndexError:
-            return {"ERROR": f"Must speficy one of the following commands: {ir_commands[target]}"}
+            return {"ERROR": f"Must specify one of the following commands: {ir_commands[target]}"}
 
     elif len(params) > 0 and params[0] == "backlight":
         params.pop(0)

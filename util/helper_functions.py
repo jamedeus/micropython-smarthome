@@ -1,4 +1,6 @@
 import re
+import os
+import json
 
 
 # Returns True if arg starts with "device" or "sensor", otherwise False
@@ -29,3 +31,12 @@ def valid_ip(ip):
 # Returns True if arg matches HH:MM timestamp regex, otherwise False
 def valid_timestamp(timestamp):
     return bool(re.match(r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$', timestamp))
+
+
+# Read current schedule keywords from config file
+def get_schedule_keywords_dict():
+    try:
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'schedule-keywords.json'), 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}

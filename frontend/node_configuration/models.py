@@ -1,5 +1,8 @@
+import os
 import json
 from django.db import models, IntegrityError
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 
@@ -105,3 +108,13 @@ class ScheduleKeyword(models.Model):
             raise IntegrityError(f"{self.keyword} is required and cannot be deleted")
         else:
             return super().delete(*args, **kwargs)
+
+
+# Write schedule keywords to json file when modified (sync with CLI client)
+# TODO django settings bool to en/disable this + config write_to_disk etc
+@receiver(post_save, sender=ScheduleKeyword)
+@receiver(post_delete, sender=ScheduleKeyword)
+def write_to_disk(**kwargs):
+    config = os.path.join(settings.REPO_DIR, 'util', 'schedule-keywords.json')
+    with open(config, 'w') as file:
+        json.dump(get_schedule_keywords_dict(), file)
