@@ -1,6 +1,7 @@
 _provision()
 {
-    local cur prev opts
+    # Get current + previous args
+    local cur prev
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
@@ -9,115 +10,109 @@ _provision()
     script_dir="$(dirname "$script_path")"
 
     # Get all node friendly names in space-seperated list
-    opts=$(cat "$script_dir/nodes.json" | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+    node_opts=$(cat "$script_dir/nodes.json" | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
 
-    # Options grouped by category to allow different options per category
+    # Group options into categories
     ip_opts="--ip"
-
     password_opts="--password"
-
     config_opts="--config"
-
     mgmt_opts="--all --test"
 
-    # Takes options list as arg
-    # Returns 0 if ANY used args are in options list
-    # Returns 1 if NO used args are in options list
+    # Takes options category as arg
+    # Returns 1 if ANY used args are in category
+    # Returns 0 if NO used args are in category
     option_used() {
         for i in $1; do
             for j in ${COMP_WORDS[*]}; do
                 if [[ $i == $j ]]; then
-                    return 0
+                    return 1
                 fi
             done
         done
-        return 1
+        return 0
     }
 
-    # Check if IP or friendly name has been used
+    # Check if each category has been used
+    option_used "$node_opts"
+    node_used=$?
+
+    option_used "$ip_opts"
+    ip_used=$?
+
+    option_used "$password_opts"
+    password_used=$?
+
+    option_used "$config_opts"
+    config_used=$?
+
+    option_used "$mgmt_opts"
+    mgmt_used=$?
+
+    # List for remaining available options
     all=""
-    option_used $opts
-    opts_result=$?
-    option_used $ip_opts
-    ip_result=$?
 
-    # If neither IP nor friendly name has been used, add to "all" options list
-    if [[ $ip_result == 1 && $opts_result == 1 ]]; then
-        all+=$opts
-        all+=" "
-        all+=$ip_opts
-        all+=" "
-    fi
-
-    # Check if password options have been used
-    option_used $password_opts
-    result=$?
-
-    # If password options haven't been used, add to "all" options list
-    if [[ $result == 1 ]]; then
+    # If password options NOT used: add to options list
+    if [[ $password_used == 0 ]]; then
         all+=$password_opts
         all+=" "
     fi
 
-    # Check if config options have been used
-    option_used $config_opts
-    result=$?
+    # If friendly name, --all, or --test was used: no further options
+    if [[ $node_used == 1 || $mgmt_used == 1 ]]; then
+        :
 
-    # If config options have not been used, add to "all" options list
-    if [[ $result == 1 ]]; then
-        all+=$config_opts
-        all+=" "
+    # If both IP and config are used: no further options
+    elif [[ $ip_used == 1 && $config_used == 1 ]]; then
+        :
+
+    # Add remaining options
+    else
+        # If neither IP nor friendly name used: add both to options list
+        if [[ $ip_used == 0 && $node_used == 0 ]]; then
+            all+=$node_opts
+            all+=" "
+            all+=$ip_opts
+            all+=" "
+        fi
+
+        # If config options NOT used: add to options list
+        if [[ $config_used == 0 ]]; then
+            all+=$config_opts
+            all+=" "
+        fi
+
+        # If conflicting options NOT used: add management options to options list
+        if [[ $ip_used == 0 && $config_used == 0 ]]; then
+            all+=$mgmt_opts
+            all+=" "
+        fi
     fi
 
-    # Check if management options have been used
-    option_used $mgmt_opts
-    result=$?
-
-    # If management options have not been used, add to "all" options list
-    if [[ $result == 1 ]]; then
-        all+=$mgmt_opts
-        all+=" "
-    fi
-
-    # Set all unused options from above checks as current command completion options (may be overriden in loops below)
-    # stderr is redirected to /dev/null due to error when completing words that start with -- on Ubuntu (bug in default config)
+    # Add remaining available options to command completion list (may be overwritten in loops below)
+    # stderr redirected to /dev/null due to error when completing words starting with -- on Ubuntu (default config bug)
     COMPREPLY=( $(compgen -W "${all}" ${cur} 2>/dev/null) )
 
-    # Display nothing if prev is a password flag (user must type a password before selecting another option)
+    # Display nothing if prev is a password flag (user must enter password before next option)
     for i in $password_opts; do
         if [[ $i == $prev ]]; then
             COMPREPLY=( $(compgen -W "" ${cur}) )
         fi
     done
 
-    # Display nothing if prev is an ip flag (user must type an IP before selecting another option)
+    # Display nothing if prev is an ip flag (user must enter IP before next option)
     for i in $ip_opts; do
         if [[ $i == $prev ]]; then
             COMPREPLY=( $(compgen -W "" ${cur}) )
         fi
     done
 
-    # Display config files if prev is a config flag (user must select a config file before other adding options)
+    # Display config files if prev is a config flag (user must select config file before next option)
     for i in $config_opts; do
         if [[ $i == $prev ]]; then
             config_files=$(ls -CF $script_dir/../config/*.json)
             COMPREPLY=( $(compgen -W "${config_files}" ${cur}) )
         fi
     done
-
-    # Display nothing if node has already been selected (node name is sufficient, other options are read from nodes.json)
-    option_used $opts
-    opts_result=$?
-    if [[ $opts_result == 0 ]]; then
-        COMPREPLY=( $(compgen -W "" ${cur}) )
-    fi
-
-    # Display nothing if a management option has been used (--all requires no args, --test requires IP)
-    option_used $mgmt_opts
-    opts_result=$?
-    if [[ $opts_result == 0 ]]; then
-        COMPREPLY=( $(compgen -W "" ${cur}) )
-    fi
 
     return 0
 }
