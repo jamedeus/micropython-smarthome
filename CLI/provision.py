@@ -6,414 +6,196 @@
 # Usage: ./provision.py <friendly-name-from-nodes.json>
 # Usage: ./provision.py --all
 
-# Everything above line 156 copied from webrepl_cli.py with minimal modifications
-# https://github.com/micropython/webrepl
-
-import sys
 import os
-import struct
-import json
-import socket
 import re
-from colorama import Fore
-
-DEBUG = 0
-
-WEBREPL_REQ_S = "<2sBBQLH64s"
-WEBREPL_PUT_FILE = 1
-WEBREPL_GET_FILE = 2
-WEBREPL_GET_VER  = 3
+import sys
+import json
+import argparse
+from Webrepl import Webrepl
 
 ip_regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
 
-
-def debugmsg(msg):
-    if DEBUG:
-        print(msg)
-
-
-class websocket:
-    def __init__(self, s):
-        self.s = s
-        self.buf = b""
-
-    def write(self, data):
-        l = len(data)
-        if l < 126:
-            # TODO: hardcoded "binary" type
-            hdr = struct.pack(">BB", 0x82, l)
-        else:
-            hdr = struct.pack(">BBH", 0x82, 126, l)
-        self.s.send(hdr)
-        self.s.send(data)
-
-    def recvexactly(self, sz):
-        res = b""
-        while sz:
-            data = self.s.recv(sz)
-            if not data:
-                break
-            res += data
-            sz -= len(data)
-        return res
-
-    def read(self, size, text_ok=False):
-        if not self.buf:
-            while True:
-                hdr = self.recvexactly(2)
-                assert len(hdr) == 2
-                fl, sz = struct.unpack(">BB", hdr)
-                if sz == 126:
-                    hdr = self.recvexactly(2)
-                    assert len(hdr) == 2
-                    (sz,) = struct.unpack(">H", hdr)
-                if fl == 0x82:
-                    break
-                if text_ok and fl == 0x81:
-                    break
-                debugmsg("Got unexpected websocket record of type %x, skipping it" % fl)
-                while sz:
-                    skip = self.s.recv(sz)
-                    debugmsg("Skip data: %s" % skip)
-                    sz -= len(skip)
-            data = self.recvexactly(sz)
-            assert len(data) == sz
-            self.buf = data
-
-        d = self.buf[:size]
-        self.buf = self.buf[size:]
-        assert len(d) == size, len(d)
-        return d
-
-    def ioctl(self, req, val):
-        assert req == 9 and val == 2
-
-
-def login(ws, passwd):
-    while True:
-        c = ws.read(1, text_ok=True)
-        if c == b":":
-            assert ws.read(1, text_ok=True) == b" "
-            break
-    ws.write(passwd.encode("utf-8") + b"\r")
-
-
-def read_resp(ws):
-    data = ws.read(4)
-    sig, code = struct.unpack("<2sH", data)
-    assert sig == b"WB"
-    return code
-
-
-def put_file(ws, local_file, remote_file):
-    sz = os.stat(local_file)[6]
-    dest_fname = remote_file.encode("utf-8")
-    rec = struct.pack(WEBREPL_REQ_S, b"WA", WEBREPL_PUT_FILE, 0, 0, sz, len(dest_fname), dest_fname)
-    debugmsg("%r %d" % (rec, len(rec)))
-    ws.write(rec[:10])
-    ws.write(rec[10:])
-    assert read_resp(ws) == 0
-    cnt = 0
-    with open(local_file, "rb") as f:
-        while True:
-            sys.stdout.write("Sent %d of %d bytes\r" % (cnt, sz))
-            sys.stdout.flush()
-            buf = f.read(1024)
-            if not buf:
-                break
-            ws.write(buf)
-            cnt += len(buf)
-    print("\n")
-    assert read_resp(ws) == 0
-
-
-# Very simplified client handshake, works for MicroPython's
-# websocket server implementation, but probably not for other
-# servers.
-def client_handshake(sock):
-    cl = sock.makefile("rwb", 0)
-    cl.write(b"""\
-GET / HTTP/1.1\r
-Host: echo.websocket.org\r
-Connection: Upgrade\r
-Upgrade: websocket\r
-Sec-WebSocket-Key: foo\r
-\r
-""")
-    l = cl.readline()
-    while 1:
-        l = cl.readline()
-        if l == b"\r\n":
-            break
-
-
-#####################################################################################################
+# Dependency relative paths for all device and sensor types, used by get_modules
+dependencies = {
+    'devices': {
+        'dimmer': ["devices/Tplink.py", "devices/Device.py"],
+        'bulb': ["devices/Tplink.py", "devices/Device.py"],
+        'relay': ["devices/Relay.py", "devices/Device.py"],
+        'dumb-relay': ["devices/DumbRelay.py", "devices/Device.py"],
+        'desktop': ["devices/Desktop_target.py", "devices/Device.py"],
+        'pwm': ["devices/LedStrip.py", "devices/Device.py"],
+        'mosfet': ["devices/Mosfet.py", "devices/Device.py"],
+        'api-target': ["devices/ApiTarget.py", "devices/Device.py"],
+        'wled': ["devices/Wled.py", "devices/Device.py"]
+    },
+    'sensors': {
+        'pir': ["sensors/MotionSensor.py", "sensors/Sensor.py"],
+        'si7021': ["sensors/Thermostat.py", "sensors/Sensor.py"],
+        'dummy': ["sensors/Dummy.py", "sensors/Sensor.py"],
+        'switch': ["sensors/Switch.py", "sensors/Sensor.py"],
+        'desktop': ["sensors/Desktop_trigger.py", "sensors/Sensor.py"],
+    }
+}
 
 
 class Provisioner():
     def __init__(self, args):
-        # Show example usage and exit if no args given
-        if len(args) < 2:
-            print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
+        # Get full paths to repository root directory, CLI tools directory
+        self.cli = os.path.dirname(os.path.realpath(__file__))
+        self.repo = os.path.split(self.cli)[0]
 
-        # Location of provision.py, used to get relative path to other modules if run from outside dir
-        self.basepath = os.path.dirname(os.path.realpath(__file__))
-
-        # Root of git repo
-        self.repo = os.path.split(self.basepath)[0]
-
-        # Load config file
+        # Load CLI config file
         try:
-            with open(os.path.join(self.basepath, 'nodes.json'), 'r') as file:
+            with open(os.path.join(self.cli, 'nodes.json'), 'r') as file:
                 self.nodes = json.load(file)
         except FileNotFoundError:
             print("Warning: Unable to find nodes.json, friendly names will not work")
             self.nodes = {}
 
-        # If user selected node by name
-        if args[1] in self.nodes:
-            self.passwd = "password"
-            self.config = self.nodes[args[1]]["config"]
-            self.host = self.nodes[args[1]]["ip"]
+        # Validate CLI arguments
+        args = self.parse_args()
 
-        # If user selected all nodes
-        elif args[1] == "--all":
+        # Use default password if arg omitted
+        if args.password:
+            self.passwd = args.password
+        else:
             self.passwd = "password"
+
+        # Reprovision all nodes
+        if args.all:
+            # Iterate all nodes in config file
             for i in self.nodes:
                 print(f"\n{i}\n")
-                self.config = self.nodes[i]["config"]
-                self.host = self.nodes[i]["ip"]
-                self.provision()
-            raise SystemExit
 
-        # If user selected unit tests
-        elif args[1] == "--test":
-            # Get config file and target IP from cli arguments
-            self.passwd = "password"
-            for i in args:
-                if re.match(ip_regex, i):
-                    self.host = i
-                    break
-            else:
-                print("Example usage: ./provision.py --test <ip>")
-                raise SystemExit
+                # Load config from disk
+                with open(self.nodes[i]["config"], 'r') as file:
+                    config = json.load(file)
 
-            if not self.open_connection():
-                print("Error: Test node not connected to network or not accepting webrepl connections.\n")
-                raise SystemExit
+                # Get modules
+                modules = self.get_modules(config)
 
-            # Upload all tests
-            for i in os.listdir(os.path.join(self.repo, "tests")):
-                if i.startswith("test_"):
-                    self.upload(os.path.join(self.repo, "tests", i), i)
+                # Upload
+                self.provision(self.nodes[i]["ip"], self.passwd, config, modules)
 
-            # Upload all device classes
-            for i in os.listdir(os.path.join(self.repo, "devices")):
-                self.upload(os.path.join(self.repo, "devices", i), i)
+        # Reprovision specific node
+        elif args.node:
+            # Load requested node config from disk
+            with open(self.nodes[args.node]["config"], 'r') as file:
+                config = json.load(file)
 
-            # Upload all sensor classes
-            for i in os.listdir(os.path.join(self.repo, "sensors")):
-                self.upload(os.path.join(self.repo, "sensors", i), i)
+            # Get modules, upload
+            modules = self.get_modules((config))
+            self.provision(self.nodes[args.node]["ip"], self.passwd, config, modules)
 
-            # Upload IR Codes
-            self.upload(os.path.join(self.repo, "lib", "samsung-codes.json"), "samsung-codes.json")
-            self.upload(os.path.join(self.repo, "lib", "whynter-codes.json"), "whynter-codes.json")
+        # Upload unit tests to IP address
+        elif args.test:
+            # Load unit test config file
+            with open(os.path.join(self.repo, "tests", "unit_test_config.json"), 'r') as file:
+                config = json.load(file)
 
-            # Upload config file
-            self.upload(os.path.join(self.repo, "tests", "unit_test_config.json"), "config.json")
+            # Build list of all device and sensor classes
+            modules = []
+            for device in dependencies['devices']:
+                modules.extend(dependencies['devices'][device])
+            for sensor in dependencies['sensors']:
+                modules.extend(dependencies['sensors'][sensor])
 
-            # Upload core dependencies (except main.py, triggers reboot)
-            core = ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py"]
-            [self.upload(os.path.join(self.repo, "core", i), i) for i in core]
+            # Add all unit test files
+            for i in os.listdir(os.path.join(self.repo, 'tests')):
+                if i.startswith('test_'):
+                    modules.append(os.path.join('tests', i))
 
-            # Upload main.py (unit test version automatically runs all tests on boot)
-            self.upload(os.path.join(self.repo, "tests", "unit_test_main.py"), "main.py")
+            # Add IR codes
+            modules.append(os.path.join('lib', 'samsung-codes.json'))
+            modules.append(os.path.join('lib', 'whynter-codes.json'))
 
-            self.close_connection()
+            # Remove duplicates
+            modules = set(modules)
 
-            # Exit to prevent provision from running (already provisioned)
-            raise SystemExit
+            # Convert to dict containing pairs of local:remote filesystem paths
+            # Local path is uploaded to remote path on target ESP32
+            modules = {os.path.join(self.repo, i): i.split("/")[1] for i in modules}
 
-        # If user used keyword args
+            self.provision(args.test, self.passwd, config, modules)
+
+        # Upload given config file to given IP address
+        elif args.config and args.ip:
+            config = json.load(args.config)
+            modules = self.get_modules(config)
+            self.provision(args.ip, self.passwd, config, modules)
+
         else:
-            # Get config file and target IP from cli arguments
-            self.passwd, self.config, self.host = self.arg_parse(args)
+            raise ValueError
 
-    def arg_parse(self, args):
-        if len(args) < 5:
-            print("Example usage: ./provision.py -c path/to/config.json -ip <target>")
-            raise SystemExit
+    def parse_args(self):
+        parser = argparse.ArgumentParser()
 
-        for i in range(len(args)):
-            if args[i] == '-p' or args[i] == '--password':
-                args.pop(i)
-                passwd = args.pop(i)
-                break
-        else:
-            print("Using default password (password)\n")
-            passwd = "password"
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument('--all', action='store_true')
+        group.add_argument('--test', type=self.validate_ip)
+        group.add_argument('node', nargs='?', choices=self.nodes.keys())
 
-        for i in range(len(args)):
-            if args[i] == '-c' or args[i] == '--config':
-                args.pop(i)
-                config = os.path.realpath(args.pop(i))
-                if not config.endswith('.json'):
-                    print("ERROR: Config file must be json.")
-                    raise SystemExit
-                break
-        else:
-            print("ERROR: Must specify config file.")
-            raise SystemExit
+        parser.add_argument('-c', '--config', type=argparse.FileType('r'))
+        parser.add_argument('-ip', '-t', '--ip', type=self.validate_ip)
+        parser.add_argument('-p', '--password')
 
-        for i in range(len(args)):
-            if args[i] == '-ip' or args[i] == '-t' or args[i] == '--node':
-                args.pop(i)
-                ip = args.pop(i)
-                if not re.match(ip_regex, ip):
-                    print("ERROR: Invalid IP address.")
-                    raise SystemExit
-                break
-        else:
-            print("ERROR: Must specify target IP.")
-            raise SystemExit
+        return parser.parse_args()
 
-        return passwd, config, ip
+    def validate_ip(self, ip):
+        if not re.match(ip_regex, ip):
+            raise argparse.ArgumentTypeError(f"Invalid IP address '{ip}'")
+        return ip
 
-    def provision(self):
-        # Read config file, determine which device/sensor modules need to be uploaded
-        with open(os.path.join(self.repo, self.config), 'r') as file:
-            modules = self.get_modules(json.load(file))
-
-        if not self.open_connection():
-            print(f"Error: {self.host} not connected to network or not accepting webrepl connections.\n")
+    # Takes IP, password, loaded config file, dict of modules
+    # Uploads all modules
+    def provision(self, ip, password, config, modules):
+        node = Webrepl(ip, password)
+        if not node.open_connection():
+            print(f"Error: {ip} not connected to network or not accepting webrepl connections.\n")
             return
 
         # Upload all device/sensor modules
-        for i in modules:
-            src_file = i
-            dst_file = i.rsplit("/", 1)[-1]  # Remove path from filename
-
-            self.upload(os.path.join(self.repo, src_file), dst_file)
+        for local, remote in modules.items():
+            print(f"{local} -> {ip}:/{remote}")
+            node.put_file(local, remote)
+            print()
 
         # Upload config file
-        self.upload(os.path.join(self.repo, self.config), "config.json")
+        node.put_file_mem(config, "config.json")
 
         # Upload core dependencies (must upload main.py last, triggers reboot)
-        core = ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py", "main.py"]
-        [self.upload(os.path.join(self.repo, "core", i), i) for i in core]
-        self.close_connection()
+        for core in ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py", "main.py"]:
+            local = os.path.join(self.repo, "core", core)
+            print(f"{local} -> {ip}:/{core}")
+            node.put_file(local, core)
+            print()
 
-    # Takes loaded config file as arg, returns list of required device/sensor/library modules
-    def get_modules(self, conf):
+        node.close_connection()
+
+    # Takes full config file, returns list of classes for each device and sensor type
+    def get_modules(self, config):
         modules = []
 
-        for i in conf:
-            if i == "ir_blaster":
-                modules.append("devices/IrBlaster.py")
-                modules.append("ir-remote/samsung-codes.json")
-                modules.append("ir-remote/whynter-codes.json")
-                continue
+        # Get lists of device and sensor types
+        device_types = [config[device]['_type'] for device in config.keys() if device.startswith('device')]
+        sensor_types = [config[sensor]['_type'] for sensor in config.keys() if sensor.startswith('sensor')]
 
-            if not i.startswith("device") and not i.startswith("sensor"): continue
-
-            if conf[i]["_type"] == "dimmer" or conf[i]["_type"] == "bulb":
-                modules.append("devices/Tplink.py")
-                modules.append("devices/Device.py")
-
-            elif conf[i]["_type"] == "relay":
-                modules.append("devices/Relay.py")
-                modules.append("devices/Device.py")
-
-            elif conf[i]["_type"] == "dumb-relay":
-                modules.append("devices/DumbRelay.py")
-                modules.append("devices/Device.py")
-
-            elif conf[i]["_type"] == "desktop":
-                if i.startswith("device"):
-                    modules.append("devices/Desktop_target.py")
-                    modules.append("devices/Device.py")
-                elif i.startswith("sensor"):
-                    modules.append("sensors/Desktop_trigger.py")
-                    modules.append("sensors/Sensor.py")
-
-            elif conf[i]["_type"] == "pwm":
-                modules.append("devices/LedStrip.py")
-                modules.append("devices/Device.py")
-
-            elif conf[i]["_type"] == "mosfet":
-                modules.append("devices/Mosfet.py")
-                modules.append("devices/Device.py")
-
-            elif conf[i]["_type"] == "api-target":
-                modules.append("devices/ApiTarget.py")
-                modules.append("devices/Device.py")
-
-            elif conf[i]["_type"] == "wled":
-                modules.append("devices/Wled.py")
-                modules.append("devices/Device.py")
-
-            elif conf[i]["_type"] == "pir":
-                modules.append("sensors/MotionSensor.py")
-                modules.append("sensors/Sensor.py")
-
-            elif conf[i]["_type"] == "si7021":
-                modules.append("sensors/Thermostat.py")
-                modules.append("sensors/Sensor.py")
-
-            elif conf[i]["_type"] == "dummy":
-                modules.append("sensors/Dummy.py")
-                modules.append("sensors/Sensor.py")
-
-            elif conf[i]["_type"] == "switch":
-                modules.append("sensors/Switch.py")
-                modules.append("sensors/Sensor.py")
+        # Get dependencies for all device and sensor types
+        for dtype in device_types:
+            modules.extend(dependencies['devices'][dtype])
+        for stype in sensor_types:
+            modules.extend(dependencies['sensors'][stype])
 
         # Remove duplicates
         modules = set(modules)
 
+        # Convert to dict containing pairs of local:remote filesystem paths
+        # Local path is uploaded to remote path on target ESP32
+        modules = {os.path.join(self.repo, i): i.split("/")[1] for i in modules}
+
         return modules
-
-    def open_connection(self):
-        try:
-            self.s = socket.socket()
-            self.s.settimeout(5)
-
-            ai = socket.getaddrinfo(self.host, 8266)
-            addr = ai[0][4]
-
-            self.s.connect(addr)
-            client_handshake(self.s)
-
-            self.ws = websocket(self.s)
-
-            login(self.ws, self.passwd)
-
-            # Set websocket to send data marked as "binary"
-            self.ws.ioctl(9, 2)
-
-            return True
-
-        except OSError:
-            # Target disconnected from network
-            self.s.close()
-            return False
-
-    # Modified from webrepl_cli.py main() function
-    def upload(self, src_file, dst_file):
-        print(f"{src_file} -> {self.host}:/{dst_file}")
-
-        try:
-            put_file(self.ws, src_file, dst_file)
-        except AssertionError:
-            print(Fore.RED + "ERROR" + Fore.RESET, end="")
-            print(": Unable to upload " + str(dst_file) + ". Node will likely crash after reboot.")
-            pass
-
-    def close_connection(self):
-        self.s.close()
 
 
 if __name__ == "__main__":
     # Create instance, pass CLI arguments to init
     app = Provisioner(sys.argv)
-    app.provision()
