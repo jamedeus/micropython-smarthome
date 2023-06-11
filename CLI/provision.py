@@ -125,21 +125,39 @@ class Provisioner():
             self.provision(args.ip, self.passwd, config, modules)
 
         else:
-            raise ValueError
+            self.parser.print_help()
 
     def parse_args(self):
-        parser = argparse.ArgumentParser()
+        self.parser = argparse.ArgumentParser(
+            description='''\
+Upload config files + dependencies to micropython smarthome nodes
 
-        group = parser.add_mutually_exclusive_group()
-        group.add_argument('--all', action='store_true')
-        group.add_argument('--test', type=self.validate_ip)
-        group.add_argument('node', nargs='?', choices=self.nodes.keys())
+Pick one of the modes listed below (Manual, Node Name, All, Test)
+The password flag is optional and works with all modes''',
+            usage='%(prog)s [--all | --test <IP> | <node name> | -c /path/to/config.json -ip IP]',
+            formatter_class=argparse.RawDescriptionHelpFormatter
+        )
 
-        parser.add_argument('-c', '--config', type=argparse.FileType('r'))
-        parser.add_argument('-ip', '-t', '--ip', type=self.validate_ip)
-        parser.add_argument('-p', '--password')
+        manual_group = self.parser.add_argument_group('Manual')
+        manual_group.add_argument('--config', type=argparse.FileType('r'), metavar='config', help='Path to config file')
+        manual_group.add_argument('--ip', type=self.validate_ip, metavar='IP', help='Target IP address')
 
-        return parser.parse_args()
+        node_group = self.parser.add_argument_group('Node Name (pick one)')
+        node_group.add_argument('node', nargs='?', choices=self.nodes.keys())
+
+        all_group = self.parser.add_argument_group('All')
+        all_group.add_argument('--all', action='store_true', help='Reupload all nodes from nodes.json')
+
+        test_group = self.parser.add_argument_group('Test')
+        test_group.add_argument('--test', type=self.validate_ip, metavar='IP', help='Upload unit tests to IP')
+
+        self.parser.add_argument('--password', metavar='<...>', help='Webrepl password (uses default if omitted)')
+
+        args = self.parser.parse_args()
+        if bool(args.config) != bool(args.ip):
+            self.parser.error('Must specify both --config and --ip')
+
+        return args
 
     def validate_ip(self, ip):
         if not re.match(ip_regex, ip):
