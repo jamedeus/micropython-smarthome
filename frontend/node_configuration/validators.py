@@ -1,5 +1,5 @@
 import json
-from .helper_functions import is_device_or_sensor, is_sensor
+from helper_functions import is_device_or_sensor, is_sensor
 
 
 # Receives full config entry from validateConfig view

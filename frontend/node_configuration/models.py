@@ -4,6 +4,11 @@ from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 
 
+# Returns all schedule keywords in dict format used by node config files and overview template
+def get_schedule_keywords_dict():
+    return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
+
+
 class TimeStampField(models.CharField):
     def __init__(self, *args, **kwargs):
         time_validator = RegexValidator(

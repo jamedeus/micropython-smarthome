@@ -1,5 +1,4 @@
 import re
-from .models import ScheduleKeyword
 
 
 # Returns True if arg starts with "device" or "sensor", otherwise False
@@ -20,11 +19,6 @@ def is_sensor(string):
 # Takes config file, param
 def get_config_param_list(config, param):
     return [value[param] for key, value in config.items() if param in value]
-
-
-# Returns all schedule keywords in dict format used by node config files and overview template
-def get_schedule_keywords_dict():
-    return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
 
 
 # Returns True if arg matches IPv4 regex, otherwise False

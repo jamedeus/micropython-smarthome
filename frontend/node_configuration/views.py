@@ -6,19 +6,12 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
-from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates
+from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates, get_schedule_keywords_dict
 from Webrepl import Webrepl
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
 from api.views import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
-from .helper_functions import (
-    is_device_or_sensor,
-    is_device,
-    is_sensor,
-    get_config_param_list,
-    get_schedule_keywords_dict,
-    valid_ip
-)
+from helper_functions import is_device_or_sensor, is_device, is_sensor, get_config_param_list, valid_ip
 
 # Env var constants
 REPO_DIR = settings.REPO_DIR
