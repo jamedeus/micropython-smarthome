@@ -7,13 +7,11 @@
 # Usage: ./provision.py --all
 
 import os
-import re
 import sys
 import json
 import argparse
 from Webrepl import Webrepl
-
-ip_regex = "^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+from helper_functions import valid_ip, is_device, is_sensor
 
 # Dependency relative paths for all device and sensor types, used by get_modules
 dependencies = {
@@ -160,7 +158,7 @@ The password flag is optional and works with all modes''',
         return args
 
     def validate_ip(self, ip):
-        if not re.match(ip_regex, ip):
+        if not valid_ip(ip):
             raise argparse.ArgumentTypeError(f"Invalid IP address '{ip}'")
         return ip
 
@@ -195,8 +193,8 @@ The password flag is optional and works with all modes''',
         modules = []
 
         # Get lists of device and sensor types
-        device_types = [config[device]['_type'] for device in config.keys() if device.startswith('device')]
-        sensor_types = [config[sensor]['_type'] for sensor in config.keys() if sensor.startswith('sensor')]
+        device_types = [config[device]['_type'] for device in config.keys() if is_device(device)]
+        sensor_types = [config[sensor]['_type'] for sensor in config.keys() if is_sensor(sensor)]
 
         # Get dependencies for all device and sensor types
         for dtype in device_types:

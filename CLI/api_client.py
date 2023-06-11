@@ -4,11 +4,8 @@ import os
 import sys
 import json
 import asyncio
-import re
 from colorama import Fore, Style
-
-timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
-ip_regex = r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$'
+from helper_functions import valid_ip, valid_timestamp, is_device, is_sensor, is_device_or_sensor
 
 # Valid IR commands for each target, used in error message
 ir_commands = {
@@ -103,13 +100,13 @@ def parse_ip(args):
         elif args[i] == "-ip":
             args.pop(i)
             ip = args.pop(i)
-            if re.match(ip_regex, ip):
+            if valid_ip(ip):
                 return parse_command(ip, args)
             else:
                 print("Error: Invalid IP format")
                 raise SystemExit
 
-        elif re.match(ip_regex, args[i]):
+        elif valid_ip(args[i]):
             ip = args.pop(i)
             return parse_command(ip, args)
 
@@ -161,7 +158,7 @@ def disable(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py disable [device|sensor]"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         return asyncio.run(request(ip, ['disable', params[0]]))
     else:
         return {"ERROR": "Can only disable devices and sensors"}
@@ -172,7 +169,7 @@ def disable_in(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py disable_in [device|sensor] [minutes]"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
             period = float(params[0])
@@ -188,7 +185,7 @@ def enable(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py enable [device|sensor]"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         return asyncio.run(request(ip, ['enable', params[0]]))
     else:
         return {"ERROR": "Can only enable devices and sensors"}
@@ -199,7 +196,7 @@ def enable_in(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py enable_in [device|sensor] [minutes]"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
             period = float(params[0])
@@ -215,7 +212,7 @@ def set_rule(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py set_rule [device|sensor] [rule]"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
             return asyncio.run(request(ip, ['set_rule', target, params[0]]))
@@ -230,7 +227,7 @@ def reset_rule(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py reset_rule [device|sensor]"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         return asyncio.run(request(ip, ['reset_rule', target]))
     else:
@@ -247,7 +244,7 @@ def get_schedule_rules(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py get_schedule_rules [device|sensor]"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         return asyncio.run(request(ip, ['get_schedule_rules', target]))
     else:
@@ -259,7 +256,7 @@ def add_schedule_rule(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py add_rule [device|sensor] [HH:MM] [rule] <overwrite>"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
@@ -283,7 +280,7 @@ def remove_rule(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py remove_rule [device|sensor] [HH:MM]"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
     else:
         return {"ERROR": "Only devices and sensors have schedule rules"}
@@ -313,7 +310,7 @@ def add_schedule_keyword(ip, params):
 
     keyword = params.pop(0)
 
-    if len(params) > 0 and re.match(timestamp_regex, params[0]):
+    if len(params) > 0 and valid_timestamp(params[0]):
         timestamp = params.pop(0)
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"}
@@ -342,7 +339,7 @@ def get_attributes(ip, params):
     if len(params) == 0:
         return {"Example usage": "./api_client.py get_attributes [device|sensor]"}
 
-    if params[0].startswith("sensor") or params[0].startswith("device"):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         return asyncio.run(request(ip, ['get_attributes', target]))
     else:
@@ -394,7 +391,7 @@ def clear_log(ip, params):
 @add_endpoint("condition_met")
 def condition_met(ip, params):
     try:
-        if params[0].startswith("sensor"):
+        if is_sensor(params[0]):
             return asyncio.run(request(ip, ['condition_met', params[0]]))
         else:
             raise IndexError
@@ -405,7 +402,7 @@ def condition_met(ip, params):
 @add_endpoint("trigger_sensor")
 def trigger_sensor(ip, params):
     try:
-        if params[0].startswith("sensor"):
+        if is_sensor(params[0]):
             return asyncio.run(request(ip, ['trigger_sensor', params[0]]))
         else:
             raise IndexError
@@ -416,7 +413,7 @@ def trigger_sensor(ip, params):
 @add_endpoint("turn_on")
 def turn_on(ip, params):
     try:
-        if params[0].startswith("device"):
+        if is_device(params[0]):
             return asyncio.run(request(ip, ['turn_on', params[0]]))
         else:
             raise IndexError
@@ -427,7 +424,7 @@ def turn_on(ip, params):
 @add_endpoint("turn_off")
 def turn_off(ip, params):
     try:
-        if params[0].startswith("device"):
+        if is_device(params[0]):
             return asyncio.run(request(ip, ['turn_off', params[0]]))
         else:
             raise IndexError
