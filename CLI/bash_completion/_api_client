@@ -11,6 +11,9 @@ _api_client()
     # Get all node friendly names in space-seperated list
     opts=$(cat "$script_dir/nodes.json" | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
 
+    # Get schedule keywords
+    keywords=$(cat "$script_dir/../util/schedule-keywords.json" | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+
     # All API endpoints
     endpoints="status reboot disable disable_in enable enable_in set_rule reset_rule reset_all_rules get_schedule_rules add_rule remove_rule save_rules get_schedule_keywords add_schedule_keyword remove_schedule_keyword save_schedule_keywords get_attributes ir get_temp get_humid get_climate clear_log condition_met trigger_sensor turn_on turn_off"
 
@@ -22,6 +25,9 @@ _api_client()
 
     # Endpoints which require a sensor target
     sensor_endpoints="trigger_sensor condition_met"
+
+    # Endpoints which accept a schedule keyword argument
+    keyword_endpoints="add_rule remove_rule"
 
     # Display node friendly names first
     if [[ $prev == *"api_client.py" ]]; then
@@ -57,11 +63,24 @@ _api_client()
         COMPREPLY=( $(compgen -W "power vol_up vol_down mute up down left right enter settings exit source" ${cur}) )
         return 0
 
-    # Display baclight presets if prev is backlight
+    # Display backlight presets if prev is backlight
     elif [[ $prev == "backlight" ]]; then
         COMPREPLY=( $(compgen -W "on off" ${cur}) )
         return 0
+
+    # Display schedule keywords if prev is remove_schedule_keyword
+    elif [[ $prev == "remove_schedule_keyword" ]]; then
+        COMPREPLY=( $(compgen -W "${keywords}" ${cur}) )
+        return 0
     fi
+
+    # Display schedule keywords if prev is device/sensor and arg before that is add/remove_rule
+    for i in $keyword_endpoints; do
+        if [[ "${COMP_WORDS[COMP_CWORD-2]}" == $i ]] && [[ $prev =~ ^(device|sensor)[0-9]+ ]]; then
+            COMPREPLY=( $(compgen -W "${keywords}" ${cur}) )
+            return 0
+        fi
+    done
 
     # Display available devices/sensors if prev command accepts both as target
     for i in $target_endpoints; do
