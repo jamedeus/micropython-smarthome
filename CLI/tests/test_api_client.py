@@ -5,7 +5,7 @@ import asyncio
 from io import StringIO
 from unittest import TestCase, IsolatedAsyncioTestCase
 from unittest.mock import patch, MagicMock, AsyncMock
-from api_client import error, parse_ip, parse_command, main
+from api_client import endpoint_error, parse_ip, parse_command, main
 from api_endpoints import ir_commands, request
 
 # Get path
@@ -76,7 +76,7 @@ class TestError(TestCase):
 
     def test_error(self):
         with self.assertRaises(SystemExit):
-            error()
+            endpoint_error()
 
 
 # Test function that makes async API calls to esp32 nodes (called by all endpoint functions)
@@ -136,8 +136,8 @@ class RequestTests(IsolatedAsyncioTestCase):
 
     async def test_request_successful(self):
         # Mock asyncio methods to simulate successful connection
-        with patch('api_client.asyncio.open_connection', side_effect=self.mock_open_connection), \
-             patch('api_client.asyncio.wait_for', side_effect=self.mock_wait_for):
+        with patch('api_endpoints.asyncio.open_connection', side_effect=self.mock_open_connection), \
+             patch('api_endpoints.asyncio.wait_for', side_effect=self.mock_wait_for):
 
             # Send request, verify response
             response = await request('192.168.1.123', ['enable', 'device1'])
@@ -145,30 +145,30 @@ class RequestTests(IsolatedAsyncioTestCase):
 
     async def test_request_connection_errors(self):
         # Simulate timed out connection (target node event loop blocked)
-        with patch('api_client.asyncio.wait_for', side_effect=asyncio.TimeoutError):
+        with patch('api_endpoints.asyncio.wait_for', side_effect=asyncio.TimeoutError):
 
             # Make request, verify error
             response = await request('192.168.1.123', ['enable', 'device1'])
             self.assertEqual(response, "Error: Request timed out")
 
         # Simulate failed connection (target node offline, wrong IP, etc)
-        with patch('api_client.asyncio.wait_for', side_effect=OSError):
+        with patch('api_endpoints.asyncio.wait_for', side_effect=OSError):
 
             # Make request, verify error
             response = await request('192.168.1.123', ['enable', 'device1'])
             self.assertEqual(response, "Error: Failed to connect")
 
         # Simulate successful connection, failed write
-        with patch('api_client.asyncio.open_connection', side_effect=self.mock_open_connection_fail), \
-             patch('api_client.asyncio.wait_for', side_effect=self.mock_wait_for):
+        with patch('api_endpoints.asyncio.open_connection', side_effect=self.mock_open_connection_fail), \
+             patch('api_endpoints.asyncio.wait_for', side_effect=self.mock_wait_for):
 
             # Make request, verify error
             response = await request('192.168.1.123', ['enable', 'device1'])
             self.assertEqual(response, "Error: Request failed")
 
         # Simulate successful connection, receive invalid response
-        with patch('api_client.asyncio.open_connection', side_effect=self.mock_open_connection), \
-             patch('api_client.asyncio.wait_for', side_effect=self.mock_wait_for), \
+        with patch('api_endpoints.asyncio.open_connection', side_effect=self.mock_open_connection), \
+             patch('api_endpoints.asyncio.wait_for', side_effect=self.mock_wait_for), \
              patch('api_client.json.loads', side_effect=ValueError):
 
             # Make request, verify error
@@ -181,7 +181,7 @@ class RequestTests(IsolatedAsyncioTestCase):
     # Fixed by adding timeout to read call.
     async def test_regression_crashed_target_node(self):
         # Simulate hanging read after successful connection (target node event loop crashed)
-        with patch('api_client.asyncio.open_connection', side_effect=self.mock_open_connection_hang):
+        with patch('api_endpoints.asyncio.open_connection', side_effect=self.mock_open_connection_hang):
             # Send request, verify error
             # Request wrapped in 6 second timeout to prevent hanging in case of failure
             response = await asyncio.wait_for(request('192.168.1.123', ['enable', 'device1']), timeout=6)
@@ -191,7 +191,10 @@ class RequestTests(IsolatedAsyncioTestCase):
 class TestParseIP(TestCase):
 
     def test_all_flag(self):
-        with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command:
+        with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
+             self.assertRaises(SystemExit):
+
+            # Parse args, should call parse_command once for each node before exiting
             self.assertTrue(parse_ip(['--all', 'enable', 'device1']))
             self.assertEqual(mock_parse_command.call_count, len(nodes))
 
@@ -221,7 +224,8 @@ class TestParseIP(TestCase):
 
     def test_no_config_file(self):
         with patch("builtins.open", MagicMock(side_effect=FileNotFoundError)), \
-             patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command:
+             patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
+             self.assertRaises(SystemExit):
 
             self.assertTrue(parse_ip(['--all', 'enable', 'device1']))
             self.assertFalse(mock_parse_command.called)
@@ -230,14 +234,14 @@ class TestParseIP(TestCase):
 class TestParseCommand(TestCase):
 
     def test_no_args(self):
-        with patch('api_client.error', MagicMock(side_effect=SystemExit)) as mock_error, \
+        with patch('api_client.endpoint_error', MagicMock(side_effect=SystemExit)) as mock_error, \
              self.assertRaises(SystemExit):
 
             parse_command('192.168.1.123', [])
             self.assertTrue(mock_error.called)
 
     def test_invalid_endpoint(self):
-        with patch('api_client.error', MagicMock(side_effect=SystemExit)) as mock_error, \
+        with patch('api_client.endpoint_error', MagicMock(side_effect=SystemExit)) as mock_error, \
              self.assertRaises(SystemExit):
 
             parse_command('192.168.1.123', ['self_destruct'])

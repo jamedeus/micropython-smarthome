@@ -63,7 +63,7 @@ example_usage = {
 
 
 # Print all endpoints and descriptions, exit
-def error():
+def endpoint_error():
     print("\n" + Fore.RED + "Error: please pass one of the following commands as argument:" + Fore.RESET + "\n")
     for command in endpoint_descriptions:
         print("- " + Fore.YELLOW + Style.BRIGHT + command.ljust(40) + Style.RESET_ALL + endpoint_descriptions[command])
@@ -72,42 +72,59 @@ def error():
 
 
 # Takes endpoint name, prints example (must be key in example_usage)
-def print_example_usage(endpoint):
+def example_usage_error(endpoint):
     try:
         return example_usage[endpoint]
     except KeyError:
-        error()
+        endpoint_error()
 
 
-# Entrypoint, find IP in CLI args, send remaining args to parse_command
-def parse_ip(args):
-    # Load config file
+# Show available nodes and exit, called when no target IP/node in args
+def missing_target_error(nodes):
+    print(Fore.RED + "Error: Must specify target ip, or one of the following names:" + Fore.RESET)
+    for name in nodes:
+        print(f" - {name}")
+    raise SystemExit
+
+
+# Load nodes.json, return dict with friendly names and IPs of existing nodes
+def load_config_file():
     try:
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'nodes.json'), 'r') as file:
-            nodes = json.load(file)
+            return json.load(file)
     except FileNotFoundError:
         print("Warning: Unable to find nodes.json, friendly names will not work")
-        nodes = {}
+        return {}
 
-    # Get target ip
+
+# Receives args, finds IP, passes IP + remaining args to parse_command
+def parse_ip(args):
+    # Get dict of existing node friendly names and IPs
+    nodes = load_config_file()
+
+    # Parse target IP from args, pass IP + remaining args to parse_command
     for i in range(len(args)):
 
+        # User passed --all flag, iterate existing nodes and pass args to each
         if args[i] == "--all":
             args.pop(i)
             for i in nodes:
                 ip = nodes[i]["ip"]
-                print(ip)
-                # Use copy of original args since items are removed by parser
+                print(f"{i} ({ip})")
+                # Use copy to preserve args for next node (parse_command removes endpoint)
                 cmd = args.copy()
                 response = parse_command(ip, cmd)
                 print(json.dumps(response, indent=4) + "\n")
-            return True
+            print("Done\n")
+            raise SystemExit
 
+        # User passed node name, look up IP in dict
         elif args[i] in nodes:
             ip = nodes[args[i]]["ip"]
             args.pop(i)
             return parse_command(ip, args)
 
+        # User passed IP flag
         elif args[i] == "-ip":
             args.pop(i)
             ip = args.pop(i)
@@ -117,21 +134,21 @@ def parse_ip(args):
                 print("Error: Invalid IP format")
                 raise SystemExit
 
+        # User passed IP with no flag
         elif valid_ip(args[i]):
             ip = args.pop(i)
             return parse_command(ip, args)
 
+    # No IP or node name found
     else:
-        print(Fore.RED + "Error: Must specify target ip, or one of the following names:" + Fore.RESET)
-        for name in nodes:
-            print(f" - {name}")
-        raise SystemExit
+        missing_target_error(nodes)
 
 
-# Iterate endpoints (see util/api_endpoints.py), find match, run
+# Takes target IP + args
+# Iterate endpoints (see util/api_endpoints.py) until match found in args, run
 def parse_command(ip, args):
     if len(args) == 0:
-        error()
+        endpoint_error()
 
     for endpoint in endpoints:
         if args[0] == endpoint[0]:
@@ -142,9 +159,9 @@ def parse_command(ip, args):
                 return endpoint[1](ip, args)
             except SyntaxError:
                 # No arguments given, show usage example
-                return print_example_usage(match)
+                return example_usage_error(match)
     else:
-        error()
+        endpoint_error()
 
 
 def main():
