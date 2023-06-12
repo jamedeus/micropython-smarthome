@@ -331,8 +331,11 @@ def parse_command(ip, args):
         if args[0] == endpoint[0]:
             # Remove endpoint arg
             args.pop(0)
-            # Send remaining args to handler function
-            return endpoint[1](ip, args)
+            try:
+                # Send remaining args to handler function
+                return endpoint[1](ip, args)
+            except SyntaxError:
+                return {"ERROR": "Please fill out all fields"}
 
     else:
         return "Error: Command not found"

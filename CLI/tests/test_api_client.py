@@ -5,8 +5,8 @@ import asyncio
 from io import StringIO
 from unittest import TestCase, IsolatedAsyncioTestCase
 from unittest.mock import patch, MagicMock, AsyncMock
-from api_client import error, parse_ip, parse_command, request, main
-from api_endpoints import ir_commands
+from api_client import error, parse_ip, parse_command, main
+from api_endpoints import ir_commands, request
 
 # Get path
 tests = os.path.dirname(os.path.realpath(__file__))
@@ -296,49 +296,49 @@ class TestEndpoints(TestCase):
 
     def test_status(self):
         # Mock request to return status object
-        with patch('api_client.request', return_value=mock_status_object):
+        with patch('api_endpoints.request', return_value=mock_status_object):
             # Request status, should receive expected object
             response = parse_command('192.168.1.123', ['status'])
             self.assertEqual(response, mock_status_object)
 
     def test_reboot(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value='Rebooting'):
+        with patch('api_endpoints.request', return_value='Rebooting'):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['reboot'])
             self.assertEqual(response, 'Rebooting')
 
     def test_disable(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Disabled': 'device1'}):
+        with patch('api_endpoints.request', return_value={'Disabled': 'device1'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['disable', 'device1'])
             self.assertEqual(response, {'Disabled': 'device1'})
 
     def test_disable_in(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Disabled': 'device1', 'Disable_in_seconds': 300.0}):
+        with patch('api_endpoints.request', return_value={'Disabled': 'device1', 'Disable_in_seconds': 300.0}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['disable_in', 'device1', '5'])
             self.assertEqual(response, {'Disabled': 'device1', 'Disable_in_seconds': 300.0})
 
     def test_enable(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Enabled': 'device1'}):
+        with patch('api_endpoints.request', return_value={'Enabled': 'device1'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['enable', 'device1'])
             self.assertEqual(response, {'Enabled': 'device1'})
 
     def test_enable_in(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Enabled': 'device1', 'Enable_in_seconds': 300.0}):
+        with patch('api_endpoints.request', return_value={'Enabled': 'device1', 'Enable_in_seconds': 300.0}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['enable_in', 'device1', '5'])
             self.assertEqual(response, {'Enabled': 'device1', 'Enable_in_seconds': 300.0})
 
     def test_set_rule(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={"device1": "50"}):
+        with patch('api_endpoints.request', return_value={"device1": "50"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['set_rule', 'device1', '50'])
             self.assertEqual(response, {"device1": "50"})
@@ -346,7 +346,7 @@ class TestEndpoints(TestCase):
     def test_reset_rule(self):
         # Mock request to return expected response
         expected_response = {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}
-        with patch('api_client.request', return_value=expected_response):
+        with patch('api_endpoints.request', return_value=expected_response):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['reset_rule', 'device1'])
             self.assertEqual(response, expected_response)
@@ -354,77 +354,77 @@ class TestEndpoints(TestCase):
     def test_reset_all_rules(self):
         # Mock request to return expected response
         expected_response = {'New rules': {'device1': 'disabled', 'sensor1': 2.0, 'device2': 'enabled'}}
-        with patch('api_client.request', return_value=expected_response):
+        with patch('api_endpoints.request', return_value=expected_response):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['reset_all_rules'])
             self.assertEqual(response, expected_response)
 
     def test_get_schedule_rules(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'05:00': 'enabled', '22:00': 'disabled'}):
+        with patch('api_endpoints.request', return_value={'05:00': 'enabled', '22:00': 'disabled'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_schedule_rules', 'device2'])
             self.assertEqual(response, {'05:00': 'enabled', '22:00': 'disabled'})
 
     def test_add_rule(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'time': '10:00', 'Rule added': 'disabled'}):
+        with patch('api_endpoints.request', return_value={'time': '10:00', 'Rule added': 'disabled'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['add_rule', 'device2', '10:00', 'disabled'])
             self.assertEqual(response, {'time': '10:00', 'Rule added': 'disabled'})
 
     def test_add_rule_keyword(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}):
+        with patch('api_endpoints.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['add_rule', 'device2', 'sunrise', 'disabled'])
             self.assertEqual(response, {'time': 'sunrise', 'Rule added': 'disabled'})
 
     def test_remove_rule(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Deleted': '10:00'}):
+        with patch('api_endpoints.request', return_value={'Deleted': '10:00'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', '10:00'])
             self.assertEqual(response, {'Deleted': '10:00'})
 
     def test_remove_rule_keyword(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Deleted': 'sunrise'}):
+        with patch('api_endpoints.request', return_value={'Deleted': 'sunrise'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', 'sunrise'])
             self.assertEqual(response, {'Deleted': 'sunrise'})
 
     def test_save_rules(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Success': 'Rules written to disk'}):
+        with patch('api_endpoints.request', return_value={'Success': 'Rules written to disk'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['save_rules'])
             self.assertEqual(response, {'Success': 'Rules written to disk'})
 
     def test_get_keywords(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={"sunrise": "05:55", "sunset": "20:20"}):
+        with patch('api_endpoints.request', return_value={"sunrise": "05:55", "sunset": "20:20"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_schedule_keywords'])
             self.assertEqual(response, {"sunrise": "05:55", "sunset": "20:20"})
 
     def test_add_keyword(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={"Keyword added": "test", "time": "05:00"}):
+        with patch('api_endpoints.request', return_value={"Keyword added": "test", "time": "05:00"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test', '05:00'])
             self.assertEqual(response, {"Keyword added": "test", "time": "05:00"})
 
     def test_remove_keyword(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={"Keyword removed": "test"}):
+        with patch('api_endpoints.request', return_value={"Keyword removed": "test"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_schedule_keyword', 'test'])
             self.assertEqual(response, {"Keyword removed": "test"})
 
     def test_save_keywords(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={"Success": "Keywords written to disk"}):
+        with patch('api_endpoints.request', return_value={"Success": "Keywords written to disk"}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['save_schedule_keywords'])
             self.assertEqual(response, {"Success": "Keywords written to disk"})
@@ -432,7 +432,7 @@ class TestEndpoints(TestCase):
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):
         # Mock request to return expected response (should not run)
-        with patch('api_client.request', return_value={"Keyword added": "test", "time": "5:00"}):
+        with patch('api_endpoints.request', return_value={"Keyword added": "test", "time": "5:00"}):
             # Send request, should receive error instead of mock response
             response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test', '5:00'])
             self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
@@ -464,77 +464,77 @@ class TestEndpoints(TestCase):
         }
 
         # Mock request to return expected response
-        with patch('api_client.request', return_value=attributes):
+        with patch('api_endpoints.request', return_value=attributes):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_attributes', 'device2'])
             self.assertEqual(response, attributes)
 
     def test_ir_key(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'tv': 'power'}):
+        with patch('api_endpoints.request', return_value={'tv': 'power'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['ir', 'tv', 'power'])
             self.assertEqual(response, {'tv': 'power'})
 
     def test_ir_backlight(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'backlight': 'on'}):
+        with patch('api_endpoints.request', return_value={'backlight': 'on'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['ir', 'backlight', 'on'])
             self.assertEqual(response, {'backlight': 'on'})
 
     def test_get_temp(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Temp': 69.9683}):
+        with patch('api_endpoints.request', return_value={'Temp': 69.9683}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_temp'])
             self.assertEqual(response, {'Temp': 69.9683})
 
     def test_get_humid(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Humidity': 47.09677}):
+        with patch('api_endpoints.request', return_value={'Humidity': 47.09677}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_humid'])
             self.assertEqual(response, {'Humidity': 47.09677})
 
     def test_get_climate(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'humid': 47.12729, 'temp': 69.94899}):
+        with patch('api_endpoints.request', return_value={'humid': 47.12729, 'temp': 69.94899}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['get_climate'])
             self.assertEqual(response, {'humid': 47.12729, 'temp': 69.94899})
 
     def test_clear_log(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'clear_log': 'success'}):
+        with patch('api_endpoints.request', return_value={'clear_log': 'success'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['clear_log'])
             self.assertEqual(response, {'clear_log': 'success'})
 
     def test_condition_met(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Condition': False}):
+        with patch('api_endpoints.request', return_value={'Condition': False}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['condition_met', 'sensor1'])
             self.assertEqual(response, {'Condition': False})
 
     def test_trigger_sensor(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Triggered': 'sensor1'}):
+        with patch('api_endpoints.request', return_value={'Triggered': 'sensor1'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['trigger_sensor', 'sensor1'])
             self.assertEqual(response, {'Triggered': 'sensor1'})
 
     def test_turn_on(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'On': 'device2'}):
+        with patch('api_endpoints.request', return_value={'On': 'device2'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['turn_on', 'device2'])
             self.assertEqual(response, {'On': 'device2'})
 
     def test_turn_off(self):
         # Mock request to return expected response
-        with patch('api_client.request', return_value={'Off': 'device2'}):
+        with patch('api_endpoints.request', return_value={'Off': 'device2'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['turn_off', 'device2'])
             self.assertEqual(response, {'Off': 'device2'})
@@ -663,13 +663,13 @@ class TestEndpointErrors(TestCase):
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):
         # Mock request to return expected response (should not run)
-        with patch('api_client.request', return_value={'time': '5:00', 'Rule added': 'disabled'}):
+        with patch('api_endpoints.request', return_value={'time': '5:00', 'Rule added': 'disabled'}):
             # Send request, should receive error instead of mock response
             response = parse_command('192.168.1.123', ['add_rule', 'device2', '5:00', 'disabled'])
             self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"})
 
         # Mock request to return expected response (should not run)
-        with patch('api_client.request', return_value={'Deleted': '5:00'}):
+        with patch('api_endpoints.request', return_value={'Deleted': '5:00'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', '5:00'])
             self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword of rule to remove"})
@@ -683,7 +683,7 @@ class TestMain(TestCase):
 
         # Mock sys.arg to simulate running from command line
         with patch("sys.argv", ["api_client.py", "192.168.1.123", "enable", "device1"]), \
-             patch('api_client.request', return_value={'Enabled': 'device1'}):
+             patch('api_endpoints.request', return_value={'Enabled': 'device1'}):
 
             # Run main, verify response printed to console
             main()

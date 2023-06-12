@@ -64,7 +64,7 @@ def reboot(ip, params):
 @add_endpoint("disable")
 def disable(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         return asyncio.run(request(ip, ['disable', params[0]]))
@@ -75,7 +75,7 @@ def disable(ip, params):
 @add_endpoint("disable_in")
 def disable_in(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
@@ -91,7 +91,7 @@ def disable_in(ip, params):
 @add_endpoint("enable")
 def enable(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         return asyncio.run(request(ip, ['enable', params[0]]))
@@ -102,7 +102,7 @@ def enable(ip, params):
 @add_endpoint("enable_in")
 def enable_in(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
@@ -118,7 +118,7 @@ def enable_in(ip, params):
 @add_endpoint("set_rule")
 def set_rule(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
@@ -133,7 +133,7 @@ def set_rule(ip, params):
 @add_endpoint("reset_rule")
 def reset_rule(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
@@ -150,7 +150,7 @@ def reset_all_rules(ip, params):
 @add_endpoint("get_schedule_rules")
 def get_schedule_rules(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
@@ -162,7 +162,7 @@ def get_schedule_rules(ip, params):
 @add_endpoint("add_rule")
 def add_schedule_rule(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
@@ -174,7 +174,7 @@ def add_schedule_rule(ip, params):
     elif len(params) > 0 and params[0] in get_schedule_keywords_dict().keys():
         timestamp = params.pop(0)
     else:
-        return {"ERROR": "Must specify time (HH:MM) followed by rule"}
+        return {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"}
 
     if len(params) == 0:
         return {"ERROR": "Must specify new rule"}
@@ -191,7 +191,7 @@ def add_schedule_rule(ip, params):
 @add_endpoint("remove_rule")
 def remove_rule(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
@@ -203,7 +203,7 @@ def remove_rule(ip, params):
     elif len(params) > 0 and params[0] in get_schedule_keywords_dict().keys():
         timestamp = params.pop(0)
     else:
-        return {"ERROR": "Must specify time (HH:MM) of rule to remove"}
+        return {"ERROR": 'Must specify timestamp (HH:MM) or keyword of rule to remove'}
 
     return asyncio.run(request(ip, ['remove_rule', target, timestamp]))
 
@@ -221,7 +221,7 @@ def get_schedule_keywords(ip, params):
 @add_endpoint("add_schedule_keyword")
 def add_schedule_keyword(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     keyword = params.pop(0)
 
@@ -238,7 +238,7 @@ def add_schedule_keyword(ip, params):
 @add_endpoint("remove_schedule_keyword")
 def remove_schedule_keyword(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     cmd = ['remove_schedule_keyword', params.pop(0)]
     return asyncio.run(request(ip, cmd))
@@ -252,7 +252,7 @@ def save_schedule_keywords(ip, params):
 @add_endpoint("get_attributes")
 def get_attributes(ip, params):
     if len(params) == 0:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
@@ -280,7 +280,7 @@ def ir(ip, params):
         except IndexError:
             return {"ERROR": "Must specify 'on' or 'off'"}
     else:
-        return {"ERROR": "Please fill out all fields"}
+        raise SyntaxError
 
 
 @add_endpoint("get_temp")

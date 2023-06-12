@@ -967,7 +967,7 @@ class TestEndpointErrors(TestCase):
     def test_add_rule_no_time_arg(self):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['add_rule', 'device1'])
-        self.assertEqual(response, {"ERROR": "Must specify time (HH:MM) followed by rule"})
+        self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"})
 
     def test_add_rule_no_rule_arg(self):
         # Send request, verify response
@@ -982,7 +982,7 @@ class TestEndpointErrors(TestCase):
     def test_remove_rule_no_time_arg(self):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['remove_rule', 'device1'])
-        self.assertEqual(response, {"ERROR": "Must specify time (HH:MM) of rule to remove"})
+        self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword of rule to remove"})
 
     def test_get_attributes_invalid_arg(self):
         # Send request, verify response
@@ -1033,13 +1033,13 @@ class TestEndpointErrors(TestCase):
         with patch('api_endpoints.request', return_value={'time': '5:00', 'Rule added': 'disabled'}):
             # Send request, should receive error instead of mock response
             response = parse_command('192.168.1.123', ['add_rule', 'device2', '5:00', 'disabled'])
-            self.assertEqual(response, {"ERROR": "Must specify time (HH:MM) followed by rule"})
+            self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"})
 
         # Mock request to return expected response (should not run)
         with patch('api_endpoints.request', return_value={'Deleted': '5:00'}):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', '5:00'])
-            self.assertEqual(response, {"ERROR": "Must specify time (HH:MM) of rule to remove"})
+            self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword of rule to remove"})
 
 
 # Test endpoint that loads modal containing existing macro actions
