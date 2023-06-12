@@ -287,12 +287,20 @@ class TestExampleUsage(TestCase):
         response = parse_ip(['192.168.1.123', 'get_attributes'])
         self.assertEqual(response, {"Example usage": "./api_client.py get_attributes [device|sensor]"})
 
+        response = parse_ip(['192.168.1.123', 'condition_met'])
+        self.assertEqual(response, {"Example usage": "./api_client.py condition_met [sensor]"})
+
+        response = parse_ip(['192.168.1.123', 'trigger_sensor'])
+        self.assertEqual(response, {"Example usage": "./api_client.py trigger_sensor [sensor]"})
+
+        response = parse_ip(['192.168.1.123', 'turn_on'])
+        self.assertEqual(response, {"Example usage": "./api_client.py turn_on [device]"})
+
+        response = parse_ip(['192.168.1.123', 'turn_off'])
+        self.assertEqual(response, {"Example usage": "./api_client.py turn_off [device]"})
+
         response = parse_ip(['192.168.1.123', 'ir'])
         self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"})
-
-        # TODO add missing usage example error messages
-        #response = parse_ip(['192.168.1.123', ''])
-        #self.assertEqual(response, )
 
 
 # Test successful calls to all API endpoints with mocked return values

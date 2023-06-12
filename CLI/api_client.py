@@ -11,6 +11,7 @@ from api_endpoints import endpoints
 # Used for help/error message
 endpoint_descriptions = {
     "status":                                "Get dict containing status of all devices and sensors",
+    "reboot":                                "Reboot the target node (will be unreachable for ~30 seconds)",
     "disable [target]":                      "Disable [target], can be device or sensor",
     "disable_in [target] [minutes]":         "Create timer to disable [target] in [minutes]",
     "enable [target]":                       "Enable [target], can be device or sensor",
@@ -53,12 +54,11 @@ example_usage = {
     'add_schedule_keyword': {"Example usage": "./api_client.py add_schedule_keyword [keyword] [HH:MM]"},
     'remove_schedule_keyword': {"Example usage": "./api_client.py remove_schedule_keyword [keyword]"},
     'get_attributes': {"Example usage": "./api_client.py get_attributes [device|sensor]"},
-    'ir': {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"},
-    # TODO fix these
-    'condition_met': {"ERROR": "Must specify sensor"},
-    'trigger_sensor': {"ERROR": "Must specify sensor"},
-    'turn_on': {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"},
-    'turn_off': {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
+    'condition_met': {"Example usage": "./api_client.py condition_met [sensor]"},
+    'trigger_sensor': {"Example usage": "./api_client.py trigger_sensor [sensor]"},
+    'turn_on': {"Example usage": "./api_client.py turn_on [device]"},
+    'turn_off': {"Example usage": "./api_client.py turn_off [device]"},
+    'ir': {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"}
 }
 
 

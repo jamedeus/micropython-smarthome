@@ -305,43 +305,43 @@ def clear_log(ip, params):
 
 @add_endpoint("condition_met")
 def condition_met(ip, params):
-    try:
-        if is_sensor(params[0]):
-            return asyncio.run(request(ip, ['condition_met', params[0]]))
-        else:
-            raise IndexError
-    except IndexError:
+    if len(params) == 0:
+        raise SyntaxError
+
+    if is_sensor(params[0]):
+        return asyncio.run(request(ip, ['condition_met', params[0]]))
+    else:
         return {"ERROR": "Must specify sensor"}
 
 
 @add_endpoint("trigger_sensor")
 def trigger_sensor(ip, params):
-    try:
-        if is_sensor(params[0]):
-            return asyncio.run(request(ip, ['trigger_sensor', params[0]]))
-        else:
-            raise IndexError
-    except IndexError:
+    if len(params) == 0:
+        raise SyntaxError
+
+    if is_sensor(params[0]):
+        return asyncio.run(request(ip, ['trigger_sensor', params[0]]))
+    else:
         return {"ERROR": "Must specify sensor"}
 
 
 @add_endpoint("turn_on")
 def turn_on(ip, params):
-    try:
-        if is_device(params[0]):
-            return asyncio.run(request(ip, ['turn_on', params[0]]))
-        else:
-            raise IndexError
-    except IndexError:
+    if len(params) == 0:
+        raise SyntaxError
+
+    if is_device(params[0]):
+        return asyncio.run(request(ip, ['turn_on', params[0]]))
+    else:
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
 
 @add_endpoint("turn_off")
 def turn_off(ip, params):
-    try:
-        if is_device(params[0]):
-            return asyncio.run(request(ip, ['turn_off', params[0]]))
-        else:
-            raise IndexError
-    except IndexError:
+    if len(params) == 0:
+        raise SyntaxError
+
+    if is_device(params[0]):
+        return asyncio.run(request(ip, ['turn_off', params[0]]))
+    else:
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
