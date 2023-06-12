@@ -4,17 +4,37 @@ import json
 import asyncio
 from io import StringIO
 from unittest import TestCase, IsolatedAsyncioTestCase
-from unittest.mock import patch, MagicMock, AsyncMock
+from unittest.mock import patch, MagicMock, AsyncMock, mock_open
 from api_client import endpoint_error, parse_ip, parse_command, main
 from api_endpoints import ir_commands, request
 
-# Get path
+# Get paths to test dir, CLI dir, repo dir
 tests = os.path.dirname(os.path.realpath(__file__))
 cli = os.path.split(tests)[0]
+repo = os.path.dirname(tests)
 
-# TODO mock config file
-with open(os.path.join(cli, 'nodes.json'), 'r') as file:
-    nodes = json.load(file)
+# Mock nodes.json contents
+mock_nodes = {
+    "node1": {
+        "config": os.path.join(repo, "config", "node1.json"),
+        "ip": "192.168.1.123"
+    },
+    "node2": {
+        "config": os.path.join(repo, "config", "node2.json"),
+        "ip": "192.168.1.234"
+    },
+    "node3": {
+        "config": os.path.join(repo, "config", "node3.json"),
+        "ip": "192.168.1.111"
+    },
+}
+
+# Mock schedule-keywords.json contents
+mock_keywords = {
+    "sunrise": "06:00",
+    "sunset": "18:00",
+    "sleep": "22:00"
+}
 
 mock_status_object = {
     'metadata': {
@@ -192,15 +212,18 @@ class TestParseIP(TestCase):
 
     def test_all_flag(self):
         with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_nodes))), \
              self.assertRaises(SystemExit):
 
             # Parse args, should call parse_command once for each node before exiting
             self.assertTrue(parse_ip(['--all', 'enable', 'device1']))
-            self.assertEqual(mock_parse_command.call_count, len(nodes))
+            self.assertEqual(mock_parse_command.call_count, len(mock_nodes))
 
     def test_node_name(self):
-        with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command:
-            self.assertTrue(parse_ip(['bedroom', 'enable', 'device1']))
+        with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_nodes))):
+
+            self.assertTrue(parse_ip(['node2', 'enable', 'device1']))
             self.assertTrue(mock_parse_command.called_once)
 
     def test_ip_flag(self):
@@ -387,7 +410,9 @@ class TestEndpoints(TestCase):
 
     def test_add_rule_keyword(self):
         # Mock request to return expected response
-        with patch('api_endpoints.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}):
+        with patch('api_endpoints.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}), \
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_keywords))):
+
             # Send request, verify response
             response = parse_command('192.168.1.123', ['add_rule', 'device2', 'sunrise', 'disabled'])
             self.assertEqual(response, {'time': 'sunrise', 'Rule added': 'disabled'})
@@ -401,7 +426,9 @@ class TestEndpoints(TestCase):
 
     def test_remove_rule_keyword(self):
         # Mock request to return expected response
-        with patch('api_endpoints.request', return_value={'Deleted': 'sunrise'}):
+        with patch('api_endpoints.request', return_value={'Deleted': 'sunrise'}), \
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_keywords))):
+
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', 'sunrise'])
             self.assertEqual(response, {'Deleted': 'sunrise'})
@@ -695,6 +722,7 @@ class TestMain(TestCase):
 
         # Mock sys.arg to simulate running from command line
         with patch("sys.argv", ["api_client.py", "192.168.1.123", "enable", "device1"]), \
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_nodes))), \
              patch('api_endpoints.request', return_value={'Enabled': 'device1'}):
 
             # Run main, verify response printed to console
