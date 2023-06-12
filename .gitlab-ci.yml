@@ -2,13 +2,14 @@ before_script:
   - docker info
 
 stages:
-  - test
+  - test_frontend
+  - test_cli
   - build
   - deploy
 
-# Run unit tests
-test:
-  stage: test
+# Run django unit tests
+test_frontend:
+  stage: test_frontend
   tags:
     - arm64
   script:
@@ -21,7 +22,22 @@ test:
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   only:
     - master
-    - frontend
+
+# Run CLI tool unit tests
+test_cli:
+  stage: test_cli
+  tags:
+    - arm64
+  script:
+    - pip3 install pipenv
+    - export PATH=$PATH:/home/gitlab-runner/.local/bin
+    - pipenv install
+    - cd CLI/
+    - pipenv run coverage run --omit='tests/*' -m unittest discover tests/
+    - pipenv run coverage report -m --precision=1
+  coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
+  only:
+    - master
 
 # Build new container, increment most-recent tag
 build:
@@ -35,7 +51,6 @@ build:
     - 'docker build --platform linux/arm64 -t $IMAGE_NAME:$NEW_TAG . -f frontend/docker/Dockerfile'
   only:
     - master
-    - frontend
 
 # Deploy most-recent container
 deploy:
@@ -49,4 +64,3 @@ deploy:
     - 'docker compose -f /home/pi/docker/docker-compose.yaml up -d'
   only:
     - master
-    - frontend
