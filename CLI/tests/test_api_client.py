@@ -5,7 +5,7 @@ import asyncio
 from io import StringIO
 from unittest import TestCase, IsolatedAsyncioTestCase
 from unittest.mock import patch, MagicMock, AsyncMock, mock_open
-from api_client import endpoint_error, parse_ip, parse_command, main
+from api_client import endpoint_error, parse_ip, parse_command, main, example_usage_error
 from api_endpoints import ir_commands, request
 
 # Get paths to test dir, CLI dir, repo dir
@@ -208,6 +208,7 @@ class RequestTests(IsolatedAsyncioTestCase):
             self.assertEqual(response, "Error: Timed out waiting for response")
 
 
+# Test function that takes all args, finds IP, and passes IP + remaining args to parse_command
 class TestParseIP(TestCase):
 
     def test_all_flag(self):
@@ -240,6 +241,7 @@ class TestParseIP(TestCase):
 
     def test_no_target_ip(self):
         with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_nodes))), \
              self.assertRaises(SystemExit):
 
             self.assertTrue(parse_ip(['enable', 'device1']))
@@ -254,6 +256,7 @@ class TestParseIP(TestCase):
             self.assertFalse(mock_parse_command.called)
 
 
+# Test function that takes IP + command args and calls correct endpoint function
 class TestParseCommand(TestCase):
 
     def test_no_args(self):
@@ -273,6 +276,7 @@ class TestParseCommand(TestCase):
 
 # Verify that the correct usage examples are shown for each endpoint when no arguments are provided
 class TestExampleUsage(TestCase):
+
     def test_no_args(self):
         response = parse_ip(['192.168.1.123', 'disable'])
         self.assertEqual(response, {"Example usage": "./api_client.py disable [device|sensor]"})
@@ -325,8 +329,14 @@ class TestExampleUsage(TestCase):
         response = parse_ip(['192.168.1.123', 'ir'])
         self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"})
 
+    def test_invalid_endpoint(self):
+        # Pass non-existing endpoint to example usage error, should show endpoint error
+        with patch('api_client.endpoint_error', MagicMock()) as mock_error:
+            example_usage_error('self_destruct')
+            self.assertTrue(mock_error.called)
 
-# Test successful calls to all API endpoints with mocked return values
+
+# Test successful calls to all API endpoints (with mocked return values)
 class TestEndpoints(TestCase):
 
     def test_status(self):
@@ -579,6 +589,7 @@ class TestEndpoints(TestCase):
             self.assertEqual(response, {'Off': 'device2'})
 
 
+# Confirm that correct errors are shown when endpoint arguments are omitted/incorrect
 class TestEndpointErrors(TestCase):
 
     def test_disable_invalid_arg(self):
@@ -645,6 +656,12 @@ class TestEndpointErrors(TestCase):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['add_rule', 'device1', '01:30'])
         self.assertEqual(response, {"ERROR": "Must specify new rule"})
+
+    def test_add_rule_keyword_no_config_file(self):
+        # Attempt to use keyword while simulating missing schedule-keywords.json
+        with patch("builtins.open", MagicMock(side_effect=FileNotFoundError)):
+            response = parse_command('192.168.1.123', ['add_rule', 'device1', 'sunrise', '50'])
+            self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"})
 
     def test_remove_rule_invalid_arg(self):
         # Send request, verify response
@@ -714,6 +731,7 @@ class TestEndpointErrors(TestCase):
             self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword of rule to remove"})
 
 
+# Test CLI script entrypoint
 class TestMain(TestCase):
     def test_main(self):
         # Redirect stdout to variable
