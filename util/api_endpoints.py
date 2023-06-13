@@ -130,6 +130,21 @@ def set_rule(ip, params):
         return {"ERROR": "Can only set rules for devices and sensors"}
 
 
+@add_endpoint("increment_rule")
+def increment_rule(ip, params):
+    if len(params) == 0:
+        raise SyntaxError
+
+    if is_device(params[0]):
+        target = params.pop(0)
+        try:
+            return asyncio.run(request(ip, ['increment_rule', target, params[0]]))
+        except IndexError:
+            return {"ERROR": "Must specify amount (int) to increment by"}
+    else:
+        return {"ERROR": "Target must be device with int rule"}
+
+
 @add_endpoint("reset_rule")
 def reset_rule(ip, params):
     if len(params) == 0:

@@ -293,6 +293,9 @@ class TestExampleUsage(TestCase):
         response = parse_ip(['192.168.1.123', 'set_rule'])
         self.assertEqual(response, {"Example usage": "./api_client.py set_rule [device|sensor] [rule]"})
 
+        response = parse_ip(['192.168.1.123', 'increment_rule'])
+        self.assertEqual(response, {"Example usage": "./api_client.py increment_rule [device] [int]"})
+
         response = parse_ip(['192.168.1.123', 'reset_rule'])
         self.assertEqual(response, {"Example usage": "./api_client.py reset_rule [device|sensor]"})
 
@@ -387,6 +390,13 @@ class TestEndpoints(TestCase):
             # Send request, verify response
             response = parse_command('192.168.1.123', ['set_rule', 'device1', '50'])
             self.assertEqual(response, {"device1": "50"})
+
+    def test_increment_rule(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"device1": "100"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['increment_rule', 'device1', '50'])
+            self.assertEqual(response, {"device1": "100"})
 
     def test_reset_rule(self):
         # Mock request to return expected response
@@ -631,6 +641,16 @@ class TestEndpointErrors(TestCase):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['set_rule', 'device1'])
         self.assertEqual(response, {"ERROR": "Must specify new rule"})
+
+    def test_increment_rule_target_sensor(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['increment_rule', 'sensor1', '50'])
+        self.assertEqual(response, {"ERROR": "Target must be device with int rule"})
+
+    def test_increment_rule_no_amount_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['increment_rule', 'device1'])
+        self.assertEqual(response, {"ERROR": "Must specify amount (int) to increment by"})
 
     def test_reset_rule_invalid_arg(self):
         # Send request, verify response

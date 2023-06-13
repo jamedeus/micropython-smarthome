@@ -244,6 +244,40 @@ def set_rule(args):
         return {"ERROR": "Invalid rule"}
 
 
+@app.route("increment_rule")
+def increment_rule(args):
+    if not len(args) >= 2:
+        return {"ERROR": "Invalid syntax"}
+
+    target = app.config.find(args[0])
+
+    if is_device(target.name):
+        if target._type not in ['dimmer', 'bulb', 'pwm', 'wled']:
+            return {"ERROR": "Device rule must be int not bool"}
+    else:
+        return {"ERROR": "Target must be device or sensor with int rule"}
+
+    try:
+        increment = int(args[1])
+    except TypeError:
+        return {"ERROR": "Argument must be integer"}
+
+    try:
+        new = int(target.current_rule) + increment
+    except ValueError:
+        return {"ERROR": f"Unable to increment current rule ({target.current_rule})"}
+
+    if new > target.max_bright:
+        new = target.max_bright
+    if new < target.min_bright:
+        new = target.min_bright
+
+    if target.set_rule(new):
+        return {target.name: new}
+    else:
+        return {"ERROR": "Invalid rule"}
+
+
 @app.route("reset_rule")
 def reset_rule(args):
     if not len(args) == 1:
