@@ -20,8 +20,10 @@ test_frontend:
     - pipenv run coverage run --source='.' --omit='*manage.py,*wsgi.py,*asgi.py,*/tests.py,*unit_test_helpers.py,*/migrations/*.py' manage.py test
     - pipenv run coverage report -m --precision=1
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
-  only:
-    - master
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+      when: never
+    - when: always
 
 # Run CLI tool unit tests
 test_cli:
@@ -36,8 +38,10 @@ test_cli:
     - pipenv run coverage run --omit='tests/*' -m unittest discover tests/
     - pipenv run coverage report -m --precision=1
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
-  only:
-    - master
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+      when: never
+    - when: always
 
 # Build new container, increment most-recent tag
 build:
@@ -49,8 +53,10 @@ build:
     - 'export LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
     - "export NEW_TAG=$(echo $LAST_TAG | awk -F. '{$NF = $NF + 1;} 1' OFS=.)"
     - 'docker build --platform linux/arm64 -t $IMAGE_NAME:$NEW_TAG . -f frontend/docker/Dockerfile'
-  only:
-    - master
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+      when: never
+    - when: always
 
 # Deploy most-recent container
 deploy:
@@ -62,5 +68,7 @@ deploy:
     - 'export LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
     - 'sed -i "s|$IMAGE_NAME:[0-9]*\.[0-9]*|$IMAGE_NAME:$LAST_TAG|g" /home/pi/docker/docker-compose.yaml'
     - 'docker compose -f /home/pi/docker/docker-compose.yaml up -d'
-  only:
-    - master
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "api"'
+      when: never
+    - when: always
