@@ -1841,7 +1841,8 @@ class GetModulesTests(TestCase):
             '../devices/Desktop_target.py': 'Desktop_target.py',
             '../sensors/Thermostat.py': 'Thermostat.py',
             '../sensors/Sensor.py': 'Sensor.py',
-            '../devices/LedStrip.py': 'LedStrip.py'
+            '../devices/LedStrip.py': 'LedStrip.py',
+            '../devices/DimmableLight.py': 'DimmableLight.py'
         }
 
         modules = get_modules(self.config)
@@ -1869,7 +1870,8 @@ class GetModulesTests(TestCase):
             '../devices/Desktop_target.py': 'Desktop_target.py',
             '../sensors/Thermostat.py': 'Thermostat.py',
             '../sensors/Sensor.py': 'Sensor.py',
-            '../devices/LedStrip.py': 'LedStrip.py'
+            '../devices/LedStrip.py': 'LedStrip.py',
+            '../devices/DimmableLight.py': 'DimmableLight.py'
         }
 
         modules = get_modules(self.config)
@@ -1892,7 +1894,8 @@ class GetModulesTests(TestCase):
             '../devices/Tplink.py': 'Tplink.py',
             '../devices/Desktop_target.py': 'Desktop_target.py',
             '../sensors/Sensor.py': 'Sensor.py',
-            '../devices/LedStrip.py': 'LedStrip.py'
+            '../devices/LedStrip.py': 'LedStrip.py',
+            '../devices/DimmableLight.py': 'DimmableLight.py'
         }
 
         modules = get_modules(self.config)
@@ -1916,7 +1919,8 @@ class GetModulesTests(TestCase):
             '../devices/Tplink.py': 'Tplink.py',
             '../devices/Wled.py': 'Wled.py',
             '../sensors/Sensor.py': 'Sensor.py',
-            '../devices/LedStrip.py': 'LedStrip.py'
+            '../devices/LedStrip.py': 'LedStrip.py',
+            '../devices/DimmableLight.py': 'DimmableLight.py'
         }
 
         modules = get_modules(self.config)

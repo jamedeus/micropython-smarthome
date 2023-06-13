@@ -16,15 +16,15 @@ from helper_functions import valid_ip, is_device, is_sensor
 # Dependency relative paths for all device and sensor types, used by get_modules
 dependencies = {
     'devices': {
-        'dimmer': ["devices/Tplink.py", "devices/Device.py"],
-        'bulb': ["devices/Tplink.py", "devices/Device.py"],
+        'dimmer': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py"],
+        'bulb': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py"],
         'relay': ["devices/Relay.py", "devices/Device.py"],
         'dumb-relay': ["devices/DumbRelay.py", "devices/Device.py"],
         'desktop': ["devices/Desktop_target.py", "devices/Device.py"],
-        'pwm': ["devices/LedStrip.py", "devices/Device.py"],
+        'pwm': ["devices/LedStrip.py", "devices/Device.py", "devices/DimmableLight.py"],
         'mosfet': ["devices/Mosfet.py", "devices/Device.py"],
         'api-target': ["devices/ApiTarget.py", "devices/Device.py"],
-        'wled': ["devices/Wled.py", "devices/Device.py"]
+        'wled': ["devices/Wled.py", "devices/Device.py", "devices/DimmableLight.py"]
     },
     'sensors': {
         'pir': ["sensors/MotionSensor.py", "sensors/Sensor.py"],
@@ -86,6 +86,7 @@ class Provisioner():
             self.provision(self.nodes[args.node]["ip"], self.passwd, config, modules)
 
         # Upload unit tests to IP address
+        # TODO broken, doesn't upload unit_test_main.py as main.py
         elif args.test:
             # Load unit test config file
             with open(os.path.join(self.repo, "tests", "unit_test_config.json"), 'r') as file:
