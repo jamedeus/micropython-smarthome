@@ -31,7 +31,7 @@ class Device():
         self.default_rule = default_rule
 
         # Prevent instantiating with invalid default_rule
-        if self._type in ("dimmer", "bulb", "pwm", "api-target") and str(self.default_rule).lower() in ("enabled", "disabled"):
+        if self._type in ("dimmer", "bulb", "pwm", "api-target", "wled") and str(self.default_rule).lower() in ("enabled", "disabled"):
             log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
             raise AttributeError
 

@@ -1,34 +1,19 @@
 import logging
 import urequests
-from Device import Device
+from DimmableLight import DimmableLight
 
 # Set name for module's log lines
 log = logging.getLogger("WLED")
 
 
 # Used for WLED instances, originally intended for monitor bias lights
-class Wled(Device):
-    def __init__(self, name, nickname, _type, default_rule, ip):
-        super().__init__(name, nickname, _type, True, None, default_rule)
+class Wled(DimmableLight):
+    def __init__(self, name, nickname, _type, default_rule, min_bright, max_bright, ip):
+        super().__init__(name, nickname, _type, True, None, default_rule, min_bright, max_bright)
 
         self.ip = ip
 
         log.info(f"Instantiated Wled named {self.name}: ip = {self.ip}")
-
-    def validator(self, rule):
-        try:
-            # Reject "False" before reaching conditional below (would cast False to 0 and accept as valid rule)
-            if isinstance(rule, bool):
-                return False
-
-            elif 1 <= int(rule) <= 255:
-                return int(rule)
-
-            else:
-                return False
-
-        except (ValueError, TypeError):
-            return False
 
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
