@@ -63,35 +63,6 @@ class Tplink(DimmableLight):
 
             return True
 
-    # TODO Maybe add a 3rd param "init=False" - will be omitted except by Config. If True, and rule is fade,
-    # then check Config.schedule, see when fade was supposed to start, and calculate current position in fade
-    def validator(self, rule):
-        try:
-            if str(rule).startswith("fade"):
-                # Parse parameters from rule
-                cmd, target, period = rule.split("/")
-
-                if int(period) < 0:
-                    return False
-
-                if 0 <= int(target) <= 100:
-                    return rule
-                else:
-                    return False
-
-            # Reject "False" before reaching conditional below (would cast False to 0 and accept as valid rule)
-            elif isinstance(rule, bool):
-                return False
-
-            elif 0 <= int(rule) <= 100:
-                return int(rule)
-
-            else:
-                return False
-
-        except (ValueError, TypeError):
-            return False
-
     # Encrypt messages to tp-link smarthome devices
     def encrypt(self, string):
         key = 171

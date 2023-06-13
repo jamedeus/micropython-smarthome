@@ -19,6 +19,43 @@ class DimmableLight(Device):
         # Store parameters in dict while fade in progress
         self.fading = False
 
+    # Base validator for universal, fade, and int rules (replaces parent class)
+    def rule_validator(self, rule):
+        try:
+            # Accept universal rules
+            if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
+                return str(rule).lower()
+
+            # Accept fade rules
+            # TODO Maybe add a 3rd param "init=False" - will be omitted except by Config. If True, and rule is fade,
+            # then check Config.schedule, see when fade was supposed to start, and calculate current position in fade
+            elif str(rule).startswith("fade"):
+                # Parse parameters from rule
+                cmd, target, period = rule.split("/")
+
+                if int(period) < 0:
+                    return False
+
+                if self.min_bright <= int(target) <= self.max_bright:
+                    return rule
+                else:
+                    return False
+
+            # Reject "False" before reaching next conditional (would cast to 0 and accept incorrectly)
+            elif isinstance(rule, bool):
+                return False
+
+            # Accept brightness integer rule
+            elif self.min_bright <= int(rule) <= self.max_bright:
+                return int(rule)
+
+            # Subclasses may overwrite validator to accept additional rules (default: return False)
+            else:
+                return self.validator(rule)
+
+        except (ValueError, TypeError):
+            return False
+
     def start_fade(self, valid_rule):
         # Parse parameters from rule
         cmd, target, period = valid_rule.split("/")

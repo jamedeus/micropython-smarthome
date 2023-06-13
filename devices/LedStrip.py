@@ -64,32 +64,6 @@ class LedStrip(DimmableLight):
 
             return True
 
-    def validator(self, rule):
-        try:
-            if str(rule).startswith("fade"):
-                # Parse parameters from rule
-                cmd, target, period = rule.split("/")
-
-                if int(period) < 0:
-                    return False
-
-                if self.min_bright <= int(target) <= self.max_bright:
-                    return rule
-                else:
-                    return False
-
-            elif isinstance(rule, bool):
-                return False
-
-            elif self.min_bright <= int(rule) <= self.max_bright:
-                return int(rule)
-
-            else:
-                return False
-
-        except (ValueError, TypeError):
-            return False
-
     def send(self, state=1):
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:
