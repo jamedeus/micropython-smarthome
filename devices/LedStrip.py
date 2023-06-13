@@ -26,44 +26,6 @@ class LedStrip(DimmableLight):
 
         log.info(f"Instantiated LedStrip named {self.name} on pin {pin}")
 
-    def set_rule(self, rule):
-        # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
-        valid_rule = self.rule_validator(rule)
-        if str(valid_rule) == "False":
-            log.error(f"{self.name}: Failed to change rule to {rule}")
-            print(f"{self.name}: Failed to change rule to {rule}")
-            return False
-
-        elif str(valid_rule).startswith("fade"):
-            # Parse fade parameters, start fade (see DimmableLight class)
-            return self.start_fade(valid_rule)
-
-        else:
-            self.current_rule = valid_rule
-            print(f"{self.name}: Rule changed to {self.current_rule}")
-            log.info(f"{self.name}: Rule changed to {self.current_rule}")
-
-            # If fade in progress when rule changed, abort
-            if self.fading:
-                self.fading = False
-
-            # Rule just changed to disabled
-            if self.current_rule == "disabled":
-                self.send(0)
-                self.disable()
-            # Rule just changed to enabled, replace with usable rule (default) and enable
-            elif self.current_rule == "enabled":
-                self.current_rule = self.default_rule
-                self.enable()
-            # Device was previously disabled, enable now that rule has changed
-            elif self.enabled is False:
-                self.enable()
-            # Device is currently on, run send so new rule can take effect
-            elif self.state is True:
-                self.send(1)
-
-            return True
-
     def send(self, state=1):
         # Refuse to turn disabled device on, but allow turning off
         if not self.enabled and state:

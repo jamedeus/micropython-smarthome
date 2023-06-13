@@ -19,6 +19,50 @@ class DimmableLight(Device):
         # Store parameters in dict while fade in progress
         self.fading = False
 
+    def set_rule(self, rule):
+        # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
+        valid_rule = self.rule_validator(rule)
+        if str(valid_rule) == "False":
+            log.error(f"{self.name}: Failed to change rule to {rule}")
+            print(f"{self.name}: Failed to change rule to {rule}")
+            return False
+
+        elif str(valid_rule).startswith("fade"):
+            # Parse fade parameters, start fade (see DimmableLight class)
+            return self.start_fade(valid_rule)
+
+        else:
+            # Abort fade if user changed brightness in opposite direction
+            if self.fading:
+                if self.fading["down"] and valid_rule > self.current_rule:
+                    self.fading = False
+                elif not self.fading["down"] and valid_rule < self.current_rule:
+                    self.fading = False
+
+            self.current_rule = valid_rule
+            print(f"{self.name}: Rule changed to {self.current_rule}")
+            log.info(f"{self.name}: Rule changed to {self.current_rule}")
+
+            # Abort fade if new rule exceeded target
+            self.fade_complete()
+
+            # Rule just changed to disabled
+            if self.current_rule == "disabled":
+                self.send(0)
+                self.disable()
+            # Rule just changed to enabled, replace with usable rule (default) and enable
+            elif self.current_rule == "enabled":
+                self.current_rule = self.default_rule
+                self.enable()
+            # Device was previously disabled, enable now that rule has changed
+            elif self.enabled is False:
+                self.enable()
+            # Device is currently on, run send so new rule can take effect
+            elif self.state is True:
+                self.send(1)
+
+            return True
+
     # Base validator for universal, fade, and int rules (replaces parent class)
     def rule_validator(self, rule):
         try:
