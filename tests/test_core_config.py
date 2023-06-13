@@ -244,12 +244,10 @@ class TestConfig(unittest.TestCase):
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
                 'device1': {
-                    '_type': 'pwm',
+                    '_type': 'mosfet',
                     'nickname': 'test',
                     'pin': 4,
                     'default_rule': '9999',
-                    'min_bright': 0,
-                    'max_bright': 1023,
                     'schedule': {
                         '10:00': '9999'
                     }
@@ -306,22 +304,22 @@ class TestConfig(unittest.TestCase):
                     'ssid': 'jamnet',
                     'password': 'cjZY8PTa4ZQ6S83A'
                 },
-                'device1': {
-                    '_type': 'pwm',
+                'sensor1': {
+                    '_type': 'si7021',
                     'nickname': 'test',
-                    'pin': 4,
+                    'mode': 'cool',
+                    'tolerance': 5,
                     'default_rule': '9999',
-                    'min_bright': 0,
-                    'max_bright': 1023,
-                    'schedule': {}
+                    'schedule': {},
+                    'targets': []
                 }
             }
         )
 
-        self.assertEqual(config.devices[0].current_rule, 'disabled')
-        self.assertEqual(config.devices[0].scheduled_rule, 'disabled')
-        self.assertEqual(config.devices[0].default_rule, 'disabled')
-        self.assertFalse(config.devices[0].enabled)
+        self.assertEqual(config.sensors[0].current_rule, 'disabled')
+        self.assertEqual(config.sensors[0].scheduled_rule, 'disabled')
+        self.assertEqual(config.sensors[0].default_rule, 'disabled')
+        self.assertFalse(config.sensors[0].enabled)
 
     # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception

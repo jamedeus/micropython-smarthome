@@ -22,7 +22,7 @@ class TestTplink(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = Tplink("device1", "device1", "dimmer", 42, "192.168.1.233")
+        self.instance = Tplink("device1", "device1", "dimmer", 42, 1, 100, "192.168.1.233")
         self.assertIsInstance(self.instance, Tplink)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.fading)
@@ -125,7 +125,7 @@ class TestTplink(unittest.TestCase):
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            Tplink("device1", "device1", "dimmer", "disabled", "192.168.1.233")
+            Tplink("device1", "device1", "dimmer", "disabled", 1, 100, "192.168.1.233")
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -133,7 +133,7 @@ class TestTplink(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            Tplink("device1", "device1", "dimmer", "enabled", "192.168.1.233")
+            Tplink("device1", "device1", "dimmer", "enabled", 1, 100, "192.168.1.233")
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:

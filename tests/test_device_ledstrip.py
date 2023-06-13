@@ -26,7 +26,7 @@ class TestLedStrip(unittest.TestCase):
         ]
 
     def test_instantiation(self):
-        self.instance = LedStrip("device1", "device1", "pwm", 512, 4, 0, 1023)
+        self.instance = LedStrip("device1", "device1", "pwm", 512, 0, 1023, 4)
         self.assertIsInstance(self.instance, LedStrip)
         self.assertFalse(self.instance.pwm.duty())
         self.assertTrue(self.instance.enabled)
@@ -133,7 +133,7 @@ class TestLedStrip(unittest.TestCase):
     def test_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            LedStrip("device1", "device1", "pwm", "disabled", 4, 0, 1023)
+            LedStrip("device1", "device1", "pwm", "disabled", 0, 1023, 4)
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -141,7 +141,7 @@ class TestLedStrip(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            LedStrip("device1", "device1", "pwm", "enabled", 4, 0, 1023)
+            LedStrip("device1", "device1", "pwm", "enabled", 0, 1023, 4)
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -188,6 +188,6 @@ class TestLedStrip(unittest.TestCase):
     # file contained a string pin. Fixed by casting to int in device init methods.
     def test_regression_string_pin_number(self):
         # Attempt to instantiate with a string pin number
-        self.instance = LedStrip("device1", "device1", "pwm", 512, "4", 0, 1023)
+        self.instance = LedStrip("device1", "device1", "pwm", 512, 0, 1023, "4")
         self.assertIsInstance(self.instance, LedStrip)
         self.assertIsInstance(self.instance.pwm, PWM)
