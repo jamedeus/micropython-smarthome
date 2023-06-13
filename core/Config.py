@@ -228,7 +228,7 @@ class Config():
             status_dict["devices"][i.name]["schedule"] = self.schedule[i.name]
 
             # If device is PWM, add min/max
-            if i._type == "pwm":
+            if i._type in ["pwm", "bulb", "dimmer", "wled"]:
                 status_dict["devices"][i.name]["min"] = i.min_bright
                 status_dict["devices"][i.name]["max"] = i.max_bright
 
