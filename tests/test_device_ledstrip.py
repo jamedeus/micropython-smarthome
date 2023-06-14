@@ -174,12 +174,30 @@ class TestLedStrip(unittest.TestCase):
         self.assertEqual(self.instance.pwm.duty(), 0)
 
     def test_regression_rule_change_while_fading(self):
-        # Start fade, confirm that fade started
-        self.assertTrue(self.instance.set_rule('fade/50/1800'))
+        # Set starting brightness
+        self.instance.set_rule(50)
+        self.assertEqual(self.instance.current_rule, 50)
+
+        # Start fading DOWN, confirm started, skip a few steps, confirm still fading
+        self.instance.set_rule('fade/30/1800')
+        self.assertTrue(self.instance.fading)
+        self.instance.set_rule(40)
+        self.assertEqual(self.instance.current_rule, 40)
         self.assertTrue(self.instance.fading)
 
-        # Change rule, fade should stop
-        self.instance.set_rule(98)
+        # Increase brightness - fade should abort despite being between start and target
+        self.instance.set_rule(45)
+        self.assertFalse(self.instance.fading)
+
+        # Start fading UP, confirm started, skip a few steps, confirm still fading
+        self.instance.set_rule('fade/90/1800')
+        self.assertTrue(self.instance.fading)
+        self.instance.set_rule(75)
+        self.assertEqual(self.instance.current_rule, 75)
+        self.assertTrue(self.instance.fading)
+
+        # Decrease brightness - fade should abort despite being between start and target
+        self.instance.set_rule(70)
         self.assertFalse(self.instance.fading)
 
     # Original bug: Config.__init__ formerly contained a conditional to instantiate devices
