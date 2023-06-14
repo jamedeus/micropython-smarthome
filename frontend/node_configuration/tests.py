@@ -1003,9 +1003,9 @@ class RestoreConfigViewTest(TestCase):
         self.assertTrue(Config.objects.get(filename='test1.json'))
         self.assertTrue(Node.objects.get(friendly_name='Test1'))
 
-        # Config should not be identical to input object (schedule keywords added)
+        # Config should be identical to input object
         config = Config.objects.get(filename='test1.json').config
-        self.assertNotEqual(config, test_config_1)
+        self.assertEqual(config, test_config_1)
         self.assertEqual(len(config['metadata']['schedule_keywords']), 2)
         self.assertIn('sunrise', config['metadata']['schedule_keywords'].keys())
         self.assertIn('sunset', config['metadata']['schedule_keywords'].keys())

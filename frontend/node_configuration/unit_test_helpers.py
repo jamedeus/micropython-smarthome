@@ -224,6 +224,8 @@ request_payload = {
             '_type': 'dimmer',
             'ip': '192.168.1.105',
             'default_rule': 100,
+            'min_bright': '1',
+            'max_bright': '100',
             'schedule': {
                 '08:00': '100',
                 '22:00': '35'
@@ -237,6 +239,8 @@ request_payload = {
             '_type': 'bulb',
             'ip': '192.168.1.106',
             'default_rule': 75,
+            'min_bright': '1',
+            'max_bright': '100',
             'schedule': {
                 '08:00': '100',
                 '22:00': '35'
@@ -309,6 +313,8 @@ request_payload = {
             'nickname': 'TV Bias Lights',
             '_type': 'wled',
             'ip': '192.168.1.110',
+            'min_bright': '1',
+            'max_bright': '255',
             'default_rule': 128,
             'schedule': {
                 '08:00': '100'
@@ -349,7 +355,10 @@ test_config_1 = {
         "id": "Test1",
         "location": "Inside cabinet above microwave",
         "floor": "1",
-        "schedule_keywords": {}
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
+        }
     },
     "wifi": {
         "ssid": "jamnet",
@@ -401,7 +410,10 @@ test_config_2 = {
         "id": "Test2",
         "location": "Bedroom",
         "floor": "2",
-        "schedule_keywords": {}
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
+        }
     },
     "wifi": {
         "ssid": "jamnet",
@@ -476,7 +488,10 @@ test_config_3 = {
         "id": "Test3",
         "location": "Inside cabinet under sink",
         "floor": "1",
-        "schedule_keywords": {}
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
+        }
     },
     "wifi": {
         "ssid": "jamnet",
@@ -552,7 +567,10 @@ test_config_1_edit_context = {
             'id': 'Test1',
             'location': 'Inside cabinet above microwave',
             'floor': '1',
-            'schedule_keywords': {}
+            "schedule_keywords": {
+                "sunrise": "06:00",
+                "sunset": "18:00"
+            }
         },
         'wifi': {
             'ssid': 'jamnet',
@@ -731,7 +749,10 @@ test_config_2_edit_context = {
             'id': 'Test2',
             'location': 'Bedroom',
             'floor': '2',
-            'schedule_keywords': {}
+            "schedule_keywords": {
+                "sunrise": "06:00",
+                "sunset": "18:00"
+            }
         },
         'wifi': {
             'ssid': 'jamnet',
@@ -899,7 +920,10 @@ test_config_3_edit_context = {
             'id': 'Test3',
             'location': 'Inside cabinet under sink',
             'floor': '1',
-            'schedule_keywords': {}
+            "schedule_keywords": {
+                "sunrise": "06:00",
+                "sunset": "18:00"
+            }
         },
         'wifi': {
             'ssid': 'jamnet',

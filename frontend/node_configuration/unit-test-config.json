@@ -24,7 +24,9 @@
         "schedule": {
             "08:00": "100",
             "22:00": "35"
-        }
+        },
+        "min_bright": "1",
+        "max_bright": "100"
     },
     "device2": {
         "nickname": "Lamp",
@@ -34,7 +36,9 @@
         "schedule": {
             "08:00": "100",
             "22:00": "35"
-        }
+        },
+        "min_bright": "1",
+        "max_bright": "100"
     },
     "device3": {
         "nickname": "Porch Light",
@@ -92,7 +96,9 @@
         "default_rule": 128,
         "schedule": {
             "08:00": "100"
-        }
+        },
+        "min_bright": "1",
+        "max_bright": "255"
     },
     "device10": {
         "nickname": "Remote Control",
@@ -205,4 +211,3 @@
         ]
     }
 }
-

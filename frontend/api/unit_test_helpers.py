@@ -4,7 +4,11 @@ config1_status_object = {
         'id': 'Test1',
         'floor': '1',
         'location': 'Inside cabinet above microwave',
-        'ir_blaster': False
+        'ir_blaster': False,
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
+        }
     },
     'sensors': {
         'sensor1': {
@@ -37,7 +41,9 @@ config1_status_object = {
             },
             'scheduled_rule': 'disabled',
             'nickname': 'Cabinet Lights',
-            'turned_on': True
+            'turned_on': True,
+            "max": 1023,
+            "min": 0
         },
         'device2': {
             'current_rule': 'enabled',
@@ -62,7 +68,11 @@ config1_api_context = {
         'floor': '1',
         'location': 'Inside cabinet above microwave',
         'ir_blaster': False,
-        'ip': '192.168.1.123'
+        'ip': '192.168.1.123',
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
+        }
     },
     'sensors': {
         'sensor1': {
@@ -95,7 +105,9 @@ config1_api_context = {
             },
             'scheduled_rule': 'disabled',
             'nickname': 'Cabinet Lights',
-            'turned_on': True
+            'turned_on': True,
+            "max": 1023,
+            "min": 0
         },
         'device2': {
             'current_rule': 'enabled',
@@ -119,7 +131,11 @@ config2_status_object = {
         'id': 'Test2',
         'floor': '2',
         'location': 'Bedroom',
-        'ir_blaster': True
+        'ir_blaster': True,
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
+        }
     },
     'sensors': {
         'sensor1': {
@@ -208,7 +224,11 @@ config2_api_context = {
         'location': 'Bedroom',
         'ir_blaster': True,
         'ip': '192.168.1.124',
-        'thermostat': True
+        'thermostat': True,
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
+        }
     },
     'sensors': {
         'sensor1': {
@@ -275,7 +295,11 @@ config3_status_object = {
         'id': 'Test3',
         'floor': '1',
         'location': 'Inside cabinet under sink',
-        'ir_blaster': False
+        'ir_blaster': False,
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
+        }
     },
     'sensors': {
         'sensor1': {
@@ -322,7 +346,9 @@ config3_status_object = {
             },
             'scheduled_rule': 256,
             'nickname': 'Bathroom LEDs',
-            'turned_on': True
+            'turned_on': True,
+            "max": 1023,
+            "min": 0
         },
         'device3': {
             'current_rule': 'disabled',
@@ -359,7 +385,11 @@ config3_api_context = {
         'floor': '1',
         'location': 'Inside cabinet under sink',
         'ir_blaster': False,
-        'ip': '192.168.1.215'
+        'ip': '192.168.1.215',
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
+        }
     },
     'sensors': {
         'sensor1': {
@@ -406,7 +436,9 @@ config3_api_context = {
             },
             'scheduled_rule': 256,
             'nickname': 'Bathroom LEDs',
-            'turned_on': True
+            'turned_on': True,
+            "max": 1023,
+            "min": 0
         },
         'device3': {
             'current_rule': 'disabled',
