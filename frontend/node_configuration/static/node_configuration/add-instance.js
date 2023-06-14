@@ -250,6 +250,16 @@ async function load_device_section(select) {
                     </div>
 
                     <div class="mb-2">
+                        <label for="device${index}-min_bright" class="device${index}"><b>Min brightness:</b></label>
+                        <input type="min" class="form-control device${index} pwm-limits" id="device${index}-min_bright" placeholder="1" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="device${index}-max_bright" class="device${index}"><b>Max brightness:</b></label>
+                        <input type="text" class="form-control device${index} pwm-limits" id="device${index}-max_bright" placeholder="100" required>
+                    </div>
+
+                    <div class="mb-2">
                         <label for="device${index}-default_rule" class="mt-1 device${index}"><b>Default Rule:</b></label>
                         <div class="d-flex flex-row align-items-center my-2">
                             <button id="device${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
@@ -262,6 +272,16 @@ async function load_device_section(select) {
         template += `<div class="mb-2">
                         <label for="device${index}-ip" class="device${index}"><b>IP:</b></label>
                         <input type="text" class="form-control device${index} ip-input" id="device${index}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="device${index}-min_bright" class="device${index}"><b>Min brightness:</b></label>
+                        <input type="min" class="form-control device${index} pwm-limits" id="device${index}-min_bright" placeholder="1" required>
+                    </div>
+
+                    <div class="mb-2">
+                        <label for="device${index}-max_bright" class="device${index}"><b>Max brightness:</b></label>
+                        <input type="text" class="form-control device${index} pwm-limits" id="device${index}-max_bright" placeholder="255" required>
                     </div>
 
                     <div class="mb-2">

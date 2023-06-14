@@ -370,6 +370,16 @@
                                     </div>
 
                                     <div class="mb-2">
+                                        <label for="device{{ forloop.counter }}-min_bright" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
+                                        <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-min_bright" placeholder="0" value="{{params.min_bright}}" required>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <label for="device{{ forloop.counter }}-max_bright" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
+                                        <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-max_bright" placeholder="1023" value="{{params.max_bright}}" required>
+                                    </div>
+
+                                    <div class="mb-2">
                                         <label for="device{{forloop.counter}}-default_rule" class="mt-1 device{{forloop.counter}}"><b>Default Rule:</b></label>
                                         <div class="d-flex flex-row align-items-center my-2">
                                             <button id="{{device}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
