@@ -87,11 +87,15 @@ async function rule_slider_increment(button) {
     const target = button.id.split("-")[0];
     const current = parseFloat(document.getElementById(`${target}-rule`).value);
 
+    // Get increment amount
     if (button.id.split("-")[2] == "up") {
-        var new_rule = current + parseFloat(button.dataset.stepsize);
+        var increment = parseFloat(button.dataset.stepsize);
     } else {
-        var new_rule = current - parseFloat(button.dataset.stepsize);
+        var increment = -parseFloat(button.dataset.stepsize);
     };
+
+    // Get new rule
+    const new_rule = current + increment;
 
     // Update slider position
     document.getElementById(`${target}-rule`).value = new_rule;
@@ -104,6 +108,6 @@ async function rule_slider_increment(button) {
     update_reset_option(target, new_rule);
 
     // Fire API command
-    var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': new_rule.toString()});
+    var result = await send_command({'command': 'increment_rule', 'instance': target, 'amount': increment.toString()});
     result = await result.json();
 };
