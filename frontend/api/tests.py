@@ -1347,6 +1347,13 @@ class ApiCardTests(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'api/unable_to_connect.html')
 
+        # Mock parse_command to simulate crashed node
+        with patch('api.views.parse_command', return_value='Error: Failed to connect'):
+            # Request page, confirm correct template used
+            response = self.client.get('/api/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'api/unable_to_connect.html')
+
     def test_recording_mode(self):
         # Mock request to return the expected status object
         with patch('api_endpoints.request', return_value=config1_status_object):
