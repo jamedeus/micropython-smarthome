@@ -7,7 +7,6 @@
 # Usage: ./provision.py --all
 
 import os
-import sys
 import json
 import argparse
 from Webrepl import Webrepl
@@ -37,7 +36,7 @@ dependencies = {
 
 
 class Provisioner():
-    def __init__(self, args):
+    def __init__(self):
         # Get full paths to repository root directory, CLI tools directory
         self.cli = os.path.dirname(os.path.realpath(__file__))
         self.repo = os.path.split(self.cli)[0]
@@ -215,4 +214,4 @@ The password flag is optional and works with all modes''',
 
 if __name__ == "__main__":
     # Create instance, pass CLI arguments to init
-    app = Provisioner(sys.argv)
+    Provisioner()
