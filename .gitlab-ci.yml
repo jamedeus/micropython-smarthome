@@ -23,7 +23,10 @@ test_frontend:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "api"'
       when: never
-    - when: always
+    - changes:
+        - 'frontend/**/*'
+        - 'util/**/*'
+        - 'Pipfile'
 
 # Run CLI tool unit tests
 test_cli:
@@ -41,7 +44,10 @@ test_cli:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "api"'
       when: never
-    - when: always
+    - changes:
+        - 'CLI/**/*'
+        - 'util/**/*'
+        - 'Pipfile'
 
 # Build new container, increment most-recent tag
 build:
@@ -56,7 +62,10 @@ build:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "api"'
       when: never
-    - when: always
+    - changes:
+        - 'frontend/**/*'
+        - 'util/**/*'
+        - 'Pipfile'
 
 # Deploy most-recent container
 deploy:
@@ -71,4 +80,7 @@ deploy:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "api"'
       when: never
-    - when: always
+    - changes:
+        - 'frontend/**/*'
+        - 'util/**/*'
+        - 'Pipfile'
