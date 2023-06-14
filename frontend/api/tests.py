@@ -715,6 +715,13 @@ class TestEndpoints(TestCase):
             response = parse_command('192.168.1.123', ['set_rule', 'device1', '50'])
             self.assertEqual(response, {"device1": "50"})
 
+    def test_increment_rule(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"device1": "100"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['increment_rule', 'device1', '50'])
+            self.assertEqual(response, {"device1": "100"})
+
     def test_reset_rule(self):
         # Mock request to return expected response
         expected_response = {'device1': 'Reverted to scheduled rule', 'current_rule': 'disabled'}
@@ -896,6 +903,7 @@ class TestEndpointErrors(TestCase):
             "disable_in",
             "enable_in",
             "set_rule",
+            "increment_rule",
             "reset_rule",
             "get_schedule_rules",
             "add_rule",
@@ -948,6 +956,16 @@ class TestEndpointErrors(TestCase):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['set_rule', 'device1'])
         self.assertEqual(response, {"ERROR": "Must specify new rule"})
+
+    def test_increment_rule_invalid_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['increment_rule', 'not-a-device'])
+        self.assertEqual(response, {"ERROR": "Target must be device with int rule"})
+
+    def test_increment_rule_no_amount_arg(self):
+        # Send request, verify response
+        response = parse_command('192.168.1.123', ['increment_rule', 'device1'])
+        self.assertEqual(response, {"ERROR": "Must specify amount (int) to increment by"})
 
     def test_reset_rule_invalid_arg(self):
         # Send request, verify response
