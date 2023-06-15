@@ -135,14 +135,14 @@ def increment_rule(ip, params):
     if len(params) == 0:
         raise SyntaxError
 
-    if is_device(params[0]):
+    if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
             return asyncio.run(request(ip, ['increment_rule', target, params[0]]))
         except IndexError:
             return {"ERROR": "Must specify amount (int) to increment by"}
     else:
-        return {"ERROR": "Target must be device with int rule"}
+        return {"ERROR": "Target must be device or sensor with int rule"}
 
 
 @add_endpoint("reset_rule")

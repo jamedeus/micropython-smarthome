@@ -960,7 +960,7 @@ class TestEndpointErrors(TestCase):
     def test_increment_rule_invalid_arg(self):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['increment_rule', 'not-a-device'])
-        self.assertEqual(response, {"ERROR": "Target must be device with int rule"})
+        self.assertEqual(response, {"ERROR": "Target must be device or sensor with int rule"})
 
     def test_increment_rule_no_amount_arg(self):
         # Send request, verify response

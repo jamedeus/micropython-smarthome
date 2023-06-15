@@ -251,9 +251,9 @@ def increment_rule(args):
 
     target = app.config.find(args[0])
 
-    if is_device(target.name):
-        if target._type not in ['dimmer', 'bulb', 'pwm', 'wled']:
-            return {"ERROR": "Device rule must be int not bool"}
+    if is_device_or_sensor(target.name):
+        if target._type not in ['dimmer', 'bulb', 'pwm', 'wled', 'si7021', 'pir']:
+            return {"ERROR": "Target must accept int rule"}
     else:
         return {"ERROR": "Target must be device or sensor with int rule"}
 
@@ -267,10 +267,11 @@ def increment_rule(args):
     except ValueError:
         return {"ERROR": f"Unable to increment current rule ({target.current_rule})"}
 
-    if new > target.max_bright:
-        new = target.max_bright
-    if new < target.min_bright:
-        new = target.min_bright
+    if target._type in ['dimmer', 'bulb', 'pwm', 'wled']:
+        if new > target.max_bright:
+            new = target.max_bright
+        if new < target.min_bright:
+            new = target.min_bright
 
     if target.set_rule(new):
         return {target.name: new}
