@@ -11,7 +11,7 @@
 
 
 # Check if firmware files are includes in commit
-FIRMWARE_FILES=$(git diff --name-only HEAD^ HEAD | grep -E "^(devices/|sensors/|lib/|core/|firmware/setup.html)")
+FIRMWARE_FILES=$(git diff --name-only HEAD^ HEAD | grep -E "^(devices/|sensors/|lib/|core/|firmware/|lib/|setup.html)")
 
 if [ ! -z "$FIRMWARE_FILES" ]; then
     # Increment most-recent tag
