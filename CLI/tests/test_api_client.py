@@ -642,10 +642,10 @@ class TestEndpointErrors(TestCase):
         response = parse_command('192.168.1.123', ['set_rule', 'device1'])
         self.assertEqual(response, {"ERROR": "Must specify new rule"})
 
-    def test_increment_rule_target_sensor(self):
+    def test_increment_rule_invalid_target(self):
         # Send request, verify response
-        response = parse_command('192.168.1.123', ['increment_rule', 'sensor1', '50'])
-        self.assertEqual(response, {"ERROR": "Target must be device with int rule"})
+        response = parse_command('192.168.1.123', ['increment_rule', 'ir_blaster', '50'])
+        self.assertEqual(response, {"ERROR": "Target must be device or sensor with int rule"})
 
     def test_increment_rule_no_amount_arg(self):
         # Send request, verify response
