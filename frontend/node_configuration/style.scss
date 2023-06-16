@@ -123,6 +123,10 @@ td:last-child{
     }
 }
 
+.text-dim {
+    color: #000000;
+    opacity: 50%;
+}
 
 
 .dark {
@@ -261,6 +265,10 @@ td:last-child{
     .section {
         border: 0px;
         background-color: #212529;
+    }
+
+    .text-dim {
+        color: #FFFFFF;
     }
 
     /* List group (location suggestions) */

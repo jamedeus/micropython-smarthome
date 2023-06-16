@@ -250,21 +250,27 @@ async function load_device_section(select) {
                     </div>
 
                     <div class="mb-2">
-                        <label for="device${index}-min_bright" class="device${index}"><b>Min brightness:</b></label>
-                        <input type="min" class="form-control device${index} pwm-limits" id="device${index}-min_bright" placeholder="1" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="device${index}-max_bright" class="device${index}"><b>Max brightness:</b></label>
-                        <input type="text" class="form-control device${index} pwm-limits" id="device${index}-max_bright" placeholder="100" required>
-                    </div>
-
-                    <div class="mb-2">
                         <label for="device${index}-default_rule" class="mt-1 device${index}"><b>Default Rule:</b></label>
                         <div class="d-flex flex-row align-items-center my-2">
                             <button id="device${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
                             <input id="device${index}-default_rule" type="range" class="device${index} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="" autocomplete="off">
                             <button id="device${index}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-center">
+                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#device${index}-advanced_settings" role="button" aria-expanded="false" aria-controls="device${index}-advanced_settings">Advanced</a>
+                    </div>
+
+                    <div id="device${index}-advanced_settings" class="collapse">
+                        <div class="mb-2">
+                            <label for="device${index}-min_bright" class="device${index}"><b>Min brightness:</b></label>
+                            <input type="min" class="form-control device${index} pwm-limits" id="device${index}-min_bright" placeholder="1" value="1" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="device${index}-max_bright" class="device${index}"><b>Max brightness:</b></label>
+                            <input type="text" class="form-control device${index} pwm-limits" id="device${index}-max_bright" placeholder="100" value="100" required>
                         </div>
                     </div>`
 
@@ -275,21 +281,27 @@ async function load_device_section(select) {
                     </div>
 
                     <div class="mb-2">
-                        <label for="device${index}-min_bright" class="device${index}"><b>Min brightness:</b></label>
-                        <input type="min" class="form-control device${index} pwm-limits" id="device${index}-min_bright" placeholder="1" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="device${index}-max_bright" class="device${index}"><b>Max brightness:</b></label>
-                        <input type="text" class="form-control device${index} pwm-limits" id="device${index}-max_bright" placeholder="255" required>
-                    </div>
-
-                    <div class="mb-2">
                         <label for="device${index}-default_rule" class="mt-1 device${index}"><b>Default Rule:</b></label>
                         <div class="d-flex flex-row align-items-center my-2">
                             <button id="device${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
                             <input id="device${index}-default_rule" type="range" class="device${index} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="" autocomplete="off">
                             <button id="device${index}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-center">
+                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#device${index}-advanced_settings" role="button" aria-expanded="false" aria-controls="device${index}-advanced_settings">Advanced</a>
+                    </div>
+
+                    <div id="device${index}-advanced_settings" class="collapse">
+                        <div class="mb-2">
+                            <label for="device${index}-min_bright" class="device${index}"><b>Min brightness:</b></label>
+                            <input type="min" class="form-control device${index} pwm-limits" id="device${index}-min_bright" placeholder="1" value="1" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="device${index}-max_bright" class="device${index}"><b>Max brightness:</b></label>
+                            <input type="text" class="form-control device${index} pwm-limits" id="device${index}-max_bright" placeholder="255" value="255" required>
                         </div>
                     </div>`
 
@@ -360,21 +372,27 @@ async function load_device_section(select) {
                     </div>
 
                     <div class="mb-2">
-                        <label for="device${index}-min_bright" class="device${index}"><b>Min brightness:</b></label>
-                        <input type="min" class="form-control device${index} pwm-limits" id="device${index}-min_bright" placeholder="0" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="device${index}-max_bright" class="device${index}"><b>Max brightness:</b></label>
-                        <input type="text" class="form-control device${index} pwm-limits" id="device${index}-max_bright" placeholder="1023" required>
-                    </div>
-
-                    <div class="mb-2">
                         <label for="device${index}-default_rule" class="mt-1 device${index}"><b>Default Rule:</b></label>
                         <div class="d-flex flex-row align-items-center my-2">
                             <button id="device${index}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-dash-lg"></i></button>
                             <input id="device${index}-default_rule" type="range" class="device${index} mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="0.5" value="512" autocomplete="off">
                             <button id="device${index}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-plus-lg"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="mt-3 text-center">
+                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#device${index}-advanced_settings" role="button" aria-expanded="false" aria-controls="device${index}-advanced_settings">Advanced</a>
+                    </div>
+
+                    <div id="device${index}-advanced_settings" class="collapse">
+                        <div class="mb-2">
+                            <label for="device${index}-min_bright" class="device${index}"><b>Min brightness:</b></label>
+                            <input type="min" class="form-control device${index} pwm-limits" id="device${index}-min_bright" placeholder="1" value="1" required>
+                        </div>
+
+                        <div class="mb-2">
+                            <label for="device${index}-max_bright" class="device${index}"><b>Max brightness:</b></label>
+                            <input type="text" class="form-control device${index} pwm-limits" id="device${index}-max_bright" placeholder="1023" value="1023" required>
                         </div>
                     </div>`
 

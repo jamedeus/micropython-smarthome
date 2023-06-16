@@ -370,16 +370,6 @@
                                     </div>
 
                                     <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-min_bright" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
-                                        <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-min_bright" placeholder="0" value="{{params.min_bright}}" required>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-max_bright" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
-                                        <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-max_bright" placeholder="1023" value="{{params.max_bright}}" required>
-                                    </div>
-
-                                    <div class="mb-2">
                                         <label for="device{{forloop.counter}}-default_rule" class="mt-1 device{{forloop.counter}}"><b>Default Rule:</b></label>
                                         <div class="d-flex flex-row align-items-center my-2">
                                             <button id="{{device}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
@@ -389,6 +379,22 @@
                                             <input id="device{{forloop.counter}}-default_rule" type="range" class="device{{forloop.counter}} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" autocomplete="off">
                                             {% endif %}
                                             <button id="{{device}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mt-3 text-center">
+                                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#device{{forloop.counter}}-advanced_settings" role="button" aria-expanded="false" aria-controls="device{{forloop.counter}}-advanced_settings">Advanced</a>
+                                    </div>
+
+                                    <div id="device{{forloop.counter}}-advanced_settings" class="collapse">
+                                        <div class="mb-2">
+                                            <label for="device{{ forloop.counter }}-min_bright" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
+                                            <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-min_bright" value="{{params.min_bright}}" required>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label for="device{{ forloop.counter }}-max_bright" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
+                                            <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-max_bright" value="{{params.max_bright}}" required>
                                         </div>
                                     </div>
 
@@ -480,16 +486,6 @@
                                     </div>
 
                                     <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-min_bright" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
-                                        <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-min_bright" placeholder="0" value="{{params.min_bright}}" required>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-max_bright" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
-                                        <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-max_bright" placeholder="1023" value="{{params.max_bright}}" required>
-                                    </div>
-
-                                    <div class="mb-2">
                                         <label for="device{{forloop.counter}}-default_rule" class="mt-1 device{{forloop.counter}}"><b>Default Rule:</b></label>
                                         <div class="d-flex flex-row align-items-center my-2">
                                             <button id="{{device}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-dash-lg"></i></button>
@@ -497,6 +493,23 @@
                                             <button id="{{device}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-plus-lg"></i></button>
                                         </div>
                                     </div>
+
+                                    <div class="mt-3 text-center">
+                                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#device{{forloop.counter}}-advanced_settings" role="button" aria-expanded="false" aria-controls="device{{forloop.counter}}-advanced_settings">Advanced</a>
+                                    </div>
+
+                                    <div id="device{{forloop.counter}}-advanced_settings" class="collapse">
+                                        <div class="mb-2">
+                                            <label for="device{{ forloop.counter }}-min_bright" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
+                                            <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-min_bright" value="{{params.min_bright}}" required>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label for="device{{ forloop.counter }}-max_bright" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
+                                            <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-max_bright" value="{{params.max_bright}}" required>
+                                        </div>
+                                    </div>
+
 
                                 {% elif params.type == "mosfet" %}
 

@@ -113,6 +113,11 @@ td:last-child {
     box-shadow: inset 0px 0px 0px 30px var(--success);
   }
 }
+.text-dim {
+  color: #000000;
+  opacity: 50%;
+}
+
 .dark {
   /* redefine theme colors for dark theme */
   /*button color*/
@@ -191,6 +196,9 @@ td:last-child {
 .dark .section {
   border: 0px;
   background-color: #212529;
+}
+.dark .text-dim {
+  color: #FFFFFF;
 }
 .dark .card {
   --bs-card-spacer-y: 1rem;

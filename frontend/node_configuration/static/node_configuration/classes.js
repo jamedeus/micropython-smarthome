@@ -27,13 +27,13 @@ class Device {
     getParams() {
         this._type = document.getElementById(`${this.id.replace("device", "deviceType")}`).value;
 
-        var params = document.getElementById(`add${this.id.replace("device", "DeviceOptions")}`).children;
+        const params = document.getElementById(`add${this.id.replace("device", "DeviceOptions")}`).querySelectorAll('input');
 
         for (let input of params) {
             // Get name that will be used in config.json, create property
             try {
-                const name = input.children[1].id.split("-")[1];
-                this[name] = input.children[1].value;
+                const name = input.id.split("-")[1];
+                this[name] = input.value;
             } catch(err) {};
         };
 
