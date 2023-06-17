@@ -132,7 +132,7 @@ Upload config files + dependencies to micropython smarthome nodes
 
 Pick one of the modes listed below (Manual, Node Name, All, Test)
 The password flag is optional and works with all modes''',
-            usage='%(prog)s [--all | --test <IP> | <node name> | -c /path/to/config.json -ip IP]',
+            usage='%(prog)s [--all | --test <IP> | <node name> | --c /path/to/config.json --ip IP]',
             formatter_class=argparse.RawDescriptionHelpFormatter
         )
 
