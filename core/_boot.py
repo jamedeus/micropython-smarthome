@@ -19,5 +19,5 @@ if "config.json" in os.listdir():
     start_loop()
 # Serve access point, wait for setup if no config file
 else:
-    from setup import serve_setup_page
+    from wifi_setup import serve_setup_page
     serve_setup_page()
