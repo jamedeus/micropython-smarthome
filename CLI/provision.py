@@ -103,10 +103,6 @@ class Provisioner():
                 if i.startswith('test_'):
                     modules.append(os.path.join('tests', i))
 
-            # Add IR codes
-            modules.append(os.path.join('lib', 'samsung-codes.json'))
-            modules.append(os.path.join('lib', 'whynter-codes.json'))
-
             # Remove duplicates
             modules = set(modules)
 

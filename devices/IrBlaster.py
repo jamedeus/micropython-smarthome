@@ -1,6 +1,5 @@
 from ir_tx import Player
 from machine import Pin
-import json
 import time
 import logging
 
@@ -18,12 +17,12 @@ class IrBlaster():
         self.codes = {}
 
         if "tv" in self.target:
-            with open('samsung-codes.json', 'r') as file:
-                self.codes["tv"] = json.load(file)
+            from ir_codes import samsung
+            self.codes["tv"] = samsung
 
         if "ac" in self.target:
-            with open('whynter-codes.json', 'r') as file:
-                self.codes["ac"] = json.load(file)
+            from ir_codes import whynter
+            self.codes["ac"] = whynter
 
         log.info(f"Instantiated IrBlaster on pin {pin}")
 
