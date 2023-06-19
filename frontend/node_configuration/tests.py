@@ -730,11 +730,10 @@ class ReuploadAllTests(TestCase):
     def setUp(self):
         create_test_nodes()
 
-        self.failed_to_connect = JsonResponse(
-            "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
-            safe=False,
-            status=404
-        )
+        self.failed_to_connect = {
+            'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+            'status': 404
+        }
 
     def tearDown(self):
         # Remove test configs from disk
@@ -743,7 +742,7 @@ class ReuploadAllTests(TestCase):
     def test_reupload_all(self):
         # Mock provision to return success message without doing anything
         with patch('node_configuration.views.provision') as mock_provision:
-            mock_provision.return_value = JsonResponse("Upload complete.", safe=False, status=200)
+            mock_provision.return_value = {'message': 'Upload complete.', 'status': 200}
 
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
@@ -931,9 +930,9 @@ class ProvisionTests(TestCase):
              patch.object(Webrepl, 'put_file', return_value=True), \
              patch.object(Webrepl, 'put_file_mem', return_value=True):
 
-            response = provision('test1.json', '123.45.67.89', modules)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.content.decode(), '"Upload complete."')
+            response = provision('123.45.67.89', 'password', 'test1.json', modules)
+            self.assertEqual(response['status'], 200)
+            self.assertEqual(response['message'], "Upload complete.")
 
     def test_provision_offline_node(self):
         modules = get_modules(test_config_1, settings.REPO_DIR)
@@ -941,11 +940,11 @@ class ProvisionTests(TestCase):
         # Mock Webrepl to fail to connect
         with patch.object(Webrepl, 'open_connection', return_value=False):
 
-            response = provision('test1.json', '123.45.67.89', modules)
-            self.assertEqual(response.status_code, 404)
+            response = provision('123.45.67.89', 'password', 'test1.json', modules)
+            self.assertEqual(response['status'], 404)
             self.assertEqual(
-                response.content.decode(),
-                '"Error: Unable to connect to node, please make sure it is connected to wifi and try again."'
+                response['message'],
+                "Error: Unable to connect to node, please make sure it is connected to wifi and try again."
             )
 
     def test_provision_connection_timeout(self):
@@ -955,11 +954,11 @@ class ProvisionTests(TestCase):
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file_mem', side_effect=TimeoutError):
 
-            response = provision('test1.json', '123.45.67.89', modules)
-            self.assertEqual(response.status_code, 408)
+            response = provision('123.45.67.89', 'password', 'test1.json', modules)
+            self.assertEqual(response['status'], 408)
             self.assertEqual(
-                response.content.decode(),
-                '"Connection timed out - please press target node reset button, wait 30 seconds, and try again."'
+                response['message'],
+                "Connection timed out - please press target node reset button, wait 30 seconds, and try again."
             )
 
     def test_provision_corrupt_filesystem(self):
@@ -969,12 +968,9 @@ class ProvisionTests(TestCase):
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'put_file_mem', new=simulate_corrupt_filesystem_upload):
 
-            response = provision('test1.json', '123.45.67.89', modules)
-            self.assertEqual(response.status_code, 409)
-            self.assertEqual(
-                response.content.decode(),
-                '"Failed due to filesystem error, please re-flash firmware."'
-            )
+            response = provision('123.45.67.89', 'password', 'test1.json', modules)
+            self.assertEqual(response['status'], 409)
+            self.assertEqual(response['message'], "Failed due to filesystem error, please re-flash firmware.")
 
 
 # Test view that connects to existing node, downloads config file, writes to database
@@ -1762,7 +1758,7 @@ class ChangeNodeIpTests(TestCase):
 
         # Mock provision to return success message
         with patch('node_configuration.views.provision') as mock_provision:
-            mock_provision.return_value = JsonResponse("Upload complete.", safe=False, status=200)
+            mock_provision.return_value = {'message': 'Upload complete.', 'status': 200}
 
             # Make request, confirm response
             request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
@@ -1777,11 +1773,10 @@ class ChangeNodeIpTests(TestCase):
     def test_target_ip_offline(self):
         # Mock provision to return failure message without doing anything
         with patch('node_configuration.views.provision') as mock_provision:
-            mock_provision.return_value = JsonResponse(
-                "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
-                safe=False,
-                status=404
-            )
+            mock_provision.return_value = {
+                'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+                'status': 404
+            }
 
             # Make request, confirm error
             request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}

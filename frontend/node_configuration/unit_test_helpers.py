@@ -2,7 +2,6 @@ import os
 import json
 import struct
 from django.conf import settings
-from django.http import JsonResponse
 from django.test import Client
 from .models import Config, Node
 
@@ -75,37 +74,36 @@ def clean_up_test_nodes():
 
 
 # Replaces provision view to simulate partially successful reupload_all
-def simulate_reupload_all_partial_success(config, ip, modules):
+def simulate_reupload_all_partial_success(ip, password, config, modules):
     if config == test_config_2:
-        return JsonResponse(
-            "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
-            safe=False,
-            status=404
-        )
+        return {
+            'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+            'status': 404
+        }
     else:
-        return JsonResponse("Upload complete.", safe=False, status=200)
+        return {
+            'message': 'Upload complete.',
+            'status': 200
+        }
 
 
 # Replaces provision view to simulate one node failing for each possible reason in reupload_all
-def simulate_reupload_all_fail_for_different_reasons(config, ip, modules):
+def simulate_reupload_all_fail_for_different_reasons(ip, password, config, modules):
     if config == test_config_1:
-        return JsonResponse(
-            "Connection timed out - please press target node reset button, wait 30 seconds, and try again.",
-            safe=False,
-            status=408
-        )
+        return {
+            'message': 'Connection timed out - please press target node reset button, wait 30 seconds, and try again.',
+            'status': 408
+        }
     if config == test_config_2:
-        return JsonResponse(
-            "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
-            safe=False,
-            status=404
-        )
+        return {
+            'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+            'status': 404
+        }
     if config == test_config_3:
-        return JsonResponse(
-            "ERROR: Upload failed due to filesystem problem, please re-flash node.",
-            safe=False,
-            status=409
-        )
+        return {
+            'message': 'Failed due to filesystem error, please re-flash firmware.',
+            'status': 409
+        }
 
 
 # Replaces Webrepl.put_file to simulate uploading to a node with no /lib directory

@@ -1,4 +1,5 @@
 import os
+from Webrepl import Webrepl
 from helper_functions import is_device, is_sensor
 
 # Dependency relative paths for all device and sensor types, used by get_modules
@@ -57,3 +58,41 @@ def get_modules(config, repo_root):
     modules = {os.path.join(repo_root, i): i.split("/")[1] for i in modules}
 
     return modules
+
+
+# Takes target ip, password, config file dict, and modules dict
+# Uploads config and modules to target IP
+def provision(ip, password, config, modules):
+    # Open conection, detect if node connected to network
+    node = Webrepl(ip, password)
+    if not node.open_connection():
+        return {
+            'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+            'status': 404
+        }
+
+    try:
+        # Upload config file
+        node.put_file_mem(config, "config.json")
+
+        # Upload all device/sensor + core modules modules
+        # Node will automatically reboot after last module (main.py)
+        [node.put_file(local, remote) for local, remote in modules.items()]
+        node.close_connection()
+
+    except TimeoutError:
+        return {
+            'message': 'Connection timed out - please press target node reset button, wait 30 seconds, and try again.',
+            'status': 408
+        }
+
+    except AssertionError:
+        return {
+            'message': 'Failed due to filesystem error, please re-flash firmware.',
+            'status': 409
+        }
+
+    return {
+        'message': 'Upload complete.',
+        'status': 200
+    }

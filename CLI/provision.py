@@ -9,9 +9,8 @@
 import os
 import json
 import argparse
-from Webrepl import Webrepl
 from helper_functions import valid_ip
-from get_modules import get_modules, dependencies, core_modules
+from get_modules import get_modules, dependencies, core_modules, provision
 
 
 class Provisioner():
@@ -53,7 +52,8 @@ class Provisioner():
         elif args.config and args.ip:
             config = json.load(args.config)
             modules = get_modules(config, self.repo)
-            self.provision(args.ip, self.passwd, config, modules)
+            result = provision(args.ip, self.passwd, config, modules)
+            print(result['message'])
 
         else:
             self.parser.print_help()
@@ -72,7 +72,8 @@ class Provisioner():
             modules = get_modules(config, self.repo)
 
             # Upload
-            self.provision(self.nodes[i]["ip"], self.passwd, config, modules)
+            result = provision(self.nodes[i]["ip"], self.passwd, config, modules)
+            print(result['message'])
 
     # Reprovision an existing node, accepts friendly name as arg
     def upload_node(self, node):
@@ -82,7 +83,8 @@ class Provisioner():
 
         # Get modules, upload
         modules = get_modules(config, self.repo)
-        self.provision(self.nodes[node]["ip"], self.passwd, config, modules)
+        result = provision(self.nodes[node]["ip"], self.passwd, config, modules)
+        print(result['message'])
 
     # Upload unit tests to IP address
     def upload_tests(self, ip):
@@ -114,7 +116,8 @@ class Provisioner():
         # Add unit_test_main.py (must add after dict comprehension, remote name is different)
         modules[os.path.join(self.repo, 'tests/unit_test_main.py')] = 'main.py'
 
-        self.provision(ip, self.passwd, config, modules)
+        result = provision(ip, self.passwd, config, modules)
+        print(result['message'])
 
     def parse_args(self):
         self.parser = argparse.ArgumentParser(
@@ -152,24 +155,6 @@ The password flag is optional and works with all modes''',
         if not valid_ip(ip):
             raise argparse.ArgumentTypeError(f"Invalid IP address '{ip}'")
         return ip
-
-    # Takes IP, password, loaded config file, dict of modules
-    # Uploads all modules
-    def provision(self, ip, password, config, modules):
-        node = Webrepl(ip, password)
-        if not node.open_connection():
-            print(f"Error: {ip} not connected to network or not accepting webrepl connections.\n")
-            return
-
-        # Upload config file
-        node.put_file_mem(config, "config.json")
-
-        # Upload all device/sensor + core modules
-        # Node will automatically reboot after last module (main.py)
-        for local, remote in modules.items():
-            node.put_file(local, remote)
-
-        node.close_connection()
 
 
 if __name__ == "__main__":

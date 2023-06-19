@@ -8,7 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates, get_schedule_keywords_dict
 from Webrepl import Webrepl
-from get_modules import get_modules
+from get_modules import get_modules, provision
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
 from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
@@ -46,10 +46,10 @@ def upload(request, reupload=False):
 
     # Get dependencies, upload
     modules = get_modules(config.config, REPO_DIR)
-    response = provision(config.config, data["ip"], modules)
+    response = provision(data["ip"], NODE_PASSWD, config.config, modules)
 
     # If uploaded for the first time, update models
-    if response.status_code == 200 and not reupload:
+    if response['status'] == 200 and not reupload:
         new = Node.objects.create(
             friendly_name=config.config["metadata"]["id"],
             ip=data["ip"],
@@ -59,45 +59,7 @@ def upload(request, reupload=False):
         config.node = new
         config.save()
 
-    return response
-
-
-# Takes config file dict, target ip, and modules list from get_modules()
-# Uploads config, modules, and core to target IP
-def provision(config, ip, modules):
-    # Open conection, detect if node connected to network
-    node = Webrepl(ip, NODE_PASSWD)
-    if not node.open_connection():
-        return JsonResponse(
-            "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
-            safe=False,
-            status=404
-        )
-
-    try:
-        # Upload config file
-        node.put_file_mem(config, "config.json")
-
-        # Upload all device/sensor + core modules modules
-        # Node will automatically reboot after last module (main.py)
-        [node.put_file(local, remote) for local, remote in modules.items()]
-
-        node.close_connection()
-
-    except TimeoutError:
-        return JsonResponse(
-            "Connection timed out - please press target node reset button, wait 30 seconds, and try again.",
-            safe=False,
-            status=408
-        )
-    except AssertionError:
-        return JsonResponse(
-            "Failed due to filesystem error, please re-flash firmware.",
-            safe=False,
-            status=409
-        )
-
-    return JsonResponse("Upload complete.", safe=False, status=200)
+    return JsonResponse(response['message'], safe=False, status=response['status'])
 
 
 def reupload_all(request):
@@ -111,16 +73,16 @@ def reupload_all(request):
         modules = get_modules(node.config.config, REPO_DIR)
 
         print(f"\nReuploading {node.friendly_name}...")
-        response = provision(node.config.config, node.ip, modules)
+        response = provision(node.ip, NODE_PASSWD, node.config.config, modules)
 
         # Add result to report
-        if response.status_code == 200:
+        if response['status'] == 200:
             report['success'].append(node.friendly_name)
-        elif response.status_code == 404:
+        elif response['status'] == 404:
             report['failed'][node.friendly_name] = 'Offline'
-        elif response.status_code == 408:
+        elif response['status'] == 408:
             report['failed'][node.friendly_name] = 'Connection timed out'
-        elif response.status_code == 409:
+        elif response['status'] == 409:
             report['failed'][node.friendly_name] = 'Filesystem error'
 
     print('\nreupload_all results:')
@@ -201,16 +163,16 @@ def change_node_ip(request):
 
     # Get dependencies, upload to new IP
     modules = get_modules(node.config.config, REPO_DIR)
-    response = provision(node.config.config, data["new_ip"], modules)
+    response = provision(data["new_ip"], NODE_PASSWD, node.config.config, modules)
 
-    if response.status_code == 200:
+    if response['status'] == 200:
         # Update model
         node.ip = data["new_ip"]
         node.save()
 
         return JsonResponse("Successfully uploaded to new IP", safe=False, status=200)
     else:
-        return response
+        return JsonResponse(response['message'], safe=False, status=response['status'])
 
 
 def config_overview(request):
