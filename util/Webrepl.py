@@ -151,7 +151,7 @@ class Webrepl():
 
     def read_resp(self):
         if self.ws is None:
-            print("ERROR: Should not be invoked directly, use open_connection()")
+            print("ERROR: Should not be invoked directly, use get_file or put_file methods")
             raise OSError
 
         data = self.ws.read(4)
@@ -252,6 +252,9 @@ class Webrepl():
         remote_file = (remote_file).encode("utf-8")
         request = struct.pack("<2sBBQLH64s", b"WA", 1, 0, 0, sz, len(remote_file), remote_file)
 
+        # Print status message before sending request
+        print(f"{local_file} -> {self.ip}:/{remote_file}")
+
         # Send first 10 bytes of request, then all remaining bytes (no response = success)
         self.ws.write(request[:10])
         self.ws.write(request[10:])
@@ -274,7 +277,7 @@ class Webrepl():
                 # Send chunk
                 self.ws.write(buf)
                 count += len(buf)
-        print()
+        print('\n')
         assert self.read_resp() == 0
 
     # Takes string instead of
@@ -298,6 +301,9 @@ class Webrepl():
         remote_file = (remote_file).encode("utf-8")
         request = struct.pack("<2sBBQLH64s", b"WA", 1, 0, 0, sz, len(remote_file), remote_file)
 
+        # Print status message before sending request
+        print(f"{sz} bytes -> {self.ip}:/{remote_file}")
+
         # Send first 10 bytes of request, then all remaining bytes (no response = success)
         self.ws.write(request[:10])
         self.ws.write(request[10:])
@@ -320,5 +326,5 @@ class Webrepl():
                 # Send chunk
                 self.ws.write(buf)
                 count += len(buf)
-        print()
+        print('\n')
         assert self.read_resp() == 0

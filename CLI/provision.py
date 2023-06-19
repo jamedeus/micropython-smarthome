@@ -159,9 +159,7 @@ The password flag is optional and works with all modes''',
 
         # Upload all device/sensor modules
         for local, remote in modules.items():
-            print(f"{local} -> {ip}:/{remote}")
             node.put_file(local, remote)
-            print()
 
         # Upload config file
         node.put_file_mem(config, "config.json")
@@ -169,9 +167,7 @@ The password flag is optional and works with all modes''',
         # Upload core dependencies (must upload main.py last, triggers reboot)
         for core in ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py", "main.py"]:
             local = os.path.join(self.repo, "core", core)
-            print(f"{local} -> {ip}:/{core}")
             node.put_file(local, core)
-            print()
 
         node.close_connection()
 
