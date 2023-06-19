@@ -11,7 +11,7 @@ import json
 import argparse
 from Webrepl import Webrepl
 from helper_functions import valid_ip
-from get_modules import get_modules, dependencies
+from get_modules import get_modules, dependencies, core_modules
 
 
 class Provisioner():
@@ -85,30 +85,34 @@ class Provisioner():
         self.provision(self.nodes[node]["ip"], self.passwd, config, modules)
 
     # Upload unit tests to IP address
-    # TODO broken, doesn't upload unit_test_main.py as main.py
     def upload_tests(self, ip):
         # Load unit test config file
         with open(os.path.join(self.repo, "tests", "unit_test_config.json"), 'r') as file:
             config = json.load(file)
 
-        # Build list of all device and sensor classes
+        # Get list of relative paths for all unit tests (Example: 'tests/test_core_config.py')
+        tests = [i for i in os.listdir(os.path.join(self.repo, 'tests')) if i.startswith('test_')]
+        tests = [os.path.join('tests', i) for i in tests]
+
+        # Build list of all device and sensor modules
         modules = []
-        for device in dependencies['devices']:
-            modules.extend(dependencies['devices'][device])
-        for sensor in dependencies['sensors']:
-            modules.extend(dependencies['sensors'][sensor])
+        [modules.extend(i) for i in dependencies['devices'].values()]
+        [modules.extend(i) for i in dependencies['sensors'].values()]
 
-        # Add all unit test files
-        for i in os.listdir(os.path.join(self.repo, 'tests')):
-            if i.startswith('test_'):
-                modules.append(os.path.join('tests', i))
+        # Add unit tests + core modules, remove main.py
+        modules.extend(tests)
+        modules.extend(core_modules)
+        modules.pop()
 
-        # Remove duplicates
-        modules = set(modules)
+        # Remove duplicates without changing order
+        modules = list(dict.fromkeys(modules))
 
         # Convert to dict containing pairs of local:remote filesystem paths
         # Local path is uploaded to remote path on target ESP32
         modules = {os.path.join(self.repo, i): i.split("/")[1] for i in modules}
+
+        # Add unit_test_main.py (must add after dict comprehension, remote name is different)
+        modules[os.path.join(self.repo, 'tests/unit_test_main.py')] = 'main.py'
 
         self.provision(ip, self.passwd, config, modules)
 
