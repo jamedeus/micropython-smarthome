@@ -10,7 +10,7 @@ import os
 import json
 import argparse
 from helper_functions import valid_ip
-from get_modules import get_modules, dependencies, core_modules, provision
+from provision_tools import get_modules, dependencies, core_modules, provision
 
 
 class Provisioner():

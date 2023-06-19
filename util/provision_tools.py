@@ -24,7 +24,8 @@ dependencies = {
     }
 }
 
-# Core modules, required regardless of configuration
+# Core module relative paths, required regardless of configuration
+# Order is important (main must be last, triggers automatic reboot)
 core_modules = [
     "core/Config.py",
     "core/Group.py",
@@ -35,7 +36,9 @@ core_modules = [
 ]
 
 
-# Takes full config file, returns list of classes for each device and sensor type
+# Takes full config file dict, path to repository root
+# Returns dict of local:remote filesystem paths with all dependencies
+# Dict iterated by provision to upload files
 def get_modules(config, repo_root):
     modules = []
 
@@ -43,7 +46,7 @@ def get_modules(config, repo_root):
     device_types = [config[device]['_type'] for device in config.keys() if is_device(device)]
     sensor_types = [config[sensor]['_type'] for sensor in config.keys() if is_sensor(sensor)]
 
-    # Get dependencies for all device and sensor types
+    # Add dependencies for each device and sensor type to modules list
     for dtype in device_types:
         modules.extend(dependencies['devices'][dtype])
     for stype in sensor_types:
@@ -61,7 +64,7 @@ def get_modules(config, repo_root):
 
 
 # Takes target ip, password, config file dict, and modules dict
-# Uploads config and modules to target IP
+# Upload config file + all modules in dict to target IP
 def provision(ip, password, config, modules):
     # Open conection, detect if node connected to network
     node = Webrepl(ip, password)
@@ -75,7 +78,7 @@ def provision(ip, password, config, modules):
         # Upload config file
         node.put_file_mem(config, "config.json")
 
-        # Upload all device/sensor + core modules modules
+        # Upload all device/sensor + core modules
         # Node will automatically reboot after last module (main.py)
         [node.put_file(local, remote) for local, remote in modules.items()]
         node.close_connection()
