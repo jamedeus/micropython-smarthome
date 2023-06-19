@@ -39,57 +39,15 @@ class Provisioner():
 
         # Reprovision all nodes
         if args.all:
-            # Iterate all nodes in config file
-            for i in self.nodes:
-                print(f"\n{i}\n")
-
-                # Load config from disk
-                with open(self.nodes[i]["config"], 'r') as file:
-                    config = json.load(file)
-
-                # Get modules
-                modules = get_modules(config, self.repo)
-
-                # Upload
-                self.provision(self.nodes[i]["ip"], self.passwd, config, modules)
+            self.upload_all()
 
         # Reprovision specific node
         elif args.node:
-            # Load requested node config from disk
-            with open(self.nodes[args.node]["config"], 'r') as file:
-                config = json.load(file)
+            self.upload_node(args.node)
 
-            # Get modules, upload
-            modules = get_modules(config, self.repo)
-            self.provision(self.nodes[args.node]["ip"], self.passwd, config, modules)
-
-        # Upload unit tests to IP address
-        # TODO broken, doesn't upload unit_test_main.py as main.py
+        # Upload unit tests
         elif args.test:
-            # Load unit test config file
-            with open(os.path.join(self.repo, "tests", "unit_test_config.json"), 'r') as file:
-                config = json.load(file)
-
-            # Build list of all device and sensor classes
-            modules = []
-            for device in dependencies['devices']:
-                modules.extend(dependencies['devices'][device])
-            for sensor in dependencies['sensors']:
-                modules.extend(dependencies['sensors'][sensor])
-
-            # Add all unit test files
-            for i in os.listdir(os.path.join(self.repo, 'tests')):
-                if i.startswith('test_'):
-                    modules.append(os.path.join('tests', i))
-
-            # Remove duplicates
-            modules = set(modules)
-
-            # Convert to dict containing pairs of local:remote filesystem paths
-            # Local path is uploaded to remote path on target ESP32
-            modules = {os.path.join(self.repo, i): i.split("/")[1] for i in modules}
-
-            self.provision(args.test, self.passwd, config, modules)
+            self.upload_tests(args.test)
 
         # Upload given config file to given IP address
         elif args.config and args.ip:
@@ -99,6 +57,60 @@ class Provisioner():
 
         else:
             self.parser.print_help()
+
+    # Iterate nodes.json, reprovision all nodes
+    def upload_all(self):
+        # Iterate all nodes in config file
+        for i in self.nodes:
+            print(f"\n{i}\n")
+
+            # Load config from disk
+            with open(self.nodes[i]["config"], 'r') as file:
+                config = json.load(file)
+
+            # Get modules
+            modules = get_modules(config, self.repo)
+
+            # Upload
+            self.provision(self.nodes[i]["ip"], self.passwd, config, modules)
+
+    # Reprovision an existing node, accepts friendly name as arg
+    def upload_node(self, node):
+        # Load requested node config from disk
+        with open(self.nodes[node]["config"], 'r') as file:
+            config = json.load(file)
+
+        # Get modules, upload
+        modules = get_modules(config, self.repo)
+        self.provision(self.nodes[node]["ip"], self.passwd, config, modules)
+
+    # Upload unit tests to IP address
+    # TODO broken, doesn't upload unit_test_main.py as main.py
+    def upload_tests(self, ip):
+        # Load unit test config file
+        with open(os.path.join(self.repo, "tests", "unit_test_config.json"), 'r') as file:
+            config = json.load(file)
+
+        # Build list of all device and sensor classes
+        modules = []
+        for device in dependencies['devices']:
+            modules.extend(dependencies['devices'][device])
+        for sensor in dependencies['sensors']:
+            modules.extend(dependencies['sensors'][sensor])
+
+        # Add all unit test files
+        for i in os.listdir(os.path.join(self.repo, 'tests')):
+            if i.startswith('test_'):
+                modules.append(os.path.join('tests', i))
+
+        # Remove duplicates
+        modules = set(modules)
+
+        # Convert to dict containing pairs of local:remote filesystem paths
+        # Local path is uploaded to remote path on target ESP32
+        modules = {os.path.join(self.repo, i): i.split("/")[1] for i in modules}
+
+        self.provision(ip, self.passwd, config, modules)
 
     def parse_args(self):
         self.parser = argparse.ArgumentParser(
