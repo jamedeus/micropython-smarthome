@@ -75,15 +75,12 @@ def provision(config, ip, modules):
         )
 
     try:
-        # Upload all device/sensor modules
-        [node.put_file(local, remote) for local, remote in modules.items()]
-
         # Upload config file
         node.put_file_mem(config, "config.json")
 
-        # Upload core dependencies - main.py must be last (triggers automatic reboot)
-        core = ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py", "main.py"]
-        [node.put_file(os.path.join(REPO_DIR, "core", i), i) for i in core]
+        # Upload all device/sensor + core modules modules
+        # Node will automatically reboot after last module (main.py)
+        [node.put_file(local, remote) for local, remote in modules.items()]
 
         node.close_connection()
 

@@ -157,17 +157,13 @@ The password flag is optional and works with all modes''',
             print(f"Error: {ip} not connected to network or not accepting webrepl connections.\n")
             return
 
-        # Upload all device/sensor modules
-        for local, remote in modules.items():
-            node.put_file(local, remote)
-
         # Upload config file
         node.put_file_mem(config, "config.json")
 
-        # Upload core dependencies (must upload main.py last, triggers reboot)
-        for core in ["Config.py", "Group.py", "SoftwareTimer.py", "Api.py", "util.py", "main.py"]:
-            local = os.path.join(self.repo, "core", core)
-            node.put_file(local, core)
+        # Upload all device/sensor + core modules
+        # Node will automatically reboot after last module (main.py)
+        for local, remote in modules.items():
+            node.put_file(local, remote)
 
         node.close_connection()
 

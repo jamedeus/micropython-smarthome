@@ -899,7 +899,7 @@ class UploadTests(TestCase):
 
         # Mock Webrepl.put_file to raise TimeoutError
         with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', side_effect=TimeoutError):
+             patch.object(Webrepl, 'put_file_mem', side_effect=TimeoutError):
 
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 408)
@@ -953,7 +953,7 @@ class ProvisionTests(TestCase):
 
         # Mock Webrepl.put_file to raise TimeoutError
         with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', side_effect=TimeoutError):
+             patch.object(Webrepl, 'put_file_mem', side_effect=TimeoutError):
 
             response = provision('test1.json', '123.45.67.89', modules)
             self.assertEqual(response.status_code, 408)
@@ -967,7 +967,7 @@ class ProvisionTests(TestCase):
 
         # Mock Webrepl.put_file to raise AssertionError for non-library files (simulate failing to upload to root dir)
         with patch.object(Webrepl, 'open_connection', return_value=True), \
-             patch.object(Webrepl, 'put_file', new=simulate_corrupt_filesystem_upload):
+             patch.object(Webrepl, 'put_file_mem', new=simulate_corrupt_filesystem_upload):
 
             response = provision('test1.json', '123.45.67.89', modules)
             self.assertEqual(response.status_code, 409)
@@ -1842,15 +1842,31 @@ class GetModulesTests(TestCase):
             '../sensors/Thermostat.py': 'Thermostat.py',
             '../sensors/Sensor.py': 'Sensor.py',
             '../devices/LedStrip.py': 'LedStrip.py',
-            '../devices/DimmableLight.py': 'DimmableLight.py'
+            '../devices/DimmableLight.py': 'DimmableLight.py',
+            '../core/Config.py': 'Config.py',
+            '../core/Group.py': 'Group.py',
+            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
+            '../core/Api.py': 'Api.py',
+            '../core/util.py': 'util.py',
+            '../core/main.py': 'main.py'
         }
 
         modules = get_modules(self.config, settings.REPO_DIR)
         self.assertEqual(modules, expected_modules)
 
     def test_get_modules_empty_config(self):
+        expected_modules = {
+            '../core/Config.py': 'Config.py',
+            '../core/Group.py': 'Group.py',
+            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
+            '../core/Api.py': 'Api.py',
+            '../core/util.py': 'util.py',
+            '../core/main.py': 'main.py'
+        }
+
+        # Should only return core modules, no devices or sensors
         modules = get_modules({}, settings.REPO_DIR)
-        self.assertEqual(modules, {})
+        self.assertEqual(modules, expected_modules)
 
     def test_get_modules_no_ir_blaster(self):
         del self.config['ir_blaster']
@@ -1871,7 +1887,13 @@ class GetModulesTests(TestCase):
             '../sensors/Thermostat.py': 'Thermostat.py',
             '../sensors/Sensor.py': 'Sensor.py',
             '../devices/LedStrip.py': 'LedStrip.py',
-            '../devices/DimmableLight.py': 'DimmableLight.py'
+            '../devices/DimmableLight.py': 'DimmableLight.py',
+            '../core/Config.py': 'Config.py',
+            '../core/Group.py': 'Group.py',
+            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
+            '../core/Api.py': 'Api.py',
+            '../core/util.py': 'util.py',
+            '../core/main.py': 'main.py'
         }
 
         modules = get_modules(self.config, settings.REPO_DIR)
@@ -1895,7 +1917,13 @@ class GetModulesTests(TestCase):
             '../devices/Desktop_target.py': 'Desktop_target.py',
             '../sensors/Sensor.py': 'Sensor.py',
             '../devices/LedStrip.py': 'LedStrip.py',
-            '../devices/DimmableLight.py': 'DimmableLight.py'
+            '../devices/DimmableLight.py': 'DimmableLight.py',
+            '../core/Config.py': 'Config.py',
+            '../core/Group.py': 'Group.py',
+            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
+            '../core/Api.py': 'Api.py',
+            '../core/util.py': 'util.py',
+            '../core/main.py': 'main.py'
         }
 
         modules = get_modules(self.config, settings.REPO_DIR)
@@ -1920,7 +1948,13 @@ class GetModulesTests(TestCase):
             '../devices/Wled.py': 'Wled.py',
             '../sensors/Sensor.py': 'Sensor.py',
             '../devices/LedStrip.py': 'LedStrip.py',
-            '../devices/DimmableLight.py': 'DimmableLight.py'
+            '../devices/DimmableLight.py': 'DimmableLight.py',
+            '../core/Config.py': 'Config.py',
+            '../core/Group.py': 'Group.py',
+            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
+            '../core/Api.py': 'Api.py',
+            '../core/util.py': 'util.py',
+            '../core/main.py': 'main.py'
         }
 
         modules = get_modules(self.config, settings.REPO_DIR)

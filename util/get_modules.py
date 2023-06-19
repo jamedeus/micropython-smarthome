@@ -23,6 +23,16 @@ dependencies = {
     }
 }
 
+# Core modules, required regardless of configuration
+core_modules = [
+    "core/Config.py",
+    "core/Group.py",
+    "core/SoftwareTimer.py",
+    "core/Api.py",
+    "core/util.py",
+    "core/main.py"
+]
+
 
 # Takes full config file, returns list of classes for each device and sensor type
 def get_modules(config, repo_root):
@@ -38,8 +48,9 @@ def get_modules(config, repo_root):
     for stype in sensor_types:
         modules.extend(dependencies['sensors'][stype])
 
-    # Remove duplicates
-    modules = set(modules)
+    # Add core modules, remove duplicates without changing order
+    modules.extend(core_modules)
+    modules = list(dict.fromkeys(modules))
 
     # Convert to dict containing pairs of local:remote filesystem paths
     # Local path is uploaded to remote path on target ESP32
