@@ -8,6 +8,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates, get_schedule_keywords_dict
 from Webrepl import Webrepl
+from get_modules import get_modules
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
 from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
@@ -28,52 +29,6 @@ valid_config_keys = {
     "wifi": {"ssid": "", "password": ""}
 }
 
-# Dependency relative paths for all device and sensor types, used by get_modules
-dependencies = {
-    'devices': {
-        'dimmer': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py"],
-        'bulb': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py"],
-        'relay': ["devices/Relay.py", "devices/Device.py"],
-        'dumb-relay': ["devices/DumbRelay.py", "devices/Device.py"],
-        'desktop': ["devices/Desktop_target.py", "devices/Device.py"],
-        'pwm': ["devices/LedStrip.py", "devices/Device.py", "devices/DimmableLight.py"],
-        'mosfet': ["devices/Mosfet.py", "devices/Device.py"],
-        'api-target': ["devices/ApiTarget.py", "devices/Device.py"],
-        'wled': ["devices/Wled.py", "devices/Device.py", "devices/DimmableLight.py"]
-    },
-    'sensors': {
-        'pir': ["sensors/MotionSensor.py", "sensors/Sensor.py"],
-        'si7021': ["sensors/Thermostat.py", "sensors/Sensor.py"],
-        'dummy': ["sensors/Dummy.py", "sensors/Sensor.py"],
-        'switch': ["sensors/Switch.py", "sensors/Sensor.py"],
-        'desktop': ["sensors/Desktop_trigger.py", "sensors/Sensor.py"],
-    }
-}
-
-
-# Takes full config file, returns list of classes for each device and sensor type
-def get_modules(config):
-    modules = []
-
-    # Get lists of device and sensor types
-    device_types = [config[device]['_type'] for device in config.keys() if is_device(device)]
-    sensor_types = [config[sensor]['_type'] for sensor in config.keys() if is_sensor(sensor)]
-
-    # Get dependencies for all device and sensor types
-    for dtype in device_types:
-        modules.extend(dependencies['devices'][dtype])
-    for stype in sensor_types:
-        modules.extend(dependencies['sensors'][stype])
-
-    # Remove duplicates
-    modules = set(modules)
-
-    # Convert to dict containing pairs of local:remote filesystem paths
-    # Local path is uploaded to remote path on target ESP32
-    modules = {os.path.join(REPO_DIR, i): i.split("/")[1] for i in modules}
-
-    return modules
-
 
 def upload(request, reupload=False):
     if request.method == "POST":
@@ -90,7 +45,7 @@ def upload(request, reupload=False):
         return JsonResponse("ERROR: Config file doesn't exist - did you delete it manually?", safe=False, status=404)
 
     # Get dependencies, upload
-    modules = get_modules(config.config)
+    modules = get_modules(config.config, REPO_DIR)
     response = provision(config.config, data["ip"], modules)
 
     # If uploaded for the first time, update models
@@ -156,7 +111,7 @@ def reupload_all(request):
     report = {'success': [], 'failed': {}}
 
     for node in nodes:
-        modules = get_modules(node.config.config)
+        modules = get_modules(node.config.config, REPO_DIR)
 
         print(f"\nReuploading {node.friendly_name}...")
         response = provision(node.config.config, node.ip, modules)
@@ -248,7 +203,7 @@ def change_node_ip(request):
         return JsonResponse({'Error': 'New IP must be different than old'}, safe=False, status=400)
 
     # Get dependencies, upload to new IP
-    modules = get_modules(node.config.config)
+    modules = get_modules(node.config.config, REPO_DIR)
     response = provision(node.config.config, data["new_ip"], modules)
 
     if response.status_code == 200:

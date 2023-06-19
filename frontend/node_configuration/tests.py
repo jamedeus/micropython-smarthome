@@ -924,7 +924,7 @@ class UploadTests(TestCase):
 # Test view that uploads completed configs and dependencies to esp32 nodes
 class ProvisionTests(TestCase):
     def test_provision(self):
-        modules = get_modules(test_config_1)
+        modules = get_modules(test_config_1, settings.REPO_DIR)
 
         # Mock Webrepl to return True without doing anything
         with patch.object(Webrepl, 'open_connection', return_value=True), \
@@ -936,7 +936,7 @@ class ProvisionTests(TestCase):
             self.assertEqual(response.content.decode(), '"Upload complete."')
 
     def test_provision_offline_node(self):
-        modules = get_modules(test_config_1)
+        modules = get_modules(test_config_1, settings.REPO_DIR)
 
         # Mock Webrepl to fail to connect
         with patch.object(Webrepl, 'open_connection', return_value=False):
@@ -949,7 +949,7 @@ class ProvisionTests(TestCase):
             )
 
     def test_provision_connection_timeout(self):
-        modules = get_modules(test_config_1)
+        modules = get_modules(test_config_1, settings.REPO_DIR)
 
         # Mock Webrepl.put_file to raise TimeoutError
         with patch.object(Webrepl, 'open_connection', return_value=True), \
@@ -963,7 +963,7 @@ class ProvisionTests(TestCase):
             )
 
     def test_provision_corrupt_filesystem(self):
-        modules = get_modules(test_config_1)
+        modules = get_modules(test_config_1, settings.REPO_DIR)
 
         # Mock Webrepl.put_file to raise AssertionError for non-library files (simulate failing to upload to root dir)
         with patch.object(Webrepl, 'open_connection', return_value=True), \
@@ -1845,11 +1845,11 @@ class GetModulesTests(TestCase):
             '../devices/DimmableLight.py': 'DimmableLight.py'
         }
 
-        modules = get_modules(self.config)
+        modules = get_modules(self.config, settings.REPO_DIR)
         self.assertEqual(modules, expected_modules)
 
     def test_get_modules_empty_config(self):
-        modules = get_modules({})
+        modules = get_modules({}, settings.REPO_DIR)
         self.assertEqual(modules, {})
 
     def test_get_modules_no_ir_blaster(self):
@@ -1874,7 +1874,7 @@ class GetModulesTests(TestCase):
             '../devices/DimmableLight.py': 'DimmableLight.py'
         }
 
-        modules = get_modules(self.config)
+        modules = get_modules(self.config, settings.REPO_DIR)
         self.assertEqual(modules, expected_modules)
 
     def test_get_modules_no_thermostat(self):
@@ -1898,7 +1898,7 @@ class GetModulesTests(TestCase):
             '../devices/DimmableLight.py': 'DimmableLight.py'
         }
 
-        modules = get_modules(self.config)
+        modules = get_modules(self.config, settings.REPO_DIR)
         self.assertEqual(modules, expected_modules)
 
     def test_get_modules_realistic(self):
@@ -1923,7 +1923,7 @@ class GetModulesTests(TestCase):
             '../devices/DimmableLight.py': 'DimmableLight.py'
         }
 
-        modules = get_modules(self.config)
+        modules = get_modules(self.config, settings.REPO_DIR)
         self.assertEqual(modules, expected_modules)
 
 

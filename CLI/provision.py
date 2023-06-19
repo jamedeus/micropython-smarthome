@@ -10,29 +10,8 @@ import os
 import json
 import argparse
 from Webrepl import Webrepl
-from helper_functions import valid_ip, is_device, is_sensor
-
-# Dependency relative paths for all device and sensor types, used by get_modules
-dependencies = {
-    'devices': {
-        'dimmer': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py"],
-        'bulb': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py"],
-        'relay': ["devices/Relay.py", "devices/Device.py"],
-        'dumb-relay': ["devices/DumbRelay.py", "devices/Device.py"],
-        'desktop': ["devices/Desktop_target.py", "devices/Device.py"],
-        'pwm': ["devices/LedStrip.py", "devices/Device.py", "devices/DimmableLight.py"],
-        'mosfet': ["devices/Mosfet.py", "devices/Device.py"],
-        'api-target': ["devices/ApiTarget.py", "devices/Device.py"],
-        'wled': ["devices/Wled.py", "devices/Device.py", "devices/DimmableLight.py"]
-    },
-    'sensors': {
-        'pir': ["sensors/MotionSensor.py", "sensors/Sensor.py"],
-        'si7021': ["sensors/Thermostat.py", "sensors/Sensor.py"],
-        'dummy': ["sensors/Dummy.py", "sensors/Sensor.py"],
-        'switch': ["sensors/Switch.py", "sensors/Sensor.py"],
-        'desktop': ["sensors/Desktop_trigger.py", "sensors/Sensor.py"],
-    }
-}
+from helper_functions import valid_ip
+from get_modules import get_modules, dependencies
 
 
 class Provisioner():
@@ -69,7 +48,7 @@ class Provisioner():
                     config = json.load(file)
 
                 # Get modules
-                modules = self.get_modules(config)
+                modules = get_modules(config, self.repo)
 
                 # Upload
                 self.provision(self.nodes[i]["ip"], self.passwd, config, modules)
@@ -81,7 +60,7 @@ class Provisioner():
                 config = json.load(file)
 
             # Get modules, upload
-            modules = self.get_modules((config))
+            modules = get_modules(config, self.repo)
             self.provision(self.nodes[args.node]["ip"], self.passwd, config, modules)
 
         # Upload unit tests to IP address
@@ -115,7 +94,7 @@ class Provisioner():
         # Upload given config file to given IP address
         elif args.config and args.ip:
             config = json.load(args.config)
-            modules = self.get_modules(config)
+            modules = get_modules(config, self.repo)
             self.provision(args.ip, self.passwd, config, modules)
 
         else:
@@ -183,29 +162,6 @@ The password flag is optional and works with all modes''',
             print()
 
         node.close_connection()
-
-    # Takes full config file, returns list of classes for each device and sensor type
-    def get_modules(self, config):
-        modules = []
-
-        # Get lists of device and sensor types
-        device_types = [config[device]['_type'] for device in config.keys() if is_device(device)]
-        sensor_types = [config[sensor]['_type'] for sensor in config.keys() if is_sensor(sensor)]
-
-        # Get dependencies for all device and sensor types
-        for dtype in device_types:
-            modules.extend(dependencies['devices'][dtype])
-        for stype in sensor_types:
-            modules.extend(dependencies['sensors'][stype])
-
-        # Remove duplicates
-        modules = set(modules)
-
-        # Convert to dict containing pairs of local:remote filesystem paths
-        # Local path is uploaded to remote path on target ESP32
-        modules = {os.path.join(self.repo, i): i.split("/")[1] for i in modules}
-
-        return modules
 
 
 if __name__ == "__main__":
