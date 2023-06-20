@@ -24,10 +24,7 @@ test_frontend:
   rules:
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
       when: never
-    - changes:
-        - 'frontend/**/*'
-        - 'util/**/*'
-        - 'Pipfile'
+    - when: always
 
 # Run CLI tool unit tests
 test_cli:
@@ -45,10 +42,7 @@ test_cli:
   rules:
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
       when: never
-    - changes:
-        - 'CLI/**/*'
-        - 'util/**/*'
-        - 'Pipfile'
+    - when: always
 
 # Build new container, increment most-recent tag
 build:
