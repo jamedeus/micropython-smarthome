@@ -5,7 +5,6 @@ from copy import deepcopy
 from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from django.conf import settings
-from django.http import JsonResponse
 from django.core.exceptions import ValidationError
 from .views import validate_full_config, get_modules, get_api_target_menu_options, provision
 from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinates
