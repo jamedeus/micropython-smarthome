@@ -5,6 +5,8 @@ from unittest import TestCase
 from unittest.mock import patch, MagicMock, mock_open
 from argparse import Namespace, ArgumentParser
 from provision import Provisioner, parse_args
+from provision_tools import provision, get_modules
+from Webrepl import Webrepl
 
 # Get full paths to repository root directory, CLI tools directory
 cli = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
@@ -241,3 +243,201 @@ class TestInstantiation(TestCase):
         # Instantiate with mock args and parser, confirm print_help called
         Provisioner(args, mock_parser)
         self.assertTrue(mock_parser.print_help.called)
+
+
+class TestGetModules(TestCase):
+    def setUp(self):
+        with open('tests/unit-test-config.json', 'r') as file:
+            self.config = json.load(file)
+
+    def test_get_modules_full_config(self):
+
+        expected_modules = {
+            os.path.join(repo, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
+            os.path.join(repo, 'devices', 'Wled.py'): 'Wled.py',
+            os.path.join(repo, 'devices', 'Mosfet.py'): 'Mosfet.py',
+            os.path.join(repo, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(repo, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
+            os.path.join(repo, 'sensors', 'Dummy.py'): 'Dummy.py',
+            os.path.join(repo, 'devices', 'Device.py'): 'Device.py',
+            os.path.join(repo, 'sensors', 'Switch.py'): 'Switch.py',
+            os.path.join(repo, 'sensors', 'Desktop_trigger.py'): 'Desktop_trigger.py',
+            os.path.join(repo, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(repo, 'devices', 'Tplink.py'): 'Tplink.py',
+            os.path.join(repo, 'devices', 'Desktop_target.py'): 'Desktop_target.py',
+            os.path.join(repo, 'sensors', 'Thermostat.py'): 'Thermostat.py',
+            os.path.join(repo, 'sensors', 'Sensor.py'): 'Sensor.py',
+            os.path.join(repo, 'devices', 'LedStrip.py'): 'LedStrip.py',
+            os.path.join(repo, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
+            os.path.join(repo, 'core', 'Config.py'): 'Config.py',
+            os.path.join(repo, 'core', 'Group.py'): 'Group.py',
+            os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'Api.py'): 'Api.py',
+            os.path.join(repo, 'core', 'util.py'): 'util.py',
+            os.path.join(repo, 'core', 'main.py'): 'main.py'
+        }
+
+        modules = get_modules(self.config, repo)
+        self.assertEqual(modules, expected_modules)
+
+    def test_get_modules_empty_config(self):
+        expected_modules = {
+            os.path.join(repo, 'core', 'Config.py'): 'Config.py',
+            os.path.join(repo, 'core', 'Group.py'): 'Group.py',
+            os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'Api.py'): 'Api.py',
+            os.path.join(repo, 'core', 'util.py'): 'util.py',
+            os.path.join(repo, 'core', 'main.py'): 'main.py'
+        }
+
+        # Should only return core modules, no devices or sensors
+        modules = get_modules({}, repo)
+        self.assertEqual(modules, expected_modules)
+
+    def test_get_modules_no_ir_blaster(self):
+        del self.config['ir_blaster']
+
+        expected_modules = {
+            os.path.join(repo, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
+            os.path.join(repo, 'devices', 'Wled.py'): 'Wled.py',
+            os.path.join(repo, 'devices', 'Mosfet.py'): 'Mosfet.py',
+            os.path.join(repo, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(repo, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
+            os.path.join(repo, 'sensors', 'Dummy.py'): 'Dummy.py',
+            os.path.join(repo, 'devices', 'Device.py'): 'Device.py',
+            os.path.join(repo, 'sensors', 'Switch.py'): 'Switch.py',
+            os.path.join(repo, 'sensors', 'Desktop_trigger.py'): 'Desktop_trigger.py',
+            os.path.join(repo, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(repo, 'devices', 'Tplink.py'): 'Tplink.py',
+            os.path.join(repo, 'devices', 'Desktop_target.py'): 'Desktop_target.py',
+            os.path.join(repo, 'sensors', 'Thermostat.py'): 'Thermostat.py',
+            os.path.join(repo, 'sensors', 'Sensor.py'): 'Sensor.py',
+            os.path.join(repo, 'devices', 'LedStrip.py'): 'LedStrip.py',
+            os.path.join(repo, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
+            os.path.join(repo, 'core', 'Config.py'): 'Config.py',
+            os.path.join(repo, 'core', 'Group.py'): 'Group.py',
+            os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'Api.py'): 'Api.py',
+            os.path.join(repo, 'core', 'util.py'): 'util.py',
+            os.path.join(repo, 'core', 'main.py'): 'main.py'
+        }
+
+        modules = get_modules(self.config, repo)
+        self.assertEqual(modules, expected_modules)
+
+    def test_get_modules_no_thermostat(self):
+        del self.config['sensor5']
+
+        expected_modules = {
+            os.path.join(repo, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
+            os.path.join(repo, 'devices', 'Wled.py'): 'Wled.py',
+            os.path.join(repo, 'devices', 'Mosfet.py'): 'Mosfet.py',
+            os.path.join(repo, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(repo, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
+            os.path.join(repo, 'sensors', 'Dummy.py'): 'Dummy.py',
+            os.path.join(repo, 'devices', 'Device.py'): 'Device.py',
+            os.path.join(repo, 'sensors', 'Switch.py'): 'Switch.py',
+            os.path.join(repo, 'sensors', 'Desktop_trigger.py'): 'Desktop_trigger.py',
+            os.path.join(repo, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(repo, 'devices', 'Tplink.py'): 'Tplink.py',
+            os.path.join(repo, 'devices', 'Desktop_target.py'): 'Desktop_target.py',
+            os.path.join(repo, 'sensors', 'Sensor.py'): 'Sensor.py',
+            os.path.join(repo, 'devices', 'LedStrip.py'): 'LedStrip.py',
+            os.path.join(repo, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
+            os.path.join(repo, 'core', 'Config.py'): 'Config.py',
+            os.path.join(repo, 'core', 'Group.py'): 'Group.py',
+            os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'Api.py'): 'Api.py',
+            os.path.join(repo, 'core', 'util.py'): 'util.py',
+            os.path.join(repo, 'core', 'main.py'): 'main.py'
+        }
+
+        modules = get_modules(self.config, repo)
+        self.assertEqual(modules, expected_modules)
+
+    def test_get_modules_realistic(self):
+        del self.config['ir_blaster']
+        del self.config['sensor3']
+        del self.config['sensor4']
+        del self.config['sensor5']
+        del self.config['device4']
+        del self.config['device5']
+        del self.config['device7']
+
+        expected_modules = {
+            os.path.join(repo, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
+            os.path.join(repo, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(repo, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
+            os.path.join(repo, 'devices', 'Device.py'): 'Device.py',
+            os.path.join(repo, 'sensors', 'Switch.py'): 'Switch.py',
+            os.path.join(repo, 'devices', 'Tplink.py'): 'Tplink.py',
+            os.path.join(repo, 'devices', 'Wled.py'): 'Wled.py',
+            os.path.join(repo, 'sensors', 'Sensor.py'): 'Sensor.py',
+            os.path.join(repo, 'devices', 'LedStrip.py'): 'LedStrip.py',
+            os.path.join(repo, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
+            os.path.join(repo, 'core', 'Config.py'): 'Config.py',
+            os.path.join(repo, 'core', 'Group.py'): 'Group.py',
+            os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(repo, 'core', 'Api.py'): 'Api.py',
+            os.path.join(repo, 'core', 'util.py'): 'util.py',
+            os.path.join(repo, 'core', 'main.py'): 'main.py'
+        }
+
+        modules = get_modules(self.config, repo)
+        self.assertEqual(modules, expected_modules)
+
+
+class TestProvisionFunction(TestCase):
+
+    def test_upload_normal(self):
+        # Mock Webrepl to return True without doing anything
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file', return_value=True) as mock_put_file, \
+             patch.object(Webrepl, 'put_file_mem', return_value=True) as mock_put_file_mem:
+
+            # Call provision with placeholder values, verify response
+            response = provision('192.168.1.123', 'password', {}, {'1': '1', '2': '2', '3': '3'})
+            self.assertEqual(response['status'], 200)
+            self.assertEqual(response['message'], 'Upload complete.')
+
+            # Verify put_file_mem called once (config file), put_file called once per module
+            self.assertEqual(mock_put_file_mem.call_count, 1)
+            self.assertEqual(mock_put_file.call_count, 3)
+
+    def test_upload_to_offline_node(self):
+        # Mock Webrepl to fail to connect
+        with patch.object(Webrepl, 'open_connection', return_value=False):
+
+            # Call provision with placeholder values, verify error
+            response = provision('192.168.1.123', 'password', {}, {})
+            self.assertEqual(response['status'], 404)
+            self.assertEqual(
+                response['message'],
+                'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
+            )
+
+    def test_upload_connection_timeout(self):
+        # Mock Webrepl.put_file to raise TimeoutError
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file_mem', side_effect=TimeoutError):
+
+            # Call provision with placeholder values, verify error
+            response = provision('192.168.1.123', 'password', {}, {})
+            self.assertEqual(response['status'], 408)
+            self.assertEqual(
+                response['message'],
+                'Connection timed out - please press target node reset button, wait 30 seconds, and try again.'
+            )
+
+    def test_provision_corrupt_filesystem(self):
+        # Mock Webrepl.put_file to raise AssertionError for non-library files (simulate failing to upload to root dir)
+        with patch.object(Webrepl, 'open_connection', return_value=True), \
+             patch.object(Webrepl, 'put_file_mem', side_effect=AssertionError):
+
+            # Call provision with placeholder values, verify error
+            response = provision('192.168.1.123', 'password', {}, {})
+            self.assertEqual(response['status'], 409)
+            self.assertEqual(
+                response['message'],
+                'Failed due to filesystem error, please re-flash firmware.'
+            )
