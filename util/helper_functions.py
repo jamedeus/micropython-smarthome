@@ -34,9 +34,16 @@ def valid_timestamp(timestamp):
 
 
 # Read current schedule keywords from config file
-def get_schedule_keywords_dict():
-    try:
-        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'schedule-keywords.json'), 'r') as file:
-            return json.load(file)
-    except FileNotFoundError:
-        return {}
+def get_schedule_keywords_dict(django=False):
+    # Load from SQL
+    if os.environ.get('SMARTHOME_FRONTEND'):
+        from node_configuration.models import ScheduleKeyword
+        return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
+
+    # Load from config file on disk
+    else:
+        try:
+            with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'schedule-keywords.json'), 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            return {}

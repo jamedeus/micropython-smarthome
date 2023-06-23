@@ -54,6 +54,9 @@ if not NODE_PASSWD:
 if not os.path.exists(CONFIG_DIR):
     os.mkdir(CONFIG_DIR)
 
+# Set env var, cause shared utilities to use db instead of json files
+os.environ.update({'SMARTHOME_FRONTEND': 'django'})
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 

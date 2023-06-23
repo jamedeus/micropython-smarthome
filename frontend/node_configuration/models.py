@@ -5,11 +5,7 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
-
-
-# Returns all schedule keywords in dict format used by node config files and overview template
-def get_schedule_keywords_dict():
-    return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
+from helper_functions import get_schedule_keywords_dict
 
 
 class TimeStampField(models.CharField):
