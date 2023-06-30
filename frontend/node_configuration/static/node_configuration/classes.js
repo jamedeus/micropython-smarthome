@@ -27,7 +27,7 @@ class Device {
     getParams() {
         this._type = document.getElementById(`${this.id.replace("device", "deviceType")}`).value;
 
-        const params = document.getElementById(`add${this.id.replace("device", "DeviceOptions")}`).querySelectorAll('input');
+        const params = document.getElementById(`add${this.id.replace("device", "DeviceOptions")}`).querySelectorAll('input, select');
 
         for (let input of params) {
             // Get name that will be used in config.json, create property
@@ -39,7 +39,8 @@ class Device {
 
         if (this._type == "ir-blaster") {
             // Remove empty property (checkbox inputs don't have value)
-            delete this.undefined;
+            delete this.tv;
+            delete this.ac;
             // Get checkbox inputs selections
             this.getIrTargets();
         } else if (this._type == "dimmer" || this._type == "bulb" || this._type == "pwm" || this._type == "wled") {
