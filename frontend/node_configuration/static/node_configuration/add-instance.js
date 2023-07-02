@@ -3,13 +3,13 @@ var instances = {"sensors": {}, "devices": {}}
 
 // Populate instances with existing device + sensor cards (if editing config)
 Array.from(document.getElementsByClassName("deviceType")).forEach(function(device) {
-    const id = device.id.replace("deviceType", "device");
+    const id = device.id.split("-")[0];
     instances["devices"][id] = new Device(id);
     instances["devices"][id].new = false;
 });
 
 Array.from(document.getElementsByClassName("sensorType")).forEach(function(sensor) {
-    const id = sensor.id.replace("sensorType", "sensor");
+    const id = sensor.id.split("-")[0];
     instances["sensors"][id] = new Sensor(id);
     instances["sensors"][id].new = false;
 });
@@ -18,7 +18,7 @@ Array.from(document.getElementsByClassName("sensorType")).forEach(function(senso
 
 async function load_sensor_section(select) {
     // Get ID of sensor
-    const id = select.id.replace("Type", "");
+    const id = select.id.split("-")[0];
 
     // Get user selection
     const selected = document.getElementById(select.id).value
@@ -232,7 +232,7 @@ async function load_sensor_section(select) {
 
 async function load_device_section(select) {
     // Get ID of device
-    const id = select.id.replace("Type", "");
+    const id = select.id.split("-")[0];
 
     // Get user selection
     const selected = document.getElementById(select.id).value
@@ -546,9 +546,9 @@ async function load_next_device(button) {
                                     <h4 class="card-title mx-auto my-auto device${index + 1}">device${index + 1}</h4>
                                     <button class="btn my-auto pe-2 device${index + 1} delete" id="device${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label for="deviceType${index + 1}" class="form-label device${index + 1}"><b>Type:</b></label>
+                                <label for="device${index + 1}-type" class="form-label device${index + 1}"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_device_section(this)" id="deviceType${index + 1}" class="form-select deviceType device${index + 1}" required>
+                                    <select onchange="load_device_section(this)" id="device${index + 1}-type" class="form-select deviceType device${index + 1} instanceType" required>
                                     <option value="clear">Select device type</option>
                                     <option value="dimmer">TP-Link Dimmer</option>
                                     <option value="bulb">TP-Link Bulb</option>
@@ -604,9 +604,9 @@ async function load_next_sensor(button) {
                                     <h4 class="card-title mx-auto my-auto sensor${index + 1}">sensor${index + 1}</h4>
                                     <button class="btn my-auto pe-2 sensor${index + 1} delete" id="sensor${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label for="sensorType${index + 1}" class="form-label sensor${index + 1}"><b>Type:</b></label>
+                                <label for="sensor${index + 1}-type" class="form-label sensor${index + 1}"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_sensor_section(this)" id="sensorType${index + 1}" class="form-select sensorType sensor${index + 1}" required>
+                                    <select onchange="load_sensor_section(this)" id="sensor${index + 1}-type" class="form-select sensorType sensor${index + 1} instanceType" required>
                                     <option value="clear">Select sensor type</option>
                                     <option value="pir">Motion Sensor</option>
                                     <option value="switch">Switch</option>

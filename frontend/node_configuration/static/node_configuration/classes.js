@@ -27,7 +27,7 @@ class Device {
         // Clear old output parameters
         this.output = {};
 
-        this.output._type = document.getElementById(`${this.id.replace("device", "deviceType")}`).value;
+        this.output._type = document.querySelector(`.${this.id} .instanceType`).value;
 
         const params = document.querySelector(`.${this.id} .configParams`).querySelectorAll('input, select');
 
@@ -118,7 +118,7 @@ class Sensor {
         // Clear old output parameters
         this.output = {};
 
-        this.output._type = document.getElementById(`${this.id.replace("sensor", "sensorType")}`).value;
+        this.output._type = document.querySelector(`.${this.id} .instanceType`).value;
 
         const params = document.querySelector(`.${this.id} .configParams`).querySelectorAll('input, select');
 

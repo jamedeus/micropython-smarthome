@@ -140,9 +140,9 @@
                                     <button class="btn my-auto pe-2 sensor{{forloop.counter}} delete" id="sensor{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
 
-                                <label for="sensorType{{ forloop.counter }}" class="form-label sensor{{forloop.counter}}"><b>Type:</b></label>
+                                <label for="sensor{{forloop.counter}}-type" class="form-label sensor{{forloop.counter}}"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_sensor_section(this)" id="sensorType{{ forloop.counter }}" class="form-select sensorType sensor{{forloop.counter}}" autocomplete="off" required>
+                                    <select onchange="load_sensor_section(this)" id="sensor{{forloop.counter}}-type" class="form-select sensorType sensor{{forloop.counter}} instanceType" autocomplete="off" required>
                                     <option value="clear" disabled>Select sensor type</option>
                                     <option value="pir" {% if params.type == "pir" %} selected {% endif %}>Motion Sensor</option>
                                     <option value="switch" {% if params.type == "switch" %} selected {% endif %}>Switch</option>
@@ -338,9 +338,9 @@
                                     <button class="btn my-auto pe-2 device{{forloop.counter}} delete" id="device{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
 
-                                <label for="deviceType{{ forloop.counter }}" class="form-label device{{forloop.counter}}"><b>Type:</b></label>
+                                <label for="device{{forloop.counter}}-type" class="form-label device{{forloop.counter}}"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_device_section(this)" id="deviceType{{ forloop.counter }}" class="form-select deviceType device{{forloop.counter}}" autocomplete="off" required>
+                                    <select onchange="load_device_section(this)" id="device{{forloop.counter}}-type" class="form-select deviceType device{{forloop.counter}} instanceType" autocomplete="off" required>
                                     <option value="clear" disabled>Select device type</option>
                                     <option value="dimmer" {% if params.type == "dimmer" %} selected {% endif %}>TP-Link Dimmer</option>
                                     <option value="bulb" {% if params.type == "bulb" %} selected {% endif %}>TP-Link Bulb</option>
@@ -592,9 +592,9 @@
                                     <h4 class="card-title mx-auto my-auto device{{config.devices|length|add:1}}">device{{ config.devices|length|add:1 }}</h4>
                                     <button class="btn my-auto pe-2 device{{config.devices|length|add:1}} delete" id="device{{ config.devices|length|add:1 }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label for="deviceType{{ config.devices|length|add:1 }}" class="form-label device{{config.devices|length|add:1}}"><b>Type:</b></label>
+                                <label for="device{{config.devices|length|add:1}}-type" class="form-label device{{config.devices|length|add:1}}"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_device_section(this)" id="deviceType{{ config.devices|length|add:1 }}" class="form-select deviceType device{{config.devices|length|add:1}}" required>
+                                    <select onchange="load_device_section(this)" id="device{{config.devices|length|add:1}}-type" class="form-select deviceType device{{config.devices|length|add:1}} instanceType" required>
                                     <option value="clear">Select device type</option>
                                     <option value="dimmer">TP-Link Dimmer</option>
                                     <option value="bulb">TP-Link Bulb</option>
