@@ -29,7 +29,7 @@ class Device {
 
         this.output._type = document.getElementById(`${this.id.replace("device", "deviceType")}`).value;
 
-        const params = document.getElementById(`add${this.id.replace("device", "DeviceOptions")}`).querySelectorAll('input, select');
+        const params = document.querySelector(`.${this.id} .configParams`).querySelectorAll('input, select');
 
         for (let input of params) {
             // Get name that will be used in config.json, create property
@@ -120,12 +120,14 @@ class Sensor {
 
         this.output._type = document.getElementById(`${this.id.replace("sensor", "sensorType")}`).value;
 
-        var params = document.getElementById(`add${this.id.replace("sensor", "SensorOptions")}`).children;
+        const params = document.querySelector(`.${this.id} .configParams`).querySelectorAll('input, select');
 
         for (let input of params) {
             // Get name that will be used in config.json, create property
-            const name = input.children[1].id.split("-")[1];
-            this.output[name] = input.children[1].value;
+            try {
+                const name = input.id.split("-")[1];
+                this.output[name] = input.value;
+            } catch(err) {};
         };
 
         if (this.output._type == "pir" || this.output._type == "si7021") {

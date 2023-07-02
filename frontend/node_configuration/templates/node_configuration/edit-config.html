@@ -152,7 +152,7 @@
                                     </select>
                                 </div>
 
-                                <div id="addSensorOptions{{ forloop.counter }}" class="card-body sensor{{forloop.counter}}">
+                                <div class="card-body sensor{{forloop.counter}} configParams">
                                     <div class="mb-2">
                                         <label for="sensor{{forloop.counter}}-nickname" class="sensor{{forloop.counter}}"><b>Nickname:</b></label>
                                         <input type="text" class="form-control sensor{{forloop.counter}} nickname" id="sensor{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
@@ -355,7 +355,7 @@
                                     </select>
                                 </div>
 
-                                <div id="addDeviceOptions{{ forloop.counter }}" class="card-body device{{forloop.counter}}">
+                                <div class="card-body device{{forloop.counter}} configParams">
                                     <div class="mb-2">
                                         <label for="device{{forloop.counter}}-nickname" class="device{{forloop.counter}}"><b>Nickname:</b></label>
                                         <input type="text" class="form-control device{{forloop.counter}} nickname" id="device{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
@@ -608,7 +608,7 @@
                                     </select>
                                 </div>
 
-                                <div id="addDeviceOptions{{ config.devices|length|add:1 }}" class="card-body device{{config.devices|length|add:1}}">
+                                <div class="card-body device{{config.devices|length|add:1}} configParams">
                                     <div class="mb-2">
                                         <label for="device{{ config.devices|length|add:1 }}-pin" class="device{{config.devices|length|add:1}}"><b>Pin:</b></label>
                                         <select id="device{{ config.devices|length|add:1 }}-pin" class="form-select device{{config.devices|length|add:1}} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
