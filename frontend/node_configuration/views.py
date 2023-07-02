@@ -468,29 +468,23 @@ def generate_config_file(request, edit_existing=False):
         location = GpsCoordinates.objects.all()[0]
         config["metadata"]["gps"] = {"lat": str(location.lat), "lon": str(location.lon)}
 
-    # Merge device and sensor sections, remove frontend parameters, add to config
-    data["devices"].update(data["sensors"])
-    for i in data["devices"]:
-        config[i] = data["devices"][i]
-
-    irblaster = False
-
-    for i in config:
-        if is_device(i) and config[i]["_type"] == "ir-blaster":
-            irblaster = i
+    # Add all devices and sensors to config
+    for i in data:
+        # IrBlaster handled different than devices (not triggered by sensors, does not have _type)
+        if is_device(i) and data[i]["_type"] == "ir-blaster":
+            config["ir_blaster"] = data[i]
+            del config["ir_blaster"]["_type"]
 
         # Convert ApiTarget rules to correct format
-        elif is_device(i) and config[i]["_type"] == "api-target":
+        elif is_device(i) and data[i]["_type"] == "api-target":
+            config[i] = data[i]
             config[i]["default_rule"] = json.loads(config[i]["default_rule"])
-
             for rule in config[i]["schedule"]:
                 config[i]["schedule"][rule] = json.loads(config[i]["schedule"][rule])
 
-    # If IrBlaster configured, move to seperate section with different syntax
-    if irblaster:
-        config["ir_blaster"] = config[irblaster]
-        del config[irblaster]
-        del config["ir_blaster"]["_type"]
+        # No changes needed for all other devices and sensors
+        elif is_device_or_sensor(i):
+            config[i] = data[i]
 
     print("Output:")
     print(json.dumps(config, indent=4))

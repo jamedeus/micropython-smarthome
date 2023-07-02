@@ -1995,7 +1995,7 @@ class GenerateConfigFileTests(TestCase):
 
         # Copy request payload, change 1 default_rule
         modified_request_payload = deepcopy(request_payload)
-        modified_request_payload['devices']['device6']['default_rule'] = 900
+        modified_request_payload['device6']['default_rule'] = 900
 
         # Send with edit argument (overwrite existing with same name instead of throwing duplicate error)
         response = self.client.post('/generate_config_file/True', json.dumps(modified_request_payload))
@@ -2037,7 +2037,7 @@ class GenerateConfigFileTests(TestCase):
 
         # Add invalid default rule to request payload
         invalid_request_payload = deepcopy(request_payload)
-        invalid_request_payload['devices']['device6']['default_rule'] = 9001
+        invalid_request_payload['device6']['default_rule'] = 9001
 
         # Post invalid payload, confirm rejected with correct error, confirm config not created
         response = self.client.post('/generate_config_file', json.dumps(invalid_request_payload))

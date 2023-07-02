@@ -1,18 +1,16 @@
 // Takes true (edit existing config and reupload) or false (create new config)
 async function submit_form(edit) {
     const value = Object.fromEntries(new FormData(document.getElementById("form")).entries());
-    value.sensors = {};
-    value.devices = {};
 
     // Update all instance properties before adding to request body
     for (sensor in instances['sensors']) {
         instances['sensors'][sensor].update();
-        value.sensors[sensor] = instances.sensors[sensor].output;
+        value[sensor] = instances.sensors[sensor].output;
     };
 
     for (device in instances['devices']) {
         instances['devices'][device].update();
-        value.devices[device] = instances.devices[device].output;
+        value[device] = instances.devices[device].output;
     };
 
     console.log(value)
