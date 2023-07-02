@@ -560,8 +560,9 @@ class EditConfigTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
 
-        # Confirm correct context + api target menu options
+        # Confirm correct context, keys in correct order (alphabetical), correct api target menu options
         self.assertEqual(response.context['config'], test_config_1_edit_context['config'])
+        self.assertEqual(list(response.context['config']['devices'].keys()), ['device1', 'device2'])
         self.assertEqual(response.context['api_target_options'], test_config_1_edit_context['api_target_options'])
 
         # Confirm title, heading, and edit mode
@@ -599,8 +600,10 @@ class EditConfigTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
 
-        # Confirm correct context + api target menu options
+        # Confirm correct context, keys in correct order (alphabetical), correct api target menu options
         self.assertEqual(response.context['config'], test_config_3_edit_context['config'])
+        self.assertEqual(list(response.context['config']['devices'].keys()), ['device1', 'device2', 'device3'])
+        self.assertEqual(list(response.context['config']['sensors'].keys()), ['sensor1', 'sensor2'])
         self.assertEqual(response.context['api_target_options'], test_config_3_edit_context['api_target_options'])
 
         # Confirm title, heading, and edit mode

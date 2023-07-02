@@ -274,9 +274,11 @@ def edit_config(request, name):
     for i in delete:
         del config[i]
 
-    config["sensors"] = sensors
-    config["devices"] = devices
-    config["instances"] = instances
+    # Add completed dicts to context with keys sorted alphabetically
+    # Template relies on forloop.counter to determine ID, will not match config if not alphabetical
+    config["sensors"] = {sensor: sensors[sensor] for sensor in sorted(sensors)}
+    config["devices"] = {device: devices[device] for device in sorted(devices)}
+    config["instances"] = {instance: instances[instance] for instance in sorted(instances)}
 
     api_target_options = get_api_target_menu_options(target.friendly_name)
 
