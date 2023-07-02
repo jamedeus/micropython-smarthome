@@ -204,7 +204,6 @@
         }
     },
     "ir_blaster": {
-        "nickname": "",
         "pin": "23",
         "target": [
             "tv"

@@ -29,14 +29,14 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
         // If device is new, add target select options on page2, add schedule rules card on page3
         if (instances['devices'][device].new) {
             // Skip IrBlaster (can't be targeted, doesn't support schedule rules)
-            if (instances['devices'][device]['type'] == 'ir-blaster') { continue };
+            if (instances['devices'][device]['output']['type'] == 'ir-blaster') { continue };
 
             // Add option to all sensor target select cards on page2
             for (sensor of sensors) {
                 const sen_id = sensor.id.split("-")[0];
 
                 template = `<input type='checkbox' class='form-check-input ${sen_id} ${device} target' id='target-${sen_id}-${device}' value='target-${sen_id}-${device}'>
-                            <label for='target-${sen_id}-${device}' class='form-check-label ${sen_id} ${device} target-label'>${instances['devices'][device]['nickname']}</label>
+                            <label for='target-${sen_id}-${device}' class='form-check-label ${sen_id} ${device} target-label'>${instances['devices'][device]['output']['nickname']}</label>
                             <br class='${device}'>`;
 
                 sensor.insertAdjacentHTML('beforeend', template);
@@ -45,8 +45,8 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             // Add schedule rule section for the new device to page3
             template = `<div class='card mb-4 ${device}'>
                             <div class='card-body text-center'>
-                                <label id='${device}-rules-label' class='card-title schedule-rule-card ${device}' title='${device} - ${instances['devices'][device]['type']}'>
-                                    <b>${instances['devices'][device]['nickname']}</b>
+                                <label id='${device}-rules-label' class='card-title schedule-rule-card ${device}' title='${device} - ${instances['devices'][device]['output']['type']}'>
+                                    <b>${instances['devices'][device]['output']['nickname']}</b>
                                 </label>
                                 <table id='${device}-rules' class='table table-borderless ${device} d-none'>
                                     <tr>
@@ -55,7 +55,7 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                     </tr>
                                 </table>
                                 <div>
-                                    <button type="button" class="btn btn-secondary add ${device}" id="${device}-add-rule" data-type="${instances['devices'][device]['type']}" onclick="add_new_rule(this)">Add Rule</i></button>
+                                    <button type="button" class="btn btn-secondary add ${device}" id="${device}-add-rule" data-type="${instances['devices'][device]['output']['type']}" onclick="add_new_rule(this)">Add Rule</i></button>
                                 </div>
                             </div>
                         </div>`;
@@ -68,12 +68,12 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
         // If device nickname changed, but type did not change (targets + rules don't need to be cleared)
         } else if (instances['devices'][device].name_changed && ! instances['devices'][device].modified) {
             // Change name on schedule rules card
-            document.getElementById(`${device}-rules-label`).innerHTML = `<b>${instances['devices'][device]['nickname']}</b>`;
+            document.getElementById(`${device}-rules-label`).innerHTML = `<b>${instances['devices'][device]['output']['nickname']}</b>`;
 
             // Change text on all target options
             target_labels = document.getElementsByClassName(`${device} target-label`);
             for (i=0; i<target_labels.length; i++) {
-                target_labels[i].innerHTML = `${instances['devices'][device]['nickname']}`;
+                target_labels[i].innerHTML = `${instances['devices'][device]['output']['nickname']}`;
             };
 
             instances['devices'][device].name_changed = false;
@@ -84,7 +84,7 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             target_labels = document.getElementsByClassName(`${device} target-label`);
 
             // If device was changed to IrBlaster, remove all target options
-            if (instances['devices'][device]['type'] == 'ir-blaster') {
+            if (instances['devices'][device]['output']['type'] == 'ir-blaster') {
                 const max = target_checks.length;
                 for (i=0; i<max; i++) {
                     target_checks[0].remove();
@@ -97,13 +97,13 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             } else {
                 for (i=0; i<target_checks.length; i++) {
                     target_checks[i].checked = false;
-                    target_labels[i].innerHTML = `${instances['devices'][device]['nickname']}`;
+                    target_labels[i].innerHTML = `${instances['devices'][device]['output']['nickname']}`;
                 };
             };
 
             // Change name and tooltip on schedule rules card
-            document.getElementById(`${device}-rules-label`).title = `${device} - ${instances['devices'][device]['type']}`;
-            document.getElementById(`${device}-rules-label`).innerHTML = `<b>${instances['devices'][device]['nickname']}</b>`;
+            document.getElementById(`${device}-rules-label`).title = `${device} - ${instances['devices'][device]['output']['type']}`;
+            document.getElementById(`${device}-rules-label`).innerHTML = `<b>${instances['devices'][device]['output']['nickname']}</b>`;
 
             // Clear existing schedule rules (likely invalid after type change)
             template = `<tr>
@@ -127,16 +127,16 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             // Card opening div
             var template =  `<div class='card ${sensor}'>
                                 <div class='card-body'>
-                                    <label id='${sensor}-targets-label' for='${sensor}-targets' class='card-title sensor-targets-label ${sensor}'><b>${instances['sensors'][sensor]["nickname"]}</b> targets:</label>
+                                    <label id='${sensor}-targets-label' for='${sensor}-targets' class='card-title sensor-targets-label ${sensor}'><b>${instances['sensors'][sensor]['output']["nickname"]}</b> targets:</label>
                                     <div id='${sensor}-targets' class='form-check sensor-targets ${sensor}'>`
 
             // Iterate devices, add checkbox for each to new sensor card
             for (device in instances['devices']) {
                 // Do not add if device is IrBlaster (cannot be targeted)
-                if (instances['devices'][device]['type'] == "ir-blaster") { continue };
+                if (instances['devices'][device]['output']['type'] == "ir-blaster") { continue };
 
                 template += `<input type='checkbox' class='form-check-input ${device} ${sensor} target' id='target-${sensor}-${device}' value='target-${sensor}-${device}'>
-                            <label for='target-${sensor}-${device}' class='form-check-label ${device} ${sensor} target-label'>${instances['devices'][device]['nickname']}</label><br>`;
+                            <label for='target-${sensor}-${device}' class='form-check-label ${device} ${sensor} target-label'>${instances['devices'][device]['output']['nickname']}</label><br>`;
             };
 
             // Close div, add to DOM
@@ -146,8 +146,8 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             // Add schedule rule section for the new sensor to page3
             template = `<div class='card mb-4 ${sensor}'>
                             <div class='card-body text-center'>
-                                <label id='${sensor}-rules-label' class='card-title schedule-rule-card ${sensor}' title='${sensor} - ${instances['sensors'][sensor]['type']}'>
-                                    <b>${instances['sensors'][sensor]['nickname']}</b>
+                                <label id='${sensor}-rules-label' class='card-title schedule-rule-card ${sensor}' title='${sensor} - ${instances['sensors'][sensor]['output']['type']}'>
+                                    <b>${instances['sensors'][sensor]['output']['nickname']}</b>
                                 </label>
                                 <table id='${sensor}-rules' class='table table-borderless ${sensor} d-none'>
                                     <tr>
@@ -156,7 +156,7 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
                                     </tr>
                                 </table>
                                 <div>
-                                    <button type="button" class="btn btn-secondary add ${sensor}" id="${sensor}-add-rule" data-type="${instances['sensors'][sensor]['type']}" onclick="add_new_rule(this)">Add Rule</i></button>
+                                    <button type="button" class="btn btn-secondary add ${sensor}" id="${sensor}-add-rule" data-type="${instances['sensors'][sensor]['output']['type']}" onclick="add_new_rule(this)">Add Rule</i></button>
                                 </div>
                             </div>
                         </div>`;
@@ -168,10 +168,10 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
         // If sensor nickname changed, but type did not change (targets + rules don't need to be cleared)
         } else if (instances['sensors'][sensor].name_changed && ! instances['sensors'][sensor].modified) {
             // Change name on schedule rules card
-            document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${instances['sensors'][sensor]['nickname']}</b>`;
+            document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${instances['sensors'][sensor]['output']['nickname']}</b>`;
 
             // Change name on targets card
-            document.getElementById(`${sensor}-targets-label`).innerHTML = `<b>${instances['sensors'][sensor]['nickname']}</b> targets:`;
+            document.getElementById(`${sensor}-targets-label`).innerHTML = `<b>${instances['sensors'][sensor]['output']['nickname']}</b> targets:`;
 
             instances['sensors'][sensor].name_changed = false;
 
@@ -186,11 +186,11 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             };
 
             // Change nickname and type on target card
-            document.getElementById(`${sensor}-targets-label`).innerHTML = `<b>${instances['sensors'][sensor]['nickname']}</b> targets:`;
+            document.getElementById(`${sensor}-targets-label`).innerHTML = `<b>${instances['sensors'][sensor]['output']['nickname']}</b> targets:`;
 
             // Change name and tooltip on schedule rules card
-            document.getElementById(`${sensor}-rules-label`).title = `${sensor} - ${instances['sensors'][sensor]['type']}`;
-            document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${instances['sensors'][sensor]['nickname']}</b>`;
+            document.getElementById(`${sensor}-rules-label`).title = `${sensor} - ${instances['sensors'][sensor]['output']['type']}`;
+            document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${instances['sensors'][sensor]['output']['nickname']}</b>`;
 
             // Clear existing schedule rules (likely invalid after type change)
             template = `<tr>

@@ -471,9 +471,6 @@ def generate_config_file(request, edit_existing=False):
     # Merge device and sensor sections, remove frontend parameters, add to config
     data["devices"].update(data["sensors"])
     for i in data["devices"]:
-        del data["devices"][i]["id"]
-        del data["devices"][i]["new"]
-        del data["devices"][i]["modified"]
         config[i] = data["devices"][i]
 
     irblaster = False
@@ -494,7 +491,6 @@ def generate_config_file(request, edit_existing=False):
         config["ir_blaster"] = config[irblaster]
         del config[irblaster]
         del config["ir_blaster"]["_type"]
-        del config["ir_blaster"]["schedule"]
 
     print("Output:")
     print(json.dumps(config, indent=4))

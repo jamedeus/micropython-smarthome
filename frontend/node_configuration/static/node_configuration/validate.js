@@ -24,7 +24,7 @@ function prevent_duplicate_nickname(event) {
     for (const category in instances) {
         for (const item in instances[category]) {
             // If not same instance and same nickname, add highlight + listener to remove
-            if (item != id && instances[category][item].nickname.toLowerCase() == event.target.value.toLowerCase()) {
+            if (item != id && instances[category][item].output.nickname.toLowerCase() == event.target.value.toLowerCase()) {
                 event.target.classList.add('is-invalid');
                 event.target.addEventListener("input", (e) => {
                     e.target.classList.remove("is-invalid");

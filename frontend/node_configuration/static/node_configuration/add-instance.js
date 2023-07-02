@@ -218,7 +218,6 @@ async function load_sensor_section(select) {
 
     if (instances["sensors"]["sensor" + index]) {
         // If instance already exists, wipe params and re-populate (type changed)
-        instances["sensors"]["sensor" + index].clearParams();
         instances["sensors"]["sensor" + index].getParams();
         instances["sensors"]["sensor" + index].modified = true;
     } else {
@@ -520,7 +519,6 @@ async function load_device_section(select) {
 
     if (instances["devices"]["device" + index]) {
         // If instance already exists, wipe params and re-populate (type changed)
-        instances["devices"]["device" + index].clearParams();
         instances["devices"]["device" + index].getParams();
         instances["devices"]["device" + index].modified = true;
     } else {

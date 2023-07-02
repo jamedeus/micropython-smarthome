@@ -132,9 +132,6 @@ request_payload = {
     'password': 'cjZY8PTa4ZQ6S83A',
     'sensors': {
         'sensor1': {
-            'id': 'sensor1',
-            'new': False,
-            'modified': False,
             '_type': 'pir',
             'nickname': 'Motion',
             'pin': '4',
@@ -151,9 +148,6 @@ request_payload = {
             }
         },
         'sensor2': {
-            'id': 'sensor2',
-            'new': False,
-            'modified': False,
             '_type': 'switch',
             'nickname': 'Switch',
             'pin': '5',
@@ -165,9 +159,6 @@ request_payload = {
             'schedule': {}
         },
         'sensor3': {
-            'id': 'sensor3',
-            'new': False,
-            'modified': False,
             '_type': 'dummy',
             'nickname': 'Override',
             'default_rule': 'on',
@@ -180,9 +171,6 @@ request_payload = {
             }
         },
         'sensor4': {
-            'id': 'sensor4',
-            'new': False,
-            'modified': False,
             '_type': 'desktop',
             'nickname': 'Activity',
             'ip': '192.168.1.150',
@@ -199,9 +187,6 @@ request_payload = {
             }
         },
         'sensor5': {
-            'id': 'sensor5',
-            'new': False,
-            'modified': False,
             '_type': 'si7021',
             'nickname': 'Temperature',
             'mode': 'cool',
@@ -219,9 +204,6 @@ request_payload = {
     },
     'devices': {
         'device1': {
-            'id': 'device1',
-            'new': False,
-            'modified': False,
             'nickname': 'Overhead',
             '_type': 'dimmer',
             'ip': '192.168.1.105',
@@ -234,9 +216,6 @@ request_payload = {
             }
         },
         'device2': {
-            'id': 'device2',
-            'new': False,
-            'modified': False,
             'nickname': 'Lamp',
             '_type': 'bulb',
             'ip': '192.168.1.106',
@@ -249,9 +228,6 @@ request_payload = {
             }
         },
         'device3': {
-            'id': 'device3',
-            'new': False,
-            'modified': False,
             'nickname': 'Porch Light',
             '_type': 'relay',
             'ip': '192.168.1.107',
@@ -262,9 +238,6 @@ request_payload = {
             }
         },
         'device4': {
-            'id': 'device4',
-            'new': False,
-            'modified': False,
             'nickname': 'Fan',
             '_type': 'dumb-relay',
             'pin': '18',
@@ -272,9 +245,6 @@ request_payload = {
             'schedule': {}
         },
         'device5': {
-            'id': 'device5',
-            'new': False,
-            'modified': False,
             'nickname': 'Screen',
             '_type': 'desktop',
             'ip': '192.168.1.150',
@@ -285,9 +255,6 @@ request_payload = {
             }
         },
         'device6': {
-            'id': 'device6',
-            'new': False,
-            'modified': False,
             'nickname': 'Cabinet Lights',
             '_type': 'pwm',
             'pin': '26',
@@ -297,21 +264,13 @@ request_payload = {
             'schedule': {}
         },
         'device7': {
-            'id': 'device7',
-            'new': False,
-            'modified': False,
             'nickname': 'Humidifier',
             '_type': 'mosfet',
             'pin': '19',
             'default_rule': 'disabled',
-            'schedule': {
-
-            }
+            'schedule': {}
         },
         'device8': {
-            'id': 'device8',
-            'new': False,
-            'modified': False,
             'nickname': 'TV Bias Lights',
             '_type': 'wled',
             'ip': '192.168.1.110',
@@ -323,21 +282,13 @@ request_payload = {
             }
         },
         'device9': {
-            'id': 'device9',
-            'new': False,
-            'modified': False,
-            'nickname': '',
             '_type': 'ir-blaster',
             'pin': '23',
             'target': [
                 'tv'
-            ],
-            'schedule': {}
+            ]
         },
         'device10': {
-            'id': 'device10',
-            'new': False,
-            'modified': False,
             'nickname': 'Remote Control',
             '_type': 'api-target',
             'ip': '127.0.0.1',

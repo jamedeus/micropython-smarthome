@@ -404,26 +404,24 @@ function get_self_target_options() {
 
     // Update all instance properties
     for (sensor in instances['sensors']) {
-        instances['sensors'][sensor].clearParams();
         instances['sensors'][sensor].getParams();
     };
 
     for (device in instances['devices']) {
-        instances['devices'][device].clearParams();
         instances['devices'][device].getParams();
     };
 
     // Add all device options
     for (device in instances['devices']) {
-        if (instances['devices'][device]['type'] == 'api-target') {
+        if (instances['devices'][device]['output']['type'] == 'api-target') {
             console.log('has api target')
-            const instance_string = `${device}-${instances['devices'][device]['nickname']} (${instances['devices'][device]['type'] })`
+            const instance_string = `${device}-${instances['devices'][device]['output']['nickname']} (${instances['devices'][device]['output']['type'] })`
 
             ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
             // Prevent ApiTarget targeting itself (infinite loop)
             continue;
-        } else if (instances['devices'][device]['type'] !== 'ir-blaster') {
-            const instance_string = `${device}-${instances['devices'][device]['nickname']} (${instances['devices'][device]['type'] })`
+        } else if (instances['devices'][device]['output']['type'] !== 'ir-blaster') {
+            const instance_string = `${device}-${instances['devices'][device]['output']['nickname']} (${instances['devices'][device]['output']['type'] })`
 
             ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off']
 
@@ -448,9 +446,9 @@ function get_self_target_options() {
 
     // Add all sensor options
     for (sensor in instances['sensors']) {
-        const instance_string = `${sensor}-${instances['sensors'][sensor]['nickname']} (${instances['sensors'][sensor]['type'] })`
+        const instance_string = `${sensor}-${instances['sensors'][sensor]['output']['nickname']} (${instances['sensors'][sensor]['output']['type'] })`
 
-        if (instances['sensors'][sensor]['type'] == "si7021" || instances['sensors'][sensor]['type'] == "switch") {
+        if (instances['sensors'][sensor]['output']['type'] == "si7021" || instances['sensors'][sensor]['output']['type'] == "switch") {
             ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
         } else {
             ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']
