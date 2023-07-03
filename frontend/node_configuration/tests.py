@@ -1544,6 +1544,23 @@ class ApiTargetMenuOptionsTest(TestCase):
         # Remove test configs from disk
         clean_up_test_nodes()
 
+    # Original bug: The self-target conditional in get_api_target_menu_options contained a
+    # dict comprehension intended to remove turn_on and turn_off from api-target instances,
+    # but it also removed all instances with types other than api-target. Fixed in 069e6b29.
+    def test_regression_self_target_missing_other_instances(self):
+        # Create nodes
+        create_test_nodes()
+
+        # Request options for node with ApiTarget, confirm options exist for all instances
+        options = get_api_target_menu_options('Test2')
+        self.assertIn('device1-Air Conditioner (api-target)', options['self-target'].keys())
+        self.assertIn('sensor1-Thermostat (si7021)', options['self-target'].keys())
+        self.assertIn('ir_blaster-Ir Blaster', options['self-target'].keys())
+        self.assertIn('ignore', options['self-target'].keys())
+
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
 
 # Test setting default wifi credentials
 class WifiCredentialsTests(TestCase):
