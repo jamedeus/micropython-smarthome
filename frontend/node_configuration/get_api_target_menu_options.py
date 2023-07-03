@@ -90,9 +90,12 @@ def get_api_target_menu_options(editing_node=False):
 
             # Remove 'turn_on' and 'turn_off' from any api-target instances (prevent self-targeting in infinite loop)
             new_options = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
-            entries = {key: new_options for key, value in entries.items() if key.endswith('api-target)')}
+            entries = {key: (new_options if key.endswith('api-target)') else value) for key, value in entries.items()}
 
             dropdownObject["self-target"] = entries
+
+            # Replace localhost (placeholder for new configs) with actual IP
+            dropdownObject["addresses"]['self-target'] = node.ip
 
             # Add ignore option
             dropdownObject["self-target"]['ignore'] = {}
