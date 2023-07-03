@@ -1713,6 +1713,22 @@ class DeleteConfigTests(TestCase):
         os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o664)
         os.chmod(settings.CONFIG_DIR, 0o775)
 
+    # Original bug: Frontend threw error when attempting to delete a config that was already
+    # deleted from disk, preventing the model entry from being removed. Now catches error,
+    # deletes model entry, and returns normal response message.
+    def test_regression_deleted_from_disk(self):
+        # Delete config file, confirm still exists in database but not on disk
+        os.remove(f'{settings.CONFIG_DIR}/unit-test-config.json')
+        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertEqual(len(Config.objects.all()), 1)
+
+        # Simulate deleting through frontend, confirm normal response, confirm removed from database
+        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), 'Deleted unit-test-config.json')
+        self.assertEqual(len(Config.objects.all()), 0)
+        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+
 
 class DeleteNodeTests(TestCase):
     def setUp(self):

@@ -98,14 +98,22 @@ def delete_config(request):
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     try:
-        # Get model entry, delete from disk + database
+        # Get model entry
         target = Config.objects.get(filename=data)
+    except Config.DoesNotExist:
+        return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
+
+    try:
+        # Delete from disk + database
         os.remove(f'{CONFIG_DIR}/{target.filename}')
         target.delete()
         return JsonResponse(f"Deleted {data}", safe=False, status=200)
 
-    except Config.DoesNotExist:
-        return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
+    except FileNotFoundError:
+        # Missing from disk: Delete from database and return normal response
+        target.delete()
+        return JsonResponse(f"Deleted {data}", safe=False, status=200)
+
     except PermissionError:
         return JsonResponse(
             "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
