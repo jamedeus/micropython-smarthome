@@ -1341,14 +1341,14 @@ class ApiCardTests(TestCase):
             self.assertEqual(response.context['context']['id'], 'Test1')
 
         # Mock parse_command to simulate timed out request
-        with patch('api.views.parse_command', return_value='Error: Request timed out'):
+        with patch('api_endpoints.request', return_value='Error: Request timed out'):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test1')
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'api/unable_to_connect.html')
 
         # Mock parse_command to simulate crashed node
-        with patch('api.views.parse_command', return_value='Error: Failed to connect'):
+        with patch('api_endpoints.request', return_value='Error: Failed to connect'):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test1')
             self.assertEqual(response.status_code, 200)
@@ -1370,6 +1370,32 @@ class ApiCardTests(TestCase):
         response = self.client.get('/api/fake-node')
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json(), {"Error": "Node named fake-node not found"})
+
+    # Original issue: View only caught errors while opening connection to the node,
+    # but did not handle situations where connection was successful and an error
+    # occurred during the request (timeout waiting for response etc).
+    # Now traps all by checking if response starts with "Error: "
+    def test_regression_fails_to_show_unable_to_connect_page(self):
+        # Mock parse_command to simulate slow response
+        with patch('api_endpoints.request', return_value='Error: Timed out waiting for response'):
+            # Request page, confirm correct template used
+            response = self.client.get('/api/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'api/unable_to_connect.html')
+
+        # Mock parse_command to simulate error on node
+        with patch('api_endpoints.request', return_value='Error: Request failed'):
+            # Request page, confirm correct template used
+            response = self.client.get('/api/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'api/unable_to_connect.html')
+
+        # Mock parse_command to simulate invalid response object
+        with patch('api_endpoints.request', return_value='Error: Unable to decode response'):
+            # Request page, confirm correct template used
+            response = self.client.get('/api/Test1')
+            self.assertEqual(response.status_code, 200)
+            self.assertTemplateUsed(response, 'api/unable_to_connect.html')
 
 
 # Test modal used to edit schedule rules

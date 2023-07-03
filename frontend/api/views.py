@@ -135,7 +135,7 @@ def api(request, node, recording=False):
 
     try:
         status = parse_command(target.ip, ["status"])
-        if status == "Error: Request timed out" or status == "Error: Failed to connect":
+        if str(status).startswith("Error: "):
             raise OSError
 
     # Render connection failed page
