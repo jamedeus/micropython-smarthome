@@ -274,15 +274,30 @@ config2_api_context = {
         }
     },
     'api_target_options': {
-        'device1': {
-            'device1-Air Conditioner (api-target)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule'
+        "device1": {
+            "device1-Air Conditioner (api-target)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
             ],
+            "sensor1-Thermostat (si7021)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
+            ],
+            "ir_blaster-Ir Blaster": {
+                "ac": [
+                    "start",
+                    "stop",
+                    "off"
+                ]
+            },
             "ignore": {}
         }
     }

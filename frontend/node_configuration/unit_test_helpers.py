@@ -371,7 +371,7 @@ test_config_2 = {
     "device1": {
         "nickname": "Air Conditioner",
         "_type": "api-target",
-        "ip": "127.0.0.1",
+        "ip": "192.168.1.124",
         "default_rule": {
             "on": [
                 "ir_key",
@@ -511,553 +511,645 @@ test_config_3 = {
 
 # Full context objects returned by edit_config view for each of the 3 test configs
 test_config_1_edit_context = {
-    'config': {
-        'metadata': {
-            'id': 'Test1',
-            'location': 'Inside cabinet above microwave',
-            'floor': '1',
+    "config": {
+        "metadata": {
+            "id": "Test1",
+            "location": "Inside cabinet above microwave",
+            "floor": "1",
             "schedule_keywords": {
                 "sunrise": "06:00",
                 "sunset": "18:00"
             }
         },
-        'wifi': {
-            'ssid': 'jamnet',
-            'password': 'cjZY8PTa4ZQ6S83A'
+        "wifi": {
+            "ssid": "jamnet",
+            "password": "cjZY8PTa4ZQ6S83A"
         },
-        'NAME': 'Test1',
-        'TITLE': 'Editing Test1',
-        'IP': '192.168.1.123',
-        'FILENAME': 'test1.json',
-        'sensors': {
-            'sensor1': {
-                'type': 'pir',
-                'nickname': 'Motion Sensor',
-                'pin': '15',
-                'default_rule': '2',
-                'targets': [
-                    'device1',
-                    'device2'
+        "NAME": "Test1",
+        "TITLE": "Editing Test1",
+        "IP": "192.168.1.123",
+        "FILENAME": "test1.json",
+        "sensors": {
+            "sensor1": {
+                "nickname": "Motion Sensor",
+                "pin": "15",
+                "default_rule": "2",
+                "targets": [
+                    "device1",
+                    "device2"
                 ],
-                'schedule': {
-                    '10:00': '2',
-                    '22:00': '2'
-                }
+                "schedule": {
+                    "10:00": "2",
+                    "22:00": "2"
+                },
+                "type": "pir"
             }
         },
-        'devices': {
-            'device1': {
-                'type': 'pwm',
-                'nickname': 'Cabinet Lights',
-                'pin': '4',
-                'min_bright': '0',
-                'max_bright': '1023',
-                'default_rule': 1023,
-                'schedule': {
-                    '22:00': '1023',
-                    '22:01': 'fade/256/7140',
-                    '00:00': 'fade/32/7200',
-                    '05:00': 'Disabled'
-                }
+        "devices": {
+            "device1": {
+                "nickname": "Cabinet Lights",
+                "pin": "4",
+                "min_bright": "0",
+                "max_bright": "1023",
+                "default_rule": 1023,
+                "schedule": {
+                    "22:00": "1023",
+                    "22:01": "fade/256/7140",
+                    "00:00": "fade/32/7200",
+                    "05:00": "Disabled"
+                },
+                "type": "pwm"
             },
-            'device2': {
-                'type': 'relay',
-                'nickname': 'Overhead Lights',
-                'ip': '192.168.1.217',
-                'default_rule': 'enabled',
-                'schedule': {
-                    '05:00': 'enabled',
-                    '22:00': 'disabled'
-                }
+            "device2": {
+                "nickname": "Overhead Lights",
+                "ip": "192.168.1.217",
+                "default_rule": "enabled",
+                "schedule": {
+                    "05:00": "enabled",
+                    "22:00": "disabled"
+                },
+                "type": "relay"
             }
         },
-        'instances': {
-            'device1': {
-                'type': 'pwm',
-                'nickname': 'Cabinet Lights',
-                'schedule': {
-                    '22:00': '1023',
-                    '22:01': 'fade/256/7140',
-                    '00:00': 'fade/32/7200',
-                    '05:00': 'Disabled'
+        "instances": {
+            "device1": {
+                "type": "pwm",
+                "nickname": "Cabinet Lights",
+                "schedule": {
+                    "22:00": "1023",
+                    "22:01": "fade/256/7140",
+                    "00:00": "fade/32/7200",
+                    "05:00": "Disabled"
                 }
             },
-            'device2': {
-                'type': 'relay',
-                'nickname': 'Overhead Lights',
-                'schedule': {
-                    '05:00': 'enabled',
-                    '22:00': 'disabled'
+            "device2": {
+                "type": "relay",
+                "nickname": "Overhead Lights",
+                "schedule": {
+                    "05:00": "enabled",
+                    "22:00": "disabled"
                 }
             },
-            'sensor1': {
-                'type': 'pir',
-                'nickname': 'Motion Sensor',
-                'schedule': {
-                    '10:00': '2',
-                    '22:00': '2'
+            "sensor1": {
+                "type": "pir",
+                "nickname": "Motion Sensor",
+                "schedule": {
+                    "10:00": "2",
+                    "22:00": "2"
                 }
             }
         }
     },
-    'api_target_options': {
-        'addresses': {
-            'self-target': '127.0.0.1',
-            'Test2': '192.168.1.124',
-            'Test3': '192.168.1.125'
+    "api_target_options": {
+        "addresses": {
+            "self-target": "192.168.1.123",
+            "Test2": "192.168.1.124",
+            "Test3": "192.168.1.125"
         },
-        'self-target': {
-            'ignore': {}
+        "self-target": {
+            "device1-Cabinet Lights (pwm)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
+            ],
+            "device2-Overhead Lights (relay)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
+            ],
+            "sensor1-Motion Sensor (pir)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
+            ],
+            "ignore": {}
         },
-        'Test2': {
-            'device1-Air Conditioner (api-target)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+        "Test2": {
+            "device1-Air Conditioner (api-target)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'sensor1-Thermostat (si7021)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule'
+            "sensor1-Thermostat (si7021)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
             ],
-            'ir_blaster-Ir Blaster': {
-                'ac': [
-                    'start',
-                    'stop',
-                    'off'
+            "ir_blaster-Ir Blaster": {
+                "ac": [
+                    "start",
+                    "stop",
+                    "off"
                 ]
             },
-            'ignore': {},
+            "ignore": {}
         },
-        'Test3': {
-            'device1-Bathroom LEDs (pwm)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+        "Test3": {
+            "device1-Bathroom LEDs (pwm)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'device2-Bathroom Lights (relay)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+            "device2-Bathroom Lights (relay)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'device3-Entry Light (relay)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+            "device3-Entry Light (relay)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'sensor1-Motion Sensor (Bath) (pir)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'trigger_sensor'
+            "sensor1-Motion Sensor (Bath) (pir)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
             ],
-            'sensor2-Motion Sensor (Entry) (pir)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'trigger_sensor'
+            "sensor2-Motion Sensor (Entry) (pir)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
             ],
-            'ignore': {},
+            "ignore": {}
         }
     }
 }
 
 
 test_config_2_edit_context = {
-    'config': {
-        'metadata': {
-            'id': 'Test2',
-            'location': 'Bedroom',
-            'floor': '2',
+    "config": {
+        "metadata": {
+            "id": "Test2",
+            "location": "Bedroom",
+            "floor": "2",
             "schedule_keywords": {
                 "sunrise": "06:00",
                 "sunset": "18:00"
             }
         },
-        'wifi': {
-            'ssid': 'jamnet',
-            'password': 'cjZY8PTa4ZQ6S83A'
+        "wifi": {
+            "ssid": "jamnet",
+            "password": "cjZY8PTa4ZQ6S83A"
         },
-        'ir_blaster': {
-            'nickname': '',
-            'pin': '19',
-            'target': [
-                'ac'
+        "ir_blaster": {
+            "nickname": "",
+            "pin": "19",
+            "target": [
+                "ac"
             ]
         },
-        'NAME': 'Test2',
-        'TITLE': 'Editing Test2',
-        'IP': '192.168.1.124',
-        'FILENAME': 'test2.json',
-        'sensors': {
-            'sensor1': {
-                'type': 'si7021',
-                'nickname': 'Thermostat',
-                'mode': 'cool',
-                'tolerance': '0.5',
-                'default_rule': 74,
-                'targets': [
-                    'device1'
+        "NAME": "Test2",
+        "TITLE": "Editing Test2",
+        "IP": "192.168.1.124",
+        "FILENAME": "test2.json",
+        "sensors": {
+            "sensor1": {
+                "nickname": "Thermostat",
+                "mode": "cool",
+                "tolerance": "0.5",
+                "default_rule": 74,
+                "targets": [
+                    "device1"
                 ],
-                'schedule': {}
+                "schedule": {},
+                "type": "si7021"
             }
         },
-        'devices': {
-            'device1': {
-                'nickname': 'Air Conditioner',
-                'type': 'api-target',
-                'ip': '127.0.0.1',
-                'default_rule': '{"on": ["ir_key", "ac", "start"], "off": ["ir_key", "ac", "stop"]}',
-                'schedule': {
-                    '10:00': '{"on": ["ir_key", "ac", "start"], "off": ["ir_key", "ac", "stop"]}',
-                    '00:00': '{"on": ["ir_key", "ac", "stop"], "off": ["ir_key", "ac", "stop"]}'
-                }
+        "devices": {
+            "device1": {
+                "nickname": "Air Conditioner",
+                "ip": "192.168.1.124",
+                "default_rule": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
+                "schedule": {
+                    "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
+                    "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
+                },
+                "type": "api-target"
             }
         },
-        'instances': {
-            'device1': {
-                'type': 'api-target',
-                'nickname': 'Air Conditioner',
-                'schedule': {
-                    '10:00': '{"on": ["ir_key", "ac", "start"], "off": ["ir_key", "ac", "stop"]}',
-                    '00:00': '{"on": ["ir_key", "ac", "stop"], "off": ["ir_key", "ac", "stop"]}'
+        "instances": {
+            "device1": {
+                "type": "api-target",
+                "nickname": "Air Conditioner",
+                "schedule": {
+                    "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
+                    "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
                 }
             },
-            'sensor1': {
-                'type': 'si7021',
-                'nickname': 'Thermostat',
-                'schedule': {}
+            "sensor1": {
+                "type": "si7021",
+                "nickname": "Thermostat",
+                "schedule": {}
             }
         }
     },
-    'api_target_options': {
-        'addresses': {
-            'self-target': '127.0.0.1',
-            'Test1': '192.168.1.123',
-            'Test3': '192.168.1.125'
+    "api_target_options": {
+        "addresses": {
+            "self-target": "192.168.1.124",
+            "Test1": "192.168.1.123",
+            "Test3": "192.168.1.125"
         },
-        'self-target': {
-            'device1-Air Conditioner (api-target)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule'
+        "self-target": {
+            "device1-Air Conditioner (api-target)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
             ],
-            'ignore': {}
+            "sensor1-Thermostat (si7021)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
+            ],
+            "ir_blaster-Ir Blaster": {
+                "ac": [
+                    "start",
+                    "stop",
+                    "off"
+                ]
+            },
+            "ignore": {}
         },
-        'Test1': {
-            'device1-Cabinet Lights (pwm)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+        "Test1": {
+            "device1-Cabinet Lights (pwm)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'device2-Overhead Lights (relay)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+            "device2-Overhead Lights (relay)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'sensor1-Motion Sensor (pir)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'trigger_sensor'
+            "sensor1-Motion Sensor (pir)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
             ],
-            'ignore': {},
+            "ignore": {}
         },
-        'Test3': {
-            'device1-Bathroom LEDs (pwm)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+        "Test3": {
+            "device1-Bathroom LEDs (pwm)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'device2-Bathroom Lights (relay)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+            "device2-Bathroom Lights (relay)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'device3-Entry Light (relay)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+            "device3-Entry Light (relay)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'sensor1-Motion Sensor (Bath) (pir)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'trigger_sensor'
+            "sensor1-Motion Sensor (Bath) (pir)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
             ],
-            'sensor2-Motion Sensor (Entry) (pir)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'trigger_sensor'
+            "sensor2-Motion Sensor (Entry) (pir)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
             ],
-            'ignore': {},
+            "ignore": {}
         }
     }
 }
 
 
 test_config_3_edit_context = {
-    'config': {
-        'metadata': {
-            'id': 'Test3',
-            'location': 'Inside cabinet under sink',
-            'floor': '1',
+    "config": {
+        "metadata": {
+            "id": "Test3",
+            "location": "Inside cabinet under sink",
+            "floor": "1",
             "schedule_keywords": {
                 "sunrise": "06:00",
                 "sunset": "18:00"
             }
         },
-        'wifi': {
-            'ssid': 'jamnet',
-            'password': 'cjZY8PTa4ZQ6S83A'
+        "wifi": {
+            "ssid": "jamnet",
+            "password": "cjZY8PTa4ZQ6S83A"
         },
-        'NAME': 'Test3',
-        'TITLE': 'Editing Test3',
-        'IP': '192.168.1.125',
-        'FILENAME': 'test3.json',
-        'sensors': {
-            'sensor1': {
-                'type': 'pir',
-                'nickname': 'Motion Sensor (Bath)',
-                'pin': '15',
-                'default_rule': '2',
-                'targets': [
-                    'device1',
-                    'device2'
+        "NAME": "Test3",
+        "TITLE": "Editing Test3",
+        "IP": "192.168.1.125",
+        "FILENAME": "test3.json",
+        "sensors": {
+            "sensor1": {
+                "nickname": "Motion Sensor (Bath)",
+                "pin": "15",
+                "default_rule": "2",
+                "targets": [
+                    "device1",
+                    "device2"
                 ],
-                'schedule': {
-                    '10:00': '2',
-                    '22:00': '2'
-                }
+                "schedule": {
+                    "10:00": "2",
+                    "22:00": "2"
+                },
+                "type": "pir"
             },
-            'sensor2': {
-                'type': 'pir',
-                'nickname': 'Motion Sensor (Entry)',
-                'pin': '16',
-                'default_rule': '1',
-                'targets': [
-                    'device3'
+            "sensor2": {
+                "nickname": "Motion Sensor (Entry)",
+                "pin": "16",
+                "default_rule": "1",
+                "targets": [
+                    "device3"
                 ],
-                'schedule': {
-                    '00:00': '1'
-                }
+                "schedule": {
+                    "00:00": "1"
+                },
+                "type": "pir"
             }
         },
-        'devices': {
-            'device1': {
-                'type': 'pwm',
-                'nickname': 'Bathroom LEDs',
-                'pin': '4',
-                'min_bright': '0',
-                'max_bright': '1023',
-                'default_rule': 0,
-                'schedule': {
-                    '22:00': '1023',
-                    '22:01': 'fade/256/7140',
-                    '00:00': 'fade/32/7200',
-                    '05:00': 'Disabled'
-                }
+        "devices": {
+            "device1": {
+                "nickname": "Bathroom LEDs",
+                "pin": "4",
+                "min_bright": "0",
+                "max_bright": "1023",
+                "default_rule": 0,
+                "schedule": {
+                    "22:00": "1023",
+                    "22:01": "fade/256/7140",
+                    "00:00": "fade/32/7200",
+                    "05:00": "Disabled"
+                },
+                "type": "pwm"
             },
-            'device2': {
-                'type': 'relay',
-                'nickname': 'Bathroom Lights',
-                'ip': '192.168.1.239',
-                'default_rule': 'enabled',
-                'schedule': {
-                    '05:00': 'enabled',
-                    '22:00': 'disabled'
-                }
+            "device2": {
+                "nickname": "Bathroom Lights",
+                "ip": "192.168.1.239",
+                "default_rule": "enabled",
+                "schedule": {
+                    "05:00": "enabled",
+                    "22:00": "disabled"
+                },
+                "type": "relay"
             },
-            'device3': {
-                'type': 'relay',
-                'nickname': 'Entry Light',
-                'ip': '192.168.1.202',
-                'default_rule': 'enabled',
-                'schedule': {
-                    '05:00': 'enabled',
-                    '23:00': 'disabled'
-                }
+            "device3": {
+                "nickname": "Entry Light",
+                "ip": "192.168.1.202",
+                "default_rule": "enabled",
+                "schedule": {
+                    "05:00": "enabled",
+                    "23:00": "disabled"
+                },
+                "type": "relay"
             }
         },
-        'instances': {
-            'device1': {
-                'type': 'pwm',
-                'nickname': 'Bathroom LEDs',
-                'schedule': {
-                    '22:00': '1023',
-                    '22:01': 'fade/256/7140',
-                    '00:00': 'fade/32/7200',
-                    '05:00': 'Disabled'
+        "instances": {
+            "device1": {
+                "type": "pwm",
+                "nickname": "Bathroom LEDs",
+                "schedule": {
+                    "22:00": "1023",
+                    "22:01": "fade/256/7140",
+                    "00:00": "fade/32/7200",
+                    "05:00": "Disabled"
                 }
             },
-            'device2': {
-                'type': 'relay',
-                'nickname': 'Bathroom Lights',
-                'schedule': {
-                    '05:00': 'enabled',
-                    '22:00': 'disabled'
+            "device2": {
+                "type": "relay",
+                "nickname": "Bathroom Lights",
+                "schedule": {
+                    "05:00": "enabled",
+                    "22:00": "disabled"
                 }
             },
-            'device3': {
-                'type': 'relay',
-                'nickname': 'Entry Light',
-                'schedule': {
-                    '05:00': 'enabled',
-                    '23:00': 'disabled'
+            "device3": {
+                "type": "relay",
+                "nickname": "Entry Light",
+                "schedule": {
+                    "05:00": "enabled",
+                    "23:00": "disabled"
                 }
             },
-            'sensor1': {
-                'type': 'pir',
-                'nickname': 'Motion Sensor (Bath)',
-                'schedule': {
-                    '10:00': '2',
-                    '22:00': '2'
+            "sensor1": {
+                "type": "pir",
+                "nickname": "Motion Sensor (Bath)",
+                "schedule": {
+                    "10:00": "2",
+                    "22:00": "2"
                 }
             },
-            'sensor2': {
-                'type': 'pir',
-                'nickname': 'Motion Sensor (Entry)',
-                'schedule': {
-                    '00:00': '1'
+            "sensor2": {
+                "type": "pir",
+                "nickname": "Motion Sensor (Entry)",
+                "schedule": {
+                    "00:00": "1"
                 }
             }
         }
     },
-    'api_target_options': {
-        'addresses': {
-            'self-target': '127.0.0.1',
-            'Test1': '192.168.1.123',
-            'Test2': '192.168.1.124'
+    "api_target_options": {
+        "addresses": {
+            "self-target": "192.168.1.125",
+            "Test1": "192.168.1.123",
+            "Test2": "192.168.1.124"
         },
-        'self-target': {
-            'ignore': {}
+        "self-target": {
+            "device1-Bathroom LEDs (pwm)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
+            ],
+            "device2-Bathroom Lights (relay)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
+            ],
+            "device3-Entry Light (relay)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
+            ],
+            "sensor1-Motion Sensor (Bath) (pir)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
+            ],
+            "sensor2-Motion Sensor (Entry) (pir)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
+            ],
+            "ignore": {}
         },
-        'Test1': {
-            'device1-Cabinet Lights (pwm)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+        "Test1": {
+            "device1-Cabinet Lights (pwm)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'device2-Overhead Lights (relay)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+            "device2-Overhead Lights (relay)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'sensor1-Motion Sensor (pir)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'trigger_sensor'
+            "sensor1-Motion Sensor (pir)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
             ],
-            'ignore': {},
+            "ignore": {}
         },
-        'Test2': {
-            'device1-Air Conditioner (api-target)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule',
-                'turn_on',
-                'turn_off'
+        "Test2": {
+            "device1-Air Conditioner (api-target)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
             ],
-            'sensor1-Thermostat (si7021)': [
-                'enable',
-                'disable',
-                'enable_in',
-                'disable_in',
-                'set_rule',
-                'reset_rule'
+            "sensor1-Thermostat (si7021)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
             ],
-            'ir_blaster-Ir Blaster': {
-                'ac': [
-                    'start',
-                    'stop',
-                    'off'
+            "ir_blaster-Ir Blaster": {
+                "ac": [
+                    "start",
+                    "stop",
+                    "off"
                 ]
             },
-            'ignore': {},
+            "ignore": {}
         }
     }
 }

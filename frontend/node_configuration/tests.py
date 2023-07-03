@@ -592,7 +592,7 @@ class EditConfigTests(TestCase):
         # Confirm all devices and sensors present
         self.assertContains(response, '<input type="text" class="form-control sensor1 thermostat" id="sensor1-tolerance" placeholder="" value="0.5" required>')
         self.assertContains(response, '<input class="form-check-input ir-target" type="checkbox" value="irblaster-ac" id="checkbox-ac" checked>')
-        self.assertContains(response, '<option value="127.0.0.1" selected>self-target</option>')
+        self.assertContains(response, '<option value="192.168.1.124" selected>self-target</option>')
 
     def test_edit_config_3(self):
         # Request page, confirm correct template used
@@ -1227,11 +1227,40 @@ class ApiTargetMenuOptionsTest(TestCase):
         # Options that should be returned for these test nodes
         expected_options = {
             "addresses": {
-                "self-target": "127.0.0.1",
+                "self-target": "192.168.1.123",
                 "Test2": "192.168.1.124",
                 "Test3": "192.168.1.125"
             },
             "self-target": {
+                "device1-Cabinet Lights (pwm)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "device2-Overhead Lights (relay)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ],
+                "sensor1-Motion Sensor (pir)": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "trigger_sensor"
+                ],
                 "ignore": {}
             },
             "Test2": {
@@ -1490,6 +1519,21 @@ class ApiTargetMenuOptionsTest(TestCase):
                 "set_rule",
                 "reset_rule"
             ],
+            "sensor1-Thermostat (si7021)": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
+            ],
+            "ir_blaster-Ir Blaster": {
+                "ac": [
+                    "start",
+                    "stop",
+                    "off"
+                ]
+            },
             "ignore": {}
         }
 
