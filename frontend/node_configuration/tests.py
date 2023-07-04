@@ -1,10 +1,12 @@
 import json
 import os
 import socket
+from io import StringIO
 from copy import deepcopy
 from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from django.conf import settings
+from django.core.management import call_command
 from django.core.exceptions import ValidationError
 from .views import validate_full_config, get_modules, get_api_target_menu_options, provision
 from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinates
@@ -28,6 +30,7 @@ from .unit_test_helpers import (
     clean_up_test_nodes,
     test_config_1,
     test_config_2,
+    test_config_3,
     simulate_reupload_all_partial_success,
     create_config_and_node_from_json,
     test_config_1_edit_context,
@@ -2675,3 +2678,76 @@ class ScheduleKeywordErrorTests(TestCase):
         response = self.client.get('/delete_schedule_keyword')
         self.assertEqual(response.status_code, 405)
         self.assertEqual(response.json(), {'Error': 'Must post data'})
+
+
+# Test custom management commands used to import/export config files
+class ManagementCommandTests(TestCase):
+    def setUp(self):
+        # Create 3 test nodes, save references
+        create_test_nodes()
+        self.config1 = Config.objects.get(config=test_config_1)
+        self.config2 = Config.objects.get(config=test_config_2)
+        self.config3 = Config.objects.get(config=test_config_3)
+
+        # Write all config files to disk
+        self.config1.write_to_disk()
+        self.config2.write_to_disk()
+        self.config3.write_to_disk()
+
+        # Create buffer to capture stdio from management command
+        self.output = StringIO()
+
+    def tearDown(self):
+        # Remove test configs from disk
+        clean_up_test_nodes()
+
+    def test_import_configs_from_disk(self):
+        # Overwrite all 3 configs in database, but not disk
+        self.config1.config = {'test': 'placeholder'}
+        self.config1.save()
+        self.assertNotEqual(self.config1.config, test_config_1)
+        self.config2.config = {'test': 'placeholder'}
+        self.config2.save()
+        self.assertNotEqual(self.config2.config, test_config_2)
+        self.config3.config = {'test': 'placeholder'}
+        self.config3.save()
+        self.assertNotEqual(self.config3.config, test_config_3)
+
+        # Call command, confirm correct output
+        call_command("import_configs_from_disk", stdout=self.output)
+        self.assertIn("Importing test1.json", self.output.getvalue())
+        self.assertIn("Importing test2.json", self.output.getvalue())
+        self.assertIn("Importing test3.json", self.output.getvalue())
+
+        # Confirm all configs restored in database
+        self.config1.refresh_from_db()
+        self.config2.refresh_from_db()
+        self.config3.refresh_from_db()
+        self.assertEqual(self.config1.config, test_config_1)
+        self.assertEqual(self.config2.config, test_config_2)
+        self.assertEqual(self.config3.config, test_config_3)
+
+    def test_export_configs_to_disk(self):
+        # Delete all 3 config files from disk
+        for i in range(1, 4):
+            os.remove(os.path.join(settings.CONFIG_DIR, f'test{i}.json'))
+            self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, f'test{i}.json')))
+
+        # Call command, confirm correct output
+        call_command("export_configs_to_disk", stdout=self.output)
+        self.assertIn("Exporting test1.json", self.output.getvalue())
+        self.assertIn("Exporting test2.json", self.output.getvalue())
+        self.assertIn("Exporting test3.json", self.output.getvalue())
+
+        # Confirm configs created on disk
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test1.json')))
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test2.json')))
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test3.json')))
+
+        # Confirm config contents correct
+        with open(os.path.join(settings.CONFIG_DIR, 'test1.json'), 'r') as file:
+            self.assertEqual(json.load(file), test_config_1)
+        with open(os.path.join(settings.CONFIG_DIR, 'test2.json'), 'r') as file:
+            self.assertEqual(json.load(file), test_config_2)
+        with open(os.path.join(settings.CONFIG_DIR, 'test3.json'), 'r') as file:
+            self.assertEqual(json.load(file), test_config_3)
