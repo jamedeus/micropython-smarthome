@@ -33,7 +33,7 @@ class DimmableLight(Device):
 
         else:
             # Abort fade if user changed brightness in opposite direction
-            if self.fading:
+            if isinstance(valid_rule, int) and self.fading:
                 if self.fading["down"] and valid_rule > self.current_rule:
                     self.fading = False
                 elif not self.fading["down"] and valid_rule < self.current_rule:
@@ -168,6 +168,11 @@ class DimmableLight(Device):
     def fade_complete(self):
         # Fade complete if device disabled mid-fade, or called when not fading
         if not self.enabled or not self.fading:
+            self.fading = False
+            return True
+
+        # Fade complete if rule is no longer int (changed to enabled, disabled, etc)
+        if not isinstance(self.current_rule, int):
             self.fading = False
             return True
 

@@ -18,7 +18,8 @@ class TestTplink(unittest.TestCase):
             "test_regression_rule_change_to_enabled",
             "test_regression_invalid_default_rule",
             "test_rule_change_while_fading",
-            "test_regression_rule_change_while_fading"
+            "test_regression_rule_change_while_fading",
+            "test_regression_rule_change_to_disabled_while_fading"
         ]
 
     def test_instantiation(self):
@@ -170,4 +171,23 @@ class TestTplink(unittest.TestCase):
 
         # Decrease brightness - fade should abort despite being between start and target
         self.instance.set_rule(70)
+        self.assertFalse(self.instance.fading)
+
+    # Original issue: DimmableLight.set_rule contains a conditional to abort an in-progress fade if
+    # brightness is changed in the opposite direction. This is determined by checking if the new rule
+    # is greater/less than current_rule, with no type checking on the new rule. This resulted in a
+    # traceback when rule changed to a string (enabled, disabled) while fading.
+    # Should now skip conditional if new rule is non-integer.
+    def test_regression_rule_change_to_disabled_while_fading(self):
+        # Set starting brightness
+        self.instance.set_rule(50)
+        self.assertEqual(self.instance.current_rule, 50)
+
+        # Start fading DOWN, confirm started
+        self.instance.set_rule('fade/30/1800')
+        self.assertTrue(self.instance.fading)
+
+        # Change rule to disabled, confirm changed, confirm no longer fading
+        self.instance.set_rule('disabled')
+        self.assertEqual(self.instance.current_rule, 'disabled')
         self.assertFalse(self.instance.fading)
