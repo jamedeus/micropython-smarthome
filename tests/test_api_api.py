@@ -173,6 +173,35 @@ class TestApi(unittest.TestCase):
         self.assertEqual(self.sensor2.current_rule, 5.0)
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
+    def test_increment_rule(self):
+        # Set known starting values
+        self.device1.current_rule = 512
+        self.sensor1.current_rule = 70
+
+        # Increment PWM by both positive and negative numbers
+        response = self.send_command(['increment_rule', 'device1', '-12'])
+        self.assertEqual(response, {'device1': 500})
+        self.assertEqual(self.device1.current_rule, 500)
+        response = self.send_command(['increment_rule', 'device1', '50'])
+        self.assertEqual(response, {'device1': 550})
+        self.assertEqual(self.device1.current_rule, 550)
+
+        # Increment SI7021 by both float and integer
+        response = self.send_command(['increment_rule', 'sensor1', '0.5'])
+        self.assertEqual(response, {'sensor1': 70.5})
+        self.assertEqual(self.sensor1.current_rule, 70.5)
+        response = self.send_command(['increment_rule', 'sensor1', '3'])
+        self.assertEqual(response, {'sensor1': 73.5})
+        self.assertEqual(self.sensor1.current_rule, 73.5)
+
+        # Attempt to increment rule of an instance that does not support int/float rules
+        response = self.send_command(['increment_rule', 'sensor3', '1'])
+        self.assertEqual(response, {'ERROR': 'Target must accept int or float rule'})
+
+        # Attempt to increment to an invalid rule
+        response = self.send_command(['increment_rule', 'sensor1', '100'])
+        self.assertEqual(response, {'ERROR': 'Invalid rule'})
+
     def test_reset_rule(self):
         # Set placeholder rule
         self.device1.set_rule(1)
@@ -438,6 +467,12 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['set_rule', 'device1'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
+        response = self.send_command(['increment_rule'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = self.send_command(['increment_rule', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
         response = self.send_command(['reset_rule'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -506,6 +541,9 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
         response = self.send_command(['set_rule', 'device99', '100'])
+        self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
+
+        response = self.send_command(['increment_rule', 'device99', '1'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
         response = self.send_command(['reset_rule', 'device99'])
