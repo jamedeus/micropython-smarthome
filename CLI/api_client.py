@@ -5,7 +5,7 @@ import sys
 import json
 from colorama import Fore, Style
 from helper_functions import valid_ip
-from api_endpoints import endpoints
+from api_endpoints import endpoint_map
 
 
 # Used for help/error message
@@ -146,23 +146,21 @@ def parse_ip(args):
         missing_target_error(nodes)
 
 
-# Takes target IP + args
-# Iterate endpoints (see util/api_endpoints.py) until match found in args, run
+# Takes target IP + args list (first item must be endpoint name)
+# Find endpoint matching first arg, call handler function with remaining args
 def parse_command(ip, args):
     if len(args) == 0:
         endpoint_error()
 
-    for endpoint in endpoints:
-        if args[0] == endpoint[0]:
-            # Remove endpoint arg
-            match = args.pop(0)
-            try:
-                # Send remaining args to handler function
-                return endpoint[1](ip, args)
-            except SyntaxError:
-                # No arguments given, show usage example
-                return example_usage_error(match)
-    else:
+    endpoint = args[0]
+    args = args[1:]
+
+    try:
+        return endpoint_map[endpoint](ip, args)
+    except SyntaxError:
+        # No arguments given, show usage example
+        return example_usage_error(endpoint)
+    except KeyError:
         endpoint_error()
 
 

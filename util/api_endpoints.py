@@ -9,13 +9,13 @@ ir_commands = {
 }
 
 # Populated with endpoint:handler pairs by decorators below
-endpoints = []
+endpoint_map = {}
 
 
+# Decorator used to populate endpoint_map
 def add_endpoint(url):
     def _add_endpoint(func):
-        endpoints.append((url, func))
-        return func
+        endpoint_map[url] = func
     return _add_endpoint
 
 

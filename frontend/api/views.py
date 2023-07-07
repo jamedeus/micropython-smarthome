@@ -9,7 +9,7 @@ from node_configuration.get_api_target_menu_options import get_api_target_menu_o
 from helper_functions import valid_ip, valid_timestamp, is_device, get_schedule_keywords_dict
 from Webrepl import Webrepl
 from api.models import Macro
-from api_endpoints import endpoints
+from api_endpoints import endpoint_map
 
 
 # Receives schedule params in post, renders rule_modal template
@@ -323,21 +323,20 @@ def send_command(request):
     return JsonResponse(response, safe=False, status=200)
 
 
+# Takes target IP + args list (first item must be endpoint name)
+# Find endpoint matching first arg, call handler function with remaining args
 def parse_command(ip, args):
     if len(args) == 0:
         return "Error: No command received"
 
-    for endpoint in endpoints:
-        if args[0] == endpoint[0]:
-            # Remove endpoint arg
-            args.pop(0)
-            try:
-                # Send remaining args to handler function
-                return endpoint[1](ip, args)
-            except SyntaxError:
-                return {"ERROR": "Please fill out all fields"}
+    endpoint = args[0]
+    args = args[1:]
 
-    else:
+    try:
+        return endpoint_map[endpoint](ip, args)
+    except SyntaxError:
+        return {"ERROR": "Please fill out all fields"}
+    except KeyError:
         return "Error: Command not found"
 
 
