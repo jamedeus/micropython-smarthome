@@ -5,6 +5,7 @@ import logging
 import gc
 import SoftwareTimer
 import re
+from functools import wraps
 from uasyncio import Lock
 from util import (
     is_device,
@@ -41,10 +42,35 @@ class Api:
         # Key = endpoint, value = function
         self.url_map = {}
 
+    # Decorator used to populate url_map
     def route(self, url):
         def _route(func):
             self.url_map[url] = func
         return _route
+
+    # Decorator factory - takes number of required args (int), returns function with wrapper
+    # that returns error if called with too few args
+    def required_args(self, num):
+        def decorator(func):
+            @wraps(func)
+            def wrapper(args):
+                if len(args) < num:
+                    return {"ERROR": "Invalid syntax"}
+                return func(args)
+            return wrapper
+        return decorator
+
+    # Decorator used to fetch device/sensor instance specified in first arg
+    # Passes instance to wrapped function as first arg (or returns error if not found)
+    # Should be placed after @required_args
+    def get_target_instance(self, func):
+        @wraps(func)
+        def wrapper(args):
+            target = self.config.find(args[0])
+            if not target:
+                return {"ERROR": "Instance not found, use status to see options"}
+            return func(target, args[1:])
+        return wrapper
 
     async def run(self):
         self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
@@ -164,79 +190,48 @@ def status(args):
 
 
 @app.route("enable")
-def enable(args):
-    if not len(args) >= 1:
-        return {"ERROR": "Invalid syntax"}
-
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-    else:
-        target.enable()
-        return {"Enabled": target.name}
+@app.required_args(1)
+@app.get_target_instance
+def enable(target, args):
+    target.enable()
+    return {"Enabled": target.name}
 
 
 @app.route("enable_in")
-def enable_for(args):
-    if not len(args) >= 2:
-        return {"ERROR": "Invalid syntax"}
-
-    target = app.config.find(args[0])
-    period = args[1]
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-    else:
-        period = float(period) * 60000
-        SoftwareTimer.timer.create(period, target.enable, "API")
-        return {"Enabled": target.name, "Enable_in_seconds": period / 1000}
+@app.required_args(2)
+@app.get_target_instance
+def enable_for(target, args):
+    period = float(args[0]) * 60000
+    SoftwareTimer.timer.create(period, target.enable, "API")
+    return {"Enabled": target.name, "Enable_in_seconds": period / 1000}
 
 
 @app.route("disable")
-def disable(args):
-    if not len(args) >= 1:
-        return {"ERROR": "Invalid syntax"}
-
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-    else:
-        target.disable()
-        return {"Disabled": target.name}
+@app.required_args(1)
+@app.get_target_instance
+def disable(target, args):
+    target.disable()
+    return {"Disabled": target.name}
 
 
 @app.route("disable_in")
-def disable_for(args):
-    if not len(args) >= 2:
-        return {"ERROR": "Invalid syntax"}
-
-    target = app.config.find(args[0])
-    period = args[1]
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-    else:
-        period = float(period) * 60000
-        SoftwareTimer.timer.create(period, target.disable, "API")
-        return {"Disabled": target.name, "Disable_in_seconds": period / 1000}
+@app.required_args(2)
+@app.get_target_instance
+def disable_for(target, args):
+    period = float(args[0]) * 60000
+    SoftwareTimer.timer.create(period, target.disable, "API")
+    return {"Disabled": target.name, "Disable_in_seconds": period / 1000}
 
 
 @app.route("set_rule")
-def set_rule(args):
-    if not len(args) >= 2:
-        return {"ERROR": "Invalid syntax"}
-
-    target = app.config.find(args[0])
-    rule = args[1]
+@app.required_args(2)
+@app.get_target_instance
+def set_rule(target, args):
+    rule = args[0]
 
     # Replace url-encoded forward slashes (fade rules)
     if "%2F" in rule:
         rule = rule.replace("%2F", "/")
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
 
     if target.set_rule(rule):
         return {target.name: rule}
@@ -245,35 +240,23 @@ def set_rule(args):
 
 
 @app.route("increment_rule")
-def increment_rule(args):
-    if not len(args) >= 2:
-        return {"ERROR": "Invalid syntax"}
-
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-    elif "increment_rule" not in dir(target):
+@app.required_args(2)
+@app.get_target_instance
+def increment_rule(target, args):
+    if "increment_rule" not in dir(target):
         return {"ERROR": "Unsupported target, must accept int or float rule"}
 
-    if target.increment_rule(args[1]):
+    if target.increment_rule(args[0]):
         return {target.name: target.current_rule}
     else:
         return {"ERROR": "Invalid rule"}
 
 
 @app.route("reset_rule")
-def reset_rule(args):
-    if not len(args) == 1:
-        return {"ERROR": "Invalid syntax"}
-
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-
+@app.required_args(1)
+@app.get_target_instance
+def reset_rule(target, args):
     target.set_rule(target.scheduled_rule)
-
     return {target.name: "Reverted to scheduled rule", "current_rule": target.current_rule}
 
 
@@ -294,74 +277,56 @@ def reset_all_rules(args):
 
 
 @app.route("get_schedule_rules")
-def get_schedule_rules(args):
-    if not len(args) == 1:
-        return {"ERROR": "Invalid syntax"}
-
-    try:
-        rules = app.config.schedule[args[0]]
-    except KeyError:
-        return {"ERROR": "Instance not found, use status to see options"}
-
-    return rules
+@app.required_args(1)
+@app.get_target_instance
+def get_schedule_rules(target, args):
+    return app.config.schedule[target.name]
 
 
 @app.route("add_schedule_rule")
-def add_schedule_rule(args):
-    if not len(args) >= 3:
-        return {"ERROR": "Invalid syntax"}
+@app.required_args(3)
+@app.get_target_instance
+def add_schedule_rule(target, args):
+    rules = app.config.schedule[target.name]
 
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-
-    rules = app.config.schedule[args[0]]
-
-    if re.match(timestamp_regex, args[1]):
-        timestamp = args[1]
-    elif args[1] in app.config.schedule_keywords.keys():
-        timestamp = args[1]
+    if re.match(timestamp_regex, args[0]):
+        timestamp = args[0]
+    elif args[0] in app.config.schedule_keywords.keys():
+        timestamp = args[0]
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"}
 
-    valid = target.rule_validator(args[2])
+    valid = target.rule_validator(args[1])
 
     if str(valid) == "False":
         return {"ERROR": "Invalid rule"}
 
-    if timestamp in rules and (not len(args) >= 4 or not args[3] == "overwrite"):
+    if timestamp in rules and (not len(args) >= 3 or not args[2] == "overwrite"):
         return {"ERROR": "Rule already exists at {}, add 'overwrite' arg to replace".format(timestamp)}
     else:
         rules[timestamp] = valid
-        app.config.schedule[args[0]] = rules
+        app.config.schedule[target.name] = rules
         # Schedule queue rebuild after connection closes (blocks for several seconds)
         SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
         return {"Rule added": valid, "time": timestamp}
 
 
 @app.route("remove_rule")
-def remove_rule(args):
-    if not len(args) == 2:
-        return {"ERROR": "Invalid syntax"}
+@app.required_args(2)
+@app.get_target_instance
+def remove_rule(target, args):
+    rules = app.config.schedule[target.name]
 
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-
-    rules = app.config.schedule[args[0]]
-
-    if re.match(timestamp_regex, args[1]):
-        timestamp = args[1]
-    elif args[1] in app.config.schedule_keywords.keys():
-        timestamp = args[1]
+    if re.match(timestamp_regex, args[0]):
+        timestamp = args[0]
+    elif args[0] in app.config.schedule_keywords.keys():
+        timestamp = args[0]
     else:
         return {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"}
 
     try:
         del rules[timestamp]
-        app.config.schedule[args[0]] = rules
+        app.config.schedule[target.name] = rules
         # Schedule queue rebuild after connection closes (blocks for several seconds)
         SoftwareTimer.timer.create(1200, app.config.build_queue, "rebuild_queue")
     except KeyError:
@@ -388,10 +353,8 @@ def get_schedule_keywords(args):
 
 
 @app.route("add_schedule_keyword")
+@app.required_args(1)
 def add_schedule_keyword(args):
-    if not len(args) == 1:
-        return {"ERROR": "Invalid syntax"}
-
     if not isinstance(args[0], dict):
         return {"ERROR": "Requires dict with keyword and timestamp"}
 
@@ -407,10 +370,8 @@ def add_schedule_keyword(args):
 
 
 @app.route("remove_schedule_keyword")
+@app.required_args(1)
 def remove_schedule_keyword(args):
-    if not len(args) == 1:
-        return {"ERROR": "Invalid syntax"}
-
     if args[0] in ['sunrise', 'sunset']:
         return {"ERROR": "Cannot delete sunrise or sunset"}
     elif args[0] in app.config.schedule_keywords.keys():
@@ -438,15 +399,9 @@ def save_schedule_keywords(args):
 
 
 @app.route("get_attributes")
-def get_attributes(args):
-    if not len(args) == 1:
-        return {"ERROR": "Invalid syntax"}
-
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-
+@app.required_args(1)
+@app.get_target_instance
+def get_attributes(target, args):
     attributes = target.__dict__.copy()
 
     # Make dict json-compatible
@@ -476,80 +431,53 @@ def get_attributes(args):
 
 
 @app.route("condition_met")
-def condition_met(args):
-    if not len(args) >= 1:
-        return {"ERROR": "Invalid syntax"}
-
-    if not is_sensor(str(args[0])):
+@app.required_args(1)
+@app.get_target_instance
+def condition_met(target, args):
+    if not is_sensor(target.name):
         return {"ERROR": "Must specify sensor"}
-
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
     else:
         return {"Condition": target.condition_met()}
 
 
 @app.route("trigger_sensor")
-def trigger_sensor(args):
-    if not len(args) >= 1:
-        return {"ERROR": "Invalid syntax"}
-
-    if not is_sensor(str(args[0])):
+@app.required_args(1)
+@app.get_target_instance
+def trigger_sensor(target, args):
+    if not is_sensor(target.name):
         return {"ERROR": "Must specify sensor"}
 
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-
-    result = target.trigger()
-    if result:
+    if target.trigger():
         return {"Triggered": target.name}
     else:
         return {"ERROR": f"Cannot trigger {target._type} sensor type"}
 
 
 @app.route("turn_on")
-def turn_on(args):
-    if not len(args) >= 1:
-        return {"ERROR": "Invalid syntax"}
-
-    if not is_device(str(args[0])):
+@app.required_args(1)
+@app.get_target_instance
+def turn_on(target, args):
+    if not is_device(target.name):
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
-
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
 
     if not target.enabled:
         return {"ERROR": f"{target.name} is disabled, please enable before turning on"}
 
-    result = target.send(1)
-    if result:
+    if target.send(1):
         target.state = True
         return {"On": target.name}
     else:
-        return {"ERROR": "Unable to turn on {}".format(target.name)}
+        return {"ERROR": f"Unable to turn on {target.name}"}
 
 
 @app.route("turn_off")
-def turn_off(args):
-    if not len(args) >= 1:
-        return {"ERROR": "Invalid syntax"}
-
-    if not is_device(str(args[0])):
+@app.required_args(1)
+@app.get_target_instance
+def turn_off(target, args):
+    if not is_device(target.name):
         return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
 
-    target = app.config.find(args[0])
-
-    if not target:
-        return {"ERROR": "Instance not found, use status to see options"}
-
-    result = target.send(0)
-    if result:
+    if target.send(0):
         target.state = False
         return {"Off": target.name}
     else:
@@ -609,10 +537,8 @@ def clear_log(args):
 
 
 @app.route("ir_key")
+@app.required_args(2)
 def ir_key(args):
-    if not len(args) >= 2:
-        return {"ERROR": "Invalid syntax"}
-
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
@@ -633,10 +559,8 @@ def ir_key(args):
 
 
 @app.route("backlight")
+@app.required_args(1)
 def backlight(args):
-    if not len(args) >= 1:
-        return {"ERROR": "Invalid syntax"}
-
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
