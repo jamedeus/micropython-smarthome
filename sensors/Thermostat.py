@@ -56,6 +56,16 @@ class Thermostat(Sensor):
         else:
             return False
 
+    # Takes positive or negative float, adds to self.current_rule
+    def increment_rule(self, amount):
+        # Add amount to current rule
+        try:
+            new = float(self.current_rule) + float(amount)
+        except (ValueError, TypeError):
+            return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
+
+        return self.set_rule(new)
+
     def fahrenheit(self):
         return si7021.convert_celcius_to_fahrenheit(self.temp_sensor.temperature)
 

@@ -63,6 +63,22 @@ class DimmableLight(Device):
 
             return True
 
+    # Takes positive or negative int, adds to self.current_rule
+    def increment_rule(self, amount):
+        # Add amount to current rule
+        try:
+            new = int(self.current_rule) + int(amount)
+        except (ValueError, TypeError):
+            return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
+
+        # Enforce limits
+        if new > self.max_bright:
+            new = self.max_bright
+        if new < self.min_bright:
+            new = self.min_bright
+
+        return self.set_rule(new)
+
     # Base validator for universal, fade, and int rules (replaces parent class)
     def rule_validator(self, rule):
         try:

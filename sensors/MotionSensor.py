@@ -51,6 +51,16 @@ class MotionSensor(Sensor):
         except (ValueError, TypeError):
             return False
 
+    # Takes positive or negative float, adds to self.current_rule
+    def increment_rule(self, amount):
+        # Add amount to current rule
+        try:
+            new = float(self.current_rule) + float(amount)
+        except (ValueError, TypeError):
+            return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
+
+        return self.set_rule(new)
+
     def next_rule(self):
         super().next_rule()
 

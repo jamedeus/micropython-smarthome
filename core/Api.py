@@ -253,52 +253,11 @@ def increment_rule(args):
 
     if not target:
         return {"ERROR": "Instance not found, use status to see options"}
-
-    if target._type in ['dimmer', 'bulb', 'pwm', 'wled']:
-        return increment_int_rule(target, args)
-
-    elif target._type in ['si7021', 'pir']:
-        return increment_float_rule(target, args)
-
-    else:
+    elif "increment_rule" not in dir(target):
         return {"ERROR": "Unsupported target, must accept int or float rule"}
 
-
-def increment_int_rule(target, args):
-    try:
-        increment = int(args[1])
-    except (TypeError, ValueError):
-        return {"ERROR": "Argument must be integer"}
-
-    try:
-        new = int(target.current_rule) + increment
-    except ValueError:
-        return {"ERROR": f"Unable to increment current rule ({target.current_rule})"}
-
-    if new > target.max_bright:
-        new = target.max_bright
-    if new < target.min_bright:
-        new = target.min_bright
-
-    if target.set_rule(new):
-        return {target.name: new}
-    else:
-        return {"ERROR": "Invalid rule"}
-
-
-def increment_float_rule(target, args):
-    try:
-        increment = float(args[1])
-    except TypeError:
-        return {"ERROR": "Argument must be integer or float"}
-
-    try:
-        new = float(target.current_rule) + increment
-    except ValueError:
-        return {"ERROR": f"Unable to increment current rule ({target.current_rule})"}
-
-    if target.set_rule(new):
-        return {target.name: new}
+    if target.increment_rule(args[1]):
+        return {target.name: target.current_rule}
     else:
         return {"ERROR": "Invalid rule"}
 
