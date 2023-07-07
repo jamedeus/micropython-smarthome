@@ -30,6 +30,51 @@ def requires_params(func):
     return wrapper
 
 
+# Decorator factory - takes error_message returned by wrapper function if first
+# param (target) is neither device nor sensor. Otherwise calls wrapped function
+# with target as second arg, remaining params as 3rd arg.
+# Should be placed after @requires_params
+def requires_device_or_sensor(error_message):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(ip, params):
+            if not is_device_or_sensor(params[0]):
+                return {"ERROR": error_message}
+            return func(ip, params[0], params[1:])
+        return wrapper
+    return decorator
+
+
+# Decorator factory - takes error_message returned by wrapper function if first
+# param (target) is not device. Otherwise calls wrapped function with target as
+# second arg, remaining params as 3rd arg.
+# Should be placed after @requires_params
+def requires_device(error_message):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(ip, params):
+            if not is_device(params[0]):
+                return {"ERROR": error_message}
+            return func(ip, params[0], params[1:])
+        return wrapper
+    return decorator
+
+
+# Decorator factory - takes error_message returned by wrapper function if first
+# param (target) is not sensor. Otherwise calls wrapped function with target as
+# second arg, remaining params as 3rd arg.
+# Should be placed after @requires_params
+def requires_sensor(error_message):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(ip, params):
+            if not is_sensor(params[0]):
+                return {"ERROR": error_message}
+            return func(ip, params[0], params[1:])
+        return wrapper
+    return decorator
+
+
 # Send JSON api request to node
 async def request(ip, msg):
     # Open connection (5 second timeout)
@@ -74,84 +119,65 @@ def reboot(ip, params):
 
 @add_endpoint("disable")
 @requires_params
-def disable(ip, params):
-    if is_device_or_sensor(params[0]):
-        return asyncio.run(request(ip, ['disable', params[0]]))
-    else:
-        return {"ERROR": "Can only disable devices and sensors"}
+@requires_device_or_sensor("Can only disable devices and sensors")
+def disable(ip, target, params):
+    return asyncio.run(request(ip, ['disable', target]))
 
 
 @add_endpoint("disable_in")
 @requires_params
-def disable_in(ip, params):
-    if is_device_or_sensor(params[0]):
-        target = params.pop(0)
-        try:
-            period = float(params[0])
-            return asyncio.run(request(ip, ['disable_in', target, period]))
-        except IndexError:
-            return {"ERROR": "Please specify delay in minutes"}
-    else:
-        return {"ERROR": "Can only disable devices and sensors"}
+@requires_device_or_sensor("Can only disable devices and sensors")
+def disable_in(ip, target, params):
+    try:
+        period = float(params[0])
+        return asyncio.run(request(ip, ['disable_in', target, period]))
+    except IndexError:
+        return {"ERROR": "Please specify delay in minutes"}
 
 
 @add_endpoint("enable")
 @requires_params
-def enable(ip, params):
-    if is_device_or_sensor(params[0]):
-        return asyncio.run(request(ip, ['enable', params[0]]))
-    else:
-        return {"ERROR": "Can only enable devices and sensors"}
+@requires_device_or_sensor("Can only enable devices and sensors")
+def enable(ip, target, params):
+    return asyncio.run(request(ip, ['enable', target]))
 
 
 @add_endpoint("enable_in")
 @requires_params
-def enable_in(ip, params):
-    if is_device_or_sensor(params[0]):
-        target = params.pop(0)
-        try:
-            period = float(params[0])
-            return asyncio.run(request(ip, ['enable_in', target, period]))
-        except IndexError:
-            return {"ERROR": "Please specify delay in minutes"}
-    else:
-        return {"ERROR": "Can only enable devices and sensors"}
+@requires_device_or_sensor("Can only enable devices and sensors")
+def enable_in(ip, target, params):
+    try:
+        period = float(params[0])
+        return asyncio.run(request(ip, ['enable_in', target, period]))
+    except IndexError:
+        return {"ERROR": "Please specify delay in minutes"}
 
 
 @add_endpoint("set_rule")
 @requires_params
-def set_rule(ip, params):
-    if is_device_or_sensor(params[0]):
-        target = params.pop(0)
-        try:
-            return asyncio.run(request(ip, ['set_rule', target, params[0]]))
-        except IndexError:
-            return {"ERROR": "Must specify new rule"}
-    else:
-        return {"ERROR": "Can only set rules for devices and sensors"}
+@requires_device_or_sensor("Can only set rules for devices and sensors")
+def set_rule(ip, target, params):
+    try:
+        return asyncio.run(request(ip, ['set_rule', target, params[0]]))
+    except IndexError:
+        return {"ERROR": "Must specify new rule"}
 
 
 @add_endpoint("increment_rule")
 @requires_params
-def increment_rule(ip, params):
-    if is_device_or_sensor(params[0]):
-        target = params.pop(0)
-        try:
-            return asyncio.run(request(ip, ['increment_rule', target, params[0]]))
-        except IndexError:
-            return {"ERROR": "Must specify amount (int) to increment by"}
-    else:
-        return {"ERROR": "Target must be device or sensor with int rule"}
+@requires_device_or_sensor("Target must be device or sensor with int rule")
+def increment_rule(ip, target, params):
+    try:
+        return asyncio.run(request(ip, ['increment_rule', target, params[0]]))
+    except IndexError:
+        return {"ERROR": "Must specify amount (int) to increment by"}
 
 
 @add_endpoint("reset_rule")
 @requires_params
-def reset_rule(ip, params):
-    if is_device_or_sensor(params[0]):
-        target = params.pop(0)
-        return asyncio.run(request(ip, ['reset_rule', target]))
-    else:
-        return {"ERROR": "Can only set rules for devices and sensors"}
+@requires_device_or_sensor("Can only set rules for devices and sensors")
+def reset_rule(ip, target, params):
+    return asyncio.run(request(ip, ['reset_rule', target]))
 
 
 @add_endpoint("reset_all_rules")
@@ -161,22 +187,15 @@ def reset_all_rules(ip, params):
 
 @add_endpoint("get_schedule_rules")
 @requires_params
-def get_schedule_rules(ip, params):
-    if is_device_or_sensor(params[0]):
-        target = params.pop(0)
-        return asyncio.run(request(ip, ['get_schedule_rules', target]))
-    else:
-        return {"ERROR": "Only devices and sensors have schedule rules"}
+@requires_device_or_sensor("Only devices and sensors have schedule rules")
+def get_schedule_rules(ip, target, params):
+    return asyncio.run(request(ip, ['get_schedule_rules', target]))
 
 
 @add_endpoint("add_rule")
 @requires_params
-def add_schedule_rule(ip, params):
-    if is_device_or_sensor(params[0]):
-        target = params.pop(0)
-    else:
-        return {"ERROR": "Only devices and sensors have schedule rules"}
-
+@requires_device_or_sensor("Only devices and sensors have schedule rules")
+def add_schedule_rule(ip, target, params):
     if len(params) > 0 and valid_timestamp(params[0]):
         timestamp = params.pop(0)
     elif len(params) > 0 and params[0] in get_schedule_keywords_dict().keys():
@@ -198,12 +217,8 @@ def add_schedule_rule(ip, params):
 
 @add_endpoint("remove_rule")
 @requires_params
-def remove_rule(ip, params):
-    if is_device_or_sensor(params[0]):
-        target = params.pop(0)
-    else:
-        return {"ERROR": "Only devices and sensors have schedule rules"}
-
+@requires_device_or_sensor("Only devices and sensors have schedule rules")
+def remove_rule(ip, target, params):
     if len(params) > 0 and valid_timestamp(params[0]):
         timestamp = params.pop(0)
     elif len(params) > 0 and params[0] in get_schedule_keywords_dict().keys():
@@ -253,12 +268,9 @@ def save_schedule_keywords(ip, params):
 
 @add_endpoint("get_attributes")
 @requires_params
-def get_attributes(ip, params):
-    if is_device_or_sensor(params[0]):
-        target = params.pop(0)
-        return asyncio.run(request(ip, ['get_attributes', target]))
-    else:
-        return {"ERROR": "Must specify device or sensor"}
+@requires_device_or_sensor("Must specify device or sensor")
+def get_attributes(ip, target, params):
+    return asyncio.run(request(ip, ['get_attributes', target]))
 
 
 @add_endpoint("ir")
@@ -305,35 +317,27 @@ def clear_log(ip, params):
 
 @add_endpoint("condition_met")
 @requires_params
-def condition_met(ip, params):
-    if is_sensor(params[0]):
-        return asyncio.run(request(ip, ['condition_met', params[0]]))
-    else:
-        return {"ERROR": "Must specify sensor"}
+@requires_sensor("Must specify sensor")
+def condition_met(ip, target, params):
+    return asyncio.run(request(ip, ['condition_met', target]))
 
 
 @add_endpoint("trigger_sensor")
 @requires_params
-def trigger_sensor(ip, params):
-    if is_sensor(params[0]):
-        return asyncio.run(request(ip, ['trigger_sensor', params[0]]))
-    else:
-        return {"ERROR": "Must specify sensor"}
+@requires_sensor("Must specify sensor")
+def trigger_sensor(ip, target, params):
+    return asyncio.run(request(ip, ['trigger_sensor', target]))
 
 
 @add_endpoint("turn_on")
 @requires_params
-def turn_on(ip, params):
-    if is_device(params[0]):
-        return asyncio.run(request(ip, ['turn_on', params[0]]))
-    else:
-        return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
+@requires_device("Can only turn on/off devices, use enable/disable for sensors")
+def turn_on(ip, target, params):
+    return asyncio.run(request(ip, ['turn_on', target]))
 
 
 @add_endpoint("turn_off")
 @requires_params
-def turn_off(ip, params):
-    if is_device(params[0]):
-        return asyncio.run(request(ip, ['turn_off', params[0]]))
-    else:
-        return {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"}
+@requires_device("Can only turn on/off devices, use enable/disable for sensors")
+def turn_off(ip, target, params):
+    return asyncio.run(request(ip, ['turn_off', target]))
