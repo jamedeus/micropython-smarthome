@@ -1,5 +1,6 @@
 import json
 import asyncio
+from functools import wraps
 from helper_functions import valid_timestamp, is_device_or_sensor, is_device, is_sensor, get_schedule_keywords_dict
 
 # Valid IR commands for each target, used in error message
@@ -17,6 +18,16 @@ def add_endpoint(url):
     def _add_endpoint(func):
         endpoint_map[url] = func
     return _add_endpoint
+
+
+# Decorator adds wrapper that prevents calling func with empty param list
+def requires_params(func):
+    @wraps(func)
+    def wrapper(ip, params):
+        if len(params) == 0:
+            raise SyntaxError
+        return func(ip, params)
+    return wrapper
 
 
 # Send JSON api request to node
@@ -62,10 +73,8 @@ def reboot(ip, params):
 
 
 @add_endpoint("disable")
+@requires_params
 def disable(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         return asyncio.run(request(ip, ['disable', params[0]]))
     else:
@@ -73,10 +82,8 @@ def disable(ip, params):
 
 
 @add_endpoint("disable_in")
+@requires_params
 def disable_in(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
@@ -89,10 +96,8 @@ def disable_in(ip, params):
 
 
 @add_endpoint("enable")
+@requires_params
 def enable(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         return asyncio.run(request(ip, ['enable', params[0]]))
     else:
@@ -100,10 +105,8 @@ def enable(ip, params):
 
 
 @add_endpoint("enable_in")
+@requires_params
 def enable_in(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
@@ -116,10 +119,8 @@ def enable_in(ip, params):
 
 
 @add_endpoint("set_rule")
+@requires_params
 def set_rule(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
@@ -131,10 +132,8 @@ def set_rule(ip, params):
 
 
 @add_endpoint("increment_rule")
+@requires_params
 def increment_rule(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
         try:
@@ -146,10 +145,8 @@ def increment_rule(ip, params):
 
 
 @add_endpoint("reset_rule")
+@requires_params
 def reset_rule(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
         return asyncio.run(request(ip, ['reset_rule', target]))
@@ -163,10 +160,8 @@ def reset_all_rules(ip, params):
 
 
 @add_endpoint("get_schedule_rules")
+@requires_params
 def get_schedule_rules(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
         return asyncio.run(request(ip, ['get_schedule_rules', target]))
@@ -175,10 +170,8 @@ def get_schedule_rules(ip, params):
 
 
 @add_endpoint("add_rule")
+@requires_params
 def add_schedule_rule(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
     else:
@@ -204,10 +197,8 @@ def add_schedule_rule(ip, params):
 
 
 @add_endpoint("remove_rule")
+@requires_params
 def remove_rule(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
     else:
@@ -234,10 +225,8 @@ def get_schedule_keywords(ip, params):
 
 
 @add_endpoint("add_schedule_keyword")
+@requires_params
 def add_schedule_keyword(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     keyword = params.pop(0)
 
     if len(params) > 0 and valid_timestamp(params[0]):
@@ -251,10 +240,8 @@ def add_schedule_keyword(ip, params):
 
 
 @add_endpoint("remove_schedule_keyword")
+@requires_params
 def remove_schedule_keyword(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     cmd = ['remove_schedule_keyword', params.pop(0)]
     return asyncio.run(request(ip, cmd))
 
@@ -265,10 +252,8 @@ def save_schedule_keywords(ip, params):
 
 
 @add_endpoint("get_attributes")
+@requires_params
 def get_attributes(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device_or_sensor(params[0]):
         target = params.pop(0)
         return asyncio.run(request(ip, ['get_attributes', target]))
@@ -319,10 +304,8 @@ def clear_log(ip, params):
 
 
 @add_endpoint("condition_met")
+@requires_params
 def condition_met(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_sensor(params[0]):
         return asyncio.run(request(ip, ['condition_met', params[0]]))
     else:
@@ -330,10 +313,8 @@ def condition_met(ip, params):
 
 
 @add_endpoint("trigger_sensor")
+@requires_params
 def trigger_sensor(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_sensor(params[0]):
         return asyncio.run(request(ip, ['trigger_sensor', params[0]]))
     else:
@@ -341,10 +322,8 @@ def trigger_sensor(ip, params):
 
 
 @add_endpoint("turn_on")
+@requires_params
 def turn_on(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device(params[0]):
         return asyncio.run(request(ip, ['turn_on', params[0]]))
     else:
@@ -352,10 +331,8 @@ def turn_on(ip, params):
 
 
 @add_endpoint("turn_off")
+@requires_params
 def turn_off(ip, params):
-    if len(params) == 0:
-        raise SyntaxError
-
     if is_device(params[0]):
         return asyncio.run(request(ip, ['turn_off', params[0]]))
     else:
