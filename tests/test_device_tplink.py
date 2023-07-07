@@ -1,12 +1,31 @@
 import unittest
 from Tplink import Tplink
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'min_bright': 1,
+    'nickname': 'device1',
+    'ip': '192.168.1.233',
+    'max_bright': 100,
+    '_type': 'dimmer',
+    'scheduled_rule': None,
+    'current_rule': None,
+    'default_rule': 42,
+    'enabled': True,
+    'rule_queue': [],
+    'state': None,
+    'name': 'device1',
+    'triggered_by': [],
+    'fading': False
+}
+
 
 class TestTplink(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -27,6 +46,10 @@ class TestTplink(unittest.TestCase):
         self.assertIsInstance(self.instance, Tplink)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.fading)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertEqual(self.instance.rule_validator(1), 1)

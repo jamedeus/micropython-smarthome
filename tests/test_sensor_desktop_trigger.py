@@ -1,12 +1,29 @@
 import unittest
 from Desktop_trigger import Desktop_trigger
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'ip': '192.168.1.216',
+    'nickname': 'sensor1',
+    'current': None,
+    'desktop_target': None,
+    'enabled': True,
+    'rule_queue': [],
+    'name': 'sensor1',
+    'default_rule': 'enabled',
+    '_type': 'desktop',
+    'current_rule': None,
+    'scheduled_rule': None,
+    'targets': []
+}
+
 
 class TestDesktopTrigger(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -20,6 +37,10 @@ class TestDesktopTrigger(unittest.TestCase):
         self.instance = Desktop_trigger("sensor1", "sensor1", "desktop", "enabled", [], "192.168.1.216")
         self.assertIsInstance(self.instance, Desktop_trigger)
         self.assertTrue(self.instance.enabled)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertIs(self.instance.rule_validator("enabled"), "enabled")

@@ -1,12 +1,31 @@
 import unittest
 from Wled import Wled
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'min_bright': 1,
+    'nickname': 'device1',
+    'ip': '192.168.1.211',
+    'max_bright': 255,
+    '_type': 'wled',
+    'scheduled_rule': None,
+    'current_rule': None,
+    'default_rule': 50,
+    'enabled': True,
+    'rule_queue': [],
+    'state': None,
+    'name': 'device1',
+    'triggered_by': [],
+    'fading': False
+}
+
 
 class TestWled(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -25,6 +44,10 @@ class TestWled(unittest.TestCase):
         self.assertIsInstance(self.instance, Wled)
         print(f'Instance type: {type(self.instance)}')
         self.assertTrue(self.instance.enabled)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertEqual(self.instance.rule_validator(1), 1)

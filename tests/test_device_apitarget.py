@@ -3,12 +3,37 @@ from ApiTarget import ApiTarget
 
 default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'triggered_by': [],
+    'nickname': 'device1',
+    'ip': '192.168.1.223',
+    'enabled': True,
+    'rule_queue': [],
+    'state': None,
+    'default_rule': {
+        'on': [
+            'enable',
+            'device1'
+        ],
+        'off': [
+            'enable',
+            'device1'
+        ]
+    },
+    'name': 'device1',
+    '_type': 'api-target',
+    'scheduled_rule': None,
+    'current_rule': None
+}
+
 
 class TestApiTarget(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -24,6 +49,10 @@ class TestApiTarget(unittest.TestCase):
         self.instance = ApiTarget("device1", "device1", "api-target", default_rule, "192.168.1.223")
         self.assertIsInstance(self.instance, ApiTarget)
         self.assertTrue(self.instance.enabled)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertEqual(

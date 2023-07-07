@@ -2,12 +2,31 @@ import unittest
 from machine import PWM
 from LedStrip import LedStrip
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'min_bright': 0,
+    'nickname': 'device1',
+    'max_bright': 1023,
+    '_type': 'pwm',
+    'scheduled_rule': None,
+    'current_rule': None,
+    'default_rule': 512,
+    'enabled': True,
+    'rule_queue': [],
+    'state': None,
+    'name': 'device1',
+    'triggered_by': [],
+    'bright': 0,
+    'fading': False
+}
+
 
 class TestLedStrip(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -31,6 +50,10 @@ class TestLedStrip(unittest.TestCase):
         self.assertIsInstance(self.instance, LedStrip)
         self.assertFalse(self.instance.pwm.duty())
         self.assertTrue(self.instance.enabled)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertEqual(self.instance.rule_validator(1), 1)

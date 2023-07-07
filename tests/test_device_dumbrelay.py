@@ -2,12 +2,27 @@ import unittest
 from machine import Pin
 from DumbRelay import DumbRelay
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'triggered_by': [],
+    'nickname': 'device1',
+    'enabled': True,
+    'rule_queue': [],
+    'state': None,
+    'default_rule': 'enabled',
+    'name': 'device1',
+    '_type': 'dumb-relay',
+    'scheduled_rule': None,
+    'current_rule': None
+}
+
 
 class TestDumbRelay(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -25,6 +40,10 @@ class TestDumbRelay(unittest.TestCase):
         self.assertIsInstance(self.instance, DumbRelay)
         self.assertFalse(self.instance.relay.value())
         self.assertTrue(self.instance.enabled)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertIs(self.instance.rule_validator("Disabled"), "disabled")

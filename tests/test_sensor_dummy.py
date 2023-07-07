@@ -1,12 +1,26 @@
 import unittest
 from Dummy import Dummy
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'rule_queue': [],
+    'enabled': True,
+    'default_rule': 'on',
+    'name': 'sensor1',
+    '_type': 'dummy',
+    'nickname': 'sensor1',
+    'current_rule': None,
+    'scheduled_rule': None,
+    'targets': []
+}
+
 
 class TestDummySensor(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -22,6 +36,10 @@ class TestDummySensor(unittest.TestCase):
         self.instance = Dummy("sensor1", "sensor1", "dummy", "on", [])
         self.assertIsInstance(self.instance, Dummy)
         self.assertTrue(self.instance.enabled)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertIs(self.instance.rule_validator("on"), "on")

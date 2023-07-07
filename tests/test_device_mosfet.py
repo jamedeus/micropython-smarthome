@@ -2,12 +2,27 @@ import unittest
 from machine import Pin
 from Mosfet import Mosfet
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'triggered_by': [],
+    'nickname': 'device1',
+    'enabled': True,
+    'rule_queue': [],
+    'state': None,
+    'default_rule': 'enabled',
+    'name': 'device1',
+    '_type': 'mosfet',
+    'scheduled_rule': None,
+    'current_rule': None
+}
+
 
 class TestMosfet(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -26,6 +41,10 @@ class TestMosfet(unittest.TestCase):
         self.assertIsInstance(self.instance, Mosfet)
         self.assertFalse(self.instance.mosfet.value())
         self.assertTrue(self.instance.enabled)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertIs(self.instance.rule_validator("Disabled"), "disabled")

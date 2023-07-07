@@ -1,12 +1,26 @@
 import unittest
 from Switch import Switch
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'rule_queue': [],
+    'enabled': True,
+    'default_rule': 'enabled',
+    'name': 'sensor1',
+    '_type': 'switch',
+    'nickname': 'sensor1',
+    'current_rule': None,
+    'scheduled_rule': None,
+    'targets': []
+}
+
 
 class TestSwitch(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -18,6 +32,10 @@ class TestSwitch(unittest.TestCase):
         self.instance = Switch("sensor1", "sensor1", "switch", "enabled", [], 19)
         self.assertIsInstance(self.instance, Switch)
         self.assertTrue(self.instance.enabled)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertIs(self.instance.rule_validator("Disabled"), "disabled")

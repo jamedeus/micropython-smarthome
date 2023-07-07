@@ -2,12 +2,27 @@ import unittest
 from MotionSensor import MotionSensor
 import SoftwareTimer
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'targets': [],
+    'nickname': 'sensor1',
+    'motion': False,
+    'enabled': True,
+    'rule_queue': [],
+    'name': 'sensor1',
+    'default_rule': None,
+    '_type': 'pir',
+    'current_rule': None,
+    'scheduled_rule': None
+}
+
 
 class TestMotionSensor(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -26,6 +41,10 @@ class TestMotionSensor(unittest.TestCase):
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.motion)
         self.assertEqual(self.instance.sensor.value(), 0)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertEqual(self.instance.rule_validator(5), 5.0)

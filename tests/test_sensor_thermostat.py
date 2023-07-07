@@ -1,12 +1,31 @@
 import unittest
 from Thermostat import Thermostat
 
+# Expected return value of get_attributes method just after instantiation
+expected_attributes = {
+    'tolerance': 1.0,
+    'nickname': 'sensor1',
+    '_type': 'si7021',
+    'current_rule': 74.0,
+    'scheduled_rule': 74,
+    'default_rule': 74,
+    'enabled': True,
+    'mode': 'cool',
+    'targets': [],
+    'rule_queue': [],
+    'name': 'sensor1',
+    'on_threshold': 75.0,
+    'off_threshold': 73.0,
+    'recent_temps': []
+}
+
 
 class TestThermostat(unittest.TestCase):
 
     def __dir__(self):
         return [
             "test_instantiation",
+            "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
             "test_rule_change",
@@ -26,6 +45,10 @@ class TestThermostat(unittest.TestCase):
         self.instance = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [])
         self.assertIsInstance(self.instance, Thermostat)
         self.assertTrue(self.instance.enabled)
+
+    def test_get_attributes(self):
+        attributes = self.instance.get_attributes()
+        self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
         self.assertEqual(self.instance.rule_validator(65), 65)
