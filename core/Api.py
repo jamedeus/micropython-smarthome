@@ -402,32 +402,7 @@ def save_schedule_keywords(args):
 @app.required_args(1)
 @app.get_target_instance
 def get_attributes(target, args):
-    attributes = target.__dict__.copy()
-
-    # Make dict json-compatible
-    for i in attributes.keys():
-        # Remove module references
-        if i in ("pwm", "i2c", "temp_sensor", "mosfet", "relay", "sensor", "switch"):
-            del attributes[i]
-
-        # Replace instances with instance.name attribute
-        elif i == "triggered_by":
-            attributes["triggered_by"] = []
-            for i in target.triggered_by:
-                attributes["triggered_by"].append(i.name)
-        elif i == "targets":
-            attributes["targets"] = []
-            for i in target.targets:
-                attributes["targets"].append(i.name)
-        elif i == "desktop_target":
-            if attributes["desktop_target"] is not None:
-                attributes["desktop_target"] = attributes["desktop_target"].name
-
-    # Replace group object with group name (JSON compatibility)
-    if "group" in attributes.keys():
-        attributes["group"] = target.group.name
-
-    return attributes
+    return target.get_attributes()
 
 
 @app.route("condition_met")

@@ -122,3 +122,30 @@ class Sensor():
     # Placeholder function for subclasses with no post-routines, overwritten if they do
     def add_routines(self):
         return
+
+    # Return JSON-serializable dict containing all current attributes
+    # Called by API get_attributes endpoint
+    def get_attributes(self):
+        attributes = self.__dict__.copy()
+
+        # Make dict json-compatible
+        for i in attributes.keys():
+            # Remove object references
+            if i in ("i2c", "temp_sensor", "sensor", "switch"):
+                del attributes[i]
+
+            # Replace desktop_target instance with instance.name
+            elif i == "desktop_target":
+                if attributes["desktop_target"] is not None:
+                    attributes["desktop_target"] = attributes["desktop_target"].name
+
+            # Replace group object with group name
+            elif i == "group":
+                attributes["group"] = self.group.name
+
+        # Replace device instances with instance.name attribute
+        attributes["targets"] = []
+        for i in self.targets:
+            attributes["targets"].append(i.name)
+
+        return attributes

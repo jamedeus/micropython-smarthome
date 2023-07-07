@@ -122,3 +122,24 @@ class Device():
         if self.set_rule(self.rule_queue.pop(0)):
             # If new rule is valid, also change scheduled_rule
             self.scheduled_rule = self.current_rule
+
+    # Return JSON-serializable dict containing all current attributes
+    # Called by API get_attributes endpoint
+    def get_attributes(self):
+        attributes = self.__dict__.copy()
+
+        for i in attributes.keys():
+            # Remove object references
+            if i in ("pwm", "mosfet", "relay"):
+                del attributes[i]
+
+            # Replace group object with group name
+            elif i == "group":
+                attributes["group"] = self.group.name
+
+        # Replace sensor instances with instance.name attributes
+        attributes["triggered_by"] = []
+        for i in self.triggered_by:
+            attributes["triggered_by"].append(i.name)
+
+        return attributes
