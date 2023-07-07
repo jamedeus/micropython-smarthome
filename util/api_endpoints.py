@@ -274,19 +274,20 @@ def get_attributes(ip, target, params):
 
 
 @add_endpoint("ir")
+@requires_params
 def ir(ip, params):
-    if len(params) > 0 and (params[0] == "tv" or params[0] == "ac"):
-        target = params.pop(0)
+    # First arg must be key in ir_commands dict or "backlight" keyword
+    target = params[0]
+    if target in ir_commands.keys():
         try:
-            return asyncio.run(request(ip, ['ir_key', target, params[0]]))
+            return asyncio.run(request(ip, ['ir_key', target, params[1]]))
         except IndexError:
             return {"ERROR": f"Must specify one of the following commands: {ir_commands[target]}"}
 
-    elif len(params) > 0 and params[0] == "backlight":
-        params.pop(0)
+    elif target == "backlight":
         try:
-            if params[0] == "on" or params[0] == "off":
-                return asyncio.run(request(ip, ['backlight', params[0]]))
+            if params[1] == "on" or params[1] == "off":
+                return asyncio.run(request(ip, ['backlight', params[1]]))
             else:
                 raise IndexError
         except IndexError:

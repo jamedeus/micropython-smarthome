@@ -736,6 +736,10 @@ class TestEndpointErrors(TestCase):
         response = parse_command('192.168.1.123', ['ir', 'ac'])
         self.assertEqual(response, {"ERROR": f"Must specify one of the following commands: {ir_commands['ac']}"})
 
+    def test_ir_invalid_target(self):
+        response = parse_ip(['192.168.1.123', 'ir', 'pacemaker'])
+        self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"})
+
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):
         # Mock request to return expected response (should not run)
