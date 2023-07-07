@@ -302,7 +302,7 @@ def add_schedule_rule(target, args):
         return {"ERROR": "Invalid rule"}
 
     if timestamp in rules and (not len(args) >= 3 or not args[2] == "overwrite"):
-        return {"ERROR": "Rule already exists at {}, add 'overwrite' arg to replace".format(timestamp)}
+        return {"ERROR": f"Rule already exists at {timestamp}, add 'overwrite' arg to replace"}
     else:
         rules[timestamp] = valid
         app.config.schedule[target.name] = rules
@@ -456,7 +456,7 @@ def turn_off(target, args):
         target.state = False
         return {"Off": target.name}
     else:
-        return {"ERROR": "Unable to turn off {}".format(target.name)}
+        return {"ERROR": f"Unable to turn off {target.name}"}
 
 
 @app.route("get_temp")
@@ -523,10 +523,10 @@ def ir_key(args):
     key = args[1]
 
     if target not in blaster.codes:
-        return {"ERROR": 'No codes found for target "{}"'.format(target)}
+        return {"ERROR": f'No codes found for target "{target}"'}
 
     if not key.lower() in blaster.codes[target]:
-        return {"ERROR": 'Target "{}" has no key {}'.format(target, key)}
+        return {"ERROR": f'Target "{target}" has no key "{key}"'}
 
     else:
         blaster.send(target, key.lower())

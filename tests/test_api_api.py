@@ -424,7 +424,7 @@ class TestApi(unittest.TestCase):
 
         # Confirm correct error message
         response = self.send_command(['ir_key', 'tv', 'on'])
-        self.assertEqual(response, {'ERROR': 'Target "tv" has no key on'})
+        self.assertEqual(response, {'ERROR': 'Target "tv" has no key "on"'})
 
         # Confirm correct error message
         response = self.send_command(['ir_key', 'ac', 'on'])
