@@ -88,8 +88,9 @@ package_setup_page() {
 # Compile micropython firmware
 # Append to existing build if present
 build() {
+    manifest="`pwd`/manifest.py"
     cd micropython/ports/esp32
-    make BOARD=GENERIC
+    make BOARD=GENERIC FROZEN_MANIFEST=$manifest
     cp build-GENERIC/firmware.bin ../../..
     cd ../../..
 }
