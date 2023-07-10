@@ -11,7 +11,7 @@ from Webrepl import Webrepl
 from provision_tools import get_modules, provision
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
-from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
+from api_endpoints import endpoint_map
 from helper_functions import is_device_or_sensor, is_device, is_sensor, get_config_param_list, valid_ip, get_schedule_keywords_dict
 
 # Env var constants
@@ -28,6 +28,11 @@ valid_config_keys = {
     "metadata": {"id": "", "location": "", "floor": "", "schedule_keywords": ""},
     "wifi": {"ssid": "", "password": ""}
 }
+
+# Copy references to endpoints called directly by views
+add_schedule_keyword = endpoint_map['add_schedule_keyword']
+remove_schedule_keyword = endpoint_map['remove_schedule_keyword']
+save_schedule_keywords = endpoint_map['save_schedule_keywords']
 
 
 def upload(request, reupload=False):

@@ -1,5 +1,6 @@
 import json
 import os
+import types
 import socket
 from io import StringIO
 from copy import deepcopy
@@ -2598,6 +2599,23 @@ class ScheduleKeywordTests(TestCase):
         self.config2.refresh_from_db()
         self.assertNotIn('first', self.node1.config.config['metadata']['schedule_keywords'].keys())
         self.assertNotIn('first', self.config2.config['metadata']['schedule_keywords'].keys())
+
+    # Original issue: Views directly imported 3 endpoint functions from api_endpoints.
+    # Decorators adding wrapper functions were later added to api_endpoints to reduce
+    # code repetition. This removed the original reference from module namespace,
+    # leading views to import NoneType objects instead of functions. Attempting to call
+    # NoneType objects in ThreadPoolExecutor resulted in an immediate return, without
+    # calling any endpoints. All unit tests above continued to pass because they mock
+    # the endpoints in question.
+    # Fixed by importing decorated functions from endpoint_map object
+    def test_regression_endpoints_imported_as_nonetype(self):
+        from node_configuration import views
+        self.assertIsNotNone(views.add_schedule_keyword)
+        self.assertIsNotNone(views.remove_schedule_keyword)
+        self.assertIsNotNone(views.save_schedule_keywords)
+        self.assertEqual(type(views.add_schedule_keyword), types.FunctionType)
+        self.assertEqual(type(views.remove_schedule_keyword), types.FunctionType)
+        self.assertEqual(type(views.save_schedule_keywords), types.FunctionType)
 
 
 # Confirm schedule keyword management endpoints raise correct errors
