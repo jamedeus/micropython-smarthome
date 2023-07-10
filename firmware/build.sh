@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Known-working commit, new commits sometimes break build
+micropython_commit="ed7a3b11d9a6c21a964d55ebfcdefeb392389d10"
+
 
 # Clone esp-idf devkit, check out branch compatible with micropython, install
 clone_esp_idf() {
@@ -24,6 +27,7 @@ source_esp_idf() {
 clone_micropython() {
     git clone --recurse-submodules https://github.com/micropython/micropython.git
     cd micropython
+    git checkout $micropython_commit
     make -C mpy-cross
     cd ports/esp32
     make submodules
