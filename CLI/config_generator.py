@@ -276,7 +276,7 @@ def device_type():
 
 
 def configure_device():
-    config = templates['device'][device_type()]
+    config = templates['device'][device_type()].copy()
     _type = config['_type']
 
     for i in [i for i in config if config[i] == "placeholder"]:
@@ -300,7 +300,7 @@ def configure_device():
 
 
 def configure_sensor():
-    config = templates['sensor'][sensor_type()]
+    config = templates['sensor'][sensor_type()].copy()
     _type = config['_type']
 
     for i in [i for i in config if config[i] == "placeholder"]:
