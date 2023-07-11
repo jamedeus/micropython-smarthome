@@ -270,7 +270,7 @@
                     {# hacky way to make this compatible with listeners (format + validation + submit-on-enter) #}
                     <div id="prompt">
                         <label for="restore-ip"><b>IP Address:</b></label>
-                        <input type="text" class="form-control modal-input ip-input" id="restore-ip" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
+                        <input type="text" class="form-control modal-input ip-input" id="restore-ip" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" data-submit="upload-restore" required>
                     </div>
                     <div id="loading" class="d-none mx-auto">
                         <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
