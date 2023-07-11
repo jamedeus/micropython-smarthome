@@ -1,7 +1,62 @@
 #!/usr/bin/python3
 
-import re
 import json
+import questionary
+from helper_functions import valid_ip
+
+
+output_template = {
+    'metadata': {
+        'id': '',
+        'floor': '',
+        'location': ''
+    },
+    'wifi': {
+        'ssid': '',
+        'password': ''
+    }
+}
+
+valid_device_pins = (
+    '4',
+    '13',
+    '16',
+    '17',
+    '18',
+    '19',
+    '21',
+    '22',
+    '23',
+    '25',
+    '26',
+    '27',
+    '32',
+    '33'
+)
+
+valid_sensor_pins = (
+    '4',
+    '5',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '21',
+    '22',
+    '23',
+    '25',
+    '26',
+    '27',
+    '32',
+    '33',
+    '34',
+    '35',
+    '36',
+    '39'
+)
 
 templates = {
     "device": {
@@ -135,102 +190,127 @@ templates = {
 }
 
 
-def initial_prompt():
-    while True:
-        print("Which category?")
-        print(" [1] Device")
-        print(" [2] Sensor")
-        choice = input()
-        print()
-
-        if choice == "1":
-            return "device"
-        elif choice == "2":
-            return "sensor"
-
-        else:
-            print("\nERROR: Please enter a number and press enter.\n")
+def validate_int(num):
+    try:
+        int(num)
+        return True
+    except ValueError:
+        return False
 
 
-def select_type(category):
-    options = enumerate(templates[category], 1)
-    choices = enumerate(templates[category], 1)
-
-    while True:
-        print(f"Select {category} type")
-        for counter, option in options:
-            print(f" [{counter}] {option}")
-
-        choice = input()
-        print()
-
+def validate_int_or_float(num):
+    try:
+        int(num)
+        return True
+    except ValueError:
         try:
-            if int(choice) in range(1, len(templates[category]) + 1):
-                for i in choices:
-                    if int(choice) == i[0]:
-                        return i[1]
-
-            else:
-                raise ValueError
-
-        except ValueError:
-            print("\nERROR: Please enter a number and press enter.\n")
+            float(num)
+            return True
+        except TypeError:
+            return False
 
 
-def configure(category, module):
-    config = templates[category][module]
+def metadata_prompt():
+    name = questionary.text("Enter a descriptive name for this node").ask()
+    floor = questionary.text("Enter floor number", validate=validate_int).ask()
+    location = questionary.text("Enter a brief description of the node's physical location").ask()
 
-    for i in config:
-        if config[i] == "placeholder":
-            print(f"{i} = ", end='')
-            config[i] = input()
-            print()
+    return {
+        'id': name,
+        'floor': floor,
+        'location': location
+    }
 
+
+def wifi_prompt():
+    ssid = questionary.text("Enter wifi SSID (2.4 GHz only)").ask()
+    password = questionary.password("Enter wifi password").ask()
+
+    return {
+        'ssid': ssid,
+        'password': password
+    }
+
+
+def sensor_type():
+    return questionary.select(
+        "Select sensor type",
+        choices=list(templates['sensor'].keys())
+    ).ask()
+
+
+def device_type():
+    return questionary.select(
+        "Select device type",
+        choices=list(templates['device'].keys())
+    ).ask()
+
+
+def configure_device():
+    config = templates['device'][device_type()]
+
+    for i in [i for i in config if config[i] == "placeholder"]:
+        if i == "nickname":
+            config[i] = questionary.text("Enter a memorable nickname for the device").ask()
+        elif i == "pin":
+            config[i] = questionary.select("Select pin", choices=valid_device_pins).ask()
+        elif i == "default_rule":
+            config[i] = questionary.text("Enter default rule").ask()
+        elif i == "min_bright":
+            config[i] = questionary.text("Enter minimum brightness", validate=validate_int).ask()
+        elif i == "max_bright":
+            config[i] = questionary.text("Enter maximum brightness", validate=validate_int).ask()
+        elif i == "ip":
+            config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
+
+    return config
+
+
+def configure_sensor():
+    config = templates['sensor'][sensor_type()]
+
+    for i in [i for i in config if config[i] == "placeholder"]:
+        if i == "nickname":
+            config[i] = questionary.text("Enter a memorable nickname for the sensor").ask()
+        elif i == "pin":
+            config[i] = questionary.select("Select pin", choices=valid_sensor_pins).ask()
+        elif i == "default_rule":
+            config[i] = questionary.text("Enter default rule").ask()
+        elif i == "ip":
+            config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
+        elif i == "mode":
+            config[i] = questionary.select("Select mode", choices=['cool', 'heat']).ask()
+        elif i == "tolerance":
+            config[i] = questionary.text("Enter temperature tolerance", validate=validate_int_or_float).ask()
+
+    return config
+
+
+if __name__ == '__main__':
+    # Add output of metadata + wifi prompts to template
+    config = output_template.copy()
+    config['metadata'].update(metadata_prompt())
+    config['wifi'].update(wifi_prompt())
+
+    # Lists to store + count device and sensor sections
+    devices = []
+    sensors = []
+
+    # Add output of device and sensor prompts to lists
     while True:
-        print("Would you like to add schedule rules?")
-        print(" [1] Yes")
-        print(" [2] No")
-        choice = input()
-        print()
-
-        if choice == "1":
+        choice = questionary.select("\nAdd instances?", choices=['device', 'sensor', 'done']).ask()
+        if choice == 'device':
+            devices.append(configure_device())
+        elif choice == 'sensor':
+            sensors.append(configure_sensor())
+        elif choice == 'done':
             break
-        elif choice == "2":
-            return config
-        else:
-            print("\nERROR: Please enter a number and press enter.\n")
 
-    while True:
-        print("Rule time (HH:MM): ", end='')
-        timestamp = input()
+    # Add sequential device and sensor keys (device1, device2, etc)
+    # for each item in devices and sensors
+    for index, instance in enumerate(devices, 1):
+        config[f'device{index}'] = instance
+    for index, instance in enumerate(sensors, 1):
+        config[f'sensor{index}'] = instance
 
-        if re.match("^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$", timestamp):
-            print("Enter rule: ", end='')
-            rule = input()
-            config["schedule"][timestamp] = rule
-        else:
-            print("\nInvalid timestamp format - must be HH:MM, no am/pm\n")
-            continue
-
-        while True:
-            print("\nAdd another rule?")
-            print(" [1] Yes")
-            print(" [2] No")
-            choice = input()
-            print()
-
-            if choice == "1":
-                break
-            elif choice == "2":
-                return config
-            else:
-                print("\nERROR: Please enter a number and press enter.\n")
-
-        continue
-
-
-category = initial_prompt()
-module = select_type(category)
-config = configure(category, module)
-
-print(json.dumps(config, indent=4))
+    print(json.dumps(config, indent=4))
