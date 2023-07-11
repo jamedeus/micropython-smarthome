@@ -6,74 +6,90 @@ import json
 templates = {
     "device": {
         "Dimmer": {
-            "type": "dimmer",
+            "_type": "dimmer",
+            "nickname": "placeholder",
             "ip": "placeholder",
+            "min_bright": "placeholder",
+            "max_bright": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
         "Bulb": {
-            "type": "bulb",
+            "_type": "bulb",
+            "nickname": "placeholder",
             "ip": "placeholder",
+            "min_bright": "placeholder",
+            "max_bright": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
         "Relay": {
-            "type": "relay",
+            "_type": "relay",
+            "nickname": "placeholder",
             "ip": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
         "DumbRelay": {
-            "type": "dumb-relay",
+            "_type": "dumb-relay",
+            "nickname": "placeholder",
             "default_rule": "placeholder",
             "pin": "placeholder",
             "schedule": {}
         },
 
         "DesktopTarget": {
-            "type": "desktop",
+            "_type": "desktop",
+            "nickname": "placeholder",
             "ip": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
         "LedStrip": {
-            "type": "pwm",
+            "_type": "pwm",
+            "nickname": "placeholder",
             "default_rule": "placeholder",
-            "min": 0,
-            "max": 1023,
+            "min_bright": "placeholder",
+            "max_bright": "placeholder",
             "pin": "placeholder",
             "schedule": {}
         },
 
         "Mosfet": {
-            "type": "mosfet",
+            "_type": "mosfet",
+            "nickname": "placeholder",
             "default_rule": "placeholder",
             "pin": "placeholder",
             "schedule": {}
         },
 
         "ApiTarget": {
-            "type": "api-target",
+            "_type": "api-target",
+            "nickname": "placeholder",
             "ip": "placeholder",
             "default_rule": "placeholder",
             "schedule": {}
         },
 
         "Wled": {
-            "type": "wled",
+            "_type": "wled",
+            "nickname": "placeholder",
             "ip": "placeholder",
             "default_rule": "placeholder",
+            "min_bright": "placeholder",
+            "max_bright": "placeholder",
             "schedule": {}
         },
     },
 
     "sensor": {
         "MotionSensor": {
-            "type": "pir",
+            "_type": "pir",
+            "nickname": "placeholder",
             "pin": "placeholder",
             "default_rule": "placeholder",
             "targets": [],
@@ -81,29 +97,35 @@ templates = {
         },
 
         "DesktopTrigger": {
-            "type": "desktop",
-            "pin": "placeholder",
+            "_type": "desktop",
+            "nickname": "placeholder",
+            "ip": "placeholder",
             "default_rule": "placeholder",
             "targets": [],
             "schedule": {}
         },
 
         "Thermostat": {
-            "type": "si7021",
+            "_type": "si7021",
+            "nickname": "placeholder",
             "default_rule": "placeholder",
+            "mode": "placeholder",
+            "tolerance": "placeholder",
             "targets": [],
             "schedule": {}
         },
 
         "Dummy": {
-            "type": "dummy",
+            "_type": "dummy",
+            "nickname": "placeholder",
             "default_rule": "placeholder",
             "targets": [],
             "schedule": {}
         },
 
         "Switch": {
-            "type": "switch",
+            "_type": "switch",
+            "nickname": "placeholder",
             "pin": "placeholder",
             "default_rule": "placeholder",
             "targets": [],
