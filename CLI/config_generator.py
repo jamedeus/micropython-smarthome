@@ -2,6 +2,7 @@
 
 import json
 import questionary
+from questionary import Validator, ValidationError
 from helper_functions import valid_ip
 
 
@@ -57,6 +58,16 @@ valid_sensor_pins = (
     '36',
     '39'
 )
+
+# Map int rule limits to device/sensor types
+rule_limits = {
+    'dimmer': (1, 100),
+    'bulb': (1, 100),
+    'pwm': (0, 1023),
+    'wled': (1, 255),
+    'pir': (0, 60),
+    'si7021': (65, 80),
+}
 
 templates = {
     "device": {
@@ -190,24 +201,42 @@ templates = {
 }
 
 
+class IntRange(Validator):
+    def __init__(self, minimum, maximum):
+        self.minimum = int(minimum)
+        self.maximum = int(maximum)
+
+    def validate(self, document):
+        if validate_int(document.text) and self.minimum <= int(document.text) <= self.maximum:
+            return True
+        else:
+            raise ValidationError(
+                message=f"Must be int between {self.minimum} and {self.maximum}",
+                cursor_position=len(document.text)
+            )
+
+
 def validate_int(num):
     try:
         int(num)
         return True
-    except ValueError:
+    except (ValueError, TypeError):
+        return False
+
+
+def validate_float(num):
+    try:
+        float(num)
+        return True
+    except (ValueError, TypeError):
         return False
 
 
 def validate_int_or_float(num):
-    try:
-        int(num)
+    if validate_int(num) or validate_float(num):
         return True
-    except ValueError:
-        try:
-            float(num)
-            return True
-        except TypeError:
-            return False
+    else:
+        return False
 
 
 def metadata_prompt():
@@ -248,6 +277,7 @@ def device_type():
 
 def configure_device():
     config = templates['device'][device_type()]
+    _type = config['_type']
 
     for i in [i for i in config if config[i] == "placeholder"]:
         if i == "nickname":
@@ -255,11 +285,14 @@ def configure_device():
         elif i == "pin":
             config[i] = questionary.select("Select pin", choices=valid_device_pins).ask()
         elif i == "default_rule":
-            config[i] = questionary.text("Enter default rule").ask()
+            if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
+                config[i] = default_rule_prompt_int_option(_type)
+            else:
+                config[i] = questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
         elif i == "min_bright":
-            config[i] = questionary.text("Enter minimum brightness", validate=validate_int).ask()
+            config[i] = questionary.text("Enter minimum brightness", validate=IntRange(*rule_limits[_type])).ask()
         elif i == "max_bright":
-            config[i] = questionary.text("Enter maximum brightness", validate=validate_int).ask()
+            config[i] = questionary.text("Enter maximum brightness", validate=IntRange(*rule_limits[_type])).ask()
         elif i == "ip":
             config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
 
@@ -268,6 +301,7 @@ def configure_device():
 
 def configure_sensor():
     config = templates['sensor'][sensor_type()]
+    _type = config['_type']
 
     for i in [i for i in config if config[i] == "placeholder"]:
         if i == "nickname":
@@ -275,7 +309,12 @@ def configure_sensor():
         elif i == "pin":
             config[i] = questionary.select("Select pin", choices=valid_sensor_pins).ask()
         elif i == "default_rule":
-            config[i] = questionary.text("Enter default rule").ask()
+            if _type in ['pir', 'si7021']:
+                config[i] = default_rule_prompt_int_option(_type)
+            elif _type == 'dummy':
+                config[i] = questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
+            else:
+                config[i] = questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
         elif i == "ip":
             config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
         elif i == "mode":
@@ -284,6 +323,14 @@ def configure_sensor():
             config[i] = questionary.text("Enter temperature tolerance", validate=validate_int_or_float).ask()
 
     return config
+
+
+def default_rule_prompt_int_option(_type):
+    choice = questionary.select("Select default rule", choices=['Enabled', 'Disabled', 'Int']).ask()
+    if choice == 'Int':
+        return questionary.text("Enter default rule", validate=IntRange(*rule_limits[_type])).ask()
+    else:
+        return choice
 
 
 if __name__ == '__main__':
