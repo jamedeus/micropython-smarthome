@@ -145,7 +145,6 @@ templates = {
             "nickname": "placeholder",
             "pin": "placeholder",
             "default_rule": "placeholder",
-            "targets": [],
             "schedule": {}
         },
 
@@ -154,7 +153,6 @@ templates = {
             "nickname": "placeholder",
             "ip": "placeholder",
             "default_rule": "placeholder",
-            "targets": [],
             "schedule": {}
         },
 
@@ -164,7 +162,6 @@ templates = {
             "default_rule": "placeholder",
             "mode": "placeholder",
             "tolerance": "placeholder",
-            "targets": [],
             "schedule": {}
         },
 
@@ -172,7 +169,6 @@ templates = {
             "_type": "dummy",
             "nickname": "placeholder",
             "default_rule": "placeholder",
-            "targets": [],
             "schedule": {}
         },
 
@@ -181,7 +177,6 @@ templates = {
             "nickname": "placeholder",
             "pin": "placeholder",
             "default_rule": "placeholder",
-            "targets": [],
             "schedule": {}
         }
     }
@@ -352,7 +347,6 @@ class GenerateConfigFile:
 
     def configure_sensor(self):
         config = templates['sensor'][self.sensor_type()].copy()
-        _type = config['_type']
 
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
@@ -404,8 +398,6 @@ class GenerateConfigFile:
             return choice
 
     def select_sensor_targets(self):
-        print("\nSelect target devices for each sensor")
-        print("All targets will turn on when the sensor is activated")
         # Get list of all sensor IDs
         sensors = [key for key in self.config.keys() if is_sensor(key)]
 
@@ -415,14 +407,20 @@ class GenerateConfigFile:
             display = f"{self.config[key]['nickname']} ({self.config[key]['_type']})"
             targets_map[display] = key
 
+        # Skip step if no devices
+        if len(targets_map.keys()) == 0:
+            return
+
+        print("\nSelect target devices for each sensor")
+        print("All targets will turn on when the sensor is activated")
+
         # Show checkbox prompt for each sensor with all devices as options
         for sensor in sensors:
             prompt = f"\nSelect targets for {self.config[sensor]['nickname']} ({self.config[sensor]['_type']})"
             targets = questionary.checkbox(prompt, choices=targets_map.keys()).ask()
 
             # Add selection to config
-            for i in targets:
-                self.config[sensor]['targets'].append(targets_map[i])
+            self.config[sensor]['targets'] = [targets_map[i] for i in targets]
 
     def add_schedule_rule(self, config):
         timestamp = questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
