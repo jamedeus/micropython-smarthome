@@ -3,7 +3,7 @@
 import json
 import questionary
 from questionary import Validator, ValidationError
-from helper_functions import valid_ip, is_device, is_sensor
+from helper_functions import valid_ip, valid_timestamp, is_device, is_sensor, is_device_or_sensor
 
 
 output_template = {
@@ -285,10 +285,7 @@ def configure_device():
         elif i == "pin":
             config[i] = questionary.select("Select pin", choices=valid_device_pins).ask()
         elif i == "default_rule":
-            if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
-                config[i] = default_rule_prompt_int_option(_type)
-            else:
-                config[i] = questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
+            config[i] = rule_prompt_router(_type)
         elif i == "min_bright":
             config[i] = questionary.text("Enter minimum brightness", validate=IntRange(*rule_limits[_type])).ask()
         elif i == "max_bright":
@@ -309,12 +306,7 @@ def configure_sensor():
         elif i == "pin":
             config[i] = questionary.select("Select pin", choices=valid_sensor_pins).ask()
         elif i == "default_rule":
-            if _type in ['pir', 'si7021']:
-                config[i] = default_rule_prompt_int_option(_type)
-            elif _type == 'dummy':
-                config[i] = questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
-            else:
-                config[i] = questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
+            config[i] = rule_prompt_router(_type)
         elif i == "ip":
             config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
         elif i == "mode":
@@ -323,6 +315,15 @@ def configure_sensor():
             config[i] = questionary.text("Enter temperature tolerance", validate=validate_int_or_float).ask()
 
     return config
+
+
+def rule_prompt_router(_type):
+    if _type in ['dimmer', 'bulb', 'pwm', 'wled', 'pir', 'si7021']:
+        return default_rule_prompt_int_option(_type)
+    elif _type == 'dummy':
+        return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
+    else:
+        return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
 
 
 def default_rule_prompt_int_option(_type):
@@ -357,6 +358,26 @@ def select_sensor_targets(config):
     return config
 
 
+def add_schedule_rule(_type):
+    timestamp = questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
+    rule = rule_prompt_router(_type)
+    return timestamp, rule
+
+
+def schedule_rules_prompt(config):
+    for instance in [key for key in config if is_device_or_sensor(key)]:
+        prompt = f"\nWould you like to add schedule rules for {config[instance]['nickname']}?"
+        choice = questionary.select(prompt, choices=['Yes', 'No']).ask()
+        if choice == 'Yes':
+            while True:
+                timestamp, rule = add_schedule_rule(config[instance]['_type'])
+                config[instance]['schedule'][timestamp] = rule
+                choice = questionary.select("\nAdd another?", choices=['Yes', 'No']).ask()
+                if choice == 'No':
+                    break
+    return config
+
+
 if __name__ == '__main__':
     # Add output of metadata + wifi prompts to template
     config = output_template.copy()
@@ -386,5 +407,8 @@ if __name__ == '__main__':
 
     # Prompt user to select targets for each sensor
     config = select_sensor_targets(config)
+
+    # Prompt user to add schedule rules for each device and sensor
+    config = schedule_rules_prompt(config)
 
     print(json.dumps(config, indent=4))
