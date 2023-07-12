@@ -11,7 +11,7 @@ from Webrepl import Webrepl
 from provision_tools import get_modules, provision
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
-from api_endpoints import endpoint_map
+from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
 from validation_constants import valid_device_pins, valid_sensor_pins, config_templates, valid_config_keys
 from helper_functions import (
     is_device_or_sensor,
@@ -30,11 +30,6 @@ NODE_PASSWD = settings.NODE_PASSWD
 # Parse tuple of device and sensor types from templates, used in validation
 valid_device_types = tuple([config_templates['device'][i]['_type'] for i in config_templates['device'].keys()])
 valid_sensor_types = tuple([config_templates['sensor'][i]['_type'] for i in config_templates['sensor'].keys()])
-
-# Copy references to endpoints called directly by views
-add_schedule_keyword = endpoint_map['add_schedule_keyword']
-remove_schedule_keyword = endpoint_map['remove_schedule_keyword']
-save_schedule_keywords = endpoint_map['save_schedule_keywords']
 
 
 def upload(request, reupload=False):

@@ -17,6 +17,7 @@ endpoint_map = {}
 def add_endpoint(url):
     def _add_endpoint(func):
         endpoint_map[url] = func
+        return func
     return _add_endpoint
 
 
