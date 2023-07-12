@@ -3,7 +3,7 @@
 import json
 import questionary
 from questionary import Validator, ValidationError
-from helper_functions import valid_ip
+from helper_functions import valid_ip, is_device, is_sensor
 
 
 output_template = {
@@ -333,6 +333,30 @@ def default_rule_prompt_int_option(_type):
         return choice
 
 
+def select_sensor_targets(config):
+    print("\nSelect target devices for each sensor")
+    print("All targets will turn on when the sensor is activated")
+    # Get list of all sensor IDs
+    sensors = [key for key in config.keys() if is_sensor(key)]
+
+    # Map strings displayed for each device option (syntax: "Nickname (type)") to their IDs
+    targets_map = {}
+    for key in [key for key in config.keys() if is_device(key)]:
+        display = f"{config[key]['nickname']} ({config[key]['_type']})"
+        targets_map[display] = key
+
+    # Show checkbox prompt for each sensor with all devices as options
+    for sensor in sensors:
+        prompt = f"\nSelect targets for {config[sensor]['nickname']} ({config[sensor]['_type']})"
+        targets = questionary.checkbox(prompt, choices=targets_map.keys()).ask()
+
+        # Add selection to config
+        for i in targets:
+            config[sensor]['targets'].append(targets_map[i])
+
+    return config
+
+
 if __name__ == '__main__':
     # Add output of metadata + wifi prompts to template
     config = output_template.copy()
@@ -359,5 +383,8 @@ if __name__ == '__main__':
         config[f'device{index}'] = instance
     for index, instance in enumerate(sensors, 1):
         config[f'sensor{index}'] = instance
+
+    # Prompt user to select targets for each sensor
+    config = select_sensor_targets(config)
 
     print(json.dumps(config, indent=4))
