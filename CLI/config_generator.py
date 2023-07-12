@@ -105,9 +105,9 @@ templates = {
         "LedStrip": {
             "_type": "pwm",
             "nickname": "placeholder",
-            "default_rule": "placeholder",
             "min_bright": "placeholder",
             "max_bright": "placeholder",
+            "default_rule": "placeholder",
             "pin": "placeholder",
             "schedule": {}
         },
@@ -132,9 +132,9 @@ templates = {
             "_type": "wled",
             "nickname": "placeholder",
             "ip": "placeholder",
-            "default_rule": "placeholder",
             "min_bright": "placeholder",
             "max_bright": "placeholder",
+            "default_rule": "placeholder",
             "schedule": {}
         },
     },
@@ -320,18 +320,31 @@ class GenerateConfigFile:
                 ).ask()
                 self.used_nicknames.append(nickname)
                 config[i] = nickname
+
             elif i == "pin":
                 # Remove already used pins from choices to prevent duplicates
                 choices = [pin for pin in valid_device_pins if pin not in self.used_pins]
                 pin = questionary.select("Select pin", choices=choices).ask()
                 self.used_pins.append(pin)
                 config[i] = pin
+
             elif i == "default_rule":
-                config[i] = self.rule_prompt_router(_type)
+                config[i] = self.rule_prompt_router(config)
+
             elif i == "min_bright":
-                config[i] = questionary.text("Enter minimum brightness", validate=IntRange(*rule_limits[_type])).ask()
+                config[i] = questionary.text(
+                    "Enter minimum brightness",
+                    default=str(rule_limits[_type][0]),
+                    validate=IntRange(*rule_limits[_type])
+                ).ask()
+
             elif i == "max_bright":
-                config[i] = questionary.text("Enter maximum brightness", validate=IntRange(*rule_limits[_type])).ask()
+                config[i] = questionary.text(
+                    "Enter maximum brightness",
+                    default=str(rule_limits[_type][1]),
+                    validate=IntRange(*rule_limits[_type])
+                ).ask()
+
             elif i == "ip":
                 config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
 
@@ -349,35 +362,44 @@ class GenerateConfigFile:
                 ).ask()
                 self.used_nicknames.append(nickname)
                 config[i] = nickname
+
             elif i == "pin":
                 # Remove already used pins from choices to prevent duplicates
                 choices = [pin for pin in valid_sensor_pins if pin not in self.used_pins]
                 pin = questionary.select("Select pin", choices=choices).ask()
                 self.used_pins.append(pin)
                 config[i] = pin
+
             elif i == "default_rule":
-                config[i] = self.rule_prompt_router(_type)
+                config[i] = self.rule_prompt_router(config)
+
             elif i == "ip":
                 config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
+
             elif i == "mode":
                 config[i] = questionary.select("Select mode", choices=['cool', 'heat']).ask()
+
             elif i == "tolerance":
                 config[i] = questionary.text("Enter temperature tolerance", validate=validate_int_or_float).ask()
 
         return config
 
-    def rule_prompt_router(self, _type):
-        if _type in ['dimmer', 'bulb', 'pwm', 'wled', 'pir', 'si7021']:
-            return self.default_rule_prompt_int_option(_type)
+    def rule_prompt_router(self, config):
+        _type = config['_type']
+        if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
+            return self.default_rule_prompt_int_option(config['min_bright'], config['max_bright'])
+        elif _type in ['pir', 'si7021']:
+            return self.default_rule_prompt_int_option(*rule_limits[_type])
         elif _type == 'dummy':
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
         else:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
 
-    def default_rule_prompt_int_option(self, _type):
+    # Rule prompt for instances that support int
+    def default_rule_prompt_int_option(self, minimum, maximum):
         choice = questionary.select("Select default rule", choices=['Enabled', 'Disabled', 'Int']).ask()
         if choice == 'Int':
-            return questionary.text("Enter default rule", validate=IntRange(*rule_limits[_type])).ask()
+            return questionary.text("Enter default rule", validate=IntRange(minimum, maximum)).ask()
         else:
             return choice
 
@@ -402,9 +424,9 @@ class GenerateConfigFile:
             for i in targets:
                 self.config[sensor]['targets'].append(targets_map[i])
 
-    def add_schedule_rule(self, _type):
+    def add_schedule_rule(self, config):
         timestamp = questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
-        rule = self.rule_prompt_router(_type)
+        rule = self.rule_prompt_router(config)
         return timestamp, rule
 
     def schedule_rules_prompt(self):
@@ -413,7 +435,7 @@ class GenerateConfigFile:
             choice = questionary.select(prompt, choices=['Yes', 'No']).ask()
             if choice == 'Yes':
                 while True:
-                    timestamp, rule = self.add_schedule_rule(self.config[instance]['_type'])
+                    timestamp, rule = self.add_schedule_rule(self.config[instance])
                     self.config[instance]['schedule'][timestamp] = rule
                     choice = questionary.select("\nAdd another?", choices=['Yes', 'No']).ask()
                     if choice == 'No':
