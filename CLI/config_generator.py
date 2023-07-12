@@ -156,7 +156,7 @@ class GenerateConfigFile:
                 config[i] = questionary.text(
                     "Enter maximum brightness",
                     default=str(rule_limits[_type][1]),
-                    validate=IntRange(*rule_limits[_type])
+                    validate=IntRange(config['min_bright'], rule_limits[_type][1])
                 ).ask()
 
             elif i == "ip":
