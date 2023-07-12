@@ -5,19 +5,6 @@ import questionary
 from questionary import Validator, ValidationError
 from helper_functions import valid_ip, valid_timestamp, is_device, is_sensor, is_device_or_sensor
 
-
-output_template = {
-    'metadata': {
-        'id': '',
-        'floor': '',
-        'location': ''
-    },
-    'wifi': {
-        'ssid': '',
-        'password': ''
-    }
-}
-
 valid_device_pins = (
     '4',
     '13',
@@ -239,176 +226,174 @@ def validate_int_or_float(num):
         return False
 
 
-def metadata_prompt():
-    name = questionary.text("Enter a descriptive name for this node").ask()
-    floor = questionary.text("Enter floor number", validate=validate_int).ask()
-    location = questionary.text("Enter a brief description of the node's physical location").ask()
+class GenerateConfigFile:
+    def __init__(self):
+        self.config = {
+            'metadata': {
+                'id': '',
+                'floor': '',
+                'location': ''
+            },
+            'wifi': {
+                'ssid': '',
+                'password': ''
+            }
+        }
 
-    return {
-        'id': name,
-        'floor': floor,
-        'location': location
-    }
+        # Prompt user to enter metadata and wifi credentials
+        self.metadata_prompt()
+        self.wifi_prompt()
 
+        # Prompt user to add devices and sensors
+        self.add_devices_and_sensors()
 
-def wifi_prompt():
-    ssid = questionary.text("Enter wifi SSID (2.4 GHz only)").ask()
-    password = questionary.password("Enter wifi password").ask()
+        # Prompt user to select targets for each sensor
+        self.select_sensor_targets()
 
-    return {
-        'ssid': ssid,
-        'password': password
-    }
+        # Prompt user to add schedule rules for each device and sensor
+        self.schedule_rules_prompt()
 
+    def add_devices_and_sensors(self):
+        # Lists to store + count device and sensor sections
+        devices = []
+        sensors = []
 
-def sensor_type():
-    return questionary.select(
-        "Select sensor type",
-        choices=list(templates['sensor'].keys())
-    ).ask()
+        # Add output of device and sensor prompts to lists
+        while True:
+            choice = questionary.select("\nAdd instances?", choices=['device', 'sensor', 'done']).ask()
+            if choice == 'device':
+                devices.append(self.configure_device())
+            elif choice == 'sensor':
+                sensors.append(self.configure_sensor())
+            elif choice == 'done':
+                break
 
+        # Add sequential device and sensor keys (device1, device2, etc)
+        # for each item in devices and sensors
+        for index, instance in enumerate(devices, 1):
+            self.config[f'device{index}'] = instance
+        for index, instance in enumerate(sensors, 1):
+            self.config[f'sensor{index}'] = instance
 
-def device_type():
-    return questionary.select(
-        "Select device type",
-        choices=list(templates['device'].keys())
-    ).ask()
+    def metadata_prompt(self):
+        name = questionary.text("Enter a descriptive name for this node").ask()
+        floor = questionary.text("Enter floor number", validate=validate_int).ask()
+        location = questionary.text("Enter a brief description of the node's physical location").ask()
 
+        self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
 
-def configure_device():
-    config = templates['device'][device_type()].copy()
-    _type = config['_type']
+    def wifi_prompt(self):
+        ssid = questionary.text("Enter wifi SSID (2.4 GHz only)").ask()
+        password = questionary.password("Enter wifi password").ask()
 
-    for i in [i for i in config if config[i] == "placeholder"]:
-        if i == "nickname":
-            config[i] = questionary.text("Enter a memorable nickname for the device").ask()
-        elif i == "pin":
-            config[i] = questionary.select("Select pin", choices=valid_device_pins).ask()
-        elif i == "default_rule":
-            config[i] = rule_prompt_router(_type)
-        elif i == "min_bright":
-            config[i] = questionary.text("Enter minimum brightness", validate=IntRange(*rule_limits[_type])).ask()
-        elif i == "max_bright":
-            config[i] = questionary.text("Enter maximum brightness", validate=IntRange(*rule_limits[_type])).ask()
-        elif i == "ip":
-            config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
+        self.config['wifi'].update({'ssid': ssid, 'password': password})
 
-    return config
+    def sensor_type(self):
+        return questionary.select(
+            "Select sensor type",
+            choices=list(templates['sensor'].keys())
+        ).ask()
 
+    def device_type(self):
+        return questionary.select(
+            "Select device type",
+            choices=list(templates['device'].keys())
+        ).ask()
 
-def configure_sensor():
-    config = templates['sensor'][sensor_type()].copy()
-    _type = config['_type']
+    def configure_device(self):
+        config = templates['device'][self.device_type()].copy()
+        _type = config['_type']
 
-    for i in [i for i in config if config[i] == "placeholder"]:
-        if i == "nickname":
-            config[i] = questionary.text("Enter a memorable nickname for the sensor").ask()
-        elif i == "pin":
-            config[i] = questionary.select("Select pin", choices=valid_sensor_pins).ask()
-        elif i == "default_rule":
-            config[i] = rule_prompt_router(_type)
-        elif i == "ip":
-            config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
-        elif i == "mode":
-            config[i] = questionary.select("Select mode", choices=['cool', 'heat']).ask()
-        elif i == "tolerance":
-            config[i] = questionary.text("Enter temperature tolerance", validate=validate_int_or_float).ask()
+        for i in [i for i in config if config[i] == "placeholder"]:
+            if i == "nickname":
+                config[i] = questionary.text("Enter a memorable nickname for the device").ask()
+            elif i == "pin":
+                config[i] = questionary.select("Select pin", choices=valid_device_pins).ask()
+            elif i == "default_rule":
+                config[i] = self.rule_prompt_router(_type)
+            elif i == "min_bright":
+                config[i] = questionary.text("Enter minimum brightness", validate=IntRange(*rule_limits[_type])).ask()
+            elif i == "max_bright":
+                config[i] = questionary.text("Enter maximum brightness", validate=IntRange(*rule_limits[_type])).ask()
+            elif i == "ip":
+                config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
 
-    return config
+        return config
 
+    def configure_sensor(self):
+        config = templates['sensor'][self.sensor_type()].copy()
+        _type = config['_type']
 
-def rule_prompt_router(_type):
-    if _type in ['dimmer', 'bulb', 'pwm', 'wled', 'pir', 'si7021']:
-        return default_rule_prompt_int_option(_type)
-    elif _type == 'dummy':
-        return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
-    else:
-        return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
+        for i in [i for i in config if config[i] == "placeholder"]:
+            if i == "nickname":
+                config[i] = questionary.text("Enter a memorable nickname for the sensor").ask()
+            elif i == "pin":
+                config[i] = questionary.select("Select pin", choices=valid_sensor_pins).ask()
+            elif i == "default_rule":
+                config[i] = self.rule_prompt_router(_type)
+            elif i == "ip":
+                config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
+            elif i == "mode":
+                config[i] = questionary.select("Select mode", choices=['cool', 'heat']).ask()
+            elif i == "tolerance":
+                config[i] = questionary.text("Enter temperature tolerance", validate=validate_int_or_float).ask()
 
+        return config
 
-def default_rule_prompt_int_option(_type):
-    choice = questionary.select("Select default rule", choices=['Enabled', 'Disabled', 'Int']).ask()
-    if choice == 'Int':
-        return questionary.text("Enter default rule", validate=IntRange(*rule_limits[_type])).ask()
-    else:
-        return choice
+    def rule_prompt_router(self, _type):
+        if _type in ['dimmer', 'bulb', 'pwm', 'wled', 'pir', 'si7021']:
+            return self.default_rule_prompt_int_option(_type)
+        elif _type == 'dummy':
+            return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
+        else:
+            return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
 
+    def default_rule_prompt_int_option(self, _type):
+        choice = questionary.select("Select default rule", choices=['Enabled', 'Disabled', 'Int']).ask()
+        if choice == 'Int':
+            return questionary.text("Enter default rule", validate=IntRange(*rule_limits[_type])).ask()
+        else:
+            return choice
 
-def select_sensor_targets(config):
-    print("\nSelect target devices for each sensor")
-    print("All targets will turn on when the sensor is activated")
-    # Get list of all sensor IDs
-    sensors = [key for key in config.keys() if is_sensor(key)]
+    def select_sensor_targets(self):
+        print("\nSelect target devices for each sensor")
+        print("All targets will turn on when the sensor is activated")
+        # Get list of all sensor IDs
+        sensors = [key for key in self.config.keys() if is_sensor(key)]
 
-    # Map strings displayed for each device option (syntax: "Nickname (type)") to their IDs
-    targets_map = {}
-    for key in [key for key in config.keys() if is_device(key)]:
-        display = f"{config[key]['nickname']} ({config[key]['_type']})"
-        targets_map[display] = key
+        # Map strings displayed for each device option (syntax: "Nickname (type)") to their IDs
+        targets_map = {}
+        for key in [key for key in self.config.keys() if is_device(key)]:
+            display = f"{self.config[key]['nickname']} ({self.config[key]['_type']})"
+            targets_map[display] = key
 
-    # Show checkbox prompt for each sensor with all devices as options
-    for sensor in sensors:
-        prompt = f"\nSelect targets for {config[sensor]['nickname']} ({config[sensor]['_type']})"
-        targets = questionary.checkbox(prompt, choices=targets_map.keys()).ask()
+        # Show checkbox prompt for each sensor with all devices as options
+        for sensor in sensors:
+            prompt = f"\nSelect targets for {self.config[sensor]['nickname']} ({self.config[sensor]['_type']})"
+            targets = questionary.checkbox(prompt, choices=targets_map.keys()).ask()
 
-        # Add selection to config
-        for i in targets:
-            config[sensor]['targets'].append(targets_map[i])
+            # Add selection to config
+            for i in targets:
+                self.config[sensor]['targets'].append(targets_map[i])
 
-    return config
+    def add_schedule_rule(self, _type):
+        timestamp = questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
+        rule = self.rule_prompt_router(_type)
+        return timestamp, rule
 
-
-def add_schedule_rule(_type):
-    timestamp = questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
-    rule = rule_prompt_router(_type)
-    return timestamp, rule
-
-
-def schedule_rules_prompt(config):
-    for instance in [key for key in config if is_device_or_sensor(key)]:
-        prompt = f"\nWould you like to add schedule rules for {config[instance]['nickname']}?"
-        choice = questionary.select(prompt, choices=['Yes', 'No']).ask()
-        if choice == 'Yes':
-            while True:
-                timestamp, rule = add_schedule_rule(config[instance]['_type'])
-                config[instance]['schedule'][timestamp] = rule
-                choice = questionary.select("\nAdd another?", choices=['Yes', 'No']).ask()
-                if choice == 'No':
-                    break
-    return config
+    def schedule_rules_prompt(self):
+        for instance in [key for key in self.config if is_device_or_sensor(key)]:
+            prompt = f"\nWould you like to add schedule rules for {self.config[instance]['nickname']}?"
+            choice = questionary.select(prompt, choices=['Yes', 'No']).ask()
+            if choice == 'Yes':
+                while True:
+                    timestamp, rule = self.add_schedule_rule(self.config[instance]['_type'])
+                    self.config[instance]['schedule'][timestamp] = rule
+                    choice = questionary.select("\nAdd another?", choices=['Yes', 'No']).ask()
+                    if choice == 'No':
+                        break
 
 
 if __name__ == '__main__':
-    # Add output of metadata + wifi prompts to template
-    config = output_template.copy()
-    config['metadata'].update(metadata_prompt())
-    config['wifi'].update(wifi_prompt())
-
-    # Lists to store + count device and sensor sections
-    devices = []
-    sensors = []
-
-    # Add output of device and sensor prompts to lists
-    while True:
-        choice = questionary.select("\nAdd instances?", choices=['device', 'sensor', 'done']).ask()
-        if choice == 'device':
-            devices.append(configure_device())
-        elif choice == 'sensor':
-            sensors.append(configure_sensor())
-        elif choice == 'done':
-            break
-
-    # Add sequential device and sensor keys (device1, device2, etc)
-    # for each item in devices and sensors
-    for index, instance in enumerate(devices, 1):
-        config[f'device{index}'] = instance
-    for index, instance in enumerate(sensors, 1):
-        config[f'sensor{index}'] = instance
-
-    # Prompt user to select targets for each sensor
-    config = select_sensor_targets(config)
-
-    # Prompt user to add schedule rules for each device and sensor
-    config = schedule_rules_prompt(config)
-
-    print(json.dumps(config, indent=4))
+    config = GenerateConfigFile()
+    print(json.dumps(config.config, indent=4))
