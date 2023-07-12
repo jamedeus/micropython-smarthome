@@ -240,6 +240,10 @@ class GenerateConfigFile:
             }
         }
 
+        # List of pins that have already been used, prevent duplicates
+        self.used_pins = []
+        self.used_nicknames = []
+
         # Prompt user to enter metadata and wifi credentials
         self.metadata_prompt()
         self.wifi_prompt()
@@ -252,6 +256,10 @@ class GenerateConfigFile:
 
         # Prompt user to add schedule rules for each device and sensor
         self.schedule_rules_prompt()
+
+    # Return True if nickname unique, False if already in self.used_nicknames
+    def unique_nickname(self, nickname):
+        return nickname not in self.used_nicknames
 
     def add_devices_and_sensors(self):
         # Lists to store + count device and sensor sections
@@ -306,9 +314,18 @@ class GenerateConfigFile:
 
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
-                config[i] = questionary.text("Enter a memorable nickname for the device").ask()
+                nickname = questionary.text(
+                    "Enter a memorable nickname for the device",
+                    validate=self.unique_nickname
+                ).ask()
+                self.used_nicknames.append(nickname)
+                config[i] = nickname
             elif i == "pin":
-                config[i] = questionary.select("Select pin", choices=valid_device_pins).ask()
+                # Remove already used pins from choices to prevent duplicates
+                choices = [pin for pin in valid_device_pins if pin not in self.used_pins]
+                pin = questionary.select("Select pin", choices=choices).ask()
+                self.used_pins.append(pin)
+                config[i] = pin
             elif i == "default_rule":
                 config[i] = self.rule_prompt_router(_type)
             elif i == "min_bright":
@@ -326,9 +343,18 @@ class GenerateConfigFile:
 
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
-                config[i] = questionary.text("Enter a memorable nickname for the sensor").ask()
+                nickname = questionary.text(
+                    "Enter a memorable nickname for the sensor",
+                    validate=self.unique_nickname
+                ).ask()
+                self.used_nicknames.append(nickname)
+                config[i] = nickname
             elif i == "pin":
-                config[i] = questionary.select("Select pin", choices=valid_sensor_pins).ask()
+                # Remove already used pins from choices to prevent duplicates
+                choices = [pin for pin in valid_sensor_pins if pin not in self.used_pins]
+                pin = questionary.select("Select pin", choices=choices).ask()
+                self.used_pins.append(pin)
+                config[i] = pin
             elif i == "default_rule":
                 config[i] = self.rule_prompt_router(_type)
             elif i == "ip":
