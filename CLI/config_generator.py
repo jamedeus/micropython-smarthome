@@ -3,47 +3,15 @@
 import json
 import questionary
 from questionary import Validator, ValidationError
-from helper_functions import valid_ip, valid_timestamp, is_device, is_sensor, is_device_or_sensor
-
-valid_device_pins = (
-    '4',
-    '13',
-    '16',
-    '17',
-    '18',
-    '19',
-    '21',
-    '22',
-    '23',
-    '25',
-    '26',
-    '27',
-    '32',
-    '33'
-)
-
-valid_sensor_pins = (
-    '4',
-    '5',
-    '13',
-    '14',
-    '15',
-    '16',
-    '17',
-    '18',
-    '19',
-    '21',
-    '22',
-    '23',
-    '25',
-    '26',
-    '27',
-    '32',
-    '33',
-    '34',
-    '35',
-    '36',
-    '39'
+from validation_constants import valid_device_pins, valid_sensor_pins, config_templates
+from helper_functions import (
+    valid_ip,
+    valid_timestamp,
+    is_device,
+    is_sensor,
+    is_device_or_sensor,
+    is_int,
+    is_int_or_float
 )
 
 # Map int rule limits to device/sensor types
@@ -56,132 +24,6 @@ rule_limits = {
     'si7021': (65, 80),
 }
 
-templates = {
-    "device": {
-        "Dimmer": {
-            "_type": "dimmer",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "min_bright": "placeholder",
-            "max_bright": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "Bulb": {
-            "_type": "bulb",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "min_bright": "placeholder",
-            "max_bright": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "Relay": {
-            "_type": "relay",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "DumbRelay": {
-            "_type": "dumb-relay",
-            "nickname": "placeholder",
-            "default_rule": "placeholder",
-            "pin": "placeholder",
-            "schedule": {}
-        },
-
-        "DesktopTarget": {
-            "_type": "desktop",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "LedStrip": {
-            "_type": "pwm",
-            "nickname": "placeholder",
-            "min_bright": "placeholder",
-            "max_bright": "placeholder",
-            "default_rule": "placeholder",
-            "pin": "placeholder",
-            "schedule": {}
-        },
-
-        "Mosfet": {
-            "_type": "mosfet",
-            "nickname": "placeholder",
-            "default_rule": "placeholder",
-            "pin": "placeholder",
-            "schedule": {}
-        },
-
-        "ApiTarget": {
-            "_type": "api-target",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "Wled": {
-            "_type": "wled",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "min_bright": "placeholder",
-            "max_bright": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-    },
-
-    "sensor": {
-        "MotionSensor": {
-            "_type": "pir",
-            "nickname": "placeholder",
-            "pin": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "DesktopTrigger": {
-            "_type": "desktop",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "Thermostat": {
-            "_type": "si7021",
-            "nickname": "placeholder",
-            "default_rule": "placeholder",
-            "mode": "placeholder",
-            "tolerance": "placeholder",
-            "schedule": {}
-        },
-
-        "Dummy": {
-            "_type": "dummy",
-            "nickname": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "Switch": {
-            "_type": "switch",
-            "nickname": "placeholder",
-            "pin": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        }
-    }
-}
-
 
 class IntRange(Validator):
     def __init__(self, minimum, maximum):
@@ -189,36 +31,13 @@ class IntRange(Validator):
         self.maximum = int(maximum)
 
     def validate(self, document):
-        if validate_int(document.text) and self.minimum <= int(document.text) <= self.maximum:
+        if is_int(document.text) and self.minimum <= int(document.text) <= self.maximum:
             return True
         else:
             raise ValidationError(
                 message=f"Must be int between {self.minimum} and {self.maximum}",
                 cursor_position=len(document.text)
             )
-
-
-def validate_int(num):
-    try:
-        int(num)
-        return True
-    except (ValueError, TypeError):
-        return False
-
-
-def validate_float(num):
-    try:
-        float(num)
-        return True
-    except (ValueError, TypeError):
-        return False
-
-
-def validate_int_or_float(num):
-    if validate_int(num) or validate_float(num):
-        return True
-    else:
-        return False
 
 
 class GenerateConfigFile:
@@ -280,7 +99,7 @@ class GenerateConfigFile:
 
     def metadata_prompt(self):
         name = questionary.text("Enter a descriptive name for this node").ask()
-        floor = questionary.text("Enter floor number", validate=validate_int).ask()
+        floor = questionary.text("Enter floor number", validate=is_int).ask()
         location = questionary.text("Enter a brief description of the node's physical location").ask()
 
         self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
@@ -294,17 +113,17 @@ class GenerateConfigFile:
     def sensor_type(self):
         return questionary.select(
             "Select sensor type",
-            choices=list(templates['sensor'].keys())
+            choices=list(config_templates['sensor'].keys())
         ).ask()
 
     def device_type(self):
         return questionary.select(
             "Select device type",
-            choices=list(templates['device'].keys())
+            choices=list(config_templates['device'].keys())
         ).ask()
 
     def configure_device(self):
-        config = templates['device'][self.device_type()].copy()
+        config = config_templates['device'][self.device_type()].copy()
         _type = config['_type']
 
         for i in [i for i in config if config[i] == "placeholder"]:
@@ -346,7 +165,7 @@ class GenerateConfigFile:
         return config
 
     def configure_sensor(self):
-        config = templates['sensor'][self.sensor_type()].copy()
+        config = config_templates['sensor'][self.sensor_type()].copy()
 
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
@@ -374,7 +193,7 @@ class GenerateConfigFile:
                 config[i] = questionary.select("Select mode", choices=['cool', 'heat']).ask()
 
             elif i == "tolerance":
-                config[i] = questionary.text("Enter temperature tolerance", validate=validate_int_or_float).ask()
+                config[i] = questionary.text("Enter temperature tolerance", validate=is_int_or_float).ask()
 
         return config
 

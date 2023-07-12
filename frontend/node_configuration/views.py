@@ -12,22 +12,24 @@ from provision_tools import get_modules, provision
 from .validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
 from api_endpoints import endpoint_map
-from helper_functions import is_device_or_sensor, is_device, is_sensor, get_config_param_list, valid_ip, get_schedule_keywords_dict
+from validation_constants import valid_device_pins, valid_sensor_pins, config_templates, valid_config_keys
+from helper_functions import (
+    is_device_or_sensor,
+    is_device,
+    is_sensor,
+    get_config_param_list,
+    valid_ip,
+    get_schedule_keywords_dict
+)
 
 # Env var constants
 REPO_DIR = settings.REPO_DIR
 CONFIG_DIR = settings.CONFIG_DIR
 NODE_PASSWD = settings.NODE_PASSWD
 
-# Config validation constants
-valid_device_pins = (4, 13, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33)
-valid_sensor_pins = (4, 5, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 26, 27, 32, 33, 34, 35, 36, 39)
-valid_device_types = ('dimmer', 'bulb', 'relay', 'dumb-relay', 'desktop', 'pwm', 'mosfet', 'api-target', 'wled')
-valid_sensor_types = ('pir', 'desktop', 'si7021', 'dummy', 'switch')
-valid_config_keys = {
-    "metadata": {"id": "", "location": "", "floor": "", "schedule_keywords": ""},
-    "wifi": {"ssid": "", "password": ""}
-}
+# Parse tuple of device and sensor types from templates, used in validation
+valid_device_types = tuple([config_templates['device'][i]['_type'] for i in config_templates['device'].keys()])
+valid_sensor_types = tuple([config_templates['sensor'][i]['_type'] for i in config_templates['sensor'].keys()])
 
 # Copy references to endpoints called directly by views
 add_schedule_keyword = endpoint_map['add_schedule_keyword']
@@ -368,11 +370,11 @@ def validate_instance_pins(config):
 
     # Check for invalid pins (reserved, input-only, etc)
     for pin in device_pins:
-        if pin not in valid_device_pins:
+        if str(pin) not in valid_device_pins:
             return f'Invalid device pin {pin} used'
 
     for pin in sensor_pins:
-        if pin not in valid_sensor_pins:
+        if str(pin) not in valid_sensor_pins:
             return f'Invalid sensor pin {pin} used'
 
     return True

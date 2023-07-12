@@ -18,6 +18,32 @@ def is_sensor(string):
     return string.startswith("sensor")
 
 
+# Returns True if argument is integer, otherwise False
+def is_int(num):
+    try:
+        int(num)
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
+# Returns True if argument is float, otherwise False
+def is_float(num):
+    try:
+        float(num)
+        return True
+    except (ValueError, TypeError):
+        return False
+
+
+# Returns True if argument is integer or float, otherwise False
+def is_int_or_float(num):
+    if is_int(num) or is_float(num):
+        return True
+    else:
+        return False
+
+
 # Takes config file, param
 def get_config_param_list(config, param):
     return [value[param] for key, value in config.items() if param in value]
