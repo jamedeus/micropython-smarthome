@@ -11,6 +11,7 @@ flask = "~=2.0"
 ipython = "*"
 coverage = "*"
 util = {editable = true, path = "util"}
+questionary = "*"
 
 [dev-packages]
 
