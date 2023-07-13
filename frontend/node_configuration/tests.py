@@ -2335,22 +2335,25 @@ class ValidatorTests(TestCase):
 
     def test_fade_rules(self):
         # LedStrip and Tplink should accept fade rules
-        self.assertTrue(led_strip_validator('fade/50/3600', '0', '1023'))
+        self.assertTrue(led_strip_validator('fade/50/3600', min_bright='0', max_bright='1023'))
         self.assertTrue(tplink_validator('fade/50/3600'))
 
         # LedStrip should reject if target out of range
-        self.assertFalse(led_strip_validator('fade/50/3600', '500', '1023'))
+        self.assertFalse(led_strip_validator('fade/50/3600', min_bright='500', max_bright='1023'))
 
         # Both should reject if target negative
         self.assertFalse(tplink_validator('fade/-5/3600'))
-        self.assertEqual(led_strip_validator('fade/-5/3600', '-500', '1023'), 'PWM limits cannot be less than 0')
+        self.assertEqual(
+            led_strip_validator('fade/-5/3600', min_bright='-500', max_bright='1023'),
+            'PWM limits cannot be less than 0'
+        )
 
         # Both should reject if period negative
-        self.assertFalse(led_strip_validator('fade/50/-500', '0', '1023'))
+        self.assertFalse(led_strip_validator('fade/50/-500', min_bright='0', max_bright='1023'))
         self.assertFalse(tplink_validator('fade/50/-500'))
 
         # Both should reject if target is non-integer
-        self.assertFalse(led_strip_validator('fade/max/3600', '0', '1023'))
+        self.assertFalse(led_strip_validator('fade/max/3600', min_bright='0', max_bright='1023'))
         self.assertFalse(tplink_validator('fade/max/3600'))
 
     def test_motion_sensor_rules(self):
@@ -2403,7 +2406,7 @@ class ValidatorErrorTests(TestCase):
 
     def test_invalid_bool_rule(self):
         # Confirm bool is rejected for correct types
-        self.assertFalse(led_strip_validator(True, '0', '1023'))
+        self.assertFalse(led_strip_validator(True, min_bright='0', max_bright='1023'))
         self.assertFalse(tplink_validator(True))
         self.assertFalse(wled_validator(True))
         self.assertFalse(motion_sensor_validator(True))
@@ -2412,18 +2415,43 @@ class ValidatorErrorTests(TestCase):
         # Confirm range is enforced for correct types
         self.assertFalse(tplink_validator('-50'))
         self.assertFalse(wled_validator('-50'))
-        self.assertFalse(thermostat_validator('50', 1))
+        self.assertFalse(thermostat_validator('50', tolerance=1))
 
     def test_invalid_noninteger_rules(self):
         # Confirm string is rejected for correct types
         self.assertFalse(wled_validator('max'))
         self.assertFalse(motion_sensor_validator('max'))
-        self.assertFalse(thermostat_validator('max', 1))
+        self.assertFalse(thermostat_validator('max', tolerance=1))
 
     def test_invalid_keyword_rules(self):
         # Confirm wrong keywords are rejected for correct types
         self.assertFalse(dummy_validator('max'))
         self.assertFalse(dummy_validator(50))
+
+    # Original bug: Validators accepted "enabled" and "disabled" as valid
+    # rules in all situations. Some device and sensor types do not support
+    # these as default_rule, only as scheduled rules.
+    # Fixed by refactor in c79864a9
+    def test_regression_invalid_default_rule(self):
+        # Set invalid default rules for all types that don't support
+        self.config['device1']['default_rule'] = 'enabled'
+        self.config['device2']['default_rule'] = 'disabled'
+        self.config['device6']['default_rule'] = 'enabled'
+        self.config['device8']['default_rule'] = 'disabled'
+        self.config['device10']['default_rule'] = 'enabled'
+        self.config['sensor1']['default_rule'] = 'disabled'
+        self.config['sensor3']['default_rule'] = 'enabled'
+        self.config['sensor5']['default_rule'] = 'disabled'
+
+        # Validators should reject all with errors
+        self.assertEqual(validate_rules(self.config['device1']), 'Overhead: Invalid default rule enabled')
+        self.assertEqual(validate_rules(self.config['device2']), 'Lamp: Invalid default rule disabled')
+        self.assertEqual(validate_rules(self.config['device6']), 'Cabinet Lights: Invalid default rule enabled')
+        self.assertEqual(validate_rules(self.config['device8']), 'TV Bias Lights: Invalid default rule disabled')
+        self.assertEqual(validate_rules(self.config['device10']), 'Remote Control: Invalid default rule enabled')
+        self.assertEqual(validate_rules(self.config['sensor1']), 'Motion: Invalid default rule disabled')
+        self.assertEqual(validate_rules(self.config['sensor3']), 'Override: Invalid default rule enabled')
+        self.assertEqual(validate_rules(self.config['sensor5']), 'Temperature: Invalid default rule disabled')
 
 
 # Test views used to manage schedule keywords from config overview
