@@ -3,6 +3,8 @@
 import json
 import questionary
 from questionary import Validator, ValidationError
+from colorama import Fore
+from instance_validators import validate_rules
 from validation_constants import valid_device_pins, valid_sensor_pins, config_templates
 from helper_functions import (
     valid_ip,
@@ -122,9 +124,16 @@ class GenerateConfigFile:
             choices=list(config_templates['device'].keys())
         ).ask()
 
-    def configure_device(self):
-        config = config_templates['device'][self.device_type()].copy()
-        _type = config['_type']
+    # Prompt user to configure a device
+    # config arg accepts partially-complete template, used to re-prompt
+    # user without repeating all questions after failed validation
+    def configure_device(self, config=None):
+        if config is None:
+            config = config_templates['device'][self.device_type()].copy()
+            _type = config['_type']
+        # Config previously failed validation, repeat prompt with most options pre-selected
+        else:
+            _type = config['_type']
 
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
@@ -162,10 +171,22 @@ class GenerateConfigFile:
             elif i == "ip":
                 config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
 
-        return config
+        # Confirm all selections are valid
+        valid = validate_rules(config)
+        if valid is not True:
+            # Print error, remove potentially invalid parameters and re-prompt
+            print(f'{Fore.RED}ERROR{Fore.RESET}: {valid}')
+            print('Resetting relevant options, please try again')
+            return self.configure_device(self.reset_config_template(config))
+        else:
+            return config
 
-    def configure_sensor(self):
-        config = config_templates['sensor'][self.sensor_type()].copy()
+    # Prompt user to configure a sensor
+    # config arg accepts partially-complete template, used to re-prompt
+    # user without repeating all questions after failed validation
+    def configure_sensor(self, config=None):
+        if config is None:
+            config = config_templates['sensor'][self.sensor_type()].copy()
 
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
@@ -195,6 +216,22 @@ class GenerateConfigFile:
             elif i == "tolerance":
                 config[i] = questionary.text("Enter temperature tolerance", validate=is_int_or_float).ask()
 
+        # Confirm all selections are valid
+        valid = validate_rules(config)
+        if valid is not True:
+            # Print error, remove potentially invalid parameters and re-prompt
+            print(f'{Fore.RED}ERROR{Fore.RESET}: {valid}')
+            print('Resetting relevant options, please try again')
+            return self.configure_sensor(self.reset_config_template(config))
+        else:
+            return config
+
+    # Takes config that failed validation, replaces potentially invalid params
+    # with placeholder. Used to re-prompt user without repeating all questions.
+    def reset_config_template(self, config):
+        for i in config:
+            if i not in ['nickname', 'pin', '_type', 'schedule']:
+                config[i] = 'placeholder'
         return config
 
     def rule_prompt_router(self, config):
