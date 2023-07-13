@@ -2336,13 +2336,13 @@ class ValidatorTests(TestCase):
     def test_fade_rules(self):
         # LedStrip and Tplink should accept fade rules
         self.assertTrue(led_strip_validator('fade/50/3600', min_bright='0', max_bright='1023'))
-        self.assertTrue(tplink_validator('fade/50/3600'))
+        self.assertTrue(tplink_validator('fade/50/3600', min_bright='1', max_bright='100'))
 
         # LedStrip should reject if target out of range
         self.assertFalse(led_strip_validator('fade/50/3600', min_bright='500', max_bright='1023'))
 
         # Both should reject if target negative
-        self.assertFalse(tplink_validator('fade/-5/3600'))
+        self.assertFalse(tplink_validator('fade/-5/3600', min_bright='1', max_bright='100'))
         self.assertEqual(
             led_strip_validator('fade/-5/3600', min_bright='-500', max_bright='1023'),
             'PWM limits cannot be less than 0'
@@ -2350,11 +2350,11 @@ class ValidatorTests(TestCase):
 
         # Both should reject if period negative
         self.assertFalse(led_strip_validator('fade/50/-500', min_bright='0', max_bright='1023'))
-        self.assertFalse(tplink_validator('fade/50/-500'))
+        self.assertFalse(tplink_validator('fade/50/-500', min_bright='1', max_bright='100'))
 
         # Both should reject if target is non-integer
         self.assertFalse(led_strip_validator('fade/max/3600', min_bright='0', max_bright='1023'))
-        self.assertFalse(tplink_validator('fade/max/3600'))
+        self.assertFalse(tplink_validator('fade/max/3600', min_bright='1', max_bright='100'))
 
     def test_motion_sensor_rules(self):
         # Should accept None (converts to 0)
@@ -2407,20 +2407,21 @@ class ValidatorErrorTests(TestCase):
     def test_invalid_bool_rule(self):
         # Confirm bool is rejected for correct types
         self.assertFalse(led_strip_validator(True, min_bright='0', max_bright='1023'))
-        self.assertFalse(tplink_validator(True))
-        self.assertFalse(wled_validator(True))
+        self.assertFalse(tplink_validator(True, min_bright='1', max_bright='100'))
+        self.assertFalse(wled_validator(True, min_bright='1', max_bright='255'))
         self.assertFalse(motion_sensor_validator(True))
 
     def test_invalid_out_of_range_rules(self):
         # Confirm range is enforced for correct types
-        self.assertFalse(tplink_validator('-50'))
-        self.assertFalse(wled_validator('-50'))
+        self.assertFalse(led_strip_validator('-50', min_bright='0', max_bright='1023'))
+        self.assertFalse(tplink_validator('-50', min_bright='1', max_bright='100'))
+        self.assertFalse(wled_validator('-50', min_bright='1', max_bright='255'))
         self.assertFalse(thermostat_validator('50', tolerance=1))
 
     def test_invalid_noninteger_rules(self):
         # Confirm string is rejected for correct types
-        self.assertFalse(wled_validator('max'))
-        self.assertFalse(motion_sensor_validator('max'))
+        self.assertFalse(wled_validator('max', min_bright='1', max_bright='255'))
+        self.assertFalse(motion_sensor_validator('max', min_bright='1', max_bright='100'))
         self.assertFalse(thermostat_validator('max', tolerance=1))
 
     def test_invalid_keyword_rules(self):
@@ -2452,6 +2453,13 @@ class ValidatorErrorTests(TestCase):
         self.assertEqual(validate_rules(self.config['sensor1']), 'Motion: Invalid default rule disabled')
         self.assertEqual(validate_rules(self.config['sensor3']), 'Override: Invalid default rule enabled')
         self.assertEqual(validate_rules(self.config['sensor5']), 'Temperature: Invalid default rule disabled')
+
+    # Original bug: Validators for tplink and wled used hardcoded min/max
+    # rules, ignoring min_bright and max_bright attributes.
+    def test_regression_min_max_bright_ignored(self):
+        self.assertFalse(led_strip_validator('1023', min_bright='500', max_bright='600'))
+        self.assertFalse(tplink_validator('5', min_bright='25', max_bright='100'))
+        self.assertFalse(wled_validator('255', min_bright='1', max_bright='200'))
 
 
 # Test views used to manage schedule keywords from config overview

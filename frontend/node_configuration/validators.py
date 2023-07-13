@@ -210,11 +210,13 @@ def led_strip_validator(rule, **kwargs):
 
 
 # Requires int between 1 and 100 (inclusive), or fade/<int>/<int>
-# TODO max/min args
 @add_schedule_rule_validator(['dimmer', 'bulb'])
 @add_generic_validator
 @add_default_rule_validator(['dimmer', 'bulb'])
 def tplink_validator(rule, **kwargs):
+    min_bright = int(kwargs['min_bright'])
+    max_bright = int(kwargs['max_bright'])
+
     try:
         if str(rule).startswith("fade"):
             # Parse parameters from rule
@@ -223,7 +225,7 @@ def tplink_validator(rule, **kwargs):
             if int(period) < 0:
                 return False
 
-            if 0 <= int(target) <= 100:
+            if min_bright <= int(target) <= max_bright:
                 return True
             else:
                 return False
@@ -232,7 +234,7 @@ def tplink_validator(rule, **kwargs):
         elif isinstance(rule, bool):
             return False
 
-        elif 0 <= int(rule) <= 100:
+        elif min_bright <= int(rule) <= max_bright:
             return True
 
         else:
@@ -243,17 +245,19 @@ def tplink_validator(rule, **kwargs):
 
 
 # Requires int between 1 and 255 (inclusive)
-# TODO max/min args
 @add_schedule_rule_validator(['wled'])
 @add_generic_validator
 @add_default_rule_validator(['wled'])
 def wled_validator(rule, **kwargs):
+    min_bright = int(kwargs['min_bright'])
+    max_bright = int(kwargs['max_bright'])
+
     try:
         # Reject "False" before reaching conditional below (would cast False to 0 and accept as valid rule)
         if isinstance(rule, bool):
             return False
 
-        elif 1 <= int(rule) <= 255:
+        elif min_bright <= int(rule) <= max_bright:
             return True
 
         else:
