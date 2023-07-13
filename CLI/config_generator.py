@@ -269,7 +269,7 @@ class GenerateConfigFile:
     def schedule_rule_prompt_router(self, config):
         _type = config['_type']
         if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
-            return self.rule_prompt_with_int_option(config['min_bright'], config['max_bright'])
+            return self.rule_prompt_int_and_fade_options(config['min_bright'], config['max_bright'])
         elif _type in ['pir', 'si7021']:
             return self.rule_prompt_with_int_option(*rule_limits[_type])
         elif _type == 'dummy':
@@ -282,6 +282,18 @@ class GenerateConfigFile:
         choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int']).ask()
         if choice == 'Int':
             return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
+        else:
+            return choice
+
+    # Rule prompt for DimmableLight instances, includes fade rule option
+    def rule_prompt_int_and_fade_options(self, minimum, maximum):
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int', 'Fade']).ask()
+        if choice == 'Int':
+            return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
+        if choice == 'Fade':
+            target = questionary.text("Enter target brightness", validate=IntRange(minimum, maximum)).ask()
+            period = questionary.text("Enter duration in seconds", validate=IntRange(1, 86400)).ask()
+            return f'fade/{target}/{period}'
         else:
             return choice
 
