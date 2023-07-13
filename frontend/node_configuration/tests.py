@@ -12,7 +12,7 @@ from django.core.exceptions import ValidationError
 from .views import validate_full_config, get_modules, get_api_target_menu_options, provision
 from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinates
 from Webrepl import websocket, Webrepl, handshake_message
-from .validators import (
+from instance_validators import (
     validate_rules,
     api_target_validator,
     led_strip_validator,

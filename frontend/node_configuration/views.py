@@ -9,7 +9,7 @@ from django.db import IntegrityError
 from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates
 from Webrepl import Webrepl
 from provision_tools import get_modules, provision
-from .validators import validate_rules
+from instance_validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
 from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
 from validation_constants import valid_device_pins, valid_sensor_pins, config_templates, valid_config_keys
