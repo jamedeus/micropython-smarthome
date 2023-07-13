@@ -1,46 +1,38 @@
 import json
+from functools import wraps
 from helper_functions import is_device_or_sensor, is_sensor
 
 
-# Receives full config entry from validateConfig view
-# Determines correct validator and passes to validate_all
+# Map device and sensor types to validators for both default
+# and schedule rules. Each key contains a dict with 'default'
+# and 'schedule' keys to access each function.
+validator_map = {}
+
+
+# Receives full config entry, tests default_rule and all schedule
+# rules with validator functions looked up in validator_map.
+# Returns True or error message
 def validate_rules(instance):
     print(f"Validating {instance['nickname']} rules...")
-    instance_type = instance['_type']
-    if instance_type == "dimmer" or instance_type == "bulb":
-        return validate_all(instance, tplink_validator)
-    elif instance_type == "pwm":
-        return validate_all(instance, led_strip_validator, instance['min_bright'], instance['max_bright'])
-    elif instance_type == "api-target":
-        return validate_all(instance, api_target_validator)
-    elif instance_type == "wled":
-        return validate_all(instance, wled_validator)
-    elif instance_type == "pir":
-        return validate_all(instance, motion_sensor_validator)
-    elif instance_type == "si7021":
-        return validate_all(instance, thermostat_validator, instance['tolerance'])
-    elif instance_type == "dummy":
-        return validate_all(instance, dummy_validator)
-    elif instance_type in ["relay", "dumb-relay", "desktop", "mosfet", "switch"]:
-        return validate_all(instance)
-    else:
-        return f"Invalid type {instance['_type']}"
 
+    try:
+        default_validator = validator_map[instance['_type']]['default']
+        schedule_validator = validator_map[instance['_type']]['schedule']
+    except KeyError:
+        return f'Invalid type {instance["_type"]}'
 
-# Receives full config entry + type-specific validator
-# Checks default_rule and all schedule rules
-def validate_all(instance, special_validator=False, *args):
-    # Check default rule
-    valid = universal_validator(instance['default_rule'], special_validator, *args)
+    # Validate default rule
+    valid = default_validator(instance['default_rule'], **instance)
     if valid is False:
         return f"{instance['nickname']}: Invalid default rule {instance['default_rule']}"
     # If validator returns own error, return as-is
     elif valid is not True:
         return valid
 
-    # Check schedule rules
+    # Validate shedule rules
     for time in instance['schedule']:
-        valid = universal_validator(instance['schedule'][time], special_validator, *args)
+        valid = schedule_validator(instance['schedule'][time], **instance)
+
         if valid is False:
             return f"{instance['nickname']}: Invalid schedule rule {instance['schedule'][time]}"
         # If validator returns own error, return as-is
@@ -50,22 +42,58 @@ def validate_all(instance, special_validator=False, *args):
     return True
 
 
-# Accepts single rule, optional type-specific validator
-# Checks against universal rules first, then type validator if present
-def universal_validator(rule, special_validator=False, *args):
+# Adds decorated function to validator_map default key
+# for all types specified in type_list
+def add_default_rule_validator(type_list):
+    def _add_schedule_rule_validator(func):
+        for i in type_list:
+            if i not in validator_map:
+                validator_map[i] = {'default': '', 'schedule': ''}
+            validator_map[i]['default'] = func
+        return func
+    return _add_schedule_rule_validator
+
+
+# Adds decorated function to validator_map schedule key
+# for all types specified in type_list
+def add_schedule_rule_validator(type_list):
+    def _add_schedule_rule_validator(func):
+        for i in type_list:
+            if i not in validator_map.keys():
+                validator_map[i] = {'default': '', 'schedule': ''}
+            validator_map[i]['schedule'] = func
+        return func
+    return _add_schedule_rule_validator
+
+
+# Returns wrapped function that accepts enabled and
+# disabled in addition to own rules
+def add_generic_validator(func):
+    @wraps(func)
+    def wrapper(rule, **kwargs):
+        if generic_validator(rule):
+            return True
+        else:
+            return func(rule, **kwargs)
+    return wrapper
+
+
+@add_schedule_rule_validator(["relay", "dumb-relay", "desktop", "mosfet", "switch"])
+@add_default_rule_validator(["relay", "dumb-relay", "desktop", "mosfet", "switch"])
+def generic_validator(rule, **kwargs):
     if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
         return True
     else:
-        if special_validator:
-            return special_validator(rule, *args)
-        else:
-            return False
+        return False
 
 
 # Takes dict containing 2 entries named "on" and "off"
 # Both entries are lists containing a full API request
 # "on" sent when self.send(1) called, "off" when self.send(0) called
-def api_target_validator(rule):
+@add_schedule_rule_validator(['api-target'])
+@add_generic_validator
+@add_default_rule_validator(['api-target'])
+def api_target_validator(rule, **kwargs):
     if isinstance(rule, str):
         try:
             # Convert string rule to dict (if received from API)
@@ -135,7 +163,14 @@ def is_valid_api_sub_rule(rule):
 
 
 # Requires int between min/max, or fade/<int>/<int>
-def led_strip_validator(rule, min_bright, max_bright):
+@add_schedule_rule_validator(['pwm'])
+@add_generic_validator
+@add_default_rule_validator(['pwm'])
+def led_strip_validator(rule, **kwargs):
+    # TODO KeyError (missing min/max args)
+    min_bright = kwargs['min_bright']
+    max_bright = kwargs['max_bright']
+
     # Validate min/max brightness limits
     try:
         if int(min_bright) > int(max_bright):
@@ -175,7 +210,11 @@ def led_strip_validator(rule, min_bright, max_bright):
 
 
 # Requires int between 1 and 100 (inclusive), or fade/<int>/<int>
-def tplink_validator(rule):
+# TODO max/min args
+@add_schedule_rule_validator(['dimmer', 'bulb'])
+@add_generic_validator
+@add_default_rule_validator(['dimmer', 'bulb'])
+def tplink_validator(rule, **kwargs):
     try:
         if str(rule).startswith("fade"):
             # Parse parameters from rule
@@ -204,7 +243,11 @@ def tplink_validator(rule):
 
 
 # Requires int between 1 and 255 (inclusive)
-def wled_validator(rule):
+# TODO max/min args
+@add_schedule_rule_validator(['wled'])
+@add_generic_validator
+@add_default_rule_validator(['wled'])
+def wled_validator(rule, **kwargs):
     try:
         # Reject "False" before reaching conditional below (would cast False to 0 and accept as valid rule)
         if isinstance(rule, bool):
@@ -223,7 +266,10 @@ def wled_validator(rule):
 # Requires on or off (in addition to enabled/disabled checked previously)
 # Needs on and off because rule is only factor determining if condition is met,
 # without it would never turn targets off (condition not checked while disabled)
-def dummy_validator(rule):
+@add_schedule_rule_validator(['dummy'])
+@add_generic_validator
+@add_default_rule_validator(['dummy'])
+def dummy_validator(rule, **kwargs):
     try:
         if rule.lower() == "on" or rule.lower() == "off":
             return True
@@ -234,7 +280,10 @@ def dummy_validator(rule):
 
 
 # Requires int or float
-def motion_sensor_validator(rule):
+@add_schedule_rule_validator(['pir'])
+@add_generic_validator
+@add_default_rule_validator(['pir'])
+def motion_sensor_validator(rule, **kwargs):
     try:
         if rule is None:
             return True
@@ -249,11 +298,16 @@ def motion_sensor_validator(rule):
         return False
 
 
-# Requires int or float between 65 and 90 (inclusive)
-def thermostat_validator(rule, tolerance):
+# Requires int or float between 65 and 80 (inclusive)
+# Also validates tolerance, must be int or float between 0.1 and 10
+@add_schedule_rule_validator(['si7021'])
+@add_generic_validator
+@add_default_rule_validator(['si7021'])
+def thermostat_validator(rule, **kwargs):
     # Validate tolerance
+    # TODO KeyError (missing tolerance)
     try:
-        if not 0.1 <= float(tolerance) <= 10.0:
+        if not 0.1 <= float(kwargs['tolerance']) <= 10.0:
             return 'Thermostat tolerance out of range (0.1 - 10.0)'
     except ValueError:
         return 'Thermostat tolerance must be int or float'
