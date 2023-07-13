@@ -85,9 +85,6 @@ class GenerateConfigFile:
         # Prompt user to select targets for each sensor
         self.select_sensor_targets()
 
-        # Prompt user to add schedule rules for each device and sensor
-        self.schedule_rules_prompt()
-
     # Return True if nickname unique, False if already in self.used_nicknames
     def unique_nickname(self, nickname):
         return nickname not in self.used_nicknames
@@ -186,6 +183,9 @@ class GenerateConfigFile:
             elif i == "ip":
                 config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
 
+        # Prompt user to add schedule rules
+        config = self.schedule_rule_prompt(config)
+
         # Confirm all selections are valid
         valid = validate_rules(config)
         if valid is not True:
@@ -230,6 +230,9 @@ class GenerateConfigFile:
 
             elif i == "tolerance":
                 config[i] = questionary.text("Enter temperature tolerance", validate=FloatRange(0, 10)).ask()
+
+        # Prompt user to add schedule rules
+        config = self.schedule_rule_prompt(config)
 
         # Confirm all selections are valid
         valid = validate_rules(config)
@@ -307,22 +310,25 @@ class GenerateConfigFile:
             # Add selection to config
             self.config[sensor]['targets'] = [targets_map[i] for i in targets]
 
+    # Takes instance config, prompts to add schedule rules in loop until
+    # user selects done. Returns config with all selected schedule rules.
+    def schedule_rule_prompt(self, config):
+        prompt = f"\nWould you like to add schedule rules for {config['nickname']}?"
+        if questionary.select(prompt, choices=['Yes', 'No']).ask() == 'Yes':
+            while True:
+                config = self.add_schedule_rule(config)
+                choice = questionary.select("\nAdd another?", choices=['Yes', 'No']).ask()
+                if choice == 'No':
+                    break
+        return config
+
+    # Takes config, prompts user to add a single schedule rule, returns
+    # config with rule added. Called by loop in schedule_rule_prompt.
     def add_schedule_rule(self, config):
         timestamp = questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
         rule = self.schedule_rule_prompt_router(config)
-        return timestamp, rule
-
-    def schedule_rules_prompt(self):
-        for instance in [key for key in self.config if is_device_or_sensor(key)]:
-            prompt = f"\nWould you like to add schedule rules for {self.config[instance]['nickname']}?"
-            choice = questionary.select(prompt, choices=['Yes', 'No']).ask()
-            if choice == 'Yes':
-                while True:
-                    timestamp, rule = self.add_schedule_rule(self.config[instance])
-                    self.config[instance]['schedule'][timestamp] = rule
-                    choice = questionary.select("\nAdd another?", choices=['Yes', 'No']).ask()
-                    if choice == 'No':
-                        break
+        config['schedule'][timestamp] = rule
+        return config
 
 
 if __name__ == '__main__':
