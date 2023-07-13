@@ -2222,19 +2222,19 @@ class ValidateConfigTests(TestCase):
         self.valid_config['device6']['max_bright'] = 500
         self.valid_config['device6']['default_rule'] = 700
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'PWM min cannot be greater than max')
+        self.assertEqual(result, 'min_bright cannot be greater than max_bright')
 
     def test_pwm_limits_negative(self):
         self.valid_config['device6']['min_bright'] = -50
         self.valid_config['device6']['max_bright'] = -5
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'PWM limits cannot be less than 0')
+        self.assertEqual(result, 'Brightness limits cannot be less than 0')
 
     def test_pwm_limits_over_max(self):
         self.valid_config['device6']['min_bright'] = 1023
         self.valid_config['device6']['max_bright'] = 4096
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'PWM limits cannot be greater than 1023')
+        self.assertEqual(result, 'Brightness limits cannot be greater than 1023')
 
     def test_pwm_invalid_default_rule(self):
         self.valid_config['device6']['min_bright'] = 500
@@ -2253,7 +2253,7 @@ class ValidateConfigTests(TestCase):
     def test_pwm_noninteger_limit(self):
         self.valid_config['device6']['min_bright'] = 'off'
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Invalid PWM limits, both must be int between 0 and 1023')
+        self.assertEqual(result, 'Invalid brightness limits, both must be int between 0 and 1023')
 
 
 # Test functions in validators.py not already covered by config generation tests
@@ -2345,7 +2345,7 @@ class ValidatorTests(TestCase):
         self.assertFalse(tplink_validator('fade/-5/3600', min_bright='1', max_bright='100'))
         self.assertEqual(
             led_strip_validator('fade/-5/3600', min_bright='-500', max_bright='1023'),
-            'PWM limits cannot be less than 0'
+            'Brightness limits cannot be less than 0'
         )
 
         # Both should reject if period negative
@@ -2460,6 +2460,51 @@ class ValidatorErrorTests(TestCase):
         self.assertFalse(led_strip_validator('1023', min_bright='500', max_bright='600'))
         self.assertFalse(tplink_validator('5', min_bright='25', max_bright='100'))
         self.assertFalse(wled_validator('255', min_bright='1', max_bright='200'))
+
+    # Original bug: Validators assumed min_bright + max_bright existed
+    # in kwargs and did not trap error, resulting in exception if missing.
+    def test_regression_missing_min_max_bright(self):
+        # Delete required attributes
+        del self.config['device1']['min_bright']
+        del self.config['device2']['max_bright']
+        del self.config['device6']['min_bright']
+        del self.config['device8']['max_bright']
+        del self.config['sensor5']['tolerance']
+
+        self.assertEqual(
+            validate_rules(self.config['device1']),
+            'Tplink missing required min_bright and/or max_bright property'
+        )
+        self.assertEqual(
+            validate_rules(self.config['device2']),
+            'Tplink missing required min_bright and/or max_bright property'
+        )
+        self.assertEqual(
+            validate_rules(self.config['device6']),
+            'LedStrip missing required min_bright and/or max_bright property'
+        )
+        self.assertEqual(
+            validate_rules(self.config['device8']),
+            'Wled missing required min_bright and/or max_bright property'
+        )
+        self.assertEqual(
+            validate_rules(self.config['sensor5']),
+            'Thermostat missing required tolerance property'
+        )
+
+    # Original bug: Validators for Tplink and Wled require min/max args
+    # but did not confirm that max is greater than min, resulting in all
+    # rules being rejected with unhelpful errors.
+    def test_regresstion_min_bright_greater_than_max_bright(self):
+        # Set invalid limits
+        self.config['device1']['min_bright'] = 100
+        self.config['device1']['max_bright'] = 1
+        self.config['device8']['min_bright'] = 255
+        self.config['device8']['max_bright'] = 1
+
+        # Confirm rejected with correct error
+        self.assertEqual(validate_rules(self.config['device1']), 'min_bright cannot be greater than max_bright')
+        self.assertEqual(validate_rules(self.config['device8']), 'min_bright cannot be greater than max_bright')
 
 
 # Test views used to manage schedule keywords from config overview
