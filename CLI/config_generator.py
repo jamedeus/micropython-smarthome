@@ -13,7 +13,7 @@ from helper_functions import (
     is_sensor,
     is_device_or_sensor,
     is_int,
-    is_int_or_float
+    is_float
 )
 
 # Map int rule limits to device/sensor types
@@ -38,6 +38,21 @@ class IntRange(Validator):
         else:
             raise ValidationError(
                 message=f"Must be int between {self.minimum} and {self.maximum}",
+                cursor_position=len(document.text)
+            )
+
+
+class FloatRange(Validator):
+    def __init__(self, minimum, maximum):
+        self.minimum = float(minimum)
+        self.maximum = float(maximum)
+
+    def validate(self, document):
+        if is_float(document.text) and self.minimum <= float(document.text) <= self.maximum:
+            return True
+        else:
+            raise ValidationError(
+                message=f"Must be float between {self.minimum} and {self.maximum}",
                 cursor_position=len(document.text)
             )
 
@@ -152,7 +167,7 @@ class GenerateConfigFile:
                 config[i] = pin
 
             elif i == "default_rule":
-                config[i] = self.rule_prompt_router(config)
+                config[i] = self.default_rule_prompt_router(config)
 
             elif i == "min_bright":
                 config[i] = questionary.text(
@@ -205,7 +220,7 @@ class GenerateConfigFile:
                 config[i] = pin
 
             elif i == "default_rule":
-                config[i] = self.rule_prompt_router(config)
+                config[i] = self.default_rule_prompt_router(config)
 
             elif i == "ip":
                 config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
@@ -214,7 +229,7 @@ class GenerateConfigFile:
                 config[i] = questionary.select("Select mode", choices=['cool', 'heat']).ask()
 
             elif i == "tolerance":
-                config[i] = questionary.text("Enter temperature tolerance", validate=is_int_or_float).ask()
+                config[i] = questionary.text("Enter temperature tolerance", validate=FloatRange(0, 10)).ask()
 
         # Confirm all selections are valid
         valid = validate_rules(config)
@@ -234,22 +249,36 @@ class GenerateConfigFile:
                 config[i] = 'placeholder'
         return config
 
-    def rule_prompt_router(self, config):
+    def default_rule_prompt_router(self, config):
         _type = config['_type']
         if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
-            return self.default_rule_prompt_int_option(config['min_bright'], config['max_bright'])
+            return questionary.text(
+                "Enter default rule",
+                validate=IntRange(config['min_bright'], config['max_bright'])
+            ).ask()
         elif _type in ['pir', 'si7021']:
-            return self.default_rule_prompt_int_option(*rule_limits[_type])
+            return questionary.text("Enter default rule", validate=IntRange(*rule_limits[_type])).ask()
+        elif _type == 'dummy':
+            return questionary.select("Enter default rule", choices=['On', 'Off']).ask()
+        else:
+            return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
+
+    def schedule_rule_prompt_router(self, config):
+        _type = config['_type']
+        if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
+            return self.rule_prompt_with_int_option(config['min_bright'], config['max_bright'])
+        elif _type in ['pir', 'si7021']:
+            return self.rule_prompt_with_int_option(*rule_limits[_type])
         elif _type == 'dummy':
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
         else:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
 
     # Rule prompt for instances that support int
-    def default_rule_prompt_int_option(self, minimum, maximum):
-        choice = questionary.select("Select default rule", choices=['Enabled', 'Disabled', 'Int']).ask()
+    def rule_prompt_with_int_option(self, minimum, maximum):
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int']).ask()
         if choice == 'Int':
-            return questionary.text("Enter default rule", validate=IntRange(minimum, maximum)).ask()
+            return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
         else:
             return choice
 
@@ -280,7 +309,7 @@ class GenerateConfigFile:
 
     def add_schedule_rule(self, config):
         timestamp = questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
-        rule = self.rule_prompt_router(config)
+        rule = self.schedule_rule_prompt_router(config)
         return timestamp, rule
 
     def schedule_rules_prompt(self):
