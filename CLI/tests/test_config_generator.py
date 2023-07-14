@@ -68,6 +68,20 @@ class TestGenerateConfigFile(TestCase):
 
         self.mock_ask = MagicMock()
 
+    def test_run_prompt_method(self):
+        # Mock all methods called by run_prompt
+        with patch.object(self.generator, 'metadata_prompt') as mock_metadata_prompt, \
+             patch.object(self.generator, 'wifi_prompt') as mock_wifi_prompt, \
+             patch.object(self.generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
+             patch.object(self.generator, 'select_sensor_targets') as mock_select_sensor_targets:
+
+            # Run method, confirm all mocks called
+            self.generator.run_prompt()
+            self.assertTrue(mock_metadata_prompt.called_once)
+            self.assertTrue(mock_wifi_prompt.called_once)
+            self.assertTrue(mock_add_devices_and_sensors.called_once)
+            self.assertTrue(mock_select_sensor_targets.called_once)
+
     def test_metadata_prompt(self):
         # Mock responses to the ID, Floor, and Location prompts
         self.mock_ask.ask.side_effect = ['Test ID', '2', 'Test Environment']
@@ -245,6 +259,52 @@ class TestGenerateConfigFile(TestCase):
             self.assertEqual(self.generator.used_nicknames, ['Overhead Lights', 'Mosfet'])
             self.assertEqual(self.generator.used_pins, ['4'])
 
+    def test_configure_device_failed_validation(self):
+        # Invalid config object with default_rule greater than max_bright
+        invalid_config = {
+            "_type": "dimmer",
+            "nickname": "Overhead Lights",
+            "ip": "192.168.1.123",
+            "min_bright": "1",
+            "max_bright": "50",
+            "default_rule": "100",
+            "schedule": {}
+        }
+
+        # Valid config expected after test complete
+        valid_config = {
+            '_type': 'dimmer',
+            'nickname': 'Overhead Lights',
+            'ip': '192.168.1.123',
+            'min_bright': '1',
+            'max_bright': '100',
+            'default_rule': '50',
+            'schedule': {}
+        }
+
+        # Mock ask to return user input in expected order
+        self.mock_ask.ask.side_effect = [
+            'No',
+            '192.168.1.123',
+            '1',
+            '100',
+            '50',
+            'No'
+        ]
+
+        # Mock ask to return user input in expected order
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+
+            # Pass invalid config to configure_device
+            # Should prompt for schedule rules (No), fail validation,
+            # go through reset_config_template, and be passed back to
+            # configure_device again (remaining mock inputs)
+            config = self.generator.configure_device(invalid_config)
+
+        # Confirm valid config received after second loop
+        self.assertEqual(config, valid_config)
+
     def test_configure_sensor_prompt(self):
         expected_output = {
             "_type": "pir",
@@ -396,6 +456,45 @@ class TestGenerateConfigFile(TestCase):
             self.assertEqual(self.generator.used_nicknames, ['Motion', 'Thermostat', 'Sunrise', 'Computer Activity'])
             self.assertEqual(self.generator.used_pins, ['14'])
 
+    def test_configure_sensor_failed_validation(self):
+        # Invalid config object with unsupported default_rule
+        invalid_config = {
+            "_type": "dummy",
+            "nickname": "Sunrise",
+            "default_rule": "Enabled",
+            "schedule": {},
+            "targets": []
+        }
+
+        # Valid config expected after test complete
+        valid_config = {
+            "_type": "dummy",
+            "nickname": "Sunrise",
+            "default_rule": "On",
+            "schedule": {},
+            "targets": []
+        }
+
+        # Mock ask to return user input in expected order
+        self.mock_ask.ask.side_effect = [
+            'No',
+            'On',
+            'No'
+        ]
+
+        # Mock ask to return user input in expected order
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+
+            # Pass invalid config to configure_device
+            # Should prompt for schedule rules (No), fail validation,
+            # go through reset_config_template, and be passed back to
+            # configure_sensor again (remaining mock inputs)
+            config = self.generator.configure_sensor(invalid_config)
+
+        # Confirm valid config received after second loop
+        self.assertEqual(config, valid_config)
+
     def test_reset_config_template(self):
         # Pass config with invalid values to reset_config_template
         invalid_config = {
@@ -423,7 +522,7 @@ class TestGenerateConfigFile(TestCase):
         })
 
     def test_select_sensor_targets_prommpt(self):
-        # Set partial config to simulate
+        # Set partial config expected when user reaching targets prompt
         self.generator.config = {
             "metadata": {
                 "id": "Target Test",
@@ -462,6 +561,34 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)']
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.select_sensor_targets()
+            self.assertTrue(self.mock_ask.called_once)
 
         # Confirm both devices added to sensor targets
         self.assertEqual(self.generator.config['sensor1']['targets'], ['device1', 'device2'])
+
+    def test_select_sensor_targets_no_targets(self):
+        # Set partial config with no devices, only sensors
+        self.generator.config = {
+            "metadata": {
+                "id": "Target Test",
+                "floor": "1",
+                "location": "Test Environment"
+            },
+            "wifi": {
+                "ssid": "mynet",
+                "password": "hunter2"
+            },
+            "sensor1": {
+                "_type": "pir",
+                "nickname": "Sensor",
+                "pin": "5",
+                "default_rule": "5",
+                "schedule": {},
+                "targets": []
+            }
+        }
+
+        # Mock checkbox ask method, confirm nothing is called
+        with patch('questionary.checkbox', return_value=self.mock_ask):
+            self.generator.select_sensor_targets()
+            self.assertFalse(self.mock_ask.called)

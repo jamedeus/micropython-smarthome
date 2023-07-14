@@ -262,7 +262,7 @@ class GenerateConfigFile:
     # with placeholder. Used to re-prompt user without repeating all questions.
     def reset_config_template(self, config):
         for i in config:
-            if i not in ['nickname', 'pin', '_type', 'schedule']:
+            if i not in ['nickname', 'pin', '_type', 'schedule', 'targets']:
                 config[i] = 'placeholder'
         return config
 
