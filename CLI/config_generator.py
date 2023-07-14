@@ -79,6 +79,9 @@ class GenerateConfigFile:
         self.device_type_options = list(config_templates['device'].keys())
         self.sensor_type_options = list(config_templates['sensor'].keys())
 
+        # List of category options
+        self.category_options = ['Device', 'Sensor', 'IR Blaster', 'Done']
+
     def run_prompt(self):
         # Prompt user to enter metadata and wifi credentials
         self.metadata_prompt()
@@ -113,12 +116,14 @@ class GenerateConfigFile:
         # Prompt user to configure devices and sensors
         # Output of each device/sensor prompt is added to lists above
         while True:
-            choice = questionary.select("\nAdd instances?", choices=['device', 'sensor', 'done']).ask()
-            if choice == 'device':
+            choice = questionary.select("\nAdd instances?", choices=self.category_options).ask()
+            if choice == 'Device':
                 devices.append(self.configure_device())
-            elif choice == 'sensor':
+            elif choice == 'Sensor':
                 sensors.append(self.configure_sensor())
-            elif choice == 'done':
+            elif choice == 'IR Blaster':
+                self.configure_ir_blaster()
+            elif choice == 'Done':
                 break
 
         # Add sequential device and sensor keys (device1, device2, etc)
@@ -264,6 +269,20 @@ class GenerateConfigFile:
             if config['_type'] == 'si7021':
                 self.sensor_type_options.remove('Thermostat')
             return config
+
+    def configure_ir_blaster(self):
+        # Prompt user for pin and targets
+        pin = self.pin_prompt(valid_device_pins)
+        targets = questionary.checkbox("Select target devices", choices=['tv', 'ac']).ask()
+
+        # Add to config
+        self.config['ir_blaster'] = {
+            "pin": pin,
+            "target": targets
+        }
+
+        # Remove option from menun (multiple ir blasters not supported)
+        self.category_options.remove('IR Blaster')
 
     # Takes config that failed validation, replaces potentially invalid params
     # with placeholder. Used to re-prompt user without repeating all questions.

@@ -165,9 +165,9 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock user input
         self.mock_ask.ask.side_effect = [
-            'device',
-            'sensor',
-            'done'
+            'Device',
+            'Sensor',
+            'Done'
         ]
 
         # Mock ask to return user input in expected order
@@ -519,6 +519,40 @@ class TestGenerateConfigFile(TestCase):
             "tolerance": "placeholder",
             "schedule": {}
         })
+
+    def test_configure_ir_blaster(self):
+        # Confirm no IR Blaster, confirm option in menu
+        self.assertNotIn("ir_blaster", self.generator.config.keys())
+        self.assertIn('IR Blaster', self.generator.category_options)
+
+        expected_config = {
+            'pin': '4',
+            'target': [
+                'ac',
+                'tv'
+            ]
+        }
+
+        # Mock user input
+        self.mock_ask.ask.side_effect = [
+            'IR Blaster',
+            '4',
+            ['ac', 'tv'],
+            'Done'
+        ]
+
+        # Mock ask to return user input in expected order
+        # Select IR Blaster option, enter pin, select targets, select done
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.checkbox', return_value=self.mock_ask):
+
+            # Run prompt
+            self.generator.add_devices_and_sensors()
+
+        # Confirm added to config, selected pin in used_pins, IR option removed from menu
+        self.assertEqual(self.generator.config['ir_blaster'], expected_config)
+        self.assertIn('4', self.generator.used_pins)
+        self.assertNotIn('IR Blaster', self.generator.category_options)
 
     def test_select_sensor_targets_prommpt(self):
         # Set partial config expected when user reaching targets prompt
