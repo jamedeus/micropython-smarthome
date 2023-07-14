@@ -196,7 +196,8 @@ class TestGenerateConfigFile(TestCase):
                 "10:00": "5",
                 "20:00": "1",
                 "00:00": "Disabled"
-            }
+            },
+            "targets": []
         }
 
         # Mock ask to return parameters in expected order
@@ -238,7 +239,8 @@ class TestGenerateConfigFile(TestCase):
             "tolerance": "1.5",
             "schedule": {
                 "10:00": "75"
-            }
+            },
+            "targets": []
         }
 
         # Mock ask to return parameters in expected order
@@ -273,7 +275,8 @@ class TestGenerateConfigFile(TestCase):
             "schedule": {
                 "06:00": "On",
                 "20:00": "Off"
-            }
+            },
+            "targets": []
         }
 
         # Mock ask to return parameters in expected order
@@ -308,7 +311,8 @@ class TestGenerateConfigFile(TestCase):
             "default_rule": "Enabled",
             "schedule": {
                 "10:00": "Enabled"
-            }
+            },
+            "targets": []
         }
 
         # Mock ask to return parameters in expected order

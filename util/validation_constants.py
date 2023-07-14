@@ -148,7 +148,8 @@ config_templates = {
             "nickname": "placeholder",
             "pin": "placeholder",
             "default_rule": "placeholder",
-            "schedule": {}
+            "schedule": {},
+            "targets": []
         },
 
         "DesktopTrigger": {
@@ -156,7 +157,8 @@ config_templates = {
             "nickname": "placeholder",
             "ip": "placeholder",
             "default_rule": "placeholder",
-            "schedule": {}
+            "schedule": {},
+            "targets": []
         },
 
         "Thermostat": {
@@ -165,14 +167,16 @@ config_templates = {
             "default_rule": "placeholder",
             "mode": "placeholder",
             "tolerance": "placeholder",
-            "schedule": {}
+            "schedule": {},
+            "targets": []
         },
 
         "Dummy": {
             "_type": "dummy",
             "nickname": "placeholder",
             "default_rule": "placeholder",
-            "schedule": {}
+            "schedule": {},
+            "targets": []
         },
 
         "Switch": {
@@ -180,7 +184,8 @@ config_templates = {
             "nickname": "placeholder",
             "pin": "placeholder",
             "default_rule": "placeholder",
-            "schedule": {}
+            "schedule": {},
+            "targets": []
         }
     }
 }
