@@ -264,6 +264,8 @@ class GenerateConfigFile:
         for i in config:
             if i not in ['nickname', 'pin', '_type', 'schedule', 'targets']:
                 config[i] = 'placeholder'
+            if i == 'schedule':
+                config[i] = {}
         return config
 
     # Takes partial config, runs appropriate default_rule prompt

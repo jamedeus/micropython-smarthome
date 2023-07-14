@@ -510,15 +510,14 @@ class TestGenerateConfigFile(TestCase):
         reset_config = self.generator.reset_config_template(invalid_config)
 
         # Confirm correct properties reset to "placeholder"
+        # Confirm schedule rules dict empty
         self.assertEqual(reset_config, {
             "_type": "si7021",
             "nickname": "Thermostat",
             "default_rule": "placeholder",
             "mode": "placeholder",
             "tolerance": "placeholder",
-            "schedule": {
-                "10:00": "75"
-            }
+            "schedule": {}
         })
 
     def test_select_sensor_targets_prommpt(self):
