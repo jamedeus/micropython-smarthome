@@ -150,6 +150,18 @@ class GenerateConfigFile:
         self.used_nicknames.append(nickname)
         return nickname
 
+    # Prompt user to select pin, add to used_pins list, return
+    # Takes list of options as arg, removes already-used pins to prevent duplicates
+    def pin_prompt(self, valid_pins):
+        choices = [pin for pin in valid_pins if pin not in self.used_pins]
+        pin = questionary.select("Select pin", choices=choices).ask()
+        self.used_pins.append(pin)
+        return pin
+
+    # Prompt user to enter an IP address, enforces syntax
+    def ip_address_prompt(self):
+        return questionary.text("Enter IP address", validate=valid_ip).ask()
+
     # Prompt user to select device type and all required params.
     # Validates config before returning - if validation fails, some
     # params are removed and the function is called with partial config
@@ -169,11 +181,7 @@ class GenerateConfigFile:
                 config[i] = self.nickname_prompt()
 
             elif i == "pin":
-                # Remove already used pins from choices to prevent duplicates
-                choices = [pin for pin in valid_device_pins if pin not in self.used_pins]
-                pin = questionary.select("Select pin", choices=choices).ask()
-                self.used_pins.append(pin)
-                config[i] = pin
+                config[i] = self.pin_prompt(valid_device_pins)
 
             elif i == "default_rule":
                 config[i] = self.default_rule_prompt_router(config)
@@ -193,7 +201,7 @@ class GenerateConfigFile:
                 ).ask()
 
             elif i == "ip":
-                config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
+                config[i] = self.ip_address_prompt()
 
         # Prompt user to add schedule rules
         config = self.schedule_rule_prompt(config)
@@ -223,17 +231,13 @@ class GenerateConfigFile:
                 config[i] = self.nickname_prompt()
 
             elif i == "pin":
-                # Remove already used pins from choices to prevent duplicates
-                choices = [pin for pin in valid_sensor_pins if pin not in self.used_pins]
-                pin = questionary.select("Select pin", choices=choices).ask()
-                self.used_pins.append(pin)
-                config[i] = pin
+                config[i] = self.pin_prompt(valid_sensor_pins)
 
             elif i == "default_rule":
                 config[i] = self.default_rule_prompt_router(config)
 
             elif i == "ip":
-                config[i] = questionary.text("Enter IP address", validate=valid_ip).ask()
+                config[i] = self.ip_address_prompt()
 
             elif i == "mode":
                 config[i] = questionary.select("Select mode", choices=['cool', 'heat']).ask()
