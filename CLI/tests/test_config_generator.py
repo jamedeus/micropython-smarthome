@@ -591,3 +591,48 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.select_sensor_targets()
             self.assertFalse(self.mock_ask.called)
+
+
+class TestRegressions(TestCase):
+    def setUp(self):
+        self.generator = GenerateConfigFile()
+
+        self.mock_ask = MagicMock()
+
+    # Original bug: Thermostat option remained in menu after adding to config,
+    # allowing user to configure multiple thermostats (not supported)
+    def test_prevent_multiple_thermostats(self):
+        sensor_config = {
+            "_type": "si7021",
+            "nickname": "Thermostat",
+            "default_rule": "70",
+            "mode": "cool",
+            "tolerance": "1.5",
+            "schedule": {
+                "10:00": "75"
+            },
+            "targets": []
+        }
+
+        # Mock ask to return parameters in expected order
+        self.mock_ask.ask.side_effect = [
+            'Thermostat',
+            'Thermostat',
+            '70',
+            'cool',
+            '1.5',
+            'Yes',
+            '10:00',
+            'Int',
+            '75',
+            'No'
+        ]
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+
+            # Run prompt, confirm output matches expected
+            config = self.generator.configure_sensor()
+            self.assertEqual(config, sensor_config)
+
+        # Confirm Thermostat option removed from sensor type options
+        self.assertNotIn('Thermostat', self.generator.sensor_type_options)

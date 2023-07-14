@@ -75,6 +75,10 @@ class GenerateConfigFile:
         self.used_pins = []
         self.used_nicknames = []
 
+        # List of device and sensor type options
+        self.device_type_options = list(config_templates['device'].keys())
+        self.sensor_type_options = list(config_templates['sensor'].keys())
+
     def run_prompt(self):
         # Prompt user to enter metadata and wifi credentials
         self.metadata_prompt()
@@ -129,7 +133,7 @@ class GenerateConfigFile:
     def device_type(self):
         return questionary.select(
             "Select device type",
-            choices=list(config_templates['device'].keys())
+            choices=self.device_type_options
         ).ask()
 
     # Prompt user to select from a list of valid sensor types
@@ -137,7 +141,7 @@ class GenerateConfigFile:
     def sensor_type(self):
         return questionary.select(
             "Select sensor type",
-            choices=list(config_templates['sensor'].keys())
+            choices=self.sensor_type_options
         ).ask()
 
     # Return True if nickname unique, False if already in self.used_nicknames
@@ -256,6 +260,9 @@ class GenerateConfigFile:
             print('Resetting relevant options, please try again')
             return self.configure_sensor(self.reset_config_template(config))
         else:
+            # If Thermostat added remove option from menu (cannot have multiple)
+            if config['_type'] == 'si7021':
+                self.sensor_type_options.remove('Thermostat')
             return config
 
     # Takes config that failed validation, replaces potentially invalid params
