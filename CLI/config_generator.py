@@ -11,7 +11,6 @@ from helper_functions import (
     valid_timestamp,
     is_device,
     is_sensor,
-    is_device_or_sensor,
     is_int,
     is_float
 )
@@ -59,6 +58,7 @@ class FloatRange(Validator):
 
 class GenerateConfigFile:
     def __init__(self):
+        # Config skeleton
         self.config = {
             'metadata': {
                 'id': '',
@@ -71,10 +71,11 @@ class GenerateConfigFile:
             }
         }
 
-        # List of pins that have already been used, prevent duplicates
+        # Lists of already-used pins and nicknames (prevent duplicates)
         self.used_pins = []
         self.used_nicknames = []
 
+    def run_prompt(self):
         # Prompt user to enter metadata and wifi credentials
         self.metadata_prompt()
         self.wifi_prompt()
@@ -85,16 +86,28 @@ class GenerateConfigFile:
         # Prompt user to select targets for each sensor
         self.select_sensor_targets()
 
-    # Return True if nickname unique, False if already in self.used_nicknames
-    def unique_nickname(self, nickname):
-        return nickname not in self.used_nicknames
+    # Prompt user for node name and location metadata, add to self.config
+    def metadata_prompt(self):
+        name = questionary.text("Enter a descriptive name for this node").ask()
+        floor = questionary.text("Enter floor number", validate=is_int).ask()
+        location = questionary.text("Enter a brief description of the node's physical location").ask()
+
+        self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
+
+    # Prompt user for wifi credentials, add to self.config
+    def wifi_prompt(self):
+        ssid = questionary.text("Enter wifi SSID (2.4 GHz only)").ask()
+        password = questionary.password("Enter wifi password").ask()
+
+        self.config['wifi'].update({'ssid': ssid, 'password': password})
 
     def add_devices_and_sensors(self):
         # Lists to store + count device and sensor sections
         devices = []
         sensors = []
 
-        # Add output of device and sensor prompts to lists
+        # Prompt user to configure devices and sensors
+        # Output of each device/sensor prompt is added to lists above
         while True:
             choice = questionary.select("\nAdd instances?", choices=['device', 'sensor', 'done']).ask()
             if choice == 'device':
@@ -111,50 +124,49 @@ class GenerateConfigFile:
         for index, instance in enumerate(sensors, 1):
             self.config[f'sensor{index}'] = instance
 
-    def metadata_prompt(self):
-        name = questionary.text("Enter a descriptive name for this node").ask()
-        floor = questionary.text("Enter floor number", validate=is_int).ask()
-        location = questionary.text("Enter a brief description of the node's physical location").ask()
-
-        self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
-
-    def wifi_prompt(self):
-        ssid = questionary.text("Enter wifi SSID (2.4 GHz only)").ask()
-        password = questionary.password("Enter wifi password").ask()
-
-        self.config['wifi'].update({'ssid': ssid, 'password': password})
-
-    def sensor_type(self):
-        return questionary.select(
-            "Select sensor type",
-            choices=list(config_templates['sensor'].keys())
-        ).ask()
-
+    # Prompt user to select from a list of valid device types
+    # Used to get template in configure_device
     def device_type(self):
         return questionary.select(
             "Select device type",
             choices=list(config_templates['device'].keys())
         ).ask()
 
-    # Prompt user to configure a device
-    # config arg accepts partially-complete template, used to re-prompt
-    # user without repeating all questions after failed validation
+    # Prompt user to select from a list of valid sensor types
+    # Used to get template in configure_sensor
+    def sensor_type(self):
+        return questionary.select(
+            "Select sensor type",
+            choices=list(config_templates['sensor'].keys())
+        ).ask()
+
+    # Return True if nickname unique, False if already in self.used_nicknames
+    def unique_nickname(self, nickname):
+        return nickname not in self.used_nicknames
+
+    # Prompt user for a nickname, add to used_nicknames list, return
+    def nickname_prompt(self):
+        nickname = questionary.text("Enter a memorable nickname", validate=self.unique_nickname).ask()
+        self.used_nicknames.append(nickname)
+        return nickname
+
+    # Prompt user to select device type and all required params.
+    # Validates config before returning - if validation fails, some
+    # params are removed and the function is called with partial config
+    # as config arg (re-prompts user without repeating all questions).
     def configure_device(self, config=None):
+        # Prompt user for device type, get config skeleton
         if config is None:
             config = config_templates['device'][self.device_type()].copy()
             _type = config['_type']
-        # Config previously failed validation, repeat prompt with most options pre-selected
+        # Previously failed validation, repeat prompts for invalid params
         else:
             _type = config['_type']
 
+        # Prompt user for all parameters with missing value
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
-                nickname = questionary.text(
-                    "Enter a memorable nickname for the device",
-                    validate=self.unique_nickname
-                ).ask()
-                self.used_nicknames.append(nickname)
-                config[i] = nickname
+                config[i] = self.nickname_prompt()
 
             elif i == "pin":
                 # Remove already used pins from choices to prevent duplicates
@@ -196,21 +208,19 @@ class GenerateConfigFile:
         else:
             return config
 
-    # Prompt user to configure a sensor
-    # config arg accepts partially-complete template, used to re-prompt
-    # user without repeating all questions after failed validation
+    # Prompt user to select sensor type and all required params.
+    # Validates config before returning - if validation fails, some
+    # params are removed and the function is called with partial config
+    # as config arg (re-prompts user without repeating all questions).
     def configure_sensor(self, config=None):
+        # Prompt user for sensor type, get config skeleton
         if config is None:
             config = config_templates['sensor'][self.sensor_type()].copy()
 
+        # Prompt user for all parameters with missing value
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
-                nickname = questionary.text(
-                    "Enter a memorable nickname for the sensor",
-                    validate=self.unique_nickname
-                ).ask()
-                self.used_nicknames.append(nickname)
-                config[i] = nickname
+                config[i] = self.nickname_prompt()
 
             elif i == "pin":
                 # Remove already used pins from choices to prevent duplicates
@@ -252,32 +262,44 @@ class GenerateConfigFile:
                 config[i] = 'placeholder'
         return config
 
+    # Takes partial config, runs appropriate default_rule prompt
+    # based on instance type, returns user selection
     def default_rule_prompt_router(self, config):
         _type = config['_type']
+        # DimmableLight subclasses require int default_rule
         if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
             return questionary.text(
                 "Enter default rule",
                 validate=IntRange(config['min_bright'], config['max_bright'])
             ).ask()
+        # Certain sensors require int default_rule
         elif _type in ['pir', 'si7021']:
             return questionary.text("Enter default rule", validate=IntRange(*rule_limits[_type])).ask()
+        # Dummy does not support enabled/disabled for default_rule, must be on or off
         elif _type == 'dummy':
             return questionary.select("Enter default rule", choices=['On', 'Off']).ask()
+        # All other instance types only support Enabled and Disabled
         else:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
 
+    # Takes partial config, runs appropriate schedule rule prompt
+    # based on instance type, returns user selection
     def schedule_rule_prompt_router(self, config):
         _type = config['_type']
+        # DimmableLight subclasses support int and fade rules in addition to enabled/disabled
         if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
             return self.rule_prompt_int_and_fade_options(config['min_bright'], config['max_bright'])
+        # Some sensors support int in addition to enabled/disabled
         elif _type in ['pir', 'si7021']:
             return self.rule_prompt_with_int_option(*rule_limits[_type])
+        # Summy supports On and Off in addition to enabled/disabled
         elif _type == 'dummy':
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
+        # All other instance types only support Enabled and Disabled
         else:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
 
-    # Rule prompt for instances that support int
+    # Rule prompt for instances that support int in addition to enabled/disabled
     def rule_prompt_with_int_option(self, minimum, maximum):
         choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int']).ask()
         if choice == 'Int':
@@ -285,7 +307,7 @@ class GenerateConfigFile:
         else:
             return choice
 
-    # Rule prompt for DimmableLight instances, includes fade rule option
+    # Rule prompt for DimmableLight instances, includes int and fade in addition to enabled/disabled
     def rule_prompt_int_and_fade_options(self, minimum, maximum):
         choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int', 'Fade']).ask()
         if choice == 'Int':
@@ -297,6 +319,9 @@ class GenerateConfigFile:
         else:
             return choice
 
+    # Iterate all configured sensors, display checkbox prompt for each
+    # with all configured devices as options. Add all checked devices
+    # to sensor targets list.
     def select_sensor_targets(self):
         # Get list of all sensor IDs
         sensors = [key for key in self.config.keys() if is_sensor(key)]
@@ -345,4 +370,5 @@ class GenerateConfigFile:
 
 if __name__ == '__main__':
     config = GenerateConfigFile()
+    config.run_prompt()
     print(json.dumps(config.config, indent=4))
