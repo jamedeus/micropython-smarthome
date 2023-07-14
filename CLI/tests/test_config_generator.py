@@ -1,6 +1,65 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-from config_generator import GenerateConfigFile
+from questionary import ValidationError
+from config_generator import GenerateConfigFile, IntRange, FloatRange
+
+
+# Simulate user input object passed to validators
+class SimulatedInput:
+    def __init__(self, text):
+        self.text = text
+
+
+class TestValidators(TestCase):
+    def test_int_range_validator(self):
+        # Create validator accepting values between 1 and 100
+        validator = IntRange(1, 100)
+
+        # Should accept integers between 1 and 100
+        user_input = SimulatedInput("2")
+        self.assertTrue(validator.validate(user_input))
+        user_input = SimulatedInput("75")
+        self.assertTrue(validator.validate(user_input))
+
+        # Should reject integers outside range
+        user_input = SimulatedInput("999")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
+
+        user_input = SimulatedInput("-5")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
+
+        # Should reject string
+        user_input = SimulatedInput("Fifty")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
+
+    def test_float_range_validator(self):
+        # Create validator accepting values between 1 and 100
+        validator = FloatRange(1, 10)
+
+        # Should accept integers and floats between 1 and 10
+        user_input = SimulatedInput("2")
+        self.assertTrue(validator.validate(user_input))
+        user_input = SimulatedInput("5.5")
+        self.assertTrue(validator.validate(user_input))
+        user_input = SimulatedInput("10.0")
+        self.assertTrue(validator.validate(user_input))
+
+        # Should reject integers and floats outside range
+        user_input = SimulatedInput("15")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
+
+        user_input = SimulatedInput("-0.5")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
+
+        # Should reject string
+        user_input = SimulatedInput("Five")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
 
 
 class TestGenerateConfigFile(TestCase):
