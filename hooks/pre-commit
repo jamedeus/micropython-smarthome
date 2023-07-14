@@ -1,14 +1,24 @@
 #!/bin/sh
 
-# Pre-commit hook that checks if static files are part of the commit
-# and automatically updates static cache version.
-# This forces clients to refresh cache and download the new version.
+# Pre-commit actions:
+# - Check if static files are part of the commit and automatically
+#   update static cache version (forces PWA clients to refresh
+#   cache and download new version)
+#
+# - Check if desktop-integration files are part of commit, update
+#   micropython-smarthome-integration.zip (downloadable from
+#   overview page in django frontend)
 
-# Check if static files are includes in commit
+
+# Check if static files are included in commit
 STATIC_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E "^(frontend/api/static/api/|frontend/node_configuration/static/node_configuration/)")
 
+# Check if desktop integration files are included in commit
+DESKTOP_INTEGRATION=$(git diff --cached --name-only --diff-filter=d | grep -E "^(desktop-integration/)")
+
+
 if [ ! -z "$STATIC_FILES" ]; then
-    # Get short hash of last commit
+    # Get short hash of last commit (used as PWA version number)
     COMMIT_HASH=$(git rev-parse --short HEAD)
 
     # Overwrite old staticCacheName to force client cache refresh
@@ -16,4 +26,13 @@ if [ ! -z "$STATIC_FILES" ]; then
 
     # Commit new static cache version
     git add frontend/webapp/serviceworker.js
+fi
+
+
+if [ ! -z "$DESKTOP_INTEGRATION" ]; then
+    # Zip current contents of desktop-integration, overwrite old bundle in static dir
+    zip -r frontend/node_configuration/static/node_configuration/micropython-smarthome-integration.zip desktop-integration/
+
+    # Commit new desktop-integration bundle, pipeline will build into new docker images
+    git add frontend/node_configuration/static/node_configuration/micropython-smarthome-integration.zip
 fi
