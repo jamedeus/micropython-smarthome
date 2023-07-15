@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from questionary import ValidationError
-from config_generator import GenerateConfigFile, IntRange, FloatRange, MinLength
+from config_generator import GenerateConfigFile, IntRange, FloatRange, MinLength, NicknameValidator
 
 
 # Simulate user input object passed to validators
@@ -82,6 +82,26 @@ class TestValidators(TestCase):
         with self.assertRaises(ValidationError):
             validator.validate(user_input)
 
+    def test_nickname_validator(self):
+        # Create validator with 3 already-used nicknames
+        validator = NicknameValidator(['Lights', 'Fan', 'Thermostat'])
+
+        # Should accept unused nicknames
+        user_input = SimulatedInput("Dimmer")
+        self.assertTrue(validator.validate(user_input))
+        user_input = SimulatedInput("Lamp")
+        self.assertTrue(validator.validate(user_input))
+
+        # Should reject already-used nicknames
+        user_input = SimulatedInput("Lights")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
+
+        # Should reject empty string
+        user_input = SimulatedInput("")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
+
 
 class TestGenerateConfigFile(TestCase):
     def setUp(self):
@@ -139,14 +159,6 @@ class TestGenerateConfigFile(TestCase):
 
         with patch('questionary.select', return_value=self.mock_ask):
             self.assertEqual(self.generator.device_type(), 'Dimmer')
-
-    def test_unique_nickname(self):
-        # Add an already-used nickname
-        self.generator.used_nicknames = ['Used']
-
-        # Should reject already-used nickname, accept all others
-        self.assertFalse(self.generator.unique_nickname('Used'))
-        self.assertTrue(self.generator.unique_nickname('Unused'))
 
     def test_nickname_prompt(self):
         # Add an already-used nickname

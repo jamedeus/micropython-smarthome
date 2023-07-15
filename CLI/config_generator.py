@@ -68,6 +68,20 @@ class MinLength(Validator):
             raise ValidationError(message=f"Enter {self.min_length} or more characters")
 
 
+# Instantiated with list of already-used nicknames
+class NicknameValidator(Validator):
+    def __init__(self, used_nicknames):
+        self.used_nicknames = used_nicknames
+
+    def validate(self, document):
+        if len(document.text) == 0:
+            raise ValidationError(message="Nickname cannot be blank")
+        elif document.text in self.used_nicknames:
+            raise ValidationError(message=f'Nickname "{document.text}" already used')
+        else:
+            return True
+
+
 class GenerateConfigFile:
     def __init__(self):
         # Config skeleton
@@ -164,13 +178,12 @@ class GenerateConfigFile:
             choices=self.sensor_type_options
         ).ask()
 
-    # Return True if nickname unique, False if already in self.used_nicknames
-    def unique_nickname(self, nickname):
-        return nickname not in self.used_nicknames
-
     # Prompt user for a nickname, add to used_nicknames list, return
     def nickname_prompt(self):
-        nickname = questionary.text("Enter a memorable nickname", validate=self.unique_nickname).ask()
+        nickname = questionary.text(
+            "Enter a memorable nickname",
+            validate=NicknameValidator(self.used_nicknames)
+        ).ask()
         self.used_nicknames.append(nickname)
         return nickname
 
