@@ -1,11 +1,5 @@
 from .models import Node
-
-
-# Options for each supported IR Blaster target device, used to populate ApiTarget menu
-ir_blaster_options = {
-    "tv": ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'],
-    "ac": ['start', 'stop', 'off']
-}
+from validation_constants import ir_blaster_options, device_endpoints, sensor_endpoints
 
 
 # Helper function for get_api_target_menu_options, converts individual configs to frontend options
@@ -25,38 +19,15 @@ def convert_config_to_api_target_options(config):
 
             # All devices have same options
             if i.startswith("device"):
-                result[instance_string] = [
-                    'enable',
-                    'disable',
-                    'enable_in',
-                    'disable_in',
-                    'set_rule',
-                    'reset_rule',
-                    'turn_on',
-                    'turn_off'
-                ]
+                result[instance_string] = device_endpoints
 
             # All sensors have same options except thermostat and switch (trigger unsupported)
             elif i.startswith("sensor") and config[i]["_type"] not in ["si7021", "switch"]:
-                result[instance_string] = [
-                    'enable',
-                    'disable',
-                    'enable_in',
-                    'disable_in',
-                    'set_rule',
-                    'reset_rule',
-                    'trigger_sensor'
-                ]
+                result[instance_string] = sensor_endpoints
 
             else:
-                result[instance_string] = [
-                    'enable',
-                    'disable',
-                    'enable_in',
-                    'disable_in',
-                    'set_rule',
-                    'reset_rule'
-                ]
+                result[instance_string] = sensor_endpoints.copy()
+                result[instance_string].remove('trigger_sensor')
 
         else:
             # Add options for all configured IR Blaster targets
