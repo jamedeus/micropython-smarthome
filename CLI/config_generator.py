@@ -12,7 +12,8 @@ from helper_functions import (
     is_device,
     is_sensor,
     is_int,
-    is_float
+    is_float,
+    get_schedule_keywords_dict
 )
 
 # Map int rule limits to device/sensor types
@@ -81,6 +82,9 @@ class GenerateConfigFile:
 
         # List of category options
         self.category_options = ['Device', 'Sensor', 'IR Blaster', 'Done']
+
+        # List of schedule keywords from config file
+        self.schedule_keyword_options = list(get_schedule_keywords_dict().keys())
 
     def run_prompt(self):
         # Prompt user to enter metadata and wifi credentials
@@ -394,10 +398,25 @@ class GenerateConfigFile:
     # Takes config, prompts user to add a single schedule rule, returns
     # config with rule added. Called by loop in schedule_rule_prompt.
     def add_schedule_rule(self, config):
-        timestamp = questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
+        # Prompt user to select timestamp or keyword if keywords are configured
+        if len(self.schedule_keyword_options):
+            timestamp = self.schedule_rule_timestamp_or_keyword_prompt()
+        # Prompt for timestamp if no keywords are available
+        else:
+            timestamp = self.schedule_rule_timestamp_prompt()
         rule = self.schedule_rule_prompt_router(config)
         config['schedule'][timestamp] = rule
         return config
+
+    def schedule_rule_timestamp_prompt(self):
+        return questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
+
+    def schedule_rule_timestamp_or_keyword_prompt(self):
+        choice = questionary.select("\nTimestamp or keyword?", choices=['Timestamp', 'Keyword']).ask()
+        if choice == 'Timestamp':
+            return self.schedule_rule_timestamp_prompt()
+        else:
+            return questionary.select("\nSelect keyword", choices=self.schedule_keyword_options).ask()
 
 
 if __name__ == '__main__':

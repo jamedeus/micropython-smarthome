@@ -64,8 +64,11 @@ class TestValidators(TestCase):
 
 class TestGenerateConfigFile(TestCase):
     def setUp(self):
+        # Create instance with mocked keywords
         self.generator = GenerateConfigFile()
+        self.generator.schedule_keyword_options = ['sunrise', 'sunset']
 
+        # Mock replaces .ask() method to simulate user input
         self.mock_ask = MagicMock()
 
     def test_run_prompt_method(self):
@@ -208,15 +211,18 @@ class TestGenerateConfigFile(TestCase):
             '100',
             '50',
             'Yes',
+            'Timestamp',
             '10:00',
             'Int',
             '100',
             'Yes',
+            'Timestamp',
             '20:00',
             'Fade',
             '25',
             '3600',
             'Yes',
+            'Timestamp',
             '00:00',
             'Disabled',
             'No'
@@ -326,14 +332,17 @@ class TestGenerateConfigFile(TestCase):
             '14',
             '5',
             'Yes',
+            'Timestamp',
             '10:00',
             'Int',
             '5',
             'Yes',
+            'Timestamp',
             '20:00',
             'Int',
             '1',
             'Yes',
+            'Timestamp',
             '00:00',
             'Disabled',
             'No'
@@ -370,6 +379,7 @@ class TestGenerateConfigFile(TestCase):
             'cool',
             '1.5',
             'Yes',
+            'Timestamp',
             '10:00',
             'Int',
             '75',
@@ -404,9 +414,11 @@ class TestGenerateConfigFile(TestCase):
             'Sunrise',
             'On',
             'Yes',
+            'Timestamp',
             '06:00',
             'On',
             'Yes',
+            'Timestamp',
             '20:00',
             'Off',
             'No'
@@ -429,7 +441,7 @@ class TestGenerateConfigFile(TestCase):
             "ip": "192.168.1.123",
             "default_rule": "Enabled",
             "schedule": {
-                "10:00": "Enabled"
+                "sunrise": "Enabled"
             },
             "targets": []
         }
@@ -441,7 +453,8 @@ class TestGenerateConfigFile(TestCase):
             '192.168.1.123',
             'Enabled',
             'Yes',
-            '10:00',
+            'keyword',
+            'sunrise',
             'Enabled',
             'No'
         ]
@@ -626,11 +639,63 @@ class TestGenerateConfigFile(TestCase):
             self.generator.select_sensor_targets()
             self.assertFalse(self.mock_ask.called)
 
+    def test_add_schedule_rule_keyword(self):
+        # Simulate user reaching schedule rule prompt
+        config = {
+            "_type": "mosfet",
+            "nickname": "Mosfet",
+            "default_rule": "Enabled",
+            "pin": "4",
+            "schedule": {}
+        }
+
+        # Call schedule rule prompt with simulated user input
+        self.mock_ask.ask.side_effect = [
+            'Keyword',
+            'sunrise',
+            'Enabled'
+        ]
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+
+            # Confirm rule added successfully
+            output = self.generator.add_schedule_rule(config)
+            self.assertEqual(output['schedule'], {'sunrise': 'Enabled'})
+
+    def test_add_schedule_rule_no_keywords_available(self):
+        # Simulate no keywords in config file
+        self.generator.schedule_keyword_options = []
+
+        # Simulate user reaching schedule rule prompt
+        config = {
+            "_type": "mosfet",
+            "nickname": "Mosfet",
+            "default_rule": "Enabled",
+            "pin": "4",
+            "schedule": {}
+        }
+
+        # Call schedule rule prompt with simulated user input
+        # Should not ask keyword or timestamp (no keywords available)
+        self.mock_ask.ask.side_effect = [
+            '10:00',
+            'Enabled'
+        ]
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+
+            # Confirm rule added successfully
+            output = self.generator.add_schedule_rule(config)
+            self.assertEqual(output['schedule'], {'10:00': 'Enabled'})
+
 
 class TestRegressions(TestCase):
     def setUp(self):
+        # Create instance with mocked keywords
         self.generator = GenerateConfigFile()
+        self.generator.schedule_keyword_options = ['sunrise', 'sunset']
 
+        # Mock replaces .ask() method to simulate user input
         self.mock_ask = MagicMock()
 
     # Original bug: Thermostat option remained in menu after adding to config,
@@ -656,6 +721,7 @@ class TestRegressions(TestCase):
             'cool',
             '1.5',
             'Yes',
+            'Timestamp',
             '10:00',
             'Int',
             '75',
