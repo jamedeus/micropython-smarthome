@@ -721,6 +721,65 @@ class TestGenerateConfigFile(TestCase):
             output = self.generator.add_schedule_rule(config)
             self.assertEqual(output['schedule'], {'10:00': 'Enabled'})
 
+    def test_api_target_rule_prompt(self):
+        # Call API target rule prompt with simulated user input
+        self.mock_ask.ask.side_effect = [
+            'API Call',
+            True,
+            'device1',
+            'enable',
+            True,
+            'sensor2',
+            'set_rule',
+            '50'
+        ]
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.confirm', return_value=self.mock_ask):
+
+            rule = self.generator.rule_prompt_with_api_call_prompt()
+            self.assertEqual(rule, {"on": ["enable", "device1"], "off": ["set_rule", "sensor2", "50"]})
+
+        # Call schedule rule router with simulated input selecting 'Enabled' option
+        self.mock_ask.ask.side_effect = ['Enabled']
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.confirm', return_value=self.mock_ask):
+
+            rule = self.generator.schedule_rule_prompt_router({"_type": "api-target"})
+            self.assertEqual(rule, 'Enabled')
+
+        # Call default rule router with simulated input selecting ignore option + endpoint requiring extra arg
+        self.mock_ask.ask.side_effect = [
+            False,
+            True,
+            'sensor5',
+            'enable_in',
+            '1800'
+        ]
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.confirm', return_value=self.mock_ask):
+
+            rule = self.generator.default_rule_prompt_router({"_type": "api-target"})
+            self.assertEqual(rule, {"on": ["ignore"], "off": ["enable_in", "sensor5", "1800"]})
+
+        # Call again with simulated input selecting IR Blaster options
+        self.mock_ask.ask.side_effect = [
+            'API Call',
+            True,
+            'ir_blaster',
+            'tv',
+            'power',
+            False,
+        ]
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.confirm', return_value=self.mock_ask):
+
+            rule = self.generator.rule_prompt_with_api_call_prompt()
+            self.assertEqual(rule, {"on": ["ir_key", "tv", "power"], "off": ["ignore"]})
+
 
 class TestRegressions(TestCase):
     def setUp(self):
