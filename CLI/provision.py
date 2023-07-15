@@ -93,8 +93,23 @@ class Provisioner():
             result = provision(args.ip, self.passwd, config, modules)
             print(result['message'])
 
+            # Add to nodes.json if upload successful
+            if result['status'] == 200:
+                self.add_to_nodes(config['metadata']['id'], args.config.name, args.ip)
+
         else:
             parser.print_help()
+
+    # Add new node to nodes.json after successful upload
+    # Takes friendly name, config rel/abs path, ip address
+    def add_to_nodes(self, friendly_name, config_path, ip):
+        if friendly_name not in nodes.keys():
+            nodes[friendly_name] = {
+                'config': os.path.abspath(config_path),
+                'ip': ip
+            }
+            with open(os.path.join(cli, 'nodes.json'), 'w') as file:
+                json.dump(nodes, file)
 
     # Iterate nodes.json, reprovision all nodes
     def upload_all(self):

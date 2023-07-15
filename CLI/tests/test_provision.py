@@ -209,9 +209,16 @@ class TestInstantiation(TestCase):
             self.assertTrue(mock_provision.called_once)
 
     def test_provision_manual_args(self):
+        # Mock config file contents with ID parameter set (used as key in nodes.json)
+        mock_file_contents = {'metadata': {'id': 'Node1'}}
+
+        # Mock file object to simulate config arg
+        mock_file = mock_open(read_data=json.dumps(mock_file_contents))
+        mock_file.name = '../config/node1.json'
+
         # Mock args with manually specified config file, IP, password
         args = Namespace(
-            config='../config/node1.json',
+            config=mock_file,
             ip='192.168.1.123',
             node=None,
             all=None,
@@ -219,11 +226,13 @@ class TestInstantiation(TestCase):
             password='hunter2'
         )
 
+        # Confirm ID from mock config not in nodes.json
+        self.assertNotIn('Node1', mock_nodes.keys())
+
         # Mock provision to do nothing, mock nodes.json, mock open + json.load to return empty dict (config)
-        mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
-             patch('provision.json.load', MagicMock(return_value={})), \
+             patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
              patch('provision.nodes', mock_nodes), \
              patch('builtins.open', mock_file):
 
@@ -232,6 +241,11 @@ class TestInstantiation(TestCase):
             self.assertEqual(mock_provision.call_count, 1)
             self.assertTrue(mock_provision.called_with('192.168.1.123'))
             self.assertTrue(mock_provision.called_with('hunter2'))
+
+        # Confirm ID from mock config was added to nodes.json
+        self.assertIn('Node1', mock_nodes.keys())
+        self.assertEqual(mock_nodes['Node1']['ip'], '192.168.1.123')
+        self.assertEqual(mock_nodes['Node1']['config'], os.path.abspath('../config/node1.json'))
 
     def test_provision_no_args(self):
         # Mock args, all blank
