@@ -1,7 +1,7 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from questionary import ValidationError
-from config_generator import GenerateConfigFile, IntRange, FloatRange
+from config_generator import GenerateConfigFile, IntRange, FloatRange, MinLength
 
 
 # Simulate user input object passed to validators
@@ -58,6 +58,27 @@ class TestValidators(TestCase):
 
         # Should reject string
         user_input = SimulatedInput("Five")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
+
+    def test_min_length_validator(self):
+        # Create validator requiring at least 5 characters
+        validator = MinLength(5)
+
+        # Should accept strings with 5 or more characters
+        user_input = SimulatedInput("String")
+        self.assertTrue(validator.validate(user_input))
+        user_input = SimulatedInput("12345")
+        self.assertTrue(validator.validate(user_input))
+        user_input = SimulatedInput("Super long string way longer than the minimum")
+        self.assertTrue(validator.validate(user_input))
+
+        # Should reject short strings, integers, etc
+        user_input = SimulatedInput("x")
+        with self.assertRaises(ValidationError):
+            validator.validate(user_input)
+
+        user_input = SimulatedInput(5)
         with self.assertRaises(ValidationError):
             validator.validate(user_input)
 

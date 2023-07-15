@@ -57,6 +57,17 @@ class FloatRange(Validator):
             )
 
 
+class MinLength(Validator):
+    def __init__(self, min_length):
+        self.min_length = int(min_length)
+
+    def validate(self, document):
+        if len(str(document.text)) >= self.min_length:
+            return True
+        else:
+            raise ValidationError(message=f"Enter {self.min_length} or more characters")
+
+
 class GenerateConfigFile:
     def __init__(self):
         # Config skeleton
@@ -99,7 +110,7 @@ class GenerateConfigFile:
 
     # Prompt user for node name and location metadata, add to self.config
     def metadata_prompt(self):
-        name = questionary.text("Enter a descriptive name for this node").ask()
+        name = questionary.text("Enter a descriptive name for this node", validate=MinLength(1)).ask()
         floor = questionary.text("Enter floor number", validate=is_int).ask()
         location = questionary.text("Enter a brief description of the node's physical location").ask()
 
@@ -107,8 +118,8 @@ class GenerateConfigFile:
 
     # Prompt user for wifi credentials, add to self.config
     def wifi_prompt(self):
-        ssid = questionary.text("Enter wifi SSID (2.4 GHz only)").ask()
-        password = questionary.password("Enter wifi password").ask()
+        ssid = questionary.text("Enter wifi SSID (2.4 GHz only)", validate=MinLength(1)).ask()
+        password = questionary.password("Enter wifi password", validate=MinLength(8)).ask()
 
         self.config['wifi'].update({'ssid': ssid, 'password': password})
 
