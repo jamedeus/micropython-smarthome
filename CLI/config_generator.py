@@ -18,9 +18,11 @@ from helper_functions import (
     valid_timestamp,
     is_device,
     is_sensor,
+    is_device_or_sensor,
     is_int,
     is_float,
-    get_schedule_keywords_dict
+    get_schedule_keywords_dict,
+    get_existing_nodes
 )
 
 # Map int rule limits to device/sensor types
@@ -118,6 +120,9 @@ class GenerateConfigFile:
         # List of schedule keywords from config file
         self.schedule_keyword_options = list(get_schedule_keywords_dict().keys())
 
+        # Dict of existing nodes, used to populate ApiTarget options
+        self.existing_nodes = get_existing_nodes()
+
     def run_prompt(self):
         # Prompt user to enter metadata and wifi credentials
         self.metadata_prompt()
@@ -206,6 +211,13 @@ class GenerateConfigFile:
     def ip_address_prompt(self):
         return questionary.text("Enter IP address", validate=valid_ip).ask()
 
+    # Prompt user to select from existing node friendly names
+    # Returns IP of selected node
+    def apitarget_ip_prompt(self):
+        options = list(self.existing_nodes.keys())
+        target = questionary.select("Select target node", choices=options).ask()
+        return self.existing_nodes[target]['ip']
+
     # Prompt user to select device type and all required params.
     # Validates config before returning - if validation fails, some
     # params are removed and the function is called with partial config
@@ -243,6 +255,10 @@ class GenerateConfigFile:
                     default=str(rule_limits[_type][1]),
                     validate=IntRange(config['min_bright'], rule_limits[_type][1])
                 ).ask()
+
+            # ApiTarget has own IP prompt (select friendly name from nodes.json)
+            elif i == "ip" and _type == "api-target":
+                config[i] = self.apitarget_ip_prompt()
 
             elif i == "ip":
                 config[i] = self.ip_address_prompt()
@@ -347,7 +363,7 @@ class GenerateConfigFile:
             return questionary.select("Enter default rule", choices=['On', 'Off']).ask()
         # ApiTarget has own prompt due to complexity
         elif _type == 'api-target':
-            return self.api_target_rule_prompt()
+            return self.api_target_rule_prompt(config)
         # All other instance types only support Enabled and Disabled
         else:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
@@ -367,7 +383,7 @@ class GenerateConfigFile:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
         # ApiTarget has own prompt due to complexity
         elif _type == 'api-target':
-            return self.rule_prompt_with_api_call_prompt()
+            return self.rule_prompt_with_api_call_prompt(config)
         # All other instance types only support Enabled and Disabled
         else:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
@@ -394,29 +410,26 @@ class GenerateConfigFile:
 
     # Schedule rule prompt for ApiTarget, includes API call option in addition to enabled/disabled
     # Only used for schedule rules, enabled/disabled are invalid as default_rule
-    def rule_prompt_with_api_call_prompt(self):
+    def rule_prompt_with_api_call_prompt(self, config):
         choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'API Call']).ask()
         if choice == 'API Call':
-            return self.api_target_rule_prompt()
+            return self.api_target_rule_prompt(config)
         else:
             return choice
 
     # Prompt user to select API call parameters for both ON and OFF actions
     # Returns complete ApiTarget rule dict
-    def api_target_rule_prompt(self):
-        print(f'\n{Fore.YELLOW}Warning{Fore.RESET}: This is an advanced feature with minimal validation')
-        print('These prompts will NOT prevent you from adding invalid rules, be careful\n')
-
+    def api_target_rule_prompt(self, config):
         if questionary.confirm("Should an API call be made when the device is turned ON?").ask():
             print('\nAPI Target ON action')
-            on_action = self.api_call_prompt()
+            on_action = self.api_call_prompt(config)
             print()
         else:
             on_action = ['ignore']
 
         if questionary.confirm("Should an API call be made when the device is turned OFF?").ask():
             print('\nAPI Target OFF action')
-            off_action = self.api_call_prompt()
+            off_action = self.api_call_prompt(config)
         else:
             off_action = ['ignore']
 
@@ -424,30 +437,66 @@ class GenerateConfigFile:
 
     # Prompt user to select parameters for an individual API call
     # Called by api_target_rule_prompt for both on and off actions
-    def api_call_prompt(self):
-        # Prompt user to enter ID of remote instance
-        instance = questionary.text("Enter ID of target device or sensor (or ir_blaster)").ask()
+    def api_call_prompt(self, config):
+        # Read target node config file from disk
+        config = self.load_config_from_ip(config['ip'])
 
-        # Prompt user to select API endpoint
+        # Build options list from instances in target config file
+        # Syntax: "device1 (dimmer)"
+        options = [f'{i} ({config[i]["_type"]})' for i in config if is_device_or_sensor(i)]
+        if 'ir_blaster' in config:
+            options.append('IR Blaster')
+
+        # Prompt user to select target instance, truncate _type param
+        instance = questionary.select("Select target instance", choices=options).ask()
+        instance = instance.split(" ")[0]
+
+        # Prompt user to select API endpoint (options based on instance selection)
         if is_device(instance):
             endpoint = questionary.select("Select endpoint", choices=device_endpoints).ask()
+
         elif is_sensor(instance):
-            endpoint = questionary.select("Select endpoint", choices=sensor_endpoints).ask()
-        elif instance == 'ir_blaster':
-            target = questionary.select("Select IR target", choices=list(ir_blaster_options.keys())).ask()
+            # Remove trigger_sensor option if target does not support
+            if config[instance]['_type'] in ['si7021', 'switch']:
+                print("remove trigger_sensor")
+                options = sensor_endpoints.copy()
+                options.remove('trigger_sensor')
+            else:
+                options = sensor_endpoints
+            endpoint = questionary.select("Select endpoint", choices=options).ask()
+
+        elif instance == 'IR':
+            target = questionary.select("Select IR target", choices=config['ir_blaster']['target']).ask()
             key = questionary.select("Select key", choices=ir_blaster_options[target]).ask()
             rule = ['ir_key', target, key]
 
         # Prompt user to add additional arg required by some endpoints
-        if not instance == 'ir_blaster':
+        if not instance == 'IR':
             rule = [endpoint, instance]
 
             if endpoint in ['enable_in', 'disable_in']:
                 rule.append(questionary.text("Enter delay in seconds", validate=IntRange(1, 86400)).ask())
             elif endpoint == 'set_rule':
-                rule.append(questionary.text("Enter rule").ask())
+                # Call correct rule prompt for target instance type
+                rule.append(self.schedule_rule_prompt_router(config[instance]))
 
         return rule
+
+    # Takes IP, finds matching config path in existing_nodes dict, reads
+    # config file and returns contents. Used by api_call_prompt to get
+    # options, determine correct rule prompt, etc.
+    def load_config_from_ip(self, ip):
+        try:
+            for i in self.existing_nodes:
+                if self.existing_nodes[i]['ip'] == ip:
+                    with open(self.existing_nodes[i]['config'], 'r') as file:
+                        return json.load(file)
+            else:
+                raise FileNotFoundError
+        except FileNotFoundError:
+            print(f"\n{Fore.RED}FATAL ERROR{Fore.RESET}: Target node config file missing from disk")
+            print("Unable to get options, please check the config path in nodes.json")
+            raise SystemExit
 
     # Iterate all configured sensors, display checkbox prompt for each
     # with all configured devices as options. Add all checked devices

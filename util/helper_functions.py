@@ -3,6 +3,11 @@ import os
 import json
 
 
+# Get full path to repository root directory
+util = os.path.dirname(os.path.realpath(__file__))
+repo = os.path.split(util)[0]
+
+
 # Returns True if arg starts with "device" or "sensor", otherwise False
 def is_device_or_sensor(string):
     return (string.startswith("device") or string.startswith("sensor"))
@@ -73,3 +78,11 @@ def get_schedule_keywords_dict(django=False):
                 return json.load(file)
         except FileNotFoundError:
             return {}
+
+
+# Load nodes.json from disk and return as dict
+# Contains section for each existing node with friendly name
+# as key, sub-dict with IP and path to config file as value
+def get_existing_nodes():
+    with open(os.path.join(repo, 'CLI', 'nodes.json'), 'r') as file:
+        return json.load(file)

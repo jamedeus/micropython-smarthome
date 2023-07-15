@@ -1,7 +1,26 @@
+import os
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from questionary import ValidationError
 from config_generator import GenerateConfigFile, IntRange, FloatRange, MinLength, NicknameValidator
+
+# Get paths to test dir, CLI dir, repo dir
+tests = os.path.dirname(os.path.realpath(__file__))
+cli = os.path.split(tests)[0]
+repo = os.path.dirname(cli)
+test_config = os.path.join(repo, 'frontend', 'node_configuration', 'unit-test-config.json')
+
+# Mock nodes.json contents
+mock_nodes = {
+    "node1": {
+        "config": test_config,
+        "ip": "192.168.1.123"
+    },
+    "node2": {
+        "config": '/not/a/real/directory',
+        "ip": "192.168.1.223"
+    }
+}
 
 
 # Simulate user input object passed to validators
@@ -721,24 +740,86 @@ class TestGenerateConfigFile(TestCase):
             output = self.generator.add_schedule_rule(config)
             self.assertEqual(output['schedule'], {'10:00': 'Enabled'})
 
+    def test_api_target_ip_prompt(self):
+        # Mock nodes.json contents
+        self.generator.existing_nodes = mock_nodes
+
+        # Simulate user selecting first option, confirm correct IP returned
+        self.mock_ask.ask.side_effect = ['node1']
+        with patch('questionary.select', return_value=self.mock_ask):
+            output = self.generator.apitarget_ip_prompt()
+            self.assertEqual(output, '192.168.1.123')
+
+    # Confirm the correct IP prompt is run when configuring ApiTarget
+    def test_configure_device_api_target(self):
+        # Partial config, block all prompts except IP and schedule
+        config = {
+            "_type": "api-target",
+            "nickname": "API",
+            "ip": "placeholder",
+            "default_rule": {"on": ["ignore"], "off": ["ignore"]},
+            "schedule": {}
+        }
+
+        # Simulate user declining schedule rule prompt
+        self.mock_ask.ask.side_effect = ['No']
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch.object(self.generator, 'apitarget_ip_prompt') as mock_ip_prompt:
+
+            # Simulate user selecting first IP option
+            mock_ip_prompt.return_value = '192.168.1.123'
+
+            # Run prompt, confirm correct IP prompt is called
+            self.generator.configure_device(config)
+            self.assertTrue(mock_ip_prompt.called)
+
     def test_api_target_rule_prompt(self):
-        # Call API target rule prompt with simulated user input
+        # Mock nodes.json to include unit-test-config.json
+        self.generator.existing_nodes = mock_nodes
+
+        # Simulate user at rule prompt after selecting IP matching unit-test-config.json
+        mock_config = {
+            "_type": "api-target",
+            "nickname": "API",
+            "ip": "192.168.1.123",
+            "default_rule": "placeholder",
+            "schedule": {}
+        }
+
+        # Call API target rule prompt with simulated user input, confirm correct rule returned
         self.mock_ask.ask.side_effect = [
             'API Call',
             True,
             'device1',
             'enable',
             True,
-            'sensor2',
+            'sensor1',
             'set_rule',
+            'Int',
             '50'
         ]
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask):
 
-            rule = self.generator.rule_prompt_with_api_call_prompt()
-            self.assertEqual(rule, {"on": ["enable", "device1"], "off": ["set_rule", "sensor2", "50"]})
+            rule = self.generator.rule_prompt_with_api_call_prompt(mock_config)
+            self.assertEqual(rule, {"on": ["enable", "device1"], "off": ["set_rule", "sensor1", "50"]})
+
+        # Call again with simulated input selecting IR Blaster options, confirm correct rule returned
+        self.mock_ask.ask.side_effect = [
+            'API Call',
+            True,
+            'IR Blaster',
+            'tv',
+            'power',
+            False,
+        ]
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('questionary.confirm', return_value=self.mock_ask):
+
+            rule = self.generator.rule_prompt_with_api_call_prompt(mock_config)
+            self.assertEqual(rule, {"on": ["ir_key", "tv", "power"], "off": ["ignore"]})
 
         # Call schedule rule router with simulated input selecting 'Enabled' option
         self.mock_ask.ask.side_effect = ['Enabled']
@@ -746,7 +827,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask):
 
-            rule = self.generator.schedule_rule_prompt_router({"_type": "api-target"})
+            rule = self.generator.schedule_rule_prompt_router(mock_config)
             self.assertEqual(rule, 'Enabled')
 
         # Call default rule router with simulated input selecting ignore option + endpoint requiring extra arg
@@ -761,24 +842,20 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask):
 
-            rule = self.generator.default_rule_prompt_router({"_type": "api-target"})
+            rule = self.generator.default_rule_prompt_router(mock_config)
             self.assertEqual(rule, {"on": ["ignore"], "off": ["enable_in", "sensor5", "1800"]})
 
-        # Call again with simulated input selecting IR Blaster options
-        self.mock_ask.ask.side_effect = [
-            'API Call',
-            True,
-            'ir_blaster',
-            'tv',
-            'power',
-            False,
-        ]
-        with patch('questionary.select', return_value=self.mock_ask), \
-             patch('questionary.text', return_value=self.mock_ask), \
-             patch('questionary.confirm', return_value=self.mock_ask):
+    def test_api_call_prompt_target_config_missing(self):
+        # Mock nodes.json to include node with fake config path
+        self.generator.existing_nodes = mock_nodes
 
-            rule = self.generator.rule_prompt_with_api_call_prompt()
-            self.assertEqual(rule, {"on": ["ir_key", "tv", "power"], "off": ["ignore"]})
+        # Confirm script exits with error when unable to open fake path
+        with self.assertRaises(SystemExit):
+            self.generator.api_call_prompt({'ip': '192.168.1.223'})
+
+        # Confirm script exits with error when IP not in nodes.json
+        with self.assertRaises(SystemExit):
+            self.generator.api_call_prompt({'ip': '10.0.0.1'})
 
 
 class TestRegressions(TestCase):
