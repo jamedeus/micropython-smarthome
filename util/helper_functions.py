@@ -84,5 +84,8 @@ def get_schedule_keywords_dict(django=False):
 # Contains section for each existing node with friendly name
 # as key, sub-dict with IP and path to config file as value
 def get_existing_nodes():
-    with open(os.path.join(repo, 'CLI', 'nodes.json'), 'r') as file:
-        return json.load(file)
+    try:
+        with open(os.path.join(repo, 'CLI', 'nodes.json'), 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {}
