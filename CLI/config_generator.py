@@ -5,7 +5,14 @@ import questionary
 from questionary import Validator, ValidationError
 from colorama import Fore
 from instance_validators import validate_rules
-from validation_constants import valid_device_pins, valid_sensor_pins, config_templates
+from validation_constants import (
+    valid_device_pins,
+    valid_sensor_pins,
+    config_templates,
+    ir_blaster_options,
+    device_endpoints,
+    sensor_endpoints
+)
 from helper_functions import (
     valid_ip,
     valid_timestamp,
@@ -338,6 +345,9 @@ class GenerateConfigFile:
         # Dummy does not support enabled/disabled for default_rule, must be on or off
         elif _type == 'dummy':
             return questionary.select("Enter default rule", choices=['On', 'Off']).ask()
+        # ApiTarget has own prompt due to complexity
+        elif _type == 'api-target':
+            return self.api_target_rule_prompt()
         # All other instance types only support Enabled and Disabled
         else:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
@@ -355,6 +365,9 @@ class GenerateConfigFile:
         # Summy supports On and Off in addition to enabled/disabled
         elif _type == 'dummy':
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
+        # ApiTarget has own prompt due to complexity
+        elif _type == 'api-target':
+            return self.rule_prompt_with_api_call_prompt()
         # All other instance types only support Enabled and Disabled
         else:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
@@ -378,6 +391,63 @@ class GenerateConfigFile:
             return f'fade/{target}/{period}'
         else:
             return choice
+
+    # Schedule rule prompt for ApiTarget, includes API call option in addition to enabled/disabled
+    # Only used for schedule rules, enabled/disabled are invalid as default_rule
+    def rule_prompt_with_api_call_prompt(self):
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'API Call']).ask()
+        if choice == 'API Call':
+            return self.api_target_rule_prompt()
+        else:
+            return choice
+
+    # Prompt user to select API call parameters for both ON and OFF actions
+    # Returns complete ApiTarget rule dict
+    def api_target_rule_prompt(self):
+        print(f'\n{Fore.YELLOW}Warning{Fore.RESET}: This is an advanced feature with minimal validation')
+        print('These prompts will NOT prevent you from adding invalid rules, be careful\n')
+
+        if questionary.confirm("Should an API call be made when the device is turned ON?").ask():
+            print('\nAPI Target ON action')
+            on_action = self.api_call_prompt()
+            print()
+        else:
+            on_action = ['ignore']
+
+        if questionary.confirm("Should an API call be made when the device is turned OFF?").ask():
+            print('\nAPI Target OFF action')
+            off_action = self.api_call_prompt()
+        else:
+            off_action = ['ignore']
+
+        return {'on': on_action, 'off': off_action}
+
+    # Prompt user to select parameters for an individual API call
+    # Called by api_target_rule_prompt for both on and off actions
+    def api_call_prompt(self):
+        # Prompt user to enter ID of remote instance
+        instance = questionary.text("Enter ID of target device or sensor (or ir_blaster)").ask()
+
+        # Prompt user to select API endpoint
+        if is_device(instance):
+            endpoint = questionary.select("Select endpoint", choices=device_endpoints).ask()
+        elif is_sensor(instance):
+            endpoint = questionary.select("Select endpoint", choices=sensor_endpoints).ask()
+        elif instance == 'ir_blaster':
+            target = questionary.select("Select IR target", choices=list(ir_blaster_options.keys())).ask()
+            key = questionary.select("Select key", choices=ir_blaster_options[target]).ask()
+            rule = ['ir_key', target, key]
+
+        # Prompt user to add additional arg required by some endpoints
+        if not instance == 'ir_blaster':
+            rule = [endpoint, instance]
+
+            if endpoint in ['enable_in', 'disable_in']:
+                rule.append(questionary.text("Enter delay in seconds", validate=IntRange(1, 86400)).ask())
+            elif endpoint == 'set_rule':
+                rule.append(questionary.text("Enter rule").ask())
+
+        return rule
 
     # Iterate all configured sensors, display checkbox prompt for each
     # with all configured devices as options. Add all checked devices
