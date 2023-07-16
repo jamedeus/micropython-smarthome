@@ -7,7 +7,14 @@ import asyncio
 import unittest
 import coverage
 
+# Add project files to python path
+sys.path.insert(0, os.path.abspath('../core'))
+sys.path.insert(0, os.path.abspath('../lib'))
+sys.path.insert(0, os.path.abspath('../devices'))
+sys.path.insert(0, os.path.abspath('../sensors'))
+
 # Add mock modules to python path
+# Must be last to give mock libraries priority over ../lib
 sys.path.insert(0, os.path.abspath('mocks'))
 
 
@@ -27,7 +34,7 @@ time.sleep_ms = sleep_ms
 
 
 async def run_tests():
-    cov = coverage.Coverage(source=['.'], omit=['/usr/*', 'test_*.py', 'runtests.py', 'mocks/*'])
+    cov = coverage.Coverage(source=['../core', '../devices', '../sensors'])
     cov.start()
 
     # Discover tests
@@ -42,7 +49,7 @@ async def run_tests():
     # Print coverage report
     cov.stop()
     cov.save()
-    cov.report(show_missing=True)
+    cov.report(show_missing=True, precision=1)
 
 
 asyncio.run(run_tests())
