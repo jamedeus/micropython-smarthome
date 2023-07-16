@@ -21,7 +21,7 @@ class TestDesktopTarget(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_instantiation",
+            "test_initial_state",
             "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
@@ -33,8 +33,11 @@ class TestDesktopTarget(unittest.TestCase):
             "test_turn_on"
         ]
 
-    def test_instantiation(self):
-        self.instance = Desktop_target("device1", "device1", "desktop", "enabled", "192.168.1.216")
+    @classmethod
+    def setUpClass(cls):
+        cls.instance = Desktop_target("device1", "device1", "desktop", "enabled", "192.168.1.216")
+
+    def test_initial_state(self):
         self.assertIsInstance(self.instance, Desktop_target)
         self.assertTrue(self.instance.enabled)
 
@@ -43,10 +46,10 @@ class TestDesktopTarget(unittest.TestCase):
         self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
-        self.assertIs(self.instance.rule_validator("Disabled"), "disabled")
-        self.assertIs(self.instance.rule_validator("DISABLED"), "disabled")
-        self.assertIs(self.instance.rule_validator("Enabled"), "enabled")
-        self.assertIs(self.instance.rule_validator("enabled"), "enabled")
+        self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
+        self.assertEqual(self.instance.rule_validator("DISABLED"), "disabled")
+        self.assertEqual(self.instance.rule_validator("Enabled"), "enabled")
+        self.assertEqual(self.instance.rule_validator("enabled"), "enabled")
 
     def test_rule_validation_invalid(self):
         self.assertFalse(self.instance.rule_validator(True))

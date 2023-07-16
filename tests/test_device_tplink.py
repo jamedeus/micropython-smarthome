@@ -24,7 +24,7 @@ class TestTplink(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_instantiation",
+            "test_initial_state",
             "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
@@ -41,8 +41,11 @@ class TestTplink(unittest.TestCase):
             "test_regression_rule_change_to_disabled_while_fading"
         ]
 
-    def test_instantiation(self):
-        self.instance = Tplink("device1", "device1", "dimmer", 42, 1, 100, "192.168.1.233")
+    @classmethod
+    def setUpClass(cls):
+        cls.instance = Tplink("device1", "device1", "dimmer", 42, 1, 100, "192.168.1.233")
+
+    def test_initial_state(self):
         self.assertIsInstance(self.instance, Tplink)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.fading)

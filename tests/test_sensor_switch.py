@@ -19,7 +19,7 @@ class TestSwitch(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_instantiation",
+            "test_initial_state",
             "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
@@ -28,8 +28,11 @@ class TestSwitch(unittest.TestCase):
             "test_trigger"
         ]
 
-    def test_instantiation(self):
-        self.instance = Switch("sensor1", "sensor1", "switch", "enabled", [], 19)
+    @classmethod
+    def setUpClass(cls):
+        cls.instance = Switch("sensor1", "sensor1", "switch", "enabled", [], 19)
+
+    def test_initial_state(self):
         self.assertIsInstance(self.instance, Switch)
         self.assertTrue(self.instance.enabled)
 
@@ -38,10 +41,10 @@ class TestSwitch(unittest.TestCase):
         self.assertEqual(attributes, expected_attributes)
 
     def test_rule_validation_valid(self):
-        self.assertIs(self.instance.rule_validator("Disabled"), "disabled")
-        self.assertIs(self.instance.rule_validator("DISABLED"), "disabled")
-        self.assertIs(self.instance.rule_validator("Enabled"), "enabled")
-        self.assertIs(self.instance.rule_validator("enabled"), "enabled")
+        self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
+        self.assertEqual(self.instance.rule_validator("DISABLED"), "disabled")
+        self.assertEqual(self.instance.rule_validator("Enabled"), "enabled")
+        self.assertEqual(self.instance.rule_validator("enabled"), "enabled")
 
     def test_rule_validation_invalid(self):
         self.assertFalse(self.instance.rule_validator(True))

@@ -24,7 +24,7 @@ class TestWled(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_instantiation",
+            "test_initial_state",
             "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
@@ -39,10 +39,12 @@ class TestWled(unittest.TestCase):
             "test_regression_rule_change_to_disabled_while_fading"
         ]
 
-    def test_instantiation(self):
-        self.instance = Wled("device1", "device1", "wled", 50, 1, 255, "192.168.1.211")
+    @classmethod
+    def setUpClass(cls):
+        cls.instance = Wled("device1", "device1", "wled", 50, 1, 255, "192.168.1.211")
+
+    def test_initial_state(self):
         self.assertIsInstance(self.instance, Wled)
-        print(f'Instance type: {type(self.instance)}')
         self.assertTrue(self.instance.enabled)
 
     def test_get_attributes(self):

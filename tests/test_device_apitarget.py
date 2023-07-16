@@ -32,7 +32,7 @@ class TestApiTarget(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_instantiation",
+            "test_initial_state",
             "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
@@ -45,8 +45,11 @@ class TestApiTarget(unittest.TestCase):
             "test_regression_rejects_valid_rules"
         ]
 
-    def test_instantiation(self):
-        self.instance = ApiTarget("device1", "device1", "api-target", default_rule, "192.168.1.223")
+    @classmethod
+    def setUpClass(cls):
+        cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, "192.168.1.223")
+
+    def test_initial_state(self):
         self.assertIsInstance(self.instance, ApiTarget)
         self.assertTrue(self.instance.enabled)
 

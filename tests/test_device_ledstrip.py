@@ -25,7 +25,7 @@ class TestLedStrip(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_instantiation",
+            "test_initial_state",
             "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
@@ -45,8 +45,11 @@ class TestLedStrip(unittest.TestCase):
             "test_regression_rule_change_to_disabled_while_fading"
         ]
 
-    def test_instantiation(self):
-        self.instance = LedStrip("device1", "device1", "pwm", 512, 0, 1023, 4)
+    @classmethod
+    def setUpClass(cls):
+        cls.instance = LedStrip("device1", "device1", "pwm", 512, 0, 1023, 4)
+
+    def test_initial_state(self):
         self.assertIsInstance(self.instance, LedStrip)
         self.assertFalse(self.instance.pwm.duty())
         self.assertTrue(self.instance.enabled)
@@ -110,6 +113,8 @@ class TestLedStrip(unittest.TestCase):
         self.assertTrue(self.instance.send(0))
         self.assertEqual(self.instance.pwm.duty(), 0)
 
+    # TODO not sure why this fails, seems like self.bright is NoneType?
+    # IDK how this would happen, very strange
     def test_turn_off_when_disabled(self):
         # Ensure turned on and enabled
         self.instance.enable()

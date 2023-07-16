@@ -7,13 +7,16 @@ class TestIrBlaster(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_instantiation",
+            "test_initial_state",
             "test_send_valid",
             "test_send_invalid"
         ]
 
-    def test_instantiation(self):
-        self.instance = IrBlaster("4", ["tv", "ac"])
+    @classmethod
+    def setUpClass(cls):
+        cls.instance = IrBlaster("4", ["tv", "ac"])
+
+    def test_initial_state(self):
         self.assertIsInstance(self.instance, IrBlaster)
         self.assertIsInstance(self.instance.ir, Player)
         self.assertEqual(len(self.instance.codes), 2)

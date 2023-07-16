@@ -21,7 +21,7 @@ class TestMotionSensor(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_instantiation",
+            "test_initial_state",
             "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
@@ -35,8 +35,11 @@ class TestMotionSensor(unittest.TestCase):
             "test_regression_invalid_default_rule"
         ]
 
-    def test_instantiation(self):
-        self.instance = MotionSensor("sensor1", "sensor1", "pir", None, [], 15)
+    @classmethod
+    def setUpClass(cls):
+        cls.instance = MotionSensor("sensor1", "sensor1", "pir", None, [], 15)
+
+    def test_initial_state(self):
         self.assertIsInstance(self.instance, MotionSensor)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.motion)

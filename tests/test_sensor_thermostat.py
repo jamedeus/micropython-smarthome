@@ -24,7 +24,7 @@ class TestThermostat(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_instantiation",
+            "test_initial_state",
             "test_get_attributes",
             "test_rule_validation_valid",
             "test_rule_validation_invalid",
@@ -41,8 +41,11 @@ class TestThermostat(unittest.TestCase):
             "test_regression_invalid_default_rule"
         ]
 
-    def test_instantiation(self):
-        self.instance = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [])
+    @classmethod
+    def setUpClass(cls):
+        cls.instance = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [])
+
+    def test_initial_state(self):
         self.assertIsInstance(self.instance, Thermostat)
         self.assertTrue(self.instance.enabled)
 
