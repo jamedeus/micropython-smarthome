@@ -8,11 +8,11 @@ class Pin:
     PULL_DOWN = 'PULL_DOWN'
     IRQ_RISING = None
 
-    def __init__(self, pin, mode=None, pull=None):
+    def __init__(self, pin, mode=None, pull=None, value=0):
         self.pin = pin
         self.mode = mode
         self.pull = pull
-        self.pin_state = 0
+        self.pin_state = value
 
     def value(self, val=None):
         if val is None:
@@ -27,12 +27,12 @@ class Pin:
 class PWM:
     def __init__(self, pin, duty=0):
         self.pin = pin
-        self.duty = duty
+        self._duty = duty
 
     def duty(self, value=None):
         if value is not None:
-            self.duty = value
-        return self.duty
+            self._duty = value
+        return self._duty
 
 
 class SoftI2C:
