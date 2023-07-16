@@ -24,10 +24,12 @@ This will require mocked versions of all micropython modules not included in cpy
 - [x] time.sleep_us
 - [x] urequests
 - [x] uasyncio
-- [ ] ubinascii
 - [x] si7021
 - [x] gc
 - [x] network
-- [ ] webrepl
+- [x] webrepl
+
+The following are only required for the `_boot` modules, which currently has no tests:
+- [ ] ubinascii
 - [ ] uos
 - [ ] flashbdev
