@@ -87,12 +87,13 @@ app.config = config
 
 
 class TestApi(unittest.TestCase):
-    def __init__(self):
-        self.device1 = config.find("device1")
-        self.sensor1 = config.find("sensor1")
-        self.sensor2 = config.find("sensor2")
-        self.sensor3 = config.find("sensor3")
-        self.sensor4 = config.find("sensor4")
+    @classmethod
+    def setUpClass(cls):
+        cls.device1 = config.find("device1")
+        cls.sensor1 = config.find("sensor1")
+        cls.sensor2 = config.find("sensor2")
+        cls.sensor3 = config.find("sensor3")
+        cls.sensor4 = config.find("sensor4")
 
     async def request(self, msg):
         reader, writer = await asyncio.open_connection(ip, 8123)

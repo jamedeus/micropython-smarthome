@@ -9,7 +9,7 @@ class TestConfig(unittest.TestCase):
 
     def __dir__(self):
         return [
-            "test_initialization",
+            "test_initial_state",
             "test_wifi_connected",
             "test_indicator_led",
             "test_api_calls",
@@ -34,7 +34,8 @@ class TestConfig(unittest.TestCase):
             "test_regression_instantiate_with_desktop_trigger"
         ]
 
-    def test_initialization(self):
+    @classmethod
+    def setUpClass(cls):
         loaded_json = {
             'wifi': {
                 'ssid': 'jamnet',
@@ -70,7 +71,9 @@ class TestConfig(unittest.TestCase):
             }
         }
 
-        self.config = Config(loaded_json)
+        cls.config = Config(loaded_json)
+
+    def test_initial_state(self):
         self.assertIsInstance(self.config, Config)
 
     def test_wifi_connected(self):
