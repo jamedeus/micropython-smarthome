@@ -22,7 +22,6 @@ config_file = {
             "10:00": 74,
             "22:00": 74
         },
-        "pin": 15,
         "default_rule": 74,
         "mode": "cool",
         "tolerance": 1,
@@ -89,8 +88,9 @@ def determine_correct_action(conditions):
 
 
 class TestMainLoop(unittest.TestCase):
-    def __init__(self):
-        self.config = Config(config_file)
+    @classmethod
+    def setUpClass(cls):
+        cls.config = Config(config_file)
 
     def test_check_sensor_state(self):
         # Make sure state is False for all motion sensors
@@ -113,10 +113,11 @@ class TestMainLoop(unittest.TestCase):
         self.assertEqual(conditions, [True, False])
 
         # Check si7021 condition
-        conditions = self.config.groups[1].check_sensor_conditions()
-        if self.config.sensors[1].fahrenheit() > 75:
+        si7021 = self.config.find('sensor1')
+        conditions = si7021.group.check_sensor_conditions()
+        if si7021.fahrenheit() > 75:
             self.assertTrue(conditions[0])
-        elif self.config.sensors[1].fahrenheit() < 73:
+        elif si7021.fahrenheit() < 73:
             self.assertFalse(conditions[0])
         else:
             self.assertEqual(conditions[0], None)
