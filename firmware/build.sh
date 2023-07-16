@@ -35,26 +35,7 @@ clone_micropython() {
 }
 
 
-# Copy project source to build modules dir
-# Compiled to mpy and frozen into firmware
-copy_repo() {
-    target="`pwd`/micropython/ports/esp32/modules/"
-    cd ..
-
-    # Copy core dependencies (Api, _boot, Config, Group, main, setup, SoftwareTimer, util)
-    \cp core/*.py $target
-
-    # Copy device and sensor classes
-    \cp -f devices/* sensors/* $target
-
-    # Copy libraries
-    \cp -r -f lib/* $target
-
-    cd firmware/
-}
-
-
-# Recompile tailwind stylesheet, insert into html, convert to python module
+# Compile tailwind stylesheet, insert into html, convert to python module
 # Module frozen into firmware, contains single variable with page contents
 package_setup_page() {
     # Working copy (do not modify source)
@@ -90,7 +71,7 @@ package_setup_page() {
 
 
 # Compile micropython firmware
-# Append to existing build if present
+# Updates existing build if present
 build() {
     manifest="`pwd`/manifest.py"
     cd micropython/ports/esp32
@@ -125,12 +106,11 @@ if [[ ! -d $FIRMWARE_DIR/micropython ]]; then
     clone_micropython
 fi
 
-
-# Copy project source to build modules dir, set env vars, build setup page
-copy_repo
+# Set env vars
 source_esp_idf
-package_setup_page
 
+# Build setup page
+package_setup_page
 
 # Update existing build unless user passed fresh arg
 if [[ $1 == "f" || $1 == "--f" || $1 == "fresh" ]]; then
