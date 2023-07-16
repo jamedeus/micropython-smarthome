@@ -18,7 +18,7 @@ This will require mocked versions of all micropython modules not included in cpy
 - [x] machine.PWM
 - [x] machine.SoftI2C
 - [x] machine.Timer
-- [ ] machine.RTC
+- [x] machine.RTC
 - [x] ir_tx.Player
 - [x] time.sleep_ms
 - [x] time.sleep_us
@@ -26,8 +26,8 @@ This will require mocked versions of all micropython modules not included in cpy
 - [x] uasyncio
 - [ ] ubinascii
 - [x] si7021
-- [ ] gc
-- [ ] network
+- [x] gc
+- [x] network
 - [ ] webrepl
 - [ ] uos
 - [ ] flashbdev

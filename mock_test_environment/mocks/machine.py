@@ -47,19 +47,48 @@ class Timer:
         self.timer_id = timer_id
         self.callback = None
         self.period = None
+        self.start_time = None
         self.thread = None
+        self.stop_event = threading.Event()
 
     def init(self, period, mode=None, callback=None):
         # Convert ms to seconds
         self.period = period / 1000.0
         self.callback = callback
 
-        # Create threat that runs callback after period seconds
+        # Remember start time, used by value()
+        self.start_time = time.time()
+
+        # Create thread that runs callback after period seconds
         self.thread = threading.Thread(target=self.handler)
         self.thread.start()
 
+    def deinit(self):
+        self.stop_event.set()
+        if self.thread is not None:
+            self.thread.join()
+        self.start_time = None
+
     # Runs in new thread to simulate callback timer
     def handler(self):
-        time.sleep(self.period)
-        if self.callback is not None:
+        stopped = self.stop_event.wait(self.period)
+        if not stopped and self.callback is not None:
             self.callback(self)
+
+    def value(self):
+        # Return remaining time in ms
+        if self.start_time is not None:
+            elapsed_time = time.time() - self.start_time
+            remaining_time = self.period - elapsed_time
+            return max(0, remaining_time) * 1000
+        else:
+            return 0
+
+
+class RTC:
+    def datetime(self, time_tuple):
+        pass
+
+
+def reset():
+    pass
