@@ -43,13 +43,21 @@ class SoftI2C:
 class Timer:
     ONE_SHOT = 'ONE_SHOT'
 
-    def __init__(self, timer_id):
-        self.timer_id = timer_id
-        self.callback = None
-        self.period = None
-        self.start_time = None
-        self.thread = None
-        self.stop_event = threading.Event()
+    # Store existing timers, return existing if same timer_ID used again
+    # Simulate behavior of real Timer class, allows accessing same "hardware
+    # timer" from multiple contexts
+    _timers = {}
+
+    def __new__(cls, timer_id, *args, **kwargs):
+        # If timer_id exists in dict, return existing
+        if timer_id in cls._timers:
+            return cls._timers[timer_id]
+
+        # If timer_id used for first time: create new timer, add to dict
+        timer = super().__new__(cls)
+        cls._timers[timer_id] = timer
+        timer.stop_event = threading.Event()  # This event is used to stop the thread
+        return timer
 
     def init(self, period, mode=None, callback=None):
         # Convert ms to seconds
@@ -59,19 +67,26 @@ class Timer:
         # Remember start time, used by value()
         self.start_time = time.time()
 
+        # Clear event if previously set by deinit
+        if self.stop_event.is_set():
+            self.stop_event.clear()
+
         # Create thread that runs callback after period seconds
+        # Daemon prevents test script hanging after complete
         self.thread = threading.Thread(target=self.handler)
+        self.thread.daemon = True
         self.thread.start()
 
     def deinit(self):
+        # Set stop event, breaks wait method in handler thread
         self.stop_event.set()
-        if self.thread is not None:
-            self.thread.join()
         self.start_time = None
 
     # Runs in new thread to simulate callback timer
     def handler(self):
+        # Wait method can be stopped with stop_event.set()
         stopped = self.stop_event.wait(self.period)
+        # Callback runs if stop_event.set() was not called within period
         if not stopped and self.callback is not None:
             self.callback(self)
 
