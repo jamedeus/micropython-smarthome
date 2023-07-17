@@ -99,7 +99,8 @@ class TestMainLoop(unittest.TestCase):
                 i.motion = False
 
         # Confirm state is correct
-        conditions = self.config.groups[0].check_sensor_conditions()
+        group = self.config.find('sensor2').group
+        conditions = group.check_sensor_conditions()
         self.assertEqual(conditions, [False, False])
 
         # Trigger only 1 sensor
@@ -109,7 +110,7 @@ class TestMainLoop(unittest.TestCase):
                 break
 
         # Confirm conditions are correct
-        conditions = self.config.groups[0].check_sensor_conditions()
+        conditions = group.check_sensor_conditions()
         self.assertEqual(conditions, [True, False])
 
         # Check si7021 condition
