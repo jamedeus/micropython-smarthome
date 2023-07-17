@@ -129,7 +129,7 @@ class Sensor():
         attributes = self.__dict__.copy()
 
         # Make dict json-compatible
-        for i in attributes.keys():
+        for i in self.__dict__:
             # Remove object references
             if i in ("i2c", "temp_sensor", "sensor", "switch"):
                 del attributes[i]

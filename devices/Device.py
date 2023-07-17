@@ -128,7 +128,7 @@ class Device():
     def get_attributes(self):
         attributes = self.__dict__.copy()
 
-        for i in attributes.keys():
+        for i in self.__dict__:
             # Remove object references
             if i in ("pwm", "mosfet", "relay"):
                 del attributes[i]
