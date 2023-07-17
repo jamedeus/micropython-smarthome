@@ -139,7 +139,8 @@ class Config():
         epoch = time.mktime(time.localtime())
         now = time.localtime(epoch)
         # Only needed to increment day, other parameters roll over correctly in testing
-        next_reset = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7]))
+        # Timezone set to none (final arg), required for compatibility with cpython test environment
+        next_reset = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7], -1))
 
         # Reload schedule rules at random time between 3-4 am (prevent multiple nodes hitting API at same second)
         adjust = randrange(3600)
@@ -366,8 +367,9 @@ class Config():
                 continue
 
             # Get epoch time of rule using current date params, substitute hour + min from rule, substitute 0 for second
-            time_tuple = (now[0], now[1], now[2], int(rule.split(":")[0]), int(rule.split(":")[1]), 0, now[6], now[7])
-            trigger_time = time.mktime(time_tuple)
+            # Timezone set to none (final arg), required for compatibility with cpython test environment
+            params = (now[0], now[1], now[2], int(rule.split(":")[0]), int(rule.split(":")[1]), 0, now[6], now[7], -1)
+            trigger_time = time.mktime(params)
 
             # Add to results: Key = unix timestamp, value = value from original rules dict
             result[trigger_time] = rules[rule]

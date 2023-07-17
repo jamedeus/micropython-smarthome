@@ -51,7 +51,7 @@ class SoftwareTimer():
         # Callers are only allowed 1 timer each - delete existing timers with same name before adding
         # Exempt callers: scheduler, API
         if not name == "scheduler" and not name == "API":
-            for i in self.schedule:
+            for i in list(self.schedule).copy():
                 if name in self.schedule[i]:
                     del self.schedule[i]
 
@@ -73,7 +73,7 @@ class SoftwareTimer():
         self.pause = True
 
         # Delete any items with same name
-        for i in self.schedule:
+        for i in list(self.schedule).copy():
             if name in self.schedule[i]:
                 del self.schedule[i]
 
