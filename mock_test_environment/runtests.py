@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import json
 import logging
 import asyncio
 import unittest
@@ -52,6 +53,10 @@ logging.root.handlers = [mock_logging.Handler()]
 with open('app.log', 'w') as file:
     pass
 
+# Create mock config.json to allow saving schedule rules
+with open('config.json', 'w') as file:
+    json.dump({'metadata': {'schedule_keywords': {}}}, file)
+
 
 async def run_tests():
     cov = coverage.Coverage(source=['../core', '../devices', '../sensors'])
@@ -60,6 +65,7 @@ async def run_tests():
     # Add API backend to loop (receives commands from tests)
     from Api import app
     asyncio.create_task(app.run())
+    asyncio.run(asyncio.sleep(0.5))
 
     # Discover tests
     loader = unittest.TestLoader()
@@ -74,6 +80,13 @@ async def run_tests():
     cov.stop()
     cov.save()
     cov.report(show_missing=True, precision=1)
+
+    # Remove mock files
+    try:
+        os.remove('config.json')
+        os.remove('app.log')
+    except FileNotFoundError:
+        pass
 
 
 asyncio.run(run_tests())
