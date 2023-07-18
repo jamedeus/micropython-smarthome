@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import logging
 import asyncio
 import unittest
 import coverage
@@ -36,6 +37,16 @@ time.sleep_ms = sleep_ms
 # Allow calling asyncio.run when an event loop is already running
 # More closely approximates micropython uasyncio behavior
 nest_asyncio.apply()
+
+# Patch logging methods and attributes with mocks
+import mock_logging
+logging.Handler = mock_logging.Handler
+logging.Logger = mock_logging.Logger
+logging.basicConfig = mock_logging.basicConfig
+logging.getLogger = mock_logging.getLogger
+logging.FileHandler = mock_logging.FileHandler
+logging.root = mock_logging.Logger()
+logging.root.handlers = [mock_logging.Handler()]
 
 
 async def run_tests():
