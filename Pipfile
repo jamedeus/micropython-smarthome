@@ -12,6 +12,7 @@ ipython = "*"
 coverage = "*"
 util = {editable = true, path = "util"}
 questionary = "*"
+nest-asyncio = "*"
 
 [dev-packages]
 

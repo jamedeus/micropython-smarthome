@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "bf81f090eb8e1bcc92099856a6fbce8279a998d86dce29c80be9af5a55c6f42a"
+            "sha256": "241a44a222a61ffb11a3ebedcea01f588343591854bbc36e49c518100e841fbf"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -48,11 +48,11 @@
         },
         "click": {
             "hashes": [
-                "sha256:2739815aaa5d2c986a88f1e9230c55e17f0caad3d958a5e13ad0797c166db9e3",
-                "sha256:b97d0c74955da062a7d4ef92fadb583806a585b2ea81958a81bd72726cbb8e37"
+                "sha256:4be4b1af8d665c6d942909916d31a213a106800c47d0eeba73d34da3cbc11367",
+                "sha256:e576aa487d679441d7d30abb87e1b43d24fc53bffb8758443b1a9e1cee504548"
             ],
             "markers": "python_version >= '3.7'",
-            "version": "==8.1.4"
+            "version": "==8.1.5"
         },
         "colorama": {
             "hashes": [
@@ -262,6 +262,14 @@
             ],
             "markers": "python_version >= '3.5'",
             "version": "==0.1.6"
+        },
+        "nest-asyncio": {
+            "hashes": [
+                "sha256:b9a953fb40dceaa587d109609098db21900182b16440652454a146cffb06e8b8",
+                "sha256:d267cc1ff794403f7df692964d1d2a3fa9418ffea2a3f6859a439ff482fef290"
+            ],
+            "index": "pypi",
+            "version": "==1.5.6"
         },
         "parso": {
             "hashes": [

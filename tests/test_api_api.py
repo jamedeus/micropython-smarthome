@@ -113,9 +113,7 @@ class TestApi(unittest.TestCase):
         return response
 
     def send_command(self, cmd):
-        response = asyncio.run(self.request(cmd))
-
-        return response
+        return asyncio.run(self.request(cmd))
 
     def test_status(self):
         response = self.send_command(['status'])

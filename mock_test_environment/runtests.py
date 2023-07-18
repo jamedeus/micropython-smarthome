@@ -6,6 +6,7 @@ import time
 import asyncio
 import unittest
 import coverage
+import nest_asyncio
 
 # Add project files to python path
 sys.path.insert(0, os.path.abspath('../core'))
@@ -32,10 +33,18 @@ def sleep_ms(ms):
 time.sleep_us = sleep_us
 time.sleep_ms = sleep_ms
 
+# Allow calling asyncio.run when an event loop is already running
+# More closely approximates micropython uasyncio behavior
+nest_asyncio.apply()
+
 
 async def run_tests():
     cov = coverage.Coverage(source=['../core', '../devices', '../sensors'])
     cov.start()
+
+    # Add API backend to loop (receives commands from tests)
+    from Api import app
+    asyncio.create_task(app.run())
 
     # Discover tests
     loader = unittest.TestLoader()
