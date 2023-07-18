@@ -48,6 +48,10 @@ logging.FileHandler = mock_logging.FileHandler
 logging.root = mock_logging.Logger()
 logging.root.handlers = [mock_logging.Handler()]
 
+# Create mock log file for clear_log test
+with open('app.log', 'w') as file:
+    pass
+
 
 async def run_tests():
     cov = coverage.Coverage(source=['../core', '../devices', '../sensors'])

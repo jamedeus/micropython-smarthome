@@ -413,7 +413,10 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'clear_log': 'success'})
 
         # Confirm correct error if log doesn't exist
-        os.remove('app.log')
+        try:
+            os.remove('app.log')
+        except FileNotFoundError:
+            pass
         response = self.send_command(['clear_log'])
         self.assertEqual(response, {'ERROR': 'no log file found'})
 

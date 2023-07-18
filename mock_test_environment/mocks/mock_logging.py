@@ -1,10 +1,16 @@
 class Handler:
     def close(self):
-        print("logger closing")
+        pass
+
+    def setFormatter(*args):
         pass
 
 
 class Logger:
+    def __init__(self):
+        self.handlers = []
+        self.addHandler()
+
     def info(self, msg):
         pass
 
@@ -20,8 +26,8 @@ class Logger:
     def critical(self, msg):
         pass
 
-    def addHandler(self, hdlr):
-        pass
+    def addHandler(self, hdlr=None):
+        self.handlers.append(Handler())
 
 
 def basicConfig(*args, **kwargs):
@@ -34,3 +40,6 @@ def getLogger(name=None):
 
 def FileHandler(filename, mode=None, encoding=None, delay=False):
     return Handler()
+
+
+mock_root = Logger()
