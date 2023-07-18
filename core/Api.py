@@ -140,7 +140,7 @@ class Api:
                     swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
                 else:
                     # Exit with error if no match found
-                    swriter.write(json.dumps({"ERROR": "Invalid command"}))
+                    swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
 
                 await swriter.drain()
                 raise OSError
