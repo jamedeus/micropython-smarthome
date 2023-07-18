@@ -17,34 +17,19 @@ expected_attributes = {
 
 class TestDummySensor(unittest.TestCase):
 
-    def __dir__(self):
-        return [
-            "test_initial_state",
-            "test_get_attributes",
-            "test_rule_validation_valid",
-            "test_rule_validation_invalid",
-            "test_rule_change",
-            "test_enable_disable",
-            "test_disable_by_rule_change",
-            "test_enable_by_rule_change",
-            "test_condition_met",
-            "test_trigger",
-            "test_regression_invalid_default_rule"
-        ]
-
     @classmethod
     def setUpClass(cls):
         cls.instance = Dummy("sensor1", "sensor1", "dummy", "on", [])
 
-    def test_initial_state(self):
+    def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Dummy)
         self.assertTrue(self.instance.enabled)
 
-    def test_get_attributes(self):
+    def test_02_get_attributes(self):
         attributes = self.instance.get_attributes()
         self.assertEqual(attributes, expected_attributes)
 
-    def test_rule_validation_valid(self):
+    def test_03_rule_validation_valid(self):
         self.assertEqual(self.instance.rule_validator("on"), "on")
         self.assertEqual(self.instance.rule_validator("On"), "on")
         self.assertEqual(self.instance.rule_validator("ON"), "on")
@@ -54,7 +39,7 @@ class TestDummySensor(unittest.TestCase):
         self.assertEqual(self.instance.rule_validator("Enabled"), "enabled")
         self.assertEqual(self.instance.rule_validator("enabled"), "enabled")
 
-    def test_rule_validation_invalid(self):
+    def test_04_rule_validation_invalid(self):
         self.assertFalse(self.instance.rule_validator(True))
         self.assertFalse(self.instance.rule_validator(None))
         self.assertFalse(self.instance.rule_validator("string"))
@@ -62,28 +47,28 @@ class TestDummySensor(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator(["on"]))
         self.assertFalse(self.instance.rule_validator({"on": "on"}))
 
-    def test_rule_change(self):
+    def test_05_rule_change(self):
         self.assertTrue(self.instance.set_rule("off"))
         self.assertEqual(self.instance.current_rule, 'off')
         self.assertTrue(self.instance.set_rule("on"))
         self.assertEqual(self.instance.current_rule, 'on')
 
-    def test_enable_disable(self):
+    def test_06_enable_disable(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 
-    def test_disable_by_rule_change(self):
+    def test_07_disable_by_rule_change(self):
         self.instance.set_rule("Disabled")
         self.assertFalse(self.instance.enabled)
 
-    def test_enable_by_rule_change(self):
+    def test_08_enable_by_rule_change(self):
         self.instance.set_rule("enabled")
         self.assertTrue(self.instance.enabled)
         self.assertEqual(self.instance.current_rule, "on")
 
-    def test_condition_met(self):
+    def test_09_condition_met(self):
         self.instance.set_rule("on")
         self.assertTrue(self.instance.condition_met())
 
@@ -93,7 +78,7 @@ class TestDummySensor(unittest.TestCase):
         self.instance.set_rule("Disabled")
         self.assertEqual(self.instance.condition_met(), None)
 
-    def test_trigger(self):
+    def test_10_trigger(self):
         # Ensure current rule is off to avoid false positive
         self.instance.set_rule("off")
         self.assertFalse(self.instance.condition_met())
@@ -104,7 +89,7 @@ class TestDummySensor(unittest.TestCase):
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
-    def test_regression_invalid_default_rule(self):
+    def test_11_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             Dummy("sensor1", "sensor1", "dummy", "disabled", [])
