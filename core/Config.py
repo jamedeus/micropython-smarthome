@@ -151,7 +151,7 @@ class Config():
 
     # Takes config dict (devices only), instantiates each with appropriate class, adds to self.devices
     def instantiate_devices(self, conf):
-        for device in conf:
+        for device in sorted(conf):
             # Add device's schedule rules to dict
             self.schedule[device] = conf[device]["schedule"]
 
@@ -173,7 +173,7 @@ class Config():
 
     # Takes config dict (sensors only), instantiates each with appropriate class, adds to self.sensors
     def instantiate_sensors(self, conf):
-        for sensor in conf:
+        for sensor in sorted(conf):
             # Add sensor's schedule rules to dict
             self.schedule[sensor] = conf[sensor]["schedule"]
 
