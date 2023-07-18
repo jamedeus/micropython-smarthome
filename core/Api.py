@@ -73,11 +73,9 @@ class Api:
         return wrapper
 
     async def run(self):
-        self.server = await asyncio.start_server(self.run_client, self.host, self.port, self.backlog)
+        self.server = await asyncio.start_server(self.run_client, host=self.host, port=self.port, backlog=self.backlog)
         print('API: Awaiting client connection.\n')
         log.info("API ready")
-        while True:
-            await asyncio.sleep(25)
 
     async def run_client(self, sreader, swriter):
         try:
@@ -89,7 +87,7 @@ class Api:
                 raise OSError
 
             # Determine if request is HTTP (browser) or raw JSON (much faster, used by api_client.py and other nodes)
-            if req.startswith("GET"):
+            if str(req).startswith("GET"):
                 # Received something like "GET /status HTTP/1.1"
                 http = True
 
@@ -153,7 +151,7 @@ class Api:
                 swriter.write(json.dumps(reply).encode())
             else:
                 # Send reply to client
-                swriter.write(json.dumps(reply))
+                swriter.write(json.dumps(reply).encode())
 
             await swriter.drain()
 
@@ -165,7 +163,8 @@ class Api:
         except asyncio.TimeoutError:
             pass
         # Client disconnected, close socket
-        await sreader.wait_closed()
+        swriter.close()
+        await swriter.wait_closed()
 
         # Allow reboot (if reboot endpoint was called)
         try:
