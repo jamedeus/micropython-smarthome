@@ -3,10 +3,31 @@ before_script:
   - printenv
 
 stages:
+  - test_firmware
   - test_frontend
   - test_cli
   - build
   - deploy
+
+# Core module unit tests
+# Runs in mocked environment to simulate micropython on esp32
+test_firmware:
+  stage: test_firmware
+  tags:
+    - arm64
+  script:
+    - pip3 install pipenv
+    - export PATH=$PATH:/home/gitlab-runner/.local/bin
+    - pipenv install
+    - cd mock_test_environment/
+    - for i in ../tests/test_*; do ln -s $i .; done
+    - pipenv run coverage run --source='../core,../devices,../sensors' runtests.py
+    - pipenv run coverage report -m --precision=1
+  coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
+  rules:
+    - if: '$GITLAB_USER_NAME == "Firmware Release"'
+      when: never
+    - when: always
 
 # Run django unit tests
 test_frontend:

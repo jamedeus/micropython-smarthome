@@ -7,7 +7,6 @@ import json
 import logging
 import asyncio
 import unittest
-import coverage
 import nest_asyncio
 
 # Add project files to python path
@@ -53,15 +52,20 @@ logging.root.handlers = [mock_logging.Handler()]
 with open('app.log', 'w') as file:
     pass
 
-# Create mock config.json to allow saving schedule rules
+# Create mock config.json to allow saving schedule rules, keywords, etc
+mock_config = {
+    'metadata': {
+        'schedule_keywords': {}
+    },
+    'device1': {
+        'schedule': {}
+    }
+}
 with open('config.json', 'w') as file:
-    json.dump({'metadata': {'schedule_keywords': {}}}, file)
+    json.dump(mock_config, file)
 
 
 async def run_tests():
-    cov = coverage.Coverage(source=['../core', '../devices', '../sensors'])
-    cov.start()
-
     # Add API backend to loop (receives commands from tests)
     from Api import app
     asyncio.create_task(app.run())
@@ -75,11 +79,6 @@ async def run_tests():
     # Run
     runner = unittest.TextTestRunner()
     runner.run(suite)
-
-    # Print coverage report
-    cov.stop()
-    cov.save()
-    cov.report(show_missing=True, precision=1)
 
     # Remove mock files
     try:
