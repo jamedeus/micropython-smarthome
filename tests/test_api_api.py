@@ -20,7 +20,10 @@ config_file = {
         "id": "unit-testing",
         "location": "test environment",
         "floor": "0",
-        "schedule_keywords": {}
+        "schedule_keywords": {
+            'sunrise': '06:00',
+            'sunset': '18:00'
+        }
     },
     "sensor1": {
         "targets": [
@@ -172,6 +175,13 @@ class TestApi(unittest.TestCase):
         self.assertEqual(self.sensor2.current_rule, 5.0)
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
+        # Set url-encoded fade rule
+        response = self.send_command(['set_rule', 'device1', 'fade%2F50%2F3600'])
+        self.assertEqual(self.sensor2.current_rule, 5.0)
+        self.assertEqual(response, {'device1': 'fade/50/3600'})
+        # Cancel timer to prevent actually fading
+        SoftwareTimer.timer.cancel('device1_fade')
+
     def test_07_increment_rule(self):
         # Set known starting values
         self.device1.current_rule = 512
@@ -255,6 +265,10 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['add_schedule_rule', 'device1', '05:37', '42', 'overwrite'])
         self.assertEqual(response, {'time': '05:37', 'Rule added': 42})
 
+        # Add a rule using a schedule keyword instead of timestamp
+        response = self.send_command(['add_schedule_rule', 'device1', 'sunrise', '42'])
+        self.assertEqual(response, {'time': 'sunrise', 'Rule added': 42})
+
         # Confirm correct error received when timestamp format is incorrect
         response = self.send_command(['add_schedule_rule', 'device1', '1234', '99'])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
@@ -267,6 +281,10 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['add_schedule_rule', 'device1', '8:22', '42'])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
+        # Confirm correct error received when rule rejected by validator
+        response = self.send_command(['add_schedule_rule', 'device1', '15:57', '9999'])
+        self.assertEqual(response, {"ERROR": "Invalid rule"})
+
     def test_12_remove_rule(self):
         # Get starting rules
         before = self.send_command(['get_schedule_rules', 'device1'])
@@ -278,6 +296,10 @@ class TestApi(unittest.TestCase):
         after = self.send_command(['get_schedule_rules', 'device1'])
         # Should now be the same
         self.assertEqual(before, after)
+
+        # Delete a schedule keyword rule
+        response = self.send_command(['remove_rule', 'device1', 'sunrise'])
+        self.assertEqual(response, {'Deleted': 'sunrise'})
 
         # Confirm correct error received when deleting a rule that doesn't exist
         response = self.send_command(['remove_rule', 'device1', '20:00'])
@@ -305,10 +327,26 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['add_schedule_keyword', {'sleep': '23:00'}])
         self.assertEqual(response, {"Keyword added": 'sleep', "time": '23:00'})
 
+        # Add keyword with invalid timestamp, confirm error
+        response = self.send_command(['add_schedule_keyword', {'invalid': '3:00'}])
+        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
+
     def test_16_remove_schedule_keyword(self):
-        # Remove keyword, confirm removed
+        # Add schedule rule using keyword, should be deleted when keyword deleted
+        app.config.schedule['device1']['sleep'] = 512
+
+        # Remove keyword, confirm removed, confirm rule using keyword removed
         response = self.send_command(['remove_schedule_keyword', 'sleep'])
         self.assertEqual(response, {"Keyword removed": 'sleep'})
+        self.assertTrue('sleep' not in app.config.schedule['device1'].keys())
+
+        # Confirm correct error when attempting to delete sunrise/sunset
+        response = self.send_command(['remove_schedule_keyword', 'sunrise'])
+        self.assertEqual(response, {"ERROR": "Cannot delete sunrise or sunset"})
+
+        # Confirm correct error when attempting to non-existing keyword
+        response = self.send_command(['remove_schedule_keyword', 'fake'])
+        self.assertEqual(response, {"ERROR": "Keyword does not exist"})
 
     def test_17_save_schedule_keywords(self):
         response = self.send_command(['save_schedule_keywords'])
