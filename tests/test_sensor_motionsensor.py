@@ -76,6 +76,17 @@ class TestMotionSensor(unittest.TestCase):
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
         # Motion attribute should be True
         self.assertTrue(self.instance.motion)
+        # Simulate reset timer expiring, motion should now be False
+        self.instance.resetTimer()
+        self.assertFalse(self.instance.motion)
+
+        # Set rule to None, cancel previous timer to avoid false positive
+        self.instance.set_rule(None)
+        SoftwareTimer.timer.cancel(self.instance.name)
+        # Call method triggered by hware interrupt
+        self.instance.motion_detected()
+        # Queue should NOT contain entry for motion sensor
+        self.assertNotIn(self.instance.name, str(SoftwareTimer.timer.schedule))
 
     def test_10_trigger(self):
         # Ensure not already tiggered to avoid false positive
@@ -91,10 +102,44 @@ class TestMotionSensor(unittest.TestCase):
         # Old rule ("disabled") should have been automatically replaced by scheduled_rule
         self.assertEqual(self.instance.current_rule, self.instance.scheduled_rule)
 
+    def test_12_increment_rule(self):
+        # Set rule to 5, increment by 1, confirm rule is now 6
+        self.instance.current_rule = 5
+        self.assertTrue(self.instance.increment_rule(1))
+        self.assertEqual(self.instance.current_rule, 6)
+
+        # Set rule to disabled, confirm correct error
+        self.instance.set_rule('Disabled')
+        self.assertEqual(
+            self.instance.increment_rule(1),
+            {"ERROR": "Unable to increment current rule (disabled)"}
+        )
+
+    def test_13_next_rule(self):
+        # Ensure enabled, confirm no reset timer in queu, set motion to True
+        self.instance.enable()
+        self.assertNotIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.instance.trigger()
+
+        # Add rules to queue, first should trigger reset timer, second should not
+        self.instance.rule_queue = [5, 'disabled']
+
+        # Move to next rule, confirm timer created, confirm rule set
+        self.instance.next_rule()
+        self.assertTrue(self.instance.motion)
+        self.assertEqual(self.instance.current_rule, 5)
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        SoftwareTimer.timer.cancel(self.instance.name)
+
+        # Set to disabled, confirm rule set, confirm no timer created
+        self.instance.next_rule()
+        self.assertEqual(self.instance.current_rule, 'disabled')
+        self.assertNotIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
-    def test_12_regression_invalid_default_rule(self):
+    def test_14_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             MotionSensor("sensor1", "sensor1", "pir", "disabled", [], 15)
