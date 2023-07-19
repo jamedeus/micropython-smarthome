@@ -1,4 +1,6 @@
 import unittest
+from Group import Group
+from Device import Device
 from Thermostat import Thermostat
 
 # Expected return value of get_attributes method just after instantiation
@@ -10,8 +12,9 @@ expected_attributes = {
     'scheduled_rule': 74,
     'default_rule': 74,
     'enabled': True,
+    'group': 'group1',
     'mode': 'cool',
-    'targets': [],
+    'targets': ['device1'],
     'rule_queue': [],
     'name': 'sensor1',
     'on_threshold': 75.0,
@@ -24,7 +27,11 @@ class TestThermostat(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [])
+        # Create test instance, mock device, mock group
+        cls.target = Device('device1', 'target', 'device', True, '70', '70')
+        cls.instance = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [cls.target])
+        group = Group('group1', [cls.instance])
+        cls.instance.group = group
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Thermostat)
@@ -127,10 +134,74 @@ class TestThermostat(unittest.TestCase):
         # Should not be able to trigger this sensor type
         self.assertFalse(self.instance.trigger())
 
+    def test_14_increment_rule(self):
+        # Set rule to 70, increment by 1, confirm rule is now 71
+        self.instance.current_rule = 70
+        self.assertTrue(self.instance.increment_rule(1))
+        self.assertEqual(self.instance.current_rule, 71)
+
+        # Set rule to disabled, confirm correct error
+        self.instance.set_rule('Disabled')
+        self.assertEqual(
+            self.instance.increment_rule(1),
+            {"ERROR": "Unable to increment current rule (disabled)"}
+        )
+
+    def test_15_audit(self):
+        # Get actual temperature to mock recent changes
+        current = self.instance.fahrenheit()
+
+        # Mock temp increasing when heater should NOT be running
+        self.instance.mode = 'heat'
+        self.instance.set_rule(current - 1)
+        self.instance.recent_temps = [current - 4, current - 3, current - 2]
+        self.instance.audit()
+        # Confirm state flips to True, allows loop to turn heater off
+        self.assertTrue(self.target.state)
+
+        # Mock temp increasing when air conditioner SHOULD be running
+        self.instance.mode = 'cool'
+        self.instance.recent_temps = [current - 4, current - 3, current - 2]
+        self.instance.audit()
+        # Confirm state flips to False, allows loop to turn AC on
+        self.assertFalse(self.target.state)
+
+        # Mock temp decreasing when air conditioner should NOT be running
+        self.instance.set_rule(current + 1)
+        self.instance.recent_temps = [current + 4, current + 3, current + 2]
+        self.instance.audit()
+        # Confirm state flips to True, allows loop to turn AC off
+        self.assertTrue(self.target.state)
+
+        # Mock temp decreasing when heater SHOULD be running
+        self.instance.mode = 'heat'
+        self.instance.recent_temps = [current + 4, current + 3, current + 2]
+        self.instance.audit()
+        # Confirm state flips to False, allows loop to turn heater on
+        self.assertFalse(self.target.state)
+
+    def test_16_instantiate_with_all_modes(self):
+        # Instantiate in heat mode
+        test = Thermostat("sensor1", "sensor1", "si7021", 74, "heat", 1, [])
+        self.assertEqual(test.mode, "heat")
+
+        # Instantiate in cool mode
+        test = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [])
+        self.assertEqual(test.mode, "cool")
+
+        # Instantiate with unsupported mode
+        try:
+            Thermostat("sensor1", "sensor1", "si7021", 74, "invalid", 1, [])
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except ValueError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
+
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
-    def test_14_regression_invalid_default_rule(self):
+    def test_17_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             Thermostat("sensor1", "sensor1", "si7021", "enabled", "cool", 1, [])

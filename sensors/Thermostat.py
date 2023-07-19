@@ -112,26 +112,33 @@ class Thermostat(Sensor):
             action = None
 
             # If 3 most recent readings trend in incorrect direction, assume command was not successful
+            # Flip target device states to reflect failed command (allows loop to turn on/off to correct)
             if self.recent_temps[0] < self.recent_temps[1] < self.recent_temps[2]:
+                # Temperature increasing, should be cooling
                 if self.mode == "cool" and self.condition_met() is True:
                     print("Failed to start cooling - turning AC on again")
                     log.info(f"Failed to start cooling (recent_temps: {self.recent_temps}). Turning AC on again")
                     action = False
 
+                # Temperature increasing, should NOT be heating
                 elif self.mode == "heat" and self.condition_met() is False:
                     log.info(f"Failed to stop heating (recent_temps: {self.recent_temps}). Turning heater off again")
                     action = True
 
+            # Neither covered
             elif self.recent_temps[0] > self.recent_temps[1] > self.recent_temps[2]:
+                # Temperature decreasing, should NOT be cooling
                 if self.mode == "cool" and self.condition_met() is False:
                     log.info(f"Failed to stop cooling (recent_temps: {self.recent_temps}). Turning AC off again")
                     action = True
 
+                # Temperature decreasing, should be heating
                 elif self.mode == "heat" and self.condition_met() is True:
                     log.info(f"Failed to start heating (recent_temps: {self.recent_temps}). Turning heater on again")
                     action = False
 
             # Override all targets' state attr, allows group to turn on/off again
+            # State set to opposite of correct state (immediately undone when loop sends turn on/off again)
             if action is not None:
                 for i in self.targets:
                     i.state = action
