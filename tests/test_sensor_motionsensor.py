@@ -86,7 +86,7 @@ class TestMotionSensor(unittest.TestCase):
         # Call method triggered by hware interrupt
         self.instance.motion_detected()
         # Queue should NOT contain entry for motion sensor
-        self.assertNotIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
     def test_10_trigger(self):
         # Ensure not already tiggered to avoid false positive
@@ -118,7 +118,7 @@ class TestMotionSensor(unittest.TestCase):
     def test_13_next_rule(self):
         # Ensure enabled, confirm no reset timer in queu, set motion to True
         self.instance.enable()
-        self.assertNotIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
         self.instance.trigger()
 
         # Add rules to queue, first should trigger reset timer, second should not
@@ -134,7 +134,7 @@ class TestMotionSensor(unittest.TestCase):
         # Set to disabled, confirm rule set, confirm no timer created
         self.instance.next_rule()
         self.assertEqual(self.instance.current_rule, 'disabled')
-        self.assertNotIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.

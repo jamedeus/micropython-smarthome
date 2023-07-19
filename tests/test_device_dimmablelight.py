@@ -57,7 +57,7 @@ class TestDimmableLight(unittest.TestCase):
         self.assertEqual(self.instance.current_rule, 100)
         # Confirm not fading, no timer created
         self.assertFalse(self.instance.fading)
-        self.assertNotIn(f'{self.instance.name}_fade', str(SoftwareTimer.timer.schedule))
+        self.assertTrue(f'{self.instance.name}_fade' not in str(SoftwareTimer.timer.schedule))
 
     def test_06_start_fade_already_at_target(self):
         # Attempt to fade to current_rule, should return immediately
@@ -65,7 +65,7 @@ class TestDimmableLight(unittest.TestCase):
         self.assertTrue(self.instance.set_rule('fade/100/3600'))
         # Confirm not fading, no timer created
         self.assertFalse(self.instance.fading)
-        self.assertNotIn(f'{self.instance.name}_fade', str(SoftwareTimer.timer.schedule))
+        self.assertTrue(f'{self.instance.name}_fade' not in str(SoftwareTimer.timer.schedule))
 
     def test_07_start_fade_while_disabled(self):
         # Attempt to fade to 100 while disabled
