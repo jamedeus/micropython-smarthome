@@ -3,6 +3,9 @@
 # Goal: Simulate all API endpoints used by device and sensor classes
 # Allows running tests without real hardware (and without annoyingly turning lights on/off)
 
+import socket
+import threading
+from struct import pack
 from flask import Flask, request
 
 app = Flask(__name__)
@@ -84,5 +87,65 @@ def monitor_off():
     return {'state': 'off'}, 200
 
 
-if __name__ == '__main__':
+# Class to simulate TpLink Kasa device, runs in separate thread
+class MockTpLink:
+    dimmer_response = """{"smartlife.iot.dimmer":{"set_brightness":{"err_code":0}}}"""
+    bulb_response = """{"smartlife.iot.smartbulb.lightingservice":{"transition_light_state":{"err_code":0}}}"""
+
+    # Listen for connections on port used by Tplink Kasa
+    def serve(self):
+        server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server.bind(("0.0.0.0", 9999))
+        server.listen(5)
+
+        while True:
+            client, addr = server.accept()
+            print(f"New connection from {addr[0]}:{addr[1]}")
+            self.handle_client(client)
+
+    # Return response based on request type (dimmer or bulb)
+    def handle_client(self, client_socket):
+        request = client_socket.recv(1024)
+        request = self.decrypt(request[4:])
+        print(f"Received: {request}")
+        if "smartbulb" in request:
+            print(f"Response: {self.bulb_response}\n")
+            client_socket.send(self.encrypt(self.bulb_response))
+        else:
+            print(f"Response: {self.dimmer_response}\n")
+            client_socket.send(self.encrypt(self.dimmer_response))
+        client_socket.close()
+
+    # Tplink's ridiculously insecure encryption
+    def encrypt(self, string):
+        key = 171
+        result = pack(">I", len(string))
+        for i in string:
+            a = key ^ ord(i)
+            key = a
+            result += bytes([a])
+        return result
+
+    def decrypt(self, string):
+        key = 171
+        result = ""
+        for i in string:
+            a = key ^ i
+            key = i
+            result += chr(a)
+        return result
+
+
+def run_flask():
     app.run(host="0.0.0.0", port=8123)
+
+
+if __name__ == '__main__':
+    # Start Flask app
+    flask_thread = threading.Thread(target=run_flask)
+    flask_thread.start()
+
+    # Start mock Tplink receiver
+    server = MockTpLink()
+    tplink_thread = threading.Thread(target=server.serve)
+    tplink_thread.start()
