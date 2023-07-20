@@ -4,6 +4,7 @@ import os
 import sys
 import time
 import json
+import shutil
 import logging
 import asyncio
 import unittest
@@ -52,17 +53,8 @@ logging.root.handlers = [mock_logging.Handler()]
 with open('app.log', 'w') as file:
     pass
 
-# Create mock config.json to allow saving schedule rules, keywords, etc
-mock_config = {
-    'metadata': {
-        'schedule_keywords': {}
-    },
-    'device1': {
-        'schedule': {}
-    }
-}
-with open('config.json', 'w') as file:
-    json.dump(mock_config, file)
+# Use unit_test_config.json as mock config.json, allow saving schedule rules, keywords, etc
+shutil.copy2(os.path.abspath('../tests/unit_test_config.json'), 'config.json')
 
 
 async def run_tests():
