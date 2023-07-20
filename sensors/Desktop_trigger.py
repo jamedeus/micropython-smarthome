@@ -8,10 +8,11 @@ log = logging.getLogger("Desktop_sensor")
 
 
 class Desktop_trigger(Sensor):
-    def __init__(self, name, nickname, _type, default_rule, targets, ip):
+    def __init__(self, name, nickname, _type, default_rule, targets, ip, port=5000):
         super().__init__(name, nickname, _type, True, None, default_rule, targets)
 
         self.ip = ip
+        self.port = port
 
         # Current monitor state
         self.current = None
@@ -27,7 +28,7 @@ class Desktop_trigger(Sensor):
         # Run monitor loop
         asyncio.create_task(self.monitor())
 
-        log.info(f"Instantiated Desktop named {self.name}: ip = {self.ip}")
+        log.info(f"Instantiated Desktop named {self.name}: ip = {self.ip}, port = {self.port}")
 
     def enable(self):
         # Restart loop if stopped
@@ -36,7 +37,7 @@ class Desktop_trigger(Sensor):
         super().enable()
 
     def get_idle_time(self):
-        response = urequests.get('http://' + str(self.ip) + ':5000/idle_time')
+        response = urequests.get(f'http://{self.ip}:{self.port}/idle_time')
         if response.status_code == 200:
             return response.json()
         else:
@@ -48,7 +49,7 @@ class Desktop_trigger(Sensor):
 
     def get_monitor_state(self):
         try:
-            return urequests.get('http://' + str(self.ip) + ':5000/state').json()["state"]
+            return urequests.get(f'http://{self.ip}:{self.port}/state').json()["state"]
         except (OSError, IndexError):
             # Wifi interruption, return False - caller will try again in 1 second
             return False

@@ -4,6 +4,7 @@ from Desktop_trigger import Desktop_trigger
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
     'ip': '192.168.1.216',
+    'port': 5000,
     'nickname': 'sensor1',
     'current': None,
     'desktop_target': None,

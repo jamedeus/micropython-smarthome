@@ -6,6 +6,7 @@ expected_attributes = {
     'triggered_by': [],
     'nickname': 'device1',
     'ip': '192.168.1.216',
+    'port': 5000,
     'enabled': True,
     'rule_queue': [],
     'state': None,
