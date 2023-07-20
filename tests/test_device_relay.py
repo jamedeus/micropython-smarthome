@@ -1,11 +1,19 @@
+import json
 import unittest
 from Relay import Relay
+
+# Read mock API receiver address
+with open('config.json', 'r') as file:
+    config = json.load(file)
+
+# IP and port of mock API receiver instance
+mock_address = f"{config['mock_receiver']['ip']}:{config['mock_receiver']['port']}"
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
     'triggered_by': [],
     'nickname': 'device1',
-    'ip': '192.168.1.202',
+    'ip': mock_address,
     'enabled': True,
     'rule_queue': [],
     'state': None,
@@ -21,7 +29,7 @@ class TestRelay(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Relay("device1", "device1", "relay", "enabled", "192.168.1.202")
+        cls.instance = Relay("device1", "device1", "relay", "enabled", mock_address)
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Relay)

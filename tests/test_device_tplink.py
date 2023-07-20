@@ -1,11 +1,16 @@
+import json
 import unittest
 from Tplink import Tplink
+
+# Read mock API receiver address
+with open('config.json', 'r') as file:
+    config = json.load(file)
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
     'min_bright': 1,
     'nickname': 'device1',
-    'ip': '192.168.1.233',
+    'ip': config['mock_receiver']['ip'],
     'max_bright': 100,
     '_type': 'dimmer',
     'scheduled_rule': None,
@@ -24,7 +29,7 @@ class TestTplink(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Tplink("device1", "device1", "dimmer", 42, 1, 100, "192.168.1.233")
+        cls.instance = Tplink("device1", "device1", "dimmer", 42, 1, 100, config["mock_receiver"]["ip"])
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Tplink)

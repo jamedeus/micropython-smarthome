@@ -1,10 +1,15 @@
+import json
 import unittest
 from Desktop_trigger import Desktop_trigger
 
+# Read mock API receiver address
+with open('config.json', 'r') as file:
+    config = json.load(file)
+
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
-    'ip': '192.168.1.216',
-    'port': 5000,
+    'ip': config['mock_receiver']['ip'],
+    'port': config['mock_receiver']['port'],
     'nickname': 'sensor1',
     'current': None,
     'desktop_target': None,
@@ -23,7 +28,9 @@ class TestDesktopTrigger(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Desktop_trigger("sensor1", "sensor1", "desktop", "enabled", [], "192.168.1.216")
+        ip = config["mock_receiver"]["ip"]
+        port = config["mock_receiver"]["port"]
+        cls.instance = Desktop_trigger("sensor1", "sensor1", "desktop", "enabled", [], ip, port)
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Desktop_trigger)
