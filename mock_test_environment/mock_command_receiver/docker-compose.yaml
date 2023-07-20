@@ -1,0 +1,10 @@
+version: "3.5"
+services:
+  smarthome_mock_receiver:
+    image: smarthome_mock_receiver:0.1
+    container_name: smarthome_mock_receiver
+    ports:
+      - "8956:8956"
+      - "9999:9999"
+    environment:
+      - PORT=8956

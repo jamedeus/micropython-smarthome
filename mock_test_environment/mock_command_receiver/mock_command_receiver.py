@@ -3,6 +3,7 @@
 # Goal: Simulate all API endpoints used by device and sensor classes
 # Allows running tests without real hardware (and without annoyingly turning lights on/off)
 
+import os
 import socket
 import threading
 from struct import pack
@@ -149,7 +150,7 @@ class MockTpLink:
 
 
 def run_flask():
-    app.run(host="0.0.0.0", port=8123)
+    app.run(host="0.0.0.0", port=int(os.environ.get('PORT')))
 
 
 if __name__ == '__main__':
