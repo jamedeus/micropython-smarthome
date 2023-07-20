@@ -1,19 +1,47 @@
 # Mock Testing Environment
 
-Goal: Run hardware-level unit tests on cpython in order to measure coverage.
+This environment allows hardware-level unit tests written for micropython to run on cpython, enabling coverage measurement. Tests also run significantly faster here and do not have to be split into groups to avoid memory fragmentation (see [unit_test_main.py](tests/unit_test_main.py)).
 
-This will require mocked versions of all micropython modules not included in cpython, as well as replacing modules that function differently with mocks.
+The [mocks](mock_test_environment/mocks/) directory contains dummy modules for all micropython-specific libraries used in this project. This directory must be patched into the python import path before running tests.
 
-## stdlib Modules
-- [ ] logging
-- [ ] struct.pack
-- [ ] socket
-- [ ] json
-- [ ] os
-- [ ] random
-- [ ] re
+In some cases (time, logging) python preferentially imports the stdlib module over a mock with the same name, regardless of position within the import path. For these cases the stdlib module must be imported, then its methods are overwritten with references to mocked methods. See [runtests.py](mock_test_environment/runtests.py) to better understand how this works.
 
-## Micropython modules
+A [mock API receiver script](mock_command_receiver/mock_command_receiver.py) is also provided to simulate hardware devices on the LAN (smart dimmers, WLED instances, etc). This makes it possible to run all unit tests without access to the physical hardware the device classes interface with.
+
+## Usage
+
+Currently tests must be copied or symlinked into the `mock_test_environment` directory for the test script to discover them (this is likely to change in the future).
+
+Symlink all tests:
+```
+for i in ../tests/test_*; do
+  ln -s $i .
+done
+```
+
+Build the mock API receiver docker image and start it:
+```
+cd mock_test_environment/mock_command_receiver
+sudo docker build -t smarthome_mock_receiver:0.1 . -f Dockerfile
+docker compose up -d
+cd ..
+```
+
+Add the IP of your docker host to [unit_test_config.json](tests/unit_test_config.json):
+```
+"mock_receiver": {
+    "ip": "192.168.1.229",
+    "port": 8956
+}
+```
+
+Then simply run [runtests.py](mock_test_environmentruntests.py):
+```
+coverage run --source='../core,../devices,../sensors' runtests.py
+coverage report -m --precision=1
+```
+
+## Mocked Micropython Modules
 - [x] machine.pin
 - [x] machine.PWM
 - [x] machine.SoftI2C
@@ -28,8 +56,9 @@ This will require mocked versions of all micropython modules not included in cpy
 - [x] gc
 - [x] network
 - [x] webrepl
+- [x] logging
 
-The following are only required for the `_boot` modules, which currently has no tests:
+The following are not currently mocked, but may be added in the future if tests for `_boot.py` are added:
 - [ ] ubinascii
 - [ ] uos
 - [ ] flashbdev
