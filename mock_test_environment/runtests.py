@@ -70,7 +70,7 @@ async def run_tests():
 
     # Run
     runner = unittest.TextTestRunner()
-    runner.run(suite)
+    result = runner.run(suite)
 
     # Remove mock files
     try:
@@ -78,6 +78,10 @@ async def run_tests():
         os.remove('app.log')
     except FileNotFoundError:
         pass
+
+    # Exit non-zero if any tests failed
+    if not result.wasSuccessful():
+        sys.exit(1)
 
 
 asyncio.run(run_tests())
