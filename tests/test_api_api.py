@@ -642,6 +642,7 @@ class TestApi(unittest.TestCase):
             response,
             {
                 'ip': '192.168.1.216',
+                'port': 5000,
                 'nickname': 'test',
                 'scheduled_rule': 'enabled',
                 'group': 'group2',
