@@ -53,3 +53,10 @@ The `ifconfig` method returns a hardcoded address/subnet/gateway tuple. This div
 ## SI7021 module
 
 This module mocks the [si7021 driver](https://github.com/chrisbalmer/micropython-si7021) used in this project. It simply returns hardcoded temperature and humidity values.
+
+
+## Urequests module
+
+The cpython `requests` module is aliased to `urequests` and used as-is in most cases.
+
+The `Response` class (returned by most requests methods) is replaced by a subclass that modifies the `json()` method. When the response contents are not valid JSON a `ValueError` is raised instead of `JSONDecodeError` to match the behavior of micropython's `urequests`. There are no other differences.
