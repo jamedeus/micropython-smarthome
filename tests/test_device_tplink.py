@@ -87,10 +87,28 @@ class TestTplink(unittest.TestCase):
     def test_09_turn_off(self):
         self.assertTrue(self.instance.send(0))
 
+        # Repeat as bulb
+        self.instance._type = "bulb"
+        self.assertTrue(self.instance.send(0))
+
     def test_10_turn_on(self):
         self.assertTrue(self.instance.send(1))
 
-    def test_11_rule_change_while_fading(self):
+        # Repeat as dimmer
+        self.instance._type = "dimmer"
+        self.assertTrue(self.instance.send(1))
+
+    def test_11_turn_on_while_disabled(self):
+        self.instance.disable()
+        self.assertTrue(self.instance.send(1))
+        self.instance.enable()
+
+    def test_12_send_method_error(self):
+        # Instantiate with invalid IP, confirm send method returns False
+        test = Tplink("device1", "device1", "dimmer", 42, 1, 100, "0.0.0.0")
+        self.assertFalse(test.send())
+
+    def test_13_rule_change_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)
@@ -122,7 +140,7 @@ class TestTplink(unittest.TestCase):
     # Original bug: Tplink class overwrites parent set_rule method and did not include conditional
     # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
     # crash next time send method was called.
-    def test_12_regression_rule_change_to_enabled(self):
+    def test_14_regression_rule_change_to_enabled(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.set_rule('enabled')
@@ -135,7 +153,7 @@ class TestTplink(unittest.TestCase):
     # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
-    def test_13_regression_invalid_default_rule(self):
+    def test_15_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             Tplink("device1", "device1", "dimmer", "disabled", 1, 100, "192.168.1.233")
@@ -158,7 +176,7 @@ class TestTplink(unittest.TestCase):
     # user's change). However, if brightness changed in opposite direction, fade would continue and user
     # change undone on next fade step.
     # Should now abort any time rule changed in opposite direction, even if still between start and target
-    def test_14_regression_rule_change_while_fading(self):
+    def test_16_regression_rule_change_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)
@@ -190,7 +208,7 @@ class TestTplink(unittest.TestCase):
     # is greater/less than current_rule, with no type checking on the new rule. This resulted in a
     # traceback when rule changed to a string (enabled, disabled) while fading.
     # Should now skip conditional if new rule is non-integer.
-    def test_15_regression_rule_change_to_disabled_while_fading(self):
+    def test_17_regression_rule_change_to_disabled_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)
