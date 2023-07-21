@@ -19,9 +19,9 @@ class Wled(DimmableLight):
     # Power state set by argument, brightness set to current_rule
     def get_payload(self, state=True):
         if state:
-            return f'{{"on":true,"bri":"{self.current_rule}"}}'
+            return {"on": True, "bri": self.current_rule}
         else:
-            return f'{{"on":false,"bri":"{self.current_rule}"}}'
+            return {"on": False, "bri": self.current_rule}
 
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
@@ -33,7 +33,7 @@ class Wled(DimmableLight):
             return True
 
         try:
-            response = urequests.post(f'http://{self.ip}/json/state', self.get_payload(state))
+            response = urequests.post(f'http://{self.ip}/json/state', json=self.get_payload(state))
             print(f"{self.name}: brightness = {self.current_rule}, state = {state}")
         except OSError:
             # Wifi interruption, send failed
