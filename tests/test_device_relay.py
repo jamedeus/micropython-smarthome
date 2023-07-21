@@ -90,7 +90,7 @@ class TestRelay(unittest.TestCase):
 
     def test_12_network_errors(self):
         # Instantiate with invalid IP, confirm send method returns False
-        test = Relay("device1", "device1", "relay", "enabled", "0.0.0.0")
+        test = Relay("device1", "device1", "relay", "enabled", "0.0.0.")
         self.assertFalse(test.send(0))
         self.assertFalse(test.send(1))
         self.assertEqual(test.check_state(), "Network Error")
