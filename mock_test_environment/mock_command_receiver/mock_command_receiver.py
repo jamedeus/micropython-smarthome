@@ -17,6 +17,7 @@ tasmota_relay_last = "ON"
 wled_brightness = 255
 wled_state = 1
 desktop_state = 'On'
+desktop_idle_time_toggle = True
 
 
 # Tasmota relay mock
@@ -81,9 +82,16 @@ def get_dpms_state():
 
 
 # Desktop integration - get idle time
+# Response alternates between long and short values to allow testing both
 @app.get("/idle_time")
 def get_idle_time():
-    return {'idle_time': 523}, 200
+    global desktop_idle_time_toggle
+    if desktop_idle_time_toggle:
+        desktop_idle_time_toggle = False
+        return {'idle_time': 456323}, 200
+    else:
+        desktop_idle_time_toggle = True
+        return {'idle_time': 523}, 200
 
 
 # Desktop integration - turn screen on

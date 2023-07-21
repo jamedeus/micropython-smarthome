@@ -1,5 +1,6 @@
 import json
 import unittest
+import SoftwareTimer
 from Desktop_target import Desktop_target
 
 # Read mock API receiver address
@@ -76,9 +77,52 @@ class TestDesktopTarget(unittest.TestCase):
         self.assertTrue(self.instance.enabled)
 
     def test_09_turn_off(self):
+        # Confirm instance does not have timer in queue
+        SoftwareTimer.timer.cancel(self.instance.name)
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        # Turn off, confirm timer added to queue
         self.assertTrue(self.instance.send(0))
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        SoftwareTimer.timer.cancel(self.instance.name)
 
     def test_10_turn_on(self):
         self.assertTrue(self.instance.send(1))
 
-    # TODO Add method that checks current state, write tests confirming correct state
+    def test_11_turn_on_while_disabled(self):
+        self.instance.disable()
+        self.assertTrue(self.instance.send(1))
+        self.instance.enable()
+
+    def test_12_off_method(self):
+        # Call method twice for full coverage
+        # Mock receiver alternates between short and long idle time values
+        self.instance.off()
+        self.instance.off()
+
+        # Call with invalid IP to trigger network error, confirm timer added to queue
+        SoftwareTimer.timer.cancel(self.instance.name)
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+        self.instance.ip = "0.0.0.0"
+        self.instance.off()
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+        SoftwareTimer.timer.cancel(self.instance.name)
+        self.instance.ip = config["mock_receiver"]["ip"]
+
+        # Simulate error due to non-JSON response, instance should be disabled
+        self.instance.port = config["mock_receiver"]["error_port"]
+        self.instance.off()
+        self.assertFalse(self.instance.enabled)
+        self.instance.enable()
+
+    def test_13_network_errors(self):
+        # Change to invalid IP to simulate failed connection, confirm send returns False
+        self.instance.ip = "0.0.0.0"
+        self.assertFalse(self.instance.send(1))
+        self.instance.ip = config["mock_receiver"]["ip"]
+
+        # Change port to error port (mock receiver returns error for all requests on this port)
+        # Confirm send method returns False
+        self.instance.port = config["mock_receiver"]["error_port"]
+        self.instance.send(1)
+        self.assertFalse(self.instance.enabled)
+        self.instance.port = config["mock_receiver"]["port"]

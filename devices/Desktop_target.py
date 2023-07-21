@@ -71,7 +71,6 @@ class Desktop_target(Device):
         elif not state:
             # Give user 5 seconds to react before screen turns off
             SoftwareTimer.timer.create(5000, self.off, self.name)
-
             return True
 
         if response.status_code == 200:
