@@ -59,13 +59,18 @@ def wled():
         payload = request.get_json(force=True)
         wled_state = bool(payload["on"])
         try:
+            bright = int(payload["bri"])
+            if bright > 255:
+                # This behavior diverges from WLED, but is necessary to
+                # simulate failed requests for full coverage
+                return b'{"error":9}', 400
             wled_brightness = int(payload["bri"])
         except (ValueError, TypeError):
             pass
-        return b'{"success":true}'
+        return b'{"success":true}', 200
 
     else:
-        return b'{"error":9}'
+        return b'{"error":9}', 200
 
 
 # Desktop integration - get monitor state

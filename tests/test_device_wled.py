@@ -94,28 +94,21 @@ class TestWled(unittest.TestCase):
     def test_10_turn_on(self):
         self.assertTrue(self.instance.send(1))
 
-    # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
-    # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
-    # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
-    def test_11_11_regression_invalid_default_rule(self):
-        # assertRaises fails for some reason, this approach seems reliable
-        try:
-            Wled("device1", "device1", "wled", "disabled", 1, 255, "192.168.1.211")
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
+    def test_11_turn_on_while_disabled(self):
+        self.instance.disable()
+        self.assertTrue(self.instance.send(1))
+        self.instance.enable()
 
-        try:
-            Wled("device1", "device1", "wled", "enabled", 1, 255, "192.168.1.211")
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
+    def test_12_network_errors(self):
+        # Instantiate with invalid IP, confirm send method returns False
+        test = Wled("device1", "device1", "wled", 50, 1, 255, "0.0.0.0")
+        self.assertFalse(test.send())
 
-    def test_12_rule_change_while_fading(self):
+        # Set invalid rule to trigger 400 status code, confirm send returns False
+        self.instance.current_rule = 9999
+        self.assertFalse(self.instance.send())
+
+    def test_13_rule_change_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)
@@ -142,12 +135,33 @@ class TestWled(unittest.TestCase):
         self.instance.set_rule(70)
         self.assertFalse(self.instance.fading)
 
+    # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
+    # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
+    # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
+    def test_14_regression_invalid_default_rule(self):
+        # assertRaises fails for some reason, this approach seems reliable
+        try:
+            Wled("device1", "device1", "wled", "disabled", 1, 255, "192.168.1.211")
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except AttributeError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
+
+        try:
+            Wled("device1", "device1", "wled", "enabled", 1, 255, "192.168.1.211")
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except AttributeError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
+
     # Original issue: DimmableLight.set_rule contains a conditional to abort an in-progress fade if
     # brightness is changed in the opposite direction. This is determined by checking if the new rule
     # is greater/less than current_rule, with no type checking on the new rule. This resulted in a
     # traceback when rule changed to a string (enabled, disabled) while fading.
     # Should now skip conditional if new rule is non-integer.
-    def test_13_regression_rule_change_to_disabled_while_fading(self):
+    def test_15_regression_rule_change_to_disabled_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)
