@@ -62,3 +62,11 @@ class TestSwitch(unittest.TestCase):
     def test_07_trigger(self):
         # Should not be able to trigger this sensor type
         self.assertFalse(self.instance.trigger())
+
+    def test_08_condition_met(self):
+        self.assertFalse(self.instance.condition_met())
+
+        # Mock env: simulate turnned on (conditional prevents fail on baremetal)
+        self.instance.switch.value(1)
+        if self.instance.switch.value():
+            self.assertTrue(self.instance.condition_met())

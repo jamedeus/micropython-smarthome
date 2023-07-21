@@ -471,10 +471,14 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'No codes found for target "ac"'})
 
     def test_29_backlight(self):
+        # Confirm responses for on and off
+        response = self.send_command(['backlight', 'on'])
+        self.assertEqual(response, {'backlight': 'on'})
+
         response = self.send_command(['backlight', 'off'])
         self.assertEqual(response, {'backlight': 'off'})
 
-        # Confirm correct error message
+        # Confirm correct error message for invalid arg
         response = self.send_command(['backlight', 'low'])
         self.assertEqual(response, {'ERROR': 'Backlight setting must be "on" or "off"'})
 
