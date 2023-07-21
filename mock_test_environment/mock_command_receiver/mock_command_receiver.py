@@ -8,7 +8,7 @@ import json
 import socket
 import threading
 from struct import pack
-from flask import Flask, request
+from flask import Flask, request, Response
 
 app = Flask(__name__)
 
@@ -163,14 +163,33 @@ class MockTpLink:
         return result
 
 
+# Create second flask app that returns error for all requests
+# Used for coverage of error handling lines
+error_app = Flask(__name__)
+
+
+# Match all paths
+@error_app.route('/<path:path>', methods=['GET', 'POST', 'PUT'])
+def catch_all(path):
+    return Response("Bad request", status=400)
+
+
 def run_flask():
     app.run(host="0.0.0.0", port=int(os.environ.get('PORT')))
+
+
+def run_error_flask():
+    error_app.run(host="0.0.0.0", port=int(os.environ.get('ERROR_PORT')))
 
 
 if __name__ == '__main__':
     # Start Flask app
     flask_thread = threading.Thread(target=run_flask)
     flask_thread.start()
+
+    # Start error Flask app
+    error_flask_thread = threading.Thread(target=run_error_flask)
+    error_flask_thread.start()
 
     # Start mock Tplink receiver
     server = MockTpLink()
