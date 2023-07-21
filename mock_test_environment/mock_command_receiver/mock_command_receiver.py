@@ -4,6 +4,7 @@
 # Allows running tests without real hardware (and without annoyingly turning lights on/off)
 
 import os
+import json
 import socket
 import threading
 from struct import pack
@@ -43,20 +44,28 @@ def tasmota_relay():
 
 
 # WLED mock
-@app.route('/win')
+@app.route('/json/state', methods=['GET', 'POST'])
 def wled():
     global wled_brightness
     global wled_state
-    wled_brightness = request.args.get('A')
-    wled_state = request.args.get('T')
 
-    # Turn on
-    if wled_state:
-        return f'<?xml version="1.0" ?><vs><ac>{wled_brightness}</ac><cl>255</cl><cl>160</cl><cl>0</cl><cs>0</cs><cs>0</cs><cs>0</cs><ns>0</ns><nr>1</nr><nl>0</nl><nf>1</nf><nd>60</nd><nt>0</nt><fx>97</fx><sx>128</sx><ix>255</ix><fp>11</fp><wv>-1</wv><ws>0</ws><ps>1</ps><cy>0</cy><ds>WLED</ds><ss>0</ss></vs>'.encode()
+    # Get: Return state information
+    if request.method == 'GET':
+        return json.dumps({'on': wled_state, 'bri': wled_brightness})
 
-    # Turn off
+    # Post set brightness and/or power state
+    elif request.method == 'POST':
+        # Read body even if headers missing
+        payload = request.get_json(force=True)
+        wled_state = bool(payload["on"])
+        try:
+            wled_brightness = int(payload["bri"])
+        except (ValueError, TypeError):
+            pass
+        return b'{"success":true}'
+
     else:
-        return b'<?xml version="1.0" ?><vs><ac>0</ac><cl>255</cl><cl>160</cl><cl>0</cl><cs>0</cs><cs>0</cs><cs>0</cs><ns>0</ns><nr>1</nr><nl>0</nl><nf>1</nf><nd>60</nd><nt>0</nt><fx>97</fx><sx>128</sx><ix>255</ix><fp>11</fp><wv>-1</wv><ws>0</ws><ps>1</ps><cy>0</cy><ds>WLED</ds><ss>0</ss></vs>'
+        return b'{"error":9}'
 
 
 # Desktop integration - get monitor state

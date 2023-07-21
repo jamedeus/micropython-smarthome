@@ -1,11 +1,19 @@
+import json
 import unittest
 from Wled import Wled
+
+# Read mock API receiver address
+with open('config.json', 'r') as file:
+    config = json.load(file)
+
+# IP and port of mock API receiver instance
+mock_address = f"{config['mock_receiver']['ip']}:{config['mock_receiver']['port']}"
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
     'min_bright': 1,
     'nickname': 'device1',
-    'ip': '192.168.1.211',
+    'ip': mock_address,
     'max_bright': 255,
     '_type': 'wled',
     'scheduled_rule': None,
@@ -24,7 +32,7 @@ class TestWled(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Wled("device1", "device1", "wled", 50, 1, 255, "192.168.1.211")
+        cls.instance = Wled("device1", "device1", "wled", 50, 1, 255, mock_address)
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Wled)
