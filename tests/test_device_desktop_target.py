@@ -102,7 +102,7 @@ class TestDesktopTarget(unittest.TestCase):
         # Call with invalid IP to trigger network error, confirm timer added to queue
         SoftwareTimer.timer.cancel(self.instance.name)
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
-        self.instance.ip = "0.0.0.0"
+        self.instance.ip = "0.0.0."
         self.instance.off()
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
         SoftwareTimer.timer.cancel(self.instance.name)
@@ -116,7 +116,7 @@ class TestDesktopTarget(unittest.TestCase):
 
     def test_13_network_errors(self):
         # Change to invalid IP to simulate failed connection, confirm send returns False
-        self.instance.ip = "0.0.0.0"
+        self.instance.ip = "0.0.0."
         self.assertFalse(self.instance.send(1))
         self.instance.ip = config["mock_receiver"]["ip"]
 
