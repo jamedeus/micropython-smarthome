@@ -21,10 +21,6 @@ test_firmware:
     - pipenv install
     - cd mock_test_environment/
     - for i in ../tests/test_*; do ln -s $i .; done
-    # Temporary workaround (API daily request limit reached)
-    - rm test_api_api.py
-    - rm test_core_config.py
-    - rm test_core_main_loop.py
     - pipenv run coverage run --source='../core,../devices,../sensors' runtests.py
     - pipenv run coverage report -m --precision=1
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
