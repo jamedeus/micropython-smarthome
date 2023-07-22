@@ -12,6 +12,7 @@ from util import (
     is_sensor,
     is_device_or_sensor,
     reboot,
+    clear_log,
     read_config_from_disk,
     write_config_to_disk
 )
@@ -489,22 +490,10 @@ def get_climate_data(args):
 
 
 @app.route("clear_log")
-def clear_log(args):
+def clear_log_file(args):
     try:
-        # Close file, remove
-        logging.root.handlers[0].close()
-        os.remove('app.log')
-
-        # Create new handler, set format
-        h = logging.FileHandler('app.log')
-        h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
-
-        # Replace old handler with new
-        logging.root.handlers.clear()
-        logging.root.addHandler(h)
-
+        clear_log()
         log.info("Deleted old log (API request)")
-
         return {"clear_log": "success"}
     except OSError:
         return {"ERROR": "no log file found"}

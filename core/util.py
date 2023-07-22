@@ -48,6 +48,20 @@ def reboot(arg=None):
     reset()
 
 
+def clear_log():
+    # Close file, remove
+    logging.root.handlers[0].close()
+    os.remove('app.log')
+
+    # Create new handler, set format
+    h = logging.FileHandler('app.log')
+    h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
+
+    # Replace old handler with new
+    logging.root.handlers.clear()
+    logging.root.addHandler(h)
+
+
 # Coroutine that keeps log under size limit, reboots when new code uploaded
 async def disk_monitor():
     print("Disk Monitor Started\n")
@@ -73,19 +87,7 @@ async def disk_monitor():
         # Limit log to 100 KB (full disk causes hang, can't pull log via webrepl)
         elif os.stat('app.log')[6] > 100000:
             print("\nLog exceeded 100 KB, clearing...\n")
-
-            # Close file, remove
-            logging.root.handlers[0].close()
-            os.remove('app.log')
-
-            # Create new handler, set format
-            h = logging.FileHandler('app.log')
-            h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(name)s - %(message)s'))
-
-            # Replace old handler with new
-            logging.root.handlers.clear()
-            logging.root.addHandler(h)
-
+            clear_log()
             log.info("Deleted old log (exceeded 100 KB size limit)")
 
             # Allow logger to write new log file to disk before loop checks size again (crashes if doesn't exist yet)
