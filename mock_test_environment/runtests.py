@@ -3,58 +3,56 @@
 import os
 import sys
 import time
-import json
 import shutil
 import logging
 import asyncio
 import unittest
 import nest_asyncio
 
-# Add project files to python path
-sys.path.insert(0, os.path.abspath('../core'))
-sys.path.insert(0, os.path.abspath('../lib'))
-sys.path.insert(0, os.path.abspath('../devices'))
-sys.path.insert(0, os.path.abspath('../sensors'))
 
-# Add mock modules to python path
-# Must be last to give mock libraries priority over ../lib
-sys.path.insert(0, os.path.abspath('mocks'))
+# Set up mocked environment used to run micropython code in cpython
+def set_mocks():
+    # Add project files to python path
+    sys.path.insert(0, os.path.abspath('../core'))
+    sys.path.insert(0, os.path.abspath('../lib'))
+    sys.path.insert(0, os.path.abspath('../devices'))
+    sys.path.insert(0, os.path.abspath('../sensors'))
 
+    # Add mock modules to python path
+    # Must be last to give mock libraries priority over ../lib
+    sys.path.insert(0, os.path.abspath('mocks'))
 
-def sleep_us(us):
-    # Convert microseconds to seconds
-    time.sleep(us / 1000000.0)
+    def sleep_us(us):
+        # Convert microseconds to seconds
+        time.sleep(us / 1000000.0)
 
+    def sleep_ms(ms):
+        # Convert milliseconds to seconds
+        time.sleep(ms / 1000.0)
 
-def sleep_ms(ms):
-    # Convert milliseconds to seconds
-    time.sleep(ms / 1000.0)
+    # Add missing methods to time module
+    time.sleep_us = sleep_us
+    time.sleep_ms = sleep_ms
 
+    # Allow calling asyncio.run when an event loop is already running
+    # More closely approximates micropython uasyncio behavior
+    nest_asyncio.apply()
 
-# Add missing methods to time module
-time.sleep_us = sleep_us
-time.sleep_ms = sleep_ms
+    # Patch logging methods and attributes with mocks
+    import mock_logging
+    logging.Handler = mock_logging.Handler
+    logging.Logger = mock_logging.Logger
+    logging.basicConfig = mock_logging.basicConfig
+    logging.getLogger = mock_logging.getLogger
+    logging.FileHandler = mock_logging.FileHandler
+    logging.root = mock_logging.Logger()
+    logging.root.handlers = [mock_logging.Handler()]
 
-# Allow calling asyncio.run when an event loop is already running
-# More closely approximates micropython uasyncio behavior
-nest_asyncio.apply()
+    # Create mock log file for clear_log test
+    open('app.log', 'w')
 
-# Patch logging methods and attributes with mocks
-import mock_logging
-logging.Handler = mock_logging.Handler
-logging.Logger = mock_logging.Logger
-logging.basicConfig = mock_logging.basicConfig
-logging.getLogger = mock_logging.getLogger
-logging.FileHandler = mock_logging.FileHandler
-logging.root = mock_logging.Logger()
-logging.root.handlers = [mock_logging.Handler()]
-
-# Create mock log file for clear_log test
-with open('app.log', 'w') as file:
-    pass
-
-# Use unit_test_config.json as mock config.json, allow saving schedule rules, keywords, etc
-shutil.copy2(os.path.abspath('../tests/unit_test_config.json'), 'config.json')
+    # Use unit_test_config.json as mock config.json, allow saving schedule rules, keywords, etc
+    shutil.copy2(os.path.abspath('../tests/unit_test_config.json'), 'config.json')
 
 
 async def run_tests():
@@ -84,4 +82,6 @@ async def run_tests():
         sys.exit(1)
 
 
-asyncio.run(run_tests())
+if __name__ == '__main__':
+    set_mocks()
+    asyncio.run(run_tests())
