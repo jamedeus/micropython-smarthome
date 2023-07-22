@@ -59,11 +59,19 @@ class TestSwitch(unittest.TestCase):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 
-    def test_07_trigger(self):
+    def test_07_enable_while_rule_is_disabled(self):
+        # Set both current and scheduled rules to disabled
+        self.instance.current_rule = 'disabled'
+        self.instance.scheduled_rule = 'disabled'
+        # Enable instance, confirm rule falls back to default_rule
+        self.instance.enable()
+        self.assertEqual(self.instance.current_rule, self.instance.default_rule)
+
+    def test_08_trigger(self):
         # Should not be able to trigger this sensor type
         self.assertFalse(self.instance.trigger())
 
-    def test_08_condition_met(self):
+    def test_09_condition_met(self):
         self.assertFalse(self.instance.condition_met())
 
         # Mock env: simulate turnned on (conditional prevents fail on baremetal)
