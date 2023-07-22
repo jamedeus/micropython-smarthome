@@ -122,9 +122,13 @@ class MockTpLink:
         server.listen(5)
 
         while True:
-            client, addr = server.accept()
-            print(f"New connection from {addr[0]}:{addr[1]}")
-            self.handle_client(client)
+            try:
+                client, addr = server.accept()
+                print(f"New connection from {addr[0]}:{addr[1]}")
+                self.handle_client(client)
+            except ConnectionResetError:
+                print("ERROR: Connection reset by peer")
+                pass
 
     # Return response based on request type (dimmer or bulb)
     def handle_client(self, client_socket):
