@@ -360,10 +360,11 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"Success": "Keywords written to disk"})
 
     def test_18_get_attributes(self):
-        response = self.send_command(['get_attributes', 'sensor1'])
+        response = self.send_command(['get_attributes', 'device1'])
         self.assertIsInstance(response, dict)
-        self.assertEqual(response["_type"], "si7021")
-        self.assertEqual(response["targets"], ['device1'])
+        self.assertEqual(response["_type"], "dimmer")
+        self.assertEqual(response["group"], "group1")
+        self.assertEqual(response["triggered_by"], ['sensor1', 'sensor2'])
 
     def test_19_trigger_sensor_condition_met(self):
         # Initial state should be False
