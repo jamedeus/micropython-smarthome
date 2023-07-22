@@ -2,7 +2,7 @@ import time
 import network
 import unittest
 from machine import Pin, Timer
-from Config import Config
+from Config import Config, instantiate_hardware
 
 
 class TestConfig(unittest.TestCase):
@@ -165,6 +165,32 @@ class TestConfig(unittest.TestCase):
         # Regression test for sensor with no schedule rules receiving default_rule of last device/sensor in config
         self.assertEqual(self.config.sensors[0].current_rule, 5)
         self.assertEqual(self.config.sensors[0].scheduled_rule, 5)
+
+    def test_instantiate_hardware_errors(self):
+        # assertRaises fails for some reason, this approach seems reliable
+        try:
+            instantiate_hardware('device1', _type='invalid')
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except ValueError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
+
+        try:
+            instantiate_hardware('sensor1', _type='invalid')
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except ValueError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
+
+        try:
+            instantiate_hardware('ir_blaster')
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except ValueError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
 
     ## Tests to confirm correct rule is set after instantiating device ##
 
