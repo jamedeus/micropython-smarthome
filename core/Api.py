@@ -1,5 +1,4 @@
 import json
-import os
 import uasyncio as asyncio
 import logging
 import gc
@@ -527,7 +526,7 @@ def backlight(args):
     try:
         blaster = app.config.ir_blaster
     except AttributeError:
-        return {"Error": "No IR blaster configured"}
+        return {"ERROR": "No IR blaster configured"}
 
     if not args[0] == "on" and not args[0] == "off":
         return {'ERROR': 'Backlight setting must be "on" or "off"'}

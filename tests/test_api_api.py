@@ -7,6 +7,10 @@ import SoftwareTimer
 from Config import Config
 from Api import app
 
+# Read mock API receiver address
+with open('config.json', 'r') as file:
+    test_config = json.load(file)
+
 # Get IP address
 ip = network.WLAN(network.STA_IF).ifconfig()[0]
 
@@ -66,17 +70,17 @@ config_file = {
         "schedule": {}
     },
     "device1": {
-        "pin": 4,
-        "_type": "pwm",
+        "_type": "dimmer",
         "schedule": {
-            "09:00": 734,
-            "11:00": 345,
-            "20:00": 915
+            "09:00": 75,
+            "11:00": 35,
+            "20:00": 90
         },
-        "min_bright": 0,
-        "max_bright": 1023,
-        "default_rule": 512,
-        "nickname": "device1"
+        "min_bright": 1,
+        "max_bright": 100,
+        "default_rule": 50,
+        "nickname": "device1",
+        "ip": test_config["mock_receiver"]["ip"]
     },
     "ir_blaster": {
         "pin": 32,
@@ -180,23 +184,23 @@ class TestApi(unittest.TestCase):
 
         # Set url-encoded fade rule
         response = self.send_command(['set_rule', 'device1', 'fade%2F50%2F3600'])
-        self.assertEqual(self.sensor2.current_rule, 5.0)
         self.assertEqual(response, {'device1': 'fade/50/3600'})
-        # Cancel timer to prevent actually fading
+        # Confirm timer added to queue, cancel to prevent actually fading
+        self.assertIn('device1_fade', str(SoftwareTimer.timer.schedule))
         SoftwareTimer.timer.cancel('device1_fade')
 
     def test_07_increment_rule(self):
         # Set known starting values
-        self.device1.current_rule = 512
+        self.device1.current_rule = 50
         self.sensor1.current_rule = 70
 
         # Increment PWM by both positive and negative numbers
         response = self.send_command(['increment_rule', 'device1', '-12'])
-        self.assertEqual(response, {'device1': 500})
-        self.assertEqual(self.device1.current_rule, 500)
-        response = self.send_command(['increment_rule', 'device1', '50'])
-        self.assertEqual(response, {'device1': 550})
-        self.assertEqual(self.device1.current_rule, 550)
+        self.assertEqual(response, {'device1': 38})
+        self.assertEqual(self.device1.current_rule, 38)
+        response = self.send_command(['increment_rule', 'device1', '30'])
+        self.assertEqual(response, {'device1': 68})
+        self.assertEqual(self.device1.current_rule, 68)
 
         # Increment SI7021 by both float and integer
         response = self.send_command(['increment_rule', 'sensor1', '0.5'])
@@ -253,7 +257,7 @@ class TestApi(unittest.TestCase):
 
     def test_10_get_schedule_rules(self):
         response = self.send_command(['get_schedule_rules', 'device1'])
-        self.assertEqual(response, {'20:00': 915, '09:00': 734, '11:00': 345})
+        self.assertEqual(response, {'20:00': 90, '09:00': 75, '11:00': 35})
 
     def test_11_add_schedule_rule(self):
         # Add a rule at a time where no rule exists
@@ -336,7 +340,7 @@ class TestApi(unittest.TestCase):
 
     def test_16_remove_schedule_keyword(self):
         # Add schedule rule using keyword, should be deleted when keyword deleted
-        app.config.schedule['device1']['sleep'] = 512
+        app.config.schedule['device1']['sleep'] = 50
 
         # Remove keyword, confirm removed, confirm rule using keyword removed
         response = self.send_command(['remove_schedule_keyword', 'sleep'])
@@ -393,12 +397,8 @@ class TestApi(unittest.TestCase):
         # Send command to turn on
         response = self.send_command(['turn_on', 'device1'])
         self.assertEqual(response, {'On': 'device1'})
-        # PWM duty cycle should now be same as current rule
-        self.assertEqual(self.device1.pwm.duty(), self.device1.current_rule)
-
-        # Should only accept devices, not sensors
-        response = self.send_command(['turn_on', 'sensor1'])
-        self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
+        # Confirm turned on
+        self.assertTrue(self.device1.state)
 
         # Should not be able to turn on a disabled device
         self.device1.disable()
@@ -408,48 +408,86 @@ class TestApi(unittest.TestCase):
 
         # Device should still be off
         self.assertFalse(self.device1.state)
-        self.assertEqual(self.device1.pwm.duty(), 0)
 
-    def test_23_turn_off(self):
+    def test_23_turn_on_invalid(self):
+        self.device1.enable()
+
+        # Should only accept devices, not sensors
+        response = self.send_command(['turn_on', 'sensor1'])
+        self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
+
+        # Change to invalid IP to simulate failed network connection
+        self.device1.ip = "0.0.0."
+        # Confirm endpoint returns error
+        response = self.send_command(['turn_on', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Unable to turn on device1'})
+        # Revert IP
+        self.device1.ip = test_config["mock_receiver"]["ip"]
+
+    def test_24_turn_off(self):
         # Make sure device is enabled and turned on before testing
         self.device1.enable()
         self.device1.send(1)
         # Send command to turn on
         response = self.send_command(['turn_off', 'device1'])
         self.assertEqual(response, {'Off': 'device1'})
-        # PWM duty cycle should now be 0
-        self.assertEqual(self.device1.pwm.duty(), 0)
-
-        # Should only accept devices, not sensors
-        response = self.send_command(['turn_off', 'sensor1'])
-        self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
+        # Confirm turned on
+        self.assertFalse(self.device1.state)
 
         # Should be able to turn off a disabled device (just not on)
-        response = self.send_command(['disable', 'device1'])
+        self.device1.disable()
+        self.device1.state = True
         response = self.send_command(['turn_off', 'device1'])
         self.assertEqual(response, {'Off': 'device1'})
 
         # Device should now be off
         self.assertFalse(self.device1.state)
-        self.assertEqual(self.device1.pwm.duty(), 0)
 
-    def test_24_get_temp(self):
+    def test_25_turn_off_invalid(self):
+        # Should only accept devices, not sensors
+        response = self.send_command(['turn_off', 'sensor1'])
+        self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
+
+        # Change to invalid IP to simulate failed network connection
+        self.device1.ip = "0.0.0."
+        # Confirm endpoint returns error
+        response = self.send_command(['turn_off', 'device1'])
+        self.assertEqual(response, {'ERROR': 'Unable to turn off device1'})
+        # Revert IP
+        self.device1.ip = test_config["mock_receiver"]["ip"]
+
+    def test_26_get_temp(self):
         response = self.send_command(['get_temp'])
         self.assertIsInstance(response, dict)
         self.assertIsInstance(response["Temp"], float)
 
-    def test_25_get_humid(self):
+    def test_27_get_humid(self):
         response = self.send_command(['get_humid'])
         self.assertIsInstance(response, dict)
         self.assertIsInstance(response["Humidity"], float)
 
-    def test_26_get_climate_data(self):
+    def test_28_get_climate_data(self):
         response = self.send_command(['get_climate_data'])
         self.assertIsInstance(response, dict)
         self.assertIsInstance(response["humid"], float)
         self.assertIsInstance(response["temp"], float)
 
-    def test_27_clear_log(self):
+    def test_29_no_temperature_sensor_errors(self):
+        # Change temperature sensor type to simulate no temp sensor
+        self.sensor1._type = "pir"
+
+        # All endpoints should now return error
+        response = self.send_command(['get_temp'])
+        self.assertEqual(response, {"ERROR": "No temperature sensor configured"})
+        response = self.send_command(['get_humid'])
+        self.assertEqual(response, {"ERROR": "No temperature sensor configured"})
+        response = self.send_command(['get_climate_data'])
+        self.assertEqual(response, {"ERROR": "No temperature sensor configured"})
+
+        # Revert sensor type
+        self.sensor1._type = "si7021"
+
+    def test_30_clear_log(self):
         response = self.send_command(['clear_log'])
         self.assertEqual(response, {'clear_log': 'success'})
 
@@ -461,7 +499,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['clear_log'])
         self.assertEqual(response, {'ERROR': 'no log file found'})
 
-    def test_28_ir_key(self):
+    def test_31_ir_key(self):
         response = self.send_command(['ir_key', 'tv', 'power'])
         self.assertEqual(response, {'tv': 'power'})
 
@@ -473,7 +511,18 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['ir_key', 'ac', 'on'])
         self.assertEqual(response, {'ERROR': 'No codes found for target "ac"'})
 
-    def test_29_backlight(self):
+        # Remove IrBlaster from config to test error
+        ir_blaster = app.config.ir_blaster
+        del app.config.ir_blaster
+
+        # Confirm correct error message
+        response = self.send_command(['ir_key', 'ac', 'on'])
+        self.assertEqual(response, {"ERROR": "No IR blaster configured"})
+
+        # Restore IrBlaster
+        app.config.ir_blaster = ir_blaster
+
+    def test_32_backlight(self):
         # Confirm responses for on and off
         response = self.send_command(['backlight', 'on'])
         self.assertEqual(response, {'backlight': 'on'})
@@ -485,11 +534,22 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['backlight', 'low'])
         self.assertEqual(response, {'ERROR': 'Backlight setting must be "on" or "off"'})
 
-    def test_30_invalid_command(self):
+        # Remove IrBlaster from config to test error
+        ir_blaster = app.config.ir_blaster
+        del app.config.ir_blaster
+
+        # Confirm correct error message
+        response = self.send_command(['backlight', 'low'])
+        self.assertEqual(response, {"ERROR": "No IR blaster configured"})
+
+        # Restore IrBlaster
+        app.config.ir_blaster = ir_blaster
+
+    def test_33_invalid_command(self):
         response = self.send_command(['notacommand'])
         self.assertEqual(response, {"ERROR": "Invalid command"})
 
-    def test_31_missing_arguments(self):
+    def test_34_missing_arguments(self):
         response = self.send_command(['enable'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -574,7 +634,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['backlight'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-    def test_32_invalid_instance(self):
+    def test_35_invalid_instance(self):
         response = self.send_command(['enable', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
@@ -624,7 +684,7 @@ class TestApi(unittest.TestCase):
     # cannot be json-serialized. These are supposed to be deleted or replaced with string
     # representations when building get_attributes response. Earlier versions of API failed to do
     # this for some classes, breaking get_attributes and resulting in an "unable to decode" error.
-    def test_33_regression_get_attributes(self):
+    def test_36_regression_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor3'])
         self.assertEqual(
             response,
