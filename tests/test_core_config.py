@@ -137,10 +137,10 @@ class TestConfig(unittest.TestCase):
 
     def test_reload_timer(self):
         # Confirm reload_config timer is running
-        self.config_timer = Timer(1)
-        first = self.config_timer.value()
+        config_timer = Timer(1)
+        first = config_timer.value()
         time.sleep_ms(1)
-        second = self.config_timer.value()
+        second = config_timer.value()
         self.assertNotEqual(first, second)
 
     def test_find_method(self):
@@ -193,8 +193,11 @@ class TestConfig(unittest.TestCase):
                         '10:00': 50
                     }
                 }
-            }
+            },
+            delay_setup=True
         )
+        config.instantiate_peripherals()
+        config.build_queue()
 
         self.assertEqual(config.devices[0].current_rule, 50)
         self.assertEqual(config.devices[0].scheduled_rule, 50)
@@ -225,8 +228,11 @@ class TestConfig(unittest.TestCase):
                         '10:00': '9999'
                     }
                 }
-            }
+            },
+            delay_setup=True
         )
+        config.instantiate_peripherals()
+        config.build_queue()
 
         self.assertEqual(config.devices[0].current_rule, 50)
         self.assertEqual(config.devices[0].scheduled_rule, 50)
@@ -255,8 +261,11 @@ class TestConfig(unittest.TestCase):
                         '10:00': '9999'
                     }
                 }
-            }
+            },
+            delay_setup=True
         )
+        config.instantiate_peripherals()
+        config.build_queue()
 
         self.assertEqual(config.devices[0].current_rule, 'disabled')
         self.assertEqual(config.devices[0].scheduled_rule, 'disabled')
@@ -286,8 +295,11 @@ class TestConfig(unittest.TestCase):
                     'max_bright': 1023,
                     'schedule': {}
                 }
-            }
+            },
+            delay_setup=True
         )
+        config.instantiate_peripherals()
+        config.build_queue()
 
         self.assertEqual(config.devices[0].current_rule, 50)
         self.assertEqual(config.devices[0].scheduled_rule, 50)
@@ -316,8 +328,11 @@ class TestConfig(unittest.TestCase):
                     'schedule': {},
                     'targets': []
                 }
-            }
+            },
+            delay_setup=True
         )
+        config.instantiate_peripherals()
+        config.build_queue()
 
         self.assertEqual(config.sensors[0].current_rule, 'disabled')
         self.assertEqual(config.sensors[0].scheduled_rule, 'disabled')
@@ -373,8 +388,11 @@ class TestConfig(unittest.TestCase):
                     "default_rule": "enabled",
                     "schedule": {}
                 }
-            }
+            },
+            delay_setup=True
         )
+        config.instantiate_peripherals()
+        config.build_queue()
 
         # Should only have 1 device (mosfet)
         self.assertEqual(len(config.devices), 1)
@@ -424,8 +442,11 @@ class TestConfig(unittest.TestCase):
                         "sunset": "enabled"
                     }
                 }
-            }
+            },
+            delay_setup=True
         )
+        config.instantiate_peripherals()
+        config.build_queue()
 
         # Should have no sensor instances
         self.assertEqual(len(config.sensors), 0)
@@ -464,8 +485,11 @@ class TestConfig(unittest.TestCase):
                     "default_rule": "enabled",
                     "schedule": {}
                 }
-            }
+            },
+            delay_setup=True
         )
+        config.instantiate_peripherals()
+        config.build_queue()
 
         # Should have 1 sensor (instantiated successfully)
         self.assertEqual(len(config.sensors), 1)

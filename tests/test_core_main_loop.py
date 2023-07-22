@@ -90,7 +90,10 @@ def determine_correct_action(conditions):
 class TestMainLoop(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.config = Config(config_file)
+        cls.config = Config(config_file, delay_setup=True)
+        cls.config.instantiate_peripherals()
+        cls.config.build_queue()
+        cls.config.build_groups()
 
     def test_check_sensor_state(self):
         # Make sure state is False for all motion sensors

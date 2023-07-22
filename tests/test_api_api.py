@@ -85,7 +85,10 @@ config_file = {
 }
 
 # Instantiate config object, pass to API
-config = Config(config_file)
+config = Config(config_file, delay_setup=True)
+config.instantiate_peripherals()
+config.build_queue()
+config.build_groups()
 app.config = config
 
 

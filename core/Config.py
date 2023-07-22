@@ -67,8 +67,11 @@ def instantiate_hardware(name, **kwargs):
     return cls(name, **kwargs)
 
 
+# Optional argument blocks expensive method calls that connect to wifi,
+# hit APIs, instantiate classes, and build schedule rule queue.
+# Primarily used in unit testing to run a subset of methods.
 class Config():
-    def __init__(self, conf):
+    def __init__(self, conf, delay_setup=False):
         print("\nInstantiating config object...\n")
         log.info("Instantiating config object...")
         log.debug(f"Config file: {conf}")
@@ -81,16 +84,6 @@ class Config():
         self.location = conf["metadata"]["location"]
         self.floor = conf["metadata"]["floor"]
 
-        # Load GPS coordinates (used for timezone + sunrise/sunset times, not shown in frontend)
-        try:
-            self.gps = conf["metadata"]["gps"]
-        except KeyError:
-            self.gps = ""
-
-        # Toggled by callback around 3:00am
-        # Loop checks this and rebuilds schedule rule queue, re-runs API calls when True
-        self.reload_rules = False
-
         # Nested dict of schedule rules, 1 entry for each device and sensor
         # Keys are IDs (device1, sensor2, etc), values are dict of timestamp-rule pairs
         self.schedule = {}
@@ -99,35 +92,32 @@ class Config():
         self.schedule_keywords = {'sunrise': '00:00', 'sunset': '00:00'}
         self.schedule_keywords.update(conf["metadata"]["schedule_keywords"])
 
-        # Call function to connect to wifi + hit APIs
+        # Load GPS coordinates (used for timezone + sunrise/sunset times, not shown in frontend)
+        try:
+            self.gps = conf["metadata"]["gps"]
+        except KeyError:
+            self.gps = ""
+
+        # Parse all device and sensor sections into dict attributes, removed
+        # after device and sensor lists populated by instantiate_peripherals
+        self.device_configs = {device: config for device, config in conf.items() if is_device(device)}
+        self.sensor_configs = {sensor: config for sensor, config in conf.items() if is_sensor(sensor)}
+        if "ir_blaster" in conf:
+            self.ir_blaster_config = conf["ir_blaster"]
+
+        if not delay_setup:
+            self.setup()
+
+    def setup(self):
         # Connect to wifi, hit APIs for current time, sunrise/sunset timestamps
         self.api_calls()
 
-        # Create lists for device, sensor instances
-        self.devices = []
-        self.sensors = []
-
-        # Pass all device entries to instantiate_devices, populates self.devices
-        devices = {device: config for device, config in conf.items() if is_device(device)}
-        self.instantiate_devices(devices)
-
-        # Pass all sensors entries to instantiate_sensors, populates self.sensors
-        sensors = {sensor: config for sensor, config in conf.items() if is_sensor(sensor)}
-        self.instantiate_sensors(sensors)
-
-        # Instantiate IR Blaster if configured (can only have 1, driver limitation)
-        # IR Blaster is not a Device subclass, has no schedule rules, and is only triggered by API calls
-        if "ir_blaster" in conf:
-            from IrBlaster import IrBlaster
-            self.ir_blaster = IrBlaster(int(conf["ir_blaster"]["pin"]), conf["ir_blaster"]["target"])
+        # Instantiate each config in self.device_configs and self.sensor_configs as
+        # appropriate class, add to self.devices and self.sensors respectively
+        self.instantiate_peripherals()
 
         # Create timers for all schedule rules expiring in next 24 hours
         self.build_queue()
-
-        # Map relationships between sensors ("triggers") and devices ("targets")
-        # Multiple sensors with identical targets are merged into groups (or 1 sensor per group if unique targets)
-        # Main loop iterates Groups, calls Group methods to check sensor conditions and apply device actions
-        self.build_groups()
 
         # Start timer to re-build schedule rule queue for next 24 hours around 3 am
         self.start_reload_schedule_rules_timer()
@@ -135,6 +125,10 @@ class Config():
         log.info("Finished instantiating config")
 
     def start_reload_schedule_rules_timer(self):
+        # Toggled by callback around 3:00am
+        # Loop checks this and rebuilds schedule rule queue, re-runs API calls when True
+        self.reload_rules = False
+
         # Get epoch time of 3:00 am tomorrow
         epoch = time.mktime(time.localtime())
         now = time.localtime(epoch)
@@ -148,6 +142,38 @@ class Config():
         reset_timestamp = f"{time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]}"
         log.debug(f"Reload_schedule_rules callback scheduled for {reset_timestamp} am")
         config_timer.init(period=reset_epoch, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
+
+    # Populates self.devices and self.sensors by instantiating configs from self.device_configs
+    # and self.sensor_configs, can only be called once
+    def instantiate_peripherals(self):
+        # Prevent calling again after setup complete
+        if "devices" in self.__dict__ or "sensors" in self.__dict__:
+            return False
+
+        # Create lists for device, sensor instances
+        self.devices = []
+        self.sensors = []
+
+        # Pass all device configs to instantiate_devices, populates self.devices
+        self.instantiate_devices(self.device_configs)
+
+        # Pass all sensors configs to instantiate_sensors, populates self.sensors
+        self.instantiate_sensors(self.sensor_configs)
+
+        # Instantiate IR Blaster if configured (can only have 1, driver limitation)
+        # IR Blaster is not a Device subclass, has no schedule rules, and is only triggered by API calls
+        if "ir_blaster_config" in self.__dict__:
+            from IrBlaster import IrBlaster
+            self.ir_blaster = IrBlaster(int(self.ir_blaster_config["pin"]), self.ir_blaster_config["target"])
+            del self.ir_blaster_config
+
+        # Delete device and sensor config dicts
+        del self.device_configs
+        del self.sensor_configs
+        gc.collect()
+
+        # Map relationships between sensors ("triggers") and devices ("targets")
+        self.build_groups()
 
     # Takes config dict (devices only), instantiates each with appropriate class, adds to self.devices
     def instantiate_devices(self, conf):
@@ -202,6 +228,45 @@ class Config():
                 print(f"ERROR: Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
 
         log.debug("Finished creating sensor instances")
+
+    # Maps relationships between sensors ("triggers") and devices ("targets")
+    # Multiple sensors with identical targets are merged into groups (or 1 sensor per group if unique targets)
+    # Main loop iterates Groups, calls Group methods to check sensor conditions and apply device actions
+    def build_groups(self):
+        # Stores completed Group instances
+        self.groups = []
+
+        sensor_list = self.sensors.copy()
+
+        while len(sensor_list) > 0:
+            # Get first sensor in sensor_list, add to group list
+            s = sensor_list.pop(0)
+            group = [s]
+
+            # Find all sensors with identical targets, add to group list
+            for i in sensor_list:
+                if i.targets == s.targets:
+                    group.append(i)
+
+            # Delete all sensors in group from sensor_list
+            for i in group:
+                try:
+                    del sensor_list[sensor_list.index(i)]
+                except ValueError:
+                    pass
+
+            # Instantiate group object from list of sensors
+            instance = Group("group" + str(len(self.groups) + 1), group)
+            self.groups.append(instance)
+
+            # Pass instance to all members' group attributes, allows group members to access group methods
+            for sensor in instance.triggers:
+                sensor.group = instance
+                # Add Sensor's post-action routines (if any), will run after group turns targets on/off
+                sensor.add_routines()
+
+            for device in instance.targets:
+                device.group = instance
 
     # Called by status API endpoint, frontend polls every 5 seconds while viewing node
     # Returns object with metadata + current status info for all devices and sensors
@@ -473,42 +538,6 @@ class Config():
 
         print(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
         log.debug(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
-
-    def build_groups(self):
-        # Stores relationships between sensors ("triggers") and devices ("targets"), iterated by main loop
-        self.groups = []
-
-        sensor_list = self.sensors.copy()
-
-        while len(sensor_list) > 0:
-            # Get first sensor in sensor_list, add to group list
-            s = sensor_list.pop(0)
-            group = [s]
-
-            # Find all sensors with identical targets, add to group list
-            for i in sensor_list:
-                if i.targets == s.targets:
-                    group.append(i)
-
-            # Delete all sensors in group from sensor_list
-            for i in group:
-                try:
-                    del sensor_list[sensor_list.index(i)]
-                except ValueError:
-                    pass
-
-            # Instantiate group object from list of sensors
-            instance = Group("group" + str(len(self.groups) + 1), group)
-            self.groups.append(instance)
-
-            # Pass instance to all members' group attributes, allows group members to access group methods
-            for sensor in instance.triggers:
-                sensor.group = instance
-                # Add Sensor's post-action routines (if any), will run after group turns targets on/off
-                sensor.add_routines()
-
-            for device in instance.targets:
-                device.group = instance
 
     # Takes ID (device1, sensor2, etc), returns instance or False
     def find(self, target):
