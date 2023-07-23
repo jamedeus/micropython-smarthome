@@ -29,49 +29,11 @@ class TestSwitch(unittest.TestCase):
         attributes = self.instance.get_attributes()
         self.assertEqual(attributes, expected_attributes)
 
-    def test_03_rule_validation_valid(self):
-        self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
-        self.assertEqual(self.instance.rule_validator("DISABLED"), "disabled")
-        self.assertEqual(self.instance.rule_validator("Enabled"), "enabled")
-        self.assertEqual(self.instance.rule_validator("enabled"), "enabled")
-
-    def test_04_rule_validation_invalid(self):
-        self.assertFalse(self.instance.rule_validator(True))
-        self.assertFalse(self.instance.rule_validator(None))
-        self.assertFalse(self.instance.rule_validator("string"))
-        self.assertFalse(self.instance.rule_validator(42))
-        self.assertFalse(self.instance.rule_validator(["on"]))
-        self.assertFalse(self.instance.rule_validator({"on": "on"}))
-        self.assertFalse(self.instance.rule_validator("On"))
-        self.assertFalse(self.instance.rule_validator("ON"))
-
-    def test_05_rule_change(self):
-        self.assertTrue(self.instance.set_rule("Enabled"))
-        self.assertEqual(self.instance.current_rule, 'enabled')
-        self.assertTrue(self.instance.enabled)
-        self.assertTrue(self.instance.set_rule("Disabled"))
-        self.assertEqual(self.instance.current_rule, 'disabled')
-        self.assertFalse(self.instance.enabled)
-
-    def test_06_enable_disable(self):
-        self.instance.disable()
-        self.assertFalse(self.instance.enabled)
-        self.instance.enable()
-        self.assertTrue(self.instance.enabled)
-
-    def test_07_enable_while_rule_is_disabled(self):
-        # Set both current and scheduled rules to disabled
-        self.instance.current_rule = 'disabled'
-        self.instance.scheduled_rule = 'disabled'
-        # Enable instance, confirm rule falls back to default_rule
-        self.instance.enable()
-        self.assertEqual(self.instance.current_rule, self.instance.default_rule)
-
-    def test_08_trigger(self):
+    def test_03_trigger(self):
         # Should not be able to trigger this sensor type
         self.assertFalse(self.instance.trigger())
 
-    def test_09_condition_met(self):
+    def test_04_condition_met(self):
         self.assertFalse(self.instance.condition_met())
 
         # Mock env: simulate turnned on (conditional prevents fail on baremetal)

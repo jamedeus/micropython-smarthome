@@ -30,6 +30,7 @@ class TestDummySensor(unittest.TestCase):
         self.assertEqual(attributes, expected_attributes)
 
     def test_03_rule_validation_valid(self):
+        # Should accept on and off in addition to enabled and disabled, all case insensitive
         self.assertEqual(self.instance.rule_validator("on"), "on")
         self.assertEqual(self.instance.rule_validator("On"), "on")
         self.assertEqual(self.instance.rule_validator("ON"), "on")
@@ -40,6 +41,7 @@ class TestDummySensor(unittest.TestCase):
         self.assertEqual(self.instance.rule_validator("enabled"), "enabled")
 
     def test_04_rule_validation_invalid(self):
+        # Should reject all other strings, non-strings
         self.assertFalse(self.instance.rule_validator(True))
         self.assertFalse(self.instance.rule_validator(None))
         self.assertFalse(self.instance.rule_validator("string"))
@@ -48,48 +50,38 @@ class TestDummySensor(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator({"on": "on"}))
 
     def test_05_rule_change(self):
+        # Should accept on and off
         self.assertTrue(self.instance.set_rule("off"))
         self.assertEqual(self.instance.current_rule, 'off')
         self.assertTrue(self.instance.set_rule("on"))
         self.assertEqual(self.instance.current_rule, 'on')
 
-    def test_06_enable_disable(self):
-        self.instance.disable()
-        self.assertFalse(self.instance.enabled)
-        self.instance.enable()
-        self.assertTrue(self.instance.enabled)
-
-    def test_07_disable_by_rule_change(self):
-        self.instance.set_rule("Disabled")
-        self.assertFalse(self.instance.enabled)
-
-    def test_08_enable_by_rule_change(self):
-        self.instance.set_rule("enabled")
-        self.assertTrue(self.instance.enabled)
-        self.assertEqual(self.instance.current_rule, "on")
-
-    def test_09_condition_met(self):
+    def test_06_condition_met(self):
+        # Should always return True when rule is on
         self.instance.set_rule("on")
         self.assertTrue(self.instance.condition_met())
 
+        # Should always return False when rule is off
         self.instance.set_rule("off")
         self.assertFalse(self.instance.condition_met())
 
+        # Should always return None when rule is neither on nor off
         self.instance.set_rule("Disabled")
         self.assertEqual(self.instance.condition_met(), None)
 
-    def test_10_trigger(self):
+    def test_07_trigger(self):
         # Ensure current rule is off to avoid false positive
         self.instance.set_rule("off")
         self.assertFalse(self.instance.condition_met())
-        # Trigger, condition should now be met
+        # Trigger, condition should now be met, current_rule should be on
         self.assertTrue(self.instance.trigger())
         self.assertTrue(self.instance.condition_met())
+        self.assertEqual(self.instance.current_rule, "on")
 
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
-    def test_11_regression_invalid_default_rule(self):
+    def test_08_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             Dummy("sensor1", "sensor1", "dummy", "disabled", [])

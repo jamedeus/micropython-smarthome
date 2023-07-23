@@ -45,60 +45,35 @@ class TestDesktopTrigger(unittest.TestCase):
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Desktop_trigger)
         self.assertTrue(self.instance.enabled)
+        self.assertEqual(self.instance.ip, config["mock_receiver"]["ip"])
+        self.assertEqual(self.instance.port, config["mock_receiver"]["port"])
+        self.assertEqual(self.instance.current, None)
+        self.assertEqual(self.instance.desktop_target, self.target)
 
     def test_02_get_attributes(self):
         attributes = self.instance.get_attributes()
         self.assertEqual(attributes, expected_attributes)
 
-    def test_03_rule_validation_valid(self):
-        self.assertEqual(self.instance.rule_validator("enabled"), "enabled")
-        self.assertEqual(self.instance.rule_validator("Enabled"), "enabled")
-        self.assertEqual(self.instance.rule_validator("ENABLED"), "enabled")
-        self.assertEqual(self.instance.rule_validator("disabled"), "disabled")
-        self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
-
-    def test_04_rule_validation_invalid(self):
-        self.assertFalse(self.instance.rule_validator(True))
-        self.assertFalse(self.instance.rule_validator(None))
-        self.assertFalse(self.instance.rule_validator("string"))
-        self.assertFalse(self.instance.rule_validator(42))
-        self.assertFalse(self.instance.rule_validator(["Enabled"]))
-        self.assertFalse(self.instance.rule_validator({"Enabled": "Enabled"}))
-
-    def test_05_rule_change(self):
-        self.assertTrue(self.instance.set_rule("Enabled"))
-        self.assertEqual(self.instance.current_rule, 'enabled')
-        self.assertTrue(self.instance.enabled)
-
-        self.assertTrue(self.instance.set_rule("Disabled"))
-        self.assertEqual(self.instance.current_rule, 'disabled')
-        self.assertFalse(self.instance.enabled)
-
-    def test_06_enable_disable(self):
-        self.instance.disable()
-        self.assertFalse(self.instance.enabled)
-        self.instance.enable()
-        self.assertTrue(self.instance.enabled)
-
-    def test_07_get_idle_time(self):
+    def test_03_get_idle_time(self):
         idle_time = self.instance.get_idle_time()
         self.assertIsInstance(idle_time, dict)
         self.assertIsInstance(int(idle_time["idle_time"]), int)
 
-    def test_08_get_monitor_state(self):
+    def test_04_get_monitor_state(self):
         state = self.instance.get_monitor_state()
         self.assertIsInstance(state, str)
         self.assertIn(state, ['On', 'Off', 'Disabled'])
 
-    def test_09_trigger(self):
+    def test_05_trigger(self):
         # Ensure not already triggered to avoid false positive
         self.instance.current = "Off"
         self.assertFalse(self.instance.condition_met())
-        # Trigger, condition should now be met
+        # Trigger, condition should now be met, current should be On
         self.assertTrue(self.instance.trigger())
         self.assertTrue(self.instance.condition_met())
+        self.assertEqual(self.instance.current, "On")
 
-    def test_10_network_errors(self):
+    def test_06_network_errors(self):
         # Change port to error port (mock receiver returns error for all requests on this port)
         self.instance.port = config["mock_receiver"]["error_port"]
 
@@ -122,7 +97,7 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertFalse(self.instance.get_monitor_state())
         self.instance.ip = config["mock_receiver"]["ip"]
 
-    def test_11_exit_monitor_loop_when_disabled(self):
+    def test_07_exit_monitor_loop_when_disabled(self):
         # Disable instance, confirm monitor coro returns False (end of loop)
         self.instance.disable()
         self.assertFalse(asyncio.run(self.instance.monitor()))

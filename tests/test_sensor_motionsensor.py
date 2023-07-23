@@ -1,6 +1,7 @@
 import unittest
-from MotionSensor import MotionSensor
+from machine import Pin
 import SoftwareTimer
+from MotionSensor import MotionSensor
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
@@ -24,50 +25,47 @@ class TestMotionSensor(unittest.TestCase):
         cls.instance = MotionSensor("sensor1", "sensor1", "pir", None, [], 15)
 
     def test_01_initial_state(self):
+        # Confirm expected attributes just after instantiation
         self.assertIsInstance(self.instance, MotionSensor)
+        self.assertIsInstance(self.instance.sensor, Pin)
         self.assertTrue(self.instance.enabled)
         self.assertFalse(self.instance.motion)
         self.assertEqual(self.instance.sensor.value(), 0)
 
     def test_02_get_attributes(self):
+        # Confirm expected attributes dict just after instantiation
         attributes = self.instance.get_attributes()
         self.assertEqual(attributes, expected_attributes)
 
     def test_03_rule_validation_valid(self):
+        # Should accept int and float in addition to enabled and disabled
         self.assertEqual(self.instance.rule_validator(5), 5.0)
         self.assertEqual(self.instance.rule_validator(0.5), 0.5)
         self.assertEqual(self.instance.rule_validator("0.5"), 0.5)
         self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
+        # Should accept None but cast to 0.0
         self.assertEqual(self.instance.rule_validator(None), 0.0)
 
     def test_04_rule_validation_invalid(self):
+        # Should reject all other rules
         self.assertFalse(self.instance.rule_validator(True))
         self.assertFalse(self.instance.rule_validator("string"))
         self.assertFalse(self.instance.rule_validator([10]))
         self.assertFalse(self.instance.rule_validator({5: 5}))
         self.assertFalse(self.instance.rule_validator("None"))
 
-    def test_05_rule_change(self):
-        self.assertTrue(self.instance.set_rule(5))
-        self.assertEqual(self.instance.current_rule, 5)
-        self.assertTrue(self.instance.set_rule("1.5"))
-        self.assertEqual(self.instance.current_rule, 1.5)
-
-    def test_06_enable_disable(self):
+    def test_05_enable_disable(self):
+        # Disable, confirm disabled
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
+
+        # Set motion to True, enable, confirm flips to False
+        self.instance.motion = True
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
+        self.assertFalse(self.instance.motion)
 
-    def test_07_disable_by_rule_change(self):
-        self.instance.set_rule("Disabled")
-        self.assertFalse(self.instance.enabled)
-
-    def test_08_enable_by_rule_change(self):
-        self.instance.set_rule(1)
-        self.assertTrue(self.instance.enabled)
-
-    def test_09_reset_timer(self):
+    def test_06_reset_timer(self):
         # Make sure rule isn't None (no timer set)
         self.instance.set_rule(1)
         # Call method triggered by hware interrupt
@@ -88,21 +86,21 @@ class TestMotionSensor(unittest.TestCase):
         # Queue should NOT contain entry for motion sensor
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
 
-    def test_10_trigger(self):
+    def test_07_trigger(self):
         # Ensure not already tiggered to avoid false positive
         self.instance.motion = False
         # Trigger, condition should now be met
         self.assertTrue(self.instance.trigger())
         self.assertTrue(self.instance.condition_met())
 
-    def test_11_enable_after_disable_by_rule_change(self):
-        # Disable by rule change, enable with method
-        self.instance.set_rule("disabled")
-        self.instance.enable()
-        # Old rule ("disabled") should have been automatically replaced by scheduled_rule
-        self.assertEqual(self.instance.current_rule, self.instance.scheduled_rule)
+    def test_08_condition_met(self):
+        # Confirm condition_met returns self.motion
+        self.instance.motion = True
+        self.assertTrue(self.instance.condition_met())
+        self.instance.motion = False
+        self.assertFalse(self.instance.condition_met())
 
-    def test_12_increment_rule(self):
+    def test_09_increment_rule(self):
         # Set rule to 5, increment by 1, confirm rule is now 6
         self.instance.current_rule = 5
         self.assertTrue(self.instance.increment_rule(1))
@@ -115,7 +113,7 @@ class TestMotionSensor(unittest.TestCase):
             {"ERROR": "Unable to increment current rule (disabled)"}
         )
 
-    def test_13_next_rule(self):
+    def test_10_next_rule(self):
         # Ensure enabled, confirm no reset timer in queu, set motion to True
         self.instance.enable()
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
@@ -139,7 +137,7 @@ class TestMotionSensor(unittest.TestCase):
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
-    def test_14_regression_invalid_default_rule(self):
+    def test_11_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             MotionSensor("sensor1", "sensor1", "pir", "disabled", [], 15)

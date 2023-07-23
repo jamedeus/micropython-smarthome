@@ -78,6 +78,18 @@ class TestSensor(unittest.TestCase):
         self.assertFalse(self.instance.set_rule('string'))
         self.assertEqual(self.instance.current_rule, "enabled")
 
+    def test_07_disable_by_rule_change(self):
+        # Set rule to disabled, confirm disabled
+        self.instance.enable()
+        self.instance.set_rule("Disabled")
+        self.assertFalse(self.instance.enabled)
+
+    def test_08_enable_by_rule_change(self):
+        # Set rule to enabled, confirm enabled
+        self.assertFalse(self.instance.enabled)
+        self.instance.set_rule("Enabled")
+        self.assertTrue(self.instance.enabled)
+
     def test_07_next_rule(self):
         # Confirm current_rule doesn't match expected new rule
         self.instance.set_rule('enabled')
