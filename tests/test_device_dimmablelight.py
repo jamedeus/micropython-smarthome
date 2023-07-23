@@ -37,7 +37,41 @@ class TestDimmableLight(unittest.TestCase):
             # Should raise exception, test passed
             self.assertTrue(True)
 
-    def test_03_increment_invalid_rule(self):
+    def test_03_rule_validation_valid(self):
+        # Should accept int between min_bright and max_bright
+        self.assertEqual(self.instance.rule_validator(1), 1)
+        self.assertEqual(self.instance.rule_validator(51), 51)
+        self.assertEqual(self.instance.rule_validator(100), 100)
+        self.assertEqual(self.instance.rule_validator("42"), 42)
+        # Should accept enabled and disabled (case-insensitive)
+        self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
+        self.assertEqual(self.instance.rule_validator("enabled"), "enabled")
+        # Should accept fade rules if target is between min_bright and max_bright
+        self.assertEqual(self.instance.rule_validator("fade/100/120"), "fade/100/120")
+        self.assertEqual(self.instance.rule_validator("fade/1/120000"), "fade/1/120000")
+
+    def test_04_rule_validation_invalid(self):
+        # Should reject non-int rules
+        self.assertFalse(self.instance.rule_validator(True))
+        self.assertFalse(self.instance.rule_validator(None))
+        self.assertFalse(self.instance.rule_validator("string"))
+        self.assertFalse(self.instance.rule_validator([51]))
+        self.assertFalse(self.instance.rule_validator({51: 51}))
+        # Should reject integers less than min_bright or greater than max_bright
+        self.assertFalse(self.instance.rule_validator(0))
+        self.assertFalse(self.instance.rule_validator(-42))
+        self.assertFalse(self.instance.rule_validator("-42"))
+        self.assertFalse(self.instance.rule_validator(1337))
+        # Should reject fade rules with target less than min_bright or greater than max_bright
+        self.assertFalse(self.instance.rule_validator(["fade", "50", "1200"]))
+        self.assertFalse(self.instance.rule_validator("fade/2000/15"))
+        self.assertFalse(self.instance.rule_validator("fade/-512/600"))
+        self.assertFalse(self.instance.rule_validator("fade/512/-600"))
+        self.assertFalse(self.instance.rule_validator("fade/None/None"))
+        self.assertFalse(self.instance.rule_validator("fade/1023/None"))
+        self.assertFalse(self.instance.rule_validator("fade/None/120"))
+
+    def test_05_increment_invalid_rule(self):
         # Set non-integer rule
         self.instance.current_rule = 'disabled'
         # Attempt to increment, confirm error
@@ -46,7 +80,7 @@ class TestDimmableLight(unittest.TestCase):
             {"ERROR": "Unable to increment current rule (disabled)"}
         )
 
-    def test_04_increment_rule_out_of_range(self):
+    def test_06_increment_rule_out_of_range(self):
         # Set rule to max_bright
         self.instance.set_rule(100)
         # Increment should still return True
@@ -59,11 +93,11 @@ class TestDimmableLight(unittest.TestCase):
         self.assertTrue(self.instance.increment_rule(-1))
         self.assertEqual(self.instance.current_rule, 1)
 
-    def test_05_set_invalid_rule(self):
+    def test_07_set_invalid_rule(self):
         # Attempt to set rule exceeding max_bright, should return False
         self.assertFalse(self.instance.set_rule(999))
 
-    def test_06_set_rule_while_state_is_true(self):
+    def test_08_set_rule_while_state_is_true(self):
         # Change rule while device turned on, confirm send method called
         self.instance.state = True
         self.assertFalse(self.instance.send_method_called)
@@ -71,7 +105,35 @@ class TestDimmableLight(unittest.TestCase):
         self.assertTrue(self.instance.send_method_called)
         self.instance.send_method_called = False
 
-    def test_07_fade_rule_on_boot(self):
+    def test_09_rule_change_while_fading(self):
+        # Set starting brightness
+        self.instance.set_rule(50)
+        self.assertEqual(self.instance.current_rule, 50)
+
+        # Start fading DOWN, confirm started, skip a few steps, confirm still fading
+        self.instance.set_rule('fade/30/1800')
+        self.assertTrue(self.instance.fading)
+        self.instance.set_rule(40)
+        self.assertEqual(self.instance.current_rule, 40)
+        self.assertTrue(self.instance.fading)
+
+        # Increase brightness - fade should abort despite being between start and target
+        self.instance.set_rule(45)
+        self.assertFalse(self.instance.fading)
+
+        # Start fading UP, confirm started, skip a few steps, confirm still fading
+        self.instance.set_rule('fade/90/1800')
+        self.assertTrue(self.instance.fading)
+        self.instance.set_rule(75)
+        self.assertEqual(self.instance.current_rule, 75)
+        self.assertTrue(self.instance.fading)
+
+        # Decrease brightness - fade should abort despite being between start and target
+        self.instance.set_rule(70)
+        self.assertFalse(self.instance.fading)
+        SoftwareTimer.timer.cancel(f'{self.instance.name}_fade')
+
+    def test_10_fade_rule_on_boot(self):
         # Set rule to None, simulate first rule on boot
         self.instance.current_rule = None
         # Set fade rule, should immediately set current_rule to target
@@ -81,7 +143,7 @@ class TestDimmableLight(unittest.TestCase):
         self.assertFalse(self.instance.fading)
         self.assertTrue(f'{self.instance.name}_fade' not in str(SoftwareTimer.timer.schedule))
 
-    def test_08_start_fade_already_at_target(self):
+    def test_11_start_fade_already_at_target(self):
         # Attempt to fade to current_rule, should return immediately
         self.instance.current_rule = 100
         self.assertTrue(self.instance.set_rule('fade/100/3600'))
@@ -89,7 +151,7 @@ class TestDimmableLight(unittest.TestCase):
         self.assertFalse(self.instance.fading)
         self.assertTrue(f'{self.instance.name}_fade' not in str(SoftwareTimer.timer.schedule))
 
-    def test_09_start_fade_while_disabled(self):
+    def test_12_start_fade_while_disabled(self):
         # Attempt to fade to 100 while disabled
         self.instance.current_rule = 'disabled'
         self.assertTrue(self.instance.set_rule('fade/100/3600'))
@@ -98,7 +160,7 @@ class TestDimmableLight(unittest.TestCase):
         self.assertIn(f'{self.instance.name}_fade', str(SoftwareTimer.timer.schedule))
         SoftwareTimer.timer.cancel(f'{self.instance.name}_fade')
 
-    def test_10_fade_complete(self):
+    def test_13_fade_complete(self):
         # Simulate fade up in progress
         self.instance.fading = {
             "started": SoftwareTimer.timer.epoch_now(),
@@ -129,7 +191,7 @@ class TestDimmableLight(unittest.TestCase):
         self.assertFalse(self.instance.fading)
         self.assertFalse(self.instance.state)
 
-    def test_11_disable_while_fading(self):
+    def test_14_disable_while_fading(self):
         # Simulate fade in progress
         self.instance.fading = {
             "started": SoftwareTimer.timer.epoch_now(),
@@ -144,7 +206,7 @@ class TestDimmableLight(unittest.TestCase):
         self.assertFalse(self.instance.fading)
         self.instance.enable()
 
-    def test_12_fade_method(self):
+    def test_15_fade_method(self):
         # Simulate fading up to 50 in 1 second
         self.instance.set_rule(1)
         self.instance.fading = {
@@ -171,6 +233,7 @@ class TestDimmableLight(unittest.TestCase):
 
         # Set state to True (send method should be called when new rule set)
         self.instance.state = True
+        self.instance.send_method_called = False
         self.assertFalse(self.instance.send_method_called)
 
         # Wait for fade to complete, call method, confirm correct rule
@@ -202,3 +265,43 @@ class TestDimmableLight(unittest.TestCase):
 
         # Confirm timer exists in queue
         self.assertIn(f'{self.instance.name}_fade', str(SoftwareTimer.timer.schedule))
+
+    # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
+    # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
+    # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
+    def test_16_regression_invalid_default_rule(self):
+        # assertRaises fails for some reason, this approach seems reliable
+        try:
+            DimmableLight("device1", "device1", "DimmableLight", True, 50, "disabled", "1", "100")
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except AttributeError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
+
+        try:
+            DimmableLight("device1", "device1", "DimmableLight", True, 50, "enabled", "1", "100")
+            # Should not make it to this line, test failed
+            self.assertFalse(True)
+        except AttributeError:
+            # Should raise exception, test passed
+            self.assertTrue(True)
+
+    # Original issue: DimmableLight.set_rule contains a conditional to abort an in-progress fade if
+    # brightness is changed in the opposite direction. This is determined by checking if the new rule
+    # is greater/less than current_rule, with no type checking on the new rule. This resulted in a
+    # traceback when rule changed to a string (enabled, disabled) while fading.
+    # Should now skip conditional if new rule is non-integer.
+    def test_17_regression_rule_change_to_disabled_while_fading(self):
+        # Set starting brightness
+        self.instance.set_rule(50)
+        self.assertEqual(self.instance.current_rule, 50)
+
+        # Start fading DOWN, confirm started
+        self.instance.set_rule('fade/30/1800')
+        self.assertTrue(self.instance.fading)
+
+        # Change rule to disabled, confirm changed, confirm no longer fading
+        self.instance.set_rule('disabled')
+        self.assertEqual(self.instance.current_rule, 'disabled')
+        self.assertFalse(self.instance.fading)
