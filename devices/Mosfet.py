@@ -1,6 +1,6 @@
+import logging
 from machine import Pin
 from Device import Device
-import logging
 
 # Set name for module's log lines
 log = logging.getLogger("Mosfet")

@@ -1,6 +1,6 @@
+import logging
 import urequests
 import uasyncio as asyncio
-import logging
 from Sensor import Sensor
 
 # Set name for module's log lines

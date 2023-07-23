@@ -1,10 +1,9 @@
-from __future__ import print_function
-import sys
+import io
 import os
+import sys
+import json
 import struct
 import socket
-import io
-import json
 
 handshake_message = b"""\
 GET / HTTP/1.1\r

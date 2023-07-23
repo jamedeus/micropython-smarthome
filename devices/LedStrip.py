@@ -1,6 +1,6 @@
-from machine import Pin, PWM
-import logging
 import time
+import logging
+from machine import Pin, PWM
 from DimmableLight import DimmableLight
 
 # Set name for module's log lines

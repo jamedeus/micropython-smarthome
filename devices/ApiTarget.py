@@ -1,7 +1,7 @@
-import logging
-from Device import Device
-import uasyncio as asyncio
 import json
+import logging
+import uasyncio as asyncio
+from Device import Device
 
 # Set name for module's log lines
 log = logging.getLogger("ApiTarget")

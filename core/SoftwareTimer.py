@@ -1,5 +1,5 @@
-from machine import Timer
 import time
+from machine import Timer
 import uasyncio as asyncio
 
 

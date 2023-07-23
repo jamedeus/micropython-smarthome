@@ -1,8 +1,8 @@
+import logging
 from machine import Pin, SoftI2C
 import si7021
-import logging
-from Sensor import Sensor
 import SoftwareTimer
+from Sensor import Sensor
 
 # Set name for module's log lines
 log = logging.getLogger("Thermostat")

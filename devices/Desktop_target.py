@@ -1,7 +1,7 @@
 import logging
 import urequests
-from Device import Device
 import SoftwareTimer
+from Device import Device
 
 # Set name for module's log lines
 log = logging.getLogger("Desktop_target")

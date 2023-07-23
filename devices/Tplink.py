@@ -1,6 +1,6 @@
 import socket
-from struct import pack
 import logging
+from struct import pack
 from DimmableLight import DimmableLight
 
 # Set name for module's log lines

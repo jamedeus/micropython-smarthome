@@ -1,8 +1,8 @@
 # This module can be used with reed switches, toggle switches, push buttons, etc.
 # Connect the switch with a ohm resister in series between an input pin and 3.3v pin
 
-from machine import Pin
 import logging
+from machine import Pin
 from Sensor import Sensor
 
 # Set name for module's log lines

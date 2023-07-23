@@ -1,7 +1,7 @@
-from machine import Pin
 import logging
-from Sensor import Sensor
+from machine import Pin
 import SoftwareTimer
+from Sensor import Sensor
 
 # Set name for module's log lines
 log = logging.getLogger("MotionSensor")

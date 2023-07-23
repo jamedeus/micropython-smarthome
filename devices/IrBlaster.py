@@ -1,7 +1,7 @@
-from ir_tx import Player
-from machine import Pin
 import time
 import logging
+from machine import Pin
+from ir_tx import Player
 
 # Set name for module's log lines
 log = logging.getLogger("IrBlaster")
