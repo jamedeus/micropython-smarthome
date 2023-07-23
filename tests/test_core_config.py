@@ -140,6 +140,10 @@ class TestConfig(unittest.TestCase):
         # Confirm config.schedule populated
         self.assertEqual(self.config.schedule, {'device1': {'sunrise': 0, 'sunset': 32}, 'sensor1': {}})
 
+        # Should not be able to call instantiate_peripherals again
+        with self.assertRaises(RuntimeError):
+            self.config.instantiate_peripherals()
+
     def test_04_build_queue(self):
         # Run build_queue method
         self.config.build_queue()
@@ -221,7 +225,14 @@ class TestConfig(unittest.TestCase):
         # Should return dict of current status info
         self.assertEqual(type(self.config.get_status()), dict)
 
-    def test_09_rebuilding_queue(self):
+    def test_09_reload_schedule_rules_method(self):
+        # Confirm starting condition
+        self.assertFalse(self.config.reload_rules)
+        # Call method, should now be True
+        self.config.reload_schedule_rules(None)
+        self.assertTrue(self.config.reload_rules)
+
+    def test_10_rebuilding_queue(self):
         # Get current rule queue before rebuilding
         device_before = self.config.devices[0].rule_queue
         sensor_before = self.config.sensors[0].rule_queue
@@ -232,12 +243,12 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(device_before, self.config.devices[0].rule_queue)
         self.assertEqual(sensor_before, self.config.sensors[0].rule_queue)
 
-    def test_10_default_rule(self):
+    def test_11_default_rule(self):
         # Regression test for sensor with no schedule rules receiving default_rule of last device/sensor in config
         self.assertEqual(self.config.sensors[0].current_rule, 5)
         self.assertEqual(self.config.sensors[0].scheduled_rule, 5)
 
-    def test_11_instantiate_hardware_errors(self):
+    def test_12_instantiate_hardware_errors(self):
         # Should raise ValueError when attempting to instantiate unknown type
         # assertRaises fails for some reason, this approach seems reliable
         try:
@@ -264,8 +275,39 @@ class TestConfig(unittest.TestCase):
             # Should raise exception, test passed
             self.assertTrue(True)
 
+    def test_13_invalid_types_in_config(self):
+        # Undo instantiate_peripherals
+        self.config = reset_test_config(self.config)
+
+        # Add device and sensor configs with invalid _type
+        self.config.sensor_configs = {
+            "sensor1": {
+                "_type": "fake",
+                "nickname": "sensor1",
+                "default_rule": "enabled",
+                "schedule": {},
+                "targets": [
+                    "device1"
+                ]
+            }
+        }
+        self.config.device_configs = {
+            "device1": {
+                "_type": "invalid",
+                "nickname": "device1",
+                "default_rule": "enabled",
+                "schedule": {}
+            }
+        }
+        self.config.instantiate_peripherals()
+        self.config.build_queue()
+
+        # Confirm neither instance instantiated
+        self.assertEqual(len(self.config.devices), 0)
+        self.assertEqual(len(self.config.sensors), 0)
+
     # Confirm device current_rule is set to schedule_rule when valid
-    def test_12_valid_scheduled_rule(self):
+    def test_14_valid_scheduled_rule(self):
         # Undo instantiate_peripherals
         self.config = reset_test_config(self.config)
 
@@ -292,7 +334,7 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(self.config.devices[0].enabled)
 
     # Confirm device current_rule falls back to default_rule when scheduled invalid
-    def test_13_invalid_scheduled_rule_valid_default_rule(self):
+    def test_15_invalid_scheduled_rule_valid_default_rule(self):
         # Undo instantiate_peripherals
         self.config = reset_test_config(self.config)
 
@@ -309,7 +351,8 @@ class TestConfig(unittest.TestCase):
                 'min_bright': 0,
                 'max_bright': 1023,
                 'schedule': {
-                    '10:00': '9999'
+                    '10:00': '9999',
+                    'later': '999'
                 }
             }
         }
@@ -323,7 +366,7 @@ class TestConfig(unittest.TestCase):
 
     # Confirm handles devices with all rules invalid by disabling and
     # setting "disabled" for current, scheduled, and default rule
-    def test_14_all_invalid_rules(self):
+    def test_16_all_invalid_rules(self):
         # Undo instantiate_peripherals
         self.config = reset_test_config(self.config)
 
@@ -350,7 +393,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(self.config.devices[0].default_rule, 'disabled')
 
     # Confirm devices with no schedule rules fall back to default_rule
-    def test_15_no_schedule_rules(self):
+    def test_17_no_schedule_rules(self):
         # Undo instantiate_peripherals
         self.config = reset_test_config(self.config)
 
@@ -376,7 +419,7 @@ class TestConfig(unittest.TestCase):
 
     # Confirm handles sensor with no schedule rules and invalid default_rule by
     # disabling and setting "disabled" for current, schedule and default rules
-    def test_16_no_schedule_rules_invalid_default_rule(self):
+    def test_18_no_schedule_rules_invalid_default_rule(self):
         # Undo instantiate_peripherals
         self.config = reset_test_config(self.config)
 
@@ -405,7 +448,7 @@ class TestConfig(unittest.TestCase):
     # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
-    def test_17_regression_instantiate_with_invalid_default_rule(self):
+    def test_19_regression_instantiate_with_invalid_default_rule(self):
         # Undo instantiate_peripherals
         self.config = reset_test_config(self.config)
 
@@ -458,7 +501,7 @@ class TestConfig(unittest.TestCase):
     # Original bug: Some sensor types would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
-    def test_18_regression_instantiate_with_invalid_default_rule_sensor(self):
+    def test_20_regression_instantiate_with_invalid_default_rule_sensor(self):
         # Undo instantiate_peripherals
         self.config = reset_test_config(self.config)
 
@@ -486,7 +529,7 @@ class TestConfig(unittest.TestCase):
     # config parameters (including target ID list), then replaced instance.targets with a list of
     # device instances. Desktop_trigger __init__ expects targets list to contain device instances
     # and checks their _type, raising an exception when the list contained strings.
-    def test_19_regression_instantiate_with_desktop_trigger(self):
+    def test_21_regression_instantiate_with_desktop_trigger(self):
         # Undo instantiate_peripherals
         self.config = reset_test_config(self.config)
 

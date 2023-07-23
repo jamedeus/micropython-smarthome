@@ -148,7 +148,7 @@ class Config():
     def instantiate_peripherals(self):
         # Prevent calling again after setup complete
         if "devices" in self.__dict__ or "sensors" in self.__dict__:
-            return False
+            raise RuntimeError("Peripherals already instantiated")
 
         # Create lists for device, sensor instances
         self.devices = []
