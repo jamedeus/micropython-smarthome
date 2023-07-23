@@ -155,8 +155,8 @@ class TestDimmableLight(unittest.TestCase):
         # Attempt to fade to 100 while disabled
         self.instance.current_rule = 'disabled'
         self.assertTrue(self.instance.set_rule('fade/100/3600'))
-        # Confirm timer created, starting brightness = 0
-        self.assertEqual(self.instance.fading['starting_brightness'], 0)
+        # Confirm timer created, starting brightness = min_bright
+        self.assertEqual(self.instance.fading['starting_brightness'], self.instance.min_bright)
         self.assertIn(f'{self.instance.name}_fade', str(SoftwareTimer.timer.schedule))
         SoftwareTimer.timer.cancel(f'{self.instance.name}_fade')
 
@@ -305,3 +305,20 @@ class TestDimmableLight(unittest.TestCase):
         self.instance.set_rule('disabled')
         self.assertEqual(self.instance.current_rule, 'disabled')
         self.assertFalse(self.instance.fading)
+
+    # Original issue: DimmableLight.start_fade handled current_rule == "disabled" by setting starting
+    # point to min_bright, but did not change current_rule. This resulted in fade_complete canceling
+    # the fade when the first step ran due to non-integer current_rule. Now calls set_rule(min_bright).
+    def test_18_regression_start_fade_while_rule_is_disabled(self):
+        # Set current_rule to disabled
+        self.instance.set_rule('disabled')
+
+        # Start fade to max brightness in 10 minutes, confirm correct fade dict and current_rule
+        self.instance.set_rule('fade/100/600')
+        self.assertTrue(isinstance(self.instance.fading, dict))
+        self.assertEqual(self.instance.fading['starting_brightness'], self.instance.min_bright)
+        self.assertEqual(self.instance.current_rule, self.instance.min_bright)
+
+        # Run first step of fade, confirm fade is not canceled
+        self.instance.fade()
+        self.assertTrue(isinstance(self.instance.fading, dict))

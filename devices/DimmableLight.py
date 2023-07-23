@@ -123,26 +123,25 @@ class DimmableLight(Device):
         print(f"{self.name}: fading to {target} in {period} seconds")
         log.info(f"{self.name}: fading to {target} in {period} seconds")
 
-        if not self.current_rule == "disabled":
-            # Get current brightness
-            brightness = int(self.current_rule)
-        else:
-            # Default to 0 if device disabled when fade starts
-            brightness = 0
+        # Default to min_bright if device disabled when fade starts
+        if self.current_rule == "disabled":
+            self.set_rule(self.min_bright)
 
-        if int(target) == brightness:
+        if int(target) == self.current_rule:
             print("Already at target brightness, skipping fade")
             log.info("Already at target brightness, skipping fade")
             return True
 
         # Find fade direction, get number of steps, period between steps
-        if int(target) > brightness:
-            steps = int(target) - brightness
+        if int(target) > self.current_rule:
+            steps = int(target) - self.current_rule
             fade_period = int(period) / steps * 1000
+            fade_down = False
 
-        elif int(target) < brightness:
-            steps = brightness - int(target)
+        elif int(target) < self.current_rule:
+            steps = self.current_rule - int(target)
             fade_period = int(period) / steps * 1000
+            fade_down = True
 
         # Ensure device is enabled
         self.enabled = True
@@ -153,16 +152,11 @@ class DimmableLight(Device):
         # Store fade parameters in dict, used by fade method below
         self.fading = {
             "started": SoftwareTimer.timer.epoch_now(),
-            "starting_brightness": brightness,
+            "starting_brightness": self.current_rule,
             "target": int(target),
-            "period": fade_period
+            "period": fade_period,
+            "down": fade_down
         }
-
-        # Store fade direction, determines if fade aborts when user changes brightness
-        if self.fading["target"] < self.fading["starting_brightness"]:
-            self.fading["down"] = True
-        else:
-            self.fading["down"] = False
 
         # Return starting point (will be set as current rule by device.set_rule)
         return True
