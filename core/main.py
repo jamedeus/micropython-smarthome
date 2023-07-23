@@ -60,9 +60,6 @@ def start_loop():
     # Disk_monitor deletes log when size limit exceeded, reboots when new code uploaded
     asyncio.create_task(disk_monitor())
 
-    # Config loop rebuilds schedule rules when config_timer expires around 3am every day
-    asyncio.create_task(config.loop())
-
     # Start API server, await requests
     asyncio.create_task(app.run())
 

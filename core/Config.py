@@ -4,7 +4,6 @@ import time
 import logging
 import network
 import urequests
-import uasyncio as asyncio
 from random import randrange
 from machine import Pin, Timer, RTC
 import SoftwareTimer
@@ -92,6 +91,9 @@ class Config():
         self.schedule_keywords = {'sunrise': '00:00', 'sunset': '00:00'}
         self.schedule_keywords.update(conf["metadata"]["schedule_keywords"])
 
+        # Stores timestamp of next schedule rule reload (between 3 and 4 am)
+        self.reload_time = ""
+
         # Load GPS coordinates (used for timezone + sunrise/sunset times, not shown in frontend)
         try:
             self.gps = conf["metadata"]["gps"]
@@ -125,23 +127,26 @@ class Config():
         log.info("Finished instantiating config")
 
     def start_reload_schedule_rules_timer(self):
-        # Toggled by callback around 3:00am
-        # Loop checks this and rebuilds schedule rule queue, re-runs API calls when True
-        self.reload_rules = False
-
-        # Get epoch time of 3:00 am tomorrow
+        # Get current epoch time + time tuple
         epoch = time.mktime(time.localtime())
         now = time.localtime(epoch)
+
+        # Get epoch time of 3:00 am tomorrow
         # Only needed to increment day, other parameters roll over correctly in testing
         # Timezone set to none (final arg), required for compatibility with cpython test environment
-        next_reset = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7], -1))
+        next_reload = time.mktime((now[0], now[1], now[2] + 1, 3, 0, 0, now[6], now[7], -1))
 
-        # Reload schedule rules at random time between 3-4 am (prevent multiple nodes hitting API at same second)
+        # Calculate miliseconds until reload, add random 0-60 minute delay to stagger API calls
         adjust = randrange(3600)
-        reset_epoch = (next_reset - epoch + adjust) * 1000
-        reset_timestamp = f"{time.localtime(next_reset + adjust)[3]}:{time.localtime(next_reset + adjust)[4]}"
-        log.debug(f"Reload_schedule_rules callback scheduled for {reset_timestamp} am")
-        config_timer.init(period=reset_epoch, mode=Timer.ONE_SHOT, callback=self.reload_schedule_rules)
+        ms_until_reload = (next_reload - epoch + adjust) * 1000
+
+        # Get HH:MM timestamp of next reload, write to log
+        self.reload_time = f"{time.localtime(next_reload + adjust)[3]}:{time.localtime(next_reload + adjust)[4]}"
+        log.debug(f"Reload_schedule_rules callback scheduled for {self.reload_time} am")
+        print(f"Reload_schedule_rules callback scheduled for {self.reload_time} am")
+
+        # Add timer to queue
+        SoftwareTimer.timer.create(ms_until_reload, self.reload_schedule_rules, "reload_schedule_rules")
 
     # Populates self.devices and self.sensors by instantiating configs from self.device_configs
     # and self.sensor_configs, can only be called once
@@ -277,6 +282,7 @@ class Config():
         status_dict["metadata"]["floor"] = self.floor
         status_dict["metadata"]["location"] = self.location
         status_dict["metadata"]["schedule_keywords"] = self.schedule_keywords
+        status_dict["metadata"]["next_reload"] = self.reload_time
         if "ir_blaster" in self.__dict__:
             status_dict["metadata"]["ir_blaster"] = True
         else:
@@ -562,27 +568,14 @@ class Config():
             return False
 
     # Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)
-    def reload_schedule_rules(self, t):
-        self.reload_rules = True
+    def reload_schedule_rules(self):
+        print("Reloading schedule rules...")
+        log.info("Callback: Reloading schedule rules")
+        # Get up-to-date sunrise/sunset, set system clock (in case of daylight savings)
+        self.api_calls()
 
-    # Loop re-builds schedule rule queue when config_timer expires
-    async def loop(self):
-        while True:
-            # Set to True by timer every night between 3-4 am
-            if self.reload_rules:
-                print("Reloading schedule rules...")
-                log.info("3:00 am callback, reloading schedule rules...")
-                # Get up-to-date sunrise/sunset, set system clock (in case of daylight savings)
-                self.api_calls()
+        # Create timers for all schedule rules expiring in next 24 hours
+        self.build_queue()
 
-                # Create timers for all schedule rules expiring in next 24 hours
-                self.build_queue()
-
-                self.reload_rules = False
-
-                # Set timer to run again tomorrow between 3-4 am
-                self.start_reload_schedule_rules_timer()
-
-            else:
-                # Check every minute
-                await asyncio.sleep(60)
+        # Set timer to run again tomorrow between 3-4 am
+        self.start_reload_schedule_rules_timer()
