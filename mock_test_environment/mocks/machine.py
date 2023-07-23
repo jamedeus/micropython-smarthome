@@ -92,11 +92,14 @@ class Timer:
 
     def value(self):
         # Return remaining time in ms
-        if self.start_time is not None:
-            elapsed_time = time.time() - self.start_time
-            remaining_time = self.period - elapsed_time
-            return max(0, remaining_time) * 1000
-        else:
+        try:
+            if self.start_time is not None:
+                elapsed_time = time.time() - self.start_time
+                remaining_time = self.period - elapsed_time
+                return max(0, remaining_time) * 1000
+            else:
+                return 0
+        except AttributeError:
             return 0
 
 
