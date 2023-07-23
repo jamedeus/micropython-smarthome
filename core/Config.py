@@ -1,16 +1,16 @@
-import network
-import time
-from machine import Pin, Timer, RTC
-import urequests
-from random import randrange
-import uasyncio as asyncio
-import logging
-import gc
 import re
+import gc
+import time
+import logging
+import network
+import urequests
+import uasyncio as asyncio
+from random import randrange
+from machine import Pin, Timer, RTC
 import SoftwareTimer
 from Group import Group
-from util import is_device, is_sensor, is_device_or_sensor, reboot
 from api_keys import ipgeo_key
+from util import is_device, is_sensor, is_device_or_sensor, reboot
 
 # Set name for module's log lines
 log = logging.getLogger("Config")

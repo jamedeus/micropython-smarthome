@@ -2,9 +2,9 @@ import gc
 import webrepl
 import logging
 import uasyncio as asyncio
+from Api import app
 from Config import Config
 from SoftwareTimer import timer
-from Api import app
 from util import disk_monitor, read_config_from_disk
 
 print("--------Booted--------")

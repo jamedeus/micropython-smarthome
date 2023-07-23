@@ -1,11 +1,11 @@
-import json
-import uasyncio as asyncio
-import logging
-import gc
-import SoftwareTimer
 import re
-from functools import wraps
+import gc
+import json
+import logging
+import uasyncio as asyncio
 from uasyncio import Lock
+from functools import wraps
+import SoftwareTimer
 from util import (
     is_device,
     is_sensor,
