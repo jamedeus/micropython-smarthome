@@ -24,5 +24,8 @@ class WLAN:
     def connect(self, ssid, password):
         self.connected = True
 
+    def disconnect(self):
+        self.connected = False
+
     def ifconfig(*args):
         return ('127.0.0.1', '255.255.255.0', '192.168.1.1', '192.168.1.100')
