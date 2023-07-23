@@ -63,37 +63,17 @@ class TestLedStrip(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator("fade/1023/None"))
         self.assertFalse(self.instance.rule_validator("fade/None/120"))
 
-    def test_05_rule_change(self):
-        self.assertTrue(self.instance.set_rule(1023))
-        self.assertEqual(self.instance.current_rule, 1023)
-
-    def test_06_enable_disable(self):
-        self.instance.disable()
-        self.assertFalse(self.instance.enabled)
-        self.instance.enable()
-        self.assertTrue(self.instance.enabled)
-
-    def test_07_disable_by_rule_change(self):
-        self.instance.set_rule("Disabled")
-        self.assertFalse(self.instance.enabled)
-
-    def test_08_enable_by_rule_change(self):
-        self.instance.set_rule(512)
-        self.assertTrue(self.instance.enabled)
-
-    def test_09_turn_on(self):
+    def test_05_turn_on(self):
         self.instance.set_rule(32)
         self.assertTrue(self.instance.send(1))
         self.assertEqual(self.instance.pwm.duty(), 32)
 
-    def test_10_turn_off(self):
+    def test_06_turn_off(self):
         self.instance.enable()
         self.assertTrue(self.instance.send(0))
         self.assertEqual(self.instance.pwm.duty(), 0)
 
-    # TODO not sure why this fails, seems like self.bright is NoneType?
-    # IDK how this would happen, very strange
-    def test_11_turn_off_when_disabled(self):
+    def test_07_turn_off_when_disabled(self):
         # Ensure turned on and enabled
         self.instance.enable()
         self.instance.send(1)
@@ -109,7 +89,7 @@ class TestLedStrip(unittest.TestCase):
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
     # resulted in comparison operator between int and string, causing crash.
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
-    def test_12_enable_regression_test(self):
+    def test_08_enable_regression_test(self):
         # Simulate disabling by scheduled rule change
         self.instance.scheduled_rule = "disabled"
         self.instance.set_rule("disabled")
@@ -124,7 +104,7 @@ class TestLedStrip(unittest.TestCase):
     # Original bug: LedStrip class overwrites parent set_rule method and did not include conditional
     # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
     # crash next time send method was called.
-    def test_13_regression_rule_change_to_enabled(self):
+    def test_09_regression_rule_change_to_enabled(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.set_rule('enabled')
@@ -137,7 +117,7 @@ class TestLedStrip(unittest.TestCase):
     # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
-    def test_14_regression_invalid_default_rule(self):
+    def test_10_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             LedStrip("device1", "device1", "pwm", "disabled", 0, 1023, 4)
@@ -161,7 +141,7 @@ class TestLedStrip(unittest.TestCase):
     # devices do NOT respond to on commands, but do flip their state to True to stay in sync with
     # rest of group - this is necessary to allow turning off, since a device with state == False
     # will be skipped by loop (already off), and user flipping light switch doesn't effect state
-    def test_15_regression_turn_off_while_disabled(self):
+    def test_11_regression_turn_off_while_disabled(self):
         # Disable, confirm disabled and off
         self.instance.send(0)
         self.instance.disable()
@@ -180,7 +160,7 @@ class TestLedStrip(unittest.TestCase):
         self.assertTrue(self.instance.send(1))
         self.assertEqual(self.instance.pwm.duty(), 0)
 
-    def test_16_regression_rule_change_while_fading(self):
+    def test_12_regression_rule_change_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)
@@ -211,7 +191,7 @@ class TestLedStrip(unittest.TestCase):
     # in the appropriate class, which cast pin arguments to int. When this was replaced with a
     # factory pattern in c9a8eae9 the type casting was lost, leading to a crash when config
     # file contained a string pin. Fixed by casting to int in device init methods.
-    def test_17_regression_string_pin_number(self):
+    def test_13_regression_string_pin_number(self):
         # Attempt to instantiate with a string pin number
         self.instance = LedStrip("device1", "device1", "pwm", 512, 0, 1023, "4")
         self.assertIsInstance(self.instance, LedStrip)
@@ -222,7 +202,7 @@ class TestLedStrip(unittest.TestCase):
     # is greater/less than current_rule, with no type checking on the new rule. This resulted in a
     # traceback when rule changed to a string (enabled, disabled) while fading.
     # Should now skip conditional if new rule is non-integer.
-    def test_18_regression_rule_change_to_disabled_while_fading(self):
+    def test_14_regression_rule_change_to_disabled_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)

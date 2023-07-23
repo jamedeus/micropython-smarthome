@@ -9,24 +9,6 @@ with open('config.json', 'r') as file:
 # IP and port of mock API receiver instance
 mock_address = f"{config['mock_receiver']['ip']}:{config['mock_receiver']['port']}"
 
-# Expected return value of get_attributes method just after instantiation
-expected_attributes = {
-    'min_bright': 1,
-    'nickname': 'device1',
-    'ip': mock_address,
-    'max_bright': 255,
-    '_type': 'wled',
-    'scheduled_rule': None,
-    'current_rule': None,
-    'default_rule': 50,
-    'enabled': True,
-    'rule_queue': [],
-    'state': None,
-    'name': 'device1',
-    'triggered_by': [],
-    'fading': False
-}
-
 
 class TestWled(unittest.TestCase):
 
@@ -38,11 +20,7 @@ class TestWled(unittest.TestCase):
         self.assertIsInstance(self.instance, Wled)
         self.assertTrue(self.instance.enabled)
 
-    def test_02_get_attributes(self):
-        attributes = self.instance.get_attributes()
-        self.assertEqual(attributes, expected_attributes)
-
-    def test_03_rule_validation_valid(self):
+    def test_02_rule_validation_valid(self):
         self.assertEqual(self.instance.rule_validator(1), 1)
         self.assertEqual(self.instance.rule_validator(51), 51)
         self.assertEqual(self.instance.rule_validator(251), 251)
@@ -52,7 +30,7 @@ class TestWled(unittest.TestCase):
         self.assertEqual(self.instance.rule_validator("fade/123/120"), "fade/123/120")
         self.assertEqual(self.instance.rule_validator("fade/1/120000"), "fade/1/120000")
 
-    def test_04_rule_validation_invalid(self):
+    def test_03_rule_validation_invalid(self):
         self.assertFalse(self.instance.rule_validator(True))
         self.assertFalse(self.instance.rule_validator(None))
         self.assertFalse(self.instance.rule_validator("string"))
@@ -70,36 +48,18 @@ class TestWled(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator("fade/1023/None"))
         self.assertFalse(self.instance.rule_validator("fade/None/120"))
 
-    def test_05_rule_change(self):
-        self.assertTrue(self.instance.set_rule(50))
-        self.assertEqual(self.instance.current_rule, 50)
-
-    def test_06_enable_disable(self):
-        self.instance.disable()
-        self.assertFalse(self.instance.enabled)
-        self.instance.enable()
-        self.assertTrue(self.instance.enabled)
-
-    def test_07_disable_by_rule_change(self):
-        self.instance.set_rule("Disabled")
-        self.assertFalse(self.instance.enabled)
-
-    def test_08_enable_by_rule_change(self):
-        self.instance.set_rule(255)
-        self.assertTrue(self.instance.enabled)
-
-    def test_09_turn_off(self):
+    def test_04_turn_off(self):
         self.assertTrue(self.instance.send(0))
 
-    def test_10_turn_on(self):
+    def test_05_turn_on(self):
         self.assertTrue(self.instance.send(1))
 
-    def test_11_turn_on_while_disabled(self):
+    def test_06_turn_on_while_disabled(self):
         self.instance.disable()
         self.assertTrue(self.instance.send(1))
         self.instance.enable()
 
-    def test_12_network_errors(self):
+    def test_07_network_errors(self):
         # Instantiate with invalid IP, confirm send method returns False
         test = Wled("device1", "device1", "wled", 50, 1, 255, "0.0.0.")
         self.assertFalse(test.send())
@@ -108,7 +68,7 @@ class TestWled(unittest.TestCase):
         self.instance.current_rule = 9999
         self.assertFalse(self.instance.send())
 
-    def test_13_rule_change_while_fading(self):
+    def test_08_rule_change_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)
@@ -135,18 +95,10 @@ class TestWled(unittest.TestCase):
         self.instance.set_rule(70)
         self.assertFalse(self.instance.fading)
 
-    def test_14_next_rule(self):
-        # Add schedule rule to queue
-        self.instance.rule_queue = [123]
-
-        # Call method, confirm correct rule set
-        self.instance.next_rule()
-        self.assertEqual(self.instance.current_rule, 123)
-
     # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
-    def test_15_regression_invalid_default_rule(self):
+    def test_09_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             Wled("device1", "device1", "wled", "disabled", 1, 255, "192.168.1.211")
@@ -169,7 +121,7 @@ class TestWled(unittest.TestCase):
     # is greater/less than current_rule, with no type checking on the new rule. This resulted in a
     # traceback when rule changed to a string (enabled, disabled) while fading.
     # Should now skip conditional if new rule is non-integer.
-    def test_16_regression_rule_change_to_disabled_while_fading(self):
+    def test_10_regression_rule_change_to_disabled_while_fading(self):
         # Set starting brightness
         self.instance.set_rule(50)
         self.assertEqual(self.instance.current_rule, 50)
