@@ -30,11 +30,6 @@ class Device():
         # Examples: Config file contains invalid rules, enabled while both current + scheduled rules are "disabled"
         self.default_rule = default_rule
 
-        # Prevent instantiating with invalid default_rule
-        if self._type in ("dimmer", "bulb", "pwm", "api-target", "wled") and str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
-            raise AttributeError
-
         # Will hold sequential schedule rules so they can be quickly changed when interrupt runs
         self.rule_queue = []
 
@@ -94,20 +89,8 @@ class Device():
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
             print(f"{self.name}: Rule changed to {self.current_rule}")
 
-            # Rule just changed to disabled
-            if self.current_rule == "disabled":
-                self.send(0)
-                self.disable()
-            # Rule just changed to enabled, replace with usable rule (default) and enable
-            elif self.current_rule == "enabled":
-                self.current_rule = self.default_rule
-                self.enable()
-            # Device was previously disabled, enable now that rule has changed
-            elif self.enabled is False:
-                self.enable()
-            # Device is currently on, run send so new rule can take effect
-            elif self.state is True:
-                self.send(1)
+            # Update instance attributes to reflect new rule
+            self.apply_new_rule()
 
             return True
 
@@ -115,6 +98,25 @@ class Device():
             log.error(f"{self.name}: Failed to change rule to {rule}")
             print(f"{self.name}: Failed to change rule to {rule}")
             return False
+
+    # Called by set_rule after current_rule changed
+    # Updates instance attributes to reflect new rule
+    # Enable/disable, prevent unusable rules, call send method so new rule takes effect
+    def apply_new_rule(self):
+        # Rule just changed to disabled, turn off and disable
+        if self.current_rule == "disabled":
+            self.send(0)
+            self.disable()
+        # Rule just changed to enabled, replace with usable rule (default) and enable
+        elif self.current_rule == "enabled":
+            self.current_rule = self.default_rule
+            self.enable()
+        # Device was previously disabled, enable now that rule has changed
+        elif self.enabled is False:
+            self.enable()
+        # Device is currently on, run send so new rule can take effect
+        elif self.state is True:
+            self.send(1)
 
     def next_rule(self):
         log.debug(f"{self.name}: Scheduled rule change")

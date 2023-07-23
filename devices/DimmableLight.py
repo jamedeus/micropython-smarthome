@@ -13,11 +13,15 @@ class DimmableLight(Device):
         self.min_bright = int(min_bright)
         self.max_bright = int(max_bright)
 
-        if int(self.default_rule) > self.max_bright or int(self.default_rule) < self.min_bright:
-            raise AttributeError
-
         # Store parameters in dict while fade in progress
         self.fading = False
+
+        # Prevent instantiating with invalid default_rule
+        if str(self.default_rule).lower() in ("enabled", "disabled"):
+            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            raise AttributeError
+        elif int(self.default_rule) > self.max_bright or int(self.default_rule) < self.min_bright:
+            raise AttributeError
 
     def set_rule(self, rule):
         # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
@@ -46,20 +50,8 @@ class DimmableLight(Device):
             # Abort fade if new rule exceeded target
             self.fade_complete()
 
-            # Rule just changed to disabled
-            if self.current_rule == "disabled":
-                self.send(0)
-                self.disable()
-            # Rule just changed to enabled, replace with usable rule (default) and enable
-            elif self.current_rule == "enabled":
-                self.current_rule = self.default_rule
-                self.enable()
-            # Device was previously disabled, enable now that rule has changed
-            elif self.enabled is False:
-                self.enable()
-            # Device is currently on, run send so new rule can take effect
-            elif self.state is True:
-                self.send(1)
+            # Update instance attributes to reflect new rule
+            self.apply_new_rule()
 
             return True
 
@@ -162,9 +154,7 @@ class DimmableLight(Device):
         self.fading = {
             "started": SoftwareTimer.timer.epoch_now(),
             "starting_brightness": brightness,
-            "target": int(
-                target
-            ),
+            "target": int(target),
             "period": fade_period
         }
 

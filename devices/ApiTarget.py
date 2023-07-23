@@ -14,6 +14,11 @@ class ApiTarget(Device):
         # IP that API command is sent to
         self.ip = ip
 
+        # Prevent instantiating with invalid default_rule
+        if str(self.default_rule).lower() in ("enabled", "disabled"):
+            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            raise AttributeError
+
     # Takes dict containing 2 entries named "on" and "off"
     # Both entries are lists containing a full API request
     # "on" sent when self.send(1) called, "off" when self.send(0) called
