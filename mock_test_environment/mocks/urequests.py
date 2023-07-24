@@ -10,7 +10,7 @@ class MockResponse(Response):
     def json(self):
         try:
             return super().json()
-        except JSONDecodeError:
+        except (OSError, JSONDecodeError):
             raise ValueError("Invalid JSON")
 
 
