@@ -8,11 +8,14 @@ log = logging.getLogger("ApiTarget")
 
 
 class ApiTarget(Device):
-    def __init__(self, name, nickname, _type, default_rule, ip):
+    def __init__(self, name, nickname, _type, default_rule, ip, port=8123):
         super().__init__(name, nickname, _type, True, None, default_rule)
 
         # IP that API command is sent to
         self.ip = ip
+
+        # Port defaults to 8123 except in unit tests
+        self.port = port
 
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
@@ -116,17 +119,39 @@ class ApiTarget(Device):
             print(f"{self.name}: Failed to change rule to {rule}")
             return False
 
+    # Takes payload and response, writes multiline log with indent for readability
+    def log_failed_request(self, msg, err):
+        log.error(f"""{self.name}: Send method failed
+        Payload: {msg}
+        Response: {err}""")
+        print(f"{self.name}: Send method failed with payload {msg}")
+        print(f"{self.name}: Response: {err}")
+
     async def request(self, msg):
-        reader, writer = await asyncio.open_connection(self.ip, 8123)
+        reader, writer = await asyncio.open_connection(self.ip, self.port)
         try:
             writer.write('{}\n'.format(json.dumps(msg)).encode())
             await writer.drain()
             # TODO change this limit?
-            await reader.read(1000)
+            res = await reader.read(1000)
+            res = json.loads(res)
         except OSError:
+            res = False
             pass
         writer.close()
         await writer.wait_closed()
+
+        # Return False if request failed
+        if not res:
+            return False
+
+        # Log payload + error and return False if response contains error
+        if "Error" in res.keys() or "ERROR" in res.keys():
+            self.log_failed_request(msg, res)
+            return False
+
+        # Return True if request successful
+        return True
 
     def send(self, state=1):
         # Refuse to turn disabled device on, but allow turning off
@@ -141,7 +166,9 @@ class ApiTarget(Device):
                 # If rule is ignore, do nothing
                 return True
 
-            asyncio.create_task(self.request(self.current_rule["on"]))
+            # Send request, return False if failed
+            if not asyncio.run(self.request(self.current_rule["on"])):
+                return False
 
             # Reset motion sensor to allow retriggering the remote motion sensor (restarts reset timer)
             # Retrigger when motion = True only restarts sensor's own resetTimer, but does not send another API command
@@ -155,7 +182,9 @@ class ApiTarget(Device):
                 # If rule is ignore, do nothing
                 return True
 
-            asyncio.create_task(self.request(self.current_rule["off"]))
+            # Send request, return False if failed
+            if not asyncio.run(self.request(self.current_rule["on"])):
+                return False
 
         # Tells main loop send succeeded
         return True
