@@ -6,6 +6,7 @@
 import os
 import json
 import socket
+import asyncio
 import threading
 from struct import pack
 from flask import Flask, request, Response
@@ -194,6 +195,70 @@ def run_error_flask():
     error_app.run(host="0.0.0.0", port=int(os.environ.get('ERROR_PORT')))
 
 
+# Mock API receiver for ApiTarget tests
+class MockApi:
+    def __init__(self, host='0.0.0.0', port=8123):
+        self.host = host
+        self.port = port
+
+        self.valid_endpoints = [
+            'enable',
+            'disable',
+            'reset_rule',
+            'condition_met',
+            'trigger_sensor',
+            'turn_on',
+            'turn_off',
+            'enable_in',
+            'disable_in',
+            'set_rule',
+            'ir_key'
+        ]
+
+    async def run(self):
+        self.server = await asyncio.start_server(self.run_client, host=self.host, port=self.port, backlog=5)
+        print('API: Awaiting client connection.\n')
+
+    async def run_client(self, sreader, swriter):
+        try:
+            # Read client request (1 second timeout)
+            req = await asyncio.wait_for(sreader.readline(), 1)
+
+            # Receives null when client closes write stream - break and close read stream
+            if not req:
+                raise OSError
+
+            # Parse endpoint and args
+            data = json.loads(req)
+            path = data[0]
+            args = data[1:]
+            print(f"MockApi: Received request, endpoint={path}, args={args}")
+
+            # Send arbitrary success message if endpoint is valid, ignore arg
+            if path in self.valid_endpoints:
+                swriter.write(json.dumps({path: "Success"}).encode())
+
+            # Otherwise send error
+            else:
+                swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
+            await swriter.drain()
+
+        except (OSError, asyncio.TimeoutError):
+            pass
+
+        # Close socket after client disconnects
+        swriter.close()
+        await swriter.wait_closed()
+
+
+def serve_api():
+    api = MockApi()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(api.run())
+    loop.run_forever()
+
+
 if __name__ == '__main__':
     # Start Flask app
     flask_thread = threading.Thread(target=run_flask)
@@ -207,3 +272,7 @@ if __name__ == '__main__':
     server = MockTpLink()
     tplink_thread = threading.Thread(target=server.serve)
     tplink_thread.start()
+
+    # Start mock Api receiver
+    api_thread = threading.Thread(target=serve_api)
+    api_thread.start()
