@@ -197,7 +197,7 @@ def run_error_flask():
 
 # Mock API receiver for ApiTarget tests
 class MockApi:
-    def __init__(self, host='0.0.0.0', port=8123):
+    def __init__(self, host='0.0.0.0', port=int(os.environ.get('API_PORT'))):
         self.host = host
         self.port = port
 

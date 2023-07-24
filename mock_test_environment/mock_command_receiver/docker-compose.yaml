@@ -5,6 +5,11 @@ services:
     container_name: smarthome_mock_receiver
     ports:
       - "8956:8956"
+      - "8955:8955"
+      - "8321:8321"
       - "9999:9999"
     environment:
       - PORT=8956
+      - ERROR_PORT=8955
+      - API_PORT=8321
+    restart: unless-stopped

@@ -1,5 +1,10 @@
+import json
 import unittest
 from ApiTarget import ApiTarget
+
+# Read mock API receiver address
+with open('config.json', 'r') as file:
+    config = json.load(file)
 
 default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
 
@@ -7,7 +12,8 @@ default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
 expected_attributes = {
     'triggered_by': [],
     'nickname': 'device1',
-    'ip': '192.168.1.223',
+    'ip': config['mock_receiver']['ip'],
+    'port': config['mock_receiver']['api_port'],
     'enabled': True,
     'rule_queue': [],
     'state': None,
@@ -32,13 +38,15 @@ class TestApiTarget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, "192.168.1.223")
+        ip = config["mock_receiver"]["ip"]
+        port = config['mock_receiver']['api_port']
+        cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, ip, port)
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
         self.assertIsInstance(self.instance, ApiTarget)
         self.assertTrue(self.instance.enabled)
-        self.assertEqual(self.instance.ip, "192.168.1.223")
+        self.assertEqual(self.instance.ip, config["mock_receiver"]["ip"])
 
     def test_02_get_attributes(self):
         # Confirm expected attributes dict just after instantiation
@@ -143,7 +151,7 @@ class TestApiTarget(unittest.TestCase):
     def test_09_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
-            ApiTarget("device1", "device1", "api-target", "disabled", "192.168.1.223")
+            ApiTarget("device1", "device1", "api-target", "disabled", config["mock_receiver"]["ip"])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
@@ -151,7 +159,7 @@ class TestApiTarget(unittest.TestCase):
             self.assertTrue(True)
 
         try:
-            ApiTarget("device1", "device1", "api-target", "enabled", "192.168.1.223")
+            ApiTarget("device1", "device1", "api-target", "enabled", config["mock_receiver"]["ip"])
             # Should not make it to this line, test failed
             self.assertFalse(True)
         except AttributeError:
