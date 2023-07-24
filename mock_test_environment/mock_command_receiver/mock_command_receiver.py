@@ -234,8 +234,15 @@ class MockApi:
             args = data[1:]
             print(f"MockApi: Received request, endpoint={path}, args={args}")
 
+            # Arbitrary keyword used to trigger OSError in ApiTarget.request
+            if path == "raise_exception":
+                print("Simulating connection failure")
+                swriter.close()
+                await swriter.wait_closed()
+                return
+
             # Send arbitrary success message if endpoint is valid, ignore arg
-            if path in self.valid_endpoints:
+            elif path in self.valid_endpoints:
                 swriter.write(json.dumps({path: "Success"}).encode())
 
             # Otherwise send error
