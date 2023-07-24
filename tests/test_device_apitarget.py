@@ -1,6 +1,7 @@
 import json
 import unittest
 from ApiTarget import ApiTarget
+from MotionSensor import MotionSensor
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
@@ -10,7 +11,7 @@ default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
-    'triggered_by': [],
+    'triggered_by': ['sensor1'],
     'nickname': 'device1',
     'ip': config['mock_receiver']['ip'],
     'port': config['mock_receiver']['api_port'],
@@ -38,9 +39,13 @@ class TestApiTarget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # Create test instance with IP and port from config file
         ip = config["mock_receiver"]["ip"]
         port = config['mock_receiver']['api_port']
         cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, ip, port)
+
+        # Add mock MotionSensor triggering test instance
+        cls.instance.triggered_by = [MotionSensor('sensor1', 'sensor1', 'pir', '5', [], 4)]
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
@@ -124,6 +129,11 @@ class TestApiTarget(unittest.TestCase):
         self.assertEqual(self.instance.current_rule, {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
         self.assertTrue(self.instance.enabled)
 
+        # Set state to True, change rule, send should be called
+        self.instance.state = True
+        self.instance.set_rule({'on': ['ignore'], 'off': ['ignore']})
+        self.instance.state = False
+
     def test_07_disable_by_rule_change(self):
         # Set rule to disabled, confirm rule changed, confirm disabled
         self.instance.enable()
@@ -132,10 +142,44 @@ class TestApiTarget(unittest.TestCase):
         self.assertEqual(self.instance.current_rule, "disabled")
         self.assertFalse(self.instance.enabled)
 
+    def test_08_send_while_disabled(self):
+        # Confirm disabled, send should return True without doing anything
+        self.assertFalse(self.instance.enabled)
+        self.assertTrue(self.instance.send(1))
+        self.instance.enable()
+
+    def test_09_send_while_rule_is_ignore(self):
+        # Set rules to ignore, send should return True without doing anything
+        self.instance.set_rule({'on': ['ignore'], 'off': ['ignore']})
+        self.assertTrue(self.instance.send(0))
+        self.assertTrue(self.instance.send(1))
+
+    def test_10_send_with_invalid_rule(self):
+        # Set invalid rules, send should return False
+        self.instance.current_rule = {'on': ['invalid'], 'off': ['invalid']}
+        self.assertFalse(self.instance.send(0))
+        self.assertFalse(self.instance.send(1))
+
+    def test_11_network_error_in_send(self):
+        # Set arbitrary rule that causes mock receiver to close connection early
+        self.instance.current_rule['on'] = ['raise_exception']
+        # Confirm failure detected
+        self.assertFalse(self.instance.send(1))
+
+    # When targetted by MotionSensor, ApiTarget should reset motion attribute after
+    # successful on command. This allows retriggering sensor to send command again
+    def test_12_send_retrigger_motion_sensor(self):
+        # Set mock sensor motion attribute to True, set valid rule
+        self.instance.triggered_by[0].motion = True
+        self.instance.current_rule = {'on': ['trigger_sensor', 'sensor1'], 'off': ['ignore']}
+        # Send, confirm motion flips to False
+        self.assertTrue(self.instance.send(1))
+        self.assertFalse(self.instance.triggered_by[0].motion)
+
     # Original bug: ApiTarget class overwrites parent set_rule method and did not include conditional
     # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
     # crash next time send method was called.
-    def test_08_rule_change_to_enabled_regression(self):
+    def test_13_regression_rule_change_to_enabled(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.set_rule('enabled')
@@ -148,7 +192,7 @@ class TestApiTarget(unittest.TestCase):
     # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
-    def test_09_regression_invalid_default_rule(self):
+    def test_14_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             ApiTarget("device1", "device1", "api-target", "disabled", config["mock_receiver"]["ip"])
@@ -167,7 +211,7 @@ class TestApiTarget(unittest.TestCase):
             self.assertTrue(True)
 
     # Original bug: Rejected turn_on, turn_off, reset_rule commands (all valid)
-    def test_10_regression_rejects_valid_rules(self):
+    def test_15_regression_rejects_valid_rules(self):
         # Should accept turn_on/turn_off targeting device
         self.assertTrue(self.instance.set_rule({'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']}))
         self.assertEqual(self.instance.current_rule, {'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']})

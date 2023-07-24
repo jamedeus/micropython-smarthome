@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import json
 import shutil
 import logging
 import asyncio
@@ -47,6 +48,11 @@ def set_mocks():
     logging.FileHandler = mock_logging.FileHandler
     logging.root = mock_logging.Logger()
     logging.root.handlers = [mock_logging.Handler()]
+
+    # Patch json.loads to raise OSError instead of JSONDecodeError
+    import mock_json
+    json.JSONDecoder = mock_json.MockDecoder
+    json.loads = mock_json.mock_loads
 
     # Create mock log file for clear_log test
     open('app.log', 'w')

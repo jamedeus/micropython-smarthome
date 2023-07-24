@@ -1,0 +1,42 @@
+import json
+
+
+# Subclass, catch JSONDecodeError, replace with OSError (match micropython behavior)
+class MockDecoder(json.JSONDecoder):
+    def decode(self, s, *args):
+        try:
+            return super().decode(s)
+        except json.JSONDecodeError:
+            raise OSError
+
+
+# Copied from source, JSONDecodeError replaced with OSError,
+# JSONDecoder replaced with MockDecoder (above)
+def mock_loads(s, *, cls=None, object_hook=None, parse_float=None,
+        parse_int=None, parse_constant=None, object_pairs_hook=None, **kw):
+    if isinstance(s, str):
+        if s.startswith('\ufeff'):
+            raise OSError("Unexpected UTF-8 BOM (decode using utf-8-sig)", s, 0)
+    else:
+        if not isinstance(s, (bytes, bytearray)):
+            raise TypeError(f'the JSON object must be str, bytes or bytearray, '
+                            f'not {s.__class__.__name__}')
+        s = s.decode(json.detect_encoding(s), 'surrogatepass')
+
+    if (cls is None and object_hook is None and
+            parse_int is None and parse_float is None and
+            parse_constant is None and object_pairs_hook is None and not kw):
+        return MockDecoder(object_hook=None, object_pairs_hook=None).decode(s)
+    if cls is None:
+        cls = MockDecoder
+    if object_hook is not None:
+        kw['object_hook'] = object_hook
+    if object_pairs_hook is not None:
+        kw['object_pairs_hook'] = object_pairs_hook
+    if parse_float is not None:
+        kw['parse_float'] = parse_float
+    if parse_int is not None:
+        kw['parse_int'] = parse_int
+    if parse_constant is not None:
+        kw['parse_constant'] = parse_constant
+    return cls(**kw).decode(s)

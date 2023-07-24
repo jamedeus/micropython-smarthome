@@ -30,7 +30,7 @@ class ApiTarget(Device):
             try:
                 # Convert string rule to dict (if received from API)
                 rule = json.loads(rule)
-            except (TypeError, ValueError):
+            except (TypeError, ValueError, OSError):
                 return False
 
         if not isinstance(rule, dict):
@@ -170,8 +170,8 @@ class ApiTarget(Device):
             if not asyncio.run(self.request(self.current_rule["on"])):
                 return False
 
-            # Reset motion sensor to allow retriggering the remote motion sensor (restarts reset timer)
-            # Retrigger when motion = True only restarts sensor's own resetTimer, but does not send another API command
+            # If targeted by motion sensor: reset motion attribute after successful on command
+            # Allows retriggering sensor to send again - otherwise motion only restarts reset timer
             for sensor in self.triggered_by:
                 if sensor._type == "pir":
                     sensor.motion = False
