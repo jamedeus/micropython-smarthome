@@ -35,14 +35,18 @@ class TestApiTarget(unittest.TestCase):
         cls.instance = ApiTarget("device1", "device1", "api-target", default_rule, "192.168.1.223")
 
     def test_01_initial_state(self):
+        # Confirm expected attributes just after instantiation
         self.assertIsInstance(self.instance, ApiTarget)
         self.assertTrue(self.instance.enabled)
+        self.assertEqual(self.instance.ip, "192.168.1.223")
 
     def test_02_get_attributes(self):
+        # Confirm expected attributes dict just after instantiation
         attributes = self.instance.get_attributes()
         self.assertEqual(attributes, expected_attributes)
 
     def test_03_rule_validation_valid(self):
+        # Should accept dict rules with correct keys and valid API commands
         self.assertEqual(
             self.instance.rule_validator({'on': ['trigger_sensor', 'sensor1'], 'off': ['enable', 'sensor1']}),
             {'on': ['trigger_sensor', 'sensor1'], 'off': ['enable', 'sensor1']}
@@ -59,41 +63,65 @@ class TestApiTarget(unittest.TestCase):
             self.instance.rule_validator({'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']}),
             {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']}
         )
+
+        # Should accept enabled and disabled, case-insensitive
         self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
         self.assertEqual(self.instance.rule_validator("disabled"), "disabled")
 
     def test_04_rule_validation_invalid(self):
-        self.assertFalse(
-            self.instance.rule_validator({'on': ['trigger_sensor', 'device1'], 'off': ['enable', 'sensor1']})
-        )
+        # Should reject rules with invalid API calls (missing args, incompatible args, etc)
+        self.assertFalse(self.instance.rule_validator({'on': ['trigger_sensor', 'device1'], 'off': ['ignore']}))
         self.assertFalse(self.instance.rule_validator({'on': ['enable_in', 'sensor1', "string"], 'off': ['ignore']}))
         self.assertFalse(self.instance.rule_validator({'on': ['set_rule'], 'off': ['ignore']}))
+        self.assertFalse(self.instance.rule_validator({'on': ['ir_key'], 'off': ['enable', 'sensor1']}))
+
+        # Should reject invalid keys (case-sensitive)
         self.assertFalse(self.instance.rule_validator({'ON': ['set_rule', 'sensor1', 5], 'OFF': ['ignore']}))
+
+        # Should reject too few keys
         self.assertFalse(self.instance.rule_validator({'Disabled': 'disabled'}))
 
+        # Should reject non-dict
+        self.assertFalse(self.instance.rule_validator(100))
+        self.assertFalse(self.instance.rule_validator('string'))
+
+        # Should reject dict with correct keys if values are not lists
+        self.assertFalse(self.instance.rule_validator({'on': 100, 'off': 0}))
+
     def test_05_rule_change(self):
+        # Should accept valid rule, confirm rule changed
         self.assertTrue(self.instance.set_rule({'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']}))
         self.assertEqual(self.instance.current_rule, {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
-        # String rule should be converted to dict automatically
+
+        # Should accept string representation of dict, cast to dict automatically
         self.assertTrue(self.instance.set_rule('{"on":["ir_key","tv","power"],"off":["ir_key","tv","power"]}'))
         self.assertEqual(
             self.instance.current_rule,
             {"on": ["ir_key", "tv", "power"], "off": ["ir_key", "tv", "power"]}
         )
-        # Should rule with both ir command and ignore
+
+        # Should accept rule with both API call and ignore
         self.assertTrue(self.instance.set_rule({'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']}))
         self.assertEqual(self.instance.current_rule, {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']})
 
+        # Should reject invalid rule
+        self.assertFalse(self.instance.set_rule('100'))
+        self.assertEqual(self.instance.current_rule, {'on': ['ir_key', 'ac', 'start'], 'off': ['ignore']})
+
     def test_06_enable_by_rule_change(self):
+        # Set rule while disabled, confirm rule takes effect, confirm enabled automatically
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.set_rule({'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
+        self.assertEqual(self.instance.current_rule, {'on': ['set_rule', 'sensor1', 5], 'off': ['ignore']})
         self.assertTrue(self.instance.enabled)
 
     def test_07_disable_by_rule_change(self):
+        # Set rule to disabled, confirm rule changed, confirm disabled
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
         self.instance.set_rule("disabled")
+        self.assertEqual(self.instance.current_rule, "disabled")
         self.assertFalse(self.instance.enabled)
 
     # Original bug: ApiTarget class overwrites parent set_rule method and did not include conditional
