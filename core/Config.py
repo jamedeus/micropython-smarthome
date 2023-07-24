@@ -381,12 +381,8 @@ class Config():
 
             # Issue with response object
             except KeyError:
-                if response.json()["message"].startswith("Provided API key is not valid"):
-                    print("Invalid API key (ipgeolocation.io)")
-                    log.error("Invalid API key (ipgeolocation.io)")
-                elif response.json()["message"].startswith("Internal server error"):
-                    print("ipgeolocation.io: Internal server error")
-                    log.error("ipgeolocation.io: Internal server error")
+                print(f'ERROR (ipgeolocation.io): {response.json()["message"]}')
+                log.error(f'ERROR (ipgeolocation.io): {response.json()["message"]}')
                 reboot()
 
             # Network issue

@@ -1,3 +1,4 @@
+import sys
 import time
 import network
 import unittest
@@ -169,6 +170,8 @@ class TestConfig(unittest.TestCase):
         self.assertIn("reload_schedule_rules", str(SoftwareTimer.timer.schedule))
 
     def test_06_full_instantiation(self):
+        # Add GPS coordinates to config
+        loaded_json["metadata"]["gps"] = {"lat": "1.15156", "lon": "174.70617"}
         # Instantiate without delay_setup arg, simulate real-world usage
         config = Config(loaded_json)
 
@@ -178,7 +181,7 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(config.identifier, loaded_json["metadata"]["id"])
         self.assertEqual(config.location, loaded_json["metadata"]["location"])
         self.assertEqual(config.floor, loaded_json["metadata"]["floor"])
-        self.assertEqual(config.gps, "")
+        self.assertEqual(config.gps, {"lat": "1.15156", "lon": "174.70617"})
 
         # Confirm connected to wifi successfully, led turned off
         self.assertTrue(network.WLAN().isconnected())
@@ -575,3 +578,44 @@ class TestConfig(unittest.TestCase):
         self.config.reload_schedule_rules()
         self.assertTrue(self.api_calls_called)
         self.assertTrue(self.build_queue_called)
+
+    # TODO Prevent running on micropython (mem fragmentation)
+    def test_22_failed_api_calls(self):
+        # Create mock reboot function that raises custom exception
+        class MockRebootCalled(Exception):
+            pass
+
+        def mock_reboot():
+            raise MockRebootCalled()
+
+        # Apply mock
+        import util
+        util.reboot = mock_reboot
+
+        # Mock API key to simulate error response from API
+        import api_keys
+        api_keys.ipgeo_key = "invalid"
+
+        # Remove Config from cache and re-import
+        # Uses mocks from cache instead of actual api_key and reboot
+        del sys.modules["Config"]
+        from Config import Config
+
+        # Simulate network error in API call, confirm error triggers reboot
+        with self.assertRaises(MockRebootCalled):
+            Config.api_calls(self.config)
+
+        # Create urequests.get mock that raises OSError (failed connection)
+        def mock_get(*args):
+            raise OSError
+
+        # Remove from cache, re-import, apply mocks
+        del sys.modules["urequests"]
+        import urequests
+        urequests.get = mock_get
+        del sys.modules["Config"]
+        from Config import Config
+
+        # Call method, confirm error triggers reboot
+        with self.assertRaises(MockRebootCalled):
+            Config.api_calls(self.config)

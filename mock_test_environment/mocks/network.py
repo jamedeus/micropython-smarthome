@@ -1,3 +1,5 @@
+from threading import Timer
+
 STA_IF = "STA_IF"
 
 
@@ -21,7 +23,12 @@ class WLAN:
     def isconnected(self):
         return self.connected
 
+    # Connect after 100ms delay
     def connect(self, ssid, password):
+        Timer(0.1, self.finish_connecting).start()
+
+    # Runs 100ms after connect called
+    def finish_connecting(self):
         self.connected = True
 
     def disconnect(self):
