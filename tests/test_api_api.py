@@ -125,9 +125,35 @@ class TestApi(unittest.TestCase):
     def send_command(self, cmd):
         return asyncio.run(self.request(cmd))
 
+    async def request_http(self, msg):
+        reader, writer = await asyncio.open_connection(ip, 8123)
+        try:
+            writer.write(msg.encode())
+            writer.write('\r\n\r\n'.encode())
+            await writer.drain()
+            res = await reader.read(1200)
+        except OSError:
+            pass
+        writer.close()
+        await writer.wait_closed()
+
+        return res.decode()
+
+    def send_http_command(self, cmd):
+        return asyncio.run(self.request_http(cmd))
+
+    async def broken_connection(self):
+        reader, writer = await asyncio.open_connection(ip, 8123)
+        writer.close()
+        await writer.wait_closed()
+
     def test_01_status(self):
         response = self.send_command(['status'])
         self.assertIsInstance(response, dict)
+
+        # HTTP status request
+        response = self.send_http_command('GET /status HTTP/1.1\r\n')
+        self.assertTrue(response.startswith('HTTP/1.0 200 NA\r\nContent-Type: application/json'))
 
     def test_02_enable(self):
         # Disable target device (might succeed incorrectly if it's already enabled)
@@ -550,6 +576,10 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['notacommand'])
         self.assertEqual(response, {"ERROR": "Invalid command"})
 
+        # Invalid HTTP endpoint
+        response = self.send_http_command('GET /notacommand HTTP/1.1\r\n')
+        self.assertTrue(response.startswith('HTTP/1.0 404 NA\r\nContent-Type: application/json'))
+
     def test_34_missing_arguments(self):
         response = self.send_command(['enable'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
@@ -635,6 +665,13 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['backlight'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
+        # HTTP request with missing querystring arg
+        response = self.send_http_command('GET /set_rule?device1 HTTP/1.1\r\n')
+        self.assertEqual(
+            response,
+            'HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n{"ERROR": "Invalid syntax"}'
+        )
+
     def test_35_invalid_instance(self):
         response = self.send_command(['enable', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
@@ -681,11 +718,16 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['turn_off', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
+    def test_36_broken_connection(self):
+        # Simulate broken connection, confirm no response sent
+        response = asyncio.run(self.broken_connection())
+        self.assertEqual(response, None)
+
     # Original bug: Some device and sensor classes have attributes containing class objects, which
     # cannot be json-serialized. These are supposed to be deleted or replaced with string
     # representations when building get_attributes response. Earlier versions of API failed to do
     # this for some classes, breaking get_attributes and resulting in an "unable to decode" error.
-    def test_36_regression_get_attributes(self):
+    def test_37_regression_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor3'])
         self.assertEqual(
             response,

@@ -135,7 +135,7 @@ class Api:
             except KeyError:
                 if http:
                     # Send headers before reply
-                    swriter.write("HTTP/1.0 404 NA\r\nContent-Type: application/json\r\n\r\n")
+                    swriter.write("HTTP/1.0 404 NA\r\nContent-Type: application/json\r\n\r\n".encode())
                     swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
                 else:
                     # Exit with error if no match found
@@ -146,7 +146,7 @@ class Api:
 
             if http:
                 # Send headers before reply
-                swriter.write("HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n")
+                swriter.write("HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n".encode())
                 swriter.write(json.dumps(reply).encode())
             else:
                 # Send reply to client
