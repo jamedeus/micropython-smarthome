@@ -81,6 +81,7 @@ class Api:
         try:
             # Read client request
             req = await asyncio.wait_for(sreader.readline(), self.timeout)
+            req = req.decode()
 
             # Receives null when client closes write stream - break and close read stream
             if not req:
@@ -90,8 +91,6 @@ class Api:
             if str(req).startswith("GET"):
                 # Received something like "GET /status HTTP/1.1"
                 http = True
-
-                req = req.decode()
 
                 # Drop all except "/status"
                 path = req.split()[1]
