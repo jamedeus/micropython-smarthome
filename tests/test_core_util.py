@@ -1,12 +1,14 @@
 import os
 import json
 import unittest
+from machine import reset
 from util import (
     is_device,
     is_sensor,
     is_device_or_sensor,
     read_config_from_disk,
     write_config_to_disk,
+    reboot,
     clear_log,
     check_log_size
 )
@@ -61,7 +63,14 @@ class TestUtil(unittest.TestCase):
         # Should refuse to write non-dict
         self.assertFalse(write_config_to_disk("string"))
 
-    def test_06_clear_log(self):
+    # TODO prevent running on micropython
+    def test_06_reboot(self):
+        # Function should call machine.reset
+        self.assertFalse(reset.called)
+        reboot()
+        self.assertTrue(reset.called)
+
+    def test_07_clear_log(self):
         # Ensure log file exists on disk
         open('app.log', 'w')
         self.assertTrue('app.log' in os.listdir())
@@ -70,7 +79,7 @@ class TestUtil(unittest.TestCase):
         clear_log()
         self.assertFalse('app.log' in os.listdir())
 
-    def test_07_check_log_size(self):
+    def test_08_check_log_size(self):
         # Create mock log file with size 100001 bytes
         with open('app.log', 'wb') as f:
             f.write(os.urandom(100001))

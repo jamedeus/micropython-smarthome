@@ -1,7 +1,6 @@
 import os
 import json
 import logging
-import uasyncio as asyncio
 import SoftwareTimer
 
 log = logging.getLogger("Util")

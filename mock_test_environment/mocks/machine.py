@@ -108,5 +108,14 @@ class RTC:
         pass
 
 
-def reset():
-    pass
+# Mocks reset function, attribute used to detect when called
+class Reset:
+    def __init__(self):
+        self.called = False
+
+    def __call__(self):
+        self.called = True
+
+
+# Instantiate with expected name (machine.reset)
+reset = Reset()
