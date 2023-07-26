@@ -1,7 +1,15 @@
 import os
 import json
 import unittest
-from util import is_device, is_sensor, is_device_or_sensor, read_config_from_disk, write_config_to_disk, clear_log
+from util import (
+    is_device,
+    is_sensor,
+    is_device_or_sensor,
+    read_config_from_disk,
+    write_config_to_disk,
+    clear_log,
+    check_log_size
+)
 
 # Read config file from disk
 with open('config.json', 'r') as file:
@@ -61,3 +69,13 @@ class TestUtil(unittest.TestCase):
         # Clear log, confirm no longer exists
         clear_log()
         self.assertFalse('app.log' in os.listdir())
+
+    def test_07_check_log_size(self):
+        # Create mock log file with size 100001 bytes
+        with open('app.log', 'wb') as f:
+            f.write(os.urandom(100001))
+        self.assertEqual(os.stat('app.log')[6], 100001)
+
+        # Run function, confirm log deleted and re-created
+        check_log_size()
+        self.assertLessEqual(os.stat('app.log')[6], 100)

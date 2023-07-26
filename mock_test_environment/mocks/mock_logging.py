@@ -12,19 +12,24 @@ class Logger:
         self.addHandler()
 
     def info(self, msg):
-        pass
+        with open('app.log', 'w') as file:
+            file.write(msg)
 
     def debug(self, msg, *args):
-        pass
+        with open('app.log', 'w') as file:
+            file.write(msg)
 
     def warning(self, msg):
-        pass
+        with open('app.log', 'w') as file:
+            file.write(msg)
 
     def error(self, msg):
-        pass
+        with open('app.log', 'w') as file:
+            file.write(msg)
 
     def critical(self, msg):
-        pass
+        with open('app.log', 'w') as file:
+            file.write(msg)
 
     def addHandler(self, hdlr=None):
         self.handlers.append(Handler())

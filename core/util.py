@@ -2,6 +2,7 @@ import os
 import json
 import logging
 import uasyncio as asyncio
+import SoftwareTimer
 
 log = logging.getLogger("Util")
 
@@ -62,6 +63,18 @@ def clear_log():
     logging.root.addHandler(h)
 
 
+# Checks log size and deletes when 100 KB exceeded
+# Called by SoftwareTimer every 60 seconds
+def check_log_size():
+    if os.stat('app.log')[6] > 100000:
+        print("\nLog exceeded 100 KB, clearing...\n")
+        clear_log()
+        log.info("Deleted old log (exceeded 100 KB size limit)")
+
+    # Add back to queue
+    SoftwareTimer.timer.create(60000, check_log_size, "check_log_size")
+
+
 # Coroutine that keeps log under size limit, reboots when new code uploaded
 async def disk_monitor():
     print("Disk Monitor Started\n")
@@ -82,16 +95,7 @@ async def disk_monitor():
 
             # Wait for webrepl connection to close before rebooting
             await asyncio.sleep(1)
-            reboot()
-
-        # Limit log to 100 KB (full disk causes hang, can't pull log via webrepl)
-        elif os.stat('app.log')[6] > 100000:
-            print("\nLog exceeded 100 KB, clearing...\n")
-            clear_log()
-            log.info("Deleted old log (exceeded 100 KB size limit)")
-
-            # Allow logger to write new log file to disk before loop checks size again (crashes if doesn't exist yet)
-            await asyncio.sleep(1)
+            reboot
 
         else:
             # Poll every 5 seconds
