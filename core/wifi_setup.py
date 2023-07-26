@@ -30,11 +30,12 @@ def test_connection(ssid, password):
 
 
 def create_config_file(data):
-    if not test_connection(data["ssid"], data["password"]):
-        print("Unable to connect to wifi with provided credentials")
-        return False
-
     try:
+        # Confirm credentials are valid before writing to disk
+        if not test_connection(data["ssid"], data["password"]):
+            print("Unable to connect to wifi with provided credentials")
+            return False
+
         # Populate template from received dict keys
         config = {
             "metadata": {
