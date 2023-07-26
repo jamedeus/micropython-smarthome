@@ -73,30 +73,3 @@ def check_log_size():
 
     # Add back to queue
     SoftwareTimer.timer.create(60000, check_log_size, "check_log_size")
-
-
-# Coroutine that keeps log under size limit, reboots when new code uploaded
-async def disk_monitor():
-    print("Disk Monitor Started\n")
-    log.debug("Disk Monitor Started")
-
-    # Get filesize/modification time (to detect upload in future)
-    if "main.py" in os.listdir():
-        old = os.stat("main.py")
-    else:
-        # Exists in firmware, not filesystem
-        old = None
-
-    while True:
-        # Check if file changed (or appeared) on disk
-        if "main.py" in os.listdir() and os.stat("main.py") != old:
-            print("\nReceived new code from webrepl, rebooting...\n")
-            log.info("Received new code from webrepl, rebooting...")
-
-            # Wait for webrepl connection to close before rebooting
-            await asyncio.sleep(1)
-            reboot
-
-        else:
-            # Poll every 5 seconds
-            await asyncio.sleep(1)

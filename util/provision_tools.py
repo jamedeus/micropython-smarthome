@@ -1,5 +1,6 @@
 import os
 from Webrepl import Webrepl
+from api_endpoints import reboot
 from helper_functions import is_device, is_sensor
 
 # Dependency relative paths for all device and sensor types, used by get_modules
@@ -25,7 +26,6 @@ dependencies = {
 }
 
 # Core module relative paths, required regardless of configuration
-# Order is important (main must be last, triggers automatic reboot)
 core_modules = [
     "core/Config.py",
     "core/Group.py",
@@ -79,9 +79,11 @@ def provision(ip, password, config, modules):
         node.put_file_mem(config, "config.json")
 
         # Upload all device/sensor + core modules
-        # Node will automatically reboot after last module (main.py)
         [node.put_file(local, remote) for local, remote in modules.items()]
         node.close_connection()
+
+        # Reboot node via API call
+        reboot(ip, [])
 
     except TimeoutError:
         return {

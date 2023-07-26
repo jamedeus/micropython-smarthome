@@ -5,7 +5,7 @@ import uasyncio as asyncio
 from Api import app
 from Config import Config
 from SoftwareTimer import timer
-from util import disk_monitor, read_config_from_disk, check_log_size
+from util import read_config_from_disk, check_log_size
 
 print("--------Booted--------")
 
@@ -56,9 +56,6 @@ def start_loop():
 
     # SoftwareTimer loop runs callbacks when timers expire (schedule rules, API, etc)
     asyncio.create_task(timer.loop())
-
-    # Disk_monitor deletes log when size limit exceeded, reboots when new code uploaded
-    asyncio.create_task(disk_monitor())
 
     # Check if log exceeded 100 KB every 60 seconds
     timer.create(60000, check_log_size, "check_log_size")
