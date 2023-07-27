@@ -1,12 +1,19 @@
 import os
 import json
+import asyncio
+import network
 import unittest
+from setup_page import setup_page
+from unittest.mock import patch, Mock, AsyncMock
 from util import read_config_from_disk, write_config_to_disk
-from wifi_setup import test_connection, create_config_file, dns_redirect
+from wifi_setup import test_connection, create_config_file, handle_client, dns_redirect, serve_setup_page
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
     config = json.load(file)
+
+ap = network.WLAN(network.AP_IF)
+wlan = network.WLAN(network.STA_IF)
 
 
 class WifiSetupTests(unittest.TestCase):
@@ -59,3 +66,56 @@ class WifiSetupTests(unittest.TestCase):
             redirect,
             b'u\xec\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x0cdetectportal\x07firefox\x03com\x00\x00\x1c\x00\x01\xc0\x0c\x00\x01\x00\x01\x00\x00\x00<\x00\x04\xc0\xa8\x04\x01'
         )
+
+    # TODO prevent running on micropython
+    def test_04_serve_setup_page(self):
+        # Mock all methods so function returns immediately
+        with patch('wifi_setup.handle_client'), \
+             patch('wifi_setup.run_captive_portal'), \
+             patch('wifi_setup.keep_alive'), \
+             patch('wifi_setup.asyncio.start_server'):
+
+            # Run function
+            serve_setup_page()
+
+        # Confirm network adapters configured correctly
+        self.assertTrue(ap.active())
+        self.assertTrue(wlan.active())
+        self.assertEqual(wlan.config('reconnects'), 0)
+        self.assertEqual(ap.config('ssid'), 'Smarthome_Setup_AEE9')
+        self.assertEqual(ap.ifconfig(), ('192.168.4.1', '255.255.255.0', '192.168.4.1', '192.168.4.1'))
+
+    # TODO prevent running on micropython
+    def test_05_handle_client_get(self):
+        # Create mock stream handlers simulating GET request
+        mock_reader = AsyncMock()
+        mock_writer = AsyncMock()
+        request = b'GET / HTTP/1.1\r\n\r\n'
+        mock_reader.read = asyncio.coroutine(Mock(return_value=request))
+
+        # Simulate connection, confirm correct response (serve setup page)
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(handle_client(mock_reader, mock_writer))
+        mock_writer.awrite.assert_called_once_with(f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n{setup_page}")
+
+    # TODO prevent running on micropython
+    def test_handle_client_post(self):
+        # Create mock stream handlers simulating POST request with invalid JSON
+        mock_reader = AsyncMock()
+        mock_writer = AsyncMock()
+        request = b'POST / HTTP/1.1\r\n\r\n{"data": "value"}'
+        mock_reader.read = asyncio.coroutine(Mock(return_value=request))
+
+        # Simulate connection, confirm correct error
+        with patch('wifi_setup.create_config_file', return_value=False):
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(handle_client(mock_reader, mock_writer))
+            mock_writer.awrite.assert_called_once_with('HTTP/1.1 400 Bad Request\r\n\r\n')
+
+        mock_writer.reset_mock()
+
+        # Simulate connection with valid JSON payload, confirm correct response
+        with patch('wifi_setup.create_config_file', return_value=True):
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(handle_client(mock_reader, mock_writer))
+            mock_writer.awrite.assert_called_once_with('HTTP/1.1 200 OK\r\n\r\n')
