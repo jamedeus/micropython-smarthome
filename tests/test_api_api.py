@@ -65,7 +65,8 @@ config_file = {
     "sensor4": {
         "_type": "desktop",
         "nickname": "test",
-        "ip": "192.168.1.216",
+        "ip": test_config["mock_receiver"]["ip"],
+        "port": test_config["mock_receiver"]["port"],
         "default_rule": "enabled",
         "targets": [],
         "schedule": {}
@@ -105,6 +106,12 @@ class TestApi(unittest.TestCase):
         cls.sensor2 = config.find("sensor2")
         cls.sensor3 = config.find("sensor3")
         cls.sensor4 = config.find("sensor4")
+
+    @classmethod
+    def tearDownClass(cls):
+        # Kill monitor task next time loop yields, avoid accumulating tasks
+        cls.sensor4.disable()
+        asyncio.run(asyncio.sleep(1))
 
     async def request(self, msg):
         reader, writer = await asyncio.open_connection(ip, 8123)
@@ -759,8 +766,8 @@ class TestApi(unittest.TestCase):
         self.assertEqual(
             response,
             {
-                'ip': '192.168.1.216',
-                'port': 5000,
+                'ip': test_config['mock_receiver']['ip'],
+                'port': test_config['mock_receiver']['port'],
                 'nickname': 'test',
                 'scheduled_rule': 'enabled',
                 'group': 'group2',

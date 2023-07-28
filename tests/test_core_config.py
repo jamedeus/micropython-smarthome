@@ -1,10 +1,15 @@
 import sys
+import json
 import time
 import network
 import unittest
 from machine import Pin, Timer
 import SoftwareTimer
 from Config import Config, instantiate_hardware
+
+# Read mock API receiver address
+with open('config.json', 'r') as file:
+    test_config = json.load(file)
 
 loaded_json = {
     'wifi': {
@@ -535,7 +540,8 @@ class TestConfig(unittest.TestCase):
             "sensor1": {
                 "_type": "desktop",
                 "nickname": "Computer Screen",
-                "ip": "192.168.1.123",
+                "ip": test_config["mock_receiver"]["ip"],
+                "port": test_config["mock_receiver"]["port"],
                 "default_rule": "enabled",
                 "schedule": {},
                 "targets": [
@@ -557,6 +563,9 @@ class TestConfig(unittest.TestCase):
 
         # Should have 1 sensor (instantiated successfully)
         self.assertEqual(len(self.config.sensors), 1)
+
+        # Kill monitor task next time loop yields, avoid accumulating tasks
+        self.config.sensors[0].disable()
 
     def test_21_reload_schedule_rules(self):
         # Used to detect which mock methods called

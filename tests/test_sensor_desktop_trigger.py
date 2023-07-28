@@ -43,6 +43,12 @@ class TestDesktopTrigger(unittest.TestCase):
         group = Group('group1', [cls.instance])
         cls.instance.group = group
 
+    @classmethod
+    def tearDownClass(cls):
+        # Kill monitor task next time loop yields, avoid accumulating tasks
+        cls.instance.disable()
+        asyncio.run(asyncio.sleep(1))
+
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Desktop_trigger)
         self.assertTrue(self.instance.enabled)
