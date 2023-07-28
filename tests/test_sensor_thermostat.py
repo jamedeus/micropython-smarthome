@@ -200,7 +200,20 @@ class TestThermostat(unittest.TestCase):
         # Confirm state flips to False, allows loop to turn heater on
         self.assertFalse(self.target.state)
 
-    def test_13_instantiate_with_all_modes(self):
+    def test_13_add_routines(self):
+        # Confirm no routines in group, instance.recent_temps not empty
+        self.assertEqual(len(self.instance.group.post_action_routines), 0)
+        self.instance.recent_temps = [69, 70, 71]
+
+        # Call method, confirm routine added
+        self.instance.add_routines()
+        self.assertEqual(len(self.instance.group.post_action_routines), 1)
+
+        # Run routine, confirm recent temps cleared
+        self.instance.group.post_action_routines[0]()
+        self.assertEqual(len(self.instance.recent_temps), 0)
+
+    def test_14_instantiate_with_all_modes(self):
         # Instantiate in heat mode
         test = Thermostat("sensor1", "sensor1", "si7021", 74, "heat", 1, [])
         self.assertEqual(test.mode, "heat")
@@ -221,7 +234,7 @@ class TestThermostat(unittest.TestCase):
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
-    def test_14_regression_invalid_default_rule(self):
+    def test_15_regression_invalid_default_rule(self):
         # assertRaises fails for some reason, this approach seems reliable
         try:
             Thermostat("sensor1", "sensor1", "si7021", "enabled", "cool", 1, [])
