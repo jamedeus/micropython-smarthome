@@ -113,8 +113,9 @@ class WifiSetupTests(unittest.TestCase):
         # Mock all methods so function returns immediately
         with patch('wifi_setup.handle_client'), \
              patch('wifi_setup.run_captive_portal'), \
-             patch('wifi_setup.keep_alive'), \
-             patch('wifi_setup.asyncio.start_server'):
+             patch('wifi_setup.asyncio.start_server'), \
+             patch('wifi_setup.asyncio.get_event_loop', return_value=AsyncMock()) as mock_loop, \
+             patch.object(mock_loop, 'run_forever'):
 
             # Run function
             serve_setup_page()

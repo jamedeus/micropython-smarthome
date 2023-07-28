@@ -135,11 +135,6 @@ def dns_redirect(query, ip):
     return response
 
 
-async def keep_alive():
-    while True:
-        await asyncio.sleep(25)
-
-
 def serve_setup_page():
     # Append last byte of access point mac address to SSID
     mac_address = ubinascii.hexlify(ap.config('mac')).decode()
@@ -155,8 +150,10 @@ def serve_setup_page():
     # Do not retry failed connection (slows down connection test)
     wlan.config(reconnects=0)
 
+    loop = asyncio.get_event_loop()
+
     # Listen for TCP connections on port 80, serve setup page
     # Listen for DNS queries on port 53, redirect to setup page
-    asyncio.create_task(asyncio.start_server(handle_client, "0.0.0.0", 80, 5))
-    asyncio.create_task(run_captive_portal())
-    asyncio.run(keep_alive())
+    loop.create_task(asyncio.start_server(handle_client, "0.0.0.0", 80, 5))
+    loop.create_task(run_captive_portal())
+    loop.run_forever()
