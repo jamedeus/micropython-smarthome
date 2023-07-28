@@ -1,5 +1,6 @@
 import json
 import unittest
+import urequests
 import uasyncio as asyncio
 from Group import Group
 from Desktop_target import Desktop_target
@@ -101,3 +102,36 @@ class TestDesktopTrigger(unittest.TestCase):
         # Disable instance, confirm monitor coro returns False (end of loop)
         self.instance.disable()
         self.assertFalse(asyncio.run(self.instance.monitor()))
+
+    def test_08_monitor(self):
+        # Ensure instance enabled, using correct port
+        self.instance.enable()
+        self.instance.port = config["mock_receiver"]["port"]
+
+        # Get URL of mock command receiver, set first reading to On
+        url = f'{config["mock_receiver"]["ip"]}:{config["mock_receiver"]["port"]}'
+        urequests.get(f'http://{url}/on')
+
+        # Task break loop after 2 readings
+        async def break_loop(instance):
+            await asyncio.sleep(2.1)
+            instance.disable()
+
+        # Task toggles state returned by mock receiver while loop is sleeping
+        async def toggle_state(url):
+            await asyncio.sleep(0.1)
+            urequests.get(f'http://{url}/off')
+            await asyncio.sleep(1.1)
+            urequests.get(f'http://{url}/on')
+
+        # Run instance.monitor + 2 tasks above with asyncio.gather
+        async def test_monitor_and_kill():
+            task_monitor = asyncio.create_task(self.instance.monitor())
+            task_kill = asyncio.create_task(break_loop(self.instance))
+            task_toggle = asyncio.create_task(toggle_state(url))
+            await asyncio.gather(task_monitor, task_kill, task_toggle)
+        asyncio.run(test_monitor_and_kill())
+
+        # Confirm instance + target attributes match last reading (On)
+        self.assertEqual(self.instance.current, 'On')
+        self.assertTrue(self.target.state)
