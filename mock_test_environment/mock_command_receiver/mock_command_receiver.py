@@ -111,6 +111,14 @@ def monitor_off():
     return {'state': 'off'}, 200
 
 
+# Desktop integration - simulate dpms Disabled
+@app.get("/Disabled")
+def monitor_Disabled():
+    global desktop_state
+    desktop_state = 'Disabled'
+    return {'state': 'Disabled'}, 200
+
+
 # Class to simulate TpLink Kasa device, runs in separate thread
 class MockTpLink:
     dimmer_response = """{"smartlife.iot.dimmer":{"set_brightness":{"err_code":0}}}"""

@@ -3,6 +3,7 @@ import unittest
 import urequests
 import uasyncio as asyncio
 from Group import Group
+from MotionSensor import MotionSensor
 from Desktop_target import Desktop_target
 from Desktop_trigger import Desktop_trigger
 
@@ -37,11 +38,14 @@ class TestDesktopTrigger(unittest.TestCase):
         ip = config["mock_receiver"]["ip"]
         port = config["mock_receiver"]["port"]
 
-        # Create test instance, target instance, group instance
+        # Create test group with desktop_trigger and motion sensor targeting desktop_target
         cls.target = Desktop_target("device1", "device1", "desktop", "enabled", ip, port)
         cls.instance = Desktop_trigger("sensor1", "sensor1", "desktop", "enabled", [cls.target], ip, port)
-        group = Group('group1', [cls.instance])
+        cls.pir = MotionSensor("sensor1", "sensor1", "pir", None, [cls.target], 15)
+        group = Group('group1', [cls.instance, cls.pir])
         cls.instance.group = group
+        cls.pir.group = group
+        cls.target.group = group
 
     @classmethod
     def tearDownClass(cls):
@@ -118,23 +122,40 @@ class TestDesktopTrigger(unittest.TestCase):
         url = f'{config["mock_receiver"]["ip"]}:{config["mock_receiver"]["port"]}'
         urequests.get(f'http://{url}/on')
 
-        # Task break loop after 2 readings
+        # Task break monitor loop after 3 readings
         async def break_loop(instance):
-            await asyncio.sleep(2.1)
+            await asyncio.sleep(3.1)
             instance.disable()
 
-        # Task toggles state returned by mock receiver while loop is sleeping
-        async def toggle_state(url):
+        # Task changes response from mock receiver /state endpoint between
+        # each monitor reading, verifies previous reading handled correctly
+        async def change_state(url):
+            # Let monitor get initial reading (On)
             await asyncio.sleep(0.1)
+
+            # Simulate MotionSensor triggered
+            self.pir.motion = True
+            # Change response to Off, wait for monitor to read
             urequests.get(f'http://{url}/off')
-            await asyncio.sleep(1.1)
+            await asyncio.sleep(1.0)
+
+            # Confirm monitor read Off, reset MotionSensor
+            self.assertEqual(self.instance.current, 'Off')
+            self.assertFalse(self.pir.motion)
+            # Change response to Disabled, wait for monitor to read
+            urequests.get(f'http://{url}/Disabled')
+            await asyncio.sleep(1.0)
+
+            # Confirm monitor did not set current to Disabled (rest of
+            # loop skipped if value is not On or Off), change to On
+            self.assertEqual(self.instance.current, 'Off')
             urequests.get(f'http://{url}/on')
 
         # Run instance.monitor + 2 tasks above with asyncio.gather
         async def test_monitor_and_kill():
             task_monitor = asyncio.create_task(self.instance.monitor())
             task_kill = asyncio.create_task(break_loop(self.instance))
-            task_toggle = asyncio.create_task(toggle_state(url))
+            task_toggle = asyncio.create_task(change_state(url))
             await asyncio.gather(task_monitor, task_kill, task_toggle)
         asyncio.run(test_monitor_and_kill())
 
