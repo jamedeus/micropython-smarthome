@@ -99,11 +99,12 @@ async def handle_client(reader, writer):
 
 
 # Respond to all DNS queries with setup page IP
-async def run_captive_portal():
+# Port defaults to 53, only changed in unit tests
+async def run_captive_portal(port=53):
     # Create non-blocking UDP socket (avoid blocking event loop)
     udps = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     udps.setblocking(False)
-    udps.bind(('0.0.0.0', 53))
+    udps.bind(('0.0.0.0', port))
 
     while True:
         try:

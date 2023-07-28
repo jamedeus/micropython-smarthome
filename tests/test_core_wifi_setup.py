@@ -16,6 +16,47 @@ ap = network.WLAN(network.AP_IF)
 wlan = network.WLAN(network.STA_IF)
 
 
+# Used to simulate DNS request to captive portal
+class DnsRequestClient(asyncio.DatagramProtocol):
+    # Takes message (DNS request) and pending future
+    def __init__(self, message, future):
+        super().__init__()
+        self.message = message
+        self.future = future
+
+    # Send message to server
+    def connection_made(self, transport):
+        self.transport = transport
+        print('Send:', self.message)
+        self.transport.sendto(self.message)
+
+    # Add response to future, close socket
+    def datagram_received(self, data, addr):
+        print("Received:", data)
+        self.future((data, addr))  # Wrap data and addr in a tuple
+        self.transport.close()
+
+
+# Simulates DNS query to run_captive_portal task in test script
+async def send_dns_query():
+    # Pending future to receive response from UDP socket
+    future = asyncio.Future()
+
+    # Instantiate with DNS query as message, future to receive response
+    query = b'u\xec\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x0cdetectportal\x07firefox\x03com\x00\x00\x1c\x00\x01'
+    protocol = DnsRequestClient(query, future.set_result)
+
+    # Open UDP connection to run_captive_portal task started in test script
+    loop = asyncio.get_running_loop()
+    transport, _ = await loop.create_datagram_endpoint(
+        lambda: protocol,
+        remote_addr=('127.0.0.1', 8316))
+
+    # Return response
+    response = await future  # Unpack data and addr from the result
+    return response
+
+
 class WifiSetupTests(unittest.TestCase):
 
     def test_01_test_connection(self):
@@ -99,7 +140,7 @@ class WifiSetupTests(unittest.TestCase):
         mock_writer.awrite.assert_called_once_with(f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n{setup_page}")
 
     # TODO prevent running on micropython
-    def test_handle_client_post(self):
+    def test_06_handle_client_post(self):
         # Create mock stream handlers simulating POST request with invalid JSON
         mock_reader = AsyncMock()
         mock_writer = AsyncMock()
@@ -119,3 +160,16 @@ class WifiSetupTests(unittest.TestCase):
             loop = asyncio.get_event_loop()
             loop.run_until_complete(handle_client(mock_reader, mock_writer))
             mock_writer.awrite.assert_called_once_with('HTTP/1.1 200 OK\r\n\r\n')
+
+    # TODO prevent running on micropython
+    def test_07_captive_portal(self):
+        # Simulate DNS query to run_captive_portal task in test script
+        response = asyncio.run(send_dns_query())
+
+        # Should return tuple containing redirect and address
+        self.assertTrue(isinstance(response, tuple))
+        self.assertEqual(
+            response[0],
+            b'u\xec\x81\x80\x00\x01\x00\x01\x00\x00\x00\x00\x0cdetectportal\x07firefox\x03com\x00\x00\x1c\x00\x01\xc0\x0c\x00\x01\x00\x01\x00\x00\x00<\x00\x04\xc0\xa8\x04\x01'
+        )
+        self.assertEqual(response[1], ('127.0.0.1', 8316))

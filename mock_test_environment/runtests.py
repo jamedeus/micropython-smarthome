@@ -67,6 +67,11 @@ async def run_tests():
     asyncio.create_task(app.run())
     asyncio.run(asyncio.sleep(0.5))
 
+    # Add captive portal to loop (receives DNS queries from tests)
+    from wifi_setup import run_captive_portal
+    asyncio.create_task(run_captive_portal(port=8316))
+    asyncio.run(asyncio.sleep(0.5))
+
     # Discover tests
     loader = unittest.TestLoader()
     start_dir = '.'
