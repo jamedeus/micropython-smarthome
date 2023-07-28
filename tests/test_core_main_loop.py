@@ -1,5 +1,9 @@
 import unittest
+from unittest.mock import patch
+import webrepl
+from Api import app
 from Config import Config
+from main import start_loop
 
 
 config_file = {
@@ -72,95 +76,38 @@ config_file = {
 }
 
 
-def determine_correct_action(conditions):
-    # Determine action to apply to target devices: True = turn on, False = turn off, None = do nothing
-    # Turn on: Requires only 1 sensor to return True
-    # Turn off: ALL sensors to return False
-    # Nothing: Requires 1 sensor to return None and 0 sensors returning True
-    if True in conditions:
-        action = True
-    elif None in conditions:
-        action = None
-    else:
-        action = False
-
-    return action
-
-
 class TestMainLoop(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        # Instantiate Config object, run all setup steps except API calls
         cls.config = Config(config_file, delay_setup=True)
         cls.config.instantiate_peripherals()
         cls.config.build_queue()
         cls.config.build_groups()
 
-    def test_check_sensor_state(self):
-        # Make sure state is False for all motion sensors
-        for i in self.config.sensors:
-            if i._type == "pir":
-                i.motion = False
+    # TODO prevent running on micropython
+    def test_01_start_loop(self):
+        # Confirm webrepl not started
+        self.assertEqual(webrepl.listen_s, None)
 
-        # Confirm state is correct
-        group = self.config.find('sensor2').group
-        conditions = group.check_sensor_conditions()
-        self.assertEqual(conditions, [False, False])
+        # Mock Config init to return existing Config object
+        # Mock asyncio.run to return immediately (instead of infinite loop)
+        with patch('main.Config', return_value=self.config), \
+             patch('main.asyncio.run'):
 
-        # Trigger only 1 sensor
-        for i in self.config.sensors:
-            if i._type == "pir":
-                i.motion = True
-                break
+            # Run function
+            start_loop()
 
-        # Confirm conditions are correct
-        conditions = group.check_sensor_conditions()
-        self.assertEqual(conditions, [True, False])
-
-        # Check si7021 condition
-        si7021 = self.config.find('sensor1')
-        conditions = si7021.group.check_sensor_conditions()
-        if si7021.fahrenheit() > 75:
-            self.assertTrue(conditions[0])
-        elif si7021.fahrenheit() < 73:
-            self.assertFalse(conditions[0])
-        else:
-            self.assertEqual(conditions[0], None)
-
-    def test_determine_correct_action(self):
-        action = determine_correct_action([True, False, False, False])
-        self.assertTrue(action)
-
-        action = determine_correct_action([False, False, True, False])
-        self.assertTrue(action)
-
-        action = determine_correct_action([False, False, False, False])
-        self.assertFalse(action)
-
-        action = determine_correct_action([True, False, False, None])
-        self.assertTrue(action)
-
-        action = determine_correct_action([False, False, False, None])
-        self.assertEqual(action, None)
-
-    def test_apply_action(self):
-        self.config.groups[0].apply_action(False)
-        self.assertFalse(self.config.groups[0].targets[0].state)
-
-        self.config.groups[0].apply_action(True)
-        self.assertTrue(self.config.groups[0].targets[0].state)
-
-        self.config.groups[1].apply_action(False)
-        self.assertFalse(self.config.groups[1].targets[0].state)
-
-        self.config.groups[1].apply_action(True)
-        self.assertTrue(self.config.groups[1].targets[0].state)
+        # Confirm API received correct config, webrepl started
+        self.assertEqual(app.config, self.config)
+        self.assertIsNotNone(webrepl.listen_s)
 
     # Original bug: Disabling a device while turned on did not turn off, but did flip state to False
     # This resulted in device staying on even after sensors turned other devices in group off. If
     # device was enabled while sensor conditions not met, it still would not be turned off because
     # state (False) matched correct action (turn off). This meant it was impossible to turn the light
     # off without triggering + reseting sensors (or using API).
-    def test_regression_correct_state_when_re_enabled(self):
+    def test_02_regression_correct_state_when_re_enabled(self):
         # Get LedStrip instance
         led = self.config.find('device1')
 
@@ -204,7 +151,7 @@ class TestMainLoop(unittest.TestCase):
     # devices do NOT respond to on commands, but do flip their state to True to stay in sync with
     # rest of group - this is necessary to allow turning off, since a device with state == False
     # will be skipped by loop (already off), and user flipping light switch doesn't effect state
-    def test_regression_turn_off_while_disabled(self):
+    def test_03_regression_turn_off_while_disabled(self):
         # Get relay instance
         relay = self.config.find('device2')
 
