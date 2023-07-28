@@ -66,6 +66,7 @@ class TestUtil(unittest.TestCase):
     # TODO prevent running on micropython
     def test_06_reboot(self):
         # Function should call machine.reset
+        reset.called = False
         self.assertFalse(reset.called)
         reboot()
         self.assertTrue(reset.called)

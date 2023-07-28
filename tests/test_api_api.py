@@ -3,6 +3,7 @@ import json
 import network
 import unittest
 import uasyncio as asyncio
+from machine import reset
 import SoftwareTimer
 from Config import Config
 from Api import app
@@ -112,7 +113,7 @@ class TestApi(unittest.TestCase):
             await writer.drain()
             res = await reader.read(1200)
         except OSError:
-            pass
+            return "Error: Request failed"
         try:
             response = json.loads(res)
         except ValueError:
@@ -723,11 +724,18 @@ class TestApi(unittest.TestCase):
         response = asyncio.run(self.broken_connection())
         self.assertEqual(response, None)
 
+    # TODO prevent running on micropython
+    def test_37_connection_timeout(self):
+        from unittest.mock import patch
+        # Simulate connection timeout while waiting for response, confirm correct error
+        with patch('Api.asyncio.wait_for', side_effect=asyncio.TimeoutError):
+            self.assertEqual(self.send_command(['status']), "Error: Request failed")
+
     # Original bug: Some device and sensor classes have attributes containing class objects, which
     # cannot be json-serialized. These are supposed to be deleted or replaced with string
     # representations when building get_attributes response. Earlier versions of API failed to do
     # this for some classes, breaking get_attributes and resulting in an "unable to decode" error.
-    def test_37_regression_get_attributes(self):
+    def test_38_regression_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor3'])
         self.assertEqual(
             response,
@@ -767,3 +775,14 @@ class TestApi(unittest.TestCase):
                 '_type': 'desktop'
             }
         )
+
+    # TODO prevent running on micropython
+    # Must run last, lock in reboot coro blocks future API requests
+    def test_39_reboot_endpoint(self):
+        # Confirm reset not yet called
+        reset.called = False
+        self.assertFalse(reset.called)
+
+        # Call reboot endpoint, confirm response, confirm reset called
+        self.assertEqual(self.send_command(['reboot']), 'Rebooting')
+        self.assertTrue(reset.called)
