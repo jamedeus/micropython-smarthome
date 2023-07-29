@@ -6,7 +6,6 @@ import network
 import uasyncio as asyncio
 import logging
 import unittest
-from util import disk_monitor
 
 # Set level to prevent logging from slowing down tests, using memory, etc
 logging.basicConfig(
@@ -116,7 +115,7 @@ async def run_tests():
         print(" [4] Run sensor tests")
         print(f" [5] View results from current test ({target})")
         print(" [6] View results from all tests")
-        print(" [7] Reboot on upload")
+        print(" [7] Reboot")
         choice = input()
         print()
 
@@ -158,9 +157,8 @@ async def run_tests():
                 print_report(testing_config["results"][category])
 
         elif choice == "7":
-            loop = asyncio.new_event_loop()
-            loop.create_task(disk_monitor())
-            loop.run_forever()
+            import machine
+            machine.reset()
 
         else:
             print("\nERROR: Please enter a number and press enter.\n")
