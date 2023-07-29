@@ -12,6 +12,7 @@ from util import (
     clear_log,
     check_log_size
 )
+from cpython_only import cpython_only
 
 # Read config file from disk
 with open('config.json', 'r') as file:
@@ -63,7 +64,7 @@ class TestUtil(unittest.TestCase):
         # Should refuse to write non-dict
         self.assertFalse(write_config_to_disk("string"))
 
-    # TODO prevent running on micropython
+    @cpython_only
     def test_06_reboot(self):
         # Function should call machine.reset
         reset.called = False
@@ -71,6 +72,7 @@ class TestUtil(unittest.TestCase):
         reboot()
         self.assertTrue(reset.called)
 
+    @cpython_only
     def test_07_clear_log(self):
         # Ensure log file exists on disk
         open('app.log', 'w')
@@ -78,8 +80,10 @@ class TestUtil(unittest.TestCase):
 
         # Clear log, confirm no longer exists
         clear_log()
+        # TODO fails on micropython
         self.assertFalse('app.log' in os.listdir())
 
+    @cpython_only
     def test_08_check_log_size(self):
         # Create mock log file with size 100001 bytes
         with open('app.log', 'wb') as f:

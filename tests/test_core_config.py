@@ -5,6 +5,7 @@ import network
 import unittest
 from machine import Pin, Timer
 import SoftwareTimer
+from cpython_only import cpython_only
 from Config import Config, instantiate_hardware
 
 # Read mock API receiver address
@@ -234,6 +235,7 @@ class TestConfig(unittest.TestCase):
         # Should return dict of current status info
         self.assertEqual(type(self.config.get_status()), dict)
 
+    # TODO different results on micropython than in test env
     def test_09_rebuilding_queue(self):
         # Get current rule queue before rebuilding
         device_before = self.config.devices[0].rule_queue
@@ -588,7 +590,7 @@ class TestConfig(unittest.TestCase):
         self.assertTrue(self.api_calls_called)
         self.assertTrue(self.build_queue_called)
 
-    # TODO Prevent running on micropython (mem fragmentation)
+    @cpython_only
     def test_22_failed_api_calls(self):
         # Create mock reboot function that raises custom exception
         class MockRebootCalled(Exception):

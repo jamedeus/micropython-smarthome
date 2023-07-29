@@ -1,9 +1,9 @@
 import unittest
-from unittest.mock import patch
 import webrepl
 from Api import app
 from Config import Config
 from main import start_loop
+from cpython_only import cpython_only
 
 
 config_file = {
@@ -85,8 +85,10 @@ class TestMainLoop(unittest.TestCase):
         cls.config.build_queue()
         cls.config.build_groups()
 
-    # TODO prevent running on micropython
+    @cpython_only
     def test_01_start_loop(self):
+        from unittest.mock import patch
+
         # Confirm webrepl not started
         self.assertEqual(webrepl.listen_s, None)
 

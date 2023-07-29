@@ -7,6 +7,7 @@ from machine import reset
 import SoftwareTimer
 from Config import Config
 from Api import app
+from cpython_only import cpython_only
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
@@ -731,7 +732,7 @@ class TestApi(unittest.TestCase):
         response = asyncio.run(self.broken_connection())
         self.assertEqual(response, None)
 
-    # TODO prevent running on micropython
+    @cpython_only
     def test_37_connection_timeout(self):
         from unittest.mock import patch
         # Simulate connection timeout while waiting for response, confirm correct error
@@ -783,8 +784,8 @@ class TestApi(unittest.TestCase):
             }
         )
 
-    # TODO prevent running on micropython
     # Must run last, lock in reboot coro blocks future API requests
+    @cpython_only
     def test_39_reboot_endpoint(self):
         # Confirm reset not yet called
         reset.called = False
