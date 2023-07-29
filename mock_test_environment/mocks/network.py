@@ -61,8 +61,8 @@ class WLAN:
 
     # Connect after 100ms delay
     def connect(self, ssid, password):
-        # Only station can connect
-        if self.interface == STA_IF:
+        # Only station can connect, must not already be connected
+        if self.interface == STA_IF and self._status != STAT_GOT_IP:
             self._status = STAT_CONNECTING
             if ssid != "wrong":
                 Timer(0.1, self.finish_connecting).start()
@@ -89,6 +89,7 @@ class WLAN:
 
         if self.interface == STA_IF:
             self._ifconfig = ('0.0.0.0', '0.0.0.0', '0.0.0.0', '0.0.0.0')
+            self._status = 8
 
     def config(self, lookup=None, reconnects=None, ssid=None):
         if lookup is not None:
