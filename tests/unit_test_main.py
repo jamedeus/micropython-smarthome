@@ -105,6 +105,7 @@ async def run_tests():
 
     # Start webrepl to allow upload
     import webrepl
+    connect_wifi()
     webrepl.start()
 
     while True:
@@ -180,8 +181,7 @@ def print_report(results):
     print(f"Total:  {total_tests}\nFailed: {total_failed}\n")
 
 
-def start_loop():
-    # Connect to wifi
+def connect_wifi():
     wlan = network.WLAN()
     wlan.active(True)
     if not wlan.isconnected():
@@ -192,6 +192,11 @@ def start_loop():
     # Wait until connected
     while not wlan.isconnected():
         continue
+
+
+def start_loop():
+    # Connect to wifi
+    connect_wifi()
 
     # Import SoftwareTimer instance, add to async loop
     from SoftwareTimer import timer
