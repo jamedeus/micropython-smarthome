@@ -261,7 +261,7 @@ class TestInstantiation(TestCase):
 
 class TestGetModules(TestCase):
     def setUp(self):
-        with open('tests/unit-test-config.json', 'r') as file:
+        with open(os.path.join(repo, "tests", "cli", "unit-test-config.json"), 'r') as file:
             self.config = json.load(file)
 
     def test_get_modules_full_config(self):

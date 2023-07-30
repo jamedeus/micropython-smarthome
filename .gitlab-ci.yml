@@ -19,9 +19,8 @@ test_firmware:
     - pip3 install pipenv
     - export PATH=$PATH:/home/gitlab-runner/.local/bin
     - pipenv install
-    - cd mock_test_environment/
-    - for i in ../tests/test_*; do ln -s $i .; done
-    - pipenv run coverage run --source='../core,../devices,../sensors' runtests.py
+    - cd tests/mock_environment/
+    - pipenv run coverage run --source='../../core,../../devices,../../sensors' runtests.py
     - pipenv run coverage report -m --precision=1
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   rules:
@@ -56,8 +55,8 @@ test_cli:
     - pip3 install pipenv
     - export PATH=$PATH:/home/gitlab-runner/.local/bin
     - pipenv install
-    - cd CLI/
-    - pipenv run coverage run --omit='tests/*' -m unittest discover tests/
+    - export PYTHONPATH=$PYTHONPATH:`pwd`/CLI
+    - pipenv run coverage run --omit='tests/*' -m unittest discover tests/cli
     - pipenv run coverage report -m --precision=1
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   rules:

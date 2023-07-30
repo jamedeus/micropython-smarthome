@@ -142,12 +142,12 @@ class Provisioner():
     # Upload unit tests to IP address
     def upload_tests(self, ip):
         # Load unit test config file
-        with open(os.path.join(repo, "tests", "unit_test_config.json"), 'r') as file:
+        with open(os.path.join(repo, "tests", 'firmware', "unit_test_config.json"), 'r') as file:
             config = json.load(file)
 
-        # Get list of relative paths for all unit tests (Example: 'tests/test_core_config.py')
-        tests = [i for i in os.listdir(os.path.join(repo, 'tests')) if i.startswith('test_')]
-        tests = [os.path.join('tests', i) for i in tests]
+        # Get list of relative paths for all unit tests (Example: 'tests/firmware/test_core_config.py')
+        tests = [i for i in os.listdir(os.path.join(repo, 'tests', 'firmware')) if i.startswith('test_')]
+        tests = [os.path.join('tests', 'firmware', i) for i in tests]
 
         # Build list of all device and sensor modules
         modules = []

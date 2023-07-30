@@ -6,8 +6,15 @@ from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from Webrepl import Webrepl, websocket, handshake_message
 
+# Get full paths to repository root directory, CLI tools directory
+cli = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
+repo = os.path.split(cli)[0]
+
+# Get absolute path to test config
+test_config_path = os.path.join(repo, "tests", "cli", "unit-test-config.json")
+
 # Binary contents of test config file, used as payload in simulated Webrepl connections
-with open('tests/unit-test-config.json', 'r') as file:
+with open(test_config_path, 'r') as file:
     binary_unit_test_config = json.dumps(json.load(file)).encode()
 
 # Used to track current position in binary_unit_test_config (read function called multiple times)
@@ -277,7 +284,7 @@ class WebreplTests(TestCase):
              patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
 
             # Call method, confirm correct methods called
-            node.put_file('tests/unit-test-config.json', 'config.json')
+            node.put_file(test_config_path, 'config.json')
             self.assertTrue(mock_websocket.write.called)
             self.assertTrue(mock_read_resp.called)
 
@@ -285,7 +292,7 @@ class WebreplTests(TestCase):
         node = Webrepl('123.45.67.89', 'password')
 
         # Read file into variable
-        with open('tests/unit-test-config.json', 'r') as file:
+        with open(test_config_path, 'r') as file:
             config = json.load(file)
 
         # Mock websocket and read_resp to allow send to complete

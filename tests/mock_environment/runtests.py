@@ -14,10 +14,10 @@ import nest_asyncio
 # Set up mocked environment used to run micropython code in cpython
 def set_mocks():
     # Add project files to python path
-    sys.path.insert(0, os.path.abspath('../core'))
-    sys.path.insert(0, os.path.abspath('../lib'))
-    sys.path.insert(0, os.path.abspath('../devices'))
-    sys.path.insert(0, os.path.abspath('../sensors'))
+    sys.path.insert(0, os.path.abspath('../../core'))
+    sys.path.insert(0, os.path.abspath('../../lib'))
+    sys.path.insert(0, os.path.abspath('../../devices'))
+    sys.path.insert(0, os.path.abspath('../../sensors'))
 
     # Add mock modules to python path
     # Must be last to give mock libraries priority over ../lib
@@ -56,7 +56,7 @@ def set_mocks():
 
     # Use unit_test_config.json as mock config.json, allow saving schedule rules, keywords, etc
     # Also contains IP and ports for mock_command_receiver container
-    shutil.copy2(os.path.abspath('../tests/unit_test_config.json'), 'config.json')
+    shutil.copy2(os.path.abspath('../firmware/unit_test_config.json'), 'config.json')
 
 
 async def run_tests():
@@ -72,7 +72,7 @@ async def run_tests():
 
     # Discover tests
     loader = unittest.TestLoader()
-    start_dir = '.'
+    start_dir = '../firmware/'
     suite = loader.discover(start_dir)
 
     # Run
