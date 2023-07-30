@@ -135,7 +135,7 @@ class ApiTarget(Device):
             # TODO change this limit?
             res = await reader.read(1000)
             res = json.loads(res)
-        except OSError:
+        except (OSError, ValueError):
             res = False
             pass
         writer.close()
