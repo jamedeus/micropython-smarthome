@@ -14,14 +14,14 @@ with open('config.json', 'r') as file:
 
 loaded_json = {
     'wifi': {
-        'ssid': 'jamnet',
-        'password': 'cjZY8PTa4ZQ6S83A'
+        'ssid': test_config['wifi']['ssid'],
+        'password': test_config['wifi']['password']
     },
     'metadata': {
         'id': 'Upstairs bathroom',
         'location': 'Under counter',
         'floor': '2',
-        "schedule_keywords": {}
+        'schedule_keywords': {}
     },
     'sensor1': {
         'nickname': 'sensor1',

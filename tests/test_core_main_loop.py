@@ -1,15 +1,20 @@
-import unittest
+import json
 import webrepl
+import unittest
 from Api import app
 from Config import Config
 from main import start_loop
 from cpython_only import cpython_only
 
+# Read wifi credentials from disk
+with open('config.json', 'r') as file:
+    test_config = json.load(file)
+
 
 config_file = {
     "wifi": {
-        "ssid": "jamnet",
-        "password": "cjZY8PTa4ZQ6S83A"
+        "ssid": test_config["wifi"]["ssid"],
+        "password": test_config["wifi"]["password"]
     },
     "metadata": {
         "id": "unit-testing",
