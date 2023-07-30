@@ -72,16 +72,15 @@ class TestUtil(unittest.TestCase):
         reboot()
         self.assertTrue(reset.called)
 
-    @cpython_only
     def test_07_clear_log(self):
-        # Ensure log file exists on disk
-        open('app.log', 'w')
-        self.assertTrue('app.log' in os.listdir())
+        # Ensure log file exists on disk, is not empty
+        with open('app.log', 'w') as file:
+            file.write('test')
+        self.assertGreaterEqual(os.stat('app.log')[6], 1)
 
-        # Clear log, confirm no longer exists
+        # Clear log, confirm filesize is 0 bytes
         clear_log()
-        # TODO fails on micropython
-        self.assertFalse('app.log' in os.listdir())
+        self.assertEqual(os.stat('app.log')[6], 0)
 
     @cpython_only
     def test_08_check_log_size(self):

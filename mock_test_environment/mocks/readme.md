@@ -8,9 +8,11 @@ Note: this project does NOT use the `logging` module from [micropython-lib](http
 
 Most of the mocked logic is only required for the `clear_log` API endpoint, which clears all log handlers, creates a new log file, and creates a new handler.
 
-The `runtests.py` script adds a mock `Logger()` instance to the `logging.root.handlers` list. This allows the `clear_log` endpoint to call the `close` method of the root logger.
+The `runtests.py` script adds a mock `Logger()` instance to the `logging.root.handlers` list. This allows the `clear_log` endpoint to call the `close` method of the root logger. It also replaces `logging.FileHandler` with a mocked class that creates its filename argument on disk, matching micropython's behavior.
 
 After `clear_log` creates a new log file and handler it clears the contents of `logging.root.handlers`, then adds its new handler with `addHandler`. This method is mocked to simply add another instance of `Logger()` to the handlers list. The handler created in the endpoint is ignored as it is not important to any tests.
+
+All log level methods (`log.info`, `log.error`, etc) simply write any argument they receive to `app.log` unmodified - timestamps are not important for any unit tests.
 
 ## Machine module
 

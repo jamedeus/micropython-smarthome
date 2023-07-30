@@ -54,10 +54,8 @@ def set_mocks():
     json.JSONDecoder = mock_json.MockDecoder
     json.loads = mock_json.mock_loads
 
-    # Create mock log file for clear_log test
-    open('app.log', 'w')
-
     # Use unit_test_config.json as mock config.json, allow saving schedule rules, keywords, etc
+    # Also contains IP and ports for mock_command_receiver container
     shutil.copy2(os.path.abspath('../tests/unit_test_config.json'), 'config.json')
 
 

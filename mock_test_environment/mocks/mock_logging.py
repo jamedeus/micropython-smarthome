@@ -1,3 +1,6 @@
+import os
+
+
 class Handler:
     def close(self):
         pass
@@ -44,6 +47,8 @@ def getLogger(name=None):
 
 
 def FileHandler(filename, mode=None, encoding=None, delay=False):
+    if not os.path.exists(filename):
+        open(filename, 'w')
     return Handler()
 
 
