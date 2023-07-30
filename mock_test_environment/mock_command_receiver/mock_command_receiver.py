@@ -135,7 +135,7 @@ class MockTpLink:
                 client, addr = server.accept()
                 print(f"New connection from {addr[0]}:{addr[1]}")
                 self.handle_client(client)
-            except ConnectionResetError:
+            except (ConnectionResetError, BrokenPipeError):
                 print("ERROR: Connection reset by peer")
                 pass
 
