@@ -10,6 +10,8 @@ class MockResponse(Response):
     def json(self):
         try:
             return super().json()
+        # Json mock replaces JSONDecodeError with OSError, both are
+        # caught so the mock will work regardless of which was applied first
         except (OSError, JSONDecodeError):
             raise ValueError("Invalid JSON")
 
