@@ -13,6 +13,9 @@ from cpython_only import cpython_only
 with open('config.json', 'r') as file:
     test_config = json.load(file)
 
+# IP and port of mock API receiver instance (for WLED)
+mock_address = f"{test_config['mock_receiver']['ip']}:{test_config['mock_receiver']['port']}"
+
 # Get IP address
 ip = network.WLAN(network.STA_IF).ifconfig()[0]
 
@@ -63,27 +66,18 @@ config_file = {
         "targets": [],
         "schedule": {}
     },
-    "sensor4": {
-        "_type": "desktop",
-        "nickname": "test",
-        "ip": test_config["mock_receiver"]["ip"],
-        "port": test_config["mock_receiver"]["port"],
-        "default_rule": "enabled",
-        "targets": [],
-        "schedule": {}
-    },
     "device1": {
-        "_type": "dimmer",
+        "_type": "wled",
         "schedule": {
             "09:00": 75,
             "11:00": 35,
             "20:00": 90
         },
         "min_bright": 1,
-        "max_bright": 100,
+        "max_bright": 255,
         "default_rule": 50,
         "nickname": "device1",
-        "ip": test_config["mock_receiver"]["ip"]
+        "ip": mock_address
     },
     "ir_blaster": {
         "pin": 32,
@@ -106,13 +100,6 @@ class TestApi(unittest.TestCase):
         cls.sensor1 = config.find("sensor1")
         cls.sensor2 = config.find("sensor2")
         cls.sensor3 = config.find("sensor3")
-        cls.sensor4 = config.find("sensor4")
-
-    @classmethod
-    def tearDownClass(cls):
-        # Kill monitor task next time loop yields, avoid accumulating tasks
-        cls.sensor4.disable()
-        asyncio.run(asyncio.sleep(1))
 
     async def request(self, msg):
         reader, writer = await asyncio.open_connection(ip, 8123)
@@ -160,11 +147,12 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['status'])
         self.assertIsInstance(response, dict)
 
-        # HTTP status request
+    @cpython_only
+    def test_02_status_http(self):
         response = self.send_http_command('GET /status HTTP/1.1\r\n')
         self.assertTrue(response.startswith('HTTP/1.0 200 NA\r\nContent-Type: application/json'))
 
-    def test_02_enable(self):
+    def test_03_enable(self):
         # Disable target device (might succeed incorrectly if it's already enabled)
         self.device1.disable()
         # Enable with API command
@@ -172,7 +160,7 @@ class TestApi(unittest.TestCase):
         self.assertTrue(self.device1.enabled)
         self.assertEqual(response, {'Enabled': 'device1'})
 
-    def test_03_disable(self):
+    def test_04_disable(self):
         # Enable target device (might succeed incorrectly if it's already disabled)
         self.device1.enable()
         # Disable with API command
@@ -180,7 +168,7 @@ class TestApi(unittest.TestCase):
         self.assertFalse(self.device1.enabled)
         self.assertEqual(response, {'Disabled': 'device1'})
 
-    def test_04_enable_in(self):
+    def test_05_enable_in(self):
         # Cancel all SoftwareTimers created by API
         SoftwareTimer.timer.cancel("API")
         # Disable target device (might succeed incorrectly if it's already enabled)
@@ -193,7 +181,7 @@ class TestApi(unittest.TestCase):
         # Device should still be disabled since timer hasn't expired yet
         self.assertFalse(self.device1.enabled)
 
-    def test_05_disable_in(self):
+    def test_06_disable_in(self):
         # Cancel all SoftwareTimers created by API
         SoftwareTimer.timer.cancel("API")
         # Enable target device (might succeed incorrectly if it's already disabled)
@@ -206,7 +194,7 @@ class TestApi(unittest.TestCase):
         # Device should still be enabled since timer hasn't expired yet
         self.assertTrue(self.device1.enabled)
 
-    def test_06_set_rule(self):
+    def test_07_set_rule(self):
         # Set to valid rule 5
         response = self.send_command(['set_rule', 'sensor2', '5'])
         self.assertEqual(self.sensor2.current_rule, 5.0)
@@ -224,7 +212,7 @@ class TestApi(unittest.TestCase):
         self.assertIn('device1_fade', str(SoftwareTimer.timer.schedule))
         SoftwareTimer.timer.cancel('device1_fade')
 
-    def test_07_increment_rule(self):
+    def test_08_increment_rule(self):
         # Set known starting values
         self.device1.current_rule = 50
         self.sensor1.current_rule = 70
@@ -253,7 +241,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['increment_rule', 'sensor1', '100'])
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
-    def test_08_reset_rule(self):
+    def test_09_reset_rule(self):
         # Set placeholder rule
         self.device1.set_rule(1)
         # Call reset API command
@@ -267,7 +255,7 @@ class TestApi(unittest.TestCase):
         )
         self.assertEqual(self.device1.current_rule, self.device1.scheduled_rule)
 
-    def test_09_reset_all_rules(self):
+    def test_10_reset_all_rules(self):
         # Set placeholder rules
         self.device1.set_rule(78)
         self.sensor1.set_rule(78)
@@ -281,8 +269,7 @@ class TestApi(unittest.TestCase):
                     "device1": self.device1.scheduled_rule,
                     "sensor1": self.sensor1.scheduled_rule,
                     "sensor2": self.sensor2.scheduled_rule,
-                    "sensor3": self.sensor3.scheduled_rule,
-                    "sensor4": self.sensor4.scheduled_rule
+                    "sensor3": self.sensor3.scheduled_rule
                 }
             }
         )
@@ -290,11 +277,11 @@ class TestApi(unittest.TestCase):
         self.assertEqual(self.sensor1.current_rule, self.sensor1.scheduled_rule)
         self.assertEqual(self.sensor2.current_rule, self.sensor2.scheduled_rule)
 
-    def test_10_get_schedule_rules(self):
+    def test_11_get_schedule_rules(self):
         response = self.send_command(['get_schedule_rules', 'device1'])
         self.assertEqual(response, {'20:00': 90, '09:00': 75, '11:00': 35})
 
-    def test_11_add_schedule_rule(self):
+    def test_12_add_schedule_rule(self):
         # Add a rule at a time where no rule exists
         response = self.send_command(['add_schedule_rule', 'device1', '05:37', '64'])
         self.assertEqual(response, {'time': '05:37', 'Rule added': 64})
@@ -327,7 +314,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['add_schedule_rule', 'device1', '15:57', '9999'])
         self.assertEqual(response, {"ERROR": "Invalid rule"})
 
-    def test_12_remove_rule(self):
+    def test_13_remove_rule(self):
         # Get starting rules
         before = self.send_command(['get_schedule_rules', 'device1'])
         del before["20:00"]
@@ -352,19 +339,19 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
 
     # Note: will fail if config.json missing or contains fewer devices/sensors than test config
-    def test_13_save_schedule_rules(self):
+    def test_14_save_schedule_rules(self):
         # Save rules, confirm response
         response = self.send_command(['save_rules'])
         self.assertEqual(response, {"Success": "Rules written to disk"})
 
-    def test_14_get_schedule_keywords(self):
+    def test_15_get_schedule_keywords(self):
         # Get keywords, should contain sunrise and sunset
         response = self.send_command(['get_schedule_keywords'])
         self.assertEqual(len(response), 2)
         self.assertIn('sunrise', response.keys())
         self.assertIn('sunset', response.keys())
 
-    def test_15_add_schedule_keyword(self):
+    def test_16_add_schedule_keyword(self):
         # Add keyword, confirm added
         response = self.send_command(['add_schedule_keyword', {'sleep': '23:00'}])
         self.assertEqual(response, {"Keyword added": 'sleep', "time": '23:00'})
@@ -373,7 +360,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['add_schedule_keyword', {'invalid': '3:00'}])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
-    def test_16_remove_schedule_keyword(self):
+    def test_17_remove_schedule_keyword(self):
         # Add schedule rule using keyword, should be deleted when keyword deleted
         app.config.schedule['device1']['sleep'] = 50
 
@@ -390,18 +377,18 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['remove_schedule_keyword', 'fake'])
         self.assertEqual(response, {"ERROR": "Keyword does not exist"})
 
-    def test_17_save_schedule_keywords(self):
+    def test_18_save_schedule_keywords(self):
         response = self.send_command(['save_schedule_keywords'])
         self.assertEqual(response, {"Success": "Keywords written to disk"})
 
-    def test_18_get_attributes(self):
+    def test_19_get_attributes(self):
         response = self.send_command(['get_attributes', 'device1'])
         self.assertIsInstance(response, dict)
-        self.assertEqual(response["_type"], "dimmer")
+        self.assertEqual(response["_type"], "wled")
         self.assertEqual(response["group"], "group1")
         self.assertEqual(response["triggered_by"], ['sensor1', 'sensor2'])
 
-    def test_19_trigger_sensor_condition_met(self):
+    def test_20_trigger_sensor_condition_met(self):
         # Initial state should be False
         response = self.send_command(['condition_met', 'sensor2'])
         self.assertEqual(response, {'Condition': False})
@@ -412,7 +399,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['condition_met', 'sensor2'])
         self.assertEqual(response, {'Condition': True})
 
-    def test_20_trigger_sensor_invalid(self):
+    def test_21_trigger_sensor_invalid(self):
         # Thermostat not compatible with endpoint
         response = self.send_command(['trigger_sensor', 'sensor1'])
         self.assertEqual(response, {"ERROR": "Cannot trigger si7021 sensor type"})
@@ -421,12 +408,12 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['trigger_sensor', 'device1'])
         self.assertEqual(response, {'ERROR': 'Must specify sensor'})
 
-    def test_21_condition_met_invalid(self):
+    def test_22_condition_met_invalid(self):
         # Should return error if argument is not a sensor
         response = self.send_command(['condition_met', 'device1'])
         self.assertEqual(response, {'ERROR': 'Must specify sensor'})
 
-    def test_22_turn_on(self):
+    def test_23_turn_on(self):
         # Make sure device is enabled and turned off before testing
         self.device1.enable()
         self.device1.send(0)
@@ -445,7 +432,7 @@ class TestApi(unittest.TestCase):
         # Device should still be off
         self.assertFalse(self.device1.state)
 
-    def test_23_turn_on_invalid(self):
+    def test_24_turn_on_invalid(self):
         self.device1.enable()
 
         # Should only accept devices, not sensors
@@ -458,11 +445,12 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['turn_on', 'device1'])
         self.assertEqual(response, {'ERROR': 'Unable to turn on device1'})
         # Revert IP
-        self.device1.ip = test_config["mock_receiver"]["ip"]
+        self.device1.ip = mock_address
 
-    def test_24_turn_off(self):
+    def test_25_turn_off(self):
         # Make sure device is enabled and turned on before testing
         self.device1.enable()
+        self.device1.set_rule(50)
         self.device1.send(1)
         # Send command to turn on
         response = self.send_command(['turn_off', 'device1'])
@@ -479,7 +467,7 @@ class TestApi(unittest.TestCase):
         # Device should now be off
         self.assertFalse(self.device1.state)
 
-    def test_25_turn_off_invalid(self):
+    def test_26_turn_off_invalid(self):
         # Should only accept devices, not sensors
         response = self.send_command(['turn_off', 'sensor1'])
         self.assertEqual(response, {"ERROR": "Can only turn on/off devices, use enable/disable for sensors"})
@@ -490,25 +478,25 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['turn_off', 'device1'])
         self.assertEqual(response, {'ERROR': 'Unable to turn off device1'})
         # Revert IP
-        self.device1.ip = test_config["mock_receiver"]["ip"]
+        self.device1.ip = mock_address
 
-    def test_26_get_temp(self):
+    def test_27_get_temp(self):
         response = self.send_command(['get_temp'])
         self.assertIsInstance(response, dict)
         self.assertIsInstance(response["Temp"], float)
 
-    def test_27_get_humid(self):
+    def test_28_get_humid(self):
         response = self.send_command(['get_humid'])
         self.assertIsInstance(response, dict)
         self.assertIsInstance(response["Humidity"], float)
 
-    def test_28_get_climate_data(self):
+    def test_29_get_climate_data(self):
         response = self.send_command(['get_climate_data'])
         self.assertIsInstance(response, dict)
         self.assertIsInstance(response["humid"], float)
         self.assertIsInstance(response["temp"], float)
 
-    def test_29_no_temperature_sensor_errors(self):
+    def test_30_no_temperature_sensor_errors(self):
         # Change temperature sensor type to simulate no temp sensor
         self.sensor1._type = "pir"
 
@@ -523,7 +511,7 @@ class TestApi(unittest.TestCase):
         # Revert sensor type
         self.sensor1._type = "si7021"
 
-    def test_30_clear_log(self):
+    def test_31_clear_log(self):
         response = self.send_command(['clear_log'])
         self.assertEqual(response, {'clear_log': 'success'})
 
@@ -535,7 +523,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['clear_log'])
         self.assertEqual(response, {'ERROR': 'no log file found'})
 
-    def test_31_ir_key(self):
+    def test_32_ir_key(self):
         response = self.send_command(['ir_key', 'tv', 'power'])
         self.assertEqual(response, {'tv': 'power'})
 
@@ -558,7 +546,7 @@ class TestApi(unittest.TestCase):
         # Restore IrBlaster
         app.config.ir_blaster = ir_blaster
 
-    def test_32_backlight(self):
+    def test_33_backlight(self):
         # Confirm responses for on and off
         response = self.send_command(['backlight', 'on'])
         self.assertEqual(response, {'backlight': 'on'})
@@ -581,15 +569,16 @@ class TestApi(unittest.TestCase):
         # Restore IrBlaster
         app.config.ir_blaster = ir_blaster
 
-    def test_33_invalid_command(self):
+    def test_34_invalid_command(self):
         response = self.send_command(['notacommand'])
         self.assertEqual(response, {"ERROR": "Invalid command"})
 
-        # Invalid HTTP endpoint
+    @cpython_only
+    def test_35_invalid_http_endpoint(self):
         response = self.send_http_command('GET /notacommand HTTP/1.1\r\n')
         self.assertTrue(response.startswith('HTTP/1.0 404 NA\r\nContent-Type: application/json'))
 
-    def test_34_missing_arguments(self):
+    def test_36_missing_arguments(self):
         response = self.send_command(['enable'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -674,6 +663,8 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['backlight'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
+    @cpython_only
+    def test_37_missing_querystring(self):
         # HTTP request with missing querystring arg
         response = self.send_http_command('GET /set_rule?device1 HTTP/1.1\r\n')
         self.assertEqual(
@@ -681,7 +672,7 @@ class TestApi(unittest.TestCase):
             'HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n{"ERROR": "Invalid syntax"}'
         )
 
-    def test_35_invalid_instance(self):
+    def test_38_invalid_instance(self):
         response = self.send_command(['enable', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
@@ -727,13 +718,13 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['turn_off', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
-    def test_36_broken_connection(self):
+    def test_39_broken_connection(self):
         # Simulate broken connection, confirm no response sent
         response = asyncio.run(self.broken_connection())
         self.assertEqual(response, None)
 
     @cpython_only
-    def test_37_connection_timeout(self):
+    def test_40_connection_timeout(self):
         from unittest.mock import patch
         # Simulate connection timeout while waiting for response, confirm correct error
         with patch('Api.asyncio.wait_for', side_effect=asyncio.TimeoutError):
@@ -743,7 +734,7 @@ class TestApi(unittest.TestCase):
     # cannot be json-serialized. These are supposed to be deleted or replaced with string
     # representations when building get_attributes response. Earlier versions of API failed to do
     # this for some classes, breaking get_attributes and resulting in an "unable to decode" error.
-    def test_38_regression_get_attributes(self):
+    def test_41_regression_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor3'])
         self.assertEqual(
             response,
@@ -761,32 +752,9 @@ class TestApi(unittest.TestCase):
             }
         )
 
-        response = self.send_command(['get_attributes', 'sensor4'])
-        # Prevent false positive if real-world monitor state differs (not important for test)
-        response['current'] = 'On'
-        self.assertEqual(
-            response,
-            {
-                'ip': test_config['mock_receiver']['ip'],
-                'port': test_config['mock_receiver']['port'],
-                'nickname': 'test',
-                'scheduled_rule': 'enabled',
-                'group': 'group2',
-                'current': 'On',
-                'name': 'sensor4',
-                'enabled': True,
-                'rule_queue': [],
-                'default_rule': 'enabled',
-                'targets': [],
-                'current_rule': 'enabled',
-                'desktop_target': None,
-                '_type': 'desktop'
-            }
-        )
-
     # Must run last, lock in reboot coro blocks future API requests
     @cpython_only
-    def test_39_reboot_endpoint(self):
+    def test_42_reboot_endpoint(self):
         # Confirm reset not yet called
         reset.called = False
         self.assertFalse(reset.called)
