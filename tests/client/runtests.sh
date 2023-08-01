@@ -1,8 +1,10 @@
 #!/bin/bash
 
 if [[ $1 == "upload" ]]; then
-    python3 provision.py -c tests/config.json -ip 192.168.1.223
+    python3 ../../CLI/provision.py --c client_test_config.json --ip 192.168.1.213
     sleep 30
 fi
 
-python3 -m unittest discover -s tests -p client_test*.py
+cd ../..
+python3 -m unittest discover -v -s tests/client/ -p client_test*.py
+cd tests/client/

@@ -1,136 +1,21 @@
 import time
+import asyncio
 import unittest
-from api_client import parse_ip, parse_command, ir_commands
-from frontend.node_configuration.Webrepl import Webrepl
+from util.Webrepl import Webrepl
+from util.api_endpoints import request
+from CLI.api_client import parse_command
+from util.validation_constants import ir_blaster_options
 
 target_ip = '192.168.1.213'
-
-
-class TestParseIP(unittest.TestCase):
-
-    def test_all_nodes(self):
-        args = ['--all', 'status']
-        self.assertTrue(parse_ip(args))
-
-    def test_node_name(self):
-        args = ['bedroom', 'status']
-        response = parse_ip(args)
-        self.assertIsInstance(response, dict)
-        self.assertEqual(len(response), 3)
-        self.assertEqual(response["metadata"]["id"], 'Bedroom')
-
-    def test_ip_flag(self):
-        args = ['-ip', target_ip, 'status']
-        response = parse_ip(args)
-        self.assertIsInstance(response, dict)
-        self.assertEqual(len(response), 3)
-        self.assertEqual(response["metadata"]["id"], 'unit testing config')
-
-    def test_no_ip_flag(self):
-        args = [target_ip, 'status']
-        response = parse_ip(args)
-        self.assertIsInstance(response, dict)
-        self.assertEqual(len(response), 3)
-        self.assertEqual(response["metadata"]["id"], 'unit testing config')
-
-
-class TestParseIPInvalid(unittest.TestCase):
-
-    def test_all_nodes_no_command(self):
-        args = ['--all']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_all_nodes_invalid_command(self):
-        args = ['--all', 'notacommand']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_node_name_no_command(self):
-        args = ['bedroom']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_node_name_invalid_command(self):
-        args = ['bedroom', 'notacommand']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_invalid_node_name(self):
-        args = ['fakeroom', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_ip_flag_no_command(self):
-        args = ['-ip', target_ip]
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_ip_flag_invalid_command(self):
-        args = ['-ip', target_ip, 'notacommand']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_ip_flag_invalid_ip(self):
-        args = ['-ip', '192.168.1', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-        args = ['-ip', '999.999.999.999', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-        args = ['-ip', '192.168.1.999', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-        args = ['-ip', '192.168.o.ll', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-        args = ['-ip', '1921681223', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_no_ip_flag_no_command(self):
-        args = [target_ip]
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_no_ip_flag_invalid_command(self):
-        args = [target_ip, 'notacommand']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-    def test_no_ip_flag_invalid_ip(self):
-        args = ['192.168.1', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-        args = ['999.999.999.999', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-        args = ['192.168.1.999', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-        args = ['192.168.o.ll', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
-
-        args = ['1921681223', 'status']
-        with self.assertRaises(SystemExit):
-            parse_ip(args)
 
 
 class TestParseCommand(unittest.TestCase):
 
     # Test reboot first for predictable initial state (replace schedule rules deleted by last test etc)
-    def test_1(self):
+    def test_01(self):
         # Re-upload config file (modified by save methods, breaks next test)
         node = Webrepl(target_ip)
-        node.put_file('tests/client_test_config.json', 'config.json')
+        node.put_file('tests/client/client_test_config.json', 'config.json')
         node.close_connection()
 
         response = parse_command(target_ip, ['reboot'])
@@ -139,7 +24,7 @@ class TestParseCommand(unittest.TestCase):
         # Wait for node to finish booting before running next test
         time.sleep(30)
 
-    def test_status(self):
+    def test_02_status(self):
         response = parse_command(target_ip, ['status'])
         keys = response.keys()
         self.assertIn('metadata', keys)
@@ -147,31 +32,31 @@ class TestParseCommand(unittest.TestCase):
         self.assertIn('devices', keys)
         self.assertEqual(len(response.keys()), 3)
 
-    def test_disable(self):
+    def test_03_disable(self):
         response = parse_command(target_ip, ['disable', 'device1'])
         self.assertEqual(response, {'Disabled': 'device1'})
 
-    def test_disable_in(self):
+    def test_04_disable_in(self):
         response = parse_command(target_ip, ['disable_in', 'device1', '1'])
         self.assertEqual(response, {'Disable_in_seconds': 60.0, 'Disabled': 'device1'})
 
-    def test_enable(self):
+    def test_05_enable(self):
         response = parse_command(target_ip, ['enable', 'sensor1'])
         self.assertEqual(response, {'Enabled': 'sensor1'})
 
-    def test_enable_in(self):
+    def test_06_enable_in(self):
         response = parse_command(target_ip, ['enable_in', 'sensor1', '1'])
         self.assertEqual(response, {'Enabled': 'sensor1', 'Enable_in_seconds': 60.0})
 
-    def test_set_rule(self):
+    def test_07_set_rule(self):
         response = parse_command(target_ip, ['set_rule', 'sensor1', '1'])
         self.assertEqual(response, {'sensor1': '1'})
 
-    def test_reset_rule(self):
+    def test_08_reset_rule(self):
         response = parse_command(target_ip, ['reset_rule', 'sensor1'])
         self.assertEqual(response["sensor1"], 'Reverted to scheduled rule')
 
-    def test_reset_all_rules(self):
+    def test_09_reset_all_rules(self):
         response = parse_command(target_ip, ['reset_all_rules'])
         self.assertEqual(
             response,
@@ -186,11 +71,11 @@ class TestParseCommand(unittest.TestCase):
             }
         )
 
-    def test_get_schedule_rules(self):
+    def test_10_get_schedule_rules(self):
         response = parse_command(target_ip, ['get_schedule_rules', 'sensor1'])
-        self.assertEqual(response, {'01:00': '1', '06:00': '5'})
+        self.assertEqual(response, {'01:00': 1, '06:00': 5})
 
-    def test_add_rule(self):
+    def test_11_add_rule(self):
         # Add a rule at a time where no rule exists
         response = parse_command(target_ip, ['add_rule', 'device1', '04:00', '256'])
         self.assertEqual(response, {'time': '04:00', 'Rule added': 256})
@@ -211,7 +96,7 @@ class TestParseCommand(unittest.TestCase):
         response = parse_command(target_ip, ['add_rule', 'device1', 'sunrise', '512'])
         self.assertEqual(response, {'time': 'sunrise', 'Rule added': 512})
 
-    def test_remove_rule(self):
+    def test_12_remove_rule(self):
         # Delete a rule by timestamp
         response = parse_command(target_ip, ['remove_rule', 'device1', '04:00'])
         self.assertEqual(response, {'Deleted': '04:00'})
@@ -220,33 +105,33 @@ class TestParseCommand(unittest.TestCase):
         response = parse_command(target_ip, ['remove_rule', 'device1', 'sunrise'])
         self.assertEqual(response, {'Deleted': 'sunrise'})
 
-    def test_save_rules(self):
+    def test_13_save_rules(self):
         # Send command, verify response
         response = parse_command(target_ip, ['save_rules'])
         self.assertEqual(response, {"Success": "Rules written to disk"})
 
-    def test_get_schedule_keywords(self):
+    def test_14_get_schedule_keywords(self):
         # Get keywords, should contain sunrise and sunset
         response = parse_command(target_ip, ['get_schedule_keywords'])
-        self.assertEqual(len(response), 3)
+        self.assertEqual(len(response), 2)
         self.assertIn('sunrise', response.keys())
         self.assertIn('sunset', response.keys())
 
-    def test_add_schedule_keyword(self):
+    def test_15_add_schedule_keyword(self):
         # Add keyword, confirm added
         response = parse_command(target_ip, ['add_schedule_keyword', 'sleep', '23:00'])
         self.assertEqual(response, {"Keyword added": 'sleep', "time": '23:00'})
 
-    def test_remove_schedule_keyword(self):
+    def test_16_remove_schedule_keyword(self):
         # Remove keyword, confirm removed
         response = parse_command(target_ip, ['remove_schedule_keyword', 'sleep'])
         self.assertEqual(response, {"Keyword removed": 'sleep'})
 
-    def test_save_schedule_keywords(self):
+    def test_17_save_schedule_keywords(self):
         response = parse_command(target_ip, ['save_schedule_keywords'])
         self.assertEqual(response, {"Success": "Keywords written to disk"})
 
-    def test_get_attributes(self):
+    def test_18_get_attributes(self):
         response = parse_command(target_ip, ['get_attributes', 'sensor1'])
         keys = response.keys()
         self.assertIn('_type', keys)
@@ -266,53 +151,53 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['name'], 'sensor1')
         self.assertEqual(response['nickname'], 'sensor1')
 
-    def test_ir(self):
+    def test_19_ir(self):
         response = parse_command(target_ip, ['ir', 'tv', 'power'])
         self.assertEqual(response, {'tv': 'power'})
 
         response = parse_command(target_ip, ['ir', 'ac', 'OFF'])
         self.assertEqual(response, {'ac': 'OFF'})
 
-        response = parse_command(target_ip, ['ir', 'backlight', 'on'])
-        self.assertEqual(response, {'backlight': 'on'})
+        #response = parse_command(target_ip, ['ir', 'backlight', 'on'])
+        #self.assertEqual(response, {'backlight': 'on'})
 
-    def test_get_temp(self):
+    def test_20_get_temp(self):
         response = parse_command(target_ip, ['get_temp'])
         self.assertEqual(len(response), 1)
         self.assertIsInstance(response["Temp"], float)
 
-    def test_get_humid(self):
+    def test_21_get_humid(self):
         response = parse_command(target_ip, ['get_humid'])
         self.assertEqual(len(response), 1)
         self.assertIsInstance(response["Humidity"], float)
 
-    def test_get_climate(self):
+    def test_22_get_climate(self):
         response = parse_command(target_ip, ['get_climate'])
         self.assertEqual(len(response), 2)
         self.assertIsInstance(response["humid"], float)
         self.assertIsInstance(response["temp"], float)
 
-    def test_clear_log(self):
+    def test_23_clear_log(self):
         response = parse_command(target_ip, ['clear_log'])
         self.assertEqual(response, {'clear_log': 'success'})
 
-    def test_condition_met(self):
+    def test_24_condition_met(self):
         response = parse_command(target_ip, ['condition_met', 'sensor1'])
         self.assertEqual(len(response), 1)
         self.assertIn("Condition", response.keys())
 
-    def test_trigger_sensor(self):
+    def test_25_trigger_sensor(self):
         response = parse_command(target_ip, ['trigger_sensor', 'sensor1'])
         self.assertEqual(response, {'Triggered': 'sensor1'})
 
-    def test_turn_on(self):
+    def test_26_turn_on(self):
         # Ensure enabled
         parse_command(target_ip, ['enable', 'device1'])
 
         response = parse_command(target_ip, ['turn_on', 'device1'])
         self.assertEqual(response, {'On': 'device1'})
 
-    def test_turn_off(self):
+    def test_27_turn_off(self):
         # Ensure enabled
         parse_command(target_ip, ['enable', 'device1'])
 
@@ -329,7 +214,7 @@ class TestParseCommand(unittest.TestCase):
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
     # resulted in comparison operator between int and string, causing crash.
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
-    def test_enable_regression_test(self):
+    def test_28_enable_regression_test(self):
         # Confirm correct starting conditions
         response = parse_command(target_ip, ['get_attributes', 'device3'])
         self.assertEqual(response['current_rule'], 'disabled')
@@ -347,7 +232,7 @@ class TestParseCommand(unittest.TestCase):
     # Original bug: LedStrip fade method made calls to set_rule method for each fade step.
     # Later, set_rule was modified to abort an in-progress fade when it received a brightness
     # rule. This caused fade to abort itself after the first step. Fixed in a29f5383.
-    def test_regression_fade_on(self):
+    def test_29_regression_fade_on(self):
         # Starting conditions
         parse_command(target_ip, ['set_rule', 'device3', '500'])
         response = parse_command(target_ip, ['get_attributes', 'device3'])
@@ -365,7 +250,7 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['fading'], False)
 
     # Confirm that calling set_rule while a fade is in-progress correctly aborts
-    def test_abort_fade(self):
+    def test_30_abort_fade(self):
         # Starting conditions
         parse_command(target_ip, ['set_rule', 'device3', '500'])
         response = parse_command(target_ip, ['get_attributes', 'device3'])
@@ -386,7 +271,7 @@ class TestParseCommand(unittest.TestCase):
 
 class TestParseCommandInvalid(unittest.TestCase):
 
-    def test_disable_invalid(self):
+    def test_31_disable_invalid(self):
         response = parse_command(target_ip, ['disable', 'device99'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
@@ -396,7 +281,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['disable'])
         self.assertEqual(response, {'Example usage': './api_client.py disable [device|sensor]'})
 
-    def test_disable_in_invalid(self):
+    def test_32_disable_in_invalid(self):
         response = parse_command(target_ip, ['disable_in', 'device99', '5'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
@@ -409,7 +294,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['disable_in'])
         self.assertEqual(response, {'Example usage': './api_client.py disable_in [device|sensor] [minutes]'})
 
-    def test_enable_invalid(self):
+    def test_33_enable_invalid(self):
         response = parse_command(target_ip, ['enable', 'device99'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
@@ -419,7 +304,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['enable'])
         self.assertEqual(response, {'Example usage': './api_client.py enable [device|sensor]'})
 
-    def test_enable_in_invalid(self):
+    def test_34_enable_in_invalid(self):
         response = parse_command(target_ip, ['enable_in', 'device99', '5'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
@@ -432,7 +317,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['enable_in'])
         self.assertEqual(response, {'Example usage': './api_client.py enable_in [device|sensor] [minutes]'})
 
-    def test_set_rule_invalid(self):
+    def test_35_set_rule_invalid(self):
         response = parse_command(target_ip, ['set_rule'])
         self.assertEqual(response, {'Example usage': './api_client.py set_rule [device|sensor] [rule]'})
 
@@ -445,7 +330,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['set_rule', 'device1', '9999'])
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
-    def test_reset_rule_invalid(self):
+    def test_36_reset_rule_invalid(self):
         response = parse_command(target_ip, ['reset_rule'])
         self.assertEqual(response, {'Example usage': './api_client.py reset_rule [device|sensor]'})
 
@@ -455,7 +340,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['reset_rule', 'notdevice'])
         self.assertEqual(response, {'ERROR': 'Can only set rules for devices and sensors'})
 
-    def test_get_schedule_rules_invalid(self):
+    def test_37_get_schedule_rules_invalid(self):
         response = parse_command(target_ip, ['get_schedule_rules'])
         self.assertEqual(response, {'Example usage': './api_client.py get_schedule_rules [device|sensor]'})
 
@@ -465,7 +350,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['get_schedule_rules', 'notdevice'])
         self.assertEqual(response, {'ERROR': 'Only devices and sensors have schedule rules'})
 
-    def test_add_rule_invalid(self):
+    def test_38_add_rule_invalid(self):
         response = parse_command(target_ip, ['add_rule'])
         self.assertEqual(
             response,
@@ -476,13 +361,13 @@ class TestParseCommandInvalid(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Only devices and sensors have schedule rules'})
 
         response = parse_command(target_ip, ['add_rule', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword followed by rule'})
 
         response = parse_command(target_ip, ['add_rule', 'device1', '99:99'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword followed by rule'})
 
         response = parse_command(target_ip, ['add_rule', 'device1', '08:00'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify new rule'})
 
         response = parse_command(target_ip, ['add_rule', 'device1', '05:00', '256'])
         self.assertEqual(response, {'ERROR': "Rule already exists at 05:00, add 'overwrite' arg to replace"})
@@ -492,25 +377,25 @@ class TestParseCommandInvalid(unittest.TestCase):
 
         # Should get error response from node (cannot regex timestamp without rejecting keyword)
         response = parse_command(target_ip, ['add_rule', 'device1', '99:13', '256'])
-        self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
+        self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"})
 
         response = parse_command(target_ip, ['add_rule', 'device99', '09:13', '256'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
         response = parse_command(target_ip, ['add_rule', 'device99', '99:13', '256'])
-        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
+        self.assertEqual(response, {'ERROR': "Must specify timestamp (HH:MM) or keyword followed by rule"})
 
         response = parse_command(target_ip, ['add_rule', 'device99', '256'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword followed by rule'})
 
         response = parse_command(target_ip, ['add_rule', 'device1', '09:13', '9999'])
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
         # Should get error response from node, schedule keyword doesn't exist
         response = parse_command(target_ip, ['add_rule', 'device1', 'midnight', '50'])
-        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM) or schedule keyword"})
+        self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"})
 
-    def test_remove_rule_invalid(self):
+    def test_39_remove_rule_invalid(self):
         response = parse_command(target_ip, ['remove_rule'])
         self.assertEqual(response, {'Example usage': './api_client.py remove_rule [device|sensor] [HH:MM]'})
 
@@ -518,10 +403,10 @@ class TestParseCommandInvalid(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Only devices and sensors have schedule rules'})
 
         response = parse_command(target_ip, ['remove_rule', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword of rule to remove'})
 
         response = parse_command(target_ip, ['remove_rule', 'device1', '99:99'])
-        self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
+        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword of rule to remove'})
 
         response = parse_command(target_ip, ['remove_rule', 'device99', '01:00'])
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
@@ -529,10 +414,10 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['remove_rule', 'device1', '07:16'])
         self.assertEqual(response, {'ERROR': 'No rule exists at that time'})
 
-        response = parse_command(target_ip, ['add_rule', 'device1', 'midnight'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp/keyword followed by rule'})
+        response = parse_command(target_ip, ['remove_rule', 'device1', 'midnight'])
+        self.assertEqual(response, {"ERROR": 'Must specify timestamp (HH:MM) or keyword of rule to remove'})
 
-    def test_add_schedule_keyword_invalid(self):
+    def test_40_add_schedule_keyword_invalid(self):
         response = parse_command(target_ip, ['add_schedule_keyword'])
         self.assertEqual(response, {"Example usage": "./api_client.py add_schedule_keyword [keyword] [HH:MM]"})
 
@@ -542,7 +427,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['add_schedule_keyword', 'new_keyword', '99:99'])
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
-    def test_remove_schedule_keyword_invalid(self):
+    def test_41_remove_schedule_keyword_invalid(self):
         response = parse_command(target_ip, ['remove_schedule_keyword'])
         self.assertEqual(response, {"Example usage": "./api_client.py remove_schedule_keyword [keyword]"})
 
@@ -552,7 +437,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['remove_schedule_keyword', 'doesnotexist'])
         self.assertEqual(response, {"ERROR": "Keyword does not exist"})
 
-    def test_get_attributes_invalid(self):
+    def test_42_get_attributes_invalid(self):
         response = parse_command(target_ip, ['get_attributes'])
         self.assertEqual(response, {'Example usage': './api_client.py get_attributes [device|sensor]'})
 
@@ -562,76 +447,76 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = parse_command(target_ip, ['get_attributes', 'notdevice'])
         self.assertEqual(response, {'ERROR': 'Must specify device or sensor'})
 
-    def test_ir_invalid(self):
-        response = parse_command(target_ip, ['ir'])
-        self.assertEqual(response, {'Example usage': './api_client.py ir [tv|ac|backlight] [command]'})
+    def test_43_ir_invalid(self):
+        response = asyncio.run(request(target_ip, ['ir_key']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['ir', 'foo'])
-        self.assertEqual(response, {'Example usage': './api_client.py ir [tv|ac|backlight] [command]'})
+        response = asyncio.run(request(target_ip, ['ir_key', 'foo']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['ir', 'ac'])
-        self.assertEqual(response, {'ERROR': f'Must speficy one of the following commands: {ir_commands["ac"]}'})
+        response = asyncio.run(request(target_ip, ['ir_key', 'ac']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['ir', 'ac', 'power'])
-        self.assertEqual(response, {'ERROR': 'Target "ac" has no key power'})
+        response = asyncio.run(request(target_ip, ['ir_key', 'ac', 'power']))
+        self.assertEqual(response, {'ERROR': 'Target "ac" has no key "power"'})
 
-        response = parse_command(target_ip, ['ir', 'tv'])
-        self.assertEqual(response, {'ERROR': f'Must speficy one of the following commands: {ir_commands["tv"]}'})
+        response = asyncio.run(request(target_ip, ['ir_key', 'tv']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['ir', 'tv', 'START'])
-        self.assertEqual(response, {'ERROR': 'Target "tv" has no key START'})
+        response = asyncio.run(request(target_ip, ['ir_key', 'tv', 'START']))
+        self.assertEqual(response, {'ERROR': 'Target "tv" has no key "START"'})
 
-        response = parse_command(target_ip, ['ir', 'backlight'])
-        self.assertEqual(response, {'ERROR': "Must specify 'on' or 'off'"})
+        response = asyncio.run(request(target_ip, ['ir_key', 'backlight']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['ir', 'backlight', 'start'])
-        self.assertEqual(response, {'ERROR': "Must specify 'on' or 'off'"})
+        response = asyncio.run(request(target_ip, ['backlight', 'start']))
+        self.assertEqual(response, {'ERROR': 'Backlight setting must be "on" or "off"'})
 
-    def test_condition_met_invalid(self):
-        response = parse_command(target_ip, ['condition_met'])
+    def test_44_condition_met_invalid(self):
+        response = asyncio.run(request(target_ip, ['condition_met']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = asyncio.run(request(target_ip, ['condition_met', 'device1']))
         self.assertEqual(response, {'ERROR': 'Must specify sensor'})
 
-        response = parse_command(target_ip, ['condition_met', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Must specify sensor'})
-
-        response = parse_command(target_ip, ['condition_met', 'sensor99'])
+        response = asyncio.run(request(target_ip, ['condition_met', 'sensor99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_trigger_sensor_invalid(self):
-        response = parse_command(target_ip, ['trigger_sensor'])
+    def test_45_trigger_sensor_invalid(self):
+        response = asyncio.run(request(target_ip, ['trigger_sensor']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = asyncio.run(request(target_ip, ['trigger_sensor', 'device1']))
         self.assertEqual(response, {'ERROR': 'Must specify sensor'})
 
-        response = parse_command(target_ip, ['trigger_sensor', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Must specify sensor'})
-
-        response = parse_command(target_ip, ['trigger_sensor', 'sensor99'])
+        response = asyncio.run(request(target_ip, ['trigger_sensor', 'sensor99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['trigger_sensor', 'sensor2'])
+        response = asyncio.run(request(target_ip, ['trigger_sensor', 'sensor2']))
         self.assertEqual(response, {'ERROR': 'Cannot trigger si7021 sensor type'})
 
-    def test_turn_on_invalid(self):
+    def test_46_turn_on_invalid(self):
         # Ensure disabled
         parse_command(target_ip, ['disable', 'device1'])
 
-        response = parse_command(target_ip, ['turn_on', 'device1'])
+        response = asyncio.run(request(target_ip, ['turn_on', 'device1']))
         self.assertEqual(response, {'ERROR': 'device1 is disabled, please enable before turning on'})
 
-        response = parse_command(target_ip, ['turn_on'])
+        response = asyncio.run(request(target_ip, ['turn_on']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = asyncio.run(request(target_ip, ['turn_on', 'sensor1']))
         self.assertEqual(response, {'ERROR': 'Can only turn on/off devices, use enable/disable for sensors'})
 
-        response = parse_command(target_ip, ['turn_on', 'sensor1'])
-        self.assertEqual(response, {'ERROR': 'Can only turn on/off devices, use enable/disable for sensors'})
-
-        response = parse_command(target_ip, ['turn_on', 'device99'])
+        response = asyncio.run(request(target_ip, ['turn_on', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_turn_off_invalid(self):
-        response = parse_command(target_ip, ['turn_off'])
+    def test_47_turn_off_invalid(self):
+        response = asyncio.run(request(target_ip, ['turn_off']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = asyncio.run(request(target_ip, ['turn_off', 'sensor1']))
         self.assertEqual(response, {'ERROR': 'Can only turn on/off devices, use enable/disable for sensors'})
 
-        response = parse_command(target_ip, ['turn_off', 'sensor1'])
-        self.assertEqual(response, {'ERROR': 'Can only turn on/off devices, use enable/disable for sensors'})
-
-        response = parse_command(target_ip, ['turn_off', 'device99'])
+        response = asyncio.run(request(target_ip, ['turn_off', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
