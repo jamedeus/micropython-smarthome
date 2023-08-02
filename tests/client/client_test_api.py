@@ -3,8 +3,6 @@ import asyncio
 import unittest
 from util.Webrepl import Webrepl
 from util.api_endpoints import request
-from CLI.api_client import parse_command
-from util.validation_constants import ir_blaster_options
 
 target_ip = '192.168.1.213'
 
@@ -18,14 +16,14 @@ class TestParseCommand(unittest.TestCase):
         node.put_file('tests/client/client_test_config.json', 'config.json')
         node.close_connection()
 
-        response = parse_command(target_ip, ['reboot'])
+        response = asyncio.run(request(target_ip, ['reboot']))
         self.assertEqual(response, "Rebooting")
 
         # Wait for node to finish booting before running next test
         time.sleep(30)
 
     def test_02_status(self):
-        response = parse_command(target_ip, ['status'])
+        response = asyncio.run(request(target_ip, ['status']))
         keys = response.keys()
         self.assertIn('metadata', keys)
         self.assertIn('sensors', keys)
@@ -33,31 +31,31 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(len(response.keys()), 3)
 
     def test_03_disable(self):
-        response = parse_command(target_ip, ['disable', 'device1'])
+        response = asyncio.run(request(target_ip, ['disable', 'device1']))
         self.assertEqual(response, {'Disabled': 'device1'})
 
     def test_04_disable_in(self):
-        response = parse_command(target_ip, ['disable_in', 'device1', '1'])
+        response = asyncio.run(request(target_ip, ['disable_in', 'device1', '1']))
         self.assertEqual(response, {'Disable_in_seconds': 60.0, 'Disabled': 'device1'})
 
     def test_05_enable(self):
-        response = parse_command(target_ip, ['enable', 'sensor1'])
+        response = asyncio.run(request(target_ip, ['enable', 'sensor1']))
         self.assertEqual(response, {'Enabled': 'sensor1'})
 
     def test_06_enable_in(self):
-        response = parse_command(target_ip, ['enable_in', 'sensor1', '1'])
+        response = asyncio.run(request(target_ip, ['enable_in', 'sensor1', '1']))
         self.assertEqual(response, {'Enabled': 'sensor1', 'Enable_in_seconds': 60.0})
 
     def test_07_set_rule(self):
-        response = parse_command(target_ip, ['set_rule', 'sensor1', '1'])
+        response = asyncio.run(request(target_ip, ['set_rule', 'sensor1', '1']))
         self.assertEqual(response, {'sensor1': '1'})
 
     def test_08_reset_rule(self):
-        response = parse_command(target_ip, ['reset_rule', 'sensor1'])
+        response = asyncio.run(request(target_ip, ['reset_rule', 'sensor1']))
         self.assertEqual(response["sensor1"], 'Reverted to scheduled rule')
 
     def test_09_reset_all_rules(self):
-        response = parse_command(target_ip, ['reset_all_rules'])
+        response = asyncio.run(request(target_ip, ['reset_all_rules']))
         self.assertEqual(
             response,
             {
@@ -72,67 +70,67 @@ class TestParseCommand(unittest.TestCase):
         )
 
     def test_10_get_schedule_rules(self):
-        response = parse_command(target_ip, ['get_schedule_rules', 'sensor1'])
+        response = asyncio.run(request(target_ip, ['get_schedule_rules', 'sensor1']))
         self.assertEqual(response, {'01:00': 1, '06:00': 5})
 
     def test_11_add_rule(self):
         # Add a rule at a time where no rule exists
-        response = parse_command(target_ip, ['add_rule', 'device1', '04:00', '256'])
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '04:00', '256']))
         self.assertEqual(response, {'time': '04:00', 'Rule added': 256})
 
         # Add another rule at the same time, should refuse to overwrite
-        response = parse_command(target_ip, ['add_rule', 'device1', '04:00', '512'])
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '04:00', '512']))
         self.assertEqual(response, {'ERROR': "Rule already exists at 04:00, add 'overwrite' arg to replace"})
 
         # Add another rule at the same time with the 'overwrite' argument, rule should be replaced
-        response = parse_command(target_ip, ['add_rule', 'device1', '04:00', '512', 'overwrite'])
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '04:00', '512', 'overwrite']))
         self.assertEqual(response, {'time': '04:00', 'Rule added': 512})
 
         # Add rule (0) which is equivalent to False in conditional (regression test for bug causing incorrect rejection)
-        response = parse_command(target_ip, ['add_rule', 'device1', '02:52', '0'])
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '02:52', '0']))
         self.assertEqual(response, {'time': '02:52', 'Rule added': 0})
 
         # Add a rule with sunrise keyword instead of timestamp
-        response = parse_command(target_ip, ['add_rule', 'device1', 'sunrise', '512'])
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', 'sunrise', '512']))
         self.assertEqual(response, {'time': 'sunrise', 'Rule added': 512})
 
     def test_12_remove_rule(self):
         # Delete a rule by timestamp
-        response = parse_command(target_ip, ['remove_rule', 'device1', '04:00'])
+        response = asyncio.run(request(target_ip, ['remove_rule', 'device1', '04:00']))
         self.assertEqual(response, {'Deleted': '04:00'})
 
         # Delete a rule by keyword
-        response = parse_command(target_ip, ['remove_rule', 'device1', 'sunrise'])
+        response = asyncio.run(request(target_ip, ['remove_rule', 'device1', 'sunrise']))
         self.assertEqual(response, {'Deleted': 'sunrise'})
 
     def test_13_save_rules(self):
         # Send command, verify response
-        response = parse_command(target_ip, ['save_rules'])
+        response = asyncio.run(request(target_ip, ['save_rules']))
         self.assertEqual(response, {"Success": "Rules written to disk"})
 
     def test_14_get_schedule_keywords(self):
         # Get keywords, should contain sunrise and sunset
-        response = parse_command(target_ip, ['get_schedule_keywords'])
+        response = asyncio.run(request(target_ip, ['get_schedule_keywords']))
         self.assertEqual(len(response), 2)
         self.assertIn('sunrise', response.keys())
         self.assertIn('sunset', response.keys())
 
     def test_15_add_schedule_keyword(self):
         # Add keyword, confirm added
-        response = parse_command(target_ip, ['add_schedule_keyword', 'sleep', '23:00'])
+        response = asyncio.run(request(target_ip, ['add_schedule_keyword', {'sleep': '23:00'}]))
         self.assertEqual(response, {"Keyword added": 'sleep', "time": '23:00'})
 
     def test_16_remove_schedule_keyword(self):
         # Remove keyword, confirm removed
-        response = parse_command(target_ip, ['remove_schedule_keyword', 'sleep'])
+        response = asyncio.run(request(target_ip, ['remove_schedule_keyword', 'sleep']))
         self.assertEqual(response, {"Keyword removed": 'sleep'})
 
     def test_17_save_schedule_keywords(self):
-        response = parse_command(target_ip, ['save_schedule_keywords'])
+        response = asyncio.run(request(target_ip, ['save_schedule_keywords']))
         self.assertEqual(response, {"Success": "Keywords written to disk"})
 
     def test_18_get_attributes(self):
-        response = parse_command(target_ip, ['get_attributes', 'sensor1'])
+        response = asyncio.run(request(target_ip, ['get_attributes', 'sensor1']))
         keys = response.keys()
         self.assertIn('_type', keys)
         self.assertIn('rule_queue', keys)
@@ -152,63 +150,63 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['nickname'], 'sensor1')
 
     def test_19_ir(self):
-        response = parse_command(target_ip, ['ir', 'tv', 'power'])
+        response = asyncio.run(request(target_ip, ['ir_key', 'tv', 'power']))
         self.assertEqual(response, {'tv': 'power'})
 
-        response = parse_command(target_ip, ['ir', 'ac', 'OFF'])
+        response = asyncio.run(request(target_ip, ['ir_key', 'ac', 'OFF']))
         self.assertEqual(response, {'ac': 'OFF'})
 
-        #response = parse_command(target_ip, ['ir', 'backlight', 'on'])
+        #response = asyncio.run(request(target_ip, ['ir_key', 'backlight', 'on']))
         #self.assertEqual(response, {'backlight': 'on'})
 
     def test_20_get_temp(self):
-        response = parse_command(target_ip, ['get_temp'])
+        response = asyncio.run(request(target_ip, ['get_temp']))
         self.assertEqual(len(response), 1)
         self.assertIsInstance(response["Temp"], float)
 
     def test_21_get_humid(self):
-        response = parse_command(target_ip, ['get_humid'])
+        response = asyncio.run(request(target_ip, ['get_humid']))
         self.assertEqual(len(response), 1)
         self.assertIsInstance(response["Humidity"], float)
 
     def test_22_get_climate(self):
-        response = parse_command(target_ip, ['get_climate'])
+        response = asyncio.run(request(target_ip, ['get_climate_data']))
         self.assertEqual(len(response), 2)
         self.assertIsInstance(response["humid"], float)
         self.assertIsInstance(response["temp"], float)
 
     def test_23_clear_log(self):
-        response = parse_command(target_ip, ['clear_log'])
+        response = asyncio.run(request(target_ip, ['clear_log']))
         self.assertEqual(response, {'clear_log': 'success'})
 
     def test_24_condition_met(self):
-        response = parse_command(target_ip, ['condition_met', 'sensor1'])
+        response = asyncio.run(request(target_ip, ['condition_met', 'sensor1']))
         self.assertEqual(len(response), 1)
         self.assertIn("Condition", response.keys())
 
     def test_25_trigger_sensor(self):
-        response = parse_command(target_ip, ['trigger_sensor', 'sensor1'])
+        response = asyncio.run(request(target_ip, ['trigger_sensor', 'sensor1']))
         self.assertEqual(response, {'Triggered': 'sensor1'})
 
     def test_26_turn_on(self):
         # Ensure enabled
-        parse_command(target_ip, ['enable', 'device1'])
+        asyncio.run(request(target_ip, ['enable', 'device1']))
 
-        response = parse_command(target_ip, ['turn_on', 'device1'])
+        response = asyncio.run(request(target_ip, ['turn_on', 'device1']))
         self.assertEqual(response, {'On': 'device1'})
 
     def test_27_turn_off(self):
         # Ensure enabled
-        parse_command(target_ip, ['enable', 'device1'])
+        asyncio.run(request(target_ip, ['enable', 'device1']))
 
-        response = parse_command(target_ip, ['turn_off', 'device1'])
+        response = asyncio.run(request(target_ip, ['turn_off', 'device1']))
         self.assertEqual(response, {'Off': 'device1'})
 
         # Ensure disabled
-        parse_command(target_ip, ['disable', 'device1'])
+        asyncio.run(request(target_ip, ['disable', 'device1']))
 
         # Should still be able to turn off (but not on)
-        response = parse_command(target_ip, ['turn_off', 'device1'])
+        response = asyncio.run(request(target_ip, ['turn_off', 'device1']))
         self.assertEqual(response, {'Off': 'device1'})
 
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
@@ -216,14 +214,14 @@ class TestParseCommand(unittest.TestCase):
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
     def test_28_enable_regression_test(self):
         # Confirm correct starting conditions
-        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['current_rule'], 'disabled')
         self.assertEqual(response['scheduled_rule'], 'disabled')
         # Enable and turn on to reproduce issue
-        response = parse_command(target_ip, ['enable', 'device3'])
-        response = parse_command(target_ip, ['turn_on', 'device3'])
+        response = asyncio.run(request(target_ip, ['enable', 'device3']))
+        response = asyncio.run(request(target_ip, ['turn_on', 'device3']))
         # Should not crash, should replace unusable rule with default_rule (256) and fade on
-        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['current_rule'], 256)
         self.assertEqual(response['scheduled_rule'], 'disabled')
         self.assertEqual(response['state'], True)
@@ -234,37 +232,37 @@ class TestParseCommand(unittest.TestCase):
     # rule. This caused fade to abort itself after the first step. Fixed in a29f5383.
     def test_29_regression_fade_on(self):
         # Starting conditions
-        parse_command(target_ip, ['set_rule', 'device3', '500'])
-        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
+        response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['fading'], False)
 
         # Start fade
-        parse_command(target_ip, ['set_rule', 'device3', 'fade/505/15'])
-        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        asyncio.run(request(target_ip, ['set_rule', 'device3', 'fade/505/15']))
+        response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['fading']['target'], 505)
 
         # Wait for fade to complete
         time.sleep(16)
-        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['current_rule'], 505)
         self.assertEqual(response['fading'], False)
 
     # Confirm that calling set_rule while a fade is in-progress correctly aborts
     def test_30_abort_fade(self):
         # Starting conditions
-        parse_command(target_ip, ['set_rule', 'device3', '500'])
-        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
+        response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['fading'], False)
 
         # Start 5 minute fade to 505 brightness, confirm started
-        parse_command(target_ip, ['set_rule', 'device3', 'fade/505/300'])
-        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        asyncio.run(request(target_ip, ['set_rule', 'device3', 'fade/505/300']))
+        response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['fading']['target'], 505)
 
         # Wait 5 seconds, then change rule - fade should abort, new rule should be used
         time.sleep(5)
-        parse_command(target_ip, ['set_rule', 'device3', '400'])
-        response = parse_command(target_ip, ['get_attributes', 'device3'])
+        asyncio.run(request(target_ip, ['set_rule', 'device3', '400']))
+        response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['current_rule'], 400)
         self.assertEqual(response['fading'], False)
 
@@ -272,180 +270,177 @@ class TestParseCommand(unittest.TestCase):
 class TestParseCommandInvalid(unittest.TestCase):
 
     def test_31_disable_invalid(self):
-        response = parse_command(target_ip, ['disable', 'device99'])
+        response = asyncio.run(request(target_ip, ['disable', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['disable', 'other'])
-        self.assertEqual(response, {'ERROR': 'Can only disable devices and sensors'})
+        response = asyncio.run(request(target_ip, ['disable', 'other']))
+        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['disable'])
-        self.assertEqual(response, {'Example usage': './api_client.py disable [device|sensor]'})
+        response = asyncio.run(request(target_ip, ['disable']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
     def test_32_disable_in_invalid(self):
-        response = parse_command(target_ip, ['disable_in', 'device99', '5'])
+        response = asyncio.run(request(target_ip, ['disable_in', 'device99', '5']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['disable_in', 'other', '5'])
-        self.assertEqual(response, {'ERROR': 'Can only disable devices and sensors'})
+        response = asyncio.run(request(target_ip, ['disable_in', 'other', '5']))
+        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['disable_in', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Please specify delay in minutes'})
+        response = asyncio.run(request(target_ip, ['disable_in', 'device1']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['disable_in'])
-        self.assertEqual(response, {'Example usage': './api_client.py disable_in [device|sensor] [minutes]'})
+        response = asyncio.run(request(target_ip, ['disable_in']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
     def test_33_enable_invalid(self):
-        response = parse_command(target_ip, ['enable', 'device99'])
+        response = asyncio.run(request(target_ip, ['enable', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['enable', 'other'])
-        self.assertEqual(response, {'ERROR': 'Can only enable devices and sensors'})
+        response = asyncio.run(request(target_ip, ['enable', 'other']))
+        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['enable'])
-        self.assertEqual(response, {'Example usage': './api_client.py enable [device|sensor]'})
+        response = asyncio.run(request(target_ip, ['enable']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
     def test_34_enable_in_invalid(self):
-        response = parse_command(target_ip, ['enable_in', 'device99', '5'])
+        response = asyncio.run(request(target_ip, ['enable_in', 'device99', '5']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['enable_in', 'other', '5'])
-        self.assertEqual(response, {'ERROR': 'Can only enable devices and sensors'})
+        response = asyncio.run(request(target_ip, ['enable_in', 'other', '5']))
+        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['enable_in', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Please specify delay in minutes'})
+        response = asyncio.run(request(target_ip, ['enable_in', 'device1']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['enable_in'])
-        self.assertEqual(response, {'Example usage': './api_client.py enable_in [device|sensor] [minutes]'})
+        response = asyncio.run(request(target_ip, ['enable_in']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
     def test_35_set_rule_invalid(self):
-        response = parse_command(target_ip, ['set_rule'])
-        self.assertEqual(response, {'Example usage': './api_client.py set_rule [device|sensor] [rule]'})
+        response = asyncio.run(request(target_ip, ['set_rule']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['set_rule', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Must specify new rule'})
+        response = asyncio.run(request(target_ip, ['set_rule', 'device1']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['set_rule', 'device99', '5'])
+        response = asyncio.run(request(target_ip, ['set_rule', 'device99', '5']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['set_rule', 'device1', '9999'])
+        response = asyncio.run(request(target_ip, ['set_rule', 'device1', '9999']))
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
     def test_36_reset_rule_invalid(self):
-        response = parse_command(target_ip, ['reset_rule'])
-        self.assertEqual(response, {'Example usage': './api_client.py reset_rule [device|sensor]'})
+        response = asyncio.run(request(target_ip, ['reset_rule']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['reset_rule', 'device99'])
+        response = asyncio.run(request(target_ip, ['reset_rule', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['reset_rule', 'notdevice'])
-        self.assertEqual(response, {'ERROR': 'Can only set rules for devices and sensors'})
+        response = asyncio.run(request(target_ip, ['reset_rule', 'notdevice']))
+        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
     def test_37_get_schedule_rules_invalid(self):
-        response = parse_command(target_ip, ['get_schedule_rules'])
-        self.assertEqual(response, {'Example usage': './api_client.py get_schedule_rules [device|sensor]'})
+        response = asyncio.run(request(target_ip, ['get_schedule_rules']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['get_schedule_rules', 'device99'])
+        response = asyncio.run(request(target_ip, ['get_schedule_rules', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['get_schedule_rules', 'notdevice'])
-        self.assertEqual(response, {'ERROR': 'Only devices and sensors have schedule rules'})
+        response = asyncio.run(request(target_ip, ['get_schedule_rules', 'notdevice']))
+        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
     def test_38_add_rule_invalid(self):
-        response = parse_command(target_ip, ['add_rule'])
-        self.assertEqual(
-            response,
-            {'Example usage': './api_client.py add_rule [device|sensor] [HH:MM] [rule] <overwrite>'}
-        )
+        response = asyncio.run(request(target_ip, ['add_schedule_rule']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['add_rule', 'notdevice'])
-        self.assertEqual(response, {'ERROR': 'Only devices and sensors have schedule rules'})
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'notdevice']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['add_rule', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword followed by rule'})
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['add_rule', 'device1', '99:99'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword followed by rule'})
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '99:99']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['add_rule', 'device1', '08:00'])
-        self.assertEqual(response, {'ERROR': 'Must specify new rule'})
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '08:00']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['add_rule', 'device1', '05:00', '256'])
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '256']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '05:00', '256']))
         self.assertEqual(response, {'ERROR': "Rule already exists at 05:00, add 'overwrite' arg to replace"})
 
-        response = parse_command(target_ip, ['add_rule', 'device1', '05:00', '256', 'del'])
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '05:00', '256', 'del']))
         self.assertEqual(response, {'ERROR': "Rule already exists at 05:00, add 'overwrite' arg to replace"})
 
         # Should get error response from node (cannot regex timestamp without rejecting keyword)
-        response = parse_command(target_ip, ['add_rule', 'device1', '99:13', '256'])
-        self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"})
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '99:13', '256']))
+        self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
-        response = parse_command(target_ip, ['add_rule', 'device99', '09:13', '256'])
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device99', '09:13', '256']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['add_rule', 'device99', '99:13', '256'])
-        self.assertEqual(response, {'ERROR': "Must specify timestamp (HH:MM) or keyword followed by rule"})
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device99', '99:13', '256']))
+        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['add_rule', 'device99', '256'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword followed by rule'})
-
-        response = parse_command(target_ip, ['add_rule', 'device1', '09:13', '9999'])
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '09:13', '9999']))
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
         # Should get error response from node, schedule keyword doesn't exist
-        response = parse_command(target_ip, ['add_rule', 'device1', 'midnight', '50'])
-        self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword followed by rule"})
+        response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', 'midnight', '50']))
+        self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
     def test_39_remove_rule_invalid(self):
-        response = parse_command(target_ip, ['remove_rule'])
-        self.assertEqual(response, {'Example usage': './api_client.py remove_rule [device|sensor] [HH:MM]'})
+        response = asyncio.run(request(target_ip, ['remove_rule']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['remove_rule', 'notdevice'])
-        self.assertEqual(response, {'ERROR': 'Only devices and sensors have schedule rules'})
+        response = asyncio.run(request(target_ip, ['remove_rule', 'notdevice']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['remove_rule', 'device1'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword of rule to remove'})
+        response = asyncio.run(request(target_ip, ['remove_rule', 'device1']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['remove_rule', 'device1', '99:99'])
-        self.assertEqual(response, {'ERROR': 'Must specify timestamp (HH:MM) or keyword of rule to remove'})
+        response = asyncio.run(request(target_ip, ['remove_rule', 'device1', '99:99']))
+        self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
-        response = parse_command(target_ip, ['remove_rule', 'device99', '01:00'])
+        response = asyncio.run(request(target_ip, ['remove_rule', 'device99', '01:00']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['remove_rule', 'device1', '07:16'])
+        response = asyncio.run(request(target_ip, ['remove_rule', 'device1', '07:16']))
         self.assertEqual(response, {'ERROR': 'No rule exists at that time'})
 
-        response = parse_command(target_ip, ['remove_rule', 'device1', 'midnight'])
-        self.assertEqual(response, {"ERROR": 'Must specify timestamp (HH:MM) or keyword of rule to remove'})
+        response = asyncio.run(request(target_ip, ['remove_rule', 'device1', 'midnight']))
+        self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
     def test_40_add_schedule_keyword_invalid(self):
-        response = parse_command(target_ip, ['add_schedule_keyword'])
-        self.assertEqual(response, {"Example usage": "./api_client.py add_schedule_keyword [keyword] [HH:MM]"})
+        response = asyncio.run(request(target_ip, ['add_schedule_keyword']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['add_schedule_keyword', 'new_keyword'])
-        self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
+        response = asyncio.run(request(target_ip, ['add_schedule_keyword', 'new_keyword']))
+        self.assertEqual(response, {"ERROR": "Requires dict with keyword and timestamp"})
 
-        response = parse_command(target_ip, ['add_schedule_keyword', 'new_keyword', '99:99'])
+        response = asyncio.run(request(target_ip, ['add_schedule_keyword', {'new_keyword': '99:99'}]))
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
     def test_41_remove_schedule_keyword_invalid(self):
-        response = parse_command(target_ip, ['remove_schedule_keyword'])
-        self.assertEqual(response, {"Example usage": "./api_client.py remove_schedule_keyword [keyword]"})
+        response = asyncio.run(request(target_ip, ['remove_schedule_keyword']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['remove_schedule_keyword', 'sunrise'])
+        response = asyncio.run(request(target_ip, ['remove_schedule_keyword', 'sunrise']))
         self.assertEqual(response, {"ERROR": "Cannot delete sunrise or sunset"})
 
-        response = parse_command(target_ip, ['remove_schedule_keyword', 'doesnotexist'])
+        response = asyncio.run(request(target_ip, ['remove_schedule_keyword', 'doesnotexist']))
         self.assertEqual(response, {"ERROR": "Keyword does not exist"})
 
     def test_42_get_attributes_invalid(self):
-        response = parse_command(target_ip, ['get_attributes'])
-        self.assertEqual(response, {'Example usage': './api_client.py get_attributes [device|sensor]'})
+        response = asyncio.run(request(target_ip, ['get_attributes']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-        response = parse_command(target_ip, ['get_attributes', 'device99'])
+        response = asyncio.run(request(target_ip, ['get_attributes', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-        response = parse_command(target_ip, ['get_attributes', 'notdevice'])
-        self.assertEqual(response, {'ERROR': 'Must specify device or sensor'})
+        response = asyncio.run(request(target_ip, ['get_attributes', 'notdevice']))
+        self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
     def test_43_ir_invalid(self):
         response = asyncio.run(request(target_ip, ['ir_key']))
@@ -497,7 +492,7 @@ class TestParseCommandInvalid(unittest.TestCase):
 
     def test_46_turn_on_invalid(self):
         # Ensure disabled
-        parse_command(target_ip, ['disable', 'device1'])
+        asyncio.run(request(target_ip, ['disable', 'device1']))
 
         response = asyncio.run(request(target_ip, ['turn_on', 'device1']))
         self.assertEqual(response, {'ERROR': 'device1 is disabled, please enable before turning on'})
