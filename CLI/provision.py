@@ -167,7 +167,7 @@ class Provisioner():
         modules = {os.path.join(repo, i): i.split("/")[1] for i in modules}
 
         # Add unit_test_main.py (must add after dict comprehension, remote name is different)
-        modules[os.path.join(repo, 'tests/unit_test_main.py')] = 'main.py'
+        modules[os.path.join(repo, 'tests', 'firmware', 'unit_test_main.py')] = 'main.py'
 
         result = provision(ip, self.passwd, config, modules)
         print(result['message'])
