@@ -164,7 +164,7 @@ class Provisioner():
 
         # Convert to dict containing pairs of local:remote filesystem paths
         # Local path is uploaded to remote path on target ESP32
-        modules = {os.path.join(repo, i): i.split("/")[1] for i in modules}
+        modules = {os.path.join(repo, i): i.split("/")[-1] for i in modules}
 
         # Add unit_test_main.py (must add after dict comprehension, remote name is different)
         modules[os.path.join(repo, 'tests', 'firmware', 'unit_test_main.py')] = 'main.py'

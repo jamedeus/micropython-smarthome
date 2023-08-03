@@ -166,30 +166,36 @@ class TestInstantiation(TestCase):
             os.path.join(repo, 'sensors', 'Dummy.py'): 'Dummy.py',
             os.path.join(repo, 'sensors', 'Switch.py'): 'Switch.py',
             os.path.join(repo, 'sensors', 'Desktop_trigger.py'): 'Desktop_trigger.py',
-            os.path.join(repo, 'tests', 'test_device_desktop_target.py'): 'test_device_desktop_target.py',
-            os.path.join(repo, 'tests', 'test_device_tplink.py'): 'test_device_tplink.py',
-            os.path.join(repo, 'tests', 'test_sensor_desktop_trigger.py'): 'test_sensor_desktop_trigger.py',
-            os.path.join(repo, 'tests', 'test_sensor_switch.py'): 'test_sensor_switch.py',
-            os.path.join(repo, 'tests', 'test_sensor_thermostat.py'): 'test_sensor_thermostat.py',
-            os.path.join(repo, 'tests', 'test_device_apitarget.py'): 'test_device_apitarget.py',
-            os.path.join(repo, 'tests', 'test_device_wled.py'): 'test_device_wled.py',
-            os.path.join(repo, 'tests', 'test_device_dumbrelay.py'): 'test_device_dumbrelay.py',
-            os.path.join(repo, 'tests', 'test_core_config.py'): 'test_core_config.py',
-            os.path.join(repo, 'tests', 'test_api_api.py'): 'test_api_api.py',
-            os.path.join(repo, 'tests', 'test_device_mosfet.py'): 'test_device_mosfet.py',
-            os.path.join(repo, 'tests', 'test_device_irblaster.py'): 'test_device_irblaster.py',
-            os.path.join(repo, 'tests', 'test_sensor_motionsensor.py'): 'test_sensor_motionsensor.py',
-            os.path.join(repo, 'tests', 'test_device_ledstrip.py'): 'test_device_ledstrip.py',
-            os.path.join(repo, 'tests', 'test_sensor_dummy.py'): 'test_sensor_dummy.py',
-            os.path.join(repo, 'tests', 'test_device_relay.py'): 'test_device_relay.py',
-            os.path.join(repo, 'tests', 'test_core_main_loop.py'): 'test_core_main_loop.py',
-            os.path.join(repo, 'tests', 'test_core_softwaretimer.py'): 'test_core_softwaretimer.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_desktop_target.py'): 'test_device_desktop_target.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_device.py'): 'test_device_device.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_dimmablelight.py'): 'test_device_dimmablelight.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_tplink.py'): 'test_device_tplink.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_sensor_desktop_trigger.py'): 'test_sensor_desktop_trigger.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_sensor_switch.py'): 'test_sensor_switch.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_sensor_sensor.py'): 'test_sensor_sensor.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_sensor_thermostat.py'): 'test_sensor_thermostat.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_apitarget.py'): 'test_device_apitarget.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_wled.py'): 'test_device_wled.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_dumbrelay.py'): 'test_device_dumbrelay.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_core_config.py'): 'test_core_config.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_api_api.py'): 'test_api_api.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_mosfet.py'): 'test_device_mosfet.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_irblaster.py'): 'test_device_irblaster.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_sensor_motionsensor.py'): 'test_sensor_motionsensor.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_ledstrip.py'): 'test_device_ledstrip.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_sensor_dummy.py'): 'test_sensor_dummy.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_relay.py'): 'test_device_relay.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_core_main_loop.py'): 'test_core_main_loop.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_core_softwaretimer.py'): 'test_core_softwaretimer.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_core_util.py'): 'test_core_util.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_core_group.py'): 'test_core_group.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_core_wifi_setup.py'): 'test_core_wifi_setup.py',
             os.path.join(repo, 'core', 'Config.py'): 'Config.py',
             os.path.join(repo, 'core', 'Group.py'): 'Group.py',
             os.path.join(repo, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
             os.path.join(repo, 'core', 'Api.py'): 'Api.py',
             os.path.join(repo, 'core', 'util.py'): 'util.py',
-            os.path.join(repo, 'tests', 'unit_test_main.py'): 'main.py'
+            os.path.join(repo, 'tests', 'firmware', 'unit_test_main.py'): 'main.py'
         }
 
         # Mock args to upload unit tests to 192.168.1.123
@@ -204,8 +210,9 @@ class TestInstantiation(TestCase):
 
             # Instantiate, confirm called once with given IP + test modules
             Provisioner(args, '')
-            self.assertTrue(mock_provision.called_with('192.168.1.123'))
-            self.assertTrue(mock_provision.called_with(test_modules))
+            args = mock_provision.call_args[0]
+            self.assertEqual(args[0], '192.168.1.123')
+            self.assertEqual(args[3], test_modules)
             self.assertTrue(mock_provision.called_once)
 
     def test_provision_manual_args(self):
