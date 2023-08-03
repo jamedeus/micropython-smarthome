@@ -1059,6 +1059,27 @@ class TestEndpointErrors(TestCase):
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', '5:00'])
             self.assertEqual(response, {"ERROR": "Must specify timestamp (HH:MM) or keyword of rule to remove"})
 
+    # Original bug: Delay argument for enable_in, disable_in was cast to float with no
+    # error handling, leading to uncaught exception when an invalid argument was given.
+    def test_regression_enable_in_disable_in_invalid_delay(self):
+        # Confirm correct error for string delay, confirm request not called
+        with patch('api_endpoints.request') as mock_request:
+            response = parse_command('192.168.1.123', ['enable_in', 'device1', 'string'])
+            self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
+            self.assertFalse(mock_request.called)
+
+        # Confirm correct error for NaN delay, confirm request not called
+        with patch('api_endpoints.request') as mock_request:
+            response = parse_command('192.168.1.123', ['enable_in', 'device1', 'NaN'])
+            self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
+            self.assertFalse(mock_request.called)
+
+        # Repeat NaN delay for disable_in, confirm error + request not called
+        with patch('api_endpoints.request') as mock_request:
+            response = parse_command('192.168.1.123', ['disable_in', 'device1', 'NaN'])
+            self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
+            self.assertFalse(mock_request.called)
+
 
 # Test endpoint that loads modal containing existing macro actions
 class EditModalTests(TestCase):

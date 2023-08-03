@@ -1,5 +1,6 @@
 import json
 import asyncio
+from math import isnan
 from functools import wraps
 from helper_functions import valid_timestamp, is_device_or_sensor, is_device, is_sensor, get_schedule_keywords_dict
 
@@ -131,9 +132,13 @@ def disable(ip, target, params):
 def disable_in(ip, target, params):
     try:
         period = float(params[0])
+        if isnan(period):
+            raise ValueError
         return asyncio.run(request(ip, ['disable_in', target, period]))
     except IndexError:
         return {"ERROR": "Please specify delay in minutes"}
+    except ValueError:
+        return {"ERROR": "Delay argument must be int or float"}
 
 
 @add_endpoint("enable")
@@ -149,9 +154,13 @@ def enable(ip, target, params):
 def enable_in(ip, target, params):
     try:
         period = float(params[0])
+        if isnan(period):
+            raise ValueError
         return asyncio.run(request(ip, ['enable_in', target, period]))
     except IndexError:
         return {"ERROR": "Please specify delay in minutes"}
+    except ValueError:
+        return {"ERROR": "Delay argument must be int or float"}
 
 
 @add_endpoint("set_rule")
