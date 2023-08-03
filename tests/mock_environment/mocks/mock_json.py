@@ -1,11 +1,30 @@
 import json
+from math import isnan
+
+
+# Takes list or dict, returns True if any items are NaN, otherwise returns False
+def contains_nan(test):
+    if isinstance(test, dict):
+        # Check keys and values
+        for k, v in test.items():
+            if (isinstance(k, float) and isnan(k)) or (isinstance(v, float) and isnan(v)):
+                return True
+    elif isinstance(test, list):
+        for i in test:
+            if isinstance(i, float) and isnan(i):
+                return True
+    return False
 
 
 # Subclass, catch JSONDecodeError, replace with OSError (match micropython behavior)
+# Raise ValueError if decoded JSON contains NaN to match micropython behavior
 class MockDecoder(json.JSONDecoder):
     def decode(self, s, *args):
         try:
-            return super().decode(s)
+            decoded = super().decode(s)
+            if contains_nan(decoded):
+                raise ValueError("syntax error in JSON")
+            return decoded
         except json.JSONDecodeError:
             raise OSError
 

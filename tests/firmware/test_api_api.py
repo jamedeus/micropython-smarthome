@@ -768,6 +768,16 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['disable_in', 'sensor1', 'NaN'])
         self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
 
+    # Original bug: run_client had no error handling when decoding received JSON, leading to
+    # uncaught ValueError. This occurred when testing the bug fixed above by sending NaN with
+    # api_client, which parses it to float before encoding as JSON. NaN is supported in JSON
+    # on cpython but not micropython. This lead to crash when micropython attempted to parse
+    # JSON containing NaN (rather than "NaN" string). Should now catch and return error.
+    def test_43_regression_received_invalid_json(self):
+        # Micropython's json module cannot parse NaN
+        response = self.send_command(['enable_in', 'sensor1', float('NaN')])
+        self.assertEqual(response, {"ERROR": "Syntax error in received JSON"})
+
     # Must run last, lock in reboot coro blocks future API requests
     @cpython_only
     def test_999_reboot_endpoint(self):

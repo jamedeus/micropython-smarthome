@@ -4,7 +4,7 @@ This directory contains mocked versions of modules exclusive to Micropython. Thi
 
 ## Json module
 
-The `runtests.py` script replaces `json.loads` and `json.JSONDecoder` with mocks that handle invalid syntax by raising OSError (rather than JSONDecodeError). This matches the behavior of micropython's json module, which does not implement JSONDecodeError.
+The `runtests.py` script replaces `json.loads` and `json.JSONDecoder` with mocks that handle invalid syntax by raising OSError (rather than JSONDecodeError). This matches the behavior of micropython's json module, which does not implement JSONDecodeError. The JSONDecoder mock also raises a ValueError if the encoded JSON contains NaN (not suppoorted on micropython).
 
 ## Logging module
 

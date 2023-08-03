@@ -162,6 +162,12 @@ class Api:
             pass
         except asyncio.TimeoutError:
             pass
+        # Return error if request JSON is invalid
+        except ValueError:
+            if http:
+                swriter.write("HTTP/1.0 400 NA\r\nContent-Type: application/json\r\n\r\n".encode())
+            swriter.write(json.dumps({"ERROR": "Syntax error in received JSON"}).encode())
+
         # Client disconnected, close socket
         swriter.close()
         await swriter.wait_closed()
