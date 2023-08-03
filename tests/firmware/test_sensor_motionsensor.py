@@ -166,3 +166,9 @@ class TestMotionSensor(unittest.TestCase):
         response = self.instance.increment_rule("NaN")
         self.assertEqual(response, {'ERROR': 'Invalid argument nan'})
         self.assertEqual(self.instance.current_rule, 5.0)
+
+    # Original bug: validator accepted any argument that could be cast to float. Since
+    # NaN is a valid float it was accepted, leading to a broken reset timer. Now rejects.
+    def test_13_regression_validator_accepts_nan(self):
+        # Attempt to set rule to NaN, should reject
+        self.assertFalse(self.instance.set_rule("NaN"))
