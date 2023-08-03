@@ -154,3 +154,15 @@ class TestMotionSensor(unittest.TestCase):
         except AttributeError:
             # Should raise exception, test passed
             self.assertTrue(True)
+
+    # Original bug: increment_rule cast argument to float inside try/except, relying
+    # on exception to detect invalid argument. Since NaN is a valid float no exception
+    # was raised and rule changed to NaN, leading to exception when motion detected.
+    def test_12_regression_increment_by_nan(self):
+        # Starting condition
+        self.instance.set_rule(5)
+
+        # Attempt to increment by NaN, confirm error, confirm rule does not change
+        response = self.instance.increment_rule("NaN")
+        self.assertEqual(response, {'ERROR': 'Invalid argument nan'})
+        self.assertEqual(self.instance.current_rule, 5.0)

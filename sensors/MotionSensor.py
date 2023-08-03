@@ -1,4 +1,5 @@
 import logging
+from math import isnan
 from machine import Pin
 import SoftwareTimer
 from Sensor import Sensor
@@ -53,9 +54,17 @@ class MotionSensor(Sensor):
 
     # Takes positive or negative float, adds to self.current_rule
     def increment_rule(self, amount):
+        # Throw error if arg is not int or float
+        try:
+            amount = float(amount)
+            if isnan(amount):
+                raise ValueError
+        except (ValueError, TypeError):
+            return {"ERROR": f"Invalid argument {amount}"}
+
         # Add amount to current rule
         try:
-            new = float(self.current_rule) + float(amount)
+            new = float(self.current_rule) + amount
         except (ValueError, TypeError):
             return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
 

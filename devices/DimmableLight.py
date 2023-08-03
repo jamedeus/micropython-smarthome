@@ -57,6 +57,12 @@ class DimmableLight(Device):
 
     # Takes positive or negative int, adds to self.current_rule
     def increment_rule(self, amount):
+        # Throw error if arg is not int
+        try:
+            amount = int(amount)
+        except (ValueError, TypeError):
+            return {"ERROR": f"Invalid argument {amount}"}
+
         # Add amount to current rule
         try:
             new = int(self.current_rule) + int(amount)

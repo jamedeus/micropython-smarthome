@@ -251,3 +251,16 @@ class TestThermostat(unittest.TestCase):
         except AttributeError:
             # Should raise exception, test passed
             self.assertTrue(True)
+
+    # Original bug: increment_rule cast argument to float inside try/except, relying
+    # on exception to detect invalid argument. Since NaN is a valid float no exception
+    # was raised and set_rule was called with NaN. The validator correctly rejected NaN
+    # but with an ambiguous error. NaN is now rejected directly by increment_rule.
+    def test_16_regression_increment_by_nan(self):
+        # Starting condition
+        self.instance.set_rule(70)
+
+        # Attempt to increment by NaN, confirm error, confirm rule does not change
+        response = self.instance.increment_rule("NaN")
+        self.assertEqual(response, {'ERROR': 'Invalid argument nan'})
+        self.assertEqual(self.instance.current_rule, 70.0)

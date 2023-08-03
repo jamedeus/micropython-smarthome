@@ -322,3 +322,22 @@ class TestDimmableLight(unittest.TestCase):
         # Run first step of fade, confirm fade is not canceled
         self.instance.fade()
         self.assertTrue(isinstance(self.instance.fading, dict))
+
+    # Original issue: set_rule cast both arg and current_rule to int inside try/except,
+    # which was intended to detect string current_rule (disabled etc) and return an error.
+    # Invalid arguments also raised exceptions here and returned the same error, indicating
+    # a problem with current_rule when the actual issue was the arg to increment_rule. Now
+    # casts in 2 separate try/except blocks and returns more helpful errors.
+    def test_19_regression_increment_rule_by_non_integer(self):
+        # Starting condition
+        self.instance.set_rule(70)
+
+        # Attempt to increment by NaN, confirm error, confirm rule does not change
+        response = self.instance.increment_rule("NaN")
+        self.assertEqual(response, {'ERROR': 'Invalid argument NaN'})
+        self.assertEqual(self.instance.current_rule, 70.0)
+
+        # Attempt to increment by list, confirm error, confirm rule does not change
+        response = self.instance.increment_rule([5])
+        self.assertEqual(response, {'ERROR': 'Invalid argument [5]'})
+        self.assertEqual(self.instance.current_rule, 70.0)
