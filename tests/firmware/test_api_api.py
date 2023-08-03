@@ -752,9 +752,25 @@ class TestApi(unittest.TestCase):
             }
         )
 
+    # Original bug: enable_in and disable_in cast delay argument to float with no error handling,
+    # leading to exceptions when invalid arguments were received. In production this could only
+    # occur when argument was NaN, other types were rejected by client-side validation.
+    def test_42_regression_enable_in_disable_in_invalid_arguments(self):
+        # Confirm correct error for string argument
+        response = self.send_command(['enable_in', 'sensor1', 'foo'])
+        self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
+        response = self.send_command(['disable_in', 'sensor1', 'foo'])
+        self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
+
+        # Confirm correct error for NaN argument
+        response = self.send_command(['enable_in', 'sensor1', 'NaN'])
+        self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
+        response = self.send_command(['disable_in', 'sensor1', 'NaN'])
+        self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
+
     # Must run last, lock in reboot coro blocks future API requests
     @cpython_only
-    def test_42_reboot_endpoint(self):
+    def test_999_reboot_endpoint(self):
         # Confirm reset not yet called
         reset.called = False
         self.assertFalse(reset.called)

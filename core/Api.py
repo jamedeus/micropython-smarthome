@@ -2,6 +2,7 @@ import re
 import gc
 import json
 import logging
+from math import isnan
 import uasyncio as asyncio
 from uasyncio import Lock
 from functools import wraps
@@ -199,7 +200,12 @@ def enable(target, args):
 @app.required_args(2)
 @app.get_target_instance
 def enable_for(target, args):
-    period = float(args[0]) * 60000
+    try:
+        period = float(args[0]) * 60000
+        if isnan(period):
+            raise ValueError
+    except (ValueError, TypeError):
+        return {"ERROR": "Delay argument must be int or float"}
     SoftwareTimer.timer.create(period, target.enable, "API")
     return {"Enabled": target.name, "Enable_in_seconds": period / 1000}
 
@@ -216,7 +222,12 @@ def disable(target, args):
 @app.required_args(2)
 @app.get_target_instance
 def disable_for(target, args):
-    period = float(args[0]) * 60000
+    try:
+        period = float(args[0]) * 60000
+        if isnan(period):
+            raise ValueError
+    except (ValueError, TypeError):
+        return {"ERROR": "Delay argument must be int or float"}
     SoftwareTimer.timer.create(period, target.disable, "API")
     return {"Disabled": target.name, "Disable_in_seconds": period / 1000}
 
