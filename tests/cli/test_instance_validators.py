@@ -331,3 +331,8 @@ class ValidatorErrorTests(TestCase):
         # Confirm rejected with correct error
         self.assertEqual(validate_rules(self.config['device1']), 'min_bright cannot be greater than max_bright')
         self.assertEqual(validate_rules(self.config['device8']), 'min_bright cannot be greater than max_bright')
+
+    # Original bug: motion_sensor_validator only required float, allowing
+    # NaN (which is a valid float, but breaks arithmetic) to be accepted.
+    def test_regression_motion_sensor_accepts_nan(self):
+        self.assertFalse(motion_sensor_validator(float('NaN'), min_bright='1', max_bright='100'))

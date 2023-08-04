@@ -1,4 +1,5 @@
 import json
+from math import isnan
 from functools import wraps
 from helper_functions import is_device_or_sensor, is_sensor
 
@@ -315,8 +316,11 @@ def motion_sensor_validator(rule, **kwargs):
     try:
         if rule is None:
             return True
-        # Prevent incorrectly accepting True and False (next condition casts to 1.0, 0.0 respectively)
+        # Prevent incorrectly accepting True and False (last condition casts to 1.0, 0.0 respectively)
         elif isinstance(rule, bool):
+            return False
+        # Prevent accepting NaN (is valid float but breaks arithmetic)
+        elif isnan(float(rule)):
             return False
         else:
             # Confirm can cast to float
