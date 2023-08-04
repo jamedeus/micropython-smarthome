@@ -138,22 +138,11 @@ class TestMotionSensor(unittest.TestCase):
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
     def test_11_regression_invalid_default_rule(self):
-        # assertRaises fails for some reason, this approach seems reliable
-        try:
+        with self.assertRaises(AttributeError):
             MotionSensor("sensor1", "sensor1", "pir", "disabled", [], 15)
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
-        try:
+        with self.assertRaises(AttributeError):
             MotionSensor("sensor1", "sensor1", "pir", "enabled", [], 15)
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
     # Original bug: increment_rule cast argument to float inside try/except, relying
     # on exception to detect invalid argument. Since NaN is a valid float no exception

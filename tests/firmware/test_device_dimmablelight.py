@@ -29,13 +29,8 @@ class TestDimmableLight(unittest.TestCase):
 
     def test_02_instantiate_with_invalid_min_max(self):
         # AttributeError should be raised if default_rule is outside limits
-        try:
+        with self.assertRaises(AttributeError):
             DimmableLight("device1", "device1", "DimmableLight", True, 50, 500, "1", "100")
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
     def test_03_rule_validation_valid(self):
         # Should accept int between min_bright and max_bright
@@ -270,22 +265,11 @@ class TestDimmableLight(unittest.TestCase):
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
     def test_16_regression_invalid_default_rule(self):
-        # assertRaises fails for some reason, this approach seems reliable
-        try:
+        with self.assertRaises(AttributeError):
             DimmableLight("device1", "device1", "DimmableLight", True, 50, "disabled", "1", "100")
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
-        try:
+        with self.assertRaises(AttributeError):
             DimmableLight("device1", "device1", "DimmableLight", True, 50, "enabled", "1", "100")
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
     # Original issue: DimmableLight.set_rule contains a conditional to abort an in-progress fade if
     # brightness is changed in the opposite direction. This is determined by checking if the new rule

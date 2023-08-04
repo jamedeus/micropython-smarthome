@@ -193,22 +193,11 @@ class TestApiTarget(unittest.TestCase):
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
     def test_14_regression_invalid_default_rule(self):
-        # assertRaises fails for some reason, this approach seems reliable
-        try:
+        with self.assertRaises(AttributeError):
             ApiTarget("device1", "device1", "api-target", "disabled", config["mock_receiver"]["ip"])
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
-        try:
+        with self.assertRaises(AttributeError):
             ApiTarget("device1", "device1", "api-target", "enabled", config["mock_receiver"]["ip"])
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
     # Original bug: Rejected turn_on, turn_off, reset_rule commands (all valid)
     def test_15_regression_rejects_valid_rules(self):

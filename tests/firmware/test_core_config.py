@@ -254,30 +254,14 @@ class TestConfig(unittest.TestCase):
 
     def test_11_instantiate_hardware_errors(self):
         # Should raise ValueError when attempting to instantiate unknown type
-        # assertRaises fails for some reason, this approach seems reliable
-        try:
+        with self.assertRaises(ValueError):
             instantiate_hardware('device1', _type='invalid')
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except ValueError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
-        try:
+        with self.assertRaises(ValueError):
             instantiate_hardware('sensor1', _type='invalid')
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except ValueError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
-        try:
+        with self.assertRaises(ValueError):
             instantiate_hardware('ir_blaster')
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except ValueError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
     def test_12_invalid_types_in_config(self):
         # Undo instantiate_peripherals

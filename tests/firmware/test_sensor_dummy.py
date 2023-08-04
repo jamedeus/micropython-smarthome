@@ -82,19 +82,8 @@ class TestDummySensor(unittest.TestCase):
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
     def test_08_regression_invalid_default_rule(self):
-        # assertRaises fails for some reason, this approach seems reliable
-        try:
+        with self.assertRaises(AttributeError):
             Dummy("sensor1", "sensor1", "dummy", "disabled", [])
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
 
-        try:
+        with self.assertRaises(AttributeError):
             Dummy("sensor1", "sensor1", "dummy", "enabled", [])
-            # Should not make it to this line, test failed
-            self.assertFalse(True)
-        except AttributeError:
-            # Should raise exception, test passed
-            self.assertTrue(True)
