@@ -778,6 +778,19 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['enable_in', 'sensor1', float('NaN')])
         self.assertEqual(response, {"ERROR": "Syntax error in received JSON"})
 
+    # Original bug: increment_rule endpoint response was determined by checking the return
+    # value of increment_rule method in bare conditional, assuming the method only returned
+    # True and False. Method can also return error JSON, which was interpretted as success
+    # resulting in success message instead of error.
+    def test_44_regression_increment_rule_wrong_error(self):
+        # Call with invalid argument, confirm correct error
+        response = self.send_command(['increment_rule', 'sensor1', 'string'])
+        self.assertEqual(response, {'ERROR': 'Invalid argument string'})
+
+        # Call with NaN argument, confirm correct error
+        response = self.send_command(['increment_rule', 'sensor1', float('NaN')])
+        self.assertEqual(response, {"ERROR": "Syntax error in received JSON"})
+
     # Must run last, lock in reboot coro blocks future API requests
     @cpython_only
     def test_999_reboot_endpoint(self):

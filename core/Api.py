@@ -261,10 +261,13 @@ def increment_rule(target, args):
     if "increment_rule" not in dir(target):
         return {"ERROR": "Unsupported target, must accept int or float rule"}
 
-    if target.increment_rule(args[0]):
+    response = target.increment_rule(args[0])
+    if response is True:
         return {target.name: target.current_rule}
-    else:
+    elif response is False:
         return {"ERROR": "Invalid rule"}
+    else:
+        return response
 
 
 @app.route("reset_rule")
