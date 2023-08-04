@@ -2,7 +2,7 @@
 
 This directory contains all unit tests for the project (except django, see [frontend](frontend/)).
 - `CLI`: Tests for the [command line tools](/CLI/) used to create and manage nodes
-- `client`: (currently broken) Tests that make API calls against a baremetal ESP32 node
+- `client`: Tests that make API calls to a baremetal ESP32 node and verify responses
 - `firmware`: Tests written in micropython that run on a baremetal ESP32 with results read over UART
 - `mock_environment`: A mocked environment to run the firmware tests on cpython for coverage measurement
 
@@ -20,9 +20,21 @@ pipenv run coverage report -m --precision=1
 
 ## Client
 
-The client tests are not currently functional.
+These tests make an exhuastive set of API calls to an ESP32 with a [mocked config file](/tests/client/client_test_config.json). The same calls are made using both the custom protocol and HTTP. This enables much more thorough coverage of responses and errors than can be achieved with tests running directly on an ESP32, where memory fragmentation limits the number of tests that can be run.
 
-These tests send an exhuastive set of API calls to an ESP32 with a [mocked config file](/tests/client/client_test_config.json) and verify the responses.
+Client tests require an ESP32 with [firmware](https://gitlab.com/jamedeus/micropython-smarthome/-/releases) flashed and wifi connected. The [test script](/tests/client/runtests.py) can upload the mocked config file automatically.
+
+Upload config and run tests in 1 step:
+```
+./tests/client/runtests.py --ip <target-node-ip> --upload
+```
+
+Run tests without uploading config:
+```
+./tests/client/runtests.py --ip <target-node-ip>
+```
+
+Coverage measurement is not possible since the code under test runs on a remote host (ESP32).
 
 ## Firmware
 
@@ -43,4 +55,4 @@ Once the core tests complete the results will be printed followed by a menu used
 
 ## Mock Environment
 
-The mock environment runs firmware tests in cpython for coverage measurement, see [here](/tests/mock_environment/readme.md) for details.
+The mock environment runs firmware tests in cpython for coverage measurement, see [here](/tests/mock_environment/readme.md) for details. No hardware is required to run these tests.

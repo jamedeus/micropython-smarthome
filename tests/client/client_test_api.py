@@ -1,10 +1,17 @@
+import os
 import time
 import asyncio
 import unittest
-from util.Webrepl import Webrepl
-from util.api_endpoints import request
+from Webrepl import Webrepl
+from api_endpoints import request
 
-target_ip = '192.168.1.213'
+# Get absolute paths to tests dir, repo root dir
+client_tests_dir = os.path.dirname(os.path.realpath(__file__))
+repo_dir = os.path.dirname(os.path.dirname(client_tests_dir))
+
+# Read target IP from disk
+with open(os.path.join(client_tests_dir, 'CLIENT_TEST_TARGET_IP'), 'r') as file:
+    target_ip = file.read()
 
 
 class TestParseCommand(unittest.TestCase):
@@ -13,7 +20,7 @@ class TestParseCommand(unittest.TestCase):
     def test_01(self):
         # Re-upload config file (modified by save methods, breaks next test)
         node = Webrepl(target_ip)
-        node.put_file('tests/client/client_test_config.json', 'config.json')
+        node.put_file(os.path.join(client_tests_dir, 'client_test_config.json'), 'config.json')
         node.close_connection()
 
         response = asyncio.run(request(target_ip, ['reboot']))
