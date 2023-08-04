@@ -248,3 +248,44 @@ class TestThermostat(unittest.TestCase):
         response = self.instance.increment_rule("NaN")
         self.assertEqual(response, {'ERROR': 'Invalid argument nan'})
         self.assertEqual(self.instance.current_rule, 70.0)
+
+    # Original bug: get_threshold was called by set_rule method, but enable method set
+    # current_rule directly without calling set_rule. This could result in inaccurate
+    # thresholds, effectively ignoring the current_rule.
+    def test_17_regression_fail_to_update_thresholds(self):
+        # Confirm initial thresholds
+        self.instance.set_rule(70)
+        self.instance.tolerance = 1.0
+        self.assertEqual(self.instance.on_threshold, 71.0)
+        self.assertEqual(self.instance.off_threshold, 69.0)
+
+        # Set scheduled rule different than current (requires new thresholds)
+        self.instance.scheduled_rule = 75
+
+        # Set rule to disabled, re-enable, scheduled_rule should take effect
+        self.instance.set_rule('disabled')
+        self.instance.enable()
+        self.assertEqual(self.instance.current_rule, 75.0)
+
+        # Confirm thresholds updated correctly
+        self.assertEqual(self.instance.on_threshold, 76.0)
+        self.assertEqual(self.instance.off_threshold, 74.0)
+
+    # Original bug: Enable method handled current_rule == 'disabled' by arbitrarily setting
+    # scheduled_rule as current_rule with no validation. This made it possible for a string
+    # representation of float to be set as current_rule, raising exception when get_threshold
+    # method called. Now uses set_rule method to cast rule to required type.
+    def test_18_regression_enable_sets_string_rule(self):
+        # Set scheduled_rule to string representation of int
+        self.instance.scheduled_rule = '70.0'
+
+        # Set rule to disabled to trigger first conditional in enable method
+        self.instance.set_rule('disabled')
+        self.assertEqual(self.instance.current_rule, 'disabled')
+
+        # Enable, should fall back to scheduled_rule and cast to int
+        self.instance.enable()
+        self.assertEqual(self.instance.current_rule, 70.0)
+
+        # Call get_threshold method, should not crash
+        self.instance.get_threshold()
