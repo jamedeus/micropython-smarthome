@@ -41,12 +41,12 @@ class Thermostat(Sensor):
             return True
 
         elif self.mode == "cool":
-            self.on_threshold = self.current_rule + self.tolerance
-            self.off_threshold = self.current_rule - self.tolerance
+            self.on_threshold = float(self.current_rule) + float(self.tolerance)
+            self.off_threshold = float(self.current_rule) - float(self.tolerance)
 
         elif self.mode == "heat":
-            self.on_threshold = self.current_rule - self.tolerance
-            self.off_threshold = self.current_rule + self.tolerance
+            self.on_threshold = float(self.current_rule) - float(self.tolerance)
+            self.off_threshold = float(self.current_rule) + float(self.tolerance)
 
     def set_rule(self, rule):
         valid = super().set_rule(rule)

@@ -45,10 +45,10 @@ class Sensor():
         if self.current_rule == "disabled":
             # Revert to scheduled rule unless it is also "disabled"
             if not str(self.scheduled_rule).lower() == "disabled":
-                self.current_rule = self.scheduled_rule
+                self.set_rule(self.scheduled_rule)
             # Last resort: revert to default_rule
             else:
-                self.current_rule = self.default_rule
+                self.set_rule(self.default_rule)
 
     def disable(self):
         self.enabled = False
