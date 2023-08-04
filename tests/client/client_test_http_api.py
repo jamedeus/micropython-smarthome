@@ -15,10 +15,9 @@ class TestEndpoint(unittest.TestCase):
         node.put_file('tests/client/client_test_config.json', 'config.json')
         node.close_connection()
 
+        # Reboot test node, wait 30 seconds before running next test
         response = requests.get(f'http://{target_ip}:8123/reboot')
         self.assertEqual(response.json(), "Rebooting")
-
-        # Wait for node to finish booting before running next test
         time.sleep(30)
 
     def test_02_status(self):
@@ -49,12 +48,21 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/set_rule?sensor1/1')
         self.assertEqual(response.json(), {'sensor1': '1'})
 
-    def test_08_reset_rule(self):
+    def test_08_increment_rule(self):
+        # Increment by 1, confirm correct rule
+        response = requests.get(f'http://{target_ip}:8123/increment_rule?sensor1/1')
+        self.assertEqual(response.json(), {'sensor1': 2})
+
+        # Increment beyond max range, confirm rule set to max
+        response = requests.get(f'http://{target_ip}:8123/increment_rule?device1/99999')
+        self.assertEqual(response.json(), {'device1': 1023})
+
+    def test_09_reset_rule(self):
         response = requests.get(f'http://{target_ip}:8123/reset_rule?sensor1')
-        self.assertEqual(response.json()["sensor1"], 'Reverted to scheduled rule')
+        self.assertEqual(response.json(), {'sensor1': 'Reverted to scheduled rule', 'current_rule': 5})
 
     # TODO failing
-    def test_09_reset_all_rules(self):
+    def test_10_reset_all_rules(self):
         response = requests.get(f'http://{target_ip}:8123/reset_all_rules')
         self.assertEqual(
             response.json(),
@@ -70,11 +78,11 @@ class TestEndpoint(unittest.TestCase):
         )
 
     # TODO failing
-    def test_10_get_schedule_rules(self):
+    def test_11_get_schedule_rules(self):
         response = requests.get(f'http://{target_ip}:8123/get_schedule_rules?sensor1')
         self.assertEqual(response.json(), {'01:00': 1, '06:00': 5})
 
-    def test_11_add_rule(self):
+    def test_12_add_rule(self):
         # Add a rule at a time where no rule exists
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/04:00/256')
         self.assertEqual(response.json(), {'time': '04:00', 'Rule added': 256})
@@ -95,7 +103,7 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/sunrise/512')
         self.assertEqual(response.json(), {'time': 'sunrise', 'Rule added': 512})
 
-    def test_12_remove_rule(self):
+    def test_13_remove_rule(self):
         # Delete a rule by timestamp
         response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/04:00')
         self.assertEqual(response.json(), {'Deleted': '04:00'})
@@ -104,12 +112,12 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/sunrise')
         self.assertEqual(response.json(), {'Deleted': 'sunrise'})
 
-    def test_13_save_rules(self):
+    def test_14_save_rules(self):
         # Send command, verify response
         response = requests.get(f'http://{target_ip}:8123/save_rules')
         self.assertEqual(response.json(), {"Success": "Rules written to disk"})
 
-    def test_14_get_schedule_keywords(self):
+    def test_15_get_schedule_keywords(self):
         # Get keywords, should contain sunrise and sunset
         response = requests.get(f'http://{target_ip}:8123/get_schedule_keywords')
         self.assertEqual(len(response.json()), 2)
@@ -117,21 +125,21 @@ class TestEndpoint(unittest.TestCase):
         self.assertIn('sunset', response.json().keys())
 
     # Not currently supported, unable to parse url param to dict
-    #def test_15_add_schedule_keyword(self):
+    #def test_16_add_schedule_keyword(self):
         ## Add keyword, confirm added
         #response = requests.get(f'http://{target_ip}:8123/add_schedule_keyword?sleep/23:00')
         #self.assertEqual(response.json(), {"Keyword added": 'sleep', "time": '23:00'})
 
-    #def test_16_remove_schedule_keyword(self):
+    #def test_17_remove_schedule_keyword(self):
         ## Remove keyword, confirm removed
         #response = requests.get(f'http://{target_ip}:8123/remove_schedule_keyword?sleep')
         #self.assertEqual(response.json(), {"Keyword removed": 'sleep'})
 
-    def test_17_save_schedule_keywords(self):
+    def test_18_save_schedule_keywords(self):
         response = requests.get(f'http://{target_ip}:8123/save_schedule_keywords')
         self.assertEqual(response.json(), {"Success": "Keywords written to disk"})
 
-    def test_18_get_attributes(self):
+    def test_19_get_attributes(self):
         response = requests.get(f'http://{target_ip}:8123/get_attributes?sensor1')
         keys = response.json().keys()
         self.assertIn('_type', keys)
@@ -151,7 +159,7 @@ class TestEndpoint(unittest.TestCase):
         self.assertEqual(response.json()['name'], 'sensor1')
         self.assertEqual(response.json()['nickname'], 'sensor1')
 
-    def test_19_ir(self):
+    def test_20_ir(self):
         response = requests.get(f'http://{target_ip}:8123/ir_key?tv/power')
         self.assertEqual(response.json(), {'tv': 'power'})
 
@@ -161,43 +169,43 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/backlight?on')
         self.assertEqual(response.json(), {'backlight': 'on'})
 
-    def test_20_get_temp(self):
+    def test_21_get_temp(self):
         response = requests.get(f'http://{target_ip}:8123/get_temp')
         self.assertEqual(len(response.json()), 1)
         self.assertIsInstance(response.json()["Temp"], float)
 
-    def test_21_get_humid(self):
+    def test_22_get_humid(self):
         response = requests.get(f'http://{target_ip}:8123/get_humid')
         self.assertEqual(len(response.json()), 1)
         self.assertIsInstance(response.json()["Humidity"], float)
 
-    def test_22_get_climate(self):
+    def test_23_get_climate(self):
         response = requests.get(f'http://{target_ip}:8123/get_climate_data')
         self.assertEqual(len(response.json()), 2)
         self.assertIsInstance(response.json()["humid"], float)
         self.assertIsInstance(response.json()["temp"], float)
 
-    def test_23_clear_log(self):
+    def test_24_clear_log(self):
         response = requests.get(f'http://{target_ip}:8123/clear_log')
         self.assertEqual(response.json(), {'clear_log': 'success'})
 
-    def test_24_condition_met(self):
+    def test_25_condition_met(self):
         response = requests.get(f'http://{target_ip}:8123/condition_met?sensor1')
         self.assertEqual(len(response.json()), 1)
         self.assertIn("Condition", response.json().keys())
 
-    def test_25_trigger_sensor(self):
+    def test_26_trigger_sensor(self):
         response = requests.get(f'http://{target_ip}:8123/trigger_sensor?sensor1')
         self.assertEqual(response.json(), {'Triggered': 'sensor1'})
 
-    def test_26_turn_on(self):
+    def test_27_turn_on(self):
         # Ensure enabled
         requests.get(f'http://{target_ip}:8123/enable?device1')
 
         response = requests.get(f'http://{target_ip}:8123/turn_on?device1')
         self.assertEqual(response.json(), {'On': 'device1'})
 
-    def test_27_turn_off(self):
+    def test_28_turn_off(self):
         # Ensure enabled
         requests.get(f'http://{target_ip}:8123/enable?device1')
 
@@ -215,7 +223,7 @@ class TestEndpoint(unittest.TestCase):
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
     # TODO failing again
     # Issue caused by str default_rule - it correctly falls back to 256, but "256"
-    def test_28_enable_regression_test(self):
+    def test_29_enable_regression_test(self):
         # Confirm correct starting conditions
         response = requests.get(f'http://{target_ip}:8123/get_attributes?device3')
         self.assertEqual(response.json()['current_rule'], 'disabled')
@@ -233,7 +241,7 @@ class TestEndpoint(unittest.TestCase):
     # Original bug: LedStrip fade method made calls to set_rule method for each fade step.
     # Later, set_rule was modified to abort an in-progress fade when it received a brightness
     # rule. This caused fade to abort itself after the first step. Fixed in a29f5383.
-    def test_29_regression_fade_on(self):
+    def test_30_regression_fade_on(self):
         # Starting conditions
         requests.get(f'http://{target_ip}:8123/set_rule?device3/500')
         response = requests.get(f'http://{target_ip}:8123/get_attributes?device3')
@@ -251,7 +259,7 @@ class TestEndpoint(unittest.TestCase):
         self.assertEqual(response.json()['fading'], False)
 
     # Confirm that calling set_rule while a fade is in-progress correctly aborts
-    def test_30_abort_fade(self):
+    def test_31_abort_fade(self):
         # Starting conditions
         requests.get(f'http://{target_ip}:8123/set_rule?device3/500')
         response = requests.get(f'http://{target_ip}:8123/get_attributes?device3')
@@ -272,11 +280,11 @@ class TestEndpoint(unittest.TestCase):
 
 class TestEndpointInvalid(unittest.TestCase):
 
-    def test_31_nonexistent_endpoint(self):
+    def test_32_nonexistent_endpoint(self):
         response = requests.get(f'http://{target_ip}:8123/notanendpoint')
         self.assertEqual(response.json(), {'ERROR': 'Invalid command'})
 
-    def test_32_disable_invalid(self):
+    def test_33_disable_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/disable?device99')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
@@ -286,7 +294,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/disable')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
-    def test_33_disable_in_invalid(self):
+    def test_34_disable_in_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/disable_in?device99/5')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
@@ -299,7 +307,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/disable_in')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
-    def test_34_enable_invalid(self):
+    def test_35_enable_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/enable?device99')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
@@ -309,7 +317,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/enable')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
-    def test_35_enable_in_invalid(self):
+    def test_36_enable_in_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/enable_in?device99/5')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
@@ -322,7 +330,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/enable_in')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
-    def test_36_set_rule_invalid(self):
+    def test_37_set_rule_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/set_rule')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
@@ -335,7 +343,23 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/set_rule?device1/9999')
         self.assertEqual(response.json(), {'ERROR': 'Invalid rule'})
 
-    def test_37_reset_rule_invalid(self):
+    def test_38_increment_rule_invalid(self):
+        response = requests.get(f'http://{target_ip}:8123/increment_rule')
+        self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
+
+        response = requests.get(f'http://{target_ip}:8123/increment_rule?sensor1')
+        self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
+
+        response = requests.get(f'http://{target_ip}:8123/increment_rule?sensor1/NaN')
+        self.assertEqual(response.json(), {'ERROR': 'Invalid argument nan'})
+
+        response = requests.get(f'http://{target_ip}:8123/increment_rule?sensor1/string')
+        self.assertEqual(response.json(), {'ERROR': 'Invalid argument string'})
+
+        response = requests.get(f'http://{target_ip}:8123/increment_rule?device2/1')
+        self.assertEqual(response.json(), {'ERROR': 'Unsupported target, must accept int or float rule'})
+
+    def test_39_reset_rule_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/reset_rule')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
@@ -345,7 +369,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/reset_rule?notdevice')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_38_get_schedule_rules_invalid(self):
+    def test_40_get_schedule_rules_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/get_schedule_rules')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
@@ -355,7 +379,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/get_schedule_rules?notdevice')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_39_add_rule_invalid(self):
+    def test_41_add_rule_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
@@ -395,7 +419,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/add_schedule_rule?device1/0913/256')
         self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
-    def test_40_remove_rule_invalid(self):
+    def test_42_remove_rule_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/remove_rule')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
@@ -417,7 +441,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/remove_rule?device1/0913')
         self.assertEqual(response.json(), {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
-    def test_41_get_attributes_invalid(self):
+    def test_43_get_attributes_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/get_attributes')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
@@ -427,7 +451,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/get_attributes?notdevice')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_42_ir_invalid(self):
+    def test_44_ir_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/ir_key')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
@@ -436,6 +460,9 @@ class TestEndpointInvalid(unittest.TestCase):
 
         response = requests.get(f'http://{target_ip}:8123/ir_key?ac')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
+
+        response = requests.get(f'http://{target_ip}:8123/ir_key?foo/on')
+        self.assertEqual(response.json(), {'ERROR': 'No codes found for target "foo"'})
 
         response = requests.get(f'http://{target_ip}:8123/ir_key?ac/power')
         self.assertEqual(response.json(), {'ERROR': 'Target "ac" has no key "power"'})
@@ -452,7 +479,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/backlight?start')
         self.assertEqual(response.json(), {'ERROR': 'Backlight setting must be "on" or "off"'})
 
-    def test_43_condition_met_invalid(self):
+    def test_45_condition_met_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/condition_met')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
@@ -462,7 +489,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/condition_met?sensor99')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_44_trigger_sensor_invalid(self):
+    def test_46_trigger_sensor_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/trigger_sensor')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 
@@ -475,7 +502,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/trigger_sensor?sensor2')
         self.assertEqual(response.json(), {'ERROR': 'Cannot trigger si7021 sensor type'})
 
-    def test_45_turn_on_invalid(self):
+    def test_47_turn_on_invalid(self):
         # Ensure disabled
         requests.get(f'http://{target_ip}:8123/disable?device1')
 
@@ -491,7 +518,7 @@ class TestEndpointInvalid(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/turn_on?device99')
         self.assertEqual(response.json(), {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_46_turn_off_invalid(self):
+    def test_48_turn_off_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/turn_off')
         self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
 

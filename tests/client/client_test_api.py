@@ -50,11 +50,20 @@ class TestParseCommand(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['set_rule', 'sensor1', '1']))
         self.assertEqual(response, {'sensor1': '1'})
 
-    def test_08_reset_rule(self):
-        response = asyncio.run(request(target_ip, ['reset_rule', 'sensor1']))
-        self.assertEqual(response["sensor1"], 'Reverted to scheduled rule')
+    def test_08_increment_rule(self):
+        # Increment by 1, confirm correct rule
+        response = asyncio.run(request(target_ip, ['increment_rule', 'sensor1', '1']))
+        self.assertEqual(response, {'sensor1': 2})
 
-    def test_09_reset_all_rules(self):
+        # Increment beyond max range, confirm rule set to max
+        response = asyncio.run(request(target_ip, ['increment_rule', 'device1', '99999']))
+        self.assertEqual(response, {'device1': 1023})
+
+    def test_09_reset_rule(self):
+        response = asyncio.run(request(target_ip, ['reset_rule', 'sensor1']))
+        self.assertEqual(response, {'sensor1': 'Reverted to scheduled rule', 'current_rule': 5})
+
+    def test_10_reset_all_rules(self):
         response = asyncio.run(request(target_ip, ['reset_all_rules']))
         self.assertEqual(
             response,
@@ -69,11 +78,11 @@ class TestParseCommand(unittest.TestCase):
             }
         )
 
-    def test_10_get_schedule_rules(self):
+    def test_11_get_schedule_rules(self):
         response = asyncio.run(request(target_ip, ['get_schedule_rules', 'sensor1']))
         self.assertEqual(response, {'01:00': 1, '06:00': 5})
 
-    def test_11_add_rule(self):
+    def test_12_add_rule(self):
         # Add a rule at a time where no rule exists
         response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', '04:00', '256']))
         self.assertEqual(response, {'time': '04:00', 'Rule added': 256})
@@ -94,7 +103,7 @@ class TestParseCommand(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', 'sunrise', '512']))
         self.assertEqual(response, {'time': 'sunrise', 'Rule added': 512})
 
-    def test_12_remove_rule(self):
+    def test_13_remove_rule(self):
         # Delete a rule by timestamp
         response = asyncio.run(request(target_ip, ['remove_rule', 'device1', '04:00']))
         self.assertEqual(response, {'Deleted': '04:00'})
@@ -103,33 +112,33 @@ class TestParseCommand(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['remove_rule', 'device1', 'sunrise']))
         self.assertEqual(response, {'Deleted': 'sunrise'})
 
-    def test_13_save_rules(self):
+    def test_14_save_rules(self):
         # Send command, verify response
         response = asyncio.run(request(target_ip, ['save_rules']))
         self.assertEqual(response, {"Success": "Rules written to disk"})
 
-    def test_14_get_schedule_keywords(self):
+    def test_15_get_schedule_keywords(self):
         # Get keywords, should contain sunrise and sunset
         response = asyncio.run(request(target_ip, ['get_schedule_keywords']))
         self.assertEqual(len(response), 2)
         self.assertIn('sunrise', response.keys())
         self.assertIn('sunset', response.keys())
 
-    def test_15_add_schedule_keyword(self):
+    def test_16_add_schedule_keyword(self):
         # Add keyword, confirm added
         response = asyncio.run(request(target_ip, ['add_schedule_keyword', {'sleep': '23:00'}]))
         self.assertEqual(response, {"Keyword added": 'sleep', "time": '23:00'})
 
-    def test_16_remove_schedule_keyword(self):
+    def test_17_remove_schedule_keyword(self):
         # Remove keyword, confirm removed
         response = asyncio.run(request(target_ip, ['remove_schedule_keyword', 'sleep']))
         self.assertEqual(response, {"Keyword removed": 'sleep'})
 
-    def test_17_save_schedule_keywords(self):
+    def test_18_save_schedule_keywords(self):
         response = asyncio.run(request(target_ip, ['save_schedule_keywords']))
         self.assertEqual(response, {"Success": "Keywords written to disk"})
 
-    def test_18_get_attributes(self):
+    def test_19_get_attributes(self):
         response = asyncio.run(request(target_ip, ['get_attributes', 'sensor1']))
         keys = response.keys()
         self.assertIn('_type', keys)
@@ -149,53 +158,54 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['name'], 'sensor1')
         self.assertEqual(response['nickname'], 'sensor1')
 
-    def test_19_ir(self):
+    def test_20_ir(self):
         response = asyncio.run(request(target_ip, ['ir_key', 'tv', 'power']))
         self.assertEqual(response, {'tv': 'power'})
 
         response = asyncio.run(request(target_ip, ['ir_key', 'ac', 'OFF']))
         self.assertEqual(response, {'ac': 'OFF'})
 
+        # TODO fix
         #response = asyncio.run(request(target_ip, ['ir_key', 'backlight', 'on']))
         #self.assertEqual(response, {'backlight': 'on'})
 
-    def test_20_get_temp(self):
+    def test_21_get_temp(self):
         response = asyncio.run(request(target_ip, ['get_temp']))
         self.assertEqual(len(response), 1)
         self.assertIsInstance(response["Temp"], float)
 
-    def test_21_get_humid(self):
+    def test_22_get_humid(self):
         response = asyncio.run(request(target_ip, ['get_humid']))
         self.assertEqual(len(response), 1)
         self.assertIsInstance(response["Humidity"], float)
 
-    def test_22_get_climate(self):
+    def test_23_get_climate(self):
         response = asyncio.run(request(target_ip, ['get_climate_data']))
         self.assertEqual(len(response), 2)
         self.assertIsInstance(response["humid"], float)
         self.assertIsInstance(response["temp"], float)
 
-    def test_23_clear_log(self):
+    def test_24_clear_log(self):
         response = asyncio.run(request(target_ip, ['clear_log']))
         self.assertEqual(response, {'clear_log': 'success'})
 
-    def test_24_condition_met(self):
+    def test_25_condition_met(self):
         response = asyncio.run(request(target_ip, ['condition_met', 'sensor1']))
         self.assertEqual(len(response), 1)
         self.assertIn("Condition", response.keys())
 
-    def test_25_trigger_sensor(self):
+    def test_26_trigger_sensor(self):
         response = asyncio.run(request(target_ip, ['trigger_sensor', 'sensor1']))
         self.assertEqual(response, {'Triggered': 'sensor1'})
 
-    def test_26_turn_on(self):
+    def test_27_turn_on(self):
         # Ensure enabled
         asyncio.run(request(target_ip, ['enable', 'device1']))
 
         response = asyncio.run(request(target_ip, ['turn_on', 'device1']))
         self.assertEqual(response, {'On': 'device1'})
 
-    def test_27_turn_off(self):
+    def test_28_turn_off(self):
         # Ensure enabled
         asyncio.run(request(target_ip, ['enable', 'device1']))
 
@@ -212,7 +222,7 @@ class TestParseCommand(unittest.TestCase):
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
     # resulted in comparison operator between int and string, causing crash.
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
-    def test_28_enable_regression_test(self):
+    def test_29_enable_regression_test(self):
         # Confirm correct starting conditions
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['current_rule'], 'disabled')
@@ -230,7 +240,7 @@ class TestParseCommand(unittest.TestCase):
     # Original bug: LedStrip fade method made calls to set_rule method for each fade step.
     # Later, set_rule was modified to abort an in-progress fade when it received a brightness
     # rule. This caused fade to abort itself after the first step. Fixed in a29f5383.
-    def test_29_regression_fade_on(self):
+    def test_30_regression_fade_on(self):
         # Starting conditions
         asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
@@ -248,7 +258,7 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['fading'], False)
 
     # Confirm that calling set_rule while a fade is in-progress correctly aborts
-    def test_30_abort_fade(self):
+    def test_31_abort_fade(self):
         # Starting conditions
         asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
@@ -269,7 +279,7 @@ class TestParseCommand(unittest.TestCase):
 
 class TestParseCommandInvalid(unittest.TestCase):
 
-    def test_31_disable_invalid(self):
+    def test_32_disable_invalid(self):
         response = asyncio.run(request(target_ip, ['disable', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
@@ -279,7 +289,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['disable']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-    def test_32_disable_in_invalid(self):
+    def test_33_disable_in_invalid(self):
         response = asyncio.run(request(target_ip, ['disable_in', 'device99', '5']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
@@ -292,7 +302,10 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['disable_in']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-    def test_33_enable_invalid(self):
+        response = asyncio.run(request(target_ip, ['disable_in', 'device1', float('NaN')]))
+        self.assertEqual(response, {'ERROR': 'Syntax error in received JSON'})
+
+    def test_34_enable_invalid(self):
         response = asyncio.run(request(target_ip, ['enable', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
@@ -302,7 +315,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['enable']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-    def test_34_enable_in_invalid(self):
+    def test_35_enable_in_invalid(self):
         response = asyncio.run(request(target_ip, ['enable_in', 'device99', '5']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
@@ -315,7 +328,10 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['enable_in']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
-    def test_35_set_rule_invalid(self):
+        response = asyncio.run(request(target_ip, ['enable_in', 'device1', float('NaN')]))
+        self.assertEqual(response, {'ERROR': 'Syntax error in received JSON'})
+
+    def test_36_set_rule_invalid(self):
         response = asyncio.run(request(target_ip, ['set_rule']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -328,7 +344,23 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['set_rule', 'device1', '9999']))
         self.assertEqual(response, {'ERROR': 'Invalid rule'})
 
-    def test_36_reset_rule_invalid(self):
+    def test_37_increment_rule_invalid(self):
+        response = asyncio.run(request(target_ip, ['increment_rule']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = asyncio.run(request(target_ip, ['increment_rule', 'sensor1']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = asyncio.run(request(target_ip, ['increment_rule', 'sensor1', float('NaN')]))
+        self.assertEqual(response, {'ERROR': 'Syntax error in received JSON'})
+
+        response = asyncio.run(request(target_ip, ['increment_rule', 'sensor1', 'string']))
+        self.assertEqual(response, {'ERROR': 'Invalid argument string'})
+
+        response = asyncio.run(request(target_ip, ['increment_rule', 'device2', '1']))
+        self.assertEqual(response, {'ERROR': 'Unsupported target, must accept int or float rule'})
+
+    def test_38_reset_rule_invalid(self):
         response = asyncio.run(request(target_ip, ['reset_rule']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -338,7 +370,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['reset_rule', 'notdevice']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_37_get_schedule_rules_invalid(self):
+    def test_39_get_schedule_rules_invalid(self):
         response = asyncio.run(request(target_ip, ['get_schedule_rules']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -348,7 +380,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['get_schedule_rules', 'notdevice']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_38_add_rule_invalid(self):
+    def test_40_add_rule_invalid(self):
         response = asyncio.run(request(target_ip, ['add_schedule_rule']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -390,7 +422,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['add_schedule_rule', 'device1', 'midnight', '50']))
         self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
-    def test_39_remove_rule_invalid(self):
+    def test_41_remove_rule_invalid(self):
         response = asyncio.run(request(target_ip, ['remove_rule']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -412,7 +444,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['remove_rule', 'device1', 'midnight']))
         self.assertEqual(response, {'ERROR': 'Timestamp format must be HH:MM (no AM/PM) or schedule keyword'})
 
-    def test_40_add_schedule_keyword_invalid(self):
+    def test_42_add_schedule_keyword_invalid(self):
         response = asyncio.run(request(target_ip, ['add_schedule_keyword']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -422,7 +454,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['add_schedule_keyword', {'new_keyword': '99:99'}]))
         self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
-    def test_41_remove_schedule_keyword_invalid(self):
+    def test_43_remove_schedule_keyword_invalid(self):
         response = asyncio.run(request(target_ip, ['remove_schedule_keyword']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -432,7 +464,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['remove_schedule_keyword', 'doesnotexist']))
         self.assertEqual(response, {"ERROR": "Keyword does not exist"})
 
-    def test_42_get_attributes_invalid(self):
+    def test_44_get_attributes_invalid(self):
         response = asyncio.run(request(target_ip, ['get_attributes']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -442,7 +474,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['get_attributes', 'notdevice']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_43_ir_invalid(self):
+    def test_45_ir_invalid(self):
         response = asyncio.run(request(target_ip, ['ir_key']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -451,6 +483,9 @@ class TestParseCommandInvalid(unittest.TestCase):
 
         response = asyncio.run(request(target_ip, ['ir_key', 'ac']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+        response = asyncio.run(request(target_ip, ['ir_key', 'foo', 'on']))
+        self.assertEqual(response, {'ERROR': 'No codes found for target "foo"'})
 
         response = asyncio.run(request(target_ip, ['ir_key', 'ac', 'power']))
         self.assertEqual(response, {'ERROR': 'Target "ac" has no key "power"'})
@@ -467,7 +502,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['backlight', 'start']))
         self.assertEqual(response, {'ERROR': 'Backlight setting must be "on" or "off"'})
 
-    def test_44_condition_met_invalid(self):
+    def test_46_condition_met_invalid(self):
         response = asyncio.run(request(target_ip, ['condition_met']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -477,7 +512,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['condition_met', 'sensor99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_45_trigger_sensor_invalid(self):
+    def test_47_trigger_sensor_invalid(self):
         response = asyncio.run(request(target_ip, ['trigger_sensor']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -490,7 +525,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['trigger_sensor', 'sensor2']))
         self.assertEqual(response, {'ERROR': 'Cannot trigger si7021 sensor type'})
 
-    def test_46_turn_on_invalid(self):
+    def test_48_turn_on_invalid(self):
         # Ensure disabled
         asyncio.run(request(target_ip, ['disable', 'device1']))
 
@@ -506,7 +541,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['turn_on', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_47_turn_off_invalid(self):
+    def test_49_turn_off_invalid(self):
         response = asyncio.run(request(target_ip, ['turn_off']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
