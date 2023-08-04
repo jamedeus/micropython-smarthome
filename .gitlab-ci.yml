@@ -19,8 +19,7 @@ test_firmware:
     - pip3 install pipenv
     - export PATH=$PATH:/home/gitlab-runner/.local/bin
     - pipenv install
-    - cd tests/mock_environment/
-    - pipenv run coverage run --source='../../core,../../devices,../../sensors' runtests.py
+    - pipenv run coverage run --source='core,devices,sensors' tests/mock_environment/runtests.py
     - pipenv run coverage report -m --precision=1
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   rules:

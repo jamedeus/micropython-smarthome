@@ -11,17 +11,22 @@ import unittest
 import nest_asyncio
 
 
+# Get absolute paths to mock_dir, repo root dir
+mock_dir = os.path.dirname(os.path.realpath(__file__))
+repo_dir = os.path.dirname(os.path.dirname(mock_dir))
+
+
 # Set up mocked environment used to run micropython code in cpython
 def set_mocks():
     # Add project files to python path
-    sys.path.insert(0, os.path.abspath('../../core'))
-    sys.path.insert(0, os.path.abspath('../../lib'))
-    sys.path.insert(0, os.path.abspath('../../devices'))
-    sys.path.insert(0, os.path.abspath('../../sensors'))
+    sys.path.insert(0, os.path.join(repo_dir, 'core'))
+    sys.path.insert(0, os.path.join(repo_dir, 'lib'))
+    sys.path.insert(0, os.path.join(repo_dir, 'devices'))
+    sys.path.insert(0, os.path.join(repo_dir, 'sensors'))
 
     # Add mock modules to python path
     # Must be last to give mock libraries priority over ../lib
-    sys.path.insert(0, os.path.abspath('mocks'))
+    sys.path.insert(0, os.path.join(mock_dir, 'mocks'))
 
     def sleep_us(us):
         # Convert microseconds to seconds
@@ -56,7 +61,7 @@ def set_mocks():
 
     # Use unit_test_config.json as mock config.json, allow saving schedule rules, keywords, etc
     # Also contains IP and ports for mock_command_receiver container
-    shutil.copy2(os.path.abspath('../firmware/unit_test_config.json'), 'config.json')
+    shutil.copy2(os.path.join(repo_dir, 'tests', 'firmware', 'unit_test_config.json'), 'config.json')
 
 
 async def run_tests():
@@ -72,7 +77,7 @@ async def run_tests():
 
     # Discover tests
     loader = unittest.TestLoader()
-    start_dir = '../firmware/'
+    start_dir = os.path.join(repo_dir, 'tests', 'firmware')
     suite = loader.discover(start_dir)
 
     # Run
