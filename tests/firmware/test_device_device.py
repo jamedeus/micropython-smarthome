@@ -7,7 +7,7 @@ from Sensor import Sensor
 expected_attributes = {
     'nickname': 'Test',
     '_type': 'device',
-    'scheduled_rule': 'enabled',
+    'scheduled_rule': 50,
     'current_rule': 'enabled',
     'default_rule': 50,
     'enabled': True,
@@ -59,6 +59,7 @@ class TestDevice(unittest.TestCase):
         # Instantiate test device with mock subclass, add rules to queue
         cls.instance = MockDevice("device1", "Test", "device", True, "enabled", 50)
         cls.instance.rule_queue = [10, 20]
+        cls.instance.scheduled_rule = cls.instance.default_rule
 
         # Create mock sensor targeting device, add both to mock group
         cls.sensor = Sensor('sensor1', 'sensor1', 'sensor', True, 'enabled', 'enabled', [cls.instance])
@@ -74,7 +75,7 @@ class TestDevice(unittest.TestCase):
         self.assertTrue(self.instance.enabled)
         self.assertEqual(self.instance.state, None)
         self.assertEqual(self.instance.current_rule, "enabled")
-        self.assertEqual(self.instance.scheduled_rule, "enabled")
+        self.assertEqual(self.instance.scheduled_rule, 50)
         self.assertEqual(self.instance.default_rule, 50)
         self.assertEqual(self.instance.triggered_by, [self.sensor])
 

@@ -8,6 +8,7 @@ class TestMosfet(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.instance = Mosfet("device1", "device1", "mosfet", "enabled", 4)
+        cls.instance.scheduled_rule = "enabled"
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Mosfet)

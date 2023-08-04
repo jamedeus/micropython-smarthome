@@ -108,3 +108,22 @@ class TestLedStrip(unittest.TestCase):
         self.instance = LedStrip("device1", "device1", "pwm", 512, 0, 1023, "4")
         self.assertIsInstance(self.instance, LedStrip)
         self.assertIsInstance(self.instance.pwm, PWM)
+
+    # Original bug: Enable method handled current_rule == 'disabled' by arbitrarily setting
+    # scheduled_rule as current_rule with no validation. This made it possible for a string
+    # representation of int to be set as current_rule, raising exception when send method
+    # called. Now uses set_rule method to cast rule to required type.
+    def test_09_regression_string_int_rule(self):
+        # Set scheduled_rule to string representation of int
+        self.instance.scheduled_rule = '512'
+
+        # Set rule to disabled to trigger first conditional in enable method
+        self.instance.set_rule('disabled')
+        self.assertEqual(self.instance.current_rule, 'disabled')
+
+        # Enable, should fall back to scheduled_rule and cast to int
+        self.instance.enable()
+        self.assertEqual(self.instance.current_rule, 512)
+
+        # Call send method, should not crash
+        self.instance.send(1)

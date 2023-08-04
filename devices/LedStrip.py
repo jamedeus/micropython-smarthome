@@ -34,7 +34,7 @@ class LedStrip(DimmableLight):
             return True
 
         if state:
-            target = self.current_rule
+            target = int(self.current_rule)
         else:
             target = 0
 
