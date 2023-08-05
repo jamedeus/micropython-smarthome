@@ -89,13 +89,14 @@ def missing_target_error(nodes):
     raise SystemExit
 
 
-# Load nodes.json, return dict with friendly names and IPs of existing nodes
+# Load cli_config.json, return dict with friendly names and IPs of existing nodes
 def load_config_file():
     try:
-        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'nodes.json'), 'r') as file:
-            return json.load(file)
+        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'cli_config.json'), 'r') as file:
+            config = json.load(file)
+            return config['nodes']
     except FileNotFoundError:
-        print("Warning: Unable to find nodes.json, friendly names will not work")
+        print("Warning: Unable to find cli_config.json, friendly names will not work")
         return {}
 
 

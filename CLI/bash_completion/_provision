@@ -5,12 +5,12 @@ _provision()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
 
-    # Get directory containing provision.py and nodes.json
+    # Get directory containing provision.py and cli_config.json
     script_path=$(which "${COMP_WORDS[0]}")
     script_dir="$(dirname "$script_path")"
 
     # Get all node friendly names in space-seperated list
-    node_opts=$(cat "$script_dir/nodes.json" | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+    node_opts=$(cat "$script_dir/cli_config.json" | jq '.nodes | keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
 
     # Group options into categories
     ip_opts="--ip"

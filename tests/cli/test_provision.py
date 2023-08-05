@@ -12,20 +12,24 @@ from Webrepl import Webrepl
 cli = os.path.split(os.path.dirname(os.path.realpath(__file__)))[0]
 repo = os.path.split(cli)[0]
 
-# Mock nodes.json contents
-mock_nodes = {
-    "node1": {
-        "config": os.path.join(repo, "config", "node1.json"),
-        "ip": "192.168.1.123"
+# Mock cli_config.json contents
+mock_cli_config = {
+    'nodes': {
+        "node1": {
+            "config": os.path.join(repo, "config_files", "node1.json"),
+            "ip": "192.168.1.123"
+        },
+        "node2": {
+            "config": os.path.join(repo, "config_files", "node2.json"),
+            "ip": "192.168.1.234"
+        },
+        "node3": {
+            "config": os.path.join(repo, "config_files", "node3.json"),
+            "ip": "192.168.1.111"
+        },
     },
-    "node2": {
-        "config": os.path.join(repo, "config", "node2.json"),
-        "ip": "192.168.1.234"
-    },
-    "node3": {
-        "config": os.path.join(repo, "config", "node3.json"),
-        "ip": "192.168.1.111"
-    },
+    'webrepl_password': 'password',
+    'config_directory': os.path.join(repo, 'config_files')
 }
 
 
@@ -62,7 +66,7 @@ class TestArgParser(TestCase):
 
     def test_node_friendly_name(self):
         with patch.object(sys, 'argv', ['', 'node1']), \
-             patch('provision.nodes', mock_nodes):
+             patch('provision.cli_config', mock_cli_config):
 
             args, parser = parse_args()
 
@@ -117,11 +121,11 @@ class TestInstantiation(TestCase):
         # Mock args for --all
         args = Namespace(config=None, ip=None, node=None, all=True, test=None, password=None)
 
-        # Mock provision to do nothing, mock nodes.json, mock open to return empty dict (config file)
+        # Mock provision to do nothing, mock cli_config.json, mock open to return empty dict (config file)
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
-             patch('provision.nodes', mock_nodes), \
+             patch('provision.cli_config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm provision called once for each node
@@ -135,11 +139,11 @@ class TestInstantiation(TestCase):
         # Mock args with node friendly name
         args = Namespace(config=None, ip=None, node='node1', all=None, test=None, password=None)
 
-        # Mock provision to do nothing, mock nodes.json, mock open to return empty dict (config file)
+        # Mock provision to do nothing, mock cli_config.json, mock open to return empty dict (config file)
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
-             patch('provision.nodes', mock_nodes), \
+             patch('provision.cli_config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm provision called once with expected IP
@@ -201,11 +205,11 @@ class TestInstantiation(TestCase):
         # Mock args to upload unit tests to 192.168.1.123
         args = Namespace(config=None, ip=None, node=None, all=None, test='192.168.1.123', password=None)
 
-        # Mock provision to do nothing, mock nodes.json, mock open to return empty dict (config file)
+        # Mock provision to do nothing, mock cli_config.json, mock open to return empty dict (config file)
         mock_file = mock_open(read_data=json.dumps({}))
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
-             patch('provision.nodes', mock_nodes), \
+             patch('provision.cli_config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm called once with given IP + test modules
@@ -216,7 +220,7 @@ class TestInstantiation(TestCase):
             self.assertTrue(mock_provision.called_once)
 
     def test_provision_manual_args(self):
-        # Mock config file contents with ID parameter set (used as key in nodes.json)
+        # Mock config file contents with ID parameter set (used as key in cli_config.json nodes section)
         mock_file_contents = {'metadata': {'id': 'Node1'}}
 
         # Mock file object to simulate config arg
@@ -233,14 +237,14 @@ class TestInstantiation(TestCase):
             password='hunter2'
         )
 
-        # Confirm ID from mock config not in nodes.json
-        self.assertNotIn('Node1', mock_nodes.keys())
+        # Confirm ID from mock config not in cli_config.json nodes section
+        self.assertNotIn('Node1', mock_cli_config['nodes'].keys())
 
-        # Mock provision to do nothing, mock nodes.json, mock open + json.load to return empty dict (config)
+        # Mock provision to do nothing, mock cli_config.json, mock open + json.load to return empty dict (config)
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
              patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
-             patch('provision.nodes', mock_nodes), \
+             patch('provision.cli_config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
             # Instantiate, confirm provision called once with expected IP and password
@@ -249,10 +253,10 @@ class TestInstantiation(TestCase):
             self.assertTrue(mock_provision.called_with('192.168.1.123'))
             self.assertTrue(mock_provision.called_with('hunter2'))
 
-        # Confirm ID from mock config was added to nodes.json
-        self.assertIn('Node1', mock_nodes.keys())
-        self.assertEqual(mock_nodes['Node1']['ip'], '192.168.1.123')
-        self.assertEqual(mock_nodes['Node1']['config'], os.path.abspath('../config/node1.json'))
+        # Confirm ID from mock config was added to cli_config.json nodes section
+        self.assertIn('Node1', mock_cli_config['nodes'].keys())
+        self.assertEqual(mock_cli_config['nodes']['Node1']['ip'], '192.168.1.123')
+        self.assertEqual(mock_cli_config['nodes']['Node1']['config'], os.path.abspath('../config/node1.json'))
 
     def test_provision_no_args(self):
         # Mock args, all blank

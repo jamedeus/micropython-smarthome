@@ -10,16 +10,20 @@ cli = os.path.split(tests)[0]
 repo = os.path.dirname(cli)
 test_config = os.path.join(repo, 'frontend', 'node_configuration', 'unit-test-config.json')
 
-# Mock nodes.json contents
-mock_nodes = {
-    "node1": {
-        "config": test_config,
-        "ip": "192.168.1.123"
+# Mock cli_config.json contents
+mock_cli_config = {
+    'nodes': {
+        "node1": {
+            "config": test_config,
+            "ip": "192.168.1.123"
+        },
+        "node2": {
+            "config": '/not/a/real/directory',
+            "ip": "192.168.1.223"
+        }
     },
-    "node2": {
-        "config": '/not/a/real/directory',
-        "ip": "192.168.1.223"
-    }
+    'webrepl_password': 'password',
+    'config_directory': os.path.join(repo, 'config_files')
 }
 
 
@@ -742,7 +746,7 @@ class TestGenerateConfigFile(TestCase):
 
     def test_api_target_ip_prompt(self):
         # Mock nodes.json contents
-        self.generator.existing_nodes = mock_nodes
+        self.generator.existing_nodes = mock_cli_config['nodes']
 
         # Simulate user selecting first option, confirm correct IP returned
         self.mock_ask.ask.side_effect = ['node1']
@@ -775,7 +779,7 @@ class TestGenerateConfigFile(TestCase):
 
     def test_api_target_rule_prompt(self):
         # Mock nodes.json to include unit-test-config.json
-        self.generator.existing_nodes = mock_nodes
+        self.generator.existing_nodes = mock_cli_config['nodes']
 
         # Simulate user at rule prompt after selecting IP matching unit-test-config.json
         mock_config = {
@@ -847,7 +851,7 @@ class TestGenerateConfigFile(TestCase):
 
     def test_api_call_prompt_target_config_missing(self):
         # Mock nodes.json to include node with fake config path
-        self.generator.existing_nodes = mock_nodes
+        self.generator.existing_nodes = mock_cli_config['nodes']
 
         # Confirm script exits with error when unable to open fake path
         with self.assertRaises(SystemExit):

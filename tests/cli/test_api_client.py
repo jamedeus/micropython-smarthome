@@ -13,20 +13,24 @@ tests = os.path.dirname(os.path.realpath(__file__))
 cli = os.path.split(tests)[0]
 repo = os.path.dirname(tests)
 
-# Mock nodes.json contents
-mock_nodes = {
-    "node1": {
-        "config": os.path.join(repo, "config", "node1.json"),
-        "ip": "192.168.1.123"
+# Mock cli_config.json contents
+mock_cli_config = {
+    'nodes': {
+        "node1": {
+            "config": os.path.join(repo, "config_files", "node1.json"),
+            "ip": "192.168.1.123"
+        },
+        "node2": {
+            "config": os.path.join(repo, "config_files", "node2.json"),
+            "ip": "192.168.1.234"
+        },
+        "node3": {
+            "config": os.path.join(repo, "config_files", "node3.json"),
+            "ip": "192.168.1.111"
+        },
     },
-    "node2": {
-        "config": os.path.join(repo, "config", "node2.json"),
-        "ip": "192.168.1.234"
-    },
-    "node3": {
-        "config": os.path.join(repo, "config", "node3.json"),
-        "ip": "192.168.1.111"
-    },
+    'webrepl_password': 'password',
+    'config_directory': os.path.join(repo, 'config_files')
 }
 
 # Mock schedule-keywords.json contents
@@ -213,16 +217,16 @@ class TestParseIP(TestCase):
 
     def test_all_flag(self):
         with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_nodes))), \
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))), \
              self.assertRaises(SystemExit):
 
             # Parse args, should call parse_command once for each node before exiting
             self.assertTrue(parse_ip(['--all', 'enable', 'device1']))
-            self.assertEqual(mock_parse_command.call_count, len(mock_nodes))
+            self.assertEqual(mock_parse_command.call_count, len(mock_cli_config['nodes']))
 
     def test_node_name(self):
         with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_nodes))):
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))):
 
             self.assertTrue(parse_ip(['node2', 'enable', 'device1']))
             self.assertTrue(mock_parse_command.called_once)
@@ -241,7 +245,7 @@ class TestParseIP(TestCase):
 
     def test_no_target_ip(self):
         with patch('api_client.parse_command', return_value={"Enabled": "device1"}) as mock_parse_command, \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_nodes))), \
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))), \
              self.assertRaises(SystemExit):
 
             self.assertTrue(parse_ip(['enable', 'device1']))
@@ -785,7 +789,7 @@ class TestMain(TestCase):
 
         # Mock sys.arg to simulate running from command line
         with patch("sys.argv", ["api_client.py", "192.168.1.123", "enable", "device1"]), \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_nodes))), \
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))), \
              patch('api_endpoints.request', return_value={'Enabled': 'device1'}):
 
             # Run main, verify response printed to console

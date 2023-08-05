@@ -256,7 +256,7 @@ class GenerateConfigFile:
                     validate=IntRange(config['min_bright'], rule_limits[_type][1])
                 ).ask()
 
-            # ApiTarget has own IP prompt (select friendly name from nodes.json)
+            # ApiTarget has own IP prompt (select friendly name from nodes in cli_config.json)
             elif i == "ip" and _type == "api-target":
                 config[i] = self.apitarget_ip_prompt()
 
@@ -495,7 +495,7 @@ class GenerateConfigFile:
                 raise FileNotFoundError
         except FileNotFoundError:
             print(f"\n{Fore.RED}FATAL ERROR{Fore.RESET}: Target node config file missing from disk")
-            print("Unable to get options, please check the config path in nodes.json")
+            print("Unable to get options, please check the config path in cli_config.json")
             raise SystemExit
 
     # Iterate all configured sensors, display checkbox prompt for each

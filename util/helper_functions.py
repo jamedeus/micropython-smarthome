@@ -80,12 +80,13 @@ def get_schedule_keywords_dict(django=False):
             return {}
 
 
-# Load nodes.json from disk and return as dict
+# Load cli_config.json from disk and return nodes section as dict
 # Contains section for each existing node with friendly name
 # as key, sub-dict with IP and path to config file as value
 def get_existing_nodes():
     try:
-        with open(os.path.join(repo, 'CLI', 'nodes.json'), 'r') as file:
-            return json.load(file)
+        with open(os.path.join(repo, 'CLI', 'cli_config.json'), 'r') as file:
+            config = json.load(file)
+            return config['nodes']
     except FileNotFoundError:
         return {}
