@@ -1,5 +1,5 @@
 [![pipeline status](https://gitlab.com/jamedeus/micropython-smarthome/badges/master/pipeline.svg)](https://gitlab.com/jamedeus/micropython-smarthome/-/commits/master)
-[![coverage report](https://gitlab.com/jamedeus/micropython-smarthome/badges/master/coverage.svg)](https://gitlab.com/jamedeus/micropython-smarthome/-/commits/master)
+[![Frontend coverage report](https://gitlab.com/jamedeus/micropython-smarthome/badges/master/coverage.svg?job=test_frontend&key_text=Frontend+Coverage&key_width=120)](https://gitlab.com/jamedeus/micropython-smarthome/-/commits/master)
 
 # Frontend
 
@@ -22,7 +22,7 @@ Build the docker image:
 sudo docker build -t micropython-smarthome:1.0 . -f frontend/docker/Dockerfile
 ```
 
-Copy the [docker-compose.yaml example](frontend/docker/docker-compose.yaml) and make changes as needed, then run `docker compose up -d`.
+Copy the [docker-compose.yaml example](frontend/docker/docker-compose.yaml) and make changes as needed.
 
 Supported Env Vars:
 - `ALLOWED_HOSTS`: Comma-separated list of domains and IPs where the app can be reached, all others will be blocked. Defaults to wildcard if omitted (not recommended).
@@ -30,6 +30,8 @@ Supported Env Vars:
 - `NODE_PASSWD`: Webrepl password of all ESP32s, defaults to `password` if omitted.
 - `SECRET_KEY`: Your django secret key, if omitted a new key will be generated each time the app starts (may break active sessions).
 - `VIRTUAL_HOST`: Reverse proxy domain, make sure to add the same domain to `ALLOWED_HOSTS`.
+
+Once configuration is complete run `docker compose up -d`. The webapp can now be accessed at any of your `ALLOWED_HOSTS`, provided the domains/IPs point to your docker host.
 
 ### Local Development Server
 
@@ -39,7 +41,15 @@ cd frontend/
 pipenv run python3 manage.py runserver
 ```
 
+The app can now be accessed at [localhost:8000/](http://localhost:8000/).
+
 Environment variables can be added to `.env` in the repository root before running.
+
+To access the app from clients other than the host, either set the `ALLOWED_HOSTS` env var or start the server listening on all interfaces:
+```
+cd frontend/
+pipenv run python3 manage.py runserver 0:8000
+```
 
 ## Management commands
 
@@ -61,5 +71,6 @@ python3 manage.py import_configs_from_disk
 
 Tests have full coverage of the django backend:
 ```
+cd frontend/
 pipenv run python3 manage.py test
 ```
