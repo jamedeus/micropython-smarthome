@@ -64,6 +64,22 @@ def valid_timestamp(timestamp):
     return bool(re.match(r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$', timestamp))
 
 
+# Returns contents of cli_config.json loaded into dict
+# If file does not exist returns template with default values
+def get_cli_config():
+    try:
+        with open(os.path.join(repo, 'CLI', 'cli_config.json'), 'r') as file:
+            return json.load(file)
+    except FileNotFoundError:
+        print("Warning: Unable to find cli_config.json, friendly names will not work")
+        return {
+            'nodes': {},
+            'schedule_keywords': {},
+            'webrepl_password': 'password',
+            'config_directory': os.path.join(repo, 'config_files')
+        }
+
+
 # Returns dict with schedule keywords as keys, timestamps as values
 # Reads from django database if argument is passed
 # Otherwise reads from CLI/cli_config.json
@@ -75,21 +91,13 @@ def get_schedule_keywords_dict(django=False):
 
     # Load from config file on disk
     else:
-        try:
-            with open(os.path.join(repo, 'CLI', 'cli_config.json'), 'r') as file:
-                config = json.load(file)
-                return config['schedule_keywords']
-        except FileNotFoundError:
-            return {}
+        config = get_cli_config()
+        return config['schedule_keywords']
 
 
-# Load cli_config.json from disk and return nodes section as dict
+# Returns nodes section from cli_config.json as dict
 # Contains section for each existing node with friendly name
 # as key, sub-dict with IP and path to config file as value
 def get_existing_nodes():
-    try:
-        with open(os.path.join(repo, 'CLI', 'cli_config.json'), 'r') as file:
-            config = json.load(file)
-            return config['nodes']
-    except (FileNotFoundError, KeyError):
-        return {}
+    config = get_cli_config()
+    return config['nodes']

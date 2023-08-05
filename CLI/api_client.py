@@ -1,11 +1,10 @@
 #!/usr/bin/python3
 
-import os
 import sys
 import json
 from colorama import Fore, Style
-from helper_functions import valid_ip
 from api_endpoints import endpoint_map
+from helper_functions import valid_ip, get_existing_nodes
 
 
 # Used for help/error message
@@ -89,21 +88,10 @@ def missing_target_error(nodes):
     raise SystemExit
 
 
-# Load cli_config.json, return dict with friendly names and IPs of existing nodes
-def load_config_file():
-    try:
-        with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'cli_config.json'), 'r') as file:
-            config = json.load(file)
-            return config['nodes']
-    except FileNotFoundError:
-        print("Warning: Unable to find cli_config.json, friendly names will not work")
-        return {}
-
-
 # Receives args, finds IP, passes IP + remaining args to parse_command
 def parse_ip(args):
     # Get dict of existing node friendly names and IPs
-    nodes = load_config_file()
+    nodes = get_existing_nodes()
 
     # Parse target IP from args, pass IP + remaining args to parse_command
     for i in range(len(args)):

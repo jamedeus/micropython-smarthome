@@ -9,7 +9,7 @@
 import os
 import json
 import argparse
-from helper_functions import valid_ip
+from helper_functions import valid_ip, get_cli_config
 from provision_tools import get_modules, dependencies, core_modules, provision
 
 
@@ -18,16 +18,7 @@ cli = os.path.dirname(os.path.realpath(__file__))
 repo = os.path.split(cli)[0]
 
 # Load CLI config file
-try:
-    with open(os.path.join(cli, 'cli_config.json'), 'r') as file:
-        cli_config = json.load(file)
-except FileNotFoundError:
-    print("Warning: Unable to find cli_config.json, friendly names will not work")
-    # Use default settings skeleton
-    cli_config = {
-        'nodes': {},
-        'webrepl_password': 'password'
-    }
+cli_config = get_cli_config()
 
 
 def validate_ip(ip):
