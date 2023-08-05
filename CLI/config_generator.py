@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 
+import os
 import json
 import questionary
 from questionary import Validator, ValidationError
@@ -22,7 +23,8 @@ from helper_functions import (
     is_int,
     is_float,
     get_schedule_keywords_dict,
-    get_existing_nodes
+    get_existing_nodes,
+    get_cli_config
 )
 
 # Map int rule limits to device/sensor types
@@ -98,7 +100,8 @@ class GenerateConfigFile:
             'metadata': {
                 'id': '',
                 'floor': '',
-                'location': ''
+                'location': '',
+                'schedule_keywords': get_schedule_keywords_dict()
             },
             'wifi': {
                 'ssid': '',
@@ -133,6 +136,14 @@ class GenerateConfigFile:
 
         # Prompt user to select targets for each sensor
         self.select_sensor_targets()
+
+    def write_to_disk(self):
+        # Get filename (all lowercase, replace spaces with hyphens)
+        filename = self.config["metadata"]["id"].lower().replace(" ", "-") + ".json"
+
+        # Write to config_directory (set in cli_config.json)
+        with open(os.path.join(get_cli_config()['config_directory'], filename), 'w') as file:
+            json.dump(self.config, file)
 
     # Prompt user for node name and location metadata, add to self.config
     def metadata_prompt(self):
@@ -566,3 +577,4 @@ if __name__ == '__main__':
     config = GenerateConfigFile()
     config.run_prompt()
     print(json.dumps(config.config, indent=4))
+    config.write_to_disk()
