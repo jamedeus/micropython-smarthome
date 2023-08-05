@@ -117,6 +117,20 @@ class ScheduleKeyword(models.Model):
 @receiver(post_delete, sender=ScheduleKeyword)
 def write_to_disk(**kwargs):
     if settings.CLI_SYNC:
-        config = os.path.join(settings.REPO_DIR, 'util', 'schedule-keywords.json')
-        with open(config, 'w') as file:
-            json.dump(get_schedule_keywords_dict(), file)
+        config = os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')
+
+        # Edit config file in place if already exists
+        if os.path.exists(config):
+            with open(config, 'r+') as file:
+                cli_config = json.load(file)
+                cli_config['schedule_keywords'] = get_schedule_keywords_dict()
+                file.seek(0)
+                json.dump(cli_config, file)
+                file.truncate()
+
+        # Create config file if it doesn't exist
+        else:
+            with open(config, 'w') as file:
+                cli_config = {}
+                cli_config['schedule_keywords'] = get_schedule_keywords_dict()
+                json.dump(get_schedule_keywords_dict(), file)

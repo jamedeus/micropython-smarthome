@@ -64,7 +64,9 @@ def valid_timestamp(timestamp):
     return bool(re.match(r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$', timestamp))
 
 
-# Read current schedule keywords from config file
+# Returns dict with schedule keywords as keys, timestamps as values
+# Reads from django database if argument is passed
+# Otherwise reads from CLI/cli_config.json
 def get_schedule_keywords_dict(django=False):
     # Load from SQL
     if os.environ.get('SMARTHOME_FRONTEND'):
@@ -74,8 +76,9 @@ def get_schedule_keywords_dict(django=False):
     # Load from config file on disk
     else:
         try:
-            with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'schedule-keywords.json'), 'r') as file:
-                return json.load(file)
+            with open(os.path.join(repo, 'CLI', 'cli_config.json'), 'r') as file:
+                config = json.load(file)
+                return config['schedule_keywords']
         except FileNotFoundError:
             return {}
 
@@ -88,5 +91,5 @@ def get_existing_nodes():
         with open(os.path.join(repo, 'CLI', 'cli_config.json'), 'r') as file:
             config = json.load(file)
             return config['nodes']
-    except FileNotFoundError:
+    except (FileNotFoundError, KeyError):
         return {}

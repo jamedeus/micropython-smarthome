@@ -29,15 +29,13 @@ mock_cli_config = {
             "ip": "192.168.1.111"
         },
     },
+    'schedule_keywords': {
+        "sunrise": "06:00",
+        "sunset": "18:00",
+        "sleep": "22:00"
+    },
     'webrepl_password': 'password',
     'config_directory': os.path.join(repo, 'config_files')
-}
-
-# Mock schedule-keywords.json contents
-mock_keywords = {
-    "sunrise": "06:00",
-    "sunset": "18:00",
-    "sleep": "22:00"
 }
 
 mock_status_object = {
@@ -435,7 +433,7 @@ class TestEndpoints(TestCase):
     def test_add_rule_keyword(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'time': 'sunrise', 'Rule added': 'disabled'}), \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_keywords))):
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))):
 
             # Send request, verify response
             response = parse_command('192.168.1.123', ['add_rule', 'device2', 'sunrise', 'disabled'])
@@ -451,7 +449,7 @@ class TestEndpoints(TestCase):
     def test_remove_rule_keyword(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'Deleted': 'sunrise'}), \
-             patch('builtins.open', mock_open(read_data=json.dumps(mock_keywords))):
+             patch('builtins.open', mock_open(read_data=json.dumps(mock_cli_config))):
 
             # Send request, verify response
             response = parse_command('192.168.1.123', ['remove_rule', 'device2', 'sunrise'])
