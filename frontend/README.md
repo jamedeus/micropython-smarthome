@@ -26,7 +26,8 @@ Copy the [docker-compose.yaml example](frontend/docker/docker-compose.yaml) and 
 
 Supported Env Vars:
 - `ALLOWED_HOSTS`: Comma-separated list of domains and IPs where the app can be reached, all others will be blocked. Defaults to wildcard if omitted (not recommended).
-- `CONFIG_DIR`: Path to directory where config files are written. Defaults to `micropython-smarthome/config_files` if omitted.
+- `CLI_SYNC`: True or False, if True config files will be written to disk where CLI tools can read them. If False config files are only stored in the database, making it possible to run diskless (with an external database server). Defaults to False.
+- `CONFIG_DIR`: Path to directory where config files are written if `CLI_SYNC` is True. Defaults to `micropython-smarthome/config_files` if omitted.
 - `NODE_PASSWD`: Webrepl password of all ESP32s, defaults to `password` if omitted.
 - `SECRET_KEY`: Your django secret key, if omitted a new key will be generated each time the app starts (may break active sessions).
 - `VIRTUAL_HOST`: Reverse proxy domain, make sure to add the same domain to `ALLOWED_HOSTS`.
@@ -69,8 +70,16 @@ python3 manage.py import_configs_from_disk
 
 ## Unit tests
 
-Tests have full coverage of the django backend:
+Tests provide full coverage of the django backend. There are currently no tests for templates, these will be added after a future UI overhaul.
+
+Testing requires the `CLI_SYNC` env var and a writable disk - files must be written/deleted to verify all functions. If this is already set in your pipenv simply run:
 ```
 cd frontend/
 pipenv run python3 manage.py test
+```
+
+If you don't want to set `CLI_SYNC` permanently you can prepend it to the testing command:
+```
+cd frontend/
+CLI_SYNC=True pipenv run python3 manage.py test
 ```

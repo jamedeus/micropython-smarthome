@@ -53,13 +53,19 @@ class Config(models.Model):
     )
 
     def read_from_disk(self):
-        with open(os.path.join(settings.CONFIG_DIR, self.filename), 'r') as file:
-            self.config = json.load(file)
-            self.save()
+        if settings.CLI_SYNC:
+            with open(os.path.join(settings.CONFIG_DIR, self.filename), 'r') as file:
+                self.config = json.load(file)
+                self.save()
+        else:
+            print('WARNING: read_from_disk called with CLI_SYNC disabled, ignoring.')
 
     def write_to_disk(self):
-        with open(os.path.join(settings.CONFIG_DIR, self.filename), 'w') as file:
-            json.dump(self.config, file)
+        if settings.CLI_SYNC:
+            with open(os.path.join(settings.CONFIG_DIR, self.filename), 'w') as file:
+                json.dump(self.config, file)
+        else:
+            print('WARNING: write_to_disk called with CLI_SYNC disabled, ignoring.')
 
     # Validate all fields before saving
     def save(self, *args, **kwargs):
@@ -107,10 +113,10 @@ class ScheduleKeyword(models.Model):
 
 
 # Write schedule keywords to json file when modified (sync with CLI client)
-# TODO django settings bool to en/disable this + config write_to_disk etc
 @receiver(post_save, sender=ScheduleKeyword)
 @receiver(post_delete, sender=ScheduleKeyword)
 def write_to_disk(**kwargs):
-    config = os.path.join(settings.REPO_DIR, 'util', 'schedule-keywords.json')
-    with open(config, 'w') as file:
-        json.dump(get_schedule_keywords_dict(), file)
+    if settings.CLI_SYNC:
+        config = os.path.join(settings.REPO_DIR, 'util', 'schedule-keywords.json')
+        with open(config, 'w') as file:
+            json.dump(get_schedule_keywords_dict(), file)

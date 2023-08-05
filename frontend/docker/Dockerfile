@@ -17,17 +17,8 @@ FROM python:3.10-slim-buster
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
-# Default env vars, can be overridden in docker-compose
-ENV REPO_DIR="/repo/"
-ENV CONFIG_DIR="/repo/config/"
-ENV NODE_PASSWD="password"
-
-# Create dir for repo, copy in modules
+# Create dir for repo, copy in core modules, peripheral modules, dependencies
 WORKDIR /repo
-RUN mkdir /repo/config
-RUN mkdir /repo/firmware
-
-# Smarthome core modules, peripheral modules, dependencies
 COPY core /repo/core/
 COPY devices /repo/devices
 COPY sensors /repo/sensors

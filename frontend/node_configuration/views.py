@@ -23,6 +23,7 @@ from helper_functions import (
 )
 
 # Env var constants
+CLI_SYNC = settings.CLI_SYNC
 REPO_DIR = settings.REPO_DIR
 CONFIG_DIR = settings.CONFIG_DIR
 NODE_PASSWD = settings.NODE_PASSWD
@@ -107,7 +108,8 @@ def delete_config(request):
 
     try:
         # Delete from disk + database
-        os.remove(os.path.join(CONFIG_DIR, target.filename))
+        if CLI_SYNC:
+            os.remove(os.path.join(CONFIG_DIR, target.filename))
         target.delete()
         return JsonResponse(f"Deleted {data}", safe=False, status=200)
 
@@ -136,17 +138,18 @@ def delete_node(request):
     except Node.DoesNotExist:
         return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
 
-    try:
-        # Delete from disk
-        os.remove(os.path.join(CONFIG_DIR, node.config.filename))
-    except PermissionError:
-        return JsonResponse(
-            "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
-            safe=False,
-            status=500
-        )
-    except FileNotFoundError:
-        pass
+    if CLI_SYNC:
+        try:
+            # Delete from disk
+            os.remove(os.path.join(CONFIG_DIR, node.config.filename))
+        except PermissionError:
+            return JsonResponse(
+                "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
+                safe=False,
+                status=500
+            )
+        except FileNotFoundError:
+            pass
 
     # Delete from database
     node.delete()
@@ -592,8 +595,9 @@ def restore_config(request):
         return JsonResponse("ERROR: Config format invalid, possibly outdated version.", safe=False, status=500)
 
     # Write file to disk
-    with open(os.path.join(CONFIG_DIR, filename), 'w') as file:
-        json.dump(config, file)
+    if CLI_SYNC:
+        with open(os.path.join(CONFIG_DIR, filename), 'w') as file:
+            json.dump(config, file)
 
     # Create Config model entry
     config = Config(config=config, filename=filename)
