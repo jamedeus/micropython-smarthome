@@ -357,7 +357,7 @@ class GenerateConfigFile:
             ).ask()
         # Certain sensors require int default_rule
         elif _type in ['pir', 'si7021']:
-            return questionary.text("Enter default rule", validate=IntRange(*rule_limits[_type])).ask()
+            return questionary.text("Enter default rule", validate=FloatRange(*rule_limits[_type])).ask()
         # Dummy does not support enabled/disabled for default_rule, must be on or off
         elif _type == 'dummy':
             return questionary.select("Enter default rule", choices=['On', 'Off']).ask()
@@ -377,7 +377,7 @@ class GenerateConfigFile:
             return self.rule_prompt_int_and_fade_options(config['min_bright'], config['max_bright'])
         # Some sensors support int in addition to enabled/disabled
         elif _type in ['pir', 'si7021']:
-            return self.rule_prompt_with_int_option(*rule_limits[_type])
+            return self.rule_prompt_with_float_option(*rule_limits[_type])
         # Summy supports On and Off in addition to enabled/disabled
         elif _type == 'dummy':
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
@@ -388,11 +388,11 @@ class GenerateConfigFile:
         else:
             return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
 
-    # Rule prompt for instances that support int in addition to enabled/disabled
-    def rule_prompt_with_int_option(self, minimum, maximum):
-        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int']).ask()
-        if choice == 'Int':
-            return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
+    # Rule prompt for instances that support float in addition to enabled/disabled
+    def rule_prompt_with_float_option(self, minimum, maximum):
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Float']).ask()
+        if choice == 'Float':
+            return questionary.text("Enter rule", validate=FloatRange(minimum, maximum)).ask()
         else:
             return choice
 

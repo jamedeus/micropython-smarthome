@@ -386,12 +386,12 @@ class TestGenerateConfigFile(TestCase):
             'Yes',
             'Timestamp',
             '10:00',
-            'Int',
+            'Float',
             '5',
             'Yes',
             'Timestamp',
             '20:00',
-            'Int',
+            'Float',
             '1',
             'Yes',
             'Timestamp',
@@ -433,7 +433,7 @@ class TestGenerateConfigFile(TestCase):
             'Yes',
             'Timestamp',
             '10:00',
-            'Int',
+            'Float',
             '75',
             'No'
         ]
@@ -795,7 +795,7 @@ class TestGenerateConfigFile(TestCase):
             True,
             'sensor1',
             'set_rule',
-            'Int',
+            'Float',
             '50'
         ]
         with patch('questionary.select', return_value=self.mock_ask), \
@@ -892,7 +892,7 @@ class TestRegressions(TestCase):
             'Yes',
             'Timestamp',
             '10:00',
-            'Int',
+            'Float',
             '75',
             'No'
         ]
@@ -905,3 +905,77 @@ class TestRegressions(TestCase):
 
         # Confirm Thermostat option removed from sensor type options
         self.assertNotIn('Thermostat', self.generator.sensor_type_options)
+
+    # Original bug: IntRange was used for PIR and Thermostat rules, preventing
+    # float rules from being configured. Now uses FloatRange.
+    def test_wrong_rule_type(self):
+        # Simulate user at rule prompt after selecting thermostat
+        mock_config = {
+            "_type": "si7021",
+            "nickname": "Thermostat",
+            "default_rule": "placeholder",
+            "mode": "cool",
+            "tolerance": "placeholder",
+            "schedule": {},
+            "targets": []
+        }
+
+        # Call default rule router with simulated float rule input
+        self.mock_ask.ask.side_effect = ['69.5']
+        with patch('questionary.text', return_value=self.mock_ask), \
+             patch('config_generator.IntRange') as mock_int_range, \
+             patch('config_generator.FloatRange') as mock_float_range:
+
+            # Confirm FloatRange called, IntRange not called
+            rule = self.generator.default_rule_prompt_router(mock_config)
+            self.assertEqual(rule, '69.5')
+            self.assertTrue(mock_float_range.called)
+            self.assertFalse(mock_int_range.called)
+
+        # Call schedule rule router with simulated float rule input
+        self.mock_ask.ask.side_effect = ['Float', '69.5']
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('config_generator.IntRange') as mock_int_range, \
+             patch('config_generator.FloatRange') as mock_float_range:
+
+            # Confirm FloatRange called, IntRange not called
+            rule = self.generator.schedule_rule_prompt_router(mock_config)
+            self.assertEqual(rule, '69.5')
+            self.assertTrue(mock_float_range.called)
+            self.assertFalse(mock_int_range.called)
+
+        # Repeat both tests with motion sensor
+        mock_config = {
+            "_type": "pir",
+            "nickname": "Motion",
+            "default_rule": "placeholder",
+            "pin": "4",
+            "schedule": {},
+            "targets": []
+        }
+
+        # Call default rule router with simulated float rule input
+        self.mock_ask.ask.side_effect = ['5.5']
+        with patch('questionary.text', return_value=self.mock_ask), \
+             patch('config_generator.IntRange') as mock_int_range, \
+             patch('config_generator.FloatRange') as mock_float_range:
+
+            # Confirm FloatRange called, IntRange not called
+            rule = self.generator.default_rule_prompt_router(mock_config)
+            self.assertEqual(rule, '5.5')
+            self.assertTrue(mock_float_range.called)
+            self.assertFalse(mock_int_range.called)
+
+        # Call schedule rule router with simulated float rule input
+        self.mock_ask.ask.side_effect = ['Float', '5.5']
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask), \
+             patch('config_generator.IntRange') as mock_int_range, \
+             patch('config_generator.FloatRange') as mock_float_range:
+
+            # Confirm FloatRange called, IntRange not called
+            rule = self.generator.schedule_rule_prompt_router(mock_config)
+            self.assertEqual(rule, '5.5')
+            self.assertTrue(mock_float_range.called)
+            self.assertFalse(mock_int_range.called)
