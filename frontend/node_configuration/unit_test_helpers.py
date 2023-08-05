@@ -52,7 +52,7 @@ def create_config_and_node_from_json(config_json, ip='192.168.1.123'):
     friendly_name = config_json['metadata']['id']
     filename = f'{friendly_name.lower()}.json'
 
-    with open(f'{settings.CONFIG_DIR}/{filename}', 'w') as file:
+    with open(os.path.join(settings.CONFIG_DIR, filename), 'w') as file:
         json.dump(config_json, file)
 
     node = Node.objects.create(friendly_name=friendly_name, ip=ip, floor=config_json['metadata']['floor'])
@@ -72,7 +72,7 @@ def create_test_nodes():
 def clean_up_test_nodes():
     for i in range(1, 4):
         try:
-            os.remove(f'{settings.CONFIG_DIR}/test{i}.json')
+            os.remove(os.path.join(settings.CONFIG_DIR, f'test{i}.json'))
         except FileNotFoundError:
             pass
 

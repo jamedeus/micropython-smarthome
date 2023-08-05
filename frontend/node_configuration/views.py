@@ -107,7 +107,7 @@ def delete_config(request):
 
     try:
         # Delete from disk + database
-        os.remove(f'{CONFIG_DIR}/{target.filename}')
+        os.remove(os.path.join(CONFIG_DIR, target.filename))
         target.delete()
         return JsonResponse(f"Deleted {data}", safe=False, status=200)
 
@@ -138,7 +138,7 @@ def delete_node(request):
 
     try:
         # Delete from disk
-        os.remove(f'{CONFIG_DIR}/{node.config.filename}')
+        os.remove(os.path.join(CONFIG_DIR, node.config.filename))
     except PermissionError:
         return JsonResponse(
             "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
@@ -592,7 +592,7 @@ def restore_config(request):
         return JsonResponse("ERROR: Config format invalid, possibly outdated version.", safe=False, status=500)
 
     # Write file to disk
-    with open(CONFIG_DIR + filename, 'w') as file:
+    with open(os.path.join(CONFIG_DIR, filename), 'w') as file:
         json.dump(config, file)
 
     # Create Config model entry

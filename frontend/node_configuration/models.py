@@ -1,9 +1,9 @@
 import os
 import json
+from django.conf import settings
+from django.dispatch import receiver
 from django.db import models, IntegrityError
 from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
-from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
 from helper_functions import get_schedule_keywords_dict
 
@@ -53,12 +53,12 @@ class Config(models.Model):
     )
 
     def read_from_disk(self):
-        with open(settings.CONFIG_DIR + self.filename, 'r') as file:
+        with open(os.path.join(settings.CONFIG_DIR, self.filename), 'r') as file:
             self.config = json.load(file)
             self.save()
 
     def write_to_disk(self):
-        with open(settings.CONFIG_DIR + self.filename, 'w') as file:
+        with open(os.path.join(settings.CONFIG_DIR, self.filename), 'w') as file:
             json.dump(self.config, file)
 
     # Validate all fields before saving

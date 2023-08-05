@@ -167,26 +167,26 @@ class ConfigTests(TestCase):
         config = Config.objects.create(config=test_config_1, filename='write_to_disk.json')
 
         # Config should not exist on disk
-        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR + 'write_to_disk.json')))
+        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json')))
 
         # Call method, should exist
         config.write_to_disk()
-        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR + 'write_to_disk.json')))
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json')))
 
         # Contents should match config attribute
-        with open(os.path.join(settings.CONFIG_DIR + 'write_to_disk.json'), 'r') as file:
+        with open(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json'), 'r') as file:
             output = json.load(file)
             self.assertEqual(config.config, output)
 
         # Remove file, prevent test failing after first run
-        os.remove(os.path.join(settings.CONFIG_DIR + 'write_to_disk.json'))
+        os.remove(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json'))
 
     def test_read_from_disk(self):
         # Create config
         config = Config.objects.create(config=test_config_1, filename='read_from_disk.json')
 
         # Write different config to expected config path
-        with open(os.path.join(settings.CONFIG_DIR + 'read_from_disk.json'), 'w') as file:
+        with open(os.path.join(settings.CONFIG_DIR, 'read_from_disk.json'), 'w') as file:
             json.dump(test_config_2, file)
 
         # Confirm configs are different
@@ -197,7 +197,7 @@ class ConfigTests(TestCase):
         self.assertEqual(config.config, test_config_2)
 
         # Remove file
-        os.remove(os.path.join(settings.CONFIG_DIR + 'read_from_disk.json'))
+        os.remove(os.path.join(settings.CONFIG_DIR, 'read_from_disk.json'))
 
 
 # Test websocket class used by Webrepl
@@ -1494,7 +1494,7 @@ class ApiTargetMenuOptionsTest(TestCase):
         Node.objects.all()[0].delete()
 
         # Clean up
-        os.remove(f"{settings.CONFIG_DIR}/ir_test.json")
+        os.remove(os.path.join(settings.CONFIG_DIR, 'ir_test.json'))
 
     # Original bug: It was possible to set ApiTarget to turn itself on/off, resulting in
     # an infinite loop. These commands are no longer included for api-target instances
@@ -1657,7 +1657,16 @@ class DeleteConfigTests(TestCase):
         # Generate Config, will be deleted below
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
+
+    def tearDown(self):
+        # Undo permissions changes made by some tests
+        # Prevents broken permissions after failed test
+        os.chmod(settings.CONFIG_DIR, 0o775)
+        try:
+            os.chmod(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'), 0o664)
+        except FileNotFoundError:
+            pass
 
     def test_delete_existing_config(self):
         # Confirm starting condition
@@ -1668,7 +1677,7 @@ class DeleteConfigTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Deleted unit-test-config.json')
         self.assertEqual(len(Config.objects.all()), 0)
-        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
     def test_delete_non_existing_config(self):
         # Confirm starting condition
@@ -1681,14 +1690,14 @@ class DeleteConfigTests(TestCase):
 
         # Confirm Config still exists
         self.assertEqual(len(Config.objects.all()), 1)
-        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
     def test_delete_invalid_permission(self):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Make read-only
-        os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o444)
+        os.chmod(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'), 0o444)
         os.chmod(settings.CONFIG_DIR, 0o554)
 
         # Attempt to delete, confirm fails with permission denied error
@@ -1701,19 +1710,15 @@ class DeleteConfigTests(TestCase):
 
         # Confirm Config still exists
         self.assertEqual(len(Config.objects.all()), 1)
-        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
-
-        # Undo permissions
-        os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o664)
-        os.chmod(settings.CONFIG_DIR, 0o775)
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
     # Original bug: Frontend threw error when attempting to delete a config that was already
     # deleted from disk, preventing the model entry from being removed. Now catches error,
     # deletes model entry, and returns normal response message.
     def test_regression_deleted_from_disk(self):
         # Delete config file, confirm still exists in database but not on disk
-        os.remove(f'{settings.CONFIG_DIR}/unit-test-config.json')
-        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        os.remove(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'))
+        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Simulate deleting through frontend, confirm normal response, confirm removed from database
@@ -1721,7 +1726,7 @@ class DeleteConfigTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Deleted unit-test-config.json')
         self.assertEqual(len(Config.objects.all()), 0)
-        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
 
 class DeleteNodeTests(TestCase):
@@ -1732,13 +1737,22 @@ class DeleteNodeTests(TestCase):
         # Generate Config for test Node
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
         # Create Node, add Config reverse relation
         self.node = Node.objects.create(friendly_name="Test Node", ip="192.168.1.123", floor="5")
         self.config = Config.objects.all()[0]
         self.config.node = self.node
         self.config.save()
+
+    def tearDown(self):
+        # Undo permissions changes made by some tests
+        # Prevents broken permissions after failed test
+        os.chmod(settings.CONFIG_DIR, 0o775)
+        try:
+            os.chmod(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'), 0o664)
+        except FileNotFoundError:
+            pass
 
     def test_delete_existing_node(self):
         # Confirm starting conditions
@@ -1751,7 +1765,7 @@ class DeleteNodeTests(TestCase):
         self.assertEqual(response.json(), 'Deleted Test Node')
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertEqual(len(Node.objects.all()), 0)
-        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
     def test_delete_non_existing_node(self):
         # Confirm starting conditions
@@ -1766,7 +1780,7 @@ class DeleteNodeTests(TestCase):
         # Confirm Node and Config still exist
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
-        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
     def test_delete_invalid_permission(self):
         # Confirm starting conditions
@@ -1774,7 +1788,7 @@ class DeleteNodeTests(TestCase):
         self.assertEqual(len(Node.objects.all()), 1)
 
         # Make read-only
-        os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o444)
+        os.chmod(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'), 0o444)
         os.chmod(settings.CONFIG_DIR, 0o554)
 
         # Attempt to delete, confirm fails with permission denied error
@@ -1788,18 +1802,14 @@ class DeleteNodeTests(TestCase):
         # Confirm Node and Config still exist
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
-        self.assertTrue(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
-
-        # Undo permissions
-        os.chmod(f'{settings.CONFIG_DIR}/unit-test-config.json', 0o664)
-        os.chmod(settings.CONFIG_DIR, 0o775)
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
     # Original bug: Impossible to delete node if config file deleted
     # from disk, traceback when file not found. Fixed in 1af01a00.
     def test_regression_delete_node_config_not_on_disk(self):
         # Delete config from disk but not database, confirm removed
-        os.remove(f'{settings.CONFIG_DIR}/unit-test-config.json')
-        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        os.remove(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'))
+        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
 
@@ -1809,7 +1819,7 @@ class DeleteNodeTests(TestCase):
         self.assertEqual(response.json(), 'Deleted Test Node')
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertEqual(len(Node.objects.all()), 0)
-        self.assertFalse(os.path.exists(f'{settings.CONFIG_DIR}/unit-test-config.json'))
+        self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
 
 # Test endpoint used to change an existing node's IP
@@ -1895,28 +1905,28 @@ class GetModulesTests(TestCase):
     def test_get_modules_full_config(self):
 
         expected_modules = {
-            '../devices/ApiTarget.py': 'ApiTarget.py',
-            '../devices/Wled.py': 'Wled.py',
-            '../devices/Mosfet.py': 'Mosfet.py',
-            '../devices/Relay.py': 'Relay.py',
-            '../sensors/MotionSensor.py': 'MotionSensor.py',
-            '../sensors/Dummy.py': 'Dummy.py',
-            '../devices/Device.py': 'Device.py',
-            '../sensors/Switch.py': 'Switch.py',
-            '../sensors/Desktop_trigger.py': 'Desktop_trigger.py',
-            '../devices/DumbRelay.py': 'DumbRelay.py',
-            '../devices/Tplink.py': 'Tplink.py',
-            '../devices/Desktop_target.py': 'Desktop_target.py',
-            '../sensors/Thermostat.py': 'Thermostat.py',
-            '../sensors/Sensor.py': 'Sensor.py',
-            '../devices/LedStrip.py': 'LedStrip.py',
-            '../devices/DimmableLight.py': 'DimmableLight.py',
-            '../core/Config.py': 'Config.py',
-            '../core/Group.py': 'Group.py',
-            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
-            '../core/Api.py': 'Api.py',
-            '../core/util.py': 'util.py',
-            '../core/main.py': 'main.py'
+            os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Mosfet.py'): 'Mosfet.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Dummy.py'): 'Dummy.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Switch.py'): 'Switch.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Desktop_trigger.py'): 'Desktop_trigger.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Tplink.py'): 'Tplink.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Desktop_target.py'): 'Desktop_target.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Thermostat.py'): 'Thermostat.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Sensor.py'): 'Sensor.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'LedStrip.py'): 'LedStrip.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
+            os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
+            os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
+            os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'
         }
 
         modules = get_modules(self.config, settings.REPO_DIR)
@@ -1924,12 +1934,12 @@ class GetModulesTests(TestCase):
 
     def test_get_modules_empty_config(self):
         expected_modules = {
-            '../core/Config.py': 'Config.py',
-            '../core/Group.py': 'Group.py',
-            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
-            '../core/Api.py': 'Api.py',
-            '../core/util.py': 'util.py',
-            '../core/main.py': 'main.py'
+            os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
+            os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
+            os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
+            os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'
         }
 
         # Should only return core modules, no devices or sensors
@@ -1940,28 +1950,28 @@ class GetModulesTests(TestCase):
         del self.config['ir_blaster']
 
         expected_modules = {
-            '../devices/ApiTarget.py': 'ApiTarget.py',
-            '../devices/Wled.py': 'Wled.py',
-            '../devices/Mosfet.py': 'Mosfet.py',
-            '../devices/Relay.py': 'Relay.py',
-            '../sensors/MotionSensor.py': 'MotionSensor.py',
-            '../sensors/Dummy.py': 'Dummy.py',
-            '../devices/Device.py': 'Device.py',
-            '../sensors/Switch.py': 'Switch.py',
-            '../sensors/Desktop_trigger.py': 'Desktop_trigger.py',
-            '../devices/DumbRelay.py': 'DumbRelay.py',
-            '../devices/Tplink.py': 'Tplink.py',
-            '../devices/Desktop_target.py': 'Desktop_target.py',
-            '../sensors/Thermostat.py': 'Thermostat.py',
-            '../sensors/Sensor.py': 'Sensor.py',
-            '../devices/LedStrip.py': 'LedStrip.py',
-            '../devices/DimmableLight.py': 'DimmableLight.py',
-            '../core/Config.py': 'Config.py',
-            '../core/Group.py': 'Group.py',
-            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
-            '../core/Api.py': 'Api.py',
-            '../core/util.py': 'util.py',
-            '../core/main.py': 'main.py'
+            os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Mosfet.py'): 'Mosfet.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Dummy.py'): 'Dummy.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Switch.py'): 'Switch.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Desktop_trigger.py'): 'Desktop_trigger.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Tplink.py'): 'Tplink.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Desktop_target.py'): 'Desktop_target.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Thermostat.py'): 'Thermostat.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Sensor.py'): 'Sensor.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'LedStrip.py'): 'LedStrip.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
+            os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
+            os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
+            os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'
         }
 
         modules = get_modules(self.config, settings.REPO_DIR)
@@ -1971,27 +1981,27 @@ class GetModulesTests(TestCase):
         del self.config['sensor5']
 
         expected_modules = {
-            '../devices/ApiTarget.py': 'ApiTarget.py',
-            '../devices/Wled.py': 'Wled.py',
-            '../devices/Mosfet.py': 'Mosfet.py',
-            '../devices/Relay.py': 'Relay.py',
-            '../sensors/MotionSensor.py': 'MotionSensor.py',
-            '../sensors/Dummy.py': 'Dummy.py',
-            '../devices/Device.py': 'Device.py',
-            '../sensors/Switch.py': 'Switch.py',
-            '../sensors/Desktop_trigger.py': 'Desktop_trigger.py',
-            '../devices/DumbRelay.py': 'DumbRelay.py',
-            '../devices/Tplink.py': 'Tplink.py',
-            '../devices/Desktop_target.py': 'Desktop_target.py',
-            '../sensors/Sensor.py': 'Sensor.py',
-            '../devices/LedStrip.py': 'LedStrip.py',
-            '../devices/DimmableLight.py': 'DimmableLight.py',
-            '../core/Config.py': 'Config.py',
-            '../core/Group.py': 'Group.py',
-            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
-            '../core/Api.py': 'Api.py',
-            '../core/util.py': 'util.py',
-            '../core/main.py': 'main.py'
+            os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Mosfet.py'): 'Mosfet.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Dummy.py'): 'Dummy.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Switch.py'): 'Switch.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Desktop_trigger.py'): 'Desktop_trigger.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Tplink.py'): 'Tplink.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Desktop_target.py'): 'Desktop_target.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Sensor.py'): 'Sensor.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'LedStrip.py'): 'LedStrip.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
+            os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
+            os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
+            os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'
         }
 
         modules = get_modules(self.config, settings.REPO_DIR)
@@ -2007,22 +2017,22 @@ class GetModulesTests(TestCase):
         del self.config['device7']
 
         expected_modules = {
-            '../devices/ApiTarget.py': 'ApiTarget.py',
-            '../devices/Relay.py': 'Relay.py',
-            '../sensors/MotionSensor.py': 'MotionSensor.py',
-            '../devices/Device.py': 'Device.py',
-            '../sensors/Switch.py': 'Switch.py',
-            '../devices/Tplink.py': 'Tplink.py',
-            '../devices/Wled.py': 'Wled.py',
-            '../sensors/Sensor.py': 'Sensor.py',
-            '../devices/LedStrip.py': 'LedStrip.py',
-            '../devices/DimmableLight.py': 'DimmableLight.py',
-            '../core/Config.py': 'Config.py',
-            '../core/Group.py': 'Group.py',
-            '../core/SoftwareTimer.py': 'SoftwareTimer.py',
-            '../core/Api.py': 'Api.py',
-            '../core/util.py': 'util.py',
-            '../core/main.py': 'main.py'
+            os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Switch.py'): 'Switch.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Tplink.py'): 'Tplink.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
+            os.path.join(settings.REPO_DIR, 'sensors', 'Sensor.py'): 'Sensor.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'LedStrip.py'): 'LedStrip.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Config.py'): 'Config.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Group.py'): 'Group.py',
+            os.path.join(settings.REPO_DIR, 'core', 'SoftwareTimer.py'): 'SoftwareTimer.py',
+            os.path.join(settings.REPO_DIR, 'core', 'Api.py'): 'Api.py',
+            os.path.join(settings.REPO_DIR, 'core', 'util.py'): 'util.py',
+            os.path.join(settings.REPO_DIR, 'core', 'main.py'): 'main.py'
         }
 
         modules = get_modules(self.config, settings.REPO_DIR)
@@ -2040,7 +2050,7 @@ class GenerateConfigFileTests(TestCase):
 
     def tearDown(self):
         try:
-            os.remove(f"{settings.CONFIG_DIR}/unit-test-config.json")
+            os.remove(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'))
         except FileNotFoundError:
             pass
 

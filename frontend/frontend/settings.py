@@ -10,8 +10,8 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 
-from pathlib import Path
 import os
+from pathlib import Path
 from django.core.management.utils import get_random_secret_key
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -39,20 +39,21 @@ for i in ALLOWED_HOSTS:
     CSRF_TRUSTED_ORIGINS.append(f'https://{i}')
 
 # Read dirs + node password from env vars
-REPO_DIR = os.environ.get('REPO_DIR')
 CONFIG_DIR = os.environ.get('CONFIG_DIR')
 NODE_PASSWD = os.environ.get('NODE_PASSWD')
 
+# Project root directory, used to upload firmware files etc
+REPO_DIR = os.path.dirname(BASE_DIR)
+
 # Use defaults if env vars not set
-if not REPO_DIR:
-    REPO_DIR = '../'
 if not CONFIG_DIR:
-    CONFIG_DIR = 'config_files/'
+    CONFIG_DIR = os.path.join(REPO_DIR, 'config_files')
 if not NODE_PASSWD:
     NODE_PASSWD = 'password'
 
+# Create config dir if it does not exist
 if not os.path.exists(CONFIG_DIR):
-    os.mkdir(CONFIG_DIR)
+    os.mkdir(CONFIG_DIR, mode=0o775)
 
 # Set env var, cause shared utilities to use db instead of json files
 os.environ.update({'SMARTHOME_FRONTEND': 'django'})
