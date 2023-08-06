@@ -1,5 +1,4 @@
-config/*
-nodes.json
+config_files/
 cli_config.json
 firmware/esp-idf/
 firmware/micropython/
