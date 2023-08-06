@@ -8,6 +8,7 @@ from unittest.mock import patch, MagicMock
 from django.test import TestCase
 from django.conf import settings
 from django.core.management import call_command
+from django.core.management.base import CommandError
 from django.core.exceptions import ValidationError
 from .views import validate_full_config, get_modules, get_api_target_menu_options, provision
 from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinates
@@ -248,6 +249,34 @@ class ConfigTests(TestCase):
         # Delete model, file should be removed from disk automatically
         config.delete()
         self.assertFalse(os.path.exists(config_path))
+
+    def test_cli_sync_disabled(self):
+        # Set CLI_SYNC to False
+        settings.CLI_SYNC = False
+
+        # Path to config file that would be created with CLI_SYNC, confirm does not exist
+        config_path = os.path.join(settings.CONFIG_DIR, 'test1.json')
+        self.assertFalse(os.path.exists(config_path))
+
+        # Create Config, config should NOT be written to disk
+        config = Config.objects.create(config=test_config_1, filename='test1.json')
+        self.assertFalse(os.path.exists(config_path))
+
+        # Call write_to_disk, confirm correctly ignored
+        config.write_to_disk()
+        self.assertFalse(os.path.exists(config_path))
+
+        # Write empty dict to expected config path
+        with open(config_path, 'w') as file:
+            json.dump({}, file)
+
+        # Call read_from_disk, confirm correctly ignored, config not effected
+        config.read_from_disk()
+        self.assertEqual(config.config, test_config_1)
+
+        # Revert
+        settings.CLI_SYNC = True
+        os.remove(config_path)
 
 
 # Test websocket class used by Webrepl
@@ -852,10 +881,13 @@ class UploadTests(TestCase):
         self.client = JSONClient()
 
     def test_upload_new_node(self):
-        # Create test config, confirm database
+        # Create test config, confirm added to database
         Config.objects.create(config=test_config_1, filename='test1.json')
         self.assertEqual(len(Config.objects.all()), 1)
+
+        # Confirm no nodes in database or cli_config.json
         self.assertEqual(len(Node.objects.all()), 0)
+        remove_node_from_cli_config('Test1')
 
         # Mock Webrepl to return True without doing anything
         with patch.object(Webrepl, 'open_connection', return_value=True), \
@@ -871,6 +903,12 @@ class UploadTests(TestCase):
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
         self.assertTrue(Node.objects.get(friendly_name='Test1'))
+
+        # Should exist in cli_config.json
+        cli_config = get_cli_config()
+        self.assertIn('Test1', cli_config['nodes'].keys())
+        self.assertEqual(cli_config['nodes']['Test1']['ip'], '123.45.67.89')
+        self.assertEqual(cli_config['nodes']['Test1']['config'], os.path.join(settings.CONFIG_DIR, 'test1.json'))
 
     def test_reupload_existing(self):
         # Create test config, confirm database
@@ -1805,17 +1843,23 @@ class DeleteNodeTests(TestCase):
             pass
 
     def test_delete_existing_node(self):
-        # Confirm starting conditions
+        # Confirm node exists in database and cli_config.json
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
+        cli_config = get_cli_config()
+        self.assertIn('Test Node', cli_config['nodes'].keys())
 
-        # Delete the Node created in setUp, confirm response message, confirm removed from database + disk
+        # Delete the Node created in setUp, confirm response message
         response = self.client.post('/delete_node', json.dumps('Test Node'))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), 'Deleted Test Node')
+
+        # Confirm removed from database, disk, and cli_config.json
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertEqual(len(Node.objects.all()), 0)
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
+        cli_config = get_cli_config()
+        self.assertNotIn('Test Node', cli_config['nodes'].keys())
 
     def test_delete_non_existing_node(self):
         # Confirm starting conditions
@@ -1886,8 +1930,10 @@ class ChangeNodeIpTests(TestCase):
         clean_up_test_nodes()
 
     def test_change_node_ip(self):
-        # Confirm starting IP
+        # Confirm starting IP, confirm same IP in cli_config.json
         self.assertEqual(Node.objects.all()[0].ip, '192.168.1.123')
+        cli_config = get_cli_config()
+        self.assertEqual(cli_config['nodes']['Test1']['ip'], '192.168.1.123')
 
         # Mock provision to return success message
         with patch('node_configuration.views.provision') as mock_provision:
@@ -1902,6 +1948,10 @@ class ChangeNodeIpTests(TestCase):
             # Confirm node model IP changed, upload was called
             self.assertEqual(Node.objects.all()[0].ip, '192.168.1.255')
             self.assertEqual(mock_provision.call_count, 1)
+
+            # Confirm IP changed in cli_config.json
+            cli_config = get_cli_config()
+            self.assertEqual(cli_config['nodes']['Test1']['ip'], '192.168.1.255')
 
     def test_target_ip_offline(self):
         # Mock provision to return failure message without doing anything
@@ -2657,3 +2707,25 @@ class ManagementCommandTests(TestCase):
             self.assertEqual(json.load(file), test_config_2)
         with open(os.path.join(settings.CONFIG_DIR, 'test3.json'), 'r') as file:
             self.assertEqual(json.load(file), test_config_3)
+
+    def test_cli_sync_disabled(self):
+        # Disable CLI_SYNC
+        settings.CLI_SYNC = False
+
+        # Confirm both commands raise correct error
+        with self.assertRaises(CommandError):
+            call_command("export_configs_to_disk", stdout=self.output)
+            self.assertIn(
+                'Files cannot be written in diskless mode, set the CLI_SYNC env var to enable.',
+                self.output.getvalue()
+            )
+
+        with self.assertRaises(CommandError):
+            call_command("import_configs_from_disk", stdout=self.output)
+            self.assertIn(
+                'Files cannot be read in diskless mode, set the CLI_SYNC env var to enable.',
+                self.output.getvalue()
+            )
+
+        # Revert
+        settings.CLI_SYNC = True
