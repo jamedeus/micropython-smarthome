@@ -2,14 +2,39 @@ import os
 import json
 import struct
 from django.conf import settings
-from django.test import Client
+from django.test import Client, TestCase
 from .models import Config, Node
+from helper_functions import get_cli_config, write_cli_config
 
 
 # Subclass Client, add default for content_type arg
 class JSONClient(Client):
     def post(self, path, data=None, content_type='application/json', **extra):
         return super().post(path, data, content_type, **extra)
+
+
+# Subclass TestCase, back up cli_config.json contents, replace with
+# template, restore after tests. Prevents tests modifying production.
+class TestCaseBackupRestore(TestCase):
+    config_path = os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        # Back up
+        with open(cls.config_path, 'r') as file:
+            cls.original_cli_config_backup = json.load(file)
+
+        # Delete and replace with template
+        os.remove(cls.config_path)
+        write_cli_config(get_cli_config())
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        # Restore backup
+        with open(cls.config_path, 'w') as file:
+            json.dump(cls.original_cli_config_backup, file)
 
 
 # Get directory containing unit_test_helpers.py

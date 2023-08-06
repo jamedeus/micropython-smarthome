@@ -2,19 +2,24 @@ import json
 import asyncio
 from copy import deepcopy
 from unittest.mock import patch, MagicMock, AsyncMock, call
-from django.test import TestCase
 from django.db import IntegrityError
 from .models import Macro
 from .views import parse_command
 from api_endpoints import request, ir_commands
 from .unit_test_helpers import config1_status_object, config1_api_context, config2_status_object, config2_api_context
-from node_configuration.unit_test_helpers import create_test_nodes, clean_up_test_nodes, JSONClient, test_config_1
 from node_configuration.models import ScheduleKeyword, Node
+from node_configuration.unit_test_helpers import (
+    create_test_nodes,
+    clean_up_test_nodes,
+    TestCaseBackupRestore,
+    JSONClient,
+    test_config_1
+)
 from Webrepl import Webrepl
 
 
 # Test function that makes async API calls to esp32 nodes (called by send_command)
-class RequestTests(TestCase):
+class RequestTests(TestCaseBackupRestore):
     def setUp(self):
         # Simulate successful reply from Node
         async def read_response():
@@ -123,7 +128,7 @@ class RequestTests(TestCase):
 
 
 # Test send_command function that bridges frontend HTTP requests to esp32 API calls
-class SendCommandTests(TestCase):
+class SendCommandTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -206,7 +211,7 @@ class SendCommandTests(TestCase):
 
 
 # Test HTTP endpoints that make API requests to nodes and return the response
-class HTTPEndpointTests(TestCase):
+class HTTPEndpointTests(TestCaseBackupRestore):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -261,7 +266,7 @@ class HTTPEndpointTests(TestCase):
 
 
 # Test model that stores and plays recorded macros
-class MacroModelTests(TestCase):
+class MacroModelTests(TestCaseBackupRestore):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -448,7 +453,7 @@ class MacroModelTests(TestCase):
 
 
 # Test endpoints used to record and edit macros
-class MacroTests(TestCase):
+class MacroTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -543,7 +548,7 @@ class MacroTests(TestCase):
             self.assertEqual(mock_parse_command.call_count, 2)
 
 
-class InvalidMacroTests(TestCase):
+class InvalidMacroTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -621,7 +626,7 @@ class InvalidMacroTests(TestCase):
 
 
 # Test actions in overview top-right dropdown menu
-class TestGlobalCommands(TestCase):
+class TestGlobalCommands(TestCaseBackupRestore):
     def setUp(self):
         create_test_nodes()
 
@@ -664,7 +669,7 @@ class TestGlobalCommands(TestCase):
 
 
 # Test successful calls to all API endpoints with mocked return values
-class TestEndpoints(TestCase):
+class TestEndpoints(TestCaseBackupRestore):
 
     def test_status(self):
         # Mock request to return status object
@@ -884,7 +889,7 @@ class TestEndpoints(TestCase):
 
 
 # Test unsuccessful calls with invalid arguments to verify errors
-class TestEndpointErrors(TestCase):
+class TestEndpointErrors(TestCaseBackupRestore):
 
     def test_parse_command_missing_argument(self):
         # Call parse_command with no argument
@@ -1082,7 +1087,7 @@ class TestEndpointErrors(TestCase):
 
 
 # Test endpoint that loads modal containing existing macro actions
-class EditModalTests(TestCase):
+class EditModalTests(TestCaseBackupRestore):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -1138,7 +1143,7 @@ class EditModalTests(TestCase):
 
 
 # Test endpoint that sets cookie to skip macro instructions modal
-class SkipInstructionsTests(TestCase):
+class SkipInstructionsTests(TestCaseBackupRestore):
     def test_get_skip_instructions_cookie(self):
         response = self.client.get('/skip_instructions')
         self.assertEqual(response.status_code, 200)
@@ -1147,7 +1152,7 @@ class SkipInstructionsTests(TestCase):
 
 
 # Test legacy api page
-class LegacyApiTests(TestCase):
+class LegacyApiTests(TestCaseBackupRestore):
     def test_legacy_api_page(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -1179,7 +1184,7 @@ class LegacyApiTests(TestCase):
 
 
 # Test api overview page
-class OverviewPageTests(TestCase):
+class OverviewPageTests(TestCaseBackupRestore):
     def test_overview_page_no_nodes(self):
         # Request page, confirm correct template used
         response = self.client.get('/api')
@@ -1309,7 +1314,7 @@ class OverviewPageTests(TestCase):
 
 
 # Test API Card interface
-class ApiCardTests(TestCase):
+class ApiCardTests(TestCaseBackupRestore):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -1420,7 +1425,7 @@ class ApiCardTests(TestCase):
 
 
 # Test modal used to edit schedule rules
-class RuleModalTests(TestCase):
+class RuleModalTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1511,7 +1516,7 @@ class RuleModalTests(TestCase):
 
 
 # Test endpoints used to manage schedule keywords
-class ScheduleKeywordTests(TestCase):
+class ScheduleKeywordTests(TestCaseBackupRestore):
     def setUp(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -1571,7 +1576,7 @@ class ScheduleKeywordTests(TestCase):
             self.assertEqual(response, {"ERROR": "Timestamp format must be HH:MM (no AM/PM)"})
 
 
-class SyncScheduleKeywordTests(TestCase):
+class SyncScheduleKeywordTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1729,7 +1734,7 @@ class SyncScheduleKeywordTests(TestCase):
 
 
 # Test endpoint that syncs config file from node to database when user modifies schedule rules
-class SyncScheduleRulesTests(TestCase):
+class SyncScheduleRulesTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()

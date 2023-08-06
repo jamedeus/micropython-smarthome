@@ -5,7 +5,6 @@ import socket
 from io import StringIO
 from copy import deepcopy
 from unittest.mock import patch, MagicMock
-from django.test import TestCase
 from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -19,6 +18,7 @@ from helper_functions import get_cli_config, remove_node_from_cli_config
 
 # Large JSON objects, helper functions
 from .unit_test_helpers import (
+    TestCaseBackupRestore,
     JSONClient,
     request_payload,
     create_test_nodes,
@@ -40,7 +40,7 @@ from .unit_test_helpers import (
 
 
 # Test the Node model
-class NodeTests(TestCase):
+class NodeTests(TestCaseBackupRestore):
     def test_create_node(self):
         self.assertEqual(len(Node.objects.all()), 0)
 
@@ -136,7 +136,7 @@ class NodeTests(TestCase):
 
 
 # Test the Config model
-class ConfigTests(TestCase):
+class ConfigTests(TestCaseBackupRestore):
     def test_create_config(self):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 0)
@@ -280,7 +280,7 @@ class ConfigTests(TestCase):
 
 
 # Test websocket class used by Webrepl
-class WebsocketTests(TestCase):
+class WebsocketTests(TestCaseBackupRestore):
 
     def test_write_method(self):
         # Mock socket and client_handshake to do nothing
@@ -366,7 +366,7 @@ class WebsocketTests(TestCase):
 
 
 # Test the Webrepl class used to upload config + dependencies to nodes
-class WebreplTests(TestCase):
+class WebreplTests(TestCaseBackupRestore):
 
     def test_open_and_close_connection(self):
         node = Webrepl('123.45.67.89', 'password')
@@ -590,7 +590,7 @@ class WebreplTests(TestCase):
 
 
 # Test all endpoints that require POST requests
-class ConfirmRequiresPostTests(TestCase):
+class ConfirmRequiresPostTests(TestCaseBackupRestore):
     def test_get_request(self):
         # All endpoints requiring POST requests
         endpoints = [
@@ -615,7 +615,7 @@ class ConfirmRequiresPostTests(TestCase):
 
 
 # Test edit config view
-class EditConfigTests(TestCase):
+class EditConfigTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -701,7 +701,7 @@ class EditConfigTests(TestCase):
 
 
 # Test config generation page
-class ConfigGeneratorTests(TestCase):
+class ConfigGeneratorTests(TestCaseBackupRestore):
     def test_new_config(self):
         # Request page, confirm correct template used
         response = self.client.get('/new_config')
@@ -736,7 +736,7 @@ class ConfigGeneratorTests(TestCase):
 
 
 # Test main overview page
-class OverviewPageTests(TestCase):
+class OverviewPageTests(TestCaseBackupRestore):
     def test_overview_page_no_nodes(self):
         # Request page, confirm correct template used
         response = self.client.get('/config_overview')
@@ -801,7 +801,7 @@ class OverviewPageTests(TestCase):
 
 
 # Test endpoint called by reupload all option in config overview
-class ReuploadAllTests(TestCase):
+class ReuploadAllTests(TestCaseBackupRestore):
     def setUp(self):
         create_test_nodes()
 
@@ -875,7 +875,7 @@ class ReuploadAllTests(TestCase):
 
 
 # Test endpoint called by frontend upload buttons (calls get_modules and provision)
-class UploadTests(TestCase):
+class UploadTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1005,7 +1005,7 @@ class UploadTests(TestCase):
 
 
 # Test view that uploads completed configs and dependencies to esp32 nodes
-class ProvisionTests(TestCase):
+class ProvisionTests(TestCaseBackupRestore):
     def test_provision(self):
         modules = get_modules(test_config_1, settings.REPO_DIR)
 
@@ -1058,7 +1058,7 @@ class ProvisionTests(TestCase):
 
 
 # Test view that connects to existing node, downloads config file, writes to database
-class RestoreConfigViewTest(TestCase):
+class RestoreConfigViewTest(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1164,7 +1164,7 @@ class RestoreConfigViewTest(TestCase):
 
 
 # Test function that generates JSON used to populate API target set_rule menu
-class ApiTargetMenuOptionsTest(TestCase):
+class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
     def test_empty_database(self):
         # Should return empty template when no Nodes exist
         options = get_api_target_menu_options()
@@ -1645,7 +1645,7 @@ class ApiTargetMenuOptionsTest(TestCase):
 
 
 # Test setting default wifi credentials
-class WifiCredentialsTests(TestCase):
+class WifiCredentialsTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1669,7 +1669,7 @@ class WifiCredentialsTests(TestCase):
         self.assertEqual(credentials.__str__(), 'testnet')
 
 
-class GpsCoordinatesTests(TestCase):
+class GpsCoordinatesTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1700,7 +1700,7 @@ class GpsCoordinatesTests(TestCase):
 
 
 # Test duplicate detection
-class DuplicateDetectionTests(TestCase):
+class DuplicateDetectionTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1737,7 +1737,7 @@ class DuplicateDetectionTests(TestCase):
 
 
 # Test delete config
-class DeleteConfigTests(TestCase):
+class DeleteConfigTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1817,7 +1817,7 @@ class DeleteConfigTests(TestCase):
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
 
-class DeleteNodeTests(TestCase):
+class DeleteNodeTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1917,7 +1917,7 @@ class DeleteNodeTests(TestCase):
 
 
 # Test endpoint used to change an existing node's IP
-class ChangeNodeIpTests(TestCase):
+class ChangeNodeIpTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -1997,7 +1997,7 @@ class ChangeNodeIpTests(TestCase):
 
 
 # Test function that takes config file, returns list of dependencies for upload
-class GetModulesTests(TestCase):
+class GetModulesTests(TestCaseBackupRestore):
     def setUp(self):
         with open('node_configuration/unit-test-config.json') as file:
             self.config = json.load(file)
@@ -2140,7 +2140,7 @@ class GetModulesTests(TestCase):
 
 
 # Test config generator backend function
-class GenerateConfigFileTests(TestCase):
+class GenerateConfigFileTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -2240,7 +2240,7 @@ class GenerateConfigFileTests(TestCase):
 
 
 # Test the validate_full_config function called when user submits config generator form
-class ValidateConfigTests(TestCase):
+class ValidateConfigTests(TestCaseBackupRestore):
     def setUp(self):
         with open('node_configuration/unit-test-config.json') as file:
             self.valid_config = json.load(file)
@@ -2357,7 +2357,7 @@ class ValidateConfigTests(TestCase):
 
 
 # Test views used to manage schedule keywords from config overview
-class ScheduleKeywordTests(TestCase):
+class ScheduleKeywordTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -2549,7 +2549,7 @@ class ScheduleKeywordTests(TestCase):
 
 
 # Confirm schedule keyword management endpoints raise correct errors
-class ScheduleKeywordErrorTests(TestCase):
+class ScheduleKeywordErrorTests(TestCaseBackupRestore):
     def setUp(self):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
@@ -2629,7 +2629,7 @@ class ScheduleKeywordErrorTests(TestCase):
 
 
 # Test custom management commands used to import/export config files
-class ManagementCommandTests(TestCase):
+class ManagementCommandTests(TestCaseBackupRestore):
     def setUp(self):
         # Create 3 test nodes, save references
         create_test_nodes()
