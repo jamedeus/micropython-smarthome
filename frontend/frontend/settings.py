@@ -60,6 +60,11 @@ if not CLI_SYNC:
 if CLI_SYNC and not os.path.exists(CONFIG_DIR):
     os.mkdir(CONFIG_DIR, mode=0o775)
 
+# Create cli_config.json if it does not exist and CLI_SYNC is enabled
+if CLI_SYNC and not os.path.exists(os.path.join(REPO_DIR, 'CLI', 'cli_config.json')):
+    from helper_functions import get_cli_config, write_cli_config
+    write_cli_config(get_cli_config())
+
 # Set env var, cause shared utilities to use db instead of json files
 os.environ.update({'SMARTHOME_FRONTEND': 'django'})
 
