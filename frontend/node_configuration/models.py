@@ -46,6 +46,9 @@ class Node(models.Model):
     # Remove from cli_config.json if CLI_SYNC enabled
     def delete(self, *args, **kwargs):
         if settings.CLI_SYNC:
+            # Delete config file on disk
+            if hasattr(self, 'config'):
+                self.config.delete()
             remove_node_from_cli_config(self.friendly_name)
         return super().delete(*args, **kwargs)
 
@@ -100,6 +103,15 @@ class Config(models.Model):
             self.write_to_disk()
 
         return super().save(*args, **kwargs)
+
+    # Remove file from disk if CLI_SYNC enabled
+    def delete(self, *args, **kwargs):
+        if settings.CLI_SYNC:
+            try:
+                os.remove(os.path.join(settings.CONFIG_DIR, self.filename))
+            except FileNotFoundError:
+                pass
+        return super().delete(*args, **kwargs)
 
 
 # TODO fix cleartext password

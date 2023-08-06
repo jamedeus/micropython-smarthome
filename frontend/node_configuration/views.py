@@ -1,5 +1,4 @@
 import json
-import os
 from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -23,9 +22,7 @@ from helper_functions import (
 )
 
 # Env var constants
-CLI_SYNC = settings.CLI_SYNC
 REPO_DIR = settings.REPO_DIR
-CONFIG_DIR = settings.CONFIG_DIR
 NODE_PASSWD = settings.NODE_PASSWD
 
 # Parse tuple of device and sensor types from templates, used in validation
@@ -107,18 +104,8 @@ def delete_config(request):
         return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
 
     try:
-        # Delete from disk + database
-        # TODO move to models
-        if CLI_SYNC:
-            os.remove(os.path.join(CONFIG_DIR, target.filename))
         target.delete()
         return JsonResponse(f"Deleted {data}", safe=False, status=200)
-
-    except FileNotFoundError:
-        # Missing from disk: Delete from database and return normal response
-        target.delete()
-        return JsonResponse(f"Deleted {data}", safe=False, status=200)
-
     except PermissionError:
         return JsonResponse(
             "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
@@ -139,23 +126,16 @@ def delete_node(request):
     except Node.DoesNotExist:
         return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
 
-    if CLI_SYNC:
-        try:
-            # Delete from disk
-            # TODO move to models
-            os.remove(os.path.join(CONFIG_DIR, node.config.filename))
-        except PermissionError:
-            return JsonResponse(
-                "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
-                safe=False,
-                status=500
-            )
-        except FileNotFoundError:
-            pass
-
-    # Delete from database
-    node.delete()
-    return JsonResponse(f"Deleted {data}", safe=False, status=200)
+    try:
+        # Delete from database and disk
+        node.delete()
+        return JsonResponse(f"Deleted {data}", safe=False, status=200)
+    except PermissionError:
+        return JsonResponse(
+            "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
+            safe=False,
+            status=500
+        )
 
 
 def change_node_ip(request):
@@ -594,11 +574,6 @@ def restore_config(request):
     valid = validate_full_config(config)
     if valid is not True:
         return JsonResponse("ERROR: Config format invalid, possibly outdated version.", safe=False, status=500)
-
-    # Write file to disk
-    if CLI_SYNC:
-        with open(os.path.join(CONFIG_DIR, filename), 'w') as file:
-            json.dump(config, file)
 
     # Create Config model entry
     config = Config(config=config, filename=filename)

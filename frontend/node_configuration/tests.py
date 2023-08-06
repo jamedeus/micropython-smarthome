@@ -13,6 +13,9 @@ from .views import validate_full_config, get_modules, get_api_target_menu_option
 from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinates
 from Webrepl import websocket, Webrepl, handshake_message
 
+# Functions used to manage cli_config.json
+from helper_functions import get_cli_config, remove_node_from_cli_config
+
 # Large JSON objects, helper functions
 from .unit_test_helpers import (
     JSONClient,
@@ -103,6 +106,33 @@ class NodeTests(TestCase):
         # Confirm no nodes created in db
         self.assertEqual(len(Node.objects.all()), 1)
 
+    def test_cli_sync(self):
+        # Path to config file that will be created
+        config_path = os.path.join(settings.CONFIG_DIR, 'test1.json')
+
+        # Confirm node not in cli_config.json, config not on disk
+        remove_node_from_cli_config('Unit Test Node')
+        self.assertFalse(os.path.exists(config_path))
+
+        # Create node, should not be added to cli_config.json (node has no config file)
+        node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='2')
+        cli_config = get_cli_config()
+        self.assertNotIn('Unit Test Node', cli_config['nodes'].keys())
+        self.assertFalse(os.path.exists(config_path))
+
+        # Create Config with reverse relation, node should be added to cli_config.json
+        Config.objects.create(config=test_config_1, filename='test1.json', node=node)
+        cli_config = get_cli_config()
+        self.assertIn('Unit Test Node', cli_config['nodes'].keys())
+        self.assertEqual(cli_config['nodes']['Unit Test Node']['ip'], '123.45.67.89')
+        self.assertEqual(cli_config['nodes']['Unit Test Node']['config'], config_path)
+
+        # Delete node, node should be removed from cli_config.json, config should be removed from disk
+        node.delete()
+        cli_config = get_cli_config()
+        self.assertNotIn('Unit Test Node', cli_config['nodes'].keys())
+        self.assertFalse(os.path.exists(config_path))
+
 
 # Test the Config model
 class ConfigTests(TestCase):
@@ -110,10 +140,11 @@ class ConfigTests(TestCase):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 0)
 
-        # Create node, confirm exists in database
+        # Create node, confirm exists in database, file exists on disk
         config = Config.objects.create(config=test_config_1, filename='test1.json')
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertIsInstance(config, Config)
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test1.json')))
 
         # Confirm filename shown when instance printed
         self.assertEqual(config.__str__(), 'test1.json')
@@ -199,6 +230,24 @@ class ConfigTests(TestCase):
 
         # Remove file
         os.remove(os.path.join(settings.CONFIG_DIR, 'read_from_disk.json'))
+
+    def test_cli_sync(self):
+        # Path to config file that will be created, confirm does not exist
+        config_path = os.path.join(settings.CONFIG_DIR, 'test1.json')
+        self.assertFalse(os.path.exists(config_path))
+
+        # Create Config, should write config file to disk automatically
+        config = Config.objects.create(config=test_config_1, filename='test1.json')
+        self.assertTrue(os.path.exists(config_path))
+
+        # Delete from disk, call save method, should be written again
+        os.remove(config_path)
+        config.save()
+        self.assertTrue(os.path.exists(config_path))
+
+        # Delete model, file should be removed from disk automatically
+        config.delete()
+        self.assertFalse(os.path.exists(config_path))
 
 
 # Test websocket class used by Webrepl
@@ -977,11 +1026,13 @@ class RestoreConfigViewTest(TestCase):
         self.client = JSONClient()
 
     def test_restore_config(self):
-        # Database should be empty
+        # Database should be empty, config file should not exist on disk
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertEqual(len(Node.objects.all()), 0)
+        if os.path.exists(os.path.join(settings.CONFIG_DIR, 'test1.json')):
+            os.remove(os.path.join(settings.CONFIG_DIR, 'test1.json'))
 
-        # Mock Webrepl to return byte-encoded test_config_1 (see unit_test_helpers.py)
+        # Mock Webrepl to return byte-encoded test_config_1 (simulate receiving from ESP32)
         with patch.object(Webrepl, 'open_connection', return_value=True), \
              patch.object(Webrepl, 'get_file_mem', return_value=json.dumps(test_config_1).encode('utf-8')):
 
@@ -990,11 +1041,12 @@ class RestoreConfigViewTest(TestCase):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), 'Config restored')
 
-        # Config and Node should now exist
+        # Config and Node should now exist, config file should exist on disk
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
         self.assertTrue(Config.objects.get(filename='test1.json'))
         self.assertTrue(Node.objects.get(friendly_name='Test1'))
+        self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'test1.json')))
 
         # Config should be identical to input object
         config = Config.objects.get(filename='test1.json').config
@@ -1493,9 +1545,6 @@ class ApiTargetMenuOptionsTest(TestCase):
         options = get_api_target_menu_options()
         self.assertEqual(options, expected_options)
         Node.objects.all()[0].delete()
-
-        # Clean up
-        os.remove(os.path.join(settings.CONFIG_DIR, 'ir_test.json'))
 
     # Original bug: It was possible to set ApiTarget to turn itself on/off, resulting in
     # an infinite loop. These commands are no longer included for api-target instances
