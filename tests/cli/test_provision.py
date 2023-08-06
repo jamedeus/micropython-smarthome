@@ -244,6 +244,7 @@ class TestInstantiation(TestCase):
         response = {'message': 'Upload complete.', 'status': 200}
         with patch('provision.provision', MagicMock(return_value=response)) as mock_provision, \
              patch('provision.json.load', MagicMock(return_value=mock_file_contents)), \
+             patch('helper_functions.get_cli_config', return_value=mock_cli_config), \
              patch('provision.cli_config', mock_cli_config), \
              patch('builtins.open', mock_file):
 

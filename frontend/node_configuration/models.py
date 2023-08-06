@@ -5,7 +5,12 @@ from django.dispatch import receiver
 from django.db import models, IntegrityError
 from django.db.models.signals import post_save, post_delete
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
-from helper_functions import get_schedule_keywords_dict, get_cli_config, add_node_to_cli_config, write_cli_config
+from helper_functions import (
+    get_schedule_keywords_dict,
+    get_cli_config,
+    add_node_to_cli_config,
+    remove_node_from_cli_config
+)
 
 
 class TimeStampField(models.CharField):
@@ -41,12 +46,7 @@ class Node(models.Model):
     # Remove from cli_config.json if CLI_SYNC enabled
     def delete(self, *args, **kwargs):
         if settings.CLI_SYNC:
-            try:
-                cli_config = get_cli_config()
-                del cli_config['nodes'][self.friendly_name]
-                write_cli_config(cli_config)
-            except KeyError:
-                pass
+            remove_node_from_cli_config(self.friendly_name)
         return super().delete(*args, **kwargs)
 
 

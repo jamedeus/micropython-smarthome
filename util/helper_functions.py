@@ -91,6 +91,16 @@ def add_node_to_cli_config(friendly_name, config_path, ip):
     write_cli_config(cli_config)
 
 
+# Takes node friendly name, deletes from cli_config.json
+def remove_node_from_cli_config(friendly_name):
+    try:
+        cli_config = get_cli_config()
+        del cli_config['nodes'][friendly_name]
+        write_cli_config(cli_config)
+    except KeyError:
+        pass
+
+
 # Takes dict, overwrites cli_config.json
 def write_cli_config(config):
     with open(os.path.join(repo, 'CLI', 'cli_config.json'), 'w') as file:

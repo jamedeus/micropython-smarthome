@@ -9,7 +9,7 @@
 import os
 import json
 import argparse
-from helper_functions import valid_ip, get_cli_config
+from helper_functions import valid_ip, get_cli_config, add_node_to_cli_config
 from provision_tools import get_modules, dependencies, core_modules, provision
 
 
@@ -90,21 +90,10 @@ class Provisioner():
 
             # Add to cli_config.json if upload successful
             if result['status'] == 200:
-                self.add_to_nodes(config['metadata']['id'], args.config.name, args.ip)
+                add_node_to_cli_config(config['metadata']['id'], args.config.name, args.ip)
 
         else:
             parser.print_help()
-
-    # Add new node to cli_config.json after successful upload
-    # Takes friendly name, config rel/abs path, ip address
-    def add_to_nodes(self, friendly_name, config_path, ip):
-        if friendly_name not in cli_config['nodes'].keys():
-            cli_config['nodes'][friendly_name] = {
-                'config': os.path.abspath(config_path),
-                'ip': ip
-            }
-            with open(os.path.join(cli, 'cli_config.json'), 'w') as file:
-                json.dump(cli_config, file)
 
     # Iterate cli_config.json, reprovision all nodes
     def upload_all(self):
