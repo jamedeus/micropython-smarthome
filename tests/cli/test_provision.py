@@ -131,9 +131,10 @@ class TestInstantiation(TestCase):
             # Instantiate, confirm provision called once for each node
             Provisioner(args, '')
             self.assertEqual(mock_provision.call_count, 3)
-            self.assertTrue(mock_provision.called_with('192.168.1.123'))
-            self.assertTrue(mock_provision.called_with('192.168.1.234'))
-            self.assertTrue(mock_provision.called_with('192.168.1.111'))
+
+            self.assertEqual(mock_provision.call_args_list[0][0][0], '192.168.1.123')
+            self.assertEqual(mock_provision.call_args_list[1][0][0], '192.168.1.234')
+            self.assertEqual(mock_provision.call_args_list[2][0][0], '192.168.1.111')
 
     def test_provision_friendly_name(self):
         # Mock args with node friendly name
@@ -149,7 +150,7 @@ class TestInstantiation(TestCase):
             # Instantiate, confirm provision called once with expected IP
             Provisioner(args, '')
             self.assertEqual(mock_provision.call_count, 1)
-            self.assertTrue(mock_provision.called_with('192.168.1.123'))
+            self.assertEqual(mock_provision.call_args[0][0], '192.168.1.123')
 
     def test_provision_unit_tests(self):
         # Expected test modules
@@ -248,11 +249,13 @@ class TestInstantiation(TestCase):
              patch('provision.cli_config', mock_cli_config), \
              patch('builtins.open', mock_file):
 
-            # Instantiate, confirm provision called once with expected IP and password
+            # Instantiate, confirm provision called once with expected IP, password, config
             Provisioner(args, '')
             self.assertEqual(mock_provision.call_count, 1)
-            self.assertTrue(mock_provision.called_with('192.168.1.123'))
-            self.assertTrue(mock_provision.called_with('hunter2'))
+            args = mock_provision.call_args[0]
+            self.assertEqual(args[0], '192.168.1.123')
+            self.assertEqual(args[1], 'hunter2')
+            self.assertEqual(args[2], mock_file_contents)
 
         # Confirm ID from mock config was added to cli_config.json nodes section
         self.assertIn('Node1', mock_cli_config['nodes'].keys())
