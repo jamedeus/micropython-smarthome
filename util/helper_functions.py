@@ -80,6 +80,23 @@ def get_cli_config():
         }
 
 
+# Takes node friendly_name, config abs path, and IP of existing node
+# Adds (or overwrites) entry in nodes section of cli_config.json
+def add_node_to_cli_config(friendly_name, config_path, ip):
+    cli_config = get_cli_config()
+    cli_config['nodes'][friendly_name] = {
+        'config': os.path.abspath(config_path),
+        'ip': ip
+    }
+    write_cli_config(cli_config)
+
+
+# Takes dict, overwrites cli_config.json
+def write_cli_config(config):
+    with open(os.path.join(repo, 'CLI', 'cli_config.json'), 'w') as file:
+        json.dump(config, file)
+
+
 # Returns dict with schedule keywords as keys, timestamps as values
 # Reads from django database if argument is passed
 # Otherwise reads from CLI/cli_config.json

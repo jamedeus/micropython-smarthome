@@ -166,7 +166,8 @@ class ConfigTests(TestCase):
         # Create config
         config = Config.objects.create(config=test_config_1, filename='write_to_disk.json')
 
-        # Config should not exist on disk
+        # Delete from disk, confirm removed
+        os.remove(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json'))
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'write_to_disk.json')))
 
         # Call method, should exist
@@ -2550,7 +2551,7 @@ class ManagementCommandTests(TestCase):
         clean_up_test_nodes()
 
     def test_import_configs_from_disk(self):
-        # Overwrite all 3 configs in database, but not disk
+        # Overwrite all 3 configs in database (also overwrites on disk)
         self.config1.config = {'test': 'placeholder'}
         self.config1.save()
         self.assertNotEqual(self.config1.config, test_config_1)
@@ -2560,6 +2561,14 @@ class ManagementCommandTests(TestCase):
         self.config3.config = {'test': 'placeholder'}
         self.config3.save()
         self.assertNotEqual(self.config3.config, test_config_3)
+
+        # Overwrite new configs on disk with original contents
+        with open(os.path.join(settings.CONFIG_DIR, 'test1.json'), 'w') as file:
+            json.dump(test_config_1, file)
+        with open(os.path.join(settings.CONFIG_DIR, 'test2.json'), 'w') as file:
+            json.dump(test_config_2, file)
+        with open(os.path.join(settings.CONFIG_DIR, 'test3.json'), 'w') as file:
+            json.dump(test_config_3, file)
 
         # Call command, confirm correct output
         call_command("import_configs_from_disk", stdout=self.output)

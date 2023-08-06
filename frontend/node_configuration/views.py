@@ -108,6 +108,7 @@ def delete_config(request):
 
     try:
         # Delete from disk + database
+        # TODO move to models
         if CLI_SYNC:
             os.remove(os.path.join(CONFIG_DIR, target.filename))
         target.delete()
@@ -141,6 +142,7 @@ def delete_node(request):
     if CLI_SYNC:
         try:
             # Delete from disk
+            # TODO move to models
             os.remove(os.path.join(CONFIG_DIR, node.config.filename))
         except PermissionError:
             return JsonResponse(
@@ -519,7 +521,6 @@ def generate_config_file(request, edit_existing=False):
     else:
         model_entry.config = config
         model_entry.save()
-        model_entry.write_to_disk()
 
     return JsonResponse("Config created.", safe=False, status=200)
 
@@ -641,7 +642,6 @@ def add_schedule_keyword_config(request):
     for node in Node.objects.all():
         node.config.config['metadata']['schedule_keywords'] = all_keywords
         node.config.save()
-        node.config.write_to_disk()
 
     return JsonResponse("Keyword created", safe=False, status=200)
 
@@ -692,7 +692,6 @@ def edit_schedule_keyword_config(request):
     for node in Node.objects.all():
         node.config.config['metadata']['schedule_keywords'] = all_keywords
         node.config.save()
-        node.config.write_to_disk()
 
     return JsonResponse("Keyword updated", safe=False, status=200)
 
@@ -726,7 +725,6 @@ def delete_schedule_keyword_config(request):
     for node in Node.objects.all():
         node.config.config['metadata']['schedule_keywords'] = all_keywords
         node.config.save()
-        node.config.write_to_disk()
 
     return JsonResponse("Keyword deleted", safe=False, status=200)
 

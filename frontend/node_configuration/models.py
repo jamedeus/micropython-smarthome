@@ -5,7 +5,7 @@ from django.dispatch import receiver
 from django.db import models, IntegrityError
 from django.db.models.signals import post_save, post_delete
 from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
-from helper_functions import get_schedule_keywords_dict
+from helper_functions import get_schedule_keywords_dict, get_cli_config, add_node_to_cli_config, write_cli_config
 
 
 class TimeStampField(models.CharField):
@@ -30,9 +30,24 @@ class Node(models.Model):
     floor = models.IntegerField(default=1, validators=[MinValueValidator(0), MaxValueValidator(999)])
 
     # Validate all fields before saving
+    # Add to cli_config.json if CLI_SYNC enabled
     def save(self, *args, **kwargs):
         self.full_clean()
+        if settings.CLI_SYNC and hasattr(self, 'config'):
+            config_path = os.path.join(settings.CONFIG_DIR, self.config.filename)
+            add_node_to_cli_config(self.friendly_name, config_path, self.ip)
         return super().save(*args, **kwargs)
+
+    # Remove from cli_config.json if CLI_SYNC enabled
+    def delete(self, *args, **kwargs):
+        if settings.CLI_SYNC:
+            try:
+                cli_config = get_cli_config()
+                del cli_config['nodes'][self.friendly_name]
+                write_cli_config(cli_config)
+            except KeyError:
+                pass
+        return super().delete(*args, **kwargs)
 
 
 class Config(models.Model):
@@ -62,14 +77,28 @@ class Config(models.Model):
 
     def write_to_disk(self):
         if settings.CLI_SYNC:
+            # Write config file to disk
             with open(os.path.join(settings.CONFIG_DIR, self.filename), 'w') as file:
                 json.dump(self.config, file)
+
+            # Add to cli_config.json
+            if self.node:
+                add_node_to_cli_config(
+                    self.node.friendly_name,
+                    os.path.join(settings.CONFIG_DIR, self.filename),
+                    self.node.ip
+                )
         else:
             print('WARNING: write_to_disk called with CLI_SYNC disabled, ignoring.')
 
     # Validate all fields before saving
     def save(self, *args, **kwargs):
         self.full_clean()
+
+        # Write to disk if CLI_SYNC enabled
+        if settings.CLI_SYNC:
+            self.write_to_disk()
+
         return super().save(*args, **kwargs)
 
 
@@ -117,20 +146,7 @@ class ScheduleKeyword(models.Model):
 @receiver(post_delete, sender=ScheduleKeyword)
 def write_to_disk(**kwargs):
     if settings.CLI_SYNC:
-        config = os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')
-
-        # Edit config file in place if already exists
-        if os.path.exists(config):
-            with open(config, 'r+') as file:
-                cli_config = json.load(file)
-                cli_config['schedule_keywords'] = get_schedule_keywords_dict()
-                file.seek(0)
-                json.dump(cli_config, file)
-                file.truncate()
-
-        # Create config file if it doesn't exist
-        else:
-            with open(config, 'w') as file:
-                cli_config = {}
-                cli_config['schedule_keywords'] = get_schedule_keywords_dict()
-                json.dump(get_schedule_keywords_dict(), file)
+        config = get_cli_config()
+        config['schedule_keywords'] = get_schedule_keywords_dict()
+        with open(os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json'), 'w') as file:
+            json.dump(config, file)
