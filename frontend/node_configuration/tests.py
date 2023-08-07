@@ -118,20 +118,20 @@ class NodeTests(TestCaseBackupRestore):
         # Create node, should not be added to cli_config.json (node has no config file)
         node = Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='2')
         cli_config = get_cli_config()
-        self.assertNotIn('Unit Test Node', cli_config['nodes'].keys())
+        self.assertNotIn('unit-test-node', cli_config['nodes'].keys())
         self.assertFalse(os.path.exists(config_path))
 
         # Create Config with reverse relation, node should be added to cli_config.json
         Config.objects.create(config=test_config_1, filename='test1.json', node=node)
         cli_config = get_cli_config()
-        self.assertIn('Unit Test Node', cli_config['nodes'].keys())
-        self.assertEqual(cli_config['nodes']['Unit Test Node']['ip'], '123.45.67.89')
-        self.assertEqual(cli_config['nodes']['Unit Test Node']['config'], config_path)
+        self.assertIn('unit-test-node', cli_config['nodes'].keys())
+        self.assertEqual(cli_config['nodes']['unit-test-node']['ip'], '123.45.67.89')
+        self.assertEqual(cli_config['nodes']['unit-test-node']['config'], config_path)
 
         # Delete node, node should be removed from cli_config.json, config should be removed from disk
         node.delete()
         cli_config = get_cli_config()
-        self.assertNotIn('Unit Test Node', cli_config['nodes'].keys())
+        self.assertNotIn('unit-test-node', cli_config['nodes'].keys())
         self.assertFalse(os.path.exists(config_path))
 
 
@@ -906,9 +906,9 @@ class UploadTests(TestCaseBackupRestore):
 
         # Should exist in cli_config.json
         cli_config = get_cli_config()
-        self.assertIn('Test1', cli_config['nodes'].keys())
-        self.assertEqual(cli_config['nodes']['Test1']['ip'], '123.45.67.89')
-        self.assertEqual(cli_config['nodes']['Test1']['config'], os.path.join(settings.CONFIG_DIR, 'test1.json'))
+        self.assertIn('test1', cli_config['nodes'].keys())
+        self.assertEqual(cli_config['nodes']['test1']['ip'], '123.45.67.89')
+        self.assertEqual(cli_config['nodes']['test1']['config'], os.path.join(settings.CONFIG_DIR, 'test1.json'))
 
     def test_reupload_existing(self):
         # Create test config, confirm database
@@ -1847,7 +1847,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
         cli_config = get_cli_config()
-        self.assertIn('Test Node', cli_config['nodes'].keys())
+        self.assertIn('test-node', cli_config['nodes'].keys())
 
         # Delete the Node created in setUp, confirm response message
         response = self.client.post('/delete_node', json.dumps('Test Node'))
@@ -1859,7 +1859,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
         self.assertEqual(len(Node.objects.all()), 0)
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
         cli_config = get_cli_config()
-        self.assertNotIn('Test Node', cli_config['nodes'].keys())
+        self.assertNotIn('test-node', cli_config['nodes'].keys())
 
     def test_delete_non_existing_node(self):
         # Confirm starting conditions
@@ -1933,7 +1933,7 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
         # Confirm starting IP, confirm same IP in cli_config.json
         self.assertEqual(Node.objects.all()[0].ip, '192.168.1.123')
         cli_config = get_cli_config()
-        self.assertEqual(cli_config['nodes']['Test1']['ip'], '192.168.1.123')
+        self.assertEqual(cli_config['nodes']['test1']['ip'], '192.168.1.123')
 
         # Mock provision to return success message
         with patch('node_configuration.views.provision') as mock_provision:
@@ -1951,7 +1951,7 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
 
             # Confirm IP changed in cli_config.json
             cli_config = get_cli_config()
-            self.assertEqual(cli_config['nodes']['Test1']['ip'], '192.168.1.255')
+            self.assertEqual(cli_config['nodes']['test1']['ip'], '192.168.1.255')
 
     def test_target_ip_offline(self):
         # Mock provision to return failure message without doing anything

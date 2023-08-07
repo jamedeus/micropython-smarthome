@@ -49,6 +49,19 @@ def is_int_or_float(num):
         return False
 
 
+# Coverts friendly_name to format used in cli_config.json
+def get_cli_config_name(friendly_name):
+    return friendly_name.lower().replace(" ", "-")
+
+
+# Takes friendly_name, returns lowercase with no spaces and json extension
+def get_config_filename(friendly_name):
+    filename = get_cli_config_name(friendly_name)
+    if not filename.endswith('.json'):
+        filename += '.json'
+    return filename
+
+
 # Takes config file, param
 def get_config_param_list(config, param):
     return [value[param] for key, value in config.items() if param in value]
@@ -83,8 +96,11 @@ def get_cli_config():
 # Takes node friendly_name, config abs path, and IP of existing node
 # Adds (or overwrites) entry in nodes section of cli_config.json
 def add_node_to_cli_config(friendly_name, config_path, ip):
+    # Remove spaces (breaks CLI tool bash completion)
+    name = get_cli_config_name(friendly_name)
+
     cli_config = get_cli_config()
-    cli_config['nodes'][friendly_name] = {
+    cli_config['nodes'][name] = {
         'config': os.path.abspath(config_path),
         'ip': ip
     }
@@ -93,9 +109,12 @@ def add_node_to_cli_config(friendly_name, config_path, ip):
 
 # Takes node friendly name, deletes from cli_config.json
 def remove_node_from_cli_config(friendly_name):
+    # Remove spaces (breaks CLI tool bash completion)
+    name = get_cli_config_name(friendly_name)
+
     try:
         cli_config = get_cli_config()
-        del cli_config['nodes'][friendly_name]
+        del cli_config['nodes'][name]
         write_cli_config(cli_config)
     except KeyError:
         pass

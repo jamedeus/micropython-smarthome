@@ -18,7 +18,8 @@ from helper_functions import (
     is_sensor,
     get_config_param_list,
     valid_ip,
-    get_schedule_keywords_dict
+    get_schedule_keywords_dict,
+    get_config_filename
 )
 
 # Env var constants
@@ -309,7 +310,7 @@ def check_duplicate(request):
         return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
 
     friendly_name = data['name']
-    filename = friendly_name.lower().replace(" ", "-") + ".json"
+    filename = get_config_filename(friendly_name)
 
     if is_duplicate(filename, friendly_name):
         return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
@@ -431,7 +432,7 @@ def generate_config_file(request, edit_existing=False):
     print(json.dumps(data, indent=4))
 
     # Get filename (all lowercase, replace spaces with hyphens)
-    filename = data["friendlyName"].lower().replace(" ", "-") + ".json"
+    filename = get_config_filename(data["friendlyName"])
 
     print(f"\nFilename: {filename}\n")
 
@@ -561,7 +562,7 @@ def restore_config(request):
     config = json.loads(config)
 
     # Get filename (all lowercase, replace spaces with hyphens)
-    filename = config["metadata"]["id"].lower().replace(" ", "-") + ".json"
+    filename = get_config_filename(config["metadata"]["id"])
 
     # Prevent overwriting existing config
     if is_duplicate(filename, config['metadata']['id']):

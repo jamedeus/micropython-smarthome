@@ -222,11 +222,11 @@ class TestInstantiation(TestCase):
 
     def test_provision_manual_args(self):
         # Mock config file contents with ID parameter set (used as key in cli_config.json nodes section)
-        mock_file_contents = {'metadata': {'id': 'Node1'}}
+        mock_file_contents = {'metadata': {'id': 'Node4'}}
 
         # Mock file object to simulate config arg
         mock_file = mock_open(read_data=json.dumps(mock_file_contents))
-        mock_file.name = '../config/node1.json'
+        mock_file.name = '../config/node4.json'
 
         # Mock args with manually specified config file, IP, password
         args = Namespace(
@@ -239,7 +239,7 @@ class TestInstantiation(TestCase):
         )
 
         # Confirm ID from mock config not in cli_config.json nodes section
-        self.assertNotIn('Node1', mock_cli_config['nodes'].keys())
+        self.assertNotIn('node4', mock_cli_config['nodes'].keys())
 
         # Mock provision to do nothing, mock cli_config.json, mock open + json.load to return empty dict (config)
         response = {'message': 'Upload complete.', 'status': 200}
@@ -258,9 +258,9 @@ class TestInstantiation(TestCase):
             self.assertEqual(args[2], mock_file_contents)
 
         # Confirm ID from mock config was added to cli_config.json nodes section
-        self.assertIn('Node1', mock_cli_config['nodes'].keys())
-        self.assertEqual(mock_cli_config['nodes']['Node1']['ip'], '192.168.1.123')
-        self.assertEqual(mock_cli_config['nodes']['Node1']['config'], os.path.abspath('../config/node1.json'))
+        self.assertIn('node4', mock_cli_config['nodes'].keys())
+        self.assertEqual(mock_cli_config['nodes']['node4']['ip'], '192.168.1.123')
+        self.assertEqual(mock_cli_config['nodes']['node4']['config'], os.path.abspath('../config/node4.json'))
 
     def test_provision_no_args(self):
         # Mock args, all blank
