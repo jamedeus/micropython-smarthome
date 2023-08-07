@@ -1,6 +1,8 @@
 import os
 import json
+import shutil
 import struct
+import tempfile
 from django.conf import settings
 from django.test import Client, TestCase
 from .models import Config, Node
@@ -16,25 +18,39 @@ class JSONClient(Client):
 # Subclass TestCase, back up cli_config.json contents, replace with
 # template, restore after tests. Prevents tests modifying production.
 class TestCaseBackupRestore(TestCase):
-    config_path = os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')
+    # Get path to cli_config.json
+    cli_config_path = os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')
+
+    # Create temp directory to back up existing config files
+    backup_path = os.path.join(tempfile.gettempdir(), 'smarthome_config_file_backups')
+    if not os.path.exists(backup_path):
+        os.mkdir(backup_path)
 
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        # Back up
-        with open(cls.config_path, 'r') as file:
+        # Back up cli_config.json to class attribute
+        with open(cls.cli_config_path, 'r') as file:
             cls.original_cli_config_backup = json.load(file)
 
-        # Delete and replace with template
-        os.remove(cls.config_path)
+        # Delete from disk, replace with template
+        os.remove(cls.cli_config_path)
         write_cli_config(get_cli_config())
+
+        # Move existing config dir to tmp, create blank dir for tests
+        cls.backup_dir = shutil.move(settings.CONFIG_DIR, cls.backup_path)
+        os.mkdir(settings.CONFIG_DIR)
 
     @classmethod
     def tearDownClass(cls):
         super().tearDownClass()
-        # Restore backup
-        with open(cls.config_path, 'w') as file:
+        # Write cli_config.json backup back to disk
+        with open(cls.cli_config_path, 'w') as file:
             json.dump(cls.original_cli_config_backup, file)
+
+        # Delete test config files, move originals back
+        shutil.rmtree(settings.CONFIG_DIR)
+        shutil.move(cls.backup_dir, settings.CONFIG_DIR)
 
 
 # Get directory containing unit_test_helpers.py
