@@ -1,3 +1,4 @@
+import json
 import time
 import logging
 from machine import Pin
@@ -8,13 +9,16 @@ log = logging.getLogger("IrBlaster")
 
 
 class IrBlaster():
-    def __init__(self, pin, target):
+    def __init__(self, pin, target, macros):
         led = Pin(int(pin), Pin.OUT, value=0)
         self.ir = Player(led)
         self.target = target
         self._type = "ir_blaster"
 
         self.codes = {}
+
+        # Dict with macro names as key, list of actions as value
+        self.macros = macros
 
         if "tv" in self.target:
             from ir_codes import samsung
@@ -32,6 +36,55 @@ class IrBlaster():
             return True
         except (KeyError, AttributeError):
             return False
+
+    # Creates a new key in self.macros
+    def create_macro(self, name):
+        if name not in self.macros.keys():
+            self.macros[name] = []
+        else:
+            raise ValueError(f"Macro named {name} already exists")
+
+    # Takes name of existing macro, removes from self.macros
+    def delete_macro(self, name):
+        if name in self.macros.keys():
+            del self.macros[name]
+        else:
+            raise ValueError(f"Macro named {name} does not exist")
+
+    # Write current macros to config file on disk
+    def save_macros(self):
+        with open('config.json', 'r') as file:
+            config = json.load(file)
+        config['ir_blaster']['macros'] = self.macros
+        with open('config.json', 'w') as file:
+            json.dump(config, file)
+
+    # Add a single action to an existing key in self.macros
+    # Required args: Macro name, IR target, IR key
+    # Optional: Delay (ms) after sending key
+    # Optional: Repeat (number of times key is pressed, delay applied after each)
+    def add_macro_action(self, name, target, key, delay=0, repeat=1):
+        # Validation
+        if name not in self.macros.keys():
+            raise ValueError(f"Macro {name} does not exist, use create_macro to add")
+        if target not in self.codes.keys():
+            raise ValueError(f"No codes for {target}")
+        if key not in self.codes[target]:
+            raise ValueError(f"Target {target} has no key {key}")
+
+        # Add action
+        self.macros[name].append((target, key, delay, repeat))
+
+    # Takes macro name, runs
+    def run_macro(self, name):
+        if name not in self.macros.keys():
+            raise ValueError(f"Macro {name} does not exist, use create_macro to add")
+
+        # Iterate actions and run each action
+        for action in self.macros[name]:
+            for i in range(0, action[3]):
+                self.send(action[0], action[1])
+                time.sleep_ms(action[2])
 
     def backlight(self, state):
         self.send("tv", "settings")

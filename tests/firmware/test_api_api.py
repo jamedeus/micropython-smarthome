@@ -81,7 +81,8 @@ config_file = {
     },
     "ir_blaster": {
         "pin": 32,
-        "target": "tv"
+        "target": "tv",
+        "macros": {}
     }
 }
 

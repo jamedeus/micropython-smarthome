@@ -7,7 +7,7 @@ class TestIrBlaster(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = IrBlaster("4", ["tv", "ac"])
+        cls.instance = IrBlaster("4", ["tv", "ac"], {})
 
     def test_1_initial_state(self):
         self.assertIsInstance(self.instance, IrBlaster)

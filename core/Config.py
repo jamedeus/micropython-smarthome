@@ -169,7 +169,11 @@ class Config():
         # IR Blaster is not a Device subclass, has no schedule rules, and is only triggered by API calls
         if "ir_blaster_config" in self.__dict__:
             from IrBlaster import IrBlaster
-            self.ir_blaster = IrBlaster(int(self.ir_blaster_config["pin"]), self.ir_blaster_config["target"])
+            self.ir_blaster = IrBlaster(
+                int(self.ir_blaster_config["pin"]),
+                self.ir_blaster_config["target"],
+                self.ir_blaster_config["macros"]
+            )
             del self.ir_blaster_config
 
         # Delete device and sensor config dicts
