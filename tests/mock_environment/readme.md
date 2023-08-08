@@ -29,7 +29,7 @@ Add the IP of your docker host to [unit_test_config.json](tests/firmware/unit_te
 Then simply run [runtests.py](tests/mock_environment/runtests.py) from the project root directory:
 ```
 cd ../../
-coverage run --source='core,devices,sensors' runtests.py
+coverage run --source='core,devices,sensors' tests/mock_environment/runtests.py
 coverage report -m --precision=1
 ```
 
