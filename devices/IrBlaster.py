@@ -1,8 +1,8 @@
-import json
 import time
 import logging
 from machine import Pin
 from ir_tx import Player
+from util import read_config_from_disk, write_config_to_disk
 
 # Set name for module's log lines
 log = logging.getLogger("IrBlaster")
@@ -53,11 +53,9 @@ class IrBlaster():
 
     # Write current macros to config file on disk
     def save_macros(self):
-        with open('config.json', 'r') as file:
-            config = json.load(file)
+        config = read_config_from_disk()
         config['ir_blaster']['macros'] = self.macros
-        with open('config.json', 'w') as file:
-            json.dump(config, file)
+        write_config_to_disk(config)
 
     # Add a single action to an existing key in self.macros
     # Required args: Macro name, IR target, IR key
@@ -71,6 +69,14 @@ class IrBlaster():
             raise ValueError(f"No codes for {target}")
         if key not in self.codes[target]:
             raise ValueError(f"Target {target} has no key {key}")
+        try:
+            delay = int(delay)
+        except ValueError:
+            raise ValueError("Delay arg must be integer (milliseconds)")
+        try:
+            repeat = int(repeat)
+        except ValueError:
+            raise ValueError("Repeat arg must be integer (number of times to press key)")
 
         # Add action
         self.macros[name].append((target, key, delay, repeat))
@@ -82,9 +88,9 @@ class IrBlaster():
 
         # Iterate actions and run each action
         for action in self.macros[name]:
-            for i in range(0, action[3]):
+            for i in range(0, int(action[3])):
                 self.send(action[0], action[1])
-                time.sleep_ms(action[2])
+                time.sleep_ms(int(action[2]))
 
     def backlight(self, state):
         self.send("tv", "settings")

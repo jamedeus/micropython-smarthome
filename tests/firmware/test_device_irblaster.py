@@ -88,6 +88,14 @@ class TestIrBlaster(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.instance.add_macro_action('test1', 'tv', 'fake')
 
+        # Confirm exception raised if delay arg is not integer
+        with self.assertRaises(ValueError):
+            self.instance.add_macro_action('test1', 'tv', 'power', 'short')
+
+        # Confirm exception raised if repeat arg is not integer
+        with self.assertRaises(ValueError):
+            self.instance.add_macro_action('test1', 'tv', 'power', '150', 'yes')
+
         # Confirm no actions added
         self.assertEqual(len(self.instance.macros['test1']), 2)
 
@@ -122,3 +130,14 @@ class TestIrBlaster(unittest.TestCase):
         # Confirm exception raised when trying to delete non-existing macro
         with self.assertRaises(ValueError):
             self.instance.delete_macro('test99')
+
+    # Original bug: run_macro method did not cast delay and repeats
+    # params to int, resulting in uncaught exception if params were
+    # string representations of integers.
+    def test_13_regression_string_delay_and_repeat(self):
+        # Add macro with string ints for delay and repeat
+        self.instance.macros['regression_test'] = [
+            ('tv', 'power', '5', '1')
+        ]
+        # Run macro, should not raise exception
+        self.instance.run_macro('regression_test')
