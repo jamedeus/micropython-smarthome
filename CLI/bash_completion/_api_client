@@ -15,7 +15,7 @@ _api_client()
     keywords=$(cat "$script_dir/cli_config.json" | jq '.schedule_keywords | keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
 
     # All API endpoints
-    endpoints="status reboot disable disable_in enable enable_in set_rule increment_rule reset_rule reset_all_rules get_schedule_rules add_rule remove_rule save_rules get_schedule_keywords add_schedule_keyword remove_schedule_keyword save_schedule_keywords get_attributes ir get_temp get_humid get_climate clear_log condition_met trigger_sensor turn_on turn_off"
+    endpoints="status reboot disable disable_in enable enable_in set_rule increment_rule reset_rule reset_all_rules get_schedule_rules add_rule remove_rule save_rules get_schedule_keywords add_schedule_keyword remove_schedule_keyword save_schedule_keywords get_attributes ir ir_get_existing_macros ir_create_macro ir_delete_macro ir_save_macros ir_add_macro_action ir_run_macro get_temp get_humid get_climate clear_log condition_met trigger_sensor turn_on turn_off"
 
     # Endpoints which require a device/sensor target
     target_endpoints="disable disable_in enable enable_in set_rule increment_rule reset_rule get_schedule_rules add_rule remove_rule get_attributes"
@@ -28,6 +28,9 @@ _api_client()
 
     # Endpoints which accept a schedule keyword argument
     keyword_endpoints="add_rule remove_rule"
+
+    # Endpoints which require an IR macro name argument
+    ir_macro_endpoints="ir_delete_macro ir_add_macro_action ir_run_macro"
 
     # Display node friendly names first
     if [[ $prev == *"api_client.py" ]]; then
@@ -103,6 +106,16 @@ _api_client()
             # Call API status command, parse devices and sensors from response object
             targets=$(python3 "$script_dir/api_client.py" ${COMP_WORDS[COMP_CWORD-2]} status | jq '.sensors' | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
             COMPREPLY=( $(compgen -W "${targets}" ${cur}) )
+            return 0
+        fi
+    done
+
+    # Display existing IR macro names if prev command requires macro name
+    for i in $ir_macro_endpoints; do
+        if [[ $prev == $i ]]; then
+            # Call API ir_get_existing_macros command, parse names from response object
+            macros=$(python3 "$script_dir/api_client.py" ${COMP_WORDS[COMP_CWORD-2]} ir_get_existing_macros | jq 'keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
+            COMPREPLY=( $(compgen -W "${macros}" ${cur}) )
             return 0
         fi
     done
