@@ -1,6 +1,7 @@
 import unittest
 from ir_tx import Player
 from IrBlaster import IrBlaster
+from cpython_only import cpython_only
 from util import read_config_from_disk
 
 
@@ -122,10 +123,16 @@ class TestIrBlaster(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.instance.delete_macro('test99')
 
+    @cpython_only
+    def test_13_instantiate_with_invalid_targets(self):
+        # Confirm ValueError raised when instantiated with invalid targets
+        with self.assertRaises(ValueError):
+            IrBlaster("4", ["tv", "invalid"], {})
+
     # Original bug: run_macro method did not cast delay and repeats
     # params to int, resulting in uncaught exception if params were
     # string representations of integers.
-    def test_13_regression_string_delay_and_repeat(self):
+    def test_14_regression_string_delay_and_repeat(self):
         # Add macro with string ints for delay and repeat
         self.instance.macros['regression_test'] = [
             ('tv', 'power', '5', '1')

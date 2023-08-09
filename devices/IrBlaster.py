@@ -8,6 +8,13 @@ from util import read_config_from_disk, write_config_to_disk
 log = logging.getLogger("IrBlaster")
 
 
+# Map target names to modules containing IR codes
+ir_code_classes = {
+    "tv": "samsung_ir_codes",
+    "ac": "whynter_ir_codes"
+}
+
+
 class IrBlaster():
     def __init__(self, pin, target, macros):
         led = Pin(int(pin), Pin.OUT, value=0)
@@ -15,20 +22,23 @@ class IrBlaster():
         self.target = target
         self._type = "ir_blaster"
 
+        # Add codes for each device in target list
         self.codes = {}
+        for target in self.target:
+            self.populate_codes(target)
 
         # Dict with macro names as key, list of actions as value
         self.macros = macros
 
-        if "tv" in self.target:
-            from ir_codes import samsung
-            self.codes["tv"] = samsung
-
-        if "ac" in self.target:
-            from ir_codes import whynter
-            self.codes["ac"] = whynter
-
         log.info(f"Instantiated IrBlaster on pin {pin}")
+
+    # Takes target name, imports codes and adds to self.codes dict
+    def populate_codes(self, target):
+        if target not in ir_code_classes.keys():
+            raise ValueError(f'Unsupported IR target "{target}"')
+
+        module = __import__(ir_code_classes[target])
+        self.codes[target] = getattr(module, 'codes')
 
     def send(self, dev, key):
         try:
