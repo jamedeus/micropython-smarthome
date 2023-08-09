@@ -52,6 +52,10 @@ def get_modules(config, repo_root):
     for stype in sensor_types:
         modules.extend(dependencies['sensors'][stype])
 
+    # Add IrBlaster if configured
+    if 'ir_blaster' in config.keys():
+        modules.append("devices/IrBlaster.py")
+
     # Add core modules, remove duplicates without changing order
     modules.extend(core_modules)
     modules = list(dict.fromkeys(modules))

@@ -137,6 +137,7 @@ class Provisioner():
         modules = []
         [modules.extend(i) for i in dependencies['devices'].values()]
         [modules.extend(i) for i in dependencies['sensors'].values()]
+        modules.append('devices/IrBlaster.py')
 
         # Add unit tests + core modules, remove main.py
         modules.extend(tests)
