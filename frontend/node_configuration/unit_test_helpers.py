@@ -169,8 +169,8 @@ request_payload = {
     'friendlyName': 'Unit Test Config',
     'location': 'build pipeline',
     'floor': '0',
-    'ssid': 'jamnet',
-    'password': 'cjZY8PTa4ZQ6S83A',
+    'ssid': 'mynetwork',
+    'password': 'hunter2',
     'sensor1': {
         '_type': 'pir',
         'nickname': 'Motion',
@@ -351,8 +351,8 @@ test_config_1 = {
         }
     },
     "wifi": {
-        "ssid": "jamnet",
-        "password": "cjZY8PTa4ZQ6S83A"
+        "ssid": "mynetwork",
+        "password": "hunter2"
     },
     "device1": {
         "_type": "pwm",
@@ -406,8 +406,8 @@ test_config_2 = {
         }
     },
     "wifi": {
-        "ssid": "jamnet",
-        "password": "cjZY8PTa4ZQ6S83A"
+        "ssid": "mynetwork",
+        "password": "hunter2"
     },
     "device1": {
         "nickname": "Air Conditioner",
@@ -484,8 +484,8 @@ test_config_3 = {
         }
     },
     "wifi": {
-        "ssid": "jamnet",
-        "password": "cjZY8PTa4ZQ6S83A"
+        "ssid": "mynetwork",
+        "password": "hunter2"
     },
     "device1": {
         "_type": "pwm",
@@ -563,8 +563,8 @@ test_config_1_edit_context = {
             }
         },
         "wifi": {
-            "ssid": "jamnet",
-            "password": "cjZY8PTa4ZQ6S83A"
+            "ssid": "mynetwork",
+            "password": "hunter2"
         },
         "NAME": "Test1",
         "TITLE": "Editing Test1",
@@ -774,8 +774,8 @@ test_config_2_edit_context = {
             }
         },
         "wifi": {
-            "ssid": "jamnet",
-            "password": "cjZY8PTa4ZQ6S83A"
+            "ssid": "mynetwork",
+            "password": "hunter2"
         },
         "ir_blaster": {
             "nickname": "",
@@ -960,8 +960,8 @@ test_config_3_edit_context = {
             }
         },
         "wifi": {
-            "ssid": "jamnet",
-            "password": "cjZY8PTa4ZQ6S83A"
+            "ssid": "mynetwork",
+            "password": "hunter2"
         },
         "NAME": "Test3",
         "TITLE": "Editing Test3",
