@@ -206,7 +206,9 @@ class WifiSetupTests(unittest.TestCase):
         with patch('wifi_setup.create_config_file', return_value=True):
             loop = asyncio.get_event_loop()
             loop.run_until_complete(handle_client(mock_reader, mock_writer))
-            mock_writer.awrite.assert_called_once_with('HTTP/1.1 200 OK\r\n\r\n')
+            mock_writer.awrite.assert_called_once_with(
+                'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{"ip": "0.0.0.0"}'
+            )
 
     @cpython_only
     def test_07_captive_portal(self):

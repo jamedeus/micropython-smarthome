@@ -10,8 +10,17 @@
     </style>
 </head>
 <body class="flex justify-center h-screen bg-sky-950">
+    <!-- Setup complete animation -->
     <div id="overlay" class="fixed top-50 z-99 w-0 h-0 rounded-full bg-teal-500 duration-800 ease-in"></div>
-    <h1 id="complete" class="fixed top-0 z-100 text-white text-4xl opacity-0 duration-500 delay-300 ease-out font-semibold">Setup Complete</h1>
+    <div class="fixed inset-0 bg-transparent z-100 flex flex-col text-center items-center justify-center pointer-events-none">
+        <h1 id="complete" class="z-100 text-white text-4xl opacity-0 duration-500 delay-300 ease-out font-semibold -translate-y-full">Setup Complete</h1>
+        <div id="ifconfig" class="z-100 mt-10 text-white opacity-0 duration-500 delay-300 ease-out font-semibold translate-y-full">
+            <h1 class="font-medium text-md">Node IP Address</h1>
+            <h1 id="ip" class="text-2xl"></h1>
+        </div>
+    </div>
+
+    <!-- Form -->
     <form class="text-center" action="" id="configuration" method="post">
         <div class="bg-white p-8 rounded-lg shadow-xl m-6">
             <h1 class="text-2xl font-bold mb-6 text-center tracking-wide text-stone-800">WiFi Credentials</h1>
@@ -42,6 +51,7 @@
         // Success animation constants
         const overlay = document.getElementById('overlay');
         const complete = document.getElementById('complete');
+        const ifconfig = document.getElementById('ifconfig');
 
         // Wifi inputs + error message
         const ssid = document.getElementById('ssid');
@@ -79,11 +89,15 @@
             });
 
             if (response.ok) {
+                // Parse node IP from response, display in success overlay
+                const data = await response.json();
+                document.getElementById('ip').innerHTML = data['ip'];
+
                 // Show setup complete animation
                 overlay.classList.remove("w-0", "h-0", "opacity-0", "top-50");
                 overlay.classList.add("h-250", "aspect-square", "-top-50");
-                complete.classList.remove("opacity-0", "top-0")
-                complete.classList.add("top-50")
+                complete.classList.remove("opacity-0", "-translate-y-full")
+                ifconfig.classList.remove("opacity-0", "translate-y-full")
 
             } else {
                 // Revert loading animation, enable button

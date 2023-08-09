@@ -82,7 +82,10 @@ async def handle_client(reader, writer):
         if create_config_file(data):
             print("Config file created, rebooting...")
             reboot_timer.init(period=5000, mode=Timer.ONE_SHOT, callback=reboot)
-            await writer.awrite('HTTP/1.1 200 OK\r\n\r\n')
+
+            # Post node IP to frontend, displayed in success animation
+            response = json.dumps({"ip": wlan.ifconfig()[0]})
+            await writer.awrite(f'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{response}')
 
         # Return 400 if unable to generate
         else:
