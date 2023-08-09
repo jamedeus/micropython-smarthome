@@ -1,7 +1,7 @@
 import unittest
 from ir_tx import Player
 from IrBlaster import IrBlaster
-from util import read_config_from_disk, write_config_to_disk
+from util import read_config_from_disk
 
 
 class TestIrBlaster(unittest.TestCase):
@@ -9,15 +9,6 @@ class TestIrBlaster(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.instance = IrBlaster("4", ["tv", "ac"], {})
-
-        # Add ir_blaster section with no macros to config file
-        config = read_config_from_disk()
-        config['ir_blaster'] = {
-            'pin': 4,
-            'target': ['tv', 'ac'],
-            'macros': {}
-        }
-        write_config_to_disk(config)
 
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, IrBlaster)
