@@ -598,7 +598,12 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['ir_save_macros'])
         self.assertEqual(response, {"Success": "Macros written to disk"})
 
-    def test_37_ir_delete_macro(self):
+    def test_37_ir_get_existing_macros(self):
+        # Save macros to disk, confirm response
+        response = self.send_command(['ir_get_existing_macros'])
+        self.assertEqual(response, {"test1": ["tv power 0 1", "tv power 50 3"]})
+
+    def test_38_ir_delete_macro(self):
         # Confirm macro exists
         self.assertEqual(len(app.config.ir_blaster.macros), 1)
 
@@ -611,7 +616,7 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['ir_delete_macro', 'test1'])
         self.assertEqual(response, {"ERROR": 'Macro named test1 does not exist'})
 
-    def test_38_no_ir_blaster_configured_errors(self):
+    def test_39_no_ir_blaster_configured_errors(self):
         # Remove IrBlaster from config to test error
         ir_blaster = app.config.ir_blaster
         del app.config.ir_blaster
@@ -635,19 +640,22 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['ir_delete_macro', 'test1'])
         self.assertEqual(response, {"ERROR": "No IR blaster configured"})
 
+        response = self.send_command(['ir_get_existing_macros'])
+        self.assertEqual(response, {"ERROR": "No IR blaster configured"})
+
         # Restore IrBlaster
         app.config.ir_blaster = ir_blaster
 
-    def test_39_invalid_command(self):
+    def test_40_invalid_command(self):
         response = self.send_command(['notacommand'])
         self.assertEqual(response, {"ERROR": "Invalid command"})
 
     @cpython_only
-    def test_40_invalid_http_endpoint(self):
+    def test_41_invalid_http_endpoint(self):
         response = self.send_http_command('GET /notacommand HTTP/1.1\r\n')
         self.assertTrue(response.startswith('HTTP/1.0 404 NA\r\nContent-Type: application/json'))
 
-    def test_41_missing_arguments(self):
+    def test_42_missing_arguments(self):
         response = self.send_command(['enable'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -730,7 +738,7 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
     @cpython_only
-    def test_42_missing_querystring(self):
+    def test_43_missing_querystring(self):
         # HTTP request with missing querystring arg
         response = self.send_http_command('GET /set_rule?device1 HTTP/1.1\r\n')
         self.assertEqual(
@@ -738,7 +746,7 @@ class TestApi(unittest.TestCase):
             'HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n{"ERROR": "Invalid syntax"}'
         )
 
-    def test_43_invalid_instance(self):
+    def test_44_invalid_instance(self):
         response = self.send_command(['enable', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
@@ -784,13 +792,13 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['turn_off', 'device99'])
         self.assertEqual(response, {"ERROR": "Instance not found, use status to see options"})
 
-    def test_44_broken_connection(self):
+    def test_45_broken_connection(self):
         # Simulate broken connection, confirm no response sent
         response = asyncio.run(self.broken_connection())
         self.assertEqual(response, None)
 
     @cpython_only
-    def test_45_connection_timeout(self):
+    def test_46_connection_timeout(self):
         from unittest.mock import patch
         # Simulate connection timeout while waiting for response, confirm correct error
         with patch('Api.asyncio.wait_for', side_effect=asyncio.TimeoutError):
@@ -800,7 +808,7 @@ class TestApi(unittest.TestCase):
     # cannot be json-serialized. These are supposed to be deleted or replaced with string
     # representations when building get_attributes response. Earlier versions of API failed to do
     # this for some classes, breaking get_attributes and resulting in an "unable to decode" error.
-    def test_46_regression_get_attributes(self):
+    def test_47_regression_get_attributes(self):
         response = self.send_command(['get_attributes', 'sensor3'])
         self.assertEqual(
             response,
@@ -821,7 +829,7 @@ class TestApi(unittest.TestCase):
     # Original bug: enable_in and disable_in cast delay argument to float with no error handling,
     # leading to exceptions when invalid arguments were received. In production this could only
     # occur when argument was NaN, other types were rejected by client-side validation.
-    def test_47_regression_enable_in_disable_in_invalid_arguments(self):
+    def test_48_regression_enable_in_disable_in_invalid_arguments(self):
         # Confirm correct error for string argument
         response = self.send_command(['enable_in', 'sensor1', 'foo'])
         self.assertEqual(response, {"ERROR": "Delay argument must be int or float"})
@@ -839,7 +847,7 @@ class TestApi(unittest.TestCase):
     # api_client, which parses it to float before encoding as JSON. NaN is supported in JSON
     # on cpython but not micropython. This lead to crash when micropython attempted to parse
     # JSON containing NaN (rather than "NaN" string). Should now catch and return error.
-    def test_48_regression_received_invalid_json(self):
+    def test_49_regression_received_invalid_json(self):
         # Micropython's json module cannot parse NaN
         response = self.send_command(['enable_in', 'sensor1', float('NaN')])
         self.assertEqual(response, {"ERROR": "Syntax error in received JSON"})
@@ -848,7 +856,7 @@ class TestApi(unittest.TestCase):
     # value of increment_rule method in bare conditional, assuming the method only returned
     # True and False. Method can also return error JSON, which was interpretted as success
     # resulting in success message instead of error.
-    def test_49_regression_increment_rule_wrong_error(self):
+    def test_50_regression_increment_rule_wrong_error(self):
         # Call with invalid argument, confirm correct error
         response = self.send_command(['increment_rule', 'sensor1', 'string'])
         self.assertEqual(response, {'ERROR': 'Invalid argument string'})
