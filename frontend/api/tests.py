@@ -824,6 +824,48 @@ class TestEndpoints(TestCaseBackupRestore):
             response = parse_command('192.168.1.123', ['ir', 'tv', 'power'])
             self.assertEqual(response, {'tv': 'power'})
 
+    def test_ir_get_existing_macros(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['ir_get_existing_macros'])
+            self.assertEqual(response, {})
+
+    def test_ir_create_macro(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"Macro created": 'test1'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['ir_create_macro', 'test1'])
+            self.assertEqual(response, {"Macro created": 'test1'})
+
+    def test_ir_delete_macro(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"Macro deleted": 'test1'}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['ir_delete_macro', 'test1'])
+            self.assertEqual(response, {"Macro deleted": 'test1'})
+
+    def test_ir_save_macros(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"Success": "Macros written to disk"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['ir_save_macros'])
+            self.assertEqual(response, {"Success": "Macros written to disk"})
+
+    def test_ir_add_macro_action(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"Macro action added": ['test1', 'tv', 'power']}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['ir_add_macro_action', 'test1', 'tv', 'power'])
+            self.assertEqual(response, {"Macro action added": ['test1', 'tv', 'power']})
+
+    def test_ir_run_macro(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"Ran macro": "test1"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['ir_run_macro', 'test1', 'tv', 'power'])
+            self.assertEqual(response, {"Ran macro": "test1"})
+
     def test_get_temp(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'Temp': 69.9683}):
@@ -1032,6 +1074,10 @@ class TestEndpointErrors(TestCaseBackupRestore):
 
         response = parse_command('192.168.1.123', ['ir', 'ac'])
         self.assertEqual(response, {"ERROR": f"Must specify one of the following commands: {ir_commands['ac']}"})
+
+    def test_ir_add_macro_action_missing_args(self):
+        response = parse_command('192.168.1.123', ['ir_add_macro_action', 'test1'])
+        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):
