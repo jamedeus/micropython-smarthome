@@ -551,7 +551,7 @@ def ir_create_macro(args):
         blaster.create_macro(args[0])
         return {"Macro created": args[0]}
     except ValueError as error:
-        return {"ERROR": error}
+        return {"ERROR": str(error)}
 
 
 @app.route("ir_delete_macro")
@@ -566,7 +566,7 @@ def ir_delete_macro(args):
         blaster.delete_macro(args[0])
         return {"Macro deleted": args[0]}
     except ValueError as error:
-        return {"ERROR": error}
+        return {"ERROR": str(error)}
 
 
 @app.route("ir_save_macros")
@@ -591,7 +591,7 @@ def ir_add_macro_action(args):
         blaster.add_macro_action(*args)
         return {"Macro action added": args}
     except ValueError as error:
-        return {"ERROR": error}
+        return {"ERROR": str(error)}
 
 
 @app.route("ir_run_macro")
@@ -606,4 +606,4 @@ def ir_run_macro(args):
         blaster.run_macro(args[0])
         return {"Ran macro": args[0]}
     except ValueError as error:
-        return {"ERROR": error}
+        return {"ERROR": str(error)}
