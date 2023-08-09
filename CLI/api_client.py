@@ -9,34 +9,39 @@ from helper_functions import valid_ip, get_existing_nodes
 
 # Used for help/error message
 endpoint_descriptions = {
-    "status":                                "Get dict containing status of all devices and sensors",
-    "reboot":                                "Reboot the target node (will be unreachable for ~30 seconds)",
-    "disable [target]":                      "Disable [target], can be device or sensor",
-    "disable_in [target] [minutes]":         "Create timer to disable [target] in [minutes]",
-    "enable [target]":                       "Enable [target], can be device or sensor",
-    "enable_in [target] [minutes]":          "Create timer to enable [target] in [minutes]",
-    "set_rule [target]":                     "Change [target]'s current rule (until next rule change), can be device or sensor",
-    "increment_rule [target] [amount]":      "Increment [target]'s current rule by [amount] (must be int)",
-    "reset_rule [target]":                   "Replace [target]'s current rule with scheduled rule, used to undo set_rule",
-    "reset_all_rules":                       "Replace current rules of all devices and sensors with their scheduled rule",
-    "get_schedule_rules [target]":           "View schedule rules for [target], can be device or sensor",
-    "add_rule [target] [HH:MM] [rule]":      "Add schedule rule, will persist until next reboot",
-    "remove_rule [target] [HH:MM]":          "Remove an existing schedule rule until next reboot",
-    "save_rules":                            "Write current schedule rules to disk, persists after reboot",
-    "get_schedule_keywords ":                "View schedule keywords and the timestamps they represent",
-    "add_schedule_keyword [keyword] [HH:MM]":"Add [keyword] representing timestamp, can be used in schedule rules",
-    "remove_schedule_keyword [keyword]":     "Remove [keyword], deletes all associated schedule rules from queue",
-    "save_schedule_keywords":                "Write current schedule keywords to disk, persists after reboot",
-    "get_attributes [target]":               "View all of [target]'s attributes, can be device or sensor",
-    "condition_met [sensor]":                "Check if [sensor]'s condition is met (turns on target devices)",
-    "trigger_sensor [sensor]":               "Simulates the sensor being triggered (turns on target devices)",
-    "turn_on [device]":                      "Turn the device on (loop may undo in some situations, disable sensor to prevent)",
-    "turn_off [device]":                     "Turn the device off (loop may undo in some situations, disable sensor to prevent)",
-    "ir [target||key]":                      "Simulate 'key' being pressed on remote control for 'target' (can be tv or ac)",
-    "get_temp":                              "Get current reading from temp sensor in Farenheit",
-    "get_humid":                             "Get current relative humidity from temp sensor",
-    "get_climate":                           "Get current temp and humidity from sensor",
-    "clear_log":                             "Delete node's log file"
+    "status":                                   "Get dict containing status of all devices and sensors",
+    "reboot":                                   "Reboot the target node (will be unreachable for ~30 seconds)",
+    "disable [target]":                         "Disable [target], can be device or sensor",
+    "disable_in [target] [minutes]":            "Create timer to disable [target] in [minutes]",
+    "enable [target]":                          "Enable [target], can be device or sensor",
+    "enable_in [target] [minutes]":             "Create timer to enable [target] in [minutes]",
+    "set_rule [target]":                        "Change [target]'s current rule (until next rule change), can be device or sensor",
+    "increment_rule [target] [amount]":         "Increment [target]'s current rule by [amount] (must be int)",
+    "reset_rule [target]":                      "Replace [target]'s current rule with scheduled rule, used to undo set_rule",
+    "reset_all_rules":                          "Replace current rules of all devices and sensors with their scheduled rule",
+    "get_schedule_rules [target]":              "View schedule rules for [target], can be device or sensor",
+    "add_rule [target] [HH:MM] [rule]":         "Add schedule rule, will persist until next reboot",
+    "remove_rule [target] [HH:MM]":             "Remove an existing schedule rule until next reboot",
+    "save_rules":                               "Write current schedule rules to disk, persists after reboot",
+    "get_schedule_keywords ":                   "View schedule keywords and the timestamps they represent",
+    "add_schedule_keyword [keyword] [HH:MM]":   "Add [keyword] representing timestamp, can be used in schedule rules",
+    "remove_schedule_keyword [keyword]":        "Remove [keyword], deletes all associated schedule rules from queue",
+    "save_schedule_keywords":                   "Write current schedule keywords to disk, persists after reboot",
+    "get_attributes [target]":                  "View all of [target]'s attributes, can be device or sensor",
+    "condition_met [sensor]":                   "Check if [sensor]'s condition is met (turns on target devices)",
+    "trigger_sensor [sensor]":                  "Simulates the sensor being triggered (turns on target devices)",
+    "turn_on [device]":                         "Turn the device on (loop may undo in some situations, disable sensor to prevent)",
+    "turn_off [device]":                        "Turn the device off (loop may undo in some situations, disable sensor to prevent)",
+    "ir [target] [key]":                         "Simulate 'key' being pressed on remote control for 'target' (can be tv or ac)",
+    "ir_create_macro [name]":                   "Create a new macro (use ir_add_macro_action to populate actions)",
+    "ir_delete_macro [name]":                   "Delete an existing macro 'name'",
+    "ir_add_macro_action [name] [target] [key]":"""Append action to macro 'name' simulating pressing 'key' on remote control for 'target'
+                                            Optional: 'delay' arg (ms delay after key), 'repeats' arg (number of times to press key)""",
+    "ir_run_macro [name]":                      "Run all actions in an existing macro 'name'",
+    "get_temp":                                 "Get current reading from temp sensor in Farenheit",
+    "get_humid":                                "Get current relative humidity from temp sensor",
+    "get_climate":                              "Get current temp and humidity from sensor",
+    "clear_log":                                "Delete node's log file"
 }
 
 
@@ -59,7 +64,11 @@ example_usage = {
     'trigger_sensor': {"Example usage": "./api_client.py trigger_sensor [sensor]"},
     'turn_on': {"Example usage": "./api_client.py turn_on [device]"},
     'turn_off': {"Example usage": "./api_client.py turn_off [device]"},
-    'ir': {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"}
+    'ir': {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"},
+    'ir_create_macro': {"Example usage": "./api_client.py ir_create_macro [name]"},
+    'ir_delete_macro': {"Example usage": "./api_client.py ir_delete_macro [name]"},
+    'ir_add_macro_action': {"Example usage": "./api_client.py ir_add_macro_action [name] [target] [key] <delay> <repeats>"},
+    'ir_run_macro': {"Example usage": "./api_client.py ir_run_macro [name]"},
 }
 
 
@@ -67,7 +76,7 @@ example_usage = {
 def endpoint_error():
     print("\n" + Fore.RED + "Error: please pass one of the following commands as argument:" + Fore.RESET + "\n")
     for command in endpoint_descriptions:
-        print("- " + Fore.YELLOW + Style.BRIGHT + command.ljust(40) + Style.RESET_ALL + endpoint_descriptions[command])
+        print("- " + Fore.YELLOW + Style.BRIGHT + command.ljust(42) + Style.RESET_ALL + endpoint_descriptions[command])
     print()
     raise SystemExit
 

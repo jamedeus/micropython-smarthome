@@ -539,6 +539,76 @@ def ir_key(args):
         return {target: key}
 
 
+@app.route("ir_create_macro")
+@app.required_args(1)
+def ir_create_macro(args):
+    try:
+        blaster = app.config.ir_blaster
+    except AttributeError:
+        return {"ERROR": "No IR blaster configured"}
+
+    try:
+        blaster.create_macro(args[0])
+        return {"Macro created": args[0]}
+    except ValueError as error:
+        return {"ERROR": error}
+
+
+@app.route("ir_delete_macro")
+@app.required_args(1)
+def ir_delete_macro(args):
+    try:
+        blaster = app.config.ir_blaster
+    except AttributeError:
+        return {"ERROR": "No IR blaster configured"}
+
+    try:
+        blaster.delete_macro(args[0])
+        return {"Macro deleted": args[0]}
+    except ValueError as error:
+        return {"ERROR": error}
+
+
+@app.route("ir_save_macros")
+def ir_save_macros(args):
+    try:
+        blaster = app.config.ir_blaster
+    except AttributeError:
+        return {"ERROR": "No IR blaster configured"}
+    blaster.save_macros()
+    return {"Success": "Macros written to disk"}
+
+
+@app.route("ir_add_macro_action")
+@app.required_args(3)
+def ir_add_macro_action(args):
+    try:
+        blaster = app.config.ir_blaster
+    except AttributeError:
+        return {"ERROR": "No IR blaster configured"}
+
+    try:
+        blaster.add_macro_action(*args)
+        return {"Macro action added": args}
+    except ValueError as error:
+        return {"ERROR": error}
+
+
+@app.route("ir_run_macro")
+@app.required_args(1)
+def ir_run_macro(args):
+    try:
+        blaster = app.config.ir_blaster
+    except AttributeError:
+        return {"ERROR": "No IR blaster configured"}
+
+    try:
+        blaster.run_macro(args[0])
+        return {"Ran macro": args[0]}
+    except ValueError as error:
+        return {"ERROR": error}
+
+
 @app.route("backlight")
 @app.required_args(1)
 def backlight(args):

@@ -306,6 +306,38 @@ def ir(ip, params):
         raise SyntaxError
 
 
+@add_endpoint("ir_create_macro")
+@requires_params
+def ir_create_macro(ip, params):
+    return asyncio.run(request(ip, ['ir_create_macro', params[0]]))
+
+
+@add_endpoint("ir_delete_macro")
+@requires_params
+def ir_delete_macro(ip, params):
+    return asyncio.run(request(ip, ['ir_delete_macro', params[0]]))
+
+
+@add_endpoint("ir_save_macros")
+def ir_save_macros(ip, params):
+    return asyncio.run(request(ip, ['ir_save_macros']))
+
+
+@add_endpoint("ir_add_macro_action")
+@requires_params
+def ir_add_macro_action(ip, params):
+    if len(params) >= 3:
+        return asyncio.run(request(ip, ['ir_add_macro_action', *params]))
+    else:
+        raise SyntaxError
+
+
+@add_endpoint("ir_run_macro")
+@requires_params
+def ir_run_macro(ip, params):
+    return asyncio.run(request(ip, ['ir_run_macro', params[0]]))
+
+
 @add_endpoint("get_temp")
 def get_temp(ip, params):
     return asyncio.run(request(ip, ['get_temp']))
