@@ -824,13 +824,6 @@ class TestEndpoints(TestCaseBackupRestore):
             response = parse_command('192.168.1.123', ['ir', 'tv', 'power'])
             self.assertEqual(response, {'tv': 'power'})
 
-    def test_ir_backlight(self):
-        # Mock request to return expected response
-        with patch('api_endpoints.request', return_value={'backlight': 'on'}):
-            # Send request, verify response
-            response = parse_command('192.168.1.123', ['ir', 'backlight', 'on'])
-            self.assertEqual(response, {'backlight': 'on'})
-
     def test_get_temp(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'Temp': 69.9683}):
@@ -1011,16 +1004,6 @@ class TestEndpointErrors(TestCaseBackupRestore):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['get_attributes', 'not-a-device'])
         self.assertEqual(response, {"ERROR": "Must specify device or sensor"})
-
-    def test_ir_backlight_no_arg(self):
-        # Send request, verify response
-        response = parse_command('192.168.1.123', ['ir', 'backlight'])
-        self.assertEqual(response, {"ERROR": "Must specify 'on' or 'off'"})
-
-    def test_ir_backlight_invalid_arg(self):
-        # Send request, verify response
-        response = parse_command('192.168.1.123', ['ir', 'backlight', 'foo'])
-        self.assertEqual(response, {"ERROR": "Must specify 'on' or 'off'"})
 
     def test_condition_met_invalid_arg(self):
         # Send request, verify response

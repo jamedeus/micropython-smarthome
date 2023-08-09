@@ -332,7 +332,7 @@ class TestExampleUsage(TestCase):
         self.assertEqual(response, {"Example usage": "./api_client.py turn_off [device]"})
 
         response = parse_ip(['192.168.1.123', 'ir'])
-        self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"})
+        self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac] [command]"})
 
     def test_invalid_endpoint(self):
         # Pass non-existing endpoint to example usage error, should show endpoint error
@@ -537,13 +537,6 @@ class TestEndpoints(TestCase):
             response = parse_command('192.168.1.123', ['ir', 'tv', 'power'])
             self.assertEqual(response, {'tv': 'power'})
 
-    def test_ir_backlight(self):
-        # Mock request to return expected response
-        with patch('api_endpoints.request', return_value={'backlight': 'on'}):
-            # Send request, verify response
-            response = parse_command('192.168.1.123', ['ir', 'backlight', 'on'])
-            self.assertEqual(response, {'backlight': 'on'})
-
     def test_get_temp(self):
         # Mock request to return expected response
         with patch('api_endpoints.request', return_value={'Temp': 69.9683}):
@@ -700,16 +693,6 @@ class TestEndpointErrors(TestCase):
         response = parse_command('192.168.1.123', ['get_attributes', 'not-a-device'])
         self.assertEqual(response, {"ERROR": "Must specify device or sensor"})
 
-    def test_ir_backlight_no_arg(self):
-        # Send request, verify response
-        response = parse_command('192.168.1.123', ['ir', 'backlight'])
-        self.assertEqual(response, {"ERROR": "Must specify 'on' or 'off'"})
-
-    def test_ir_backlight_invalid_arg(self):
-        # Send request, verify response
-        response = parse_command('192.168.1.123', ['ir', 'backlight', 'foo'])
-        self.assertEqual(response, {"ERROR": "Must specify 'on' or 'off'"})
-
     def test_condition_met_invalid_arg(self):
         # Send request, verify response
         response = parse_command('192.168.1.123', ['condition_met', 'device1'])
@@ -740,7 +723,7 @@ class TestEndpointErrors(TestCase):
 
     def test_ir_invalid_target(self):
         response = parse_ip(['192.168.1.123', 'ir', 'pacemaker'])
-        self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"})
+        self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac] [command]"})
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):

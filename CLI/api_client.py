@@ -64,7 +64,7 @@ example_usage = {
     'trigger_sensor': {"Example usage": "./api_client.py trigger_sensor [sensor]"},
     'turn_on': {"Example usage": "./api_client.py turn_on [device]"},
     'turn_off': {"Example usage": "./api_client.py turn_off [device]"},
-    'ir': {"Example usage": "./api_client.py ir [tv|ac|backlight] [command]"},
+    'ir': {"Example usage": "./api_client.py ir [tv|ac] [command]"},
     'ir_create_macro': {"Example usage": "./api_client.py ir_create_macro [name]"},
     'ir_delete_macro': {"Example usage": "./api_client.py ir_delete_macro [name]"},
     'ir_add_macro_action': {"Example usage": "./api_client.py ir_add_macro_action [name] [target] [key] <delay> <repeats>"},

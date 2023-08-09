@@ -547,29 +547,6 @@ class TestApi(unittest.TestCase):
         # Restore IrBlaster
         app.config.ir_blaster = ir_blaster
 
-    def test_33_backlight(self):
-        # Confirm responses for on and off
-        response = self.send_command(['backlight', 'on'])
-        self.assertEqual(response, {'backlight': 'on'})
-
-        response = self.send_command(['backlight', 'off'])
-        self.assertEqual(response, {'backlight': 'off'})
-
-        # Confirm correct error message for invalid arg
-        response = self.send_command(['backlight', 'low'])
-        self.assertEqual(response, {'ERROR': 'Backlight setting must be "on" or "off"'})
-
-        # Remove IrBlaster from config to test error
-        ir_blaster = app.config.ir_blaster
-        del app.config.ir_blaster
-
-        # Confirm correct error message
-        response = self.send_command(['backlight', 'low'])
-        self.assertEqual(response, {"ERROR": "No IR blaster configured"})
-
-        # Restore IrBlaster
-        app.config.ir_blaster = ir_blaster
-
     def test_34_invalid_command(self):
         response = self.send_command(['notacommand'])
         self.assertEqual(response, {"ERROR": "Invalid command"})
@@ -659,9 +636,6 @@ class TestApi(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
         response = self.send_command(['ir_key', 'tv'])
-        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
-
-        response = self.send_command(['backlight'])
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
     @cpython_only

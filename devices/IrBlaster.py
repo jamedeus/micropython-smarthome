@@ -91,27 +91,3 @@ class IrBlaster():
             for i in range(0, int(action[3])):
                 self.send(action[0], action[1])
                 time.sleep_ms(int(action[2]))
-
-    def backlight(self, state):
-        self.send("tv", "settings")
-        time.sleep(2)
-        self.send("tv", "right")
-        time.sleep_ms(500)
-        self.send("tv", "down")
-        time.sleep_ms(500)
-        self.send("tv", "enter")
-        time.sleep_ms(500)
-
-        ct = 1
-
-        if state == "on":
-            direction = "right"
-        else:
-            direction = "left"
-
-        while ct < 15:
-            self.send("tv", direction)
-            time.sleep_ms(150)
-            ct += 1
-
-        self.send("tv", "exit")

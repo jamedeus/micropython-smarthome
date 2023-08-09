@@ -172,10 +172,6 @@ class TestParseCommand(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['ir_key', 'ac', 'OFF']))
         self.assertEqual(response, {'ac': 'OFF'})
 
-        # TODO fix
-        #response = asyncio.run(request(target_ip, ['ir_key', 'backlight', 'on']))
-        #self.assertEqual(response, {'backlight': 'on'})
-
     def test_21_get_temp(self):
         response = asyncio.run(request(target_ip, ['get_temp']))
         self.assertEqual(len(response), 1)
@@ -502,12 +498,6 @@ class TestParseCommandInvalid(unittest.TestCase):
 
         response = asyncio.run(request(target_ip, ['ir_key', 'tv', 'START']))
         self.assertEqual(response, {'ERROR': 'Target "tv" has no key "START"'})
-
-        response = asyncio.run(request(target_ip, ['ir_key', 'backlight']))
-        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
-
-        response = asyncio.run(request(target_ip, ['backlight', 'start']))
-        self.assertEqual(response, {'ERROR': 'Backlight setting must be "on" or "off"'})
 
     def test_46_condition_met_invalid(self):
         response = asyncio.run(request(target_ip, ['condition_met']))

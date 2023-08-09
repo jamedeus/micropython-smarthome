@@ -173,9 +173,6 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/ir_key?ac/OFF')
         self.assertEqual(response.json(), {'ac': 'OFF'})
 
-        response = requests.get(f'http://{target_ip}:8123/backlight?on')
-        self.assertEqual(response.json(), {'backlight': 'on'})
-
     def test_21_get_temp(self):
         response = requests.get(f'http://{target_ip}:8123/get_temp')
         self.assertEqual(len(response.json()), 1)
@@ -479,12 +476,6 @@ class TestEndpointInvalid(unittest.TestCase):
 
         response = requests.get(f'http://{target_ip}:8123/ir_key?tv/START')
         self.assertEqual(response.json(), {'ERROR': 'Target "tv" has no key "START"'})
-
-        response = requests.get(f'http://{target_ip}:8123/backlight')
-        self.assertEqual(response.json(), {'ERROR': 'Invalid syntax'})
-
-        response = requests.get(f'http://{target_ip}:8123/backlight?start')
-        self.assertEqual(response.json(), {'ERROR': 'Backlight setting must be "on" or "off"'})
 
     def test_45_condition_met_invalid(self):
         response = requests.get(f'http://{target_ip}:8123/condition_met')

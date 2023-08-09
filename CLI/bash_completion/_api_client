@@ -50,7 +50,7 @@ _api_client()
 
     # Display IR categories if prev is ir
     elif [[ $prev == "ir" ]]; then
-        COMPREPLY=( $(compgen -W "ac tv backlight" ${cur}) )
+        COMPREPLY=( $(compgen -W "ac tv" ${cur}) )
         return 0
 
     # Display AC remote keys if prev is ac
@@ -61,11 +61,6 @@ _api_client()
     # Display TV remote keys if prev is tv
     elif [[ $prev == "tv" ]]; then
         COMPREPLY=( $(compgen -W "power vol_up vol_down mute up down left right enter settings exit source" ${cur}) )
-        return 0
-
-    # Display backlight presets if prev is backlight
-    elif [[ $prev == "backlight" ]]; then
-        COMPREPLY=( $(compgen -W "on off" ${cur}) )
         return 0
 
     # Display schedule keywords if prev is remove_schedule_keyword

@@ -607,18 +607,3 @@ def ir_run_macro(args):
         return {"Ran macro": args[0]}
     except ValueError as error:
         return {"ERROR": error}
-
-
-@app.route("backlight")
-@app.required_args(1)
-def backlight(args):
-    try:
-        blaster = app.config.ir_blaster
-    except AttributeError:
-        return {"ERROR": "No IR blaster configured"}
-
-    if not args[0] == "on" and not args[0] == "off":
-        return {'ERROR': 'Backlight setting must be "on" or "off"'}
-    else:
-        blaster.backlight(args[0])
-        return {"backlight": args[0]}
