@@ -37,6 +37,17 @@ class IrBlaster():
         except (KeyError, AttributeError):
             return False
 
+    # Returns dict of existing macros formatted for readability
+    def get_existing_macros(self):
+        response = {}
+        for macro in self.macros:
+            response[macro] = []
+            for action in self.macros[macro]:
+                # Convert each action list to string
+                # Keeps each action on 1 line in printed json output
+                response[macro].append(' '.join(map(str, action)))
+        return response
+
     # Creates a new key in self.macros
     def create_macro(self, name):
         if name not in self.macros.keys():

@@ -547,6 +547,15 @@ def ir_key(args):
         return {target: key}
 
 
+@app.route("ir_get_existing_macros")
+def ir_get_existing_macros(args):
+    try:
+        blaster = app.config.ir_blaster
+    except AttributeError:
+        return {"ERROR": "No IR blaster configured"}
+    return blaster.get_existing_macros()
+
+
 @app.route("ir_create_macro")
 @app.required_args(1)
 def ir_create_macro(args):

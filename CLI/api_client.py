@@ -33,6 +33,7 @@ endpoint_descriptions = {
     "turn_on [device]":                         "Turn the device on (loop may undo in some situations, disable sensor to prevent)",
     "turn_off [device]":                        "Turn the device off (loop may undo in some situations, disable sensor to prevent)",
     "ir [target] [key]":                         "Simulate 'key' being pressed on remote control for 'target' (can be tv or ac)",
+    "ir_get_existing_macros":                   "Get dict of existing IR macros",
     "ir_create_macro [name]":                   "Create a new macro (use ir_add_macro_action to populate actions)",
     "ir_delete_macro [name]":                   "Delete an existing macro 'name'",
     "ir_add_macro_action [name] [target] [key]":"""Append action to macro 'name' simulating pressing 'key' on remote control for 'target'

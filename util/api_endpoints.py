@@ -297,6 +297,11 @@ def ir(ip, params):
         return {"ERROR": f"Must specify one of the following commands: {ir_commands[target]}"}
 
 
+@add_endpoint("ir_get_existing_macros")
+def ir_get_existing_macros(ip, params):
+    return asyncio.run(request(ip, ['ir_get_existing_macros']))
+
+
 @add_endpoint("ir_create_macro")
 @requires_params
 def ir_create_macro(ip, params):
