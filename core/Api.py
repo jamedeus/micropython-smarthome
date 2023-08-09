@@ -32,6 +32,14 @@ async def reboot_task():
     reboot()
 
 
+# Ensure API call complete, connection closed before running macro
+# Avoids connection timeout during long-running (>5 second) macros
+async def run_macro_task(blaster, macro_name):
+    await lock.acquire()
+    await blaster.run_macro_coro(macro_name)
+    lock.release()
+
+
 class Api:
     def __init__(self, host='0.0.0.0', port=8123, backlog=5, timeout=20):
         self.host = host
@@ -601,9 +609,9 @@ def ir_run_macro(args):
         blaster = app.config.ir_blaster
     except AttributeError:
         return {"ERROR": "No IR blaster configured"}
+    if args[0] not in blaster.macros.keys():
+        return {"ERROR": f"Macro {args[0]} does not exist, use create_macro to add"}
 
-    try:
-        blaster.run_macro(args[0])
-        return {"Ran macro": args[0]}
-    except ValueError as error:
-        return {"ERROR": str(error)}
+    # Create task, return response immediately
+    asyncio.create_task(run_macro_task(blaster, args[0]))
+    return {"Ran macro": args[0]}

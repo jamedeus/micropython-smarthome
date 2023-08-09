@@ -1,7 +1,7 @@
-import time
 import logging
 from machine import Pin
 from ir_tx import Player
+import uasyncio as asyncio
 from util import read_config_from_disk, write_config_to_disk
 
 # Set name for module's log lines
@@ -81,13 +81,18 @@ class IrBlaster():
         # Add action
         self.macros[name].append((target, key, delay, repeat))
 
-    # Takes macro name, runs
+    # Takes macro name, creates async coroutine to run macro
     def run_macro(self, name):
         if name not in self.macros.keys():
             raise ValueError(f"Macro {name} does not exist, use create_macro to add")
 
+        # Run macro
+        asyncio.run(self.run_macro_coro(name))
+
+    # Takes macro name, runs
+    async def run_macro_coro(self, name):
         # Iterate actions and run each action
         for action in self.macros[name]:
             for i in range(0, int(action[3])):
                 self.send(action[0], action[1])
-                time.sleep_ms(int(action[2]))
+                await asyncio.sleep_ms(int(action[2]))
