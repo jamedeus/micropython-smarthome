@@ -172,43 +172,103 @@ class TestParseCommand(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['ir_key', 'ac', 'OFF']))
         self.assertEqual(response, {'ac': 'OFF'})
 
-    def test_21_get_temp(self):
+    def test_21_ir_create_macro(self):
+        response = asyncio.run(request(target_ip, ['ir_create_macro', 'test1']))
+        self.assertEqual(response, {"Macro created": 'test1'})
+
+        # Attempt to create duplicate, confirm error, confirm not created
+        response = asyncio.run(request(target_ip, ['ir_create_macro', 'test1']))
+        self.assertEqual(response, {"ERROR": 'Macro named test1 already exists'})
+
+    def test_22_ir_add_macro_action(self):
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'power']))
+        self.assertEqual(response, {"Macro action added": ['test1', 'tv', 'power']})
+
+        # Add action with all required and optional args
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'power', 50, 3]))
+        self.assertEqual(response, {"Macro action added": ['test1', 'tv', 'power', 50, 3]})
+
+        # Confirm error when attempting to add to non-existing macro
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test99', 'tv', 'power']))
+        self.assertEqual(response, {"ERROR": "Macro test99 does not exist, use create_macro to add"})
+
+        # Confirm error when attempting to add action with non-existing target
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'refrigerator', 'power']))
+        self.assertEqual(response, {"ERROR": "No codes for refrigerator"})
+
+        # Confirm error when attempting to add to non-existing key
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'fake']))
+        self.assertEqual(response, {"ERROR": "Target tv has no key fake"})
+
+        # Confirm error when delay arg is not integer
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'power', 'short']))
+        self.assertEqual(response, {"ERROR": "Delay arg must be integer (milliseconds)"})
+
+        # Confirm error when repeats arg is not integer
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1', 'tv', 'power', '50', 'yes']))
+        self.assertEqual(response, {"ERROR": "Repeat arg must be integer (number of times to press key)"})
+
+    def test_23_ir_run_macro(self):
+        response = asyncio.run(request(target_ip, ['ir_run_macro', 'test1', 'tv', 'power']))
+        self.assertEqual(response, {"Ran macro": "test1"})
+
+        # Attempt to run non-existing macro, confirm error
+        response = asyncio.run(request(target_ip, ['ir_run_macro', 'test99']))
+        self.assertEqual(response, {"ERROR": "Macro test99 does not exist, use create_macro to add"})
+
+    def test_24_ir_save_macros(self):
+        response = asyncio.run(request(target_ip, ['ir_save_macros']))
+        self.assertEqual(response, {"Success": "Macros written to disk"})
+
+    def test_25_ir_get_existing_macros(self):
+        response = asyncio.run(request(target_ip, ['ir_get_existing_macros']))
+        self.assertEqual(response, {"test1": ["tv power 0 1", "tv power 50 3"]})
+
+    def test_26_ir_delete_macro(self):
+        response = asyncio.run(request(target_ip, ['ir_delete_macro', 'test1']))
+        self.assertEqual(response, {"Macro deleted": 'test1'})
+
+        # Attempt to delete again, confirm error
+        response = asyncio.run(request(target_ip, ['ir_delete_macro', 'test1']))
+        self.assertEqual(response, {"ERROR": 'Macro named test1 does not exist'})
+
+    def test_27_get_temp(self):
         response = asyncio.run(request(target_ip, ['get_temp']))
         self.assertEqual(len(response), 1)
         self.assertIsInstance(response["Temp"], float)
 
-    def test_22_get_humid(self):
+    def test_28_get_humid(self):
         response = asyncio.run(request(target_ip, ['get_humid']))
         self.assertEqual(len(response), 1)
         self.assertIsInstance(response["Humidity"], float)
 
-    def test_23_get_climate(self):
+    def test_29_get_climate(self):
         response = asyncio.run(request(target_ip, ['get_climate_data']))
         self.assertEqual(len(response), 2)
         self.assertIsInstance(response["humid"], float)
         self.assertIsInstance(response["temp"], float)
 
-    def test_24_clear_log(self):
+    def test_30_clear_log(self):
         response = asyncio.run(request(target_ip, ['clear_log']))
         self.assertEqual(response, {'clear_log': 'success'})
 
-    def test_25_condition_met(self):
+    def test_31_condition_met(self):
         response = asyncio.run(request(target_ip, ['condition_met', 'sensor1']))
         self.assertEqual(len(response), 1)
         self.assertIn("Condition", response.keys())
 
-    def test_26_trigger_sensor(self):
+    def test_32_trigger_sensor(self):
         response = asyncio.run(request(target_ip, ['trigger_sensor', 'sensor1']))
         self.assertEqual(response, {'Triggered': 'sensor1'})
 
-    def test_27_turn_on(self):
+    def test_33_turn_on(self):
         # Ensure enabled
         asyncio.run(request(target_ip, ['enable', 'device1']))
 
         response = asyncio.run(request(target_ip, ['turn_on', 'device1']))
         self.assertEqual(response, {'On': 'device1'})
 
-    def test_28_turn_off(self):
+    def test_34_turn_off(self):
         # Ensure enabled
         asyncio.run(request(target_ip, ['enable', 'device1']))
 
@@ -225,7 +285,7 @@ class TestParseCommand(unittest.TestCase):
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
     # resulted in comparison operator between int and string, causing crash.
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
-    def test_29_enable_regression_test(self):
+    def test_35_enable_regression_test(self):
         # Confirm correct starting conditions
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['current_rule'], 'disabled')
@@ -243,7 +303,7 @@ class TestParseCommand(unittest.TestCase):
     # Original bug: LedStrip fade method made calls to set_rule method for each fade step.
     # Later, set_rule was modified to abort an in-progress fade when it received a brightness
     # rule. This caused fade to abort itself after the first step. Fixed in a29f5383.
-    def test_30_regression_fade_on(self):
+    def test_36_regression_fade_on(self):
         # Starting conditions
         asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
@@ -261,7 +321,7 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['fading'], False)
 
     # Confirm that calling set_rule while a fade is in-progress correctly aborts
-    def test_31_abort_fade(self):
+    def test_37_abort_fade(self):
         # Starting conditions
         asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
@@ -499,7 +559,11 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['ir_key', 'tv', 'START']))
         self.assertEqual(response, {'ERROR': 'Target "tv" has no key "START"'})
 
-    def test_46_condition_met_invalid(self):
+    def test_46_ir_add_macro_action_missing_args(self):
+        response = asyncio.run(request(target_ip, ['ir_add_macro_action', 'test1']))
+        self.assertEqual(response, {'ERROR': 'Invalid syntax'})
+
+    def test_47_condition_met_invalid(self):
         response = asyncio.run(request(target_ip, ['condition_met']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -509,7 +573,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['condition_met', 'sensor99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_47_trigger_sensor_invalid(self):
+    def test_48_trigger_sensor_invalid(self):
         response = asyncio.run(request(target_ip, ['trigger_sensor']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 
@@ -522,7 +586,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['trigger_sensor', 'sensor2']))
         self.assertEqual(response, {'ERROR': 'Cannot trigger si7021 sensor type'})
 
-    def test_48_turn_on_invalid(self):
+    def test_49_turn_on_invalid(self):
         # Ensure disabled
         asyncio.run(request(target_ip, ['disable', 'device1']))
 
@@ -538,7 +602,7 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['turn_on', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
 
-    def test_49_turn_off_invalid(self):
+    def test_50_turn_off_invalid(self):
         response = asyncio.run(request(target_ip, ['turn_off']))
         self.assertEqual(response, {'ERROR': 'Invalid syntax'})
 

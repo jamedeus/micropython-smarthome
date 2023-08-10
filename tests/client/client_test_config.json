@@ -17,7 +17,8 @@
         "target": [
             "tv",
             "ac"
-        ]
+        ],
+        "macros": {}
     },
     "device1": {
         "_type": "pwm",
