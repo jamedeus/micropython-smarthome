@@ -175,9 +175,15 @@ def config_overview(request):
     context = {
         "not_uploaded": [],
         "uploaded": [],
-        "schedule_keywords": get_schedule_keywords_dict(),
-        "client_ip": request.META.get('REMOTE_ADDR')
+        "schedule_keywords": get_schedule_keywords_dict()
     }
+
+    # Reverse proxy connection: Add forwarded_for IP to context
+    if 'HTTP_X_FORWARDED_FOR' in request.META:
+        context['client_ip'] = request.META.get('HTTP_X_FORWARDED_FOR')
+    # Direct connection: Add client IP to context
+    else:
+        context['client_ip'] = request.META.get('REMOTE_ADDR')
 
     # Don't show sunrise or sunset (prevent editing time, overwrites on nodes)
     del context["schedule_keywords"]["sunrise"]
