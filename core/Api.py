@@ -631,7 +631,7 @@ def ir_run_macro(args):
 @app.route("set_gps_coords")
 @app.required_args(1)
 def set_gps_coords(args):
-    if not isinstance(args[0], dict):
+    if not isinstance(args[0], dict) or 'latitude' not in args[0].keys() or 'longitude' not in args[0].keys():
         return {"ERROR": "Requires dict with longitude and latitude keys"}
 
     if not is_latitude(args[0]['latitude']):

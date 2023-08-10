@@ -622,6 +622,10 @@ class TestParseCommandInvalid(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['set_gps_coords', '-90', '0.1']))
         self.assertEqual(response, {"ERROR": "Requires dict with longitude and latitude keys"})
 
+        # Confirm error when dict contains wrong keys
+        response = asyncio.run(request(target_ip, ['set_gps_coords', {'lat': '-90', 'long': '0.1'}]))
+        self.assertEqual(response, {"ERROR": "Requires dict with longitude and latitude keys"})
+
         # Confirm error when latitude is invalid
         response = asyncio.run(request(target_ip, ['set_gps_coords', {'latitude': '-99', 'longitude': '0.1'}]))
         self.assertEqual(response, {"ERROR": "Latitude must be between -90 and 90"})

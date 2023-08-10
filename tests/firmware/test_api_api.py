@@ -653,6 +653,9 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['set_gps_coords', -90, 0])
         self.assertEqual(response, {"ERROR": "Requires dict with longitude and latitude keys"})
 
+        response = self.send_command(['set_gps_coords', {'lat': -90, 'long': 0}])
+        self.assertEqual(response, {"ERROR": "Requires dict with longitude and latitude keys"})
+
         response = self.send_command(['set_gps_coords', {'latitude': -99, 'longitude': 0}])
         self.assertEqual(response, {"ERROR": "Latitude must be between -90 and 90"})
 
