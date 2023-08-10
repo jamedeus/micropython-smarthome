@@ -42,6 +42,7 @@ endpoint_descriptions = {
     "get_temp":                                 "Get current reading from temp sensor in Farenheit",
     "get_humid":                                "Get current relative humidity from temp sensor",
     "get_climate":                              "Get current temp and humidity from sensor",
+    "set_gps_coords":                           "Set the latitude and longitude used to look up sunrise/sunset times",
     "clear_log":                                "Delete node's log file"
 }
 
@@ -70,6 +71,7 @@ example_usage = {
     'ir_delete_macro': {"Example usage": "./api_client.py ir_delete_macro [name]"},
     'ir_add_macro_action': {"Example usage": "./api_client.py ir_add_macro_action [name] [target] [key] <delay> <repeats>"},
     'ir_run_macro': {"Example usage": "./api_client.py ir_run_macro [name]"},
+    'set_gps_coords': {"Example usage": "./api_client.py set_gps_coords [latitude] [longitude]"},
 }
 
 

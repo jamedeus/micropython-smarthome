@@ -282,10 +282,15 @@ class TestParseCommand(unittest.TestCase):
         response = asyncio.run(request(target_ip, ['turn_off', 'device1']))
         self.assertEqual(response, {'Off': 'device1'})
 
+    def test_35_set_gps_coords(self):
+        # Set coordinates, confirm response
+        response = asyncio.run(request(target_ip, ['set_gps_coords', {'latitude': '-90', 'longitude': '0.1'}]))
+        self.assertEqual(response, {"Success": "GPS coordinates set"})
+
     # Original bug: Enabling and turning on when both current and scheduled rules == "disabled"
     # resulted in comparison operator between int and string, causing crash.
     # After fix (see efd79c6f) this is handled by overwriting current_rule with default_rule.
-    def test_35_enable_regression_test(self):
+    def test_36_enable_regression_test(self):
         # Confirm correct starting conditions
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
         self.assertEqual(response['current_rule'], 'disabled')
@@ -303,7 +308,7 @@ class TestParseCommand(unittest.TestCase):
     # Original bug: LedStrip fade method made calls to set_rule method for each fade step.
     # Later, set_rule was modified to abort an in-progress fade when it received a brightness
     # rule. This caused fade to abort itself after the first step. Fixed in a29f5383.
-    def test_36_regression_fade_on(self):
+    def test_37_regression_fade_on(self):
         # Starting conditions
         asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
@@ -321,7 +326,7 @@ class TestParseCommand(unittest.TestCase):
         self.assertEqual(response['fading'], False)
 
     # Confirm that calling set_rule while a fade is in-progress correctly aborts
-    def test_37_abort_fade(self):
+    def test_38_abort_fade(self):
         # Starting conditions
         asyncio.run(request(target_ip, ['set_rule', 'device3', '500']))
         response = asyncio.run(request(target_ip, ['get_attributes', 'device3']))
@@ -611,3 +616,16 @@ class TestParseCommandInvalid(unittest.TestCase):
 
         response = asyncio.run(request(target_ip, ['turn_off', 'device99']))
         self.assertEqual(response, {'ERROR': 'Instance not found, use status to see options'})
+
+    def test_51_set_gps_coords_invalid(self):
+        # Confirm error when arg is not dict
+        response = asyncio.run(request(target_ip, ['set_gps_coords', '-90', '0.1']))
+        self.assertEqual(response, {"ERROR": "Requires dict with longitude and latitude keys"})
+
+        # Confirm error when latitude is invalid
+        response = asyncio.run(request(target_ip, ['set_gps_coords', {'latitude': '-99', 'longitude': '0.1'}]))
+        self.assertEqual(response, {"ERROR": "Latitude must be between -90 and 90"})
+
+        # Confirm error when longitude is invalid
+        response = asyncio.run(request(target_ip, ['set_gps_coords', {'latitude': '-90', 'longitude': '999'}]))
+        self.assertEqual(response, {"ERROR": "Longitude must be between -180 and 180"})

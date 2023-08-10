@@ -334,6 +334,9 @@ class TestExampleUsage(TestCase):
         response = parse_ip(['192.168.1.123', 'ir'])
         self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac] [command]"})
 
+        response = parse_ip(['192.168.1.123', 'set_gps_coords'])
+        self.assertEqual(response, {"Example usage": "./api_client.py set_gps_coords [latitude] [longitude]"})
+
     def test_invalid_endpoint(self):
         # Pass non-existing endpoint to example usage error, should show endpoint error
         with patch('api_client.endpoint_error', MagicMock()) as mock_error:
@@ -635,6 +638,13 @@ class TestEndpoints(TestCase):
             response = parse_command('192.168.1.123', ['turn_off', 'device2'])
             self.assertEqual(response, {'Off': 'device2'})
 
+    def test_set_gps_coords(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"Success": "GPS coordinates set"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['set_gps_coords', '-90', '0.1'])
+            self.assertEqual(response, {"Success": "GPS coordinates set"})
+
 
 # Confirm that correct errors are shown when endpoint arguments are omitted/incorrect
 class TestEndpointErrors(TestCase):
@@ -764,15 +774,19 @@ class TestEndpointErrors(TestCase):
         self.assertEqual(response, {"ERROR": f"Must specify one of the following commands: {ir_commands['ac']}"})
 
     def test_ir_invalid_target(self):
-        response = parse_ip(['192.168.1.123', 'ir', 'pacemaker'])
+        response = parse_command('192.168.1.123', ['ir', 'pacemaker'])
         self.assertEqual(response, {"Example usage": "./api_client.py ir [tv|ac] [command]"})
 
     def test_ir_add_macro_action_missing_args(self):
-        response = parse_ip(['192.168.1.123', 'ir_add_macro_action', 'test1'])
+        response = parse_command('192.168.1.123', ['ir_add_macro_action', 'test1'])
         self.assertEqual(
             response,
             {"Example usage": "./api_client.py ir_add_macro_action [name] [target] [key] <delay> <repeats>"}
         )
+
+    def test_set_gps_coords_missing_args(self):
+        response = parse_command('192.168.1.123', ['set_gps_coords', '-90'])
+        self.assertEqual(response, {"Example usage": "./api_client.py set_gps_coords [latitude] [longitude]"})
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):

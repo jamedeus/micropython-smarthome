@@ -922,6 +922,13 @@ class TestEndpoints(TestCaseBackupRestore):
             response = parse_command('192.168.1.123', ['turn_off', 'device2'])
             self.assertEqual(response, {'Off': 'device2'})
 
+    def test_set_gps_coords(self):
+        # Mock request to return expected response
+        with patch('api_endpoints.request', return_value={"Success": "GPS coordinates set"}):
+            # Send request, verify response
+            response = parse_command('192.168.1.123', ['set_gps_coords', '-90', '0.1'])
+            self.assertEqual(response, {"Success": "GPS coordinates set"})
+
 
 # Test unsuccessful calls with invalid arguments to verify errors
 class TestEndpointErrors(TestCaseBackupRestore):
@@ -1077,6 +1084,10 @@ class TestEndpointErrors(TestCaseBackupRestore):
 
     def test_ir_add_macro_action_missing_args(self):
         response = parse_command('192.168.1.123', ['ir_add_macro_action', 'test1'])
+        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+
+    def test_set_gps_coords_missing_args(self):
+        response = parse_command('192.168.1.123', ['set_gps_coords', '-90'])
         self.assertEqual(response, {"ERROR": "Please fill out all fields"})
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM

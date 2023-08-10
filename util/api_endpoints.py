@@ -380,3 +380,13 @@ def turn_on(ip, target, params):
 @requires_device("Can only turn on/off devices, use enable/disable for sensors")
 def turn_off(ip, target, params):
     return asyncio.run(request(ip, ['turn_off', target]))
+
+
+@add_endpoint("set_gps_coords")
+@requires_params
+def set_gps_coords(ip, params):
+    if len(params) >= 2:
+        payload = {'latitude': params[0], 'longitude': params[1]}
+        return asyncio.run(request(ip, ['set_gps_coords', payload]))
+    else:
+        raise SyntaxError
