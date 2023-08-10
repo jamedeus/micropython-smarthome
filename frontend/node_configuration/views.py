@@ -10,7 +10,7 @@ from Webrepl import Webrepl
 from provision_tools import get_modules, provision
 from instance_validators import validate_rules
 from .get_api_target_menu_options import get_api_target_menu_options
-from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords
+from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords, set_gps_coords
 from validation_constants import valid_device_pins, valid_sensor_pins, config_templates, valid_config_keys
 from helper_functions import (
     is_device_or_sensor,
@@ -540,7 +540,19 @@ def set_default_location(request):
         for i in GpsCoordinates.objects.all():
             i.delete()
 
+    # Instantiate model
     GpsCoordinates.objects.create(display=data["name"], lat=data["lat"], lon=data["lon"])
+
+    # Add coordinates to all existing nodes in parallel
+    commands = [(node.ip, {'latitude': data["lat"], 'longitude': data["lon"]}) for node in Node.objects.all()]
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        executor.map(set_gps_coords, *zip(*commands))
+
+    # Add coordinates to all existing configs
+    for config in Config.objects.all():
+        config.config['metadata']['gps'] = {'lat': data['lat'], 'lon': data['lon']}
+        config.save()
+
     return JsonResponse("Location set", safe=False, status=200)
 
 

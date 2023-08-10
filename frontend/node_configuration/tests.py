@@ -1674,9 +1674,13 @@ class GpsCoordinatesTests(TestCaseBackupRestore):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
 
+        # Create config with no coordinates set
+        self.config = Config.objects.create(config=test_config_1, filename='test1.json')
+
     def test_setting_coordinates(self):
-        # Database should be empty
+        # Database should be empty, config metadata should not contain gps key
         self.assertEqual(len(GpsCoordinates.objects.all()), 0)
+        self.assertNotIn('gps', self.config.config['metadata'].keys())
 
         # Set default credentials, verify response + database
         response = self.client.post(
@@ -1693,6 +1697,12 @@ class GpsCoordinatesTests(TestCaseBackupRestore):
         )
         self.assertEqual(response.json(), 'Location set')
         self.assertEqual(len(GpsCoordinates.objects.all()), 1)
+
+        # Confirm existing configs were updated
+        self.config.refresh_from_db()
+        self.assertIn('gps', self.config.config['metadata'].keys())
+        self.assertEqual(self.config.config['metadata']['gps']['lat'], '32.99171902655')
+        self.assertEqual(self.config.config['metadata']['gps']['lon'], '-96.77213361367663')
 
     def test_print_method(self):
         gps = GpsCoordinates.objects.create(display='Portland', lat='45.689122409097', lon='-122.63675124859863')
