@@ -11,6 +11,8 @@ from util import (
     is_device,
     is_sensor,
     is_device_or_sensor,
+    is_latitude,
+    is_longitude,
     reboot,
     clear_log,
     read_config_from_disk,
@@ -624,3 +626,23 @@ def ir_run_macro(args):
     # Create task, return response immediately
     asyncio.create_task(run_macro_task(blaster, args[0]))
     return {"Ran macro": args[0]}
+
+
+@app.route("set_gps_coords")
+@app.required_args(1)
+def set_gps_coords(args):
+    if not isinstance(args[0], dict):
+        return {"ERROR": "Requires dict with longitude and latitude keys"}
+
+    if not is_latitude(args[0]['latitude']):
+        return {"ERROR": "Latitude must be between -90 and 90"}
+    elif not is_longitude(args[0]['longitude']):
+        return {"ERROR": "Longitude must be between -180 and 180"}
+
+    config = read_config_from_disk()
+    config['metadata']['gps'] = {
+        'lat': args[0]['latitude'],
+        'lon': args[0]['longitude']
+    }
+    write_config_to_disk(config)
+    return {"Success": "GPS coordinates set"}

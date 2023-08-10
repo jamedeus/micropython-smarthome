@@ -27,6 +27,22 @@ def is_device_or_sensor(string):
         return False
 
 
+# Returns True if argument is valid latitude
+def is_latitude(num):
+    try:
+        return -90 <= float(num) <= 90
+    except ValueError:
+        return False
+
+
+# Returns True if argument is valid longitude
+def is_longitude(num):
+    try:
+        return -180 <= float(num) <= 180
+    except ValueError:
+        return False
+
+
 def read_config_from_disk():
     with open('config.json', 'r') as file:
         return json.load(file)
