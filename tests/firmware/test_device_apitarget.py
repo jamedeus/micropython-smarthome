@@ -1,7 +1,13 @@
+import sys
 import json
 import unittest
 from ApiTarget import ApiTarget
 from MotionSensor import MotionSensor
+from cpython_only import cpython_only
+
+# Import dependencies for tests that only run in mocked environment
+if sys.implementation.name == 'cpython':
+    from unittest.mock import patch
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
@@ -214,3 +220,21 @@ class TestApiTarget(unittest.TestCase):
 
         # Should reject turn_on/turn_off for sensors
         self.assertFalse(self.instance.rule_validator({'on': ['turn_on', 'sensor1'], 'off': ['turn_off', 'sensor2']}))
+
+    # Original bug: A typo in 187eb8d2 caused the send method to use the "on" rule
+    # regardless of state argument. This was not detected for 2 weeks because no
+    # existing tests verified that on and off rules were used correctly.
+    @cpython_only
+    def test_16_regression_send_ignores_state(self):
+        # Set different on and off rules
+        self.instance.set_rule({'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']})
+
+        # Call send with mocked request method to
+        with patch.object(ApiTarget, 'request', return_value=True) as mock_request:
+            # Turn on, confirm correct arg passed
+            self.instance.send(1)
+            self.assertEqual(mock_request.call_args_list[0][0][0], ['turn_on', 'device2'])
+
+            # Turn off, confirm correct arg passed
+            self.instance.send(0)
+            self.assertEqual(mock_request.call_args_list[1][0][0], ['turn_off', 'device2'])

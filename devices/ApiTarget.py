@@ -183,7 +183,7 @@ class ApiTarget(Device):
                 return True
 
             # Send request, return False if failed
-            if not asyncio.run(self.request(self.current_rule["on"])):
+            if not asyncio.run(self.request(self.current_rule["off"])):
                 return False
 
         # Tells main loop send succeeded
