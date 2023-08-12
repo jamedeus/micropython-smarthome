@@ -1,6 +1,6 @@
 import json
+import socket
 import logging
-import uasyncio as asyncio
 from Device import Device
 
 # Set name for module's log lines
@@ -127,19 +127,16 @@ class ApiTarget(Device):
         print(f"{self.name}: Send method failed with payload {msg}")
         print(f"{self.name}: Response: {err}")
 
-    async def request(self, msg):
-        reader, writer = await asyncio.open_connection(self.ip, self.port)
+    def request(self, msg):
+        s = socket.socket()
         try:
-            writer.write('{}\n'.format(json.dumps(msg)).encode())
-            await writer.drain()
-            # TODO change this limit?
-            res = await reader.read(1000)
+            s.connect((self.ip, self.port))
+            s.sendall(f'{json.dumps(msg)}\n'.encode())
+            res = s.recv(1000).decode()
             res = json.loads(res)
         except (OSError, ValueError):
             res = False
-            pass
-        writer.close()
-        await writer.wait_closed()
+        s.close()
 
         # Return False if request failed
         if not res:
@@ -167,7 +164,7 @@ class ApiTarget(Device):
                 return True
 
             # Send request, return False if failed
-            if not asyncio.run(self.request(self.current_rule["on"])):
+            if not self.request(self.current_rule["on"]):
                 return False
 
             # If targeted by motion sensor: reset motion attribute after successful on command
@@ -183,7 +180,7 @@ class ApiTarget(Device):
                 return True
 
             # Send request, return False if failed
-            if not asyncio.run(self.request(self.current_rule["off"])):
+            if not self.request(self.current_rule["off"]):
                 return False
 
         # Tells main loop send succeeded
