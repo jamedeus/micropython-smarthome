@@ -139,6 +139,13 @@ class Sensor():
                 if attributes["desktop_target"] is not None:
                     attributes["desktop_target"] = attributes["desktop_target"].name
 
+            # Replace monitor_task with True or False
+            elif i == "monitor_task":
+                if attributes["monitor_task"] is not None:
+                    attributes["monitor_task"] = True
+                else:
+                    attributes["monitor_task"] = False
+
             # Replace group object with group name
             elif i == "group":
                 attributes["group"] = self.group.name

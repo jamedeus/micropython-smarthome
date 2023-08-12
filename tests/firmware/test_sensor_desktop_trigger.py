@@ -26,7 +26,8 @@ expected_attributes = {
     '_type': 'desktop',
     'current_rule': None,
     'scheduled_rule': None,
-    'targets': ['device1']
+    'targets': ['device1'],
+    'monitor_task': True
 }
 
 
@@ -108,12 +109,33 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertFalse(self.instance.get_monitor_state())
         self.instance.ip = config["mock_receiver"]["ip"]
 
-    def test_07_exit_monitor_loop_when_disabled(self):
-        # Disable instance, confirm monitor coro returns False (end of loop)
-        self.instance.disable()
-        self.assertFalse(asyncio.run(self.instance.monitor()))
+    def test_07_enable_starts_loop(self):
+        # Cancel existing loop and replace with None
+        self.instance.monitor_task.cancel()
+        self.instance.monitor_task = None
 
-    def test_08_monitor(self):
+        # Enable, confirm loop task created
+        self.instance.enable()
+        self.assertIsInstance(self.instance.monitor_task, asyncio.Task)
+
+    def test_08_disable_stops_loop(self):
+        # Confirm loop task exists
+        self.assertIsInstance(self.instance.monitor_task, asyncio.Task)
+
+        # Ensure cancel and yield are in same event loop (cpython test
+        # environment, not required for pure micropython)
+        async def test():
+            # Disable, should call monitor_task.cancel()
+            self.instance.disable()
+
+            # Yield to loop to allow monitor_task to exit
+            await asyncio.sleep(0.1)
+
+        # Disable and yeild to loop, confirm task replaced with None
+        asyncio.run(test())
+        self.assertEqual(self.instance.monitor_task, None)
+
+    def test_09_monitor(self):
         # Ensure instance enabled, using correct port
         self.instance.enable()
         self.instance.port = config["mock_receiver"]["port"]
@@ -122,10 +144,10 @@ class TestDesktopTrigger(unittest.TestCase):
         url = f'{config["mock_receiver"]["ip"]}:{config["mock_receiver"]["port"]}'
         urequests.get(f'http://{url}/on')
 
-        # Task break monitor loop after 3 readings
-        async def break_loop(instance):
+        # Task breaks monitor loop after 3 readings
+        async def break_loop(task):
             await asyncio.sleep(3.1)
-            instance.disable()
+            task.cancel()
 
         # Task changes response from mock receiver /state endpoint between
         # each monitor reading, verifies previous reading handled correctly
@@ -154,7 +176,7 @@ class TestDesktopTrigger(unittest.TestCase):
         # Run instance.monitor + 2 tasks above with asyncio.gather
         async def test_monitor_and_kill():
             task_monitor = asyncio.create_task(self.instance.monitor())
-            task_kill = asyncio.create_task(break_loop(self.instance))
+            task_kill = asyncio.create_task(break_loop(task_monitor))
             task_toggle = asyncio.create_task(change_state(url))
             await asyncio.gather(task_monitor, task_kill, task_toggle)
         asyncio.run(test_monitor_and_kill())
