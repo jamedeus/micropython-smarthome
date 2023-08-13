@@ -148,9 +148,10 @@ class TestDesktopTrigger(unittest.TestCase):
         self.assertEqual(self.instance.monitor_task, None)
 
     def test_09_monitor(self):
-        # Ensure instance enabled, using correct port
+        # Ensure instance enabled, using correct port, Group.refresh not called
         self.instance.enable()
         self.instance.port = config["mock_receiver"]["port"]
+        self.group.refresh_called = False
 
         # Get URL of mock command receiver, set first reading to On
         url = f'{config["mock_receiver"]["ip"]}:{config["mock_receiver"]["port"]}'
@@ -196,6 +197,8 @@ class TestDesktopTrigger(unittest.TestCase):
         # Confirm instance + target attributes match last reading (On)
         self.assertEqual(self.instance.current, 'On')
         self.assertTrue(self.target.state)
+        # Confirm refresh called
+        self.assertTrue(self.group.refresh_called)
 
     # Original bug: trigger method set Desktop current reading to 'On', which caused
     # main loop to turn targets on. After main loop was removed in c6f5e1d2 Desktop

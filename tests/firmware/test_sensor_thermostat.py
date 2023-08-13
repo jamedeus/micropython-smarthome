@@ -25,6 +25,17 @@ expected_attributes = {
 }
 
 
+# Subclass Group to detect when refresh method called
+class MockGroup(Group):
+    def __init__(self, name, sensors):
+        super().__init__(name, sensors)
+
+        self.refresh_called = False
+
+    def refresh(self):
+        self.refresh_called = True
+
+
 class TestThermostat(unittest.TestCase):
 
     @classmethod
@@ -32,8 +43,8 @@ class TestThermostat(unittest.TestCase):
         # Create test instance, mock device, mock group
         cls.target = Device('device1', 'target', 'device', True, '70', '70')
         cls.instance = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [cls.target])
-        group = Group('group1', [cls.instance])
-        cls.instance.group = group
+        cls.group = MockGroup('group1', [cls.instance])
+        cls.instance.group = cls.group
 
         # Dummy send method so group.refresh can run
         def mock_send(state):
@@ -174,6 +185,9 @@ class TestThermostat(unittest.TestCase):
         self.assertFalse(self.instance.trigger())
 
     def test_12_audit(self):
+        # Ensure Group.refresh not called
+        self.group.refresh_called = False
+
         # Get actual temperature to mock recent changes
         current = self.instance.fahrenheit()
 
@@ -181,30 +195,34 @@ class TestThermostat(unittest.TestCase):
         self.instance.mode = 'heat'
         self.instance.set_rule(current - 1)
         self.instance.recent_temps = [current - 4, current - 3, current - 2]
+        # Confirm state flips to True (allow heater to turn off), Group.refresh called
         self.instance.audit()
-        # Confirm state flips to True, allows loop to turn heater off
         self.assertTrue(self.target.state)
+        self.assertTrue(self.group.refresh_called)
 
         # Mock temp increasing when air conditioner SHOULD be running
         self.instance.mode = 'cool'
         self.instance.recent_temps = [current - 4, current - 3, current - 2]
+        # Confirm state flips to False (allow AC to turn on), Group.refresh called
         self.instance.audit()
-        # Confirm state flips to False, allows loop to turn AC on
         self.assertFalse(self.target.state)
+        self.assertTrue(self.group.refresh_called)
 
         # Mock temp decreasing when air conditioner should NOT be running
         self.instance.set_rule(current + 1)
         self.instance.recent_temps = [current + 4, current + 3, current + 2]
+        # Confirm state flips to True (allow AC to turn off), Group.refresh called
         self.instance.audit()
-        # Confirm state flips to True, allows loop to turn AC off
         self.assertTrue(self.target.state)
+        self.assertTrue(self.group.refresh_called)
 
         # Mock temp decreasing when heater SHOULD be running
         self.instance.mode = 'heat'
         self.instance.recent_temps = [current + 4, current + 3, current + 2]
+        # Confirm state flips to True (allow heater to turn on), Group.refresh called
         self.instance.audit()
-        # Confirm state flips to False, allows loop to turn heater on
         self.assertFalse(self.target.state)
+        self.assertTrue(self.group.refresh_called)
 
     def test_13_add_routines(self):
         # Confirm no routines in group, instance.recent_temps not empty
