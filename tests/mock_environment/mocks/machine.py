@@ -3,10 +3,12 @@ import time
 
 
 class Pin:
-    IN = 'IN'
-    OUT = 'OUT'
-    PULL_DOWN = 'PULL_DOWN'
-    IRQ_RISING = None
+    IN = 1
+    OUT = 3
+    PULL_DOWN = 1
+    PULL_UP = 2
+    IRQ_RISING = 1
+    IRQ_FALLING = 2
 
     def __init__(self, pin, mode=None, pull=None, value=0):
         self.pin = pin
