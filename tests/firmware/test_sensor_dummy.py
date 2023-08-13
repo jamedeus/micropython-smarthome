@@ -104,7 +104,7 @@ class TestDummySensor(unittest.TestCase):
         self.assertTrue(self.instance.trigger())
         self.assertTrue(self.instance.condition_met())
         self.assertEqual(self.instance.current_rule, "on")
-        #self.assertTrue(self.group.refresh_called)
+        self.assertTrue(self.group.refresh_called)
 
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
@@ -115,3 +115,15 @@ class TestDummySensor(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             Dummy("sensor1", "sensor1", "dummy", "enabled", [])
+
+    # Original bug: trigger method set Dummy current_rule to 'On', which caused
+    # main loop to turn targets on. After main loop was removed in c6f5e1d2 Dummy
+    # could only turn targets on with set_rule method, which was not called by
+    # trigger. This resulted in no change when trigger method called.
+    def test_09_regression_trigger_does_not_turn_on(self):
+        # Ensure Group.refresh not called
+        self.group.refresh_called = False
+
+        # Trigger Dummy sensor, confirm Group.refresh called
+        self.assertTrue(self.instance.trigger())
+        self.assertTrue(self.group.refresh_called)

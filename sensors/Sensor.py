@@ -118,13 +118,14 @@ class Sensor():
 
         elif self._type == "desktop":
             self.current = "On"
+            self.refresh_group()
             return True
 
         elif self._type == "si7021":
             return False
 
         elif self._type == "dummy":
-            self.current_rule = "on"
+            self.set_rule("on")
             return True
 
         elif self._type == "switch":

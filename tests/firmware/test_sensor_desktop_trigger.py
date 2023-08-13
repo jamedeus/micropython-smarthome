@@ -31,6 +31,18 @@ expected_attributes = {
 }
 
 
+# Subclass Group to detect when refresh method called
+class MockGroup(Group):
+    def __init__(self, name, sensors):
+        super().__init__(name, sensors)
+
+        self.refresh_called = False
+
+    def refresh(self):
+        self.refresh_called = True
+        super().refresh()
+
+
 class TestDesktopTrigger(unittest.TestCase):
 
     @classmethod
@@ -43,10 +55,10 @@ class TestDesktopTrigger(unittest.TestCase):
         cls.target = Desktop_target("device1", "device1", "desktop", "enabled", ip, port)
         cls.instance = Desktop_trigger("sensor1", "sensor1", "desktop", "enabled", [cls.target], ip, port)
         cls.pir = MotionSensor("sensor1", "sensor1", "pir", None, [cls.target], 15)
-        group = Group('group1', [cls.instance, cls.pir])
-        cls.instance.group = group
-        cls.pir.group = group
-        cls.target.group = group
+        cls.group = MockGroup('group1', [cls.instance, cls.pir])
+        cls.instance.group = cls.group
+        cls.pir.group = cls.group
+        cls.target.group = cls.group
 
     @classmethod
     def tearDownClass(cls):
@@ -183,4 +195,25 @@ class TestDesktopTrigger(unittest.TestCase):
 
         # Confirm instance + target attributes match last reading (On)
         self.assertEqual(self.instance.current, 'On')
+        self.assertTrue(self.target.state)
+
+    # Original bug: trigger method set Desktop current reading to 'On', which caused
+    # main loop to turn targets on. After main loop was removed in c6f5e1d2 Desktop
+    # only calls refresh_group when monitor loop receives new reading - overwriting
+    # reading did not achieve this. Instead, overwriting with 'On' caused monitor
+    # to interpret next reading ('Off') as new, resulting in targets being turned
+    # OFF by trigger instead of ON. Trigger method now calls refresh_group directly.
+    def test_10_regression_trigger_does_not_turn_on(self):
+        # Ensure target enabled, target turned off
+        self.target.enable()
+        self.target.state = False
+        # Ensure Group.refresh not called, group state False
+        self.group.refresh_called = False
+        self.group.state = False
+
+        # Trigger sensor, confirm Group.refresh called, confirm target turned ON
+        self.assertTrue(self.instance.trigger())
+        self.assertTrue(self.instance.condition_met())
+        self.assertTrue(self.group.refresh_called)
+        self.assertTrue(self.group.state)
         self.assertTrue(self.target.state)
