@@ -1,6 +1,7 @@
 import unittest
 from machine import Pin
 import SoftwareTimer
+from Group import Group
 from MotionSensor import MotionSensor
 
 # Expected return value of get_attributes method just after instantiation
@@ -9,6 +10,7 @@ expected_attributes = {
     'nickname': 'sensor1',
     'motion': False,
     'enabled': True,
+    'group': 'group1',
     'rule_queue': [],
     'name': 'sensor1',
     'default_rule': None,
@@ -18,11 +20,25 @@ expected_attributes = {
 }
 
 
+# Subclass Group to detect when refresh method called
+class MockGroup(Group):
+    def __init__(self, name, sensors):
+        super().__init__(name, sensors)
+
+        self.refresh_called = False
+
+    def refresh(self):
+        self.refresh_called = True
+        super().refresh()
+
+
 class TestMotionSensor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         cls.instance = MotionSensor("sensor1", "sensor1", "pir", None, [], 15)
+        cls.group = MockGroup("group1", [cls.instance])
+        cls.instance.group = cls.group
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
@@ -66,17 +82,26 @@ class TestMotionSensor(unittest.TestCase):
         self.assertFalse(self.instance.motion)
 
     def test_06_reset_timer(self):
-        # Make sure rule isn't None (no timer set)
+        # Make sure rule isn't None (no timer set), Group.refresh not called
         self.instance.set_rule(1)
+        self.group.refresh_called = False
+
         # Call method triggered by hware interrupt
         self.instance.motion_detected()
         # SoftwareTimer queue should now contain entry containing sensor's name attribute
         self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
         # Motion attribute should be True
         self.assertTrue(self.instance.motion)
+        # Group.refresh should have been called
+        self.assertTrue(self.group.refresh_called)
+        self.group.refresh_called = False
+
         # Simulate reset timer expiring, motion should now be False
         self.instance.resetTimer()
         self.assertFalse(self.instance.motion)
+        # Group.refresh should be called again
+        self.assertTrue(self.group.refresh_called)
+        self.group.refresh_called = False
 
         # Set rule to None, cancel previous timer to avoid false positive
         self.instance.set_rule(None)
