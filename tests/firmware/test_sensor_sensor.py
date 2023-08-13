@@ -1,5 +1,17 @@
 import unittest
+from Group import Group
 from Sensor import Sensor
+
+
+# Subclass Group to detect when refresh method called
+class MockGroup(Group):
+    def __init__(self, name, sensors):
+        super().__init__(name, sensors)
+
+        self.refresh_called = False
+
+    def refresh(self):
+        self.refresh_called = True
 
 
 class TestSensor(unittest.TestCase):
@@ -9,6 +21,10 @@ class TestSensor(unittest.TestCase):
         # Create test instance, add rule to queue
         cls.instance = Sensor("sensor1", "Test", "sensor", True, "enabled", "enabled", [])
         cls.instance.rule_queue = ["disabled"]
+
+        # Create mock group
+        cls.group = MockGroup("group1", [cls.instance])
+        cls.instance.group = cls.group
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
@@ -26,10 +42,14 @@ class TestSensor(unittest.TestCase):
         self.instance.set_rule('disabled')
         self.assertFalse(self.instance.enabled)
 
-        # Enable, confirm rule changes to scheduled_rule
+        # Ensure Group.refresh not called
+        self.group.refresh_called = False
+
+        # Enable, confirm rule changes to scheduled_rule, confirm Group.refresh called
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
         self.assertEqual(self.instance.current_rule, self.instance.scheduled_rule)
+        self.assertTrue(self.group.refresh_called)
 
     def test_03_enable_with_invalid_schedule_rule(self):
         # Set both current and scheduled rules disabled
@@ -47,9 +67,13 @@ class TestSensor(unittest.TestCase):
         self.instance.enable()
         self.assertTrue(self.instance.enabled)
 
-        # Disable, confirm disabled
+        # Ensure Group.refresh not called
+        self.group.refresh_called = False
+
+        # Disable, confirm disabled, confirm Group.refresh called
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
+        self.assertTrue(self.group.refresh_called)
 
     def test_04_rule_validation_valid(self):
         # Should accept enabled and disabled, case insensitive
@@ -90,7 +114,7 @@ class TestSensor(unittest.TestCase):
         self.instance.set_rule("Enabled")
         self.assertTrue(self.instance.enabled)
 
-    def test_07_next_rule(self):
+    def test_09_next_rule(self):
         # Confirm current_rule doesn't match expected new rule
         self.instance.set_rule('enabled')
         self.assertNotEqual(self.instance.current_rule, "disabled")
@@ -98,3 +122,11 @@ class TestSensor(unittest.TestCase):
         # Move to next rule, confirm correct rule
         self.instance.next_rule()
         self.assertEqual(self.instance.current_rule, "disabled")
+
+    def test_10_refresh_group(self):
+        # Ensure Group.refresh not called
+        self.group.refresh_called = False
+
+        # Call method, confirm Group.refresh called
+        self.instance.refresh_group()
+        self.assertTrue(self.group.refresh_called)
