@@ -104,7 +104,7 @@ class TestDummySensor(unittest.TestCase):
         self.assertTrue(self.instance.trigger())
         self.assertTrue(self.instance.condition_met())
         self.assertEqual(self.instance.current_rule, "on")
-        #self.assertTrue(self.group.refresh_called)
+        self.assertTrue(self.group.refresh_called)
 
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
