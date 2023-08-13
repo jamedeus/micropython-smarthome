@@ -26,7 +26,7 @@ class Dummy(Sensor):
         result = super().set_rule(rule)
         # Refresh group if rule changed successfully
         if result and hasattr(self, "group"):
-            self.group.refresh()
+            self.refresh_group()
         return result
 
     def condition_met(self):

@@ -10,7 +10,7 @@ class MockGroup(Group):
 
         self.refresh_called = False
 
-    def refresh(self):
+    def refresh(self, arg=None):
         self.refresh_called = True
 
 

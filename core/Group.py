@@ -21,6 +21,10 @@ class Group():
         # After adding sensor to group, Config calls sensor's add_routines method to populate list with functions
         self.post_action_routines = []
 
+        # Preallocate reference to bound method so it can be called in ISR
+        # https://docs.micropython.org/en/latest/reference/isr_rules.html#creation-of-python-objects
+        self._refresh = self.refresh
+
         log.info(f"Instantiated Group named {self.name}")
 
     def reset_state(self):
@@ -88,9 +92,10 @@ class Group():
             for function in self.post_action_routines:
                 function()
 
-    # Called by all sensors when condition changes
     # Check condition of all sensors in group, turn devices on/off if needed
-    def refresh(self):
+    # Arg is required for micropython.schedule but unused
+    # Called by all sensors when condition changes
+    def refresh(self, arg=None):
         action = self.determine_correct_action(self.check_sensor_conditions())
         if action is not None:
             print(f"{self.name}: Applying action: {action}")
