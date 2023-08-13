@@ -3,7 +3,7 @@ import webrepl
 import unittest
 from Api import app
 from Config import Config
-from main import start_loop
+from main import start
 from cpython_only import cpython_only
 
 # Read wifi credentials from disk
@@ -81,7 +81,7 @@ config_file = {
 }
 
 
-class TestMainLoop(unittest.TestCase):
+class TestMain(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Instantiate Config object, run all setup steps except API calls
@@ -91,7 +91,7 @@ class TestMainLoop(unittest.TestCase):
         cls.config.build_groups()
 
     @cpython_only
-    def test_01_start_loop(self):
+    def test_01_start(self):
         from unittest.mock import patch, MagicMock
 
         # Confirm webrepl not started
@@ -105,7 +105,7 @@ class TestMainLoop(unittest.TestCase):
             mock_loop.run_forever = MagicMock()
 
             # Run function
-            start_loop()
+            start()
 
         # Confirm API received correct config, webrepl started
         self.assertEqual(app.config, self.config)

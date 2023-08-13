@@ -194,7 +194,7 @@ def connect_wifi():
         continue
 
 
-def start_loop():
+def start():
     # Connect to wifi
     connect_wifi()
 

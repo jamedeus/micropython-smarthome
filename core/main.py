@@ -20,7 +20,7 @@ log = logging.getLogger("Main")
 log.info("Booted")
 
 
-def start_loop():
+def start():
     # Instantiate config object (connects to wifi, sets up hardware, etc)
     config = Config(read_config_from_disk())
     gc.collect()
