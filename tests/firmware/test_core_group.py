@@ -119,3 +119,35 @@ class TestGroup(unittest.TestCase):
         self.assertTrue(self.device.send_method_called)
         self.assertFalse(self.sensor.routine_called)
         self.device.send_method_called = False
+
+    def test_06_refresh(self):
+        # Reset mock device: send method not called, send result = True
+        self.device.send_method_called = False
+        self.device.send_result = True
+
+        # Simulate sensor triggered, call refresh_group
+        self.sensor.condition = True
+        self.sensor.refresh_group()
+
+        # Confirm device turned on, reset
+        self.assertTrue(self.device.send_method_called)
+        self.device.send_method_called = False
+
+        # Refresh again, confirm device.send not called (state already matches)
+        self.sensor.refresh_group()
+        self.assertFalse(self.device.send_method_called)
+
+        # Simulate sensor off condition, call refresh_group
+        self.sensor.condition = False
+        self.sensor.refresh_group()
+
+        # Confirm device turned off, reset
+        self.assertTrue(self.device.send_method_called)
+        self.device.send_method_called = False
+
+        # Simulate sensor no-change condition, call refresh_group
+        self.sensor.condition = None
+        self.sensor.refresh_group()
+
+        # Confirm device.send not called
+        self.assertFalse(self.device.send_method_called)
