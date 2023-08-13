@@ -115,6 +115,9 @@ class Desktop_trigger(Sensor):
                         if self.desktop_target:
                             self.desktop_target.state = True
 
+                    # Refresh group
+                    self.refresh_group()
+
                 # Poll every second
                 await asyncio.sleep(1)
 

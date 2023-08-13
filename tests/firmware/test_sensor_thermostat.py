@@ -9,6 +9,7 @@ expected_attributes = {
     'tolerance': 1.0,
     'nickname': 'sensor1',
     '_type': 'si7021',
+    'current': None,
     'current_rule': 74.0,
     'scheduled_rule': 74,
     'default_rule': 74,
@@ -33,6 +34,11 @@ class TestThermostat(unittest.TestCase):
         cls.instance = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [cls.target])
         group = Group('group1', [cls.instance])
         cls.instance.group = group
+
+        # Dummy send method so group.refresh can run
+        def mock_send(state):
+            pass
+        cls.target.send = mock_send
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation

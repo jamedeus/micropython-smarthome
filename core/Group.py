@@ -87,3 +87,11 @@ class Group():
             # Run post-action routines (if any) for all sensors in group
             for function in self.post_action_routines:
                 function()
+
+    # Called by all sensors when condition changes
+    # Check condition of all sensors in group, turn devices on/off if needed
+    def refresh(self):
+        action = self.determine_correct_action(self.check_sensor_conditions())
+        if action is not None:
+            print(f"{self.name}: Applying action: {action}")
+            self.apply_action(action)

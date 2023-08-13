@@ -38,6 +38,12 @@ class Sensor():
         # List of instances
         self.targets = targets
 
+    def refresh_group(self):
+        # Check conditions of all sensors in group
+        if hasattr(self, 'group'):
+            print(f"{self.name}: Refreshing {self.group.name}")
+            self.group.refresh()
+
     def enable(self):
         self.enabled = True
 
@@ -50,8 +56,14 @@ class Sensor():
             else:
                 self.set_rule(self.default_rule)
 
+        # Check conditions of all sensors in group
+        self.refresh_group()
+
     def disable(self):
         self.enabled = False
+
+        # Check conditions of all sensors in group
+        self.refresh_group()
 
     # Base validator for universal rules, can be extended in subclass validator method
     def rule_validator(self, rule):

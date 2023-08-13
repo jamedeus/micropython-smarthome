@@ -21,9 +21,9 @@ class MotionSensor(Sensor):
         log.info(f"Instantiated MotionSensor named {self.name} on pin {pin}")
 
     def enable(self):
-        super().enable()
-
         self.motion = False
+
+        super().enable()
 
         # Create hardware interrupt
         self.sensor.irq(trigger=Pin.IRQ_RISING, handler=self.motion_detected)
@@ -105,7 +105,13 @@ class MotionSensor(Sensor):
             # Stop any reset timer that may be running from before delay = None
             SoftwareTimer.timer.cancel(self.name)
 
+        # Check conditions of all sensors in group
+        self.refresh_group()
+
     def resetTimer(self, timer="optional"):
         log.info(f"{self.name}: resetTimer interrupt")
         # Reset motion, causes main loop to fade lights off
         self.motion = False
+
+        # Check conditions of all sensors in group
+        self.refresh_group()

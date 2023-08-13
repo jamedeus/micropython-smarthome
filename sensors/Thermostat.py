@@ -1,5 +1,6 @@
 import logging
 from math import isnan
+import uasyncio as asyncio
 from machine import Pin, SoftI2C
 import si7021
 import SoftwareTimer
@@ -32,6 +33,12 @@ class Thermostat(Sensor):
 
         # Store last 3 temperature readings, used to detect failed on/off command (ir command didn't reach ac, etc)
         self.recent_temps = []
+
+        # Track output of condition_met (set by monitor callback)
+        self.current = None
+
+        # Start monitor loop (checks temp every 5 seconds)
+        asyncio.create_task(self.monitor())
 
         log.info(f"Instantiated Thermostat named {self.name}")
 
@@ -96,6 +103,19 @@ class Thermostat(Sensor):
         # No action needed if temperature between on/off thresholds
         return None
 
+    # Check if temperature exceeded threshold every 5 seconds
+    async def monitor(self):
+        while True:
+            print(f"Thermostat monitor: {self.fahrenheit()}")
+            new = self.condition_met()
+
+            # If condition changed, overwrite and refresh group
+            if new != self.current and new is not None:
+                self.current = new
+                self.refresh_group()
+
+            await asyncio.sleep(5)
+
     # Receive rule from API, validate, set and return True if valid, otherwise return False
     def validator(self, rule):
         try:
@@ -154,6 +174,7 @@ class Thermostat(Sensor):
 
             # Force group to turn targets on/off again
             self.group.reset_state()
+            self.refresh_group()
 
         # Run again in 30 seconds
         SoftwareTimer.timer.create(30000, self.audit, self.name)

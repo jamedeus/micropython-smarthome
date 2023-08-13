@@ -15,7 +15,15 @@ class Switch(Sensor):
 
         self.switch = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 
+        # Create hardware interrupt, refresh group when switch changes state
+        self.switch.irq(handler=self.interrupt_handler, trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING)
+
         log.info(f"Instantiated switch sensor named {self.name}")
+
+    # Called by hardware intterupt, must accept arg (unused)
+    # Refresh group when switch changes state
+    def interrupt_handler(self, arg=None):
+        self.refresh_group()
 
     def condition_met(self):
         if self.switch.value():

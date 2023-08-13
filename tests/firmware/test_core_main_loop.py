@@ -92,15 +92,17 @@ class TestMainLoop(unittest.TestCase):
 
     @cpython_only
     def test_01_start_loop(self):
-        from unittest.mock import patch
+        from unittest.mock import patch, MagicMock
 
         # Confirm webrepl not started
         self.assertEqual(webrepl.listen_s, None)
 
         # Mock Config init to return existing Config object
-        # Mock asyncio.run to return immediately (instead of infinite loop)
+        # Mock asyncio.get_event_loop to return mock with methods that return immediately
         with patch('main.Config', return_value=self.config), \
-             patch('main.asyncio.run'):
+             patch('main.asyncio.get_event_loop', return_value=MagicMock()) as mock_loop:
+            mock_loop.create_task = MagicMock()
+            mock_loop.run_forever = MagicMock()
 
             # Run function
             start_loop()
@@ -109,6 +111,7 @@ class TestMainLoop(unittest.TestCase):
         self.assertEqual(app.config, self.config)
         self.assertIsNotNone(webrepl.listen_s)
 
+    # TODO move to Group tests
     # Original bug: Disabling a device while turned on did not turn off, but did flip state to False
     # This resulted in device staying on even after sensors turned other devices in group off. If
     # device was enabled while sensor conditions not met, it still would not be turned off because
@@ -152,6 +155,7 @@ class TestMainLoop(unittest.TestCase):
         self.assertFalse(led.state)
         self.assertEqual(led.pwm.duty(), 0)
 
+    # TODO move to Group tests
     # Original bug: Disabled devices manually turned on by user could not be turned off by loop.
     # This became an issue when on/off rules were removed, requiring use of enabled/disabled.
     # After fix disabled devices may be turned off, preventing lights from getting stuck. Disabled
