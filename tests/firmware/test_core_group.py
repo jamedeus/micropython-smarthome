@@ -14,8 +14,14 @@ class MockDevice(Device):
         # Used to simulate failed send call
         self.send_result = True
 
-    def send(self, arg=None):
+        # Used to simulate hardware device turned on by send method
+        self.hardware_state = None
+
+    def send(self, state):
         self.send_method_called = True
+        if not self.enabled and state:
+            return True
+        self.hardware_state = bool(state)
         return self.send_result
 
 
@@ -151,3 +157,76 @@ class TestGroup(unittest.TestCase):
 
         # Confirm device.send not called
         self.assertFalse(self.device.send_method_called)
+
+    # Original bug: Disabling a device while turned on did not turn off, but did flip state to False
+    # This resulted in device staying on even after sensors turned other devices in group off. If
+    # device was enabled while sensor conditions not met, it still would not be turned off because
+    # state (False) matched correct action (turn off). This meant it was impossible to turn the light
+    # off without triggering + reseting sensors (or using API).
+    def test_07_regression_correct_state_when_re_enabled(self):
+        # Ensure Device enabled, simulate turning on
+        self.device.enable()
+        self.group.state = False
+        self.group.apply_action(True)
+
+        # Confirm Device turned on, LED state is correct, group state is correct
+        self.assertEqual(self.device.hardware_state, True)
+        self.assertTrue(self.device.state)
+        self.assertTrue(self.group.state)
+
+        # Disable, should turn off automatically (before fix would stay on)
+        self.device.disable()
+        self.assertFalse(self.device.enabled)
+
+        # Confirm turned off
+        self.assertFalse(self.device.state)
+        self.assertEqual(self.device.hardware_state, False)
+
+        # Simulate reset_timer expiring while disabled
+        self.group.state = False
+
+        # Re-enable to reproduce issue, before fix device would still be on
+        self.device.enable()
+
+        # Should be turned off
+        self.assertFalse(self.device.state)
+        self.assertEqual(self.device.hardware_state, False)
+
+    # Original bug: Disabled devices manually turned on by user could not be turned off by loop.
+    # This became an issue when on/off rules were removed, requiring use of enabled/disabled.
+    # After fix disabled devices may be turned off, preventing lights from getting stuck. Disabled
+    # devices do NOT respond to on commands, but do flip their state to True to stay in sync with
+    # rest of group - this is necessary to allow turning off, since a device with state == False
+    # will be skipped by loop (already off), and user flipping light switch doesn't effect state
+    def test_08_regression_turn_off_while_disabled(self):
+        # Disable Device, simulate user turning on (cannot call send while disabled)
+        self.device.disable()
+        self.device.hardware_state = True
+        self.assertFalse(self.device.enabled)
+        self.assertEqual(self.device.hardware_state, True)
+        # State is uneffected when manually turned on
+        self.assertFalse(self.device.state)
+
+        # Simulate triggered sensor turning group on
+        self.group.state = False
+        self.group.apply_action(True)
+        # Device state should change, now matches actual state (possible for loop to turn off)
+        self.assertTrue(self.device.state)
+
+        # Simulate group turning off after sensor resets
+        self.group.state = True
+        self.group.apply_action(False)
+
+        # Device should now be turned off
+        self.assertFalse(self.device.state)
+        self.assertEqual(self.device.hardware_state, False)
+
+        # Simulate group turning on again - relay should NOT turn on
+        self.group.apply_action(True)
+        self.assertTrue(self.device.state)
+
+        # Should still be off
+        self.assertEqual(self.device.hardware_state, False)
+
+        # State should be True even though device is disabled and off
+        self.assertTrue(self.device.state)
