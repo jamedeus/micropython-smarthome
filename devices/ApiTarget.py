@@ -172,52 +172,42 @@ class ApiTarget(Device):
             # This allows turning off (would be skipped if state already == False)
             return True
 
-        # "On" rule
+        # Get correct command for state argument
         if state:
-            if self.current_rule["on"][0] == "ignore":
-                # If rule is ignore, do nothing
-                return True
+            command = self.current_rule["on"]
+        else:
+            command = self.current_rule["off"]
 
-            if self.ip != self.get_node_ip():
-                # Send request, return False if failed
-                if not self.request(self.current_rule["on"]):
-                    return False
-            else:
-                if not self.send_to_self(state):
-                    return False
+        # Return early if rule is "ignore"
+        if command[0] == "ignore":
+            return True
 
-            # If targeted by motion sensor: reset motion attribute after successful on command
-            # Allows retriggering sensor to send again - otherwise motion only restarts reset timer
+        # Send request, return False if failed
+        if self.ip != self.get_node_ip():
+            if not self.request(command):
+                return False
+
+        # Self targetting, pass request directly to API backend
+        else:
+            if not self.send_to_self(command):
+                return False
+
+        # If targeted by motion sensor: reset motion attribute after successful on command
+        # Allows retriggering sensor to send again - otherwise motion only restarts reset timer
+        # TODO does group.refresh break this?
+        if state:
             for sensor in self.triggered_by:
                 if sensor._type == "pir":
                     sensor.motion = False
 
-        # "Off" rule
-        else:
-            if self.current_rule["off"][0] == "ignore":
-                # If rule is ignore, do nothing
-                return True
-
-            if self.ip != self.get_node_ip():
-                # Send request, return False if failed
-                if not self.request(self.current_rule["off"]):
-                    return False
-            else:
-                if not self.send_to_self(state):
-                    return False
-
-        # Tells main loop send succeeded
+        # Tells group send succeeded
         return True
 
     # Passes current_rule directly to API backend without opening connection
     # Synchronous request method blocks API.run_client when self-targetting
-    def send_to_self(self, state=1):
-        if state:
-            path = self.current_rule["on"][0]
-            args = self.current_rule["on"][1:]
-        else:
-            path = self.current_rule["off"][0]
-            args = self.current_rule["off"][1:]
+    def send_to_self(self, command):
+        path = command[0]
+        args = command[1:]
 
         try:
             reply = app.url_map[path](args)
@@ -226,7 +216,7 @@ class ApiTarget(Device):
 
         # Log payload + error and return False if response contains error
         if "Error" in reply.keys() or "ERROR" in reply.keys():
-            self.log_failed_request(args.insert(0, path), reply)
+            self.log_failed_request(command, reply)
             return False
 
         # Return True if request successful
