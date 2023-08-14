@@ -1,6 +1,8 @@
 import json
 import socket
 import logging
+import network
+from Api import app
 from Device import Device
 
 # Set name for module's log lines
@@ -17,10 +19,22 @@ class ApiTarget(Device):
         # Port defaults to 8123 except in unit tests
         self.port = port
 
+        # IP of ESP32, used to detect self-target
+        self.node_ip = None
+        self.get_node_ip()
+
         # Prevent instantiating with invalid default_rule
         if str(self.default_rule).lower() in ("enabled", "disabled"):
             log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
             raise AttributeError
+
+    # Returns node_ip attribute (sets attribute on first call)
+    def get_node_ip(self):
+        if self.node_ip is None:
+            wlan = network.WLAN(network.STA_IF)
+            if wlan.isconnected():
+                self.node_ip = wlan.ifconfig()[0]
+        return self.node_ip
 
     # Takes dict containing 2 entries named "on" and "off"
     # Both entries are lists containing a full API request
@@ -129,6 +143,7 @@ class ApiTarget(Device):
 
     def request(self, msg):
         s = socket.socket()
+        s.settimeout(1)
         try:
             s.connect((self.ip, self.port))
             s.sendall(f'{json.dumps(msg)}\n'.encode())
@@ -163,9 +178,13 @@ class ApiTarget(Device):
                 # If rule is ignore, do nothing
                 return True
 
-            # Send request, return False if failed
-            if not self.request(self.current_rule["on"]):
-                return False
+            if self.ip != self.get_node_ip():
+                # Send request, return False if failed
+                if not self.request(self.current_rule["on"]):
+                    return False
+            else:
+                if not self.send_to_self(state):
+                    return False
 
             # If targeted by motion sensor: reset motion attribute after successful on command
             # Allows retriggering sensor to send again - otherwise motion only restarts reset timer
@@ -179,9 +198,36 @@ class ApiTarget(Device):
                 # If rule is ignore, do nothing
                 return True
 
-            # Send request, return False if failed
-            if not self.request(self.current_rule["off"]):
-                return False
+            if self.ip != self.get_node_ip():
+                # Send request, return False if failed
+                if not self.request(self.current_rule["off"]):
+                    return False
+            else:
+                if not self.send_to_self(state):
+                    return False
 
         # Tells main loop send succeeded
+        return True
+
+    # Passes current_rule directly to API backend without opening connection
+    # Synchronous request method blocks API.run_client when self-targetting
+    def send_to_self(self, state=1):
+        if state:
+            path = self.current_rule["on"][0]
+            args = self.current_rule["on"][1:]
+        else:
+            path = self.current_rule["off"][0]
+            args = self.current_rule["off"][1:]
+
+        try:
+            reply = app.url_map[path](args)
+        except KeyError:
+            return False
+
+        # Log payload + error and return False if response contains error
+        if "Error" in reply.keys() or "ERROR" in reply.keys():
+            self.log_failed_request(args.insert(0, path), reply)
+            return False
+
+        # Return True if request successful
         return True

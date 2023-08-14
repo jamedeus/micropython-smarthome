@@ -1,6 +1,8 @@
 import sys
 import json
+import network
 import unittest
+from Api import app
 from ApiTarget import ApiTarget
 from MotionSensor import MotionSensor
 from cpython_only import cpython_only
@@ -13,6 +15,13 @@ if sys.implementation.name == 'cpython':
 with open('config.json', 'r') as file:
     config = json.load(file)
 
+# Connect to network if not connected (get node_ip for expected_attributes)
+wlan = network.WLAN(network.STA_IF)
+if not wlan.isconnected():
+    wlan.connect(config['wifi']['ssid'], config['wifi']['password'])
+    while not wlan.isconnected():
+        continue
+
 default_rule = {'on': ['enable', 'device1'], 'off': ['enable', 'device1']}
 
 # Expected return value of get_attributes method just after instantiation
@@ -21,6 +30,7 @@ expected_attributes = {
     'nickname': 'device1',
     'ip': config['mock_receiver']['ip'],
     'port': config['mock_receiver']['api_port'],
+    'node_ip': wlan.ifconfig()[0],
     'enabled': True,
     'rule_queue': [],
     'state': None,
@@ -41,10 +51,43 @@ expected_attributes = {
 }
 
 
+# Mock Config class used in self-target tests
+class MockConfig():
+    def __init__(self, target):
+        self.target = target
+
+    def find(self, target):
+        if target == 'device1':
+            return self.target
+        else:
+            return False
+
+
+# Mock Device class used in self-target tests
+class MockDevice():
+    def __init__(self):
+        self.name = 'device1'
+        self.enabled = True
+
+    def enable(self):
+        self.enabled = True
+
+    def disable(self):
+        self.enabled = False
+
+
 class TestApiTarget(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # Ensure wifi connected before instantiating (set correct node_ip)
+        # Required for cpython test environment (loads all tests before running
+        # any, possible for other test to disconnect wifi before reaching this)
+        if not wlan.isconnected():
+            wlan.connect(config['wifi']['ssid'], config['wifi']['password'])
+            while not wlan.isconnected():
+                continue
+
         # Create test instance with IP and port from config file
         ip = config["mock_receiver"]["ip"]
         port = config['mock_receiver']['api_port']
@@ -52,6 +95,14 @@ class TestApiTarget(unittest.TestCase):
 
         # Add mock MotionSensor triggering test instance
         cls.instance.triggered_by = [MotionSensor('sensor1', 'sensor1', 'pir', '5', [], 4)]
+
+        # Create mock device and config for self-target tests
+        cls.target = MockDevice()
+        cls.config = MockConfig(cls.target)
+
+    def tearDown(self):
+        # Revert IP (prevent other tests failing if self-target fails)
+        self.instance.ip = config["mock_receiver"]["ip"]
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
@@ -182,10 +233,35 @@ class TestApiTarget(unittest.TestCase):
         self.assertTrue(self.instance.send(1))
         self.assertFalse(self.instance.triggered_by[0].motion)
 
+    # Different send method used when targeting own IP
+    def test_13_send_to_self(self):
+        # Set target IP to own IP
+        self.instance.ip = wlan.ifconfig()[0]
+
+        # Pass mock Config to API, set rule to enable and disable mock device
+        app.config = self.config
+        self.assertTrue(self.instance.set_rule({'on': ['enable', 'device1'], 'off': ['disable', 'device1']}))
+
+        # Turn off, confirm mock device disabled
+        self.assertTrue(self.instance.send(0))
+        self.assertFalse(self.target.enabled)
+
+        # Turn on, confirm mock device enabled
+        self.assertTrue(self.instance.send(1))
+        self.assertTrue(self.target.enabled)
+
+        # Switch to invalid target, confirm both fail
+        self.instance.set_rule({'on': ['enable', 'device2'], 'off': ['disable', 'device2']})
+        self.assertFalse(self.instance.send(0))
+        self.assertFalse(self.instance.send(1))
+
+        # Revert IP
+        self.instance.ip = config["mock_receiver"]["ip"]
+
     # Original bug: ApiTarget class overwrites parent set_rule method and did not include conditional
     # that overwrites "enabled" with default_rule. This resulted in an unusable rule which caused
     # crash next time send method was called.
-    def test_13_regression_rule_change_to_enabled(self):
+    def test_14_regression_rule_change_to_enabled(self):
         self.instance.disable()
         self.assertFalse(self.instance.enabled)
         self.instance.set_rule('enabled')
@@ -198,7 +274,7 @@ class TestApiTarget(unittest.TestCase):
     # Original bug: Devices that use current_rule in send() payload crashed if default_rule was "enabled" or "disabled"
     # and current_rule changed to "enabled" (string rule instead of int in payload). These classes now raise exception
     # in init method to prevent this. It should no longer be possible to instantiate with invalid default_rule.
-    def test_14_regression_invalid_default_rule(self):
+    def test_15_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
             ApiTarget("device1", "device1", "api-target", "disabled", config["mock_receiver"]["ip"])
 
@@ -206,7 +282,7 @@ class TestApiTarget(unittest.TestCase):
             ApiTarget("device1", "device1", "api-target", "enabled", config["mock_receiver"]["ip"])
 
     # Original bug: Rejected turn_on, turn_off, reset_rule commands (all valid)
-    def test_15_regression_rejects_valid_rules(self):
+    def test_16_regression_rejects_valid_rules(self):
         # Should accept turn_on/turn_off targeting device
         self.assertTrue(self.instance.set_rule({'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']}))
         self.assertEqual(self.instance.current_rule, {'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']})
@@ -225,7 +301,7 @@ class TestApiTarget(unittest.TestCase):
     # regardless of state argument. This was not detected for 2 weeks because no
     # existing tests verified that on and off rules were used correctly.
     @cpython_only
-    def test_16_regression_send_ignores_state(self):
+    def test_17_regression_send_ignores_state(self):
         # Set different on and off rules
         self.instance.set_rule({'on': ['turn_on', 'device2'], 'off': ['turn_off', 'device2']})
 
