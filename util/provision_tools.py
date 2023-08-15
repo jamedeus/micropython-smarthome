@@ -6,22 +6,22 @@ from helper_functions import is_device, is_sensor
 # Dependency relative paths for all device and sensor types, used by get_modules
 dependencies = {
     'devices': {
-        'dimmer': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py"],
-        'bulb': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py"],
-        'relay': ["devices/Relay.py", "devices/Device.py"],
-        'dumb-relay': ["devices/DumbRelay.py", "devices/Device.py"],
-        'desktop': ["devices/Desktop_target.py", "devices/Device.py"],
-        'pwm': ["devices/LedStrip.py", "devices/Device.py", "devices/DimmableLight.py"],
-        'mosfet': ["devices/Mosfet.py", "devices/Device.py"],
-        'api-target': ["devices/ApiTarget.py", "devices/Device.py"],
-        'wled': ["devices/Wled.py", "devices/Device.py", "devices/DimmableLight.py"]
+        'dimmer': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py", "core/Instance.py"],
+        'bulb': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py", "core/Instance.py"],
+        'relay': ["devices/Relay.py", "devices/Device.py", "core/Instance.py"],
+        'dumb-relay': ["devices/DumbRelay.py", "devices/Device.py", "core/Instance.py"],
+        'desktop': ["devices/Desktop_target.py", "devices/Device.py", "core/Instance.py"],
+        'pwm': ["devices/LedStrip.py", "devices/Device.py", "devices/DimmableLight.py", "core/Instance.py"],
+        'mosfet': ["devices/Mosfet.py", "devices/Device.py", "core/Instance.py"],
+        'api-target': ["devices/ApiTarget.py", "devices/Device.py", "core/Instance.py"],
+        'wled': ["devices/Wled.py", "devices/Device.py", "devices/DimmableLight.py", "core/Instance.py"],
     },
     'sensors': {
-        'pir': ["sensors/MotionSensor.py", "sensors/Sensor.py"],
-        'si7021': ["sensors/Thermostat.py", "sensors/Sensor.py"],
-        'dummy': ["sensors/Dummy.py", "sensors/Sensor.py"],
-        'switch': ["sensors/Switch.py", "sensors/Sensor.py"],
-        'desktop': ["sensors/Desktop_trigger.py", "sensors/Sensor.py"],
+        'pir': ["sensors/MotionSensor.py", "sensors/Sensor.py", "core/Instance.py"],
+        'si7021': ["sensors/Thermostat.py", "sensors/Sensor.py", "core/Instance.py"],
+        'dummy': ["sensors/Dummy.py", "sensors/Sensor.py", "core/Instance.py"],
+        'switch': ["sensors/Switch.py", "sensors/Sensor.py", "core/Instance.py"],
+        'desktop': ["sensors/Desktop_trigger.py", "sensors/Sensor.py", "core/Instance.py"],
     }
 }
 
