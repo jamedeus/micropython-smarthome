@@ -78,12 +78,7 @@ class MotionSensor(Sensor):
 
         # If reset timer currently running, replace so new rule takes effect
         if self.motion:
-            try:
-                off = float(self.current_rule) * 60000
-                if off > 0:
-                    SoftwareTimer.timer.create(off, self.resetTimer, self.name)
-            except ValueError:
-                pass  # Prevent crash when rule changes to "disabled"
+            self.start_reset_timer()
 
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin=""):
@@ -91,25 +86,32 @@ class MotionSensor(Sensor):
             print(f"{self.name}: Motion detected")
             log.debug(f"{self.name}: Motion detected")
 
+        # Set motion attribute, start reset timer
         self.motion = True
-
-        # Set reset timer unless current rule is 0 (no reset timer) or sensor is disabled
-        if not (self.current_rule == 0 or self.current_rule == "disabled"):
-            try:
-                off = float(self.current_rule) * 60000
-                SoftwareTimer.timer.create(off, self.resetTimer, self.name)
-            except:
-                print(f"CAUGHT: name = {self.name}, rule = {self.current_rule}")
-
-        else:
-            # Stop any reset timer that may be running from before delay = None
-            SoftwareTimer.timer.cancel(self.name)
+        self.start_reset_timer()
 
         # Check conditions of all sensors in group
         self.refresh_group()
 
-    def resetTimer(self, timer="optional"):
-        log.info(f"{self.name}: resetTimer interrupt")
+    # Called when motion is detected or rule changes, starts timer to reset
+    # motion attribute and refresh group in <current_rule> minutes
+    def start_reset_timer(self):
+        # Set reset timer unless current rule is 0 (no reset timer) or sensor is disabled
+        if not (self.current_rule == 0 or self.current_rule == "disabled"):
+            try:
+                # Convert delay (minutes) to milliseconds, start timer
+                off = float(self.current_rule) * 60000
+                SoftwareTimer.timer.create(off, self.reset_timer, self.name)
+            except (ValueError, TypeError):
+                print(f"{self.name}: Failed to start reset timer, current_rule = {self.current_rule}")
+                log.debug(f"{self.name}: Failed to start reset timer, current_rule = {self.current_rule}")
+        else:
+            # Stop reset timer (may be running from before delay set to None)
+            SoftwareTimer.timer.cancel(self.name)
+
+    # Called when reset timer expires
+    def reset_timer(self, timer=None):
+        log.info(f"{self.name}: reset_timer interrupt")
         # Reset motion, causes main loop to fade lights off
         self.motion = False
 

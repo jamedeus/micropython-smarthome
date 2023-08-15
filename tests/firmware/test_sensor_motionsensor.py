@@ -97,7 +97,7 @@ class TestMotionSensor(unittest.TestCase):
         self.group.refresh_called = False
 
         # Simulate reset timer expiring, motion should now be False
-        self.instance.resetTimer()
+        self.instance.reset_timer()
         self.assertFalse(self.instance.motion)
         # Group.refresh should be called again
         self.assertTrue(self.group.refresh_called)
