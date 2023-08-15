@@ -21,62 +21,6 @@ config_file = {
         "location": "test environment",
         "floor": "0",
         "schedule_keywords": {}
-    },
-    "sensor1": {
-        "targets": [
-            "device2"
-        ],
-        "_type": "si7021",
-        "schedule": {
-            "10:00": 74,
-            "22:00": 74
-        },
-        "default_rule": 74,
-        "mode": "cool",
-        "tolerance": 1,
-        "nickname": "sensor1"
-    },
-    "sensor2": {
-        "_type": "pir",
-        "targets": [
-            "device1"
-        ],
-        "pin": 16,
-        "default_rule": 1,
-        "schedule": {},
-        "nickname": "sensor2"
-    },
-    "sensor3": {
-        "_type": "pir",
-        "targets": [
-            "device1"
-        ],
-        "pin": 17,
-        "default_rule": 1,
-        "schedule": {},
-        "nickname": "sensor3"
-    },
-    "device1": {
-        "pin": 4,
-        "_type": "pwm",
-        "schedule": {
-            "09:00": 734,
-            "11:00": 345,
-            "20:00": 915
-        },
-        "min_bright": 0,
-        "max_bright": 1023,
-        "default_rule": 512,
-        "nickname": "device1"
-    },
-    "device2": {
-        "pin": 18,
-        "_type": "dumb-relay",
-        "schedule": {
-            "09:00": "enabled"
-        },
-        "default_rule": "enabled",
-        "nickname": "device2"
     }
 }
 
