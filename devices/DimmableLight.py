@@ -234,3 +234,9 @@ class DimmableLight(Device):
             # Sleep until next step
             next_step = int(self.fading["period"] - ((SoftwareTimer.timer.epoch_now() - self.fading["started"]) % self.fading["period"]))
             SoftwareTimer.timer.create(next_step, self.fade, self.name + "_fade")
+
+    def get_status(self):
+        status = super().get_status()
+        status['min'] = self.min_bright
+        status['max'] = self.max_bright
+        return status

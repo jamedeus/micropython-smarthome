@@ -95,3 +95,14 @@ class Instance():
             attributes["group"] = self.group.name
 
         return attributes
+
+    # Return JSON-serializable dict containing state information
+    # Called by Config.get_status to build API status response
+    def get_status(self):
+        return {
+            'nickname': self.nickname,
+            'type': self._type,
+            'enabled': self.enabled,
+            'current_rule': self.current_rule,
+            'scheduled_rule': self.scheduled_rule
+        }

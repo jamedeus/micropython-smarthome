@@ -280,52 +280,29 @@ class Config():
     # Called by status API endpoint, frontend polls every 5 seconds while viewing node
     # Returns object with metadata + current status info for all devices and sensors
     def get_status(self):
-        status_dict = {}
-        status_dict["metadata"] = {}
-        status_dict["metadata"]["id"] = self.identifier
-        status_dict["metadata"]["floor"] = self.floor
-        status_dict["metadata"]["location"] = self.location
-        status_dict["metadata"]["schedule_keywords"] = self.schedule_keywords
-        status_dict["metadata"]["next_reload"] = self.reload_time
-        if "ir_blaster" in self.__dict__:
-            status_dict["metadata"]["ir_blaster"] = True
-        else:
-            status_dict["metadata"]["ir_blaster"] = False
+        # Populate template from class attributes
+        status_dict = {
+            "metadata": {
+                "id": self.identifier,
+                "floor": self.floor,
+                "location": self.location,
+                "schedule_keywords": self.schedule_keywords,
+                "next_reload": self.reload_time,
+                "ir_blaster": bool("ir_blaster" in self.__dict__)
+            },
+            "devices": {},
+            "sensors": {}
+        }
 
-        status_dict["devices"] = {}
+        # Iterate devices, add get_status return value, add schedule rules
         for i in self.devices:
-            status_dict["devices"][i.name] = {}
-            status_dict["devices"][i.name]["nickname"] = i.nickname
-            status_dict["devices"][i.name]["type"] = i._type
-            status_dict["devices"][i.name]["enabled"] = i.enabled
-            status_dict["devices"][i.name]["current_rule"] = i.current_rule
-            status_dict["devices"][i.name]["scheduled_rule"] = i.scheduled_rule
-            status_dict["devices"][i.name]["turned_on"] = i.state
+            status_dict["devices"][i.name] = i.get_status()
             status_dict["devices"][i.name]["schedule"] = self.schedule[i.name]
 
-            # If device is PWM, add min/max
-            if i._type in ["pwm", "bulb", "dimmer", "wled"]:
-                status_dict["devices"][i.name]["min"] = i.min_bright
-                status_dict["devices"][i.name]["max"] = i.max_bright
-
-        status_dict["sensors"] = {}
+        # Iterate sensors, add get_status return value, add schedule rules
         for i in self.sensors:
-            status_dict["sensors"][i.name] = {}
-            status_dict["sensors"][i.name]["nickname"] = i.nickname
-            status_dict["sensors"][i.name]["type"] = i._type
-            status_dict["sensors"][i.name]["enabled"] = i.enabled
-            status_dict["sensors"][i.name]["current_rule"] = i.current_rule
-            status_dict["sensors"][i.name]["condition_met"] = i.condition_met()
-            status_dict["sensors"][i.name]["scheduled_rule"] = i.scheduled_rule
-            status_dict["sensors"][i.name]["targets"] = []
-            for t in i.targets:
-                status_dict["sensors"][i.name]["targets"].append(t.name)
+            status_dict["sensors"][i.name] = i.get_status()
             status_dict["sensors"][i.name]["schedule"] = self.schedule[i.name]
-
-            # If node has temp sensor, add climate data
-            if i._type == "si7021":
-                status_dict["sensors"][i.name]["temp"] = i.fahrenheit()
-                status_dict["sensors"][i.name]["humid"] = i.temp_sensor.relative_humidity
 
         return status_dict
 

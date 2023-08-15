@@ -75,3 +75,10 @@ class Device(Instance):
             attributes["triggered_by"].append(i.name)
 
         return attributes
+
+    # Return JSON-serializable dict containing state information
+    # Called by Config.get_status to build API status response
+    def get_status(self):
+        status = super().get_status()
+        status['turned_on'] = self.state
+        return status

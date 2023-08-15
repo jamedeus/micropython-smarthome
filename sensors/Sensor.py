@@ -107,3 +107,11 @@ class Sensor(Instance):
             attributes["targets"].append(i.name)
 
         return attributes
+
+    # Return JSON-serializable dict containing state information
+    # Called by Config.get_status to build API status response
+    def get_status(self):
+        status = super().get_status()
+        status['condition_met'] = self.condition_met()
+        status['targets'] = [t.name for t in self.targets]
+        return status

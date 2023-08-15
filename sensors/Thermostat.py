@@ -191,3 +191,9 @@ class Thermostat(Sensor):
             # False positive becomes likely if callback runs shortly after change, since only 2 readings are meaningful
             SoftwareTimer.timer.cancel(self.name)
             SoftwareTimer.timer.create(30000, self.audit, self.name)
+
+    def get_status(self):
+        status = super().get_status()
+        status['temp'] = self.fahrenheit()
+        status['humid'] = self.temp_sensor.relative_humidity
+        return status
