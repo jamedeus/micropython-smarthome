@@ -139,10 +139,10 @@ class TestMotionSensor(unittest.TestCase):
         )
 
     def test_10_next_rule(self):
-        # Ensure enabled, confirm no reset timer in queu, set motion to True
+        # Ensure enabled, set motion to True, confirm no reset timer in queue
         self.instance.enable()
+        self.instance.motion = True
         self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
-        self.instance.trigger()
 
         # Add rules to queue, first should trigger reset timer, second should not
         self.instance.rule_queue = [5, 'disabled']
@@ -186,3 +186,20 @@ class TestMotionSensor(unittest.TestCase):
     def test_13_regression_validator_accepts_nan(self):
         # Attempt to set rule to NaN, should reject
         self.assertFalse(self.instance.set_rule("NaN"))
+
+    # Original bug: Reset timer started when motion detected or schedule rule changed,
+    # but not when set_rule was called. If the existing timer was expiring in 30 seconds
+    # when rule was changed to 10 minutes timer would incorrectly expire early. Timer
+    # now restarts after applying new rule.
+    def test_14_regression_rule_change_does_not_start_timer(self):
+        # Simulate motion detected, confirm timer started
+        self.instance.motion_detected()
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))
+
+        # Manually cancel timer, confirm not running
+        SoftwareTimer.timer.cancel(self.instance.name)
+        self.assertTrue(self.instance.name not in str(SoftwareTimer.timer.schedule))
+
+        # Change rule, confirm timer recreated
+        self.instance.set_rule(5)
+        self.assertIn(self.instance.name, str(SoftwareTimer.timer.schedule))

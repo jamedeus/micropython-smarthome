@@ -40,6 +40,13 @@ class MotionSensor(Sensor):
     def condition_met(self):
         return self.motion
 
+    def apply_new_rule(self):
+        super().apply_new_rule()
+
+        # If reset timer currently running, replace so new rule takes effect
+        if self.motion:
+            self.start_reset_timer()
+
     def validator(self, rule):
         try:
             if rule is None:
@@ -72,13 +79,6 @@ class MotionSensor(Sensor):
             return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
 
         return self.set_rule(new)
-
-    def next_rule(self):
-        super().next_rule()
-
-        # If reset timer currently running, replace so new rule takes effect
-        if self.motion:
-            self.start_reset_timer()
 
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin=""):
