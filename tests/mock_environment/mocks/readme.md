@@ -24,6 +24,8 @@ All log level methods (`log.info`, `log.error`, etc) simply write any argument t
 
 The `value` method can be called with an argument to set the `pin_state` attribute. When called without argument it returns the `pin_state` attribute.
 
+Constants required to provision pins and set interrupts exist but their values are ignored.
+
 ### machine.PWM
 
 The `duty` method can be called with an argument to set the `_duty` attribute. When called without argument it returns the `_duty` attribute.
@@ -45,6 +47,12 @@ When the `init` method is called a new thread is created to handle the callback 
 The `deinit` method sets a `threading.Event()` attribute checked by the thread handler function. This causes the thread to exit without running the callback after the timer expires.
 
 The `value` method returns the remaining time in milliseconds, calculcated from the `start_time` and `period` attribute created by `init`.
+
+## Micropython module
+
+### micropython.schedule
+
+The `schedule` method requires 2 arguments: a function to call and its argument. In micropython this is used to call a function during an interrupt with execution delayed until immediately after the heap is locked. The mock simply calls the function immediately.
 
 ## Network module
 
