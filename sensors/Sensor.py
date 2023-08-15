@@ -85,17 +85,8 @@ class Sensor():
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
             print(f"{self.name}: Rule changed to {self.current_rule}")
 
-            # Rule just changed to disabled
-            if self.current_rule == "disabled":
-                # TODO there are probably scenarios where lights can get stuck on here
-                self.disable()
-            # Rule just changed to enabled, replace with usable rule (default) and enable
-            elif self.current_rule == "enabled":
-                self.current_rule = self.default_rule
-                self.enable()
-            # Sensor was previously disabled, enable now that rule has changed
-            elif self.enabled is False:
-                self.enable()
+            # Update instance attributes to reflect new rule
+            self.apply_new_rule()
 
             return True
 
@@ -103,6 +94,22 @@ class Sensor():
             log.error(f"{self.name}: Failed to change rule to {rule}")
             print(f"{self.name}: Failed to change rule to {rule}")
             return False
+
+    # Called by set_rule after current_rule changed
+    # Updates instance attributes to reflect new rule
+    # Enable/disable, prevent unusable rules, etc
+    def apply_new_rule(self):
+        # Rule just changed to disabled
+        if self.current_rule == "disabled":
+            # TODO there are probably scenarios where lights can get stuck on here
+            self.disable()
+        # Rule just changed to enabled, replace with usable rule (default) and enable
+        elif self.current_rule == "enabled":
+            self.current_rule = self.default_rule
+            self.enable()
+        # Sensor was previously disabled, enable now that rule has changed
+        elif self.enabled is False:
+            self.enable()
 
     def next_rule(self):
         log.debug(f"{self.name}: Scheduled rule change")
