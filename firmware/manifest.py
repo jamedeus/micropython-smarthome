@@ -11,6 +11,7 @@ module("main.py", base_path="../core")
 module("SoftwareTimer.py", base_path="../core")
 module("util.py", base_path="../core")
 module("wifi_setup.py", base_path="../core")
+module("Instance.py", base_path="../core")
 
 # Device driver modules
 module("ApiTarget.py", base_path="../devices")
