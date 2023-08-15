@@ -1,6 +1,8 @@
 import unittest
+from machine import Pin
 from Group import Group
 from Switch import Switch
+from cpython_only import cpython_only
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
@@ -13,7 +15,8 @@ expected_attributes = {
     'nickname': 'sensor1',
     'current_rule': None,
     'scheduled_rule': None,
-    'targets': []
+    'targets': [],
+    'switch_closed': bool(Pin(19, Pin.IN, Pin.PULL_DOWN).value())
 }
 
 
@@ -64,3 +67,15 @@ class TestSwitch(unittest.TestCase):
         # Simulate hardware interrupt, confirm group.Refresh called
         self.instance.interrupt_handler()
         self.assertTrue(self.group.refresh_called)
+
+    @cpython_only
+    def test_06_switch_closed_attribute(self):
+        # Mock closed switch, call interrupt handler, confirm attribute
+        self.instance.switch.pin_state = 1
+        self.instance.interrupt_handler()
+        self.assertTrue(self.instance.switch_closed)
+
+        # Mock open switch, call interrupt handler, confirm attribute
+        self.instance.switch.pin_state = 0
+        self.instance.interrupt_handler()
+        self.assertFalse(self.instance.switch_closed)

@@ -18,11 +18,15 @@ class Switch(Sensor):
         # Create hardware interrupt, refresh group when switch changes state
         self.switch.irq(handler=self.interrupt_handler, trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING)
 
+        # Track whether switch open or closed
+        self.switch_closed = bool(self.switch.value())
+
         log.info(f"Instantiated switch sensor named {self.name}")
 
     # Called by hardware intterupt, must accept arg (unused)
-    # Refresh group when switch changes state
+    # Update switch_closed and refresh group when switch changes state
     def interrupt_handler(self, arg=None):
+        self.switch_closed = bool(self.switch.value())
         self.refresh_group()
 
     def condition_met(self):

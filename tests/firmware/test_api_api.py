@@ -3,7 +3,7 @@ import json
 import network
 import unittest
 import uasyncio as asyncio
-from machine import reset
+from machine import reset, Pin
 import SoftwareTimer
 from Config import Config
 from Api import app
@@ -844,7 +844,8 @@ class TestApi(unittest.TestCase):
                 'rule_queue': [],
                 'default_rule': 'enabled',
                 'scheduled_rule': 'enabled',
-                'current_rule': 'enabled'
+                'current_rule': 'enabled',
+                'switch_closed': bool(Pin(19, Pin.IN, Pin.PULL_DOWN).value())
             }
         )
 
