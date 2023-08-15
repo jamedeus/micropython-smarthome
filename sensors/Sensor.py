@@ -15,7 +15,8 @@ class Sensor(Instance):
             log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
             raise AttributeError
 
-        # List of Device instances
+        # List of Device instances controlled by Sensor, used by Config.build_groups
+        # to determine which sensors belong in same Group instance
         self.targets = targets
 
     def refresh_group(self):
@@ -79,7 +80,7 @@ class Sensor(Instance):
         return
 
     # Return JSON-serializable dict containing all current attributes
-    # Called by API get_attributes endpoint
+    # Called by API get_attributes endpoint, more verbose than status
     def get_attributes(self):
         attributes = super().get_attributes()
 

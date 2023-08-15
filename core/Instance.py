@@ -14,21 +14,31 @@ class Instance():
         # User-configurable name used in frontend, not necesarily unique
         self.nickname = nickname
 
+        # Instance type, arg determines which class is instantiated by Config.instantiate_hardware
+        # Attribute is used in status object, determines UI shown by frontend
         self._type = _type
 
+        # Bool, set with enable/disable methods
+        # Determines whether instance affects other instances in group
         self.enabled = enabled
 
-        # The rule actually followed when the device is triggered (can be changed through API)
+        # The rule currently being followed, has different effects depending on subclass
+        # - Devices: determines whether device can be turned on, device brightness, etc
+        # - Sensors: determines how sensor is triggered, how long before sensor resets, etc
         self.current_rule = current_rule
 
-        # The rule that should be followed at the current time (used to undo API changes to current_rule)
+        # The rule that should be followed at the current time unless changed by API
+        # The reset_rule endpoint overwrites current_rule with this rule
+        # This rule will be set when a disabled instance is re-enabled
         self.scheduled_rule = current_rule
 
-        # The fallback rule used when no other valid rules are available
-        # Examples: Config file contains invalid rules, enabled while both current + scheduled rules are "disabled"
+        # The fallback rule used when no other valid rules are available, examples:
+        # - Config file contains invalid schedule rules
+        # - Instance enabled while both current and scheduled rules are "disabled"
         self.default_rule = default_rule
 
-        # Will hold sequential schedule rules so they can be quickly changed when interrupt runs
+        # Stores sequential schedule rules, next_rule method applies the first rule in queue
+        # Config.build_queue populates list + adds callback timers for each rule change
         self.rule_queue = []
 
     def enable(self):
@@ -86,7 +96,7 @@ class Instance():
             self.scheduled_rule = self.current_rule
 
     # Return JSON-serializable dict containing all current attributes
-    # Called by API get_attributes endpoint
+    # Called by API get_attributes endpoint, more verbose than status
     def get_attributes(self):
         attributes = self.__dict__.copy()
 

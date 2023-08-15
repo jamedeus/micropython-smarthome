@@ -235,6 +235,8 @@ class DimmableLight(Device):
             next_step = int(self.fading["period"] - ((SoftwareTimer.timer.epoch_now() - self.fading["started"]) % self.fading["period"]))
             SoftwareTimer.timer.create(next_step, self.fade, self.name + "_fade")
 
+    # Return JSON-serializable dict containing state information
+    # Called by Config.get_status to build API status response
     def get_status(self):
         status = super().get_status()
         status['min'] = self.min_bright

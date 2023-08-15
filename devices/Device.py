@@ -9,10 +9,12 @@ class Device(Instance):
     def __init__(self, name, nickname, _type, enabled, current_rule, default_rule):
         super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
 
-        # Record device's on/off state
+        # Record device's on/off state, prevent turning on/off when already on/off
+        # Included in status object, used by API to display device state
         self.state = None
 
-        # Will be populated with instances of all triggering sensors later
+        # List of Sensor instances which control the device, populated by Config
+        # when sensors are instantiated
         self.triggered_by = []
 
     def enable(self):
@@ -60,7 +62,7 @@ class Device(Instance):
             self.send(1)
 
     # Return JSON-serializable dict containing all current attributes
-    # Called by API get_attributes endpoint
+    # Called by API get_attributes endpoint, more verbose than status
     def get_attributes(self):
         attributes = super().get_attributes()
 
