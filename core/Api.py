@@ -30,16 +30,15 @@ timestamp_regex = r'^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
 
 # Ensure API call complete, connection closed before rebooting (reboot endpoint)
 async def reboot_task():
-    await lock.acquire()
-    reboot()
+    async with lock:
+        reboot()
 
 
 # Ensure API call complete, connection closed before running macro
 # Avoids connection timeout during long-running (>5 second) macros
 async def run_macro_task(blaster, macro_name):
-    await lock.acquire()
-    await blaster.run_macro_coro(macro_name)
-    lock.release()
+    async with lock:
+        await blaster.run_macro_coro(macro_name)
 
 
 class Api:
