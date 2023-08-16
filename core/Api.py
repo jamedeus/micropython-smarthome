@@ -136,41 +136,43 @@ class Api:
                 path = data[0]
                 args = data[1:]
 
-            # Acquire lock, prevents reboot until finished sending reply
-            await lock.acquire()
+            # Acquire lock, prevent multiple endpoints running simultaneously
+            # Ensures response sent + connection closed before reboot task runs
+            async with lock:
+                # Find endpoint matching path, call handler function and pass args
+                try:
+                    # Call handler, receive reply for client
+                    reply = self.url_map[path](args)
+                except KeyError:
+                    if http:
+                        # Send headers before reply
+                        swriter.write("HTTP/1.0 404 NA\r\nContent-Type: application/json\r\n\r\n".encode())
+                        swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
+                    else:
+                        # Exit with error if no match found
+                        swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
 
-            # Find endpoint matching path, call handler function and pass args
-            try:
-                # Call handler, receive reply for client
-                reply = self.url_map[path](args)
-            except KeyError:
+                    await swriter.drain()
+                    raise OSError
+
                 if http:
                     # Send headers before reply
-                    swriter.write("HTTP/1.0 404 NA\r\nContent-Type: application/json\r\n\r\n".encode())
-                    swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
+                    swriter.write("HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n".encode())
+                    swriter.write(json.dumps(reply).encode())
                 else:
-                    # Exit with error if no match found
-                    swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
+                    # Send reply to client
+                    swriter.write(json.dumps(reply).encode())
 
                 await swriter.drain()
-                raise OSError
 
-            if http:
-                # Send headers before reply
-                swriter.write("HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n".encode())
-                swriter.write(json.dumps(reply).encode())
-            else:
-                # Send reply to client
-                swriter.write(json.dumps(reply).encode())
+                # Client disconnected, close socket
+                swriter.close()
+                await swriter.wait_closed()
 
-            await swriter.drain()
+                # Prevent running out of mem after repeated requests
+                gc.collect()
 
-            # Prevent running out of mem after repeated requests
-            gc.collect()
-
-        except OSError:
-            pass
-        except asyncio.TimeoutError:
+        except (OSError, asyncio.TimeoutError):
             pass
         # Return error if request JSON is invalid
         except ValueError:
@@ -178,16 +180,9 @@ class Api:
                 swriter.write("HTTP/1.0 400 NA\r\nContent-Type: application/json\r\n\r\n".encode())
             swriter.write(json.dumps({"ERROR": "Syntax error in received JSON"}).encode())
 
-        # Client disconnected, close socket
+        # Ensure stream closed (exception can prevent previous call from running)
         swriter.close()
         await swriter.wait_closed()
-
-        # Allow reboot (if reboot endpoint was called)
-        try:
-            lock.release()
-        except RuntimeError:
-            # Prevent crash if connection timed out before lock acquired
-            pass
 
 
 app = Api()

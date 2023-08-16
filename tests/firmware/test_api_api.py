@@ -94,6 +94,12 @@ config.build_groups()
 app.config = config
 
 
+# Add endpoint that raises uncaught exception for testing
+@app.route("uncaught_exception")
+def uncaught_exception(args):
+    raise TypeError
+
+
 class TestApi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -107,7 +113,9 @@ class TestApi(unittest.TestCase):
         try:
             writer.write('{}\n'.format(json.dumps(msg)).encode())
             await writer.drain()
-            res = await reader.read(1200)
+            res = await asyncio.wait_for(reader.read(1200), timeout=1)
+        except asyncio.TimeoutError:
+            return "Error: Timed out waiting for response"
         except OSError:
             return "Error: Request failed"
         try:
@@ -824,7 +832,7 @@ class TestApi(unittest.TestCase):
         from unittest.mock import patch
         # Simulate connection timeout while waiting for response, confirm correct error
         with patch('Api.asyncio.wait_for', side_effect=asyncio.TimeoutError):
-            self.assertEqual(self.send_command(['status']), "Error: Request failed")
+            self.assertEqual(self.send_command(['status']), "Error: Timed out waiting for response")
 
     # Original bug: Some device and sensor classes have attributes containing class objects, which
     # cannot be json-serialized. These are supposed to be deleted or replaced with string
@@ -887,6 +895,19 @@ class TestApi(unittest.TestCase):
         # Call with NaN argument, confirm correct error
         response = self.send_command(['increment_rule', 'sensor1', float('NaN')])
         self.assertEqual(response, {"ERROR": "Syntax error in received JSON"})
+
+    # Original bug: An uncaught exception within an endpoint would cause run_client to return
+    # before releasing lock. The server continued listening for API calls but would hang
+    # while waiting to acquire lock resulting in client-side timeout. Lock is now acquired
+    # with context manager and automatically released if an exception occurs.
+    def test_52_regression_fails_to_release_lock(self):
+        # Call endpoint that raises uncaught exception, should time out
+        response = self.send_command(['uncaught_exception'])
+        self.assertEqual(response, "Error: Timed out waiting for response")
+
+        # Call status endpoint, should succeed (this would hang + timeout prior to fix)
+        response = self.send_command(['status'])
+        self.assertIsInstance(response, dict)
 
     # Must run last, lock in reboot coro blocks future API requests
     @cpython_only
