@@ -97,40 +97,24 @@ class Api:
             if not req:
                 raise OSError
 
-            # Determine if request is HTTP (browser) or raw JSON (much faster, used by api_client.py and other nodes)
+            # HTTP request (slow but can be made from browser)
             if str(req).startswith("GET"):
-                # Received something like "GET /status HTTP/1.1"
                 http = True
 
-                # Drop all except "/status"
-                path = req.split()[1]
+                path, args = await self.parse_http_request(req)
 
-                # Convert to list, path ("/status") as first index, query string (if present) as second
-                path = path.split("?", 1)
-
-                if len(path) > 1:
-                    # If query string present, split all parameters into args list
-                    args = path[1]
-                    args = args.split("/")
-                else:
-                    # No query string
-                    args = ""
-
-                # Drop all except path ("/status"), remove leading "/"
-                path = path[0][1:]
-
-                # Skip headers
+                # Read until end of headers
                 while True:
-                    l = await asyncio.wait_for(sreader.readline(), self.timeout)
+                    line = await asyncio.wait_for(sreader.readline(), self.timeout)
                     # Sequence indicates end of headers
-                    if l == b"\r\n":
+                    if line == b"\r\n":
                         break
 
+            # Raw JSON request (faster than HTTP, used by api_client, frontend, ApiTarget device type)
             else:
-                # Received serialized json, no headers etc
                 http = False
 
-                # Convert to dict, get path and args
+                # Convert serialized json to dict, get path and args
                 data = json.loads(req)
                 path = data[0]
                 args = data[1:]
@@ -182,6 +166,24 @@ class Api:
         # Ensure stream closed (exception can prevent previous call from running)
         swriter.close()
         await swriter.wait_closed()
+
+    # Takes HTTP request (ex: "GET /status HTTP/1.1")
+    # Returns requested endpoint and list of args
+    async def parse_http_request(self, req):
+        # Drop everything except path and querystring
+        req = req.split()[1]
+
+        # Split path and querystring (if present)
+        # Remove leading / from path, convert querystring to list of args
+        if "?" in req:
+            path, querystring = req.split("?")
+            path = path[1:]
+            args = querystring.split("/")
+        else:
+            path = req[1:]
+            args = ""
+
+        return path, args
 
 
 app = Api()
