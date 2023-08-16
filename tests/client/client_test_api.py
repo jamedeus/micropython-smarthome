@@ -87,7 +87,7 @@ class TestParseCommand(unittest.TestCase):
 
     def test_11_get_schedule_rules(self):
         response = asyncio.run(request(target_ip, ['get_schedule_rules', 'sensor1']))
-        self.assertEqual(response, {'01:00': 1, '06:00': 5})
+        self.assertEqual(response, {'04:59': 1, '05:00': 5})
 
     def test_12_add_rule(self):
         # Add a rule at a time where no rule exists

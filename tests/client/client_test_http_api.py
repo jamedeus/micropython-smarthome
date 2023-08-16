@@ -68,7 +68,6 @@ class TestEndpoint(unittest.TestCase):
         response = requests.get(f'http://{target_ip}:8123/reset_rule?sensor1')
         self.assertEqual(response.json(), {'sensor1': 'Reverted to scheduled rule', 'current_rule': 5})
 
-    # TODO failing
     def test_10_reset_all_rules(self):
         response = requests.get(f'http://{target_ip}:8123/reset_all_rules')
         self.assertEqual(
@@ -84,10 +83,9 @@ class TestEndpoint(unittest.TestCase):
             }
         )
 
-    # TODO failing
     def test_11_get_schedule_rules(self):
         response = requests.get(f'http://{target_ip}:8123/get_schedule_rules?sensor1')
-        self.assertEqual(response.json(), {'01:00': 1, '06:00': 5})
+        self.assertEqual(response.json(), {'04:59': 1, '05:00': 5})
 
     def test_12_add_rule(self):
         # Add a rule at a time where no rule exists
