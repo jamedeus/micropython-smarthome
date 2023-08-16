@@ -14,7 +14,7 @@ from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinat
 from Webrepl import websocket, Webrepl, handshake_message
 
 # Functions used to manage cli_config.json
-from helper_functions import get_cli_config, remove_node_from_cli_config
+from helper_functions import get_cli_config, remove_node_from_cli_config, load_unit_test_config
 
 # Large JSON objects, helper functions
 from .unit_test_helpers import (
@@ -518,7 +518,7 @@ class WebreplTests(TestCaseBackupRestore):
              patch.object(node, 'read_resp', side_effect=[0, 0]) as mock_read_resp:
 
             # Call method, confirm correct methods called
-            node.put_file('node_configuration/unit-test-config.json', 'config.json')
+            node.put_file(os.path.join(settings.REPO_DIR, 'util', 'unit-test-config.json'), 'config.json')
             self.assertTrue(mock_websocket.write.called)
             self.assertTrue(mock_read_resp.called)
 
@@ -526,8 +526,7 @@ class WebreplTests(TestCaseBackupRestore):
         node = Webrepl('123.45.67.89', 'password')
 
         # Read file into variable
-        with open('node_configuration/unit-test-config.json', 'r') as file:
-            config = json.load(file)
+        config = load_unit_test_config()
 
         # Mock websocket and read_resp to allow send to complete
         with patch.object(node, 'ws', MagicMock()) as mock_websocket, \
@@ -2009,8 +2008,7 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
 # Test function that takes config file, returns list of dependencies for upload
 class GetModulesTests(TestCaseBackupRestore):
     def setUp(self):
-        with open('node_configuration/unit-test-config.json') as file:
-            self.config = json.load(file)
+        self.config = load_unit_test_config()
 
     def test_get_modules_full_config(self):
 
@@ -2184,9 +2182,8 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         config = Config.objects.all()[0]
 
         # Confirm output file is same as known-value config
-        with open('node_configuration/unit-test-config.json') as file:
-            compare = json.load(file)
-            self.assertEqual(config.config, compare)
+        compare = load_unit_test_config()
+        self.assertEqual(config.config, compare)
 
     def test_edit_existing_config_file(self):
         # Create config, confirm 1 exists in database
@@ -2207,13 +2204,12 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         config = Config.objects.all()[0]
 
         # Confirm new output is NOT identical to known-value config
-        with open('node_configuration/unit-test-config.json') as file:
-            compare = json.load(file)
-            self.assertNotEqual(config.config, compare)
+        compare = load_unit_test_config()
+        self.assertNotEqual(config.config, compare)
 
-            # Change same default_rule, confirm was only change made
-            compare['device6']['default_rule'] = 900
-            self.assertEqual(config.config, compare)
+        # Change same default_rule, confirm was only change made
+        compare['device6']['default_rule'] = 900
+        self.assertEqual(config.config, compare)
 
     def test_duplicate_config_name(self):
         # Confirm starting condition
@@ -2258,8 +2254,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
 # Test the validate_full_config function called when user submits config generator form
 class ValidateConfigTests(TestCaseBackupRestore):
     def setUp(self):
-        with open('node_configuration/unit-test-config.json') as file:
-            self.valid_config = json.load(file)
+        self.valid_config = load_unit_test_config()
 
     def test_valid_config(self):
         result = validate_full_config(self.valid_config)

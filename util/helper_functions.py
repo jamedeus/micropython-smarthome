@@ -147,3 +147,9 @@ def get_schedule_keywords_dict(django=False):
 def get_existing_nodes():
     config = get_cli_config()
     return config['nodes']
+
+
+# Returns config file used in unit tests
+def load_unit_test_config():
+    with open(os.path.join(util, 'unit-test-config.json')) as file:
+        return json.load(file)

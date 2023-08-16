@@ -6,7 +6,7 @@ import tempfile
 from django.conf import settings
 from django.test import Client, TestCase
 from .models import Config, Node
-from helper_functions import get_cli_config, write_cli_config
+from helper_functions import get_cli_config, write_cli_config, load_unit_test_config
 
 
 # Subclass Client, add default for content_type arg
@@ -57,8 +57,7 @@ class TestCaseBackupRestore(TestCase):
 file_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Binary contents of test config file, used as payload in simulated Webrepl connections
-with open(os.path.join(file_dir, 'unit-test-config.json'), 'r') as file:
-    binary_unit_test_config = json.dumps(json.load(file)).encode()
+binary_unit_test_config = json.dumps(load_unit_test_config()).encode()
 
 # Used to track current position in binary_unit_test_config (read function called multiple times)
 # A mutable object must be used for scope reasons, can't use int (would reset each call)
