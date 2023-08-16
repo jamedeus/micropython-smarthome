@@ -93,14 +93,13 @@ class Api:
             req = await asyncio.wait_for(sreader.readline(), self.timeout)
             req = req.decode()
 
-            # Receives null when client closes write stream - break and close read stream
+            # Received null (client closed write stream), skip to end and close read stream
             if not req:
                 raise OSError
 
             # HTTP request (slow but can be made from browser)
             if str(req).startswith("GET"):
                 http = True
-
                 path, args = await self.parse_http_request(req)
 
                 # Read until end of headers
@@ -114,10 +113,16 @@ class Api:
             else:
                 http = False
 
-                # Convert serialized json to dict, get path and args
-                data = json.loads(req)
-                path = data[0]
-                args = data[1:]
+                try:
+                    # Convert serialized json to dict, get path and args
+                    data = json.loads(req)
+                    path = data[0]
+                    args = data[1:]
+                except ValueError:
+                    # Return error if request JSON is invalid
+                    swriter.write(json.dumps({"ERROR": "Syntax error in received JSON"}).encode())
+                    await swriter.drain()
+                    raise OSError
 
             # Acquire lock, prevent multiple endpoints running simultaneously
             # Ensures response sent + connection closed before reboot task runs
@@ -126,46 +131,33 @@ class Api:
                 try:
                     # Call handler, receive reply for client
                     reply = self.url_map[path](args)
+
+                # Return error if no match found
                 except KeyError:
                     if http:
-                        # Send headers before reply
+                        # Send headers before error
                         swriter.write("HTTP/1.0 404 NA\r\nContent-Type: application/json\r\n\r\n".encode())
-                        swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
-                    else:
-                        # Exit with error if no match found
-                        swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
+                    swriter.write(json.dumps({"ERROR": "Invalid command"}).encode())
 
-                    await swriter.drain()
-                    raise OSError
-
-                if http:
-                    # Send headers before reply
-                    swriter.write("HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n".encode())
-                    swriter.write(json.dumps(reply).encode())
+                # Return endpoint reply to client
                 else:
-                    # Send reply to client
+                    if http:
+                        # Send headers before reply
+                        swriter.write("HTTP/1.0 200 NA\r\nContent-Type: application/json\r\n\r\n".encode())
                     swriter.write(json.dumps(reply).encode())
 
+                # Send response, close stream
                 await swriter.drain()
-
-                # Client disconnected, close socket
                 swriter.close()
                 await swriter.wait_closed()
 
-                # Prevent running out of mem after repeated requests
-                gc.collect()
-
         except (OSError, asyncio.TimeoutError):
-            pass
-        # Return error if request JSON is invalid
-        except ValueError:
-            if http:
-                swriter.write("HTTP/1.0 400 NA\r\nContent-Type: application/json\r\n\r\n".encode())
-            swriter.write(json.dumps({"ERROR": "Syntax error in received JSON"}).encode())
+            # Close stream
+            swriter.close()
+            await swriter.wait_closed()
 
-        # Ensure stream closed (exception can prevent previous call from running)
-        swriter.close()
-        await swriter.wait_closed()
+        # Reduce memory fragmentation from repeated requests
+        gc.collect()
 
     # Takes HTTP request (ex: "GET /status HTTP/1.1")
     # Returns requested endpoint and list of args
