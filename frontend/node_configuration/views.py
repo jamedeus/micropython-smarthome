@@ -1,4 +1,5 @@
 import json
+from functools import wraps
 from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -25,12 +26,21 @@ REPO_DIR = settings.REPO_DIR
 NODE_PASSWD = settings.NODE_PASSWD
 
 
-def upload(request, reupload=False):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+# Decorator used throw error if request is not POST
+# Passes parsed JSON body to wrapped function as first arg
+def requires_post(func):
+    @wraps(func)
+    def wrapper(request, **kwargs):
+        if request.method == "POST":
+            data = json.loads(request.body.decode("utf-8"))
+        else:
+            return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+        return func(data, **kwargs)
+    return wrapper
 
+
+@requires_post
+def upload(data, reupload=False):
     if not valid_ip(data["ip"]):
         return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
 
@@ -86,12 +96,8 @@ def reupload_all(request):
     return JsonResponse(report, safe=False, status=200)
 
 
-def delete_config(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def delete_config(data):
     try:
         # Get model entry
         target = Config.objects.get(filename=data)
@@ -109,12 +115,8 @@ def delete_config(request):
         )
 
 
-def delete_node(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def delete_node(data):
     try:
         # Get model entry
         node = Node.objects.get(friendly_name=data)
@@ -133,12 +135,8 @@ def delete_node(request):
         )
 
 
-def change_node_ip(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def change_node_ip(data):
     if not valid_ip(data["new_ip"]):
         return JsonResponse({'Error': f'Invalid IP {data["new_ip"]}'}, safe=False, status=400)
 
@@ -303,12 +301,8 @@ def is_duplicate(filename, friendly_name):
 
 
 # Used to warn when duplicate name entered in config generator
-def check_duplicate(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def check_duplicate(data):
     friendly_name = data['name']
     filename = get_config_filename(friendly_name)
 
@@ -318,12 +312,8 @@ def check_duplicate(request):
         return JsonResponse("Name OK.", safe=False, status=200)
 
 
-def generate_config_file(request, edit_existing=False):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def generate_config_file(data, edit_existing=False):
     print("Input:")
     print(json.dumps(data, indent=4))
 
@@ -402,12 +392,8 @@ def generate_config_file(request, edit_existing=False):
     return JsonResponse("Config created.", safe=False, status=200)
 
 
-def set_default_credentials(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def set_default_credentials(data):
     # If default already set, overwrite
     if len(WifiCredentials.objects.all()) > 0:
         for i in WifiCredentials.objects.all():
@@ -419,12 +405,8 @@ def set_default_credentials(request):
     return JsonResponse("Default credentials set", safe=False, status=200)
 
 
-def set_default_location(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def set_default_location(data):
     # If default already set, overwrite
     if len(GpsCoordinates.objects.all()) > 0:
         for i in GpsCoordinates.objects.all():
@@ -447,12 +429,8 @@ def set_default_location(request):
 
 
 # Downloads config file from an existing node and saves to database + disk
-def restore_config(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def restore_config(data):
     if not valid_ip(data["ip"]):
         return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
 
@@ -501,12 +479,8 @@ def restore_config(request):
     return JsonResponse("Config restored", safe=False, status=200)
 
 
-def add_schedule_keyword_config(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def add_schedule_keyword_config(data):
     # Create keyword in database
     try:
         ScheduleKeyword.objects.create(keyword=data["keyword"], timestamp=data["timestamp"])
@@ -530,12 +504,8 @@ def add_schedule_keyword_config(request):
     return JsonResponse("Keyword created", safe=False, status=200)
 
 
-def edit_schedule_keyword_config(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def edit_schedule_keyword_config(data):
     try:
         target = ScheduleKeyword.objects.get(keyword=data["keyword_old"])
     except ScheduleKeyword.DoesNotExist:
@@ -580,12 +550,8 @@ def edit_schedule_keyword_config(request):
     return JsonResponse("Keyword updated", safe=False, status=200)
 
 
-def delete_schedule_keyword_config(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def delete_schedule_keyword_config(data):
     try:
         target = ScheduleKeyword.objects.get(keyword=data["keyword"])
     except ScheduleKeyword.DoesNotExist:

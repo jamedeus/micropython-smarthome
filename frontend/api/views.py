@@ -4,6 +4,7 @@ from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
+from node_configuration.views import requires_post
 from node_configuration.models import Node, ScheduleKeyword
 from node_configuration.get_api_target_menu_options import get_api_target_menu_options
 from helper_functions import valid_ip, valid_timestamp, is_device, get_schedule_keywords_dict
@@ -206,12 +207,8 @@ def reset_all(request):
 
 # Receives node IP and existing schedule keywords in post body
 # Uploads missing keywords (if any) from database
-def sync_schedule_keywords(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def sync_schedule_keywords(data):
     # Get current keywords from database, target node
     database = get_schedule_keywords_dict()
     node = data['existing_keywords']
@@ -251,12 +248,8 @@ def sync_schedule_keywords(request):
 
 # Receives node IP, overwrites node config with current schedule rules, updates config in backend database
 # Called when user clicks yes on toast notification after modifying schedule rules
-def sync_schedule_rules(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def sync_schedule_rules(data):
     try:
         node = Node.objects.get(ip=data['ip'])
     except Node.DoesNotExist:
@@ -281,12 +274,8 @@ def sync_schedule_rules(request):
         return JsonResponse({"Error": "Failed to save rules"}, safe=False, status=500)
 
 
-def send_command(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def send_command(data):
     if valid_ip(data["target"]):
         # New API Card interface
         ip = data["target"]
@@ -367,12 +356,8 @@ def run_macro(request, name):
     return JsonResponse("Done", safe=False, status=200)
 
 
-def add_macro_action(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
-
+@requires_post
+def add_macro_action(data):
     try:
         macro = Macro.objects.get(name=data['name'])
     except Macro.DoesNotExist:
