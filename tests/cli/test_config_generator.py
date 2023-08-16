@@ -2,13 +2,15 @@ import os
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from questionary import ValidationError
+from validate_config import validate_full_config
+from helper_functions import load_unit_test_config
 from config_generator import GenerateConfigFile, IntRange, FloatRange, MinLength, NicknameValidator
 
 # Get paths to test dir, CLI dir, repo dir
 tests = os.path.dirname(os.path.realpath(__file__))
 cli = os.path.split(tests)[0]
 repo = os.path.dirname(cli)
-test_config = os.path.join(repo, 'frontend', 'node_configuration', 'unit-test-config.json')
+test_config = os.path.join(repo, 'util', 'unit-test-config.json')
 
 # Mock cli_config.json contents
 mock_cli_config = {
@@ -33,6 +35,7 @@ class SimulatedInput:
         self.text = text
 
 
+# Test input field validators
 class TestValidators(TestCase):
     def test_int_range_validator(self):
         # Create validator accepting values between 1 and 100
@@ -126,6 +129,122 @@ class TestValidators(TestCase):
             validator.validate(user_input)
 
 
+# Test the validate_full_config function called before saving config to disk
+class ValidateConfigTests(TestCase):
+    def setUp(self):
+        self.valid_config = load_unit_test_config()
+
+    def test_valid_config(self):
+        result = validate_full_config(self.valid_config)
+        self.assertTrue(result)
+
+    def test_missing_keys(self):
+        del self.valid_config['wifi']['ssid']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Missing required key in wifi section')
+
+        del self.valid_config['metadata']['id']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Missing required key in metadata section')
+
+        del self.valid_config['metadata']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Missing required top-level metadata key')
+
+    def test_invalid_floor(self):
+        self.valid_config['metadata']['floor'] = 'top'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Invalid floor, must be integer')
+
+    def test_duplicate_nicknames(self):
+        self.valid_config['device4']['nickname'] = self.valid_config['device1']['nickname']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Contains duplicate nicknames')
+
+    def test_duplicate_pins(self):
+        self.valid_config['sensor2']['pin'] = self.valid_config['sensor1']['pin']
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Contains duplicate pins')
+
+    def test_invalid_device_pin(self):
+        self.valid_config['device1']['pin'] = '14'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid device pin {self.valid_config["device1"]["pin"]} used')
+
+    def test_invalid_sensor_pin(self):
+        self.valid_config['sensor1']['pin'] = '3'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid sensor pin {self.valid_config["sensor1"]["pin"]} used')
+
+    def test_noninteger_pin(self):
+        self.valid_config['sensor1']['pin'] = 'three'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Invalid pin (non-integer)')
+
+    def test_invalid_device_type(self):
+        self.valid_config['device1']['_type'] = 'nuclear'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid device type {self.valid_config["device1"]["_type"]} used')
+
+    def test_invalid_sensor_type(self):
+        self.valid_config['sensor1']['_type'] = 'ozone-sensor'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid sensor type {self.valid_config["sensor1"]["_type"]} used')
+
+    def test_invalid_ip(self):
+        self.valid_config['device1']['ip'] = '192.168.1.500'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, f'Invalid IP {self.valid_config["device1"]["ip"]}')
+
+    def test_thermostat_tolerance_out_of_range(self):
+        self.valid_config['sensor5']['tolerance'] = 12.5
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Thermostat tolerance out of range (0.1 - 10.0)')
+
+    def test_invalid_thermostat_tolerance(self):
+        self.valid_config['sensor5']['tolerance'] = 'low'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Thermostat tolerance must be int or float')
+
+    def test_pwm_min_greater_than_max(self):
+        self.valid_config['device6']['min_bright'] = 1023
+        self.valid_config['device6']['max_bright'] = 500
+        self.valid_config['device6']['default_rule'] = 700
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'min_bright cannot be greater than max_bright')
+
+    def test_pwm_limits_negative(self):
+        self.valid_config['device6']['min_bright'] = -50
+        self.valid_config['device6']['max_bright'] = -5
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Brightness limits cannot be less than 0')
+
+    def test_pwm_limits_over_max(self):
+        self.valid_config['device6']['min_bright'] = 1023
+        self.valid_config['device6']['max_bright'] = 4096
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Brightness limits cannot be greater than 1023')
+
+    def test_pwm_invalid_default_rule(self):
+        self.valid_config['device6']['min_bright'] = 500
+        self.valid_config['device6']['max_bright'] = 1000
+        self.valid_config['device6']['default_rule'] = 1100
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Cabinet Lights: Invalid default rule 1100')
+
+    def test_pwm_invalid_schedule_rule(self):
+        self.valid_config['device6']['min_bright'] = 500
+        self.valid_config['device6']['max_bright'] = 1000
+        self.valid_config['device6']['schedule']['01:00'] = 1023
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Cabinet Lights: Invalid schedule rule 1023')
+
+    def test_pwm_noninteger_limit(self):
+        self.valid_config['device6']['min_bright'] = 'off'
+        result = validate_full_config(self.valid_config)
+        self.assertEqual(result, 'Invalid brightness limits, both must be int between 0 and 1023')
+
+
 class TestGenerateConfigFile(TestCase):
     def setUp(self):
         # Create instance with mocked keywords
@@ -136,11 +255,12 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask = MagicMock()
 
     def test_run_prompt_method(self):
-        # Mock all methods called by run_prompt
+        # Mock all methods called by run_prompt, mock validator to return True
         with patch.object(self.generator, 'metadata_prompt') as mock_metadata_prompt, \
              patch.object(self.generator, 'wifi_prompt') as mock_wifi_prompt, \
              patch.object(self.generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
-             patch.object(self.generator, 'select_sensor_targets') as mock_select_sensor_targets:
+             patch.object(self.generator, 'select_sensor_targets') as mock_select_sensor_targets, \
+             patch('config_generator.validate_full_config', return_value=True) as mock_validate_full_config:
 
             # Run method, confirm all mocks called
             self.generator.run_prompt()
@@ -148,6 +268,29 @@ class TestGenerateConfigFile(TestCase):
             self.assertTrue(mock_wifi_prompt.called_once)
             self.assertTrue(mock_add_devices_and_sensors.called_once)
             self.assertTrue(mock_select_sensor_targets.called_once)
+            self.assertTrue(mock_validate_full_config.called_once)
+
+            # Confirm passed_validation set to True (mock)
+            self.assertTrue(self.generator.passed_validation)
+
+    def test_run_prompt_failed_validation(self):
+        # Mock all methods called by run_prompt, mock validator to return False
+        with patch.object(self.generator, 'metadata_prompt') as mock_metadata_prompt, \
+             patch.object(self.generator, 'wifi_prompt') as mock_wifi_prompt, \
+             patch.object(self.generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
+             patch.object(self.generator, 'select_sensor_targets') as mock_select_sensor_targets, \
+             patch('config_generator.validate_full_config', return_value=False) as mock_validate_full_config:
+
+            # Run method, confirm all mocks called
+            self.generator.run_prompt()
+            self.assertTrue(mock_metadata_prompt.called_once)
+            self.assertTrue(mock_wifi_prompt.called_once)
+            self.assertTrue(mock_add_devices_and_sensors.called_once)
+            self.assertTrue(mock_select_sensor_targets.called_once)
+            self.assertTrue(mock_validate_full_config.called_once)
+
+            # Confirm passed_validation set to False (mock)
+            self.assertFalse(self.generator.passed_validation)
 
     def test_metadata_prompt(self):
         # Mock responses to the ID, Floor, and Location prompts

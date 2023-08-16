@@ -3,9 +3,10 @@
 import os
 import json
 import questionary
-from questionary import Validator, ValidationError
 from colorama import Fore
+from questionary import Validator, ValidationError
 from instance_validators import validate_rules
+from validate_config import validate_full_config
 from validation_constants import (
     valid_device_pins,
     valid_sensor_pins,
@@ -136,6 +137,14 @@ class GenerateConfigFile:
 
         # Prompt user to select targets for each sensor
         self.select_sensor_targets()
+
+        # Validate finished config, print error if failed
+        valid = validate_full_config(self.config)
+        if valid is True:
+            self.passed_validation = True
+        else:
+            print(f'{Fore.RED}ERROR: {valid}{Fore.RESET}')
+            self.passed_validation = False
 
     def write_to_disk(self):
         # Get filename (all lowercase, replace spaces with hyphens)
@@ -576,5 +585,8 @@ class GenerateConfigFile:
 if __name__ == '__main__':
     config = GenerateConfigFile()
     config.run_prompt()
-    print(json.dumps(config.config, indent=4))
-    config.write_to_disk()
+
+    # Write to disk if passed validation
+    if config.passed_validation:
+        print(json.dumps(config.config, indent=4))
+        config.write_to_disk()

@@ -1,6 +1,5 @@
-import os
-import json
 from unittest import TestCase
+from helper_functions import load_unit_test_config
 from instance_validators import (
     validate_rules,
     api_target_validator,
@@ -12,19 +11,12 @@ from instance_validators import (
     thermostat_validator,
 )
 
-# Get paths to test dir, CLI dir, repo dir
-tests = os.path.dirname(os.path.realpath(__file__))
-cli = os.path.split(tests)[0]
-repo = os.path.dirname(cli)
-test_config = os.path.join(repo, 'frontend', 'node_configuration', 'unit-test-config.json')
-
 
 # Test functions in instance_validators.py not already covered by config generation tests
 class ValidatorTests(TestCase):
     def setUp(self):
         # Load valid config
-        with open(test_config, 'r') as file:
-            self.config = json.load(file)
+        self.config = load_unit_test_config()
 
     def test_api_target_single_param(self):
         # Should accept all 3 single-parameter commands
@@ -136,8 +128,7 @@ class ValidatorTests(TestCase):
 class ValidatorErrorTests(TestCase):
     def setUp(self):
         # Load valid config
-        with open(test_config, 'r') as file:
-            self.config = json.load(file)
+        self.config = load_unit_test_config()
 
     def test_invalid_type(self):
         # Verify error when type is unsupported
