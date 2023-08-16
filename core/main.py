@@ -20,6 +20,12 @@ log = logging.getLogger("Main")
 log.info("Booted")
 
 
+# Log uncaught exceptions to disk before calling default handler
+def async_exception_handler(loop, context):
+    log.error(f"UNCAUGHT EXCEPTION: {context}")
+    loop.default_exception_handler(loop, context)
+
+
 def start():
     # Instantiate config object (connects to wifi, sets up hardware, etc)
     config = Config(read_config_from_disk())
@@ -28,18 +34,20 @@ def start():
     # Start webrepl (OTA updates)
     webrepl.start()
 
-    # Pass config object to API instance
-    app.config = config
-
     # Check if log exceeded 100 KB every 60 seconds
     timer.create(60000, check_log_size, "check_log_size")
 
-    # Get event loop, add tasks, run forever
+    # Get event loop, add custom exception handler that logs all uncaught
+    # exceptions to disk before calling default exception handler
     loop = asyncio.get_event_loop()
+    loop.set_exception_handler(async_exception_handler)
 
-    # SoftwareTimer loop runs callbacks when timers expire (schedule rules, API, etc)
+    # Add SoftwareTimer loop (runs callbacks when timers expire)
     loop.create_task(timer.loop())
 
-    # Start API server, await requests
+    # Pass config object to API backend, start server and await requests
+    app.config = config
     loop.create_task(app.run())
+
+    # Run forever
     loop.run_forever()
