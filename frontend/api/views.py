@@ -1,5 +1,6 @@
 import json
 import itertools
+from functools import wraps
 from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
@@ -11,6 +12,19 @@ from helper_functions import valid_ip, valid_timestamp, is_device, get_schedule_
 from Webrepl import Webrepl
 from api.models import Macro
 from api_endpoints import endpoint_map
+
+
+# Decorator looks up target node, returns error if does not exist
+# Passes node model entry to wrapped function as second arg
+def get_target_node(func):
+    @wraps(func)
+    def wrapper(request, node, **kwargs):
+        try:
+            node = Node.objects.get(friendly_name=node)
+        except Node.DoesNotExist:
+            return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
+        return func(request, node, **kwargs)
+    return wrapper
 
 
 # Receives schedule params in post, renders rule_modal template
@@ -43,15 +57,11 @@ def legacy_api(request):
     return render(request, 'api/legacy_api.html', {'context': context})
 
 
+@get_target_node
 def get_status(request, node):
-    try:
-        ip = Node.objects.get(friendly_name=node).ip
-    except Node.DoesNotExist:
-        return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
-
     # Query status object
     try:
-        status = parse_command(ip, ["status"])
+        status = parse_command(node.ip, ["status"])
     except OSError:
         return JsonResponse("Error: Unable to connect.", safe=False, status=502)
 
@@ -128,29 +138,26 @@ def get_api_target_instance_options(node, status):
 
 
 @ensure_csrf_cookie
+@get_target_node
 def api(request, node, recording=False):
+    # Get status object (used as context)
     try:
-        target = Node.objects.get(friendly_name=node)
-    except Node.DoesNotExist:
-        return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
-
-    try:
-        status = parse_command(target.ip, ["status"])
+        status = parse_command(node.ip, ["status"])
         if str(status).startswith("Error: "):
             raise OSError
 
     # Render connection failed page
     except OSError:
-        context = {"ip": target.ip, "id": target.friendly_name}
+        context = {"ip": node.ip, "id": node.friendly_name}
         return render(request, 'api/unable_to_connect.html', {'context': context})
 
     # Add IP, parsed into target_node var on frontend
-    status["metadata"]["ip"] = target.ip
+    status["metadata"]["ip"] = node.ip
 
     # If ApiTarget configured, add options for all valid API commands for current target IP
     if "api-target" in str(status):
         status["api_target_options"] = {}
-        status = get_api_target_instance_options(target, status)
+        status = get_api_target_instance_options(node, status)
 
     # Add temp history chart to frontend if temp sensor present
     for i in status["sensors"]:
@@ -167,14 +174,10 @@ def api(request, node, recording=False):
 
 
 # TODO unused? Climate card updates from status object
+@get_target_node
 def get_climate_data(request, node):
     try:
-        ip = Node.objects.get(friendly_name=node).ip
-    except Node.DoesNotExist:
-        return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
-
-    try:
-        data = parse_command(ip, ["get_climate"])
+        data = parse_command(node.ip, ["get_climate"])
     except OSError:
         return JsonResponse("Error: Unable to connect.", safe=False, status=502)
 
