@@ -1,7 +1,7 @@
 import json
 from math import isnan
 from functools import wraps
-from helper_functions import is_device_or_sensor, is_sensor
+from helper_functions import is_device_or_sensor, is_sensor, is_device
 
 
 # Map device and sensor types to validators for both default
@@ -129,19 +129,24 @@ def is_valid_api_sub_rule(rule):
     if not isinstance(rule, list):
         return False
 
+    # Endpoints that require no args
     # "ignore" is not a valid command, it allows only using on/off and ignoring the other
     if rule[0] in ['reboot', 'clear_log', 'ignore'] and len(rule) == 1:
         return True
 
+    # Endpoints that require a device or sensor arg
     elif rule[0] in ['enable', 'disable', 'reset_rule'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
         return True
 
+    # Endpoints that require a sensor arg
     elif rule[0] in ['condition_met', 'trigger_sensor'] and len(rule) == 2 and is_sensor(rule[1]):
         return True
 
-    elif rule[0] in ['turn_on', 'turn_off'] and len(rule) == 2 and rule[1].startswith("device"):
+    # Endpoints that require a device arg
+    elif rule[0] in ['turn_on', 'turn_off'] and len(rule) == 2 and is_device(rule[1]):
         return True
 
+    # Endpoints that require a device/sensor arg and int/float arg
     elif rule[0] in ['enable_in', 'disable_in'] and len(rule) == 3 and is_device_or_sensor(rule[1]):
         try:
             float(rule[2])
@@ -149,9 +154,13 @@ def is_valid_api_sub_rule(rule):
         except ValueError:
             return False
 
+    # Endpoint requires a device/sensor arg and rule arg
+    # Rule arg not validated (device/sensor type not known), client returns error if invalid
     elif rule[0] == 'set_rule' and len(rule) == 3 and is_device_or_sensor(rule[1]):
         return True
 
+    # Endpoint requires IR target and IR key args
+    # Target and keys not validated (configured codes not known), client returns error if invalid
     elif rule[0] == 'ir_key':
         if len(rule) == 3 and type(rule[1]) == str and type(rule[2]) == str:
             return True

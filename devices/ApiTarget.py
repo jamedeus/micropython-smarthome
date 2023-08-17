@@ -4,6 +4,7 @@ import logging
 import network
 from Api import app
 from Device import Device
+from util import is_device, is_sensor, is_device_or_sensor
 
 # Set name for module's log lines
 log = logging.getLogger("ApiTarget")
@@ -59,45 +60,60 @@ class ApiTarget(Device):
             if not i == "on" and not i == "off":
                 return False
 
-            if not isinstance(rule[i], list):
-                return False
-
-            # "ignore" is not a valid command, it allows only using on/off and ignoring the other
-            if rule[i][0] in ['reboot', 'clear_log', 'ignore'] and len(rule[i]) == 1:
-                continue
-
-            elif rule[i][0] in ['enable', 'disable', 'reset_rule'] and len(rule[i]) == 2 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
-                continue
-
-            elif rule[i][0] in ['condition_met', 'trigger_sensor'] and len(rule[i]) == 2 and rule[i][1].startswith("sensor"):
-                continue
-
-            elif rule[i][0] in ['turn_on', 'turn_off'] and len(rule[i]) == 2 and rule[i][1].startswith("device"):
-                continue
-
-            elif rule[i][0] in ['enable_in', 'disable_in'] and len(rule[i]) == 3 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
-                try:
-                    float(rule[i][2])
-                    continue
-                except ValueError:
-                    return False
-
-            elif rule[i][0] == 'set_rule' and len(rule[i]) == 3 and (rule[i][1].startswith("device") or rule[i][1].startswith("sensor")):
-                continue
-
-            elif rule[i][0] == 'ir_key':
-                if len(rule[i]) == 3 and type(rule[i][1]) == str and type(rule[i][2]) == str:
-                    continue
-                else:
-                    return False
-
-            else:
-                # Did not match any valid patterns
+            # Check against all valid sub-rule patterns
+            if not self.sub_rule_validator(rule[i]):
                 return False
 
         else:
             # Iteration finished without a return False, rule is valid
             return rule
+
+    # Takes sub-rule (on or off), returns True if valid, False if invalid
+    def sub_rule_validator(self, rule):
+        if not isinstance(rule, list):
+            return False
+
+        # Endpoints that require no args
+        # "ignore" is not a valid command, it allows only using on/off and ignoring the other
+        if rule[0] in ['reboot', 'clear_log', 'ignore'] and len(rule) == 1:
+            return True
+
+        # Endpoints that require a device or sensor arg
+        elif rule[0] in ['enable', 'disable', 'reset_rule'] and len(rule) == 2 and is_device_or_sensor(rule[1]):
+            return True
+
+        # Endpoints that require a sensor arg
+        elif rule[0] in ['condition_met', 'trigger_sensor'] and len(rule) == 2 and is_sensor(rule[1]):
+            return True
+
+        # Endpoints that require a device arg
+        elif rule[0] in ['turn_on', 'turn_off'] and len(rule) == 2 and is_device(rule[1]):
+            return True
+
+        # Endpoints that require a device/sensor arg and int/float arg
+        elif rule[0] in ['enable_in', 'disable_in'] and len(rule) == 3 and is_device_or_sensor(rule[1]):
+            try:
+                float(rule[2])
+                return True
+            except ValueError:
+                return False
+
+        # Endpoint requires a device/sensor arg and rule arg
+        # Rule arg not validated (device/sensor type not known), client returns error if invalid
+        elif rule[0] == 'set_rule' and len(rule) == 3 and is_device_or_sensor(rule[1]):
+            return True
+
+        # Endpoint requires IR target and IR key args
+        # Target and keys not validated (configured codes not known), client returns error if invalid
+        elif rule[0] == 'ir_key':
+            if len(rule) == 3 and type(rule[1]) == str and type(rule[2]) == str:
+                return True
+            else:
+                return False
+
+        else:
+            # Did not match any valid patterns
+            return False
 
     def set_rule(self, rule):
         # Check if rule is valid - may return a modified rule (ie cast str to int)
