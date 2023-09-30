@@ -535,15 +535,16 @@
                 location.reload();
             };
 
-            // Stores changes made to existing macro in edit modal
+            // Store macro name + changes made to macro in edit modal
+            var editing_macro_name = "";
             var editing_macro_actions = {};
 
             // Called when user clicks edit IR macro button
             // Adds existing macro actions to modal and shows
             function populate_edit_modal(button) {
-                // Add macro name to modal heading, submit button dataset attribute
+                // Add macro name to modal heading dataset attribute, variable
                 document.getElementById('edit-ir-macro-title').innerHTML = `Editing ${button.dataset.name}`;
-                document.getElementById('edit-ir-macro-submit').dataset.name = button.dataset.name;
+                editing_macro_name = button.dataset.name;
 
                 // Parse actions string into array
                 const actions = JSON.parse(button.dataset.actions.replace(/'/g, '"'));
@@ -574,10 +575,16 @@
             };
 
             // Called by delete button on each row of table
-            function delete_macro_action(button) {
+            async function delete_macro_action(button) {
                 // Remove row from table, remove action from object used to track changes
                 button.parentElement.parentElement.remove();
                 delete editing_macro_actions[button.dataset.index];
+
+                // If last action deleted, delete macro and refresh page
+                if (Object.keys(editing_macro_actions).length == 0) {
+                    await send_command({'command': 'ir_delete_macro', 'macro_name': editing_macro_name});
+                    location.reload();
+                };
             };
 
             // Called when user edits value in delay input
@@ -600,7 +607,7 @@
                 // Submit new macro actions
                 var result = await fetch('/edit_ir_macro', {
                     method: 'POST',
-                    body: JSON.stringify({ip: target_node, name: button.dataset.name, actions: payload}),
+                    body: JSON.stringify({ip: target_node, name: editing_macro_name, actions: payload}),
                     headers: {
                         'Accept': 'application/json, text/plain, */*',
                         'Content-Type': 'application/json',
