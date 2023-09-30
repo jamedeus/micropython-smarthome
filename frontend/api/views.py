@@ -146,6 +146,10 @@ def api(request, node, recording=False):
         if str(status).startswith("Error: "):
             raise OSError
 
+        # Get IR macros if IR Blaster configured
+        if status['metadata']['ir_blaster']:
+            status['metadata']['ir_macros'] = parse_command(node.ip, ["ir_get_existing_macros"])
+
     # Render connection failed page
     except OSError:
         context = {"ip": node.ip, "id": node.friendly_name}

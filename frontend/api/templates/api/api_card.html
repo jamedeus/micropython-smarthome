@@ -376,6 +376,7 @@
                         <div id="remote-cards">
                     {% endif %}
 
+                    <!-- TV Remote -->
                     <div class="d-flex flex-column pb-4">
                         <div class="row text-center remote remote-top mx-auto" style="position: relative;">
                             <!-- Title is narrower than body due to mx-auto - add invisible buttons to reserve correct width -->
@@ -417,6 +418,7 @@
                         </div>
                     </div>
 
+                    <!-- AC Remote -->
                     <div class="d-flex flex-column" style="width: auto;">
                         <div class="row text-center remote remote-top mx-auto" style="position: relative;">
                             <!-- Title is narrower than body due to mx-auto - add invisible buttons to reserve correct width -->
@@ -431,6 +433,20 @@
                             <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'off'});" title="Turn off fan"><i class="bi-x-octagon-fill"></i></button>
                             <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'start'});" title="Start cooling"><i class="bi-snow"></i></i></button>
                         </div>
+                    </div>
+
+                    <!-- IR Macros -->
+                    <div class="d-flex flex-column remote mx-auto mb-3" style="width: min-content;border-radius: 20px;">
+                        <div class="row text-center">
+                            <h4 class="my-3">IR Macros</h4>
+                        </div>
+
+                        <!-- Add button for each configured macro -->
+                        {% for name, actions in context.metadata.ir_macros.items %}
+                            <div class="row pb-3 px-5">
+                                <button class="col btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir_run_macro', 'macro_name': '{{name}}'})" data-actions="{{actions}}">{{name}}</button>
+                            </div>
+                        {% endfor %}
                     </div>
                 {% endif %}
             </div>

@@ -6,7 +6,13 @@ from django.db import IntegrityError
 from .models import Macro
 from .views import parse_command
 from api_endpoints import request, ir_commands
-from .unit_test_helpers import config1_status_object, config1_api_context, config2_status_object, config2_api_context
+from .unit_test_helpers import (
+    config1_status_object,
+    config1_api_context,
+    config2_status_object,
+    config2_api_context,
+    config2_existing_macros
+)
 from node_configuration.models import ScheduleKeyword, Node
 from node_configuration.unit_test_helpers import (
     create_test_nodes,
@@ -1378,8 +1384,8 @@ class ApiCardTests(TestCaseBackupRestore):
 
     # Repeat test above with a node containing ApiTarget and Thermostat
     def test_api_target_and_thermostat(self):
-        # Mock request to return the expected status object
-        with patch('api_endpoints.request', return_value=config2_status_object):
+        # Mock request to return the expected status object followed by existing_macros object
+        with patch('api_endpoints.request', side_effect=[config2_status_object, config2_existing_macros]):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test2')
             self.assertEqual(response.status_code, 200)

@@ -223,6 +223,15 @@ config2_api_context = {
         'floor': '2',
         'location': 'Bedroom',
         'ir_blaster': True,
+        'ir_macros': {
+            'macro1': [
+                'tv power 500 1',
+                'tv vol_up 15 10',
+            ],
+            'macro2': [
+                'ac ON 0 1'
+            ]
+        },
         'ip': '192.168.1.124',
         'thermostat': True,
         "schedule_keywords": {
@@ -301,6 +310,18 @@ config2_api_context = {
             "ignore": {}
         }
     }
+}
+
+
+# Expected ir_get_existing_macros response for test config 2
+config2_existing_macros = {
+    'macro1': [
+        'tv power 500 1',
+        'tv vol_up 15 10',
+    ],
+    'macro2': [
+        'ac ON 0 1'
+    ]
 }
 
 
