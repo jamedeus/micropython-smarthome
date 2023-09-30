@@ -433,8 +433,11 @@
 
                         <!-- Add button for each configured macro -->
                         {% for name, actions in context.metadata.ir_macros.items %}
-                            <div class="d-flex flex-row my-2 px-5">
-                                <button class="col btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir_run_macro', 'macro_name': '{{name}}'})" data-actions="{{actions}}">{{name}}</button>
+                            <div class="d-flex flex-row my-2 px-4">
+                                <div class="btn-group" role="group">
+                                    <button type="button" class="btn btn-lg btn-primary" onclick="send_command({'command': 'ir_run_macro', 'macro_name': '{{name}}'})">{{name}}</button>
+                                    <button type="button" class="btn btn-lg btn-success" onclick="populate_edit_modal(this);" data-name="{{name}}" data-actions="{{actions}}"><i class="bi-pencil"></i></button>
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
@@ -442,6 +445,115 @@
             </div>
         </div>
     </div>
+
+    {% if context.metadata.ir_blaster == True %}
+        <!-- Edit IR macro modal -->
+        <div class="modal fade" id="edit-ir-macro-modal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
+                <div class="modal-content">
+                    <div class="modal-header justify-content-between">
+                        <button type="button" class="btn-close" style="visibility:hidden;"></button>
+                        <h5 id="edit-ir-macro-title" class="modal-title">Edit Macro</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body d-flex" id="edit-ir-macro-body">
+                        <table class="table table-borderless text-center">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Key</th>
+                                    <th scope="col">Delay (ms)</th>
+                                    <th scope="col">Repeat</th>
+                                </tr>
+                            </thead>
+                            <tbody id="edit-ir-macro-actions">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div id="edit-ir-macro-footer" class="modal-footer mx-auto">
+                        <button type="button" id="edit-ir-macro-submit" class="btn btn-success" onclick="edit_macro_submit(this)">Edit</button>
+                        <button type="button" class="btn btn-secondary" onclick="editMacroModal.hide()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            var editing_macro_actions = {};
+
+            function populate_edit_modal(button) {
+                // Add macro name to modal heading, submit button dataset attribute
+                document.getElementById('edit-ir-macro-title').innerHTML = `Editing ${button.dataset.name}`;
+                document.getElementById('edit-ir-macro-submit').dataset.name = button.dataset.name;
+
+                // Parse actions string into array
+                const actions = JSON.parse(button.dataset.actions.replace(/'/g, '"'));
+
+                // Clear table contents, object used to track changes
+                document.getElementById('edit-ir-macro-actions').innerHTML = "";
+                editing_macro_actions = {};
+
+                // Add table row for each existing macro action
+                actions.forEach((action, index) => {
+                    const [target, key, delay, repeat] = action.split(' ');
+                    document.getElementById('edit-ir-macro-actions').insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td>${target} ${key}</td>
+                            <td class="edit-ir-macro-cell"><input type="text" class="form-control text-center" data-index="${index}" oninput="edit_action_delay(this);" value="${delay}"></td>
+                            <td class="edit-ir-macro-cell"><input type="text" class="form-control text-center" data-index="${index}" oninput="edit_action_repeat(this);" value="${repeat}"></td>
+                            <td><button id="delete_${index}" class="btn btn-sm btn-danger" data-index="${index}" onclick="delete_macro_action(this);"><i class="bi-trash"></i></button></td>
+                        </tr>`
+                    );
+
+                    // Add each action to object used to track changes
+                    // Convert action string to array so fields can be edited
+                    editing_macro_actions[index] = action.split(' ');
+                })
+
+                // Show modal
+                editMacroModal.show();
+            };
+
+            // Called by delete button on each row of table
+            function delete_macro_action(button) {
+                // Remove row from table, remove action from object used to track changes
+                button.parentElement.parentElement.remove();
+                delete editing_macro_actions[button.dataset.index];
+            };
+
+            // Called when user edits value in delay input
+            function edit_action_delay(input) {
+                // Overwrite delay field in object used to track changes
+                editing_macro_actions[input.dataset.index][2] = input.value;
+            };
+
+            // Called when user edits value in repeat input
+            function edit_action_repeat(input) {
+                // Overwrite repeat field in object used to track changes
+                editing_macro_actions[input.dataset.index][3] = input.value;
+            };
+
+            // Called when user clicks edit IR macro submit button
+            async function edit_macro_submit(button) {
+                // Convert action objects to strings with syntax "target key delay repeat"
+                let payload = Object.values(editing_macro_actions).map(item => item.join(' '));
+
+                // Submit new macro actions
+                var result = await fetch('/edit_ir_macro', {
+                    method: 'POST',
+                    body: JSON.stringify({ip: target_node, name: button.dataset.name, actions: payload}),
+                    headers: {
+                        'Accept': 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json',
+                        "X-CSRFToken": getCookie('csrftoken')
+                    }
+                });
+                result = await result.json();
+
+                // Refresh page
+                location.reload();
+            };
+        </script>
+    {% endif %}
 
     {% if context.metadata.thermostat %}
         <!-- Modal for viewing temperature history chart -->
@@ -799,6 +911,9 @@
         const toggleModal = new bootstrap.Modal(document.getElementById('toggle-modal'));
         const ruleModal = new bootstrap.Modal(document.getElementById('schedule-rule-modal'));
         const fadeModal = new bootstrap.Modal(document.getElementById('start-fade-modal'));
+        {% if context.metadata.ir_blaster == True %}
+        const editMacroModal = new bootstrap.Modal(document.getElementById('edit-ir-macro-modal'));
+        {% endif %}
 
         {% if context.metadata.recording %}
         const recording = '{{context.metadata.recording}}';

@@ -23,6 +23,9 @@ urlpatterns = [
     path('macro_name_available/<str:name>', views.macro_name_available, name='macro_name_available'),
     path('skip_instructions', views.skip_instructions, name='skip_instructions'),
 
+    # IR macro views
+    path('edit_ir_macro', views.edit_ir_macro, name='edit_ir_macro'),
+
     # Template views
     path('', views.api_overview, name='api_overview'),
     path('api', views.api_overview, name='api_overview'),

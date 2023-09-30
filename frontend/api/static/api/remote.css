@@ -18,3 +18,7 @@ body.dark .result {
 body.dark .remote {
     background-color: #212529;
 }
+
+.edit-ir-macro-cell {
+    width: min-content;
+}
