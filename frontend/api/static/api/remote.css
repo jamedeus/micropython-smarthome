@@ -22,3 +22,17 @@ body.dark .remote {
 .edit-ir-macro-cell {
     width: min-content;
 }
+
+/* Record macro button effect */
+@keyframes glowing {
+    0% {
+        box-shadow: 0 0 1px 1px #2DD4BF;
+    }
+    50% {
+        box-shadow: 0 0 3px 6px #2DD4BF;
+    }
+}
+
+.blue-glow {
+    animation: glowing 1.8s cubic-bezier(.25,.1,.41,1) infinite;
+}

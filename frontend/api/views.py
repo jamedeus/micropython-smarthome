@@ -452,3 +452,23 @@ def edit_ir_macro(data):
     parse_command(ip, ['ir_save_macros'])
 
     return JsonResponse("Done", safe=False, status=200)
+
+
+@requires_post
+def add_ir_macro(data):
+    ip = data['ip']
+    macro_name = data['name']
+
+    # Create new macro
+    parse_command(ip, ['ir_create_macro', macro_name])
+
+    # Add each action
+    for action in data['actions']:
+        payload = ['ir_add_macro_action', macro_name]
+        payload.extend(action.split(' '))
+        parse_command(ip, payload)
+
+    # Save changes
+    parse_command(ip, ['ir_save_macros'])
+
+    return JsonResponse("Done", safe=False, status=200)

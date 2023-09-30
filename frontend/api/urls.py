@@ -25,6 +25,7 @@ urlpatterns = [
 
     # IR macro views
     path('edit_ir_macro', views.edit_ir_macro, name='edit_ir_macro'),
+    path('add_ir_macro', views.add_ir_macro, name='add_ir_macro'),
 
     # Template views
     path('', views.api_overview, name='api_overview'),

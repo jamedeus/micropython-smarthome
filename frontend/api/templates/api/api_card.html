@@ -377,39 +377,39 @@
                     {% endif %}
 
                     <!-- TV Remote -->
-                    <div class="d-flex flex-column remote mx-auto mb-4">
+                    <div id="ir-tv" class="d-flex flex-column remote mx-auto mb-4">
                         <div class="row text-center">
                             <h4 class="my-2">TV Remote</h4>
                         </div>
                         <div class="d-flex flex-row pb-3 mx-auto">
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'power'});" title="Power"><i class="bi-power"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'source'});" title="Source"><i class="bi-upload"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'power'});" title="Power"><i class="bi-power"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'source'});" title="Source"><i class="bi-upload"></i></button>
                         </div>
                         <div class="d-flex flex-row mx-auto">
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'up'});" title="Up"><i class="bi bi-arrow-up"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'up'});" title="Up"><i class="bi bi-arrow-up"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
                         </div>
                         <div class="d-flex flex-row mx-auto">
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'left'});" title="Left"><i class="bi bi-arrow-left"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'enter'});" title="Enter"><i class="bi bi-app"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'right'});" title="right"><i class="bi bi-arrow-right"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'left'});" title="Left"><i class="bi bi-arrow-left"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'enter'});" title="Enter"><i class="bi bi-app"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'right'});" title="right"><i class="bi bi-arrow-right"></i></button>
                         </div>
                         <div class="d-flex flex-row pb-3 mx-auto">
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'down'});" title="Down"><i class="bi bi-arrow-down"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'down'});" title="Down"><i class="bi bi-arrow-down"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
                         </div>
                         <div class="d-flex flex-row mx-auto">
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'vol_down'});" title="Volume Down"><i class="bi-volume-down-fill"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'mute'});" title="Mute"><i class="bi-volume-mute-fill"></i></button>
-                            <button class="col m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'vol_up'});" title="Volume Up"><i class="bi-volume-up-fill"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'vol_down'});" title="Volume Down"><i class="bi-volume-down-fill"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'mute'});" title="Mute"><i class="bi-volume-mute-fill"></i></button>
+                            <button class="col m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'vol_up'});" title="Volume Up"><i class="bi-volume-up-fill"></i></button>
                         </div>
                         <div class="d-flex flex-row mx-auto">
-                            <button class="col m-3 btn btn-lg btn-secondary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'settings'});" title="Settings"><i class="bi-gear-fill"></i></button>
-                            <button class="col m-3 btn btn-lg btn-secondary" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
-                            <button class="col m-3 btn btn-lg btn-secondary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'exit'});" title="Exit"><i class="bi-arrow-return-left"></i></button>
+                            <button class="col m-3 btn btn-lg btn-secondary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'settings'});" title="Settings"><i class="bi-gear-fill"></i></button>
+                            <button class="col m-3 btn btn-lg btn-secondary ir-btn" type="button" style="visibility: hidden;"><i class="bi-question"></i></button>
+                            <button class="col m-3 btn btn-lg btn-secondary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'tv', 'key': 'exit'});" title="Exit"><i class="bi-arrow-return-left"></i></button>
                         </div>
                     </div>
 
@@ -419,9 +419,9 @@
                             <h4 class="my-2">AC Remote</h4>
                         </div>
                         <div class="d-flex flex-row my-2 mx-auto">
-                            <button class="m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'stop'});" title="Stop cooling"><i class="bi-wind"></i></button>
-                            <button class="m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'off'});" title="Turn off fan"><i class="bi-x-octagon-fill"></i></button>
-                            <button class="m-3 btn btn-lg btn-primary" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'start'});" title="Start cooling"><i class="bi-snow"></i></i></button>
+                            <button class="m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'stop'});" title="Stop cooling"><i class="bi-wind"></i></button>
+                            <button class="m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'off'});" title="Turn off fan"><i class="bi-x-octagon-fill"></i></button>
+                            <button class="m-3 btn btn-lg btn-primary ir-btn" type="button" onclick="send_command({'command': 'ir', 'ir_target': 'ac', 'key': 'start'});" title="Start cooling"><i class="bi-snow"></i></i></button>
                         </div>
                     </div>
 
@@ -433,13 +433,25 @@
 
                         <!-- Add button for each configured macro -->
                         {% for name, actions in context.metadata.ir_macros.items %}
-                            <div class="d-flex flex-row my-2 px-4">
-                                <div class="btn-group" role="group">
-                                    <button type="button" class="btn btn-lg btn-primary" onclick="send_command({'command': 'ir_run_macro', 'macro_name': '{{name}}'})">{{name}}</button>
+                            <div class="d-flex flex-row my-2">
+                                <div class="btn-group w-100 mx-3" role="group">
+                                    <button type="button" class="btn btn-lg btn-primary w-100" onclick="send_command({'command': 'ir_run_macro', 'macro_name': '{{name}}'})">{{name}}</button>
                                     <button type="button" class="btn btn-lg btn-success" onclick="populate_edit_modal(this);" data-name="{{name}}" data-actions="{{actions}}"><i class="bi-pencil"></i></button>
                                 </div>
                             </div>
                         {% endfor %}
+
+                        <!-- Record macro collapse -->
+                        <button class="btn btn-secondary my-3 mx-auto" type="button" data-bs-toggle="collapse" data-bs-target="#record-macro-menu" aria-expanded="false" aria-controls="record-macro-menu"><i class="bi-plus-lg"></i></button>
+                        <div class="collapse" id="record-macro-menu">
+                            <div class="px-3 pb-3 d-flex flex-column">
+                                <div class="form-floating mb-3">
+                                    <input type="text" class="form-control" id="new-macro-name" placeholder="" autocomplete='off'>
+                                    <label for="new-macro-name">New macro name</label>
+                                </div>
+                                <button id="start-recording" class="btn btn-success mx-auto" type="button" autocomplete="off" onclick="start_recording_ir_macro()">Start Recording</button>
+                            </div>
+                        </div>
                     </div>
                 {% endif %}
             </div>
@@ -478,8 +490,56 @@
         </div>
 
         <script>
+            // Stores actions from IR buttons clicked while recording macro
+            var new_macro_actions = [];
+
+            // Called by start recording button under macro name input
+            function start_recording_ir_macro() {
+                // Change start button to finish button, disable input
+                document.getElementById('start-recording').innerHTML = 'Save Macro';
+                document.getElementById('start-recording').onclick = add_new_macro;
+                document.getElementById('new-macro-name').disabled = true;
+
+                // Replace send_command with function that appends commands to new_macro_actions
+                window.send_command = record_macro_send_command;
+
+                // Add glow effect on IR buttons, scroll into view
+                Array.from(document.getElementsByClassName('ir-btn')).forEach(button => button.classList.add('blue-glow'));
+                document.getElementById('ir-tv').scrollIntoView({behavior: 'smooth'})
+            }
+
+            // Replaces send_command while recording macro
+            function record_macro_send_command(value) {
+                // Default to 100ms delay, no repeat
+                new_macro_actions.push(`${value.ir_target} ${value.key} 100 1`);
+            }
+
+            // Called by submit button after recording new macro
+            async function add_new_macro() {
+                // Submit new macro actions
+                var result = await fetch('/add_ir_macro', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        ip: target_node,
+                        name: document.getElementById('new-macro-name').value,
+                        actions: new_macro_actions}),
+                    headers: {
+                        'Accept': 'application/json, text/plain, */*',
+                        'Content-Type': 'application/json',
+                        "X-CSRFToken": getCookie('csrftoken')
+                    }
+                });
+                result = await result.json();
+
+                // Refresh page
+                location.reload();
+            };
+
+            // Stores changes made to existing macro in edit modal
             var editing_macro_actions = {};
 
+            // Called when user clicks edit IR macro button
+            // Adds existing macro actions to modal and shows
             function populate_edit_modal(button) {
                 // Add macro name to modal heading, submit button dataset attribute
                 document.getElementById('edit-ir-macro-title').innerHTML = `Editing ${button.dataset.name}`;
