@@ -1834,3 +1834,132 @@ class SyncScheduleRulesTests(TestCaseBackupRestore):
             response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.123'})
             self.assertEqual(response.status_code, 500)
             self.assertEqual(response.json(), {"Error": "Failed to save rules"})
+
+
+# Test endpoints used to create and modify IR macros
+class IrMacroTests(TestCaseBackupRestore):
+    def setUp(self):
+        # Set default content_type for post requests (avoid long lines)
+        self.client = JSONClient()
+
+    def test_edit_ir_macro(self):
+        # Simulated payload from frontend
+        payload = {
+            'ip': '192.168.1.123',
+            'name': 'backlight_on',
+            'actions': [
+                'tv settings 1500 1',
+                'tv right 500 1',
+                'tv down 500 1',
+                'tv enter 500 1',
+                'tv right 150 14',
+                'tv exit 0 1'
+            ]
+        }
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value=None) as mock_parse_command:
+            # Make API call, confirm response, confirm parse_command called once
+            response = self.client.post('/edit_ir_macro', payload)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Confirm parse_command was called 9 times with correct args
+            # Delete old macro, create new macro with same name, add 6 actions, save
+            self.assertEqual(mock_parse_command.call_count, 9)
+            calls = mock_parse_command.call_args_list
+            self.assertEqual(
+                calls[0].args,
+                ('192.168.1.123', ['ir_delete_macro', 'backlight_on'])
+            )
+            self.assertEqual(
+                calls[1].args,
+                ('192.168.1.123', ['ir_create_macro', 'backlight_on'])
+            )
+            self.assertEqual(
+                calls[2].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'settings', '1500', '1'])
+            )
+            self.assertEqual(
+                calls[3].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'right', '500', '1'])
+            )
+            self.assertEqual(
+                calls[4].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'down', '500', '1'])
+            )
+            self.assertEqual(
+                calls[5].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'enter', '500', '1'])
+            )
+            self.assertEqual(
+                calls[6].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'right', '150', '14'])
+            )
+            self.assertEqual(
+                calls[7].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'exit', '0', '1'])
+            )
+            self.assertEqual(
+                calls[8].args,
+                ('192.168.1.123', ['ir_save_macros'])
+            )
+
+    def test_add_ir_macro(self):
+        # Simulated payload from frontend
+        payload = {
+            'ip': '192.168.1.123',
+            'name': 'backlight_on',
+            'actions': [
+                'tv settings 1500 1',
+                'tv right 500 1',
+                'tv down 500 1',
+                'tv enter 500 1',
+                'tv right 150 14',
+                'tv exit 0 1'
+            ]
+        }
+
+        # Mock parse_command to do nothing
+        with patch('api.views.parse_command', return_value=None) as mock_parse_command:
+            # Make API call, confirm response
+            response = self.client.post('/add_ir_macro', payload)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), "Done")
+
+            # Confirm parse_command was called 8 times with correct args
+            # Create new macro, add 6 actions, save
+            self.assertEqual(mock_parse_command.call_count, 8)
+            calls = mock_parse_command.call_args_list
+            self.assertEqual(
+                calls[0].args,
+                ('192.168.1.123', ['ir_create_macro', 'backlight_on'])
+            )
+            self.assertEqual(
+                calls[1].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'settings', '1500', '1'])
+            )
+            self.assertEqual(
+                calls[2].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'right', '500', '1'])
+            )
+            self.assertEqual(
+                calls[3].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'down', '500', '1'])
+            )
+            self.assertEqual(
+                calls[4].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'enter', '500', '1'])
+            )
+            self.assertEqual(
+                calls[5].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'right', '150', '14'])
+            )
+            self.assertEqual(
+                calls[6].args,
+                ('192.168.1.123', ['ir_add_macro_action', 'backlight_on', 'tv', 'exit', '0', '1'])
+            )
+            self.assertEqual(
+                calls[7].args,
+                ('192.168.1.123', ['ir_save_macros'])
+            )
