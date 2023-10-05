@@ -35,31 +35,32 @@ if [ ! -z "$FIRMWARE_FILES" ]; then
     printf "$(date -Iseconds): Built new firmware: firmware/$filename\n" >> firmware/release.log
 
     # Upload firmware to gitlab, parse URL from response
-    output=$(curl --request POST --header "PRIVATE-TOKEN: $SMARTHOME_ACCESS_TOKEN" \
-              --form "file=@$HOME/git/micropython-smarthome/firmware/firmware_$NEW_TAG.bin" \
-              "https://gitlab.com/api/v4/projects/30373611/uploads")
+    output=$(curl --request POST \
+                  --header "PRIVATE-TOKEN: $SMARTHOME_ACCESS_TOKEN" \
+                  --form "file=@$HOME/git/micropython-smarthome/firmware/firmware_$NEW_TAG.bin" \
+                  "https://gitlab.com/api/v4/projects/30373611/uploads"
+    )
     url=$(echo "$output" | jq -r '.full_path')
     printf "$(date -Iseconds): Uploaded firmware to gitlab, response:\n" >> firmware/release.log
     printf "$output\n" >> firmware/release.log
 
-    # Build payload for new release
-    json_payload=$(jq -n \
-        --arg name "Release $NEW_TAG" \
-        --arg tag "$NEW_TAG" \
-        --arg ref "$HASH" \
-        --arg url "https://gitlab.com$url" \
-        --arg filename "firmware_$NEW_TAG.bin" \
-        '{ "name": $name, "tag_name": $tag, "ref": $ref, "assets": { "links": [{ "name": $filename, "url": $url }] } }' \
-        | jq --arg name "$NEW_TAG" \
-        --arg url "$url"
+    # Build JSON payload for new release
+    payload=$(jq -n \
+                 --arg name "Release $NEW_TAG" \
+                 --arg tag "$NEW_TAG" \
+                 --arg ref "$HASH" \
+                 --arg url "https://gitlab.com$url" \
+                 --arg filename "firmware_$NEW_TAG.bin" \
+                 '{ "name": $name, "tag_name": $tag, "ref": $ref, "assets": { "links": [{ "name": $filename, "url": $url }] } }'
     )
-    printf "$(date -Iseconds): Built release payload: $json_payload\n" >> firmware/release.log
+    printf "$(date -Iseconds): Built release payload: $payload\n" >> firmware/release.log
 
     # Push new release
     output=$(curl --header 'Content-Type: application/json' \
-         --header "PRIVATE-TOKEN: $SMARTHOME_ACCESS_TOKEN" \
-         --data "$json_payload" \
-         --request POST "https://gitlab.com/api/v4/projects/30373611/releases")
+                  --header "PRIVATE-TOKEN: $SMARTHOME_ACCESS_TOKEN" \
+                  --data "$payload" \
+                  --request POST "https://gitlab.com/api/v4/projects/30373611/releases"
+    )
     printf "$(date -Iseconds): Pushed new release to gitlab, response:\n" >> firmware/release.log
     printf "$output\n\n" >> firmware/release.log
 fi
