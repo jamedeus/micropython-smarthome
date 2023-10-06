@@ -1,30 +1,44 @@
 import os
+import json
 from Webrepl import Webrepl
 from api_endpoints import reboot
 from helper_functions import is_device, is_sensor
 
-# Dependency relative paths for all device and sensor types, used by get_modules
-dependencies = {
-    'devices': {
-        'dimmer': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py", "core/Instance.py"],
-        'bulb': ["devices/Tplink.py", "devices/Device.py", "devices/DimmableLight.py", "core/Instance.py"],
-        'relay': ["devices/Relay.py", "devices/Device.py", "core/Instance.py"],
-        'dumb-relay': ["devices/DumbRelay.py", "devices/Device.py", "core/Instance.py"],
-        'desktop': ["devices/Desktop_target.py", "devices/Device.py", "core/Instance.py"],
-        'pwm': ["devices/LedStrip.py", "devices/Device.py", "devices/DimmableLight.py", "core/Instance.py"],
-        'mosfet': ["devices/Mosfet.py", "devices/Device.py", "core/Instance.py"],
-        'api-target': ["devices/ApiTarget.py", "devices/Device.py", "core/Instance.py"],
-        'wled': ["devices/Wled.py", "devices/Device.py", "devices/DimmableLight.py", "core/Instance.py"],
-    },
-    'sensors': {
-        'pir': ["sensors/MotionSensor.py", "sensors/Sensor.py", "core/Instance.py"],
-        'si7021': ["sensors/Thermostat.py", "sensors/Sensor.py", "core/Instance.py"],
-        'dummy': ["sensors/Dummy.py", "sensors/Sensor.py", "core/Instance.py"],
-        'switch': ["sensors/Switch.py", "sensors/Sensor.py", "core/Instance.py"],
-        'desktop': ["sensors/Desktop_trigger.py", "sensors/Sensor.py", "core/Instance.py"],
-        'load-cell': ["sensors/LoadCell.py", "sensors/Sensor.py", "core/Instance.py"],
+
+# Returns dict containing dependency lists for all device and sensor types
+# Devices are in "devices" subsection, keyed by _type parmater
+# Sensors are in "sensors" subsection, keyed by _type parmater
+def build_dependencies_dict():
+    dependencies = {
+        'devices': {},
+        'sensors': {}
     }
-}
+
+    # Resolve paths to devices/manifest/ and sensors/manifest/
+    util = os.path.dirname(os.path.realpath(__file__))
+    repo = os.path.split(util)[0]
+    device_manifest = os.path.join(repo, 'devices', 'manifest')
+    sensor_manifest = os.path.join(repo, 'sensors', 'manifest')
+
+    # Iterate device manifests, add each config template to dict
+    for i in os.listdir(device_manifest):
+        with open(os.path.join(device_manifest, i), 'r') as file:
+            config = json.load(file)
+            name = config['config_name']
+            dependencies['devices'][name] = config['dependencies']
+
+    # Iterate sensor manifests, add each config template to dict
+    for i in os.listdir(sensor_manifest):
+        with open(os.path.join(sensor_manifest, i), 'r') as file:
+            config = json.load(file)
+            name = config['config_name']
+            dependencies['sensors'][name] = config['dependencies']
+
+    return dependencies
+
+
+# Combine dependency relative paths from all device and sensor manifests, used by get_modules
+dependencies = build_dependencies_dict()
 
 # Core module relative paths, required regardless of configuration
 core_modules = [

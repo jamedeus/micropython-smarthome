@@ -1,0 +1,16 @@
+{
+    "config_name": "dummy",
+    "class_name": "Dummy",
+    "dependencies": [
+        "sensors/Dummy.py",
+        "sensors/Sensor.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "dummy",
+        "nickname": "placeholder",
+        "default_rule": "placeholder",
+        "schedule": {},
+        "targets": []
+    }
+}

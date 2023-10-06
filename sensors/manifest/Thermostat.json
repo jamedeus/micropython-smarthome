@@ -1,0 +1,18 @@
+{
+    "config_name": "si7021",
+    "class_name": "Thermostat",
+    "dependencies": [
+        "sensors/Thermostat.py",
+        "sensors/Sensor.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "si7021",
+        "nickname": "placeholder",
+        "default_rule": "placeholder",
+        "mode": "placeholder",
+        "tolerance": "placeholder",
+        "schedule": {},
+        "targets": []
+    }
+}

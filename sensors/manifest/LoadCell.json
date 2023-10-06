@@ -1,0 +1,16 @@
+{
+    "config_name": "load-cell",
+    "class_name": "LoadCell",
+    "dependencies": [
+        "sensors/LoadCell.py",
+        "sensors/Sensor.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "load-cell",
+        "nickname": "placeholder",
+        "default_rule": "placeholder",
+        "schedule": {},
+        "targets": []
+    }
+}

@@ -1,0 +1,16 @@
+{
+    "config_name": "api-target",
+    "class_name": "ApiTarget",
+    "dependencies": [
+        "devices/ApiTarget.py",
+        "devices/Device.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "api-target",
+        "nickname": "placeholder",
+        "ip": "placeholder",
+        "default_rule": "placeholder",
+        "schedule": {}
+    }
+}

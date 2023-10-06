@@ -1,0 +1,17 @@
+{
+    "config_name": "switch",
+    "class_name": "Switch",
+    "dependencies": [
+        "sensors/Switch.py",
+        "sensors/Sensor.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "switch",
+        "nickname": "placeholder",
+        "default_rule": "placeholder",
+        "pin": "placeholder",
+        "schedule": {},
+        "targets": []
+    }
+}

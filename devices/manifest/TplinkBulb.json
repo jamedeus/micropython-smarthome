@@ -1,0 +1,19 @@
+{
+    "config_name": "bulb",
+    "class_name": "Bulb",
+    "dependencies": [
+        "devices/Tplink.py",
+        "devices/DimmableLight.py",
+        "devices/Device.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "bulb",
+        "nickname": "placeholder",
+        "ip": "placeholder",
+        "min_bright": "placeholder",
+        "max_bright": "placeholder",
+        "default_rule": "placeholder",
+        "schedule": {}
+    }
+}

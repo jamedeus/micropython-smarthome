@@ -528,8 +528,8 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.ask.side_effect = [
             'MotionSensor',
             'Motion',
-            '14',
             '5',
+            '14',
             'Yes',
             'Timestamp',
             '10:00',
@@ -649,8 +649,8 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.ask.side_effect = [
             'DesktopTrigger',
             'Computer Activity',
-            '192.168.1.123',
             'Enabled',
+            '192.168.1.123',
             'Yes',
             'keyword',
             'sunrise',

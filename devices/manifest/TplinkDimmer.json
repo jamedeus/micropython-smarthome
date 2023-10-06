@@ -1,0 +1,19 @@
+{
+    "config_name": "dimmer",
+    "class_name": "Dimmer",
+    "dependencies": [
+        "devices/Tplink.py",
+        "devices/DimmableLight.py",
+        "devices/Device.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "dimmer",
+        "nickname": "placeholder",
+        "ip": "placeholder",
+        "min_bright": "placeholder",
+        "max_bright": "placeholder",
+        "default_rule": "placeholder",
+        "schedule": {}
+    }
+}

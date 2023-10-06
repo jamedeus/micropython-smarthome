@@ -1,0 +1,16 @@
+{
+    "config_name": "desktop",
+    "class_name": "DesktopTarget",
+    "dependencies": [
+        "devices/Desktop_target.py",
+        "devices/Device.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "desktop",
+        "nickname": "placeholder",
+        "ip": "placeholder",
+        "default_rule": "placeholder",
+        "schedule": {}
+    }
+}

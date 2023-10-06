@@ -1,0 +1,16 @@
+{
+    "config_name": "relay",
+    "class_name": "Relay",
+    "dependencies": [
+        "devices/Relay.py",
+        "devices/Device.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "relay",
+        "nickname": "placeholder",
+        "ip": "placeholder",
+        "default_rule": "placeholder",
+        "schedule": {}
+    }
+}

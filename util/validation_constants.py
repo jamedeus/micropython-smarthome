@@ -1,3 +1,6 @@
+import os
+import json
+
 # All valid ESP32 pins, excluding input-only
 valid_device_pins = (
     '4',
@@ -58,145 +61,40 @@ valid_config_keys = {
 }
 
 
-# Config skeletons for all device and sensor types
-config_templates = {
-    "device": {
-        "Dimmer": {
-            "_type": "dimmer",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "min_bright": "placeholder",
-            "max_bright": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "Bulb": {
-            "_type": "bulb",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "min_bright": "placeholder",
-            "max_bright": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "Relay": {
-            "_type": "relay",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "DumbRelay": {
-            "_type": "dumb-relay",
-            "nickname": "placeholder",
-            "default_rule": "placeholder",
-            "pin": "placeholder",
-            "schedule": {}
-        },
-
-        "DesktopTarget": {
-            "_type": "desktop",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "LedStrip": {
-            "_type": "pwm",
-            "nickname": "placeholder",
-            "min_bright": "placeholder",
-            "max_bright": "placeholder",
-            "default_rule": "placeholder",
-            "pin": "placeholder",
-            "schedule": {}
-        },
-
-        "Mosfet": {
-            "_type": "mosfet",
-            "nickname": "placeholder",
-            "default_rule": "placeholder",
-            "pin": "placeholder",
-            "schedule": {}
-        },
-
-        "ApiTarget": {
-            "_type": "api-target",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-
-        "Wled": {
-            "_type": "wled",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "min_bright": "placeholder",
-            "max_bright": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {}
-        },
-    },
-
-    "sensor": {
-        "MotionSensor": {
-            "_type": "pir",
-            "nickname": "placeholder",
-            "pin": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {},
-            "targets": []
-        },
-
-        "DesktopTrigger": {
-            "_type": "desktop",
-            "nickname": "placeholder",
-            "ip": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {},
-            "targets": []
-        },
-
-        "Thermostat": {
-            "_type": "si7021",
-            "nickname": "placeholder",
-            "default_rule": "placeholder",
-            "mode": "placeholder",
-            "tolerance": "placeholder",
-            "schedule": {},
-            "targets": []
-        },
-
-        "Dummy": {
-            "_type": "dummy",
-            "nickname": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {},
-            "targets": []
-        },
-
-        "Switch": {
-            "_type": "switch",
-            "nickname": "placeholder",
-            "pin": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {},
-            "targets": []
-        },
-
-        "LoadCell": {
-            "_type": "load-cell",
-            "nickname": "placeholder",
-            "default_rule": "placeholder",
-            "schedule": {},
-            "targets": []
-        }
+# Returns dict containing config templates for all device and sensor types
+# Devices are in "device" subsection, keyed by classname
+# Sensors are in "sensor" subsection, keyed by classname
+def build_config_templates():
+    config_templates = {
+        "device": {},
+        "sensor": {}
     }
-}
+
+    # Resolve paths to devices/manifest/ and sensors/manifest/
+    util = os.path.dirname(os.path.realpath(__file__))
+    repo = os.path.split(util)[0]
+    device_manifest = os.path.join(repo, 'devices', 'manifest')
+    sensor_manifest = os.path.join(repo, 'sensors', 'manifest')
+
+    # Iterate device manifests, add each config template to dict
+    for i in os.listdir(device_manifest):
+        with open(os.path.join(device_manifest, i), 'r') as file:
+            config = json.load(file)
+            name = config['class_name']
+            config_templates['device'][name] = config['config_template']
+
+    # Iterate sensor manifests, add each config template to dict
+    for i in os.listdir(sensor_manifest):
+        with open(os.path.join(sensor_manifest, i), 'r') as file:
+            config = json.load(file)
+            name = config['class_name']
+            config_templates['sensor'][name] = config['config_template']
+
+    return config_templates
+
+
+# Combine config templates from all device and sensor manifests
+config_templates = build_config_templates()
 
 
 # Options for each supported IR Blaster target device, used to populate ApiTarget menu

@@ -1,0 +1,17 @@
+{
+    "config_name": "pir",
+    "class_name": "MotionSensor",
+    "dependencies": [
+        "sensors/MotionSensor.py",
+        "sensors/Sensor.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "pir",
+        "nickname": "placeholder",
+        "default_rule": "placeholder",
+        "pin": "placeholder",
+        "schedule": {},
+        "targets": []
+    }
+}

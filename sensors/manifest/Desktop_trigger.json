@@ -1,0 +1,17 @@
+{
+    "config_name": "desktop",
+    "class_name": "DesktopTrigger",
+    "dependencies": [
+        "sensors/Desktop_trigger.py",
+        "sensors/Sensor.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "desktop",
+        "nickname": "placeholder",
+        "default_rule": "placeholder",
+        "ip": "placeholder",
+        "schedule": {},
+        "targets": []
+    }
+}
