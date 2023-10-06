@@ -169,6 +169,7 @@ class TestInstantiation(TestCase):
             os.path.join(repo, 'sensors', 'Sensor.py'): 'Sensor.py',
             os.path.join(repo, 'sensors', 'Thermostat.py'): 'Thermostat.py',
             os.path.join(repo, 'sensors', 'Dummy.py'): 'Dummy.py',
+            os.path.join(repo, 'sensors', 'LoadCell.py'): 'LoadCell.py',
             os.path.join(repo, 'sensors', 'Switch.py'): 'Switch.py',
             os.path.join(repo, 'sensors', 'Desktop_trigger.py'): 'Desktop_trigger.py',
             os.path.join(repo, 'devices', 'IrBlaster.py'): 'IrBlaster.py',

@@ -318,6 +318,21 @@ def dummy_validator(rule, **kwargs):
 
 
 # Requires int or float
+@add_schedule_rule_validator(['load-cell'])
+@add_generic_validator
+@add_default_rule_validator(['load-cell'])
+def load_cell_validator(rule, **kwargs):
+    try:
+        # Prevent accepting NaN (is valid float but breaks comparison)
+        if isnan(float(rule)):
+            return False
+        else:
+            return True
+    except (ValueError, TypeError):
+        return False
+
+
+# Requires int, float, or None
 @add_schedule_rule_validator(['pir'])
 @add_generic_validator
 @add_default_rule_validator(['pir'])

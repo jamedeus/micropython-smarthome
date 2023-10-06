@@ -36,6 +36,7 @@ rule_limits = {
     'wled': (1, 255),
     'pir': (0, 60),
     'si7021': (65, 80),
+    'load-cell': (0, 10000000)
 }
 
 
@@ -376,7 +377,7 @@ class GenerateConfigFile:
                 validate=IntRange(config['min_bright'], config['max_bright'])
             ).ask()
         # Certain sensors require int default_rule
-        elif _type in ['pir', 'si7021']:
+        elif _type in ['pir', 'si7021', 'load-cell']:
             return questionary.text("Enter default rule", validate=FloatRange(*rule_limits[_type])).ask()
         # Dummy does not support enabled/disabled for default_rule, must be on or off
         elif _type == 'dummy':
@@ -396,7 +397,7 @@ class GenerateConfigFile:
         if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
             return self.rule_prompt_int_and_fade_options(config['min_bright'], config['max_bright'])
         # Some sensors support int in addition to enabled/disabled
-        elif _type in ['pir', 'si7021']:
+        elif _type in ['pir', 'si7021', 'load-cell']:
             return self.rule_prompt_with_float_option(*rule_limits[_type])
         # Summy supports On and Off in addition to enabled/disabled
         elif _type == 'dummy':

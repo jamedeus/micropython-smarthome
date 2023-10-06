@@ -39,6 +39,7 @@ hardware_classes = {
         "pir": "MotionSensor",
         "desktop": "Desktop_trigger",
         "dummy": "Dummy",
+        "load-cell": "LoadCell",
         "si7021": "Thermostat",
         "switch": "Switch"
     }

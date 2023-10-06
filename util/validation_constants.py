@@ -186,6 +186,14 @@ config_templates = {
             "default_rule": "placeholder",
             "schedule": {},
             "targets": []
+        },
+
+        "LoadCell": {
+            "_type": "load-cell",
+            "nickname": "placeholder",
+            "default_rule": "placeholder",
+            "schedule": {},
+            "targets": []
         }
     }
 }

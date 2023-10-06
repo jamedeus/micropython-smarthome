@@ -22,6 +22,7 @@ dependencies = {
         'dummy': ["sensors/Dummy.py", "sensors/Sensor.py", "core/Instance.py"],
         'switch': ["sensors/Switch.py", "sensors/Sensor.py", "core/Instance.py"],
         'desktop': ["sensors/Desktop_trigger.py", "sensors/Sensor.py", "core/Instance.py"],
+        'load-cell': ["sensors/LoadCell.py", "sensors/Sensor.py", "core/Instance.py"],
     }
 }
 
