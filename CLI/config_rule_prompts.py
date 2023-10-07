@@ -37,6 +37,8 @@ def build_rule_prompt_maps():
 
         # Determine correct prompt functions using rule_prompt key
         if prompt == "int_range":
+            rule_prompt_map[_type] = int_rule_prompt
+        elif prompt == "int_or_fade":
             rule_prompt_map[_type] = int_or_fade_rule_prompt
         elif prompt == "float_range":
             rule_prompt_map[_type] = float_rule_prompt
@@ -98,6 +100,26 @@ def float_rule_prompt(config, rule_type):
         choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Float']).ask()
         if choice == 'Float':
             return questionary.text("Enter rule", validate=FloatRange(minimum, maximum)).ask()
+        else:
+            return choice
+
+
+# Rule prompt for instances that support int rules in addition to standard rules
+# Default prompt: Require int rule (standard rules are invalid)
+# Schedule prompt: Show standard rules prompt in addition to int
+def int_rule_prompt(config, rule_type):
+    minimum = config['min_bright']
+    maximum = config['max_bright']
+
+    # Default rule prompt
+    if rule_type == "default":
+        return questionary.text("Enter default rule", validate=IntRange(minimum, maximum)).ask()
+
+    # Schedule rule prompt
+    else:
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int']).ask()
+        if choice == 'Int':
+            return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
         else:
             return choice
 

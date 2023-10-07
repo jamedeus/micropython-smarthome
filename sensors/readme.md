@@ -62,8 +62,9 @@ Parameters:
     - The `schedule` and `targets` parameters must be empty
 - `rule_prompt`: Determines which rule prompt is shown by the config generator script (in the future this will also determine configuration options in the web frontend). Available options:
     - `standard`: User may select "Enabled" or "Disabled"
-    - `int_range`: User may select an integer, fade rule, "Enabled", or "Disabled"
     - `float_range`: User may select a float, "Enabled", or "Disabled"
+    - `int_range`: User may select an integer, "Enabled", or "Disabled"
+    - `int_or_fade`: User may select an integer, fade rule, "Enabled", or "Disabled"
     - `on_off`: User may select "On", "Off", "Enabled", or "Disabled"
 - `rule_limits`: Required for sensors which accept int/float rules, ignored for all others. Should contain 2 integers representing the minimum and maximum supported rules.
 

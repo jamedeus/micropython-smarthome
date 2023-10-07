@@ -16,6 +16,6 @@
         "pin": "placeholder",
         "schedule": {}
     },
-    "rule_prompt": "int_range",
+    "rule_prompt": "int_or_fade",
     "rule_limits": [0, 1023]
 }
