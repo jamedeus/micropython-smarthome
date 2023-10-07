@@ -17,7 +17,7 @@ class LoadCell(Sensor):
         data = Pin(23, Pin.IN, Pin.PULL_DOWN)
         clock = Pin(22, Pin.OUT)
         self.sensor = HX711(clock, data)
-        self.sensor.tare()
+        self.tare_sensor()
 
         # Track output of condition_met (set by monitor callback)
         self.current = None
@@ -48,6 +48,10 @@ class LoadCell(Sensor):
         if abs(self.sensor.get_value()) > self.current_rule:
             return True
         return False
+
+    # Tares the sensor, surface must not be occupied
+    def tare_sensor(self):
+        self.sensor.tare()
 
     # Check condition every second
     async def monitor(self):
