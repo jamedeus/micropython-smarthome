@@ -14,5 +14,6 @@
         "tolerance": "placeholder",
         "schedule": {},
         "targets": []
-    }
+    },
+    "rule_prompt": "float_range"
 }

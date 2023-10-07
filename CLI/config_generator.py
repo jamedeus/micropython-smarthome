@@ -4,31 +4,24 @@ import os
 import json
 import questionary
 from colorama import Fore
-from questionary import Validator, ValidationError
 from instance_validators import validate_rules
 from validate_config import validate_full_config
-from validation_constants import (
-    valid_device_pins,
-    valid_sensor_pins,
-    config_templates,
-    ir_blaster_options,
-    device_endpoints,
-    sensor_endpoints
-)
+from config_prompt_validators import IntRange, FloatRange, MinLength, NicknameValidator
+from validation_constants import valid_device_pins, valid_sensor_pins, config_templates
+from config_rule_prompts import default_rule_prompt_router, schedule_rule_prompt_router
 from helper_functions import (
     valid_ip,
     valid_timestamp,
     is_device,
     is_sensor,
-    is_device_or_sensor,
     is_int,
-    is_float,
     get_schedule_keywords_dict,
     get_existing_nodes,
     get_cli_config
 )
 
 # Map int rule limits to device/sensor types
+# TODO integrate into manifest/metadata
 rule_limits = {
     'dimmer': (1, 100),
     'bulb': (1, 100),
@@ -38,61 +31,6 @@ rule_limits = {
     'si7021': (65, 80),
     'load-cell': (0, 10000000)
 }
-
-
-class IntRange(Validator):
-    def __init__(self, minimum, maximum):
-        self.minimum = int(minimum)
-        self.maximum = int(maximum)
-
-    def validate(self, document):
-        if is_int(document.text) and self.minimum <= int(document.text) <= self.maximum:
-            return True
-        else:
-            raise ValidationError(
-                message=f"Must be int between {self.minimum} and {self.maximum}",
-                cursor_position=len(document.text)
-            )
-
-
-class FloatRange(Validator):
-    def __init__(self, minimum, maximum):
-        self.minimum = float(minimum)
-        self.maximum = float(maximum)
-
-    def validate(self, document):
-        if is_float(document.text) and self.minimum <= float(document.text) <= self.maximum:
-            return True
-        else:
-            raise ValidationError(
-                message=f"Must be float between {self.minimum} and {self.maximum}",
-                cursor_position=len(document.text)
-            )
-
-
-class MinLength(Validator):
-    def __init__(self, min_length):
-        self.min_length = int(min_length)
-
-    def validate(self, document):
-        if len(str(document.text)) >= self.min_length:
-            return True
-        else:
-            raise ValidationError(message=f"Enter {self.min_length} or more characters")
-
-
-# Instantiated with list of already-used nicknames
-class NicknameValidator(Validator):
-    def __init__(self, used_nicknames):
-        self.used_nicknames = used_nicknames
-
-    def validate(self, document):
-        if len(document.text) == 0:
-            raise ValidationError(message="Nickname cannot be blank")
-        elif document.text in self.used_nicknames:
-            raise ValidationError(message=f'Nickname "{document.text}" already used')
-        else:
-            return True
 
 
 class GenerateConfigFile:
@@ -261,7 +199,7 @@ class GenerateConfigFile:
                 config[i] = self.pin_prompt(valid_device_pins)
 
             elif i == "default_rule":
-                config[i] = self.default_rule_prompt_router(config)
+                config[i] = default_rule_prompt_router(config)
 
             elif i == "min_bright":
                 config[i] = questionary.text(
@@ -315,7 +253,7 @@ class GenerateConfigFile:
                 config[i] = self.pin_prompt(valid_sensor_pins)
 
             elif i == "default_rule":
-                config[i] = self.default_rule_prompt_router(config)
+                config[i] = default_rule_prompt_router(config)
 
             elif i == "ip":
                 config[i] = self.ip_address_prompt()
@@ -366,159 +304,6 @@ class GenerateConfigFile:
                 config[i] = {}
         return config
 
-    # Takes partial config, runs appropriate default_rule prompt
-    # based on instance type, returns user selection
-    def default_rule_prompt_router(self, config):
-        _type = config['_type']
-        # DimmableLight subclasses require int default_rule
-        if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
-            return questionary.text(
-                "Enter default rule",
-                validate=IntRange(config['min_bright'], config['max_bright'])
-            ).ask()
-        # Certain sensors require int default_rule
-        elif _type in ['pir', 'si7021', 'load-cell']:
-            return questionary.text("Enter default rule", validate=FloatRange(*rule_limits[_type])).ask()
-        # Dummy does not support enabled/disabled for default_rule, must be on or off
-        elif _type == 'dummy':
-            return questionary.select("Enter default rule", choices=['On', 'Off']).ask()
-        # ApiTarget has own prompt due to complexity
-        elif _type == 'api-target':
-            return self.api_target_rule_prompt(config)
-        # All other instance types only support Enabled and Disabled
-        else:
-            return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
-
-    # Takes partial config, runs appropriate schedule rule prompt
-    # based on instance type, returns user selection
-    def schedule_rule_prompt_router(self, config):
-        _type = config['_type']
-        # DimmableLight subclasses support int and fade rules in addition to enabled/disabled
-        if _type in ['dimmer', 'bulb', 'pwm', 'wled']:
-            return self.rule_prompt_int_and_fade_options(config['min_bright'], config['max_bright'])
-        # Some sensors support int in addition to enabled/disabled
-        elif _type in ['pir', 'si7021', 'load-cell']:
-            return self.rule_prompt_with_float_option(*rule_limits[_type])
-        # Summy supports On and Off in addition to enabled/disabled
-        elif _type == 'dummy':
-            return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
-        # ApiTarget has own prompt due to complexity
-        elif _type == 'api-target':
-            return self.rule_prompt_with_api_call_prompt(config)
-        # All other instance types only support Enabled and Disabled
-        else:
-            return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
-
-    # Rule prompt for instances that support float in addition to enabled/disabled
-    def rule_prompt_with_float_option(self, minimum, maximum):
-        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Float']).ask()
-        if choice == 'Float':
-            return questionary.text("Enter rule", validate=FloatRange(minimum, maximum)).ask()
-        else:
-            return choice
-
-    # Rule prompt for DimmableLight instances, includes int and fade in addition to enabled/disabled
-    def rule_prompt_int_and_fade_options(self, minimum, maximum):
-        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int', 'Fade']).ask()
-        if choice == 'Int':
-            return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
-        if choice == 'Fade':
-            target = questionary.text("Enter target brightness", validate=IntRange(minimum, maximum)).ask()
-            period = questionary.text("Enter duration in seconds", validate=IntRange(1, 86400)).ask()
-            return f'fade/{target}/{period}'
-        else:
-            return choice
-
-    # Schedule rule prompt for ApiTarget, includes API call option in addition to enabled/disabled
-    # Only used for schedule rules, enabled/disabled are invalid as default_rule
-    def rule_prompt_with_api_call_prompt(self, config):
-        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'API Call']).ask()
-        if choice == 'API Call':
-            return self.api_target_rule_prompt(config)
-        else:
-            return choice
-
-    # Prompt user to select API call parameters for both ON and OFF actions
-    # Returns complete ApiTarget rule dict
-    def api_target_rule_prompt(self, config):
-        if questionary.confirm("Should an API call be made when the device is turned ON?").ask():
-            print('\nAPI Target ON action')
-            on_action = self.api_call_prompt(config)
-            print()
-        else:
-            on_action = ['ignore']
-
-        if questionary.confirm("Should an API call be made when the device is turned OFF?").ask():
-            print('\nAPI Target OFF action')
-            off_action = self.api_call_prompt(config)
-        else:
-            off_action = ['ignore']
-
-        return {'on': on_action, 'off': off_action}
-
-    # Prompt user to select parameters for an individual API call
-    # Called by api_target_rule_prompt for both on and off actions
-    def api_call_prompt(self, config):
-        # Read target node config file from disk
-        config = self.load_config_from_ip(config['ip'])
-
-        # Build options list from instances in target config file
-        # Syntax: "device1 (dimmer)"
-        options = [f'{i} ({config[i]["_type"]})' for i in config if is_device_or_sensor(i)]
-        if 'ir_blaster' in config:
-            options.append('IR Blaster')
-
-        # Prompt user to select target instance, truncate _type param
-        instance = questionary.select("Select target instance", choices=options).ask()
-        instance = instance.split(" ")[0]
-
-        # Prompt user to select API endpoint (options based on instance selection)
-        if is_device(instance):
-            endpoint = questionary.select("Select endpoint", choices=device_endpoints).ask()
-
-        elif is_sensor(instance):
-            # Remove trigger_sensor option if target does not support
-            if config[instance]['_type'] in ['si7021', 'switch']:
-                print("remove trigger_sensor")
-                options = sensor_endpoints.copy()
-                options.remove('trigger_sensor')
-            else:
-                options = sensor_endpoints
-            endpoint = questionary.select("Select endpoint", choices=options).ask()
-
-        elif instance == 'IR':
-            target = questionary.select("Select IR target", choices=config['ir_blaster']['target']).ask()
-            key = questionary.select("Select key", choices=ir_blaster_options[target]).ask()
-            rule = ['ir_key', target, key]
-
-        # Prompt user to add additional arg required by some endpoints
-        if not instance == 'IR':
-            rule = [endpoint, instance]
-
-            if endpoint in ['enable_in', 'disable_in']:
-                rule.append(questionary.text("Enter delay in seconds", validate=IntRange(1, 86400)).ask())
-            elif endpoint == 'set_rule':
-                # Call correct rule prompt for target instance type
-                rule.append(self.schedule_rule_prompt_router(config[instance]))
-
-        return rule
-
-    # Takes IP, finds matching config path in existing_nodes dict, reads
-    # config file and returns contents. Used by api_call_prompt to get
-    # options, determine correct rule prompt, etc.
-    def load_config_from_ip(self, ip):
-        try:
-            for i in self.existing_nodes:
-                if self.existing_nodes[i]['ip'] == ip:
-                    with open(self.existing_nodes[i]['config'], 'r') as file:
-                        return json.load(file)
-            else:
-                raise FileNotFoundError
-        except FileNotFoundError:
-            print(f"\n{Fore.RED}FATAL ERROR{Fore.RESET}: Target node config file missing from disk")
-            print("Unable to get options, please check the config path in cli_config.json")
-            raise SystemExit
-
     # Iterate all configured sensors, display checkbox prompt for each
     # with all configured devices as options. Add all checked devices
     # to sensor targets list.
@@ -568,7 +353,7 @@ class GenerateConfigFile:
         # Prompt for timestamp if no keywords are available
         else:
             timestamp = self.schedule_rule_timestamp_prompt()
-        rule = self.schedule_rule_prompt_router(config)
+        rule = schedule_rule_prompt_router(config)
         config['schedule'][timestamp] = rule
         return config
 

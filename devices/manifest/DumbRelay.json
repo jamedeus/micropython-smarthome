@@ -12,5 +12,6 @@
         "default_rule": "placeholder",
         "pin": "placeholder",
         "schedule": {}
-    }
+    },
+    "rule_prompt": "standard"
 }

@@ -12,5 +12,6 @@
         "ip": "placeholder",
         "default_rule": "placeholder",
         "schedule": {}
-    }
+    },
+    "rule_prompt": "standard"
 }

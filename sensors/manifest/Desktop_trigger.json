@@ -13,5 +13,6 @@
         "ip": "placeholder",
         "schedule": {},
         "targets": []
-    }
+    },
+    "rule_prompt": "standard"
 }

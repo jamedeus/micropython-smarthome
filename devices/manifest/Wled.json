@@ -15,5 +15,6 @@
         "max_bright": "placeholder",
         "default_rule": "placeholder",
         "schedule": {}
-    }
+    },
+    "rule_prompt": "int_range"
 }

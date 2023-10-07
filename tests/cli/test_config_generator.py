@@ -5,6 +5,12 @@ from questionary import ValidationError
 from validate_config import validate_full_config
 from helper_functions import load_unit_test_config
 from config_generator import GenerateConfigFile, IntRange, FloatRange, MinLength, NicknameValidator
+from config_rule_prompts import (
+    api_call_prompt,
+    rule_prompt_with_api_call_prompt,
+    default_rule_prompt_router,
+    schedule_rule_prompt_router
+)
 
 # Get paths to test dir, CLI dir, repo dir
 tests = os.path.dirname(os.path.realpath(__file__))
@@ -947,9 +953,10 @@ class TestGenerateConfigFile(TestCase):
         ]
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
-             patch('questionary.confirm', return_value=self.mock_ask):
+             patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
-            rule = self.generator.rule_prompt_with_api_call_prompt(mock_config)
+            rule = rule_prompt_with_api_call_prompt(mock_config)
             self.assertEqual(rule, {"on": ["enable", "device1"], "off": ["set_rule", "sensor1", "50"]})
 
         # Call again with simulated input selecting IR Blaster options, confirm correct rule returned
@@ -963,18 +970,20 @@ class TestGenerateConfigFile(TestCase):
         ]
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
-             patch('questionary.confirm', return_value=self.mock_ask):
+             patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
-            rule = self.generator.rule_prompt_with_api_call_prompt(mock_config)
+            rule = rule_prompt_with_api_call_prompt(mock_config)
             self.assertEqual(rule, {"on": ["ir_key", "tv", "power"], "off": ["ignore"]})
 
         # Call schedule rule router with simulated input selecting 'Enabled' option
         self.mock_ask.ask.side_effect = ['Enabled']
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
-             patch('questionary.confirm', return_value=self.mock_ask):
+             patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
-            rule = self.generator.schedule_rule_prompt_router(mock_config)
+            rule = schedule_rule_prompt_router(mock_config)
             self.assertEqual(rule, 'Enabled')
 
         # Call default rule router with simulated input selecting ignore option + endpoint requiring extra arg
@@ -987,9 +996,10 @@ class TestGenerateConfigFile(TestCase):
         ]
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
-             patch('questionary.confirm', return_value=self.mock_ask):
+             patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
-            rule = self.generator.default_rule_prompt_router(mock_config)
+            rule = default_rule_prompt_router(mock_config)
             self.assertEqual(rule, {"on": ["ignore"], "off": ["enable_in", "sensor5", "1800"]})
 
     def test_api_call_prompt_target_config_missing(self):
@@ -997,12 +1007,14 @@ class TestGenerateConfigFile(TestCase):
         self.generator.existing_nodes = mock_cli_config['nodes']
 
         # Confirm script exits with error when unable to open fake path
-        with self.assertRaises(SystemExit):
-            self.generator.api_call_prompt({'ip': '192.168.1.223'})
+        with patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
+            with self.assertRaises(SystemExit):
+                api_call_prompt({'ip': '192.168.1.223'})
 
         # Confirm script exits with error when IP not in nodes.json
-        with self.assertRaises(SystemExit):
-            self.generator.api_call_prompt({'ip': '10.0.0.1'})
+        with patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
+            with self.assertRaises(SystemExit):
+                api_call_prompt({'ip': '10.0.0.1'})
 
 
 class TestRegressions(TestCase):
@@ -1070,11 +1082,11 @@ class TestRegressions(TestCase):
         # Call default rule router with simulated float rule input
         self.mock_ask.ask.side_effect = ['69.5']
         with patch('questionary.text', return_value=self.mock_ask), \
-             patch('config_generator.IntRange') as mock_int_range, \
-             patch('config_generator.FloatRange') as mock_float_range:
+             patch('config_rule_prompts.IntRange') as mock_int_range, \
+             patch('config_rule_prompts.FloatRange') as mock_float_range:
 
             # Confirm FloatRange called, IntRange not called
-            rule = self.generator.default_rule_prompt_router(mock_config)
+            rule = default_rule_prompt_router(mock_config)
             self.assertEqual(rule, '69.5')
             self.assertTrue(mock_float_range.called)
             self.assertFalse(mock_int_range.called)
@@ -1083,11 +1095,11 @@ class TestRegressions(TestCase):
         self.mock_ask.ask.side_effect = ['Float', '69.5']
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
-             patch('config_generator.IntRange') as mock_int_range, \
-             patch('config_generator.FloatRange') as mock_float_range:
+             patch('config_rule_prompts.IntRange') as mock_int_range, \
+             patch('config_rule_prompts.FloatRange') as mock_float_range:
 
             # Confirm FloatRange called, IntRange not called
-            rule = self.generator.schedule_rule_prompt_router(mock_config)
+            rule = schedule_rule_prompt_router(mock_config)
             self.assertEqual(rule, '69.5')
             self.assertTrue(mock_float_range.called)
             self.assertFalse(mock_int_range.called)
@@ -1105,11 +1117,11 @@ class TestRegressions(TestCase):
         # Call default rule router with simulated float rule input
         self.mock_ask.ask.side_effect = ['5.5']
         with patch('questionary.text', return_value=self.mock_ask), \
-             patch('config_generator.IntRange') as mock_int_range, \
-             patch('config_generator.FloatRange') as mock_float_range:
+             patch('config_rule_prompts.IntRange') as mock_int_range, \
+             patch('config_rule_prompts.FloatRange') as mock_float_range:
 
             # Confirm FloatRange called, IntRange not called
-            rule = self.generator.default_rule_prompt_router(mock_config)
+            rule = default_rule_prompt_router(mock_config)
             self.assertEqual(rule, '5.5')
             self.assertTrue(mock_float_range.called)
             self.assertFalse(mock_int_range.called)
@@ -1118,11 +1130,11 @@ class TestRegressions(TestCase):
         self.mock_ask.ask.side_effect = ['Float', '5.5']
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
-             patch('config_generator.IntRange') as mock_int_range, \
-             patch('config_generator.FloatRange') as mock_float_range:
+             patch('config_rule_prompts.IntRange') as mock_int_range, \
+             patch('config_rule_prompts.FloatRange') as mock_float_range:
 
             # Confirm FloatRange called, IntRange not called
-            rule = self.generator.schedule_rule_prompt_router(mock_config)
+            rule = schedule_rule_prompt_router(mock_config)
             self.assertEqual(rule, '5.5')
             self.assertTrue(mock_float_range.called)
             self.assertFalse(mock_int_range.called)
