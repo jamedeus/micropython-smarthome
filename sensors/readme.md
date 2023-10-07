@@ -1,6 +1,24 @@
 # Writing new sensor classes
 
-All new sensor classes must subclass [Sensor.py](sensors/Sensor.py), which is itself a subclass of [Instance.py](core/Instance.py). These provide methods required to interface with the API, including `enable`, `disable`, `set_rule`, etc. These can be extended or overridden as needed.
+Adding new sensor types requires 2 files:
+- A micropython sensor class which interfaces with the hardware and integrates it into the API
+- A JSON manifest used to integrate the sensor with client-side tooling
+
+Some hardware sensors (especially i2c devices) may require driver libraries that are not part of the micropython stdlib, these should be placed in [`lib/`](lib/).
+
+## Naming Conventions
+
+Sensors are identified by 2 names:
+- Class name: The literal class name from the micropython driver, written in CamelCase
+- Config name: The string used for the config file `_type` parameter, written in lowercase with hyphens separating words
+
+Both names are used in a mapping dict which controls which class is instantiated at boot time (see `hardware_classes` in [Config.py](core/Config.py)).
+
+Two names are required because multiple hardware types can share a single class. For example, the [Tplink](devices/Tplink.py) class is used for both smart dimmers and smart bulbs, which have different API call syntax. The `_type` parameter determines which syntax is used in this case. This approach allows much more code reuse than maintaining separate classes for each.
+
+## Sensor Class
+
+All sensor classes must subclass [Sensor.py](sensors/Sensor.py), which is itself a subclass of [Instance.py](core/Instance.py). These provide methods required to interface with the API, including `enable`, `disable`, `set_rule`, etc. These can be extended or overridden as needed.
 
 All sensor classes **must** include a `condition_met` method, which determines when the sensor's targets are turned on and off. The `condition_met` method should return:
 - `True` when targets should turn on
@@ -9,18 +27,49 @@ All sensor classes **must** include a `condition_met` method, which determines w
 
 By default all sensors support the rules `Enabled` and `Disabled`. If more rules are required the sensor must include a `validator` method. This method accepts a rule as argument, returns `False` if it is invalid, and returns the rule if it is valid. Returning a modified rule is encouraged in some situations - for example, a class which expects an integer rule should return `int(rule)` to avoid incorrectly accepting string representations of integers.
 
-## Configuration
+## Sensor Manifest
 
-Config file syntax for the new sensor must be specified in the `config_templates` dict in [`util/validation_constants.py`](util/validation_constants.py). The sensor class name (CamelCase) must be used as the key. The `_type` parameter should contain the same name in lowercase with hyphens separating words. This parameter is read at boot to determine which class will be instantiated.
+The manifest must follow this syntax:
+```
+{
+    "config_name": "",
+    "class_name": "",
+    "description": "",
+    "dependencies": [
+        "sensors/Sensor.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "",
+        "nickname": "placeholder",
+        "default_rule": "placeholder",
+        "schedule": {},
+        "targets": []
+    },
+    "rule_prompt": ""
+}
+```
+
+Parameters:
+- `config_name`: The config file `_type` parameter, lowercase with hyphens between words.
+- `class_name`: The name of the sensor class in your micropython file, CamelCase.
+- `dependencies`: A list of relative paths to all dependencies. This should include your sensor class, the `Sensor.py` and `core/Instance.py` base classes. If your sensor requires a driver from `lib/` then it must also be included (see [Thermostat.json](sensors/manifest/Thermostat.json) for an example).
+- `config_template`: A full template of the hardware-level config file for the sensor type.
+    - All parameters in the example above are required, but more can be added (for example, an `ip` parameter for network sensors).
+    - The `placeholder` keyword indicates that the [config generator script](CLI/config_generator.py) should prompt the user for input.
+    - The `_type` parameter must be pre-filled with the same value as `config_name`.
+    - The `schedule` and `targets` parameters must be empty
+- `rule_prompt`: Determines which rule prompt is shown by the config generator script, options:
+    - `standard`: User may select "Enabled" or "Disabled"
+    - `int_range`: User may select an integer, fade rule, "Enabled", or "Disabled"
+    - `float_range`: User may select a float, "Enabled", or "Disabled"
+    - `on_off`: User may select "On", "Off", "Enabled", or "Disabled"
 
 ## Integrating new sensor classes
 
 The following changes must be made when a new sensor class is added:
-- [ ] [`CLI/config_generator.py`](CLI/config_generator.py): Add the sensor's `_type` parameter to the correct conditional in `default_rule_prompt_router` and `schedule_rule_prompt_router`
 - [ ] [`Config.hardware_classes`](core/Config.py): Add the `_type` parameter as key and the class name as value
 - [ ] [`firmware/manifest.py`](firmware/manifest.py): Add a module statement pointing to the new sensor class
-- [ ] [`util/instance_validators.py`](util/instance_validators.py): Add a validator function for the new class, typically you can copy the validator method and return True instead of the rule
-- [ ] [`util/provision_tools.py`](util/provision_tools.py): Add the `_type` parameter as key in the dependencies dict with a list of dependency modules as value
-- [ ] [`util/validation_constants.py`](util/validation_constants.py): Add the class name as key in the config_templates dict and a full config template as value, using `placeholder` for all user-selectable parameters
+- [ ] [`util/instance_validators.py`](util/instance_validators.py): Add a validator function for the new class, typically you can copy the validator method and return True instead of the rule user-selectable parameters
 
 Once the above changes have been made, run the unit tests and fix anything that fails. At a minimum the module will need to be added to [`test_provision.py](tests/cli/test_provision.py) in the `test_provision_unit_tests` test case.
