@@ -1,5 +1,4 @@
-import os
-import json
+from helper_functions import get_device_and_sensor_manifests
 
 # All valid ESP32 pins, excluding input-only
 valid_device_pins = (
@@ -70,25 +69,16 @@ def build_config_templates():
         "sensor": {}
     }
 
-    # Resolve paths to devices/manifest/ and sensors/manifest/
-    util = os.path.dirname(os.path.realpath(__file__))
-    repo = os.path.split(util)[0]
-    device_manifest = os.path.join(repo, 'devices', 'manifest')
-    sensor_manifest = os.path.join(repo, 'sensors', 'manifest')
+    # Get object containing all device and sensor manifest objects
+    manifest = get_device_and_sensor_manifests()
 
-    # Iterate device manifests, add each config template to dict
-    for i in os.listdir(device_manifest):
-        with open(os.path.join(device_manifest, i), 'r') as file:
-            config = json.load(file)
-            name = config['class_name']
-            config_templates['device'][name] = config['config_template']
+    # Iterate device manifests, add each config template lists to dict
+    for i in manifest['devices']:
+        config_templates['device'][i['class_name']] = i['config_template']
 
-    # Iterate sensor manifests, add each config template to dict
-    for i in os.listdir(sensor_manifest):
-        with open(os.path.join(sensor_manifest, i), 'r') as file:
-            config = json.load(file)
-            name = config['class_name']
-            config_templates['sensor'][name] = config['config_template']
+    # Iterate sensor manifests, add each config template lists to dict
+    for i in manifest['sensors']:
+        config_templates['sensor'][i['class_name']] = i['config_template']
 
     return config_templates
 

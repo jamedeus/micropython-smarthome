@@ -1,8 +1,7 @@
 import os
-import json
 from Webrepl import Webrepl
 from api_endpoints import reboot
-from helper_functions import is_device, is_sensor
+from helper_functions import is_device, is_sensor, get_device_and_sensor_manifests
 
 
 # Returns dict containing dependency lists for all device and sensor types
@@ -14,25 +13,16 @@ def build_dependencies_dict():
         'sensors': {}
     }
 
-    # Resolve paths to devices/manifest/ and sensors/manifest/
-    util = os.path.dirname(os.path.realpath(__file__))
-    repo = os.path.split(util)[0]
-    device_manifest = os.path.join(repo, 'devices', 'manifest')
-    sensor_manifest = os.path.join(repo, 'sensors', 'manifest')
+    # Get object containing all device and sensor manifest objects
+    manifest = get_device_and_sensor_manifests()
 
-    # Iterate device manifests, add each config template to dict
-    for i in os.listdir(device_manifest):
-        with open(os.path.join(device_manifest, i), 'r') as file:
-            config = json.load(file)
-            name = config['config_name']
-            dependencies['devices'][name] = config['dependencies']
+    # Iterate device manifests, add dependency lists to dict
+    for i in manifest['devices']:
+        dependencies['devices'][i['config_name']] = i['dependencies']
 
-    # Iterate sensor manifests, add each config template to dict
-    for i in os.listdir(sensor_manifest):
-        with open(os.path.join(sensor_manifest, i), 'r') as file:
-            config = json.load(file)
-            name = config['config_name']
-            dependencies['sensors'][name] = config['dependencies']
+    # Iterate sensor manifests, add dependency lists to dict
+    for i in manifest['sensors']:
+        dependencies['sensors'][i['config_name']] = i['dependencies']
 
     return dependencies
 

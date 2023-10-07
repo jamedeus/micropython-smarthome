@@ -153,3 +153,27 @@ def get_existing_nodes():
 def load_unit_test_config():
     with open(os.path.join(util, 'unit-test-config.json')) as file:
         return json.load(file)
+
+
+# Reads all device and sensor manifest files
+# Returns dict with devices and sensors keys, each containing list of manifest objects
+def get_device_and_sensor_manifests():
+    manifest = {'devices': [], 'sensors': []}
+
+    # Resolve paths to devices/manifest/ and sensors/manifest/
+    util = os.path.dirname(os.path.realpath(__file__))
+    repo = os.path.split(util)[0]
+    device_manifest = os.path.join(repo, 'devices', 'manifest')
+    sensor_manifest = os.path.join(repo, 'sensors', 'manifest')
+
+    # Load each device manifest and add to output object
+    for i in os.listdir(device_manifest):
+        with open(os.path.join(device_manifest, i), 'r') as file:
+            manifest['devices'].append(json.load(file))
+
+    # Load each sensor manifest and add to output object
+    for i in os.listdir(sensor_manifest):
+        with open(os.path.join(sensor_manifest, i), 'r') as file:
+            manifest['sensors'].append(json.load(file))
+
+    return manifest
