@@ -8,11 +8,11 @@ from helper_functions import (
     is_sensor,
     is_device_or_sensor,
     get_existing_nodes,
-    get_device_and_sensor_manifests
+    get_device_and_sensor_metadata
 )
 
 
-# Reads all manifest files, returns 2 mapping dicts with config names as keys:
+# Reads all metadata files, returns 2 mapping dicts with config names as keys:
 # - rule_prompt_map: Contains keys for every class, values are rule prompt
 #   functions. All rule prompt functions accept config arg and rule_type arg
 #   ("default" or "schedule"). The rule_type arg determines which options
@@ -24,14 +24,14 @@ def build_rule_prompt_maps():
     rule_prompt_map = {}
     rule_limits_map = {}
 
-    # Get object containing all device and sensor manifest objects
-    manifests = get_device_and_sensor_manifests()
+    # Get object containing all device and sensor metadata objects
+    metadata = get_device_and_sensor_metadata()
 
     # Combine into single list
-    manifests = manifests['devices'] + manifests['sensors']
+    metadata = metadata['devices'] + metadata['sensors']
 
-    # Iterate manifest objects, add config_name as map key, prompt function as value
-    for i in manifests:
+    # Iterate metadata objects, add config_name as map key, prompt function as value
+    for i in metadata:
         _type = i['config_name']
         prompt = i['rule_prompt']
 
@@ -49,7 +49,7 @@ def build_rule_prompt_maps():
         else:
             rule_prompt_map[_type] = standard_rule_prompt
 
-        # If manifest contains rule_limits_map key, add to dict
+        # If metadata contains rule_limits_map key, add to dict
         if "rule_limits" in i.keys():
             rule_limits_map[_type] = i['rule_limits']
 

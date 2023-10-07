@@ -1,4 +1,4 @@
-from helper_functions import get_device_and_sensor_manifests
+from helper_functions import get_device_and_sensor_metadata
 
 # All valid ESP32 pins, excluding input-only
 valid_device_pins = (
@@ -69,21 +69,21 @@ def build_config_templates():
         "sensor": {}
     }
 
-    # Get object containing all device and sensor manifest objects
-    manifest = get_device_and_sensor_manifests()
+    # Get object containing all device and sensor metadata objects
+    metadata = get_device_and_sensor_metadata()
 
-    # Iterate device manifests, add each config template lists to dict
-    for i in manifest['devices']:
+    # Iterate device metadata files, add each config template lists to dict
+    for i in metadata['devices']:
         config_templates['device'][i['class_name']] = i['config_template']
 
-    # Iterate sensor manifests, add each config template lists to dict
-    for i in manifest['sensors']:
+    # Iterate sensor metadata files, add each config template lists to dict
+    for i in metadata['sensors']:
         config_templates['sensor'][i['class_name']] = i['config_template']
 
     return config_templates
 
 
-# Combine config templates from all device and sensor manifests
+# Combine config templates from all device and sensor metadata files
 config_templates = build_config_templates()
 
 

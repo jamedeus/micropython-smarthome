@@ -155,25 +155,25 @@ def load_unit_test_config():
         return json.load(file)
 
 
-# Reads all device and sensor manifest files
-# Returns dict with devices and sensors keys, each containing list of manifest objects
-def get_device_and_sensor_manifests():
-    manifest = {'devices': [], 'sensors': []}
+# Reads all device and sensor metadata files
+# Returns dict with devices and sensors keys, each containing list of metadata objects
+def get_device_and_sensor_metadata():
+    metadata = {'devices': [], 'sensors': []}
 
-    # Resolve paths to devices/manifest/ and sensors/manifest/
+    # Resolve paths to devices/metadata/ and sensors/metadata/
     util = os.path.dirname(os.path.realpath(__file__))
     repo = os.path.split(util)[0]
-    device_manifest = os.path.join(repo, 'devices', 'manifest')
-    sensor_manifest = os.path.join(repo, 'sensors', 'manifest')
+    device_metadata = os.path.join(repo, 'devices', 'metadata')
+    sensor_metadata = os.path.join(repo, 'sensors', 'metadata')
 
-    # Load each device manifest and add to output object
-    for i in os.listdir(device_manifest):
-        with open(os.path.join(device_manifest, i), 'r') as file:
-            manifest['devices'].append(json.load(file))
+    # Load each device metadata and add to output object
+    for i in os.listdir(device_metadata):
+        with open(os.path.join(device_metadata, i), 'r') as file:
+            metadata['devices'].append(json.load(file))
 
-    # Load each sensor manifest and add to output object
-    for i in os.listdir(sensor_manifest):
-        with open(os.path.join(sensor_manifest, i), 'r') as file:
-            manifest['sensors'].append(json.load(file))
+    # Load each sensor metadata and add to output object
+    for i in os.listdir(sensor_metadata):
+        with open(os.path.join(sensor_metadata, i), 'r') as file:
+            metadata['sensors'].append(json.load(file))
 
-    return manifest
+    return metadata

@@ -1,7 +1,7 @@
 import os
 from Webrepl import Webrepl
 from api_endpoints import reboot
-from helper_functions import is_device, is_sensor, get_device_and_sensor_manifests
+from helper_functions import is_device, is_sensor, get_device_and_sensor_metadata
 
 
 # Returns dict containing dependency lists for all device and sensor types
@@ -13,21 +13,21 @@ def build_dependencies_dict():
         'sensors': {}
     }
 
-    # Get object containing all device and sensor manifest objects
-    manifest = get_device_and_sensor_manifests()
+    # Get object containing all device and sensor metadata objects
+    metadata = get_device_and_sensor_metadata()
 
-    # Iterate device manifests, add dependency lists to dict
-    for i in manifest['devices']:
+    # Iterate device metadata files, add dependency lists to dict
+    for i in metadata['devices']:
         dependencies['devices'][i['config_name']] = i['dependencies']
 
-    # Iterate sensor manifests, add dependency lists to dict
-    for i in manifest['sensors']:
+    # Iterate sensor metadata files, add dependency lists to dict
+    for i in metadata['sensors']:
         dependencies['sensors'][i['config_name']] = i['dependencies']
 
     return dependencies
 
 
-# Combine dependency relative paths from all device and sensor manifests, used by get_modules
+# Combine dependency relative paths from all device and sensor metadatas, used by get_modules
 dependencies = build_dependencies_dict()
 
 # Core module relative paths, required regardless of configuration

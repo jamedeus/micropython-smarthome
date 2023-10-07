@@ -2,13 +2,13 @@
 
 This module contains hardware drivers for all supported sensors.
 
-The manifest directory contains metadata used to integrate each class with various tools (config generation, provisioning, etc).
+The metadata directory contains metadata used to integrate each class with various tools (config generation, provisioning, etc).
 
 ## Development
 
 Adding new sensor types requires 2 files:
 - A micropython sensor class which interfaces with the hardware and integrates it into the API
-- A JSON manifest used to integrate the sensor with client-side tooling
+- A JSON metadata file used to integrate the sensor with client-side tooling
 
 Some hardware sensors (especially i2c devices) may require driver libraries that are not part of the micropython stdlib, these should be placed in [`lib/`](lib/).
 
@@ -35,7 +35,7 @@ By default all sensors support the rules `Enabled` and `Disabled`. If more rules
 
 ### Sensor Manifest
 
-The manifest must follow this syntax:
+The JSON metadata must follow this syntax:
 ```
 {
     "config_name": "",
@@ -60,7 +60,7 @@ The manifest must follow this syntax:
 Parameters:
 - `config_name`: The config file `_type` parameter, lowercase with hyphens between words.
 - `class_name`: The name of the sensor class in your micropython file, CamelCase.
-- `dependencies`: A list of relative paths to all dependencies. This should include your sensor class, the `Sensor.py` and `core/Instance.py` base classes. If your sensor requires a driver from `lib/` then it must also be included (see [Thermostat.json](sensors/manifest/Thermostat.json) for an example).
+- `dependencies`: A list of relative paths to all dependencies. This should include your sensor class, the `Sensor.py` and `core/Instance.py` base classes. If your sensor requires a driver from `lib/` then it must also be included (see [Thermostat.json](sensors/metadata/Thermostat.json) for an example).
 - `config_template`: A full template of the hardware-level config file for the sensor type.
     - All parameters in the example above are required, but more can be added (for example, an `ip` parameter for network sensors).
     - The `placeholder` keyword indicates that the [config generator script](CLI/config_generator.py) should prompt the user for input.
