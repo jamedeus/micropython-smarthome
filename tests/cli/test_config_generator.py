@@ -7,7 +7,7 @@ from helper_functions import load_unit_test_config
 from config_generator import GenerateConfigFile, IntRange, FloatRange, MinLength, NicknameValidator
 from config_rule_prompts import (
     api_call_prompt,
-    rule_prompt_with_api_call_prompt,
+    api_target_schedule_rule_prompt,
     default_rule_prompt_router,
     schedule_rule_prompt_router
 )
@@ -956,7 +956,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.confirm', return_value=self.mock_ask), \
              patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
-            rule = rule_prompt_with_api_call_prompt(mock_config)
+            rule = api_target_schedule_rule_prompt(mock_config)
             self.assertEqual(rule, {"on": ["enable", "device1"], "off": ["set_rule", "sensor1", "50"]})
 
         # Call again with simulated input selecting IR Blaster options, confirm correct rule returned
@@ -973,7 +973,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.confirm', return_value=self.mock_ask), \
              patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
-            rule = rule_prompt_with_api_call_prompt(mock_config)
+            rule = api_target_schedule_rule_prompt(mock_config)
             self.assertEqual(rule, {"on": ["ir_key", "tv", "power"], "off": ["ignore"]})
 
         # Call schedule rule router with simulated input selecting 'Enabled' option

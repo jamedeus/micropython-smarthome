@@ -24,75 +24,137 @@ rule_limits = {
 }
 
 
-# Rule prompt for instances that only support standard rules (Enabled and Disabled)
-def standard_rule_prompt(config=None):
+# Reads all manifest files, returns mapping dict with config names as keys and
+# rule prompt functions as values. All rule prompt functions accept config arg
+# and rule type arg ("default" or "schedule"). The rule_type arg determines
+# which options are shown (typically "default" ommits "Enabled" and "Disabled")
+def build_rule_prompt_map():
+    rule_prompt_map = {}
+
+    # Get object containing all device and sensor manifest objects
+    manifests = get_device_and_sensor_manifests()
+
+    # Combine into single list
+    manifests = manifests['devices'] + manifests['sensors']
+
+    # Iterate manifest objects, add config_name as map key, prompt function as value
+    for i in manifests:
+        _type = i['config_name']
+        prompt = i['rule_prompt']
+
+        # Determine correct prompt functions using rule_prompt key
+        if prompt == "int_range":
+            rule_prompt_map[_type] = int_or_fade_rule_prompt
+        elif prompt == "float_range":
+            rule_prompt_map[_type] = float_rule_prompt
+        elif prompt == "on_off":
+            rule_prompt_map[_type] = on_off_rule_prompt
+        elif prompt == "api_target":
+            rule_prompt_map[_type] = api_target_rule_prompt
+        else:
+            rule_prompt_map[_type] = standard_rule_prompt
+
+    return rule_prompt_map
+
+
+# Takes partial config, runs appropriate default rule prompt for instance type, returns user selection
+def default_rule_prompt_router(config):
+    return rule_prompt_map[config['_type']](config, 'default')
+
+
+# Takes partial config, runs appropriate schedule rule prompt for instance type, returns user selection
+def schedule_rule_prompt_router(config):
+    return rule_prompt_map[config['_type']](config, 'schedule')
+
+
+# Rule prompt for instances that only support standard rules ("Enabled" and "Disabled")
+# Same prompt for default and schedule rules
+def standard_rule_prompt(config, rule_type):
     return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
 
 
 # Rule prompt for instances that support "On" and "Off" in addition to standard rules
-def standard_rule_prompt_with_on_off(config=None):
-    return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
+# Default prompt: Only show "On" and "Off" (standard rules are invalid)
+# Schedule prompt: Show standard rules in addition to "On" and "Off"
+def on_off_rule_prompt(config, rule_type):
+    # Default rule prompt
+    if rule_type == "default":
+        return questionary.select("Enter default rule", choices=['On', 'Off']).ask()
 
-
-# Rule prompt for instances that support "On" and "Off" rules
-# Used for default rule prompt where standard rules are not allowed
-def on_off_rule_prompt(config=None):
-    return questionary.select("Enter default rule", choices=['On', 'Off']).ask()
-
-
-# Rule prompt for instances that support float rules
-# Used for default rule prompt where standard rules are not allowed
-def float_rule_prompt(config):
-    minimum, maximum = rule_limits[config['_type']]
-    return questionary.text("Enter default rule", validate=FloatRange(minimum, maximum)).ask()
-
-
-# Rule prompt for instances that support float in addition to enabled/disabled
-def rule_prompt_with_float_option(config):
-    minimum, maximum = rule_limits[config['_type']]
-    choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Float']).ask()
-    if choice == 'Float':
-        return questionary.text("Enter rule", validate=FloatRange(minimum, maximum)).ask()
+    # Schedule rule prompt
     else:
-        return choice
+        return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
 
 
-# Rule prompt for isinstances that support int rules
-# Used for default rule prompt where standard rules are not allowed
-def int_rule_prompt(config):
+# Rule prompt for instances that support float rules in addition to standard rules
+# Default prompt: Only show float prompt (standard rules are invalid)
+# Schedule prompt: Show standard rules in addition to float
+def float_rule_prompt(config, rule_type):
+    minimum, maximum = rule_limits[config['_type']]
+
+    # Default rule prompt
+    if rule_type == "default":
+        return questionary.text("Enter default rule", validate=FloatRange(minimum, maximum)).ask()
+
+    # Schedule rule prompt
+    else:
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Float']).ask()
+        if choice == 'Float':
+            return questionary.text("Enter rule", validate=FloatRange(minimum, maximum)).ask()
+        else:
+            return choice
+
+
+# Rule prompt for DimmableLight subclasses (support int and fade rules in addition to standard)
+# Default prompt: Require int rule (fade and standard are invalid)
+# Schedule prompt: Show standard rules and fade prompt in addition to int
+def int_or_fade_rule_prompt(config, rule_type):
     minimum = config['min_bright']
     maximum = config['max_bright']
-    return questionary.text("Enter default rule", validate=IntRange(minimum, maximum)).ask()
 
+    # Default rule prompt
+    if rule_type == "default":
+        return questionary.text("Enter default rule", validate=IntRange(minimum, maximum)).ask()
 
-# Rule prompt for DimmableLight instances, includes int and fade in addition to enabled/disabled
-def rule_prompt_int_and_fade_options(config):
-    minimum = config['min_bright']
-    maximum = config['max_bright']
-    choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int', 'Fade']).ask()
-    if choice == 'Int':
-        return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
-    if choice == 'Fade':
-        target = questionary.text("Enter target brightness", validate=IntRange(minimum, maximum)).ask()
-        period = questionary.text("Enter duration in seconds", validate=IntRange(1, 86400)).ask()
-        return f'fade/{target}/{period}'
+    # Schedule rule prompt
     else:
-        return choice
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int', 'Fade']).ask()
+        if choice == 'Int':
+            return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
+        if choice == 'Fade':
+            target = questionary.text("Enter target brightness", validate=IntRange(minimum, maximum)).ask()
+            period = questionary.text("Enter duration in seconds", validate=IntRange(1, 86400)).ask()
+            return f'fade/{target}/{period}'
+        else:
+            return choice
 
 
-# Schedule rule prompt for ApiTarget, includes API call option in addition to enabled/disabled
+# Rule prompt used by ApiTarget device class (supports complicated dict rules)
+# Default prompt: Go directly to API call rule prompt
+# Schedule prompt: Give options for standard rules or API call rule
+def api_target_rule_prompt(config, rule_type):
+    # Default rule prompt
+    if rule_type == "default":
+        return api_call_rule_prompt(config)
+
+    # Schedule rule prompt
+    else:
+        return api_target_schedule_rule_prompt(config)
+
+
+# Shows standard rule options in addition to API call option
 # Only used for schedule rules, enabled/disabled are invalid as default_rule
-def rule_prompt_with_api_call_prompt(config):
+def api_target_schedule_rule_prompt(config):
     choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'API Call']).ask()
     if choice == 'API Call':
-        return api_target_rule_prompt(config)
+        return api_call_rule_prompt(config)
     else:
         return choice
 
 
 # Prompt user to select API call parameters for both ON and OFF actions
 # Returns complete ApiTarget rule dict
-def api_target_rule_prompt(config):
+def api_call_rule_prompt(config):
     if questionary.confirm("Should an API call be made when the device is turned ON?").ask():
         print('\nAPI Target ON action')
         on_action = api_call_prompt(config)
@@ -110,7 +172,7 @@ def api_target_rule_prompt(config):
 
 
 # Prompt user to select parameters for an individual API call
-# Called by api_target_rule_prompt for both on and off actions
+# Called by api_call_rule_prompt for both on and off actions
 def api_call_prompt(config):
     # Read target node config file from disk
     config = load_config_from_ip(config['ip'])
@@ -175,57 +237,5 @@ def load_config_from_ip(ip):
         raise SystemExit
 
 
-# Takes partial config, runs appropriate default_rule prompt
-# based on instance type, returns user selection
-def default_rule_prompt_router(config):
-    return rule_prompt_map[config['_type']]['default'](config)
-
-
-# Takes partial config, runs appropriate schedule rule prompt
-# based on instance type, returns user selection
-def schedule_rule_prompt_router(config):
-    return rule_prompt_map[config['_type']]['schedule'](config)
-
-
-# Reads all manifest files, returns mapping dict with config names as keys
-# Each entry contains "default" and "schedule" subkeys containing prompt functions
-# Map is used to route default rule and schedule rule prompts to the correct functions
-def build_rule_prompt_map():
-    rule_prompt_map = {}
-
-    # Get object containing all device and sensor manifest objects
-    manifests = get_device_and_sensor_manifests()
-
-    # Combine into single list
-    manifests = manifests['devices'] + manifests['sensors']
-
-    # Iterate manifest objects, add config_name to map as key, add
-    # "default" and "schedule" subkeys with correct prompt function
-    for i in manifests:
-        _type = i['config_name']
-        prompt = i['rule_prompt']
-
-        # Template
-        rule_prompt_map[_type] = {'default': '', 'schedule': ''}
-
-        # Determine correct prompt functions using rule_prompt key
-        if prompt == "int_range":
-            rule_prompt_map[_type]['default'] = int_rule_prompt
-            rule_prompt_map[_type]['schedule'] = rule_prompt_int_and_fade_options
-        elif prompt == "float_range":
-            rule_prompt_map[_type]['default'] = float_rule_prompt
-            rule_prompt_map[_type]['schedule'] = rule_prompt_with_float_option
-        elif prompt == "on_off":
-            rule_prompt_map[_type]['default'] = on_off_rule_prompt
-            rule_prompt_map[_type]['schedule'] = standard_rule_prompt_with_on_off
-        elif prompt == "api_target":
-            rule_prompt_map[_type]['default'] = api_target_rule_prompt
-            rule_prompt_map[_type]['schedule'] = rule_prompt_with_api_call_prompt
-        else:
-            rule_prompt_map[_type]['default'] = standard_rule_prompt
-            rule_prompt_map[_type]['schedule'] = standard_rule_prompt
-
-    return rule_prompt_map
-
-
+# Build mapping dict (must call after functions are declared)
 rule_prompt_map = build_rule_prompt_map()
