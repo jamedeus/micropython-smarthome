@@ -13,5 +13,6 @@
         "schedule": {},
         "targets": []
     },
-    "rule_prompt": "float_range"
+    "rule_prompt": "float_range",
+    "rule_limits": [0, 10000000]
 }

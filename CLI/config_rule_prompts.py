@@ -11,25 +11,18 @@ from helper_functions import (
     get_device_and_sensor_manifests
 )
 
-# Map int rule limits to device/sensor types
-# TODO integrate into manifest/metadata
-rule_limits = {
-    'dimmer': (1, 100),
-    'bulb': (1, 100),
-    'pwm': (0, 1023),
-    'wled': (1, 255),
-    'pir': (0, 60),
-    'si7021': (65, 80),
-    'load-cell': (0, 10000000)
-}
 
-
-# Reads all manifest files, returns mapping dict with config names as keys and
-# rule prompt functions as values. All rule prompt functions accept config arg
-# and rule type arg ("default" or "schedule"). The rule_type arg determines
-# which options are shown (typically "default" ommits "Enabled" and "Disabled")
-def build_rule_prompt_map():
+# Reads all manifest files, returns 2 mapping dicts with config names as keys:
+# - rule_prompt_map: Contains keys for every class, values are rule prompt
+#   functions. All rule prompt functions accept config arg and rule_type arg
+#   ("default" or "schedule"). The rule_type arg determines which options
+#   are shown (typically "default" ommits "Enabled" and "Disabled").
+#
+# - rule_limits_map: Only contains keys for classes which accept numeric (int
+#   or float) rules, values are 2 tuples with minimum, maximum valid rules.
+def build_rule_prompt_maps():
     rule_prompt_map = {}
+    rule_limits_map = {}
 
     # Get object containing all device and sensor manifest objects
     manifests = get_device_and_sensor_manifests()
@@ -54,7 +47,11 @@ def build_rule_prompt_map():
         else:
             rule_prompt_map[_type] = standard_rule_prompt
 
-    return rule_prompt_map
+        # If manifest contains rule_limits_map key, add to dict
+        if "rule_limits" in i.keys():
+            rule_limits_map[_type] = i['rule_limits']
+
+    return rule_prompt_map, rule_limits_map
 
 
 # Takes partial config, runs appropriate default rule prompt for instance type, returns user selection
@@ -90,7 +87,7 @@ def on_off_rule_prompt(config, rule_type):
 # Default prompt: Only show float prompt (standard rules are invalid)
 # Schedule prompt: Show standard rules in addition to float
 def float_rule_prompt(config, rule_type):
-    minimum, maximum = rule_limits[config['_type']]
+    minimum, maximum = rule_limits_map[config['_type']]
 
     # Default rule prompt
     if rule_type == "default":
@@ -238,4 +235,4 @@ def load_config_from_ip(ip):
 
 
 # Build mapping dict (must call after functions are declared)
-rule_prompt_map = build_rule_prompt_map()
+rule_prompt_map, rule_limits_map = build_rule_prompt_maps()

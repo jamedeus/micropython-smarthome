@@ -8,7 +8,7 @@ from instance_validators import validate_rules
 from validate_config import validate_full_config
 from config_prompt_validators import IntRange, FloatRange, MinLength, NicknameValidator
 from validation_constants import valid_device_pins, valid_sensor_pins, config_templates
-from config_rule_prompts import default_rule_prompt_router, schedule_rule_prompt_router
+from config_rule_prompts import default_rule_prompt_router, schedule_rule_prompt_router, rule_limits_map
 from helper_functions import (
     valid_ip,
     valid_timestamp,
@@ -19,18 +19,6 @@ from helper_functions import (
     get_existing_nodes,
     get_cli_config
 )
-
-# Map int rule limits to device/sensor types
-# TODO integrate into manifest/metadata
-rule_limits = {
-    'dimmer': (1, 100),
-    'bulb': (1, 100),
-    'pwm': (0, 1023),
-    'wled': (1, 255),
-    'pir': (0, 60),
-    'si7021': (65, 80),
-    'load-cell': (0, 10000000)
-}
 
 
 class GenerateConfigFile:
@@ -204,15 +192,15 @@ class GenerateConfigFile:
             elif i == "min_bright":
                 config[i] = questionary.text(
                     "Enter minimum brightness",
-                    default=str(rule_limits[_type][0]),
-                    validate=IntRange(*rule_limits[_type])
+                    default=str(rule_limits_map[_type][0]),
+                    validate=IntRange(*rule_limits_map[_type])
                 ).ask()
 
             elif i == "max_bright":
                 config[i] = questionary.text(
                     "Enter maximum brightness",
-                    default=str(rule_limits[_type][1]),
-                    validate=IntRange(config['min_bright'], rule_limits[_type][1])
+                    default=str(rule_limits_map[_type][1]),
+                    validate=IntRange(config['min_bright'], rule_limits_map[_type][1])
                 ).ask()
 
             # ApiTarget has own IP prompt (select friendly name from nodes in cli_config.json)
