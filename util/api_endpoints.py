@@ -390,3 +390,17 @@ def set_gps_coords(ip, params):
         return asyncio.run(request(ip, ['set_gps_coords', payload]))
     else:
         raise SyntaxError
+
+
+@add_endpoint("load_cell_tare")
+@requires_params
+@requires_sensor("Must specify load cell sensor")
+def load_cell_tare(ip, target, params):
+    return asyncio.run(request(ip, ['load_cell_tare', target]))
+
+
+@add_endpoint("load_cell_read")
+@requires_params
+@requires_sensor("Must specify load cell sensor")
+def load_cell_get_raw_reading(ip, target, params):
+    return asyncio.run(request(ip, ['load_cell_read', target]))

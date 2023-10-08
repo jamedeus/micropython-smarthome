@@ -634,3 +634,22 @@ def set_gps_coords(args):
     }
     write_config_to_disk(config)
     return {"Success": "GPS coordinates set"}
+
+
+@app.route("load_cell_tare")
+@app.required_args(1)
+@app.get_target_instance
+def load_cell_tare(target, args):
+    if target._type != 'load-cell':
+        return {"ERROR": "Must specify load cell sensor"}
+    target.tare_sensor()
+    return {"Success": "Sensor tared"}
+
+
+@app.route("load_cell_read")
+@app.required_args(1)
+@app.get_target_instance
+def load_cell_read(target, args):
+    if target._type != 'load-cell':
+        return {"ERROR": "Must specify load cell sensor"}
+    return {"Raw": target.get_raw_reading()}

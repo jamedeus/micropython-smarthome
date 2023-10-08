@@ -39,7 +39,6 @@ class LoadCell(Sensor):
             return False
 
     # Used for calibration
-    # TODO add API endpoint
     def get_raw_reading(self):
         return self.sensor.get_value()
 
