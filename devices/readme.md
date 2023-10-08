@@ -22,7 +22,7 @@ Both names are used in a mapping dict which controls which class is instantiated
 
 Two names are required because multiple hardware types can share a single class. For example, the [Tplink](devices/Tplink.py) class is used for both smart dimmers and smart bulbs, which have different API call syntax. The `_type` parameter determines which syntax is used in this case. This approach allows much more code reuse than maintaining separate classes for each.
 
-### Sensor Class
+### Device Class
 
 All device classes must subclass [Device.py](devices/Device.py), which is itself a subclass of [Instance.py](core/Instance.py). These provide methods required to interface with the API, including `enable`, `disable`, `set_rule`, etc. These can be extended or overridden as needed.
 
@@ -32,7 +32,7 @@ All device classes **must** include a `send` method which accepts a boolean argu
 
 By default all devices support the rules `Enabled` and `Disabled`. If more rules are required the device must include a `validator` method. This method accepts a rule as argument, returns `False` if it is invalid, and returns the rule if it is valid. Returning a modified rule is encouraged in some situations - for example, a class which expects an integer rule should return `int(rule)` to avoid incorrectly accepting string representations of integers.
 
-### Sensor Manifest
+### Device Manifest
 
 The JSON metadata must follow this syntax:
 ```
@@ -58,7 +58,7 @@ The JSON metadata must follow this syntax:
 Parameters:
 - `config_name`: The config file `_type` parameter, lowercase with hyphens between words.
 - `class_name`: The name of the device class in your micropython file, CamelCase.
-- `dependencies`: A list of relative paths to all dependencies. This should include your device class, the `Sensor.py` and `core/Instance.py` base classes. If your device requires a driver from `lib/` then it must also be included (see [Thermostat.json](sensors/metadata/Thermostat.json) for an example).
+- `dependencies`: A list of relative paths to all dependencies. This should include your device class, the `Device.py` and `core/Instance.py` base classes. If your device requires a driver from `lib/` then it must also be included (see [Thermostat.json](sensors/metadata/Thermostat.json) for an example).
 - `config_template`: A full template of the hardware-level config file for the device type.
     - All parameters in the example above are required, but more can be added (for example, an `ip` parameter for network devices).
     - The `placeholder` keyword indicates that the [config generator script](CLI/config_generator.py) should prompt the user for input.
