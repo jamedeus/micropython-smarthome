@@ -22,7 +22,9 @@ Add the IP of your docker host to [unit_test_config.json](tests/firmware/unit_te
 ```
 "mock_receiver": {
     "ip": "192.168.1.229",
-    "port": 8956
+    "port": 8956,
+    "error_port": 8955,
+    "api_port": 8321
 }
 ```
 
@@ -32,6 +34,17 @@ cd ../../
 coverage run --source='core,devices,sensors' tests/mock_environment/runtests.py
 coverage report -m --precision=1
 ```
+
+## Ports
+
+If the default ports `8956`, `8955`, and `8321` are already in use they must be changed in **both** [unit_test_config.json](tests/firmware/unit_test_config.json) and [docker-compose.yaml](tests/mock_environment/mock_command_receiver/docker-compose.yaml).
+
+These ports are used for:
+- `port`: Simulates successful API calls to Tasmota devices, WLED instances, and desktop integration
+- `error_port`: Simulates failed API calls, returns 500 to all requests
+- `api_port`: Simulates another ESP32 node for [ApiTarget](tests/firmware/test_device_apitarget.py) tests
+
+The port `9999` is used to simulate requests to TpLink Kasa devices. This cannot be changed because it is not configurable on the actual TpLink devices (the same test suite is run against physical hardware when run outside the mocked environment).
 
 ## Mocked Micropython Modules
 - [x] machine.pin
