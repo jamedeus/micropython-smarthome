@@ -368,26 +368,33 @@ class GenerateConfigFile:
     # with all configured devices as options. Add all checked devices
     # to sensor targets list.
     def select_sensor_targets(self):
-        # Get list of all sensor IDs
+        # Get list of all sensor and device IDs
         sensors = [key for key in self.config.keys() if is_sensor(key)]
+        devices = [key for key in self.config.keys() if is_device(key)]
+
+        # Skip step if no devices
+        if len(devices) == 0:
+            return
 
         # Map strings displayed for each device option (syntax: "Nickname (type)") to their IDs
         targets_map = {}
-        for key in [key for key in self.config.keys() if is_device(key)]:
+        for key in devices:
             display = f"{self.config[key]['nickname']} ({self.config[key]['_type']})"
             targets_map[display] = key
-
-        # Skip step if no devices
-        if len(targets_map.keys()) == 0:
-            return
 
         print("\nSelect target devices for each sensor")
         print("All targets will turn on when the sensor is activated")
 
         # Show checkbox prompt for each sensor with all devices as options
         for sensor in sensors:
+            # Build Choice objects for each device option
+            # Pre-select option if device is already a target in existing config file
+            options = []
+            for display, device in targets_map.items():
+                options.append(questionary.Choice(display, checked=bool(device in self.config[sensor]['targets'])))
+
             prompt = f"\nSelect targets for {self.config[sensor]['nickname']} ({self.config[sensor]['_type']})"
-            targets = questionary.checkbox(prompt, choices=targets_map.keys()).ask()
+            targets = questionary.checkbox(prompt, choices=options).ask()
 
             # Add selection to config
             self.config[sensor]['targets'] = [targets_map[i] for i in targets]
