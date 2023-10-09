@@ -153,6 +153,7 @@ class TestInstantiation(TestCase):
             self.assertEqual(mock_provision.call_args[0][0], '192.168.1.123')
 
     def test_provision_unit_tests(self):
+        self.maxDiff = None
         # Expected test modules
         test_modules = {
             os.path.join(repo, 'devices', 'Tplink.py'): 'Tplink.py',
@@ -191,6 +192,7 @@ class TestInstantiation(TestCase):
             os.path.join(repo, 'tests', 'firmware', 'test_sensor_motionsensor.py'): 'test_sensor_motionsensor.py',
             os.path.join(repo, 'tests', 'firmware', 'test_device_ledstrip.py'): 'test_device_ledstrip.py',
             os.path.join(repo, 'tests', 'firmware', 'test_sensor_dummy.py'): 'test_sensor_dummy.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_sensor_load_cell.py'): 'test_sensor_load_cell.py',
             os.path.join(repo, 'tests', 'firmware', 'test_device_relay.py'): 'test_device_relay.py',
             os.path.join(repo, 'tests', 'firmware', 'test_core_main.py'): 'test_core_main.py',
             os.path.join(repo, 'tests', 'firmware', 'test_core_softwaretimer.py'): 'test_core_softwaretimer.py',

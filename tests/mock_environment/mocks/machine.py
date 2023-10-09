@@ -25,6 +25,10 @@ class Pin:
     def irq(self, trigger=None, handler=None):
         pass
 
+    # Alias to value method
+    def __call__(self, val=None):
+        return self.value(val)
+
 
 class PWM:
     def __init__(self, pin, duty=0):
@@ -121,3 +125,11 @@ class Reset:
 
 # Instantiate with expected name (machine.reset)
 reset = Reset()
+
+
+def enable_irq(arg=None):
+    pass
+
+
+def disable_irq(arg=None):
+    pass

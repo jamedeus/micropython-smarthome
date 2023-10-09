@@ -24,6 +24,8 @@ All log level methods (`log.info`, `log.error`, etc) simply write any argument t
 
 The `value` method can be called with an argument to set the `pin_state` attribute. When called without argument it returns the `pin_state` attribute.
 
+Calling the Pin object itself is equivalent to calling `value`, this matches micropython's behavior and is used in some libraries (eg hx711).
+
 Constants required to provision pins and set interrupts exist but their values are ignored.
 
 ### machine.PWM
@@ -47,6 +49,10 @@ When the `init` method is called a new thread is created to handle the callback 
 The `deinit` method sets a `threading.Event()` attribute checked by the thread handler function. This causes the thread to exit without running the callback after the timer expires.
 
 The `value` method returns the remaining time in milliseconds, calculcated from the `start_time` and `period` attribute created by `init`.
+
+### machine.enable_irq, machine.disable_irq
+
+The enable_irq and disable_irq methods are mocked to do nothing, this is required for the hx711 driver.
 
 ## Micropython module
 
