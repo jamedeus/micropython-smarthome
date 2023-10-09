@@ -39,6 +39,8 @@ coverage report -m --precision=1
 - [x] machine.SoftI2C
 - [x] machine.Timer
 - [x] machine.RTC
+- [x] machine.enable_irq
+- [x] machine.disable_irq
 - [x] micropython.schedule
 - [x] ir_tx.Player
 - [x] time.sleep_ms

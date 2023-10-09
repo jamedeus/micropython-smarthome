@@ -28,6 +28,8 @@ Calling the Pin object itself is equivalent to calling `value`, this matches mic
 
 Constants required to provision pins and set interrupts exist but their values are ignored.
 
+The irq method used to create interrupts exists but has no functionality in the mocked environment.
+
 ### machine.PWM
 
 The `duty` method can be called with an argument to set the `_duty` attribute. When called without argument it returns the `_duty` attribute.
@@ -49,6 +51,14 @@ When the `init` method is called a new thread is created to handle the callback 
 The `deinit` method sets a `threading.Event()` attribute checked by the thread handler function. This causes the thread to exit without running the callback after the timer expires.
 
 The `value` method returns the remaining time in milliseconds, calculcated from the `start_time` and `period` attribute created by `init`.
+
+### machine.RTC
+
+The RTC class is used to set the ESP32 system clock. This is not required in the mocked environment so the method is ignored.
+
+### machine.SoftI2C
+
+The SoftI2C class is instantiated and passed to the si7021 driver in the Thermostat init method. Since the driver itself is mocked SoftI2C is simply ignored.
 
 ### machine.enable_irq, machine.disable_irq
 
@@ -83,7 +93,6 @@ The `ifconfig` method called with no argument returns the `_ifconfig` attribute,
 ## SI7021 module
 
 This module mocks the [si7021 driver](https://github.com/chrisbalmer/micropython-si7021) used in this project. It simply returns hardcoded temperature and humidity values.
-
 
 ## Uasyncio module
 
