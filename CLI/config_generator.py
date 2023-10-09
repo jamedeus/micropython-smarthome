@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 
 import os
+import sys
 import json
 import questionary
 from colorama import Fore
 from instance_validators import validate_rules
 from validate_config import validate_full_config
-from config_prompt_validators import IntRange, FloatRange, MinLength, NicknameValidator
 from validation_constants import valid_device_pins, valid_sensor_pins, config_templates
+from config_prompt_validators import IntRange, FloatRange, MinLength, NicknameValidator
 from config_rule_prompts import default_rule_prompt_router, schedule_rule_prompt_router, rule_limits_map
 from helper_functions import (
     valid_ip,
@@ -22,24 +23,42 @@ from helper_functions import (
 
 
 class GenerateConfigFile:
-    def __init__(self):
-        # Config skeleton
-        self.config = {
-            'metadata': {
-                'id': '',
-                'floor': '',
-                'location': '',
-                'schedule_keywords': get_schedule_keywords_dict()
-            },
-            'wifi': {
-                'ssid': '',
-                'password': ''
+    def __init__(self, edit=None):
+        if not edit:
+            # Start with config skeleton
+            self.config = {
+                'metadata': {
+                    'id': '',
+                    'floor': '',
+                    'location': '',
+                    'schedule_keywords': get_schedule_keywords_dict()
+                },
+                'wifi': {
+                    'ssid': '',
+                    'password': ''
+                }
             }
-        }
 
-        # Lists of already-used pins and nicknames (prevent duplicates)
-        self.used_pins = []
-        self.used_nicknames = []
+            # Lists for already-used pins and nicknames (prevent duplicates)
+            self.used_pins = []
+            self.used_nicknames = []
+
+            # Show default prompt when run_prompt called
+            self.edit_mode = False
+
+        else:
+            # Start with existing config file
+            with open(edit, 'r') as file:
+                self.config = json.load(file)
+
+            # Parse already-used pins and nicknames (prevent duplicates)
+            self.used_pins = [self.config[i]['pin'] for i in self.config if 'pin' in self.config[i].keys()]
+            self.used_nicknames = [
+                self.config[i]['nickname'] for i in self.config if 'nickname' in self.config[i].keys()
+            ]
+
+            # Show edit prompt when run_prompt called
+            self.edit_mode = True
 
         # List of device and sensor type options
         self.device_type_options = list(config_templates['device'].keys())
@@ -55,6 +74,10 @@ class GenerateConfigFile:
         self.existing_nodes = get_existing_nodes()
 
     def run_prompt(self):
+        # Edit mode: redirect to edit prompt
+        if self.edit_mode:
+            return self.run_edit_prompt()
+
         # Prompt user to enter metadata and wifi credentials
         self.metadata_prompt()
         self.wifi_prompt()
@@ -73,6 +96,53 @@ class GenerateConfigFile:
             print(f'{Fore.RED}ERROR: {valid}{Fore.RESET}')
             self.passed_validation = False
 
+    def run_edit_prompt(self):
+        print("Editing existing config:\n")
+        print(json.dumps(self.config, indent=4))
+
+        # Prompt user to select action
+        while True:
+            choice = questionary.select(
+                "\nWhat would you like to do?",
+                choices=[
+                    "Edit metadata",
+                    "Edit wifi credentials",
+                    "Add devices and sensors",
+                    #"Delete devices and sensors",
+                    "Edit sensor targets",
+                    "Done"
+                ]
+            ).ask()
+            if choice == 'Edit metadata':
+                # Show metadata prompt with existing values pre-filled
+                self.metadata_prompt(
+                    self.config['metadata']['id'],
+                    self.config['metadata']['floor'],
+                    self.config['metadata']['location']
+                )
+            elif choice == 'Edit wifi credentials':
+                # Show wifi prompt with existing values pre-filled
+                self.wifi_prompt(
+                    self.config['wifi']['ssid'],
+                    self.config['wifi']['password']
+                )
+            elif choice == 'Add devices and sensors':
+                # Prompt user to add devices and sensors
+                self.add_devices_and_sensors()
+            elif choice == 'Edit sensor targets':
+                # Prompt user to select targets for each sensor
+                self.select_sensor_targets()
+            elif choice == 'Done':
+                break
+
+        # Validate finished config, print error if failed
+        valid = validate_full_config(self.config)
+        if valid is True:
+            self.passed_validation = True
+        else:
+            print(f'{Fore.RED}ERROR: {valid}{Fore.RESET}')
+            self.passed_validation = False
+
     def write_to_disk(self):
         # Get filename (all lowercase, replace spaces with hyphens)
         filename = self.config["metadata"]["id"].lower().replace(" ", "-") + ".json"
@@ -82,24 +152,26 @@ class GenerateConfigFile:
             json.dump(self.config, file)
 
     # Prompt user for node name and location metadata, add to self.config
-    def metadata_prompt(self):
-        name = questionary.text("Enter a descriptive name for this node", validate=MinLength(1)).ask()
-        floor = questionary.text("Enter floor number", validate=is_int).ask()
-        location = questionary.text("Enter a brief description of the node's physical location").ask()
+    # Optional arguments are used to set defaults when editing existing config
+    def metadata_prompt(self, name="", floor="", location=""):
+        name = questionary.text("Enter a descriptive name for this node", validate=MinLength(1), default=name).ask()
+        floor = questionary.text("Enter floor number", validate=is_int, default=floor).ask()
+        location = questionary.text("Enter a brief description of the node's physical location", default=location).ask()
 
         self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
 
     # Prompt user for wifi credentials, add to self.config
-    def wifi_prompt(self):
-        ssid = questionary.text("Enter wifi SSID (2.4 GHz only)", validate=MinLength(1)).ask()
-        password = questionary.password("Enter wifi password", validate=MinLength(8)).ask()
+    # Optional arguments are used to set defaults when editing existing config
+    def wifi_prompt(self, ssid="", password=""):
+        ssid = questionary.text("Enter wifi SSID (2.4 GHz only)", validate=MinLength(1), default=ssid).ask()
+        password = questionary.password("Enter wifi password", validate=MinLength(8), default=password).ask()
 
         self.config['wifi'].update({'ssid': ssid, 'password': password})
 
     def add_devices_and_sensors(self):
         # Lists to store + count device and sensor sections
-        devices = []
-        sensors = []
+        devices = [self.config[i] for i in self.config if is_device(i)]
+        sensors = [self.config[i] for i in self.config if is_sensor(i)]
 
         # Prompt user to configure devices and sensors
         # Output of each device/sensor prompt is added to lists above
@@ -357,7 +429,13 @@ class GenerateConfigFile:
 
 
 if __name__ == '__main__':
-    config = GenerateConfigFile()
+    if len(sys.argv) > 1:
+        # Instantiate in edit mode with path to existing config
+        path = os.path.abspath(sys.argv[1])
+        config = GenerateConfigFile(path)
+    else:
+        config = GenerateConfigFile()
+
     config.run_prompt()
 
     # Write to disk if passed validation
