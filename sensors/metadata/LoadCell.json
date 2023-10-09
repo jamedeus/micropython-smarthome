@@ -10,6 +10,8 @@
         "_type": "load-cell",
         "nickname": "placeholder",
         "default_rule": "placeholder",
+        "pin_data": "placeholder",
+        "pin_clock": "placeholder",
         "schedule": {},
         "targets": []
     },

@@ -10,12 +10,12 @@ log = logging.getLogger("Load_Cell")
 
 
 class LoadCell(Sensor):
-    def __init__(self, name, nickname, _type, default_rule, targets):
+    def __init__(self, name, nickname, _type, default_rule, targets, pin_data, pin_clock):
         super().__init__(name, nickname, _type, True, None, default_rule, targets)
 
         # Instantiate sensor, tare
-        data = Pin(23, Pin.IN, Pin.PULL_DOWN)
-        clock = Pin(22, Pin.OUT)
+        data = Pin(int(pin_data), Pin.IN, Pin.PULL_DOWN)
+        clock = Pin(int(pin_clock), Pin.OUT)
         self.sensor = HX711(clock, data)
         self.tare_sensor()
 
