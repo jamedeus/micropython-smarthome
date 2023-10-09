@@ -75,8 +75,10 @@ class GenerateConfigFile:
         self.existing_nodes = get_existing_nodes()
 
     def run_prompt(self):
-        # Edit mode: redirect to edit prompt
+        # Edit mode: print existing config and redirect to edit prompt
         if self.edit_mode:
+            print("Editing existing config:\n")
+            print(json.dumps(self.config, indent=4))
             return self.run_edit_prompt()
 
         # Prompt user to enter metadata and wifi credentials
@@ -93,14 +95,13 @@ class GenerateConfigFile:
         valid = validate_full_config(self.config)
         if valid is True:
             self.passed_validation = True
+            # Show final prompt (allows user to continue editing)
+            self.finished_prompt()
         else:
             print(f'{Fore.RED}ERROR: {valid}{Fore.RESET}')
             self.passed_validation = False
 
     def run_edit_prompt(self):
-        print("Editing existing config:\n")
-        print(json.dumps(self.config, indent=4))
-
         # Prompt user to select action
         while True:
             choice = questionary.select(
@@ -147,6 +148,16 @@ class GenerateConfigFile:
             print(f'{Fore.RED}ERROR: {valid}{Fore.RESET}')
             self.passed_validation = False
 
+    # Shown when finished creating new config
+    # Prints completed config and gives user option to continue editing
+    def finished_prompt(self):
+        print("\nFinished config:")
+        print(json.dumps(self.config, indent=4))
+
+        choice = questionary.select("Continue editing?", choices=["Yes", "No"]).ask()
+        if choice == "Yes":
+            self.run_edit_prompt()
+
     def write_to_disk(self):
         # Get filename (all lowercase, replace spaces with hyphens)
         filename = self.config["metadata"]["id"].lower().replace(" ", "-") + ".json"
@@ -154,6 +165,8 @@ class GenerateConfigFile:
         # Write to config_directory (set in cli_config.json)
         with open(os.path.join(get_cli_config()['config_directory'], filename), 'w') as file:
             json.dump(self.config, file)
+
+        print(f"\nConfig saved as {filename}")
 
     # Prompt user for node name and location metadata, add to self.config
     # Optional arguments are used to set defaults when editing existing config
@@ -472,5 +485,4 @@ if __name__ == '__main__':
 
     # Write to disk if passed validation
     if config.passed_validation:
-        print(json.dumps(config.config, indent=4))
         config.write_to_disk()

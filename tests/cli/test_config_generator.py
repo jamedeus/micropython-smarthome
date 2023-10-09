@@ -266,6 +266,7 @@ class TestGenerateConfigFile(TestCase):
              patch.object(self.generator, 'wifi_prompt') as mock_wifi_prompt, \
              patch.object(self.generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
              patch.object(self.generator, 'select_sensor_targets') as mock_select_sensor_targets, \
+             patch.object(self.generator, 'finished_prompt') as mock_finished_prompt, \
              patch('config_generator.validate_full_config', return_value=True) as mock_validate_full_config:
 
             # Run method, confirm all mocks called
@@ -274,6 +275,7 @@ class TestGenerateConfigFile(TestCase):
             self.assertTrue(mock_wifi_prompt.called_once)
             self.assertTrue(mock_add_devices_and_sensors.called_once)
             self.assertTrue(mock_select_sensor_targets.called_once)
+            self.assertTrue(mock_finished_prompt.called_once)
             self.assertTrue(mock_validate_full_config.called_once)
 
             # Confirm passed_validation set to True (mock)
@@ -297,6 +299,25 @@ class TestGenerateConfigFile(TestCase):
 
             # Confirm passed_validation set to False (mock)
             self.assertFalse(self.generator.passed_validation)
+
+    def test_finished_prompt(self):
+        # Simulate user selecting No
+        self.mock_ask.ask.return_value = 'No'
+        with patch.object(self.generator, 'run_edit_prompt') as mock_run_edit_prompt, \
+             patch('questionary.select', return_value=self.mock_ask):
+
+            # Call method, confirm edit prompt was NOT called
+            self.generator.finished_prompt()
+            mock_run_edit_prompt.assert_not_called()
+
+        # Simulate user selecting Yes
+        self.mock_ask.ask.return_value = 'Yes'
+        with patch.object(self.generator, 'run_edit_prompt') as mock_run_edit_prompt, \
+             patch('questionary.select', return_value=self.mock_ask):
+
+            # Call method, confirm edit prompt WAS called
+            self.generator.finished_prompt()
+            mock_run_edit_prompt.assert_called_once()
 
     def test_metadata_prompt(self):
         # Mock responses to the ID, Floor, and Location prompts
