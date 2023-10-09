@@ -1016,6 +1016,91 @@ class TestGenerateConfigFile(TestCase):
             with self.assertRaises(SystemExit):
                 api_call_prompt({'ip': '10.0.0.1'})
 
+    def test_edit_existing_config(self):
+        # Simulate user already completed all prompts
+        self.generator.config = {
+            "metadata": {
+                "id": "Unit Test Existing Config",
+                "floor": "0",
+                "location": "Unit Test",
+                "schedule_keywords": {
+                    "morning": "11:30",
+                    "relax": "23:00",
+                    "sleep": "04:15",
+                    "sunrise": "06:00",
+                    "sunset": "18:00"
+                }
+            },
+            "wifi": {
+                "ssid": "mynet",
+                "password": "password"
+            },
+            "device1": {
+                "_type": "mosfet",
+                "nickname": "LED",
+                "default_rule": "Enabled",
+                "pin": "4",
+                "schedule": {}
+            },
+            "sensor1": {
+                "_type": "dummy",
+                "nickname": "Sunrise",
+                "default_rule": "On",
+                "schedule": {
+                    "sunrise": "Off",
+                    "sunset": "On"
+                },
+                "targets": [
+                    "device1"
+                ]
+            }
+        }
+
+        # Write to disk, confirm file exists
+        self.generator.write_to_disk()
+        path = os.path.join(repo, 'config_files', 'unit-test-existing-config.json')
+        self.assertTrue(os.path.exists(path))
+
+        # Instantiate new generator with path to existing config, confirm edit_mode and config attributes
+        generator = GenerateConfigFile(path)
+        self.assertTrue(generator.edit_mode)
+        self.assertEqual(generator.config, self.generator.config)
+
+        # Simulate user selecting each option in edit prompt
+        self.mock_ask.ask.side_effect = [
+            'Edit metadata',
+            'Edit wifi credentials',
+            'Add devices and sensors',
+            'Edit sensor targets',
+            'Done'
+        ]
+
+        # Mock all methods called by run_edit_prompt, mock validator to return True
+        with patch.object(generator, 'metadata_prompt') as mock_metadata_prompt, \
+             patch.object(generator, 'wifi_prompt') as mock_wifi_prompt, \
+             patch.object(generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
+             patch.object(generator, 'select_sensor_targets') as mock_select_sensor_targets, \
+             patch('config_generator.validate_full_config', return_value=True) as mock_validate_full_config, \
+             patch('questionary.select', return_value=self.mock_ask):
+
+            # Run prompt, confirm all mocks called
+            generator.run_prompt()
+            self.assertTrue(mock_metadata_prompt.called_once)
+            self.assertTrue(mock_wifi_prompt.called_once)
+            self.assertTrue(mock_add_devices_and_sensors.called_once)
+            self.assertTrue(mock_select_sensor_targets.called_once)
+            self.assertTrue(mock_validate_full_config.called_once)
+
+            # Confirm prompt methods were called with default values from existing config
+            self.assertEqual(mock_metadata_prompt.call_args_list[0][0], ("Unit Test Existing Config", "0", "Unit Test"))
+            self.assertEqual(mock_wifi_prompt.call_args_list[0][0], ("mynet", "password"))
+
+            # Confirm passed_validation set to True (mock)
+            self.assertTrue(generator.passed_validation)
+
+        # Delete test config
+        os.remove(path)
+
 
 class TestRegressions(TestCase):
     def setUp(self):
