@@ -227,8 +227,11 @@ class GenerateConfigFile:
         # Prompt user to select all devices and sensors they wish to delete
         delete = questionary.checkbox("Select devices and sensors to delete", choices=instances_map.keys()).ask()
 
-        # Delete instances from config file
+        # Delete instances from config file, remove pin/nickname from used lists
         for i in delete:
+            self.used_nicknames.remove(self.config[instances_map[i]]['nickname'])
+            if 'pin' in self.config[instances_map[i]].keys():
+                self.used_pins.remove(self.config[instances_map[i]]['pin'])
             del self.config[instances_map[i]]
 
     # Prompt user to select from a list of valid device types
