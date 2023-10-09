@@ -34,7 +34,7 @@ class TestLoadCellSensor(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = LoadCell("sensor1", "sensor1", "load-cell", "100000", [])
+        cls.instance = LoadCell("sensor1", "sensor1", "load-cell", "100000", [], 18, 19)
         cls.group = MockGroup("group1", [cls.instance])
         cls.instance.group = cls.group
 
