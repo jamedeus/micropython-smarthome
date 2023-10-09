@@ -314,3 +314,17 @@ class TestApiTarget(unittest.TestCase):
             # Turn off, confirm correct arg passed
             self.instance.send(0)
             self.assertEqual(mock_request.call_args_list[1][0][0], ['turn_off', 'device2'])
+
+    # Original bug: When disabled send(1) was ignored, but send(0) was not (this is
+    # intentional to prevent targets getting stuck if user manually turns on). When
+    # current_rule was "disabled" this resulted in an uncaught exception when trying
+    # to access sub-rule (using string key as index in a string). Fixed by returning
+    # True immediately if rule is not dict.
+    def test_18_regression_turn_off_while_rule_is_disabled(self):
+        # Disable by setting rule to "Disabled"
+        self.instance.set_rule("Disabled")
+        self.assertFalse(self.instance.enabled)
+
+        # Send method should return True immediately without doing anything
+        self.assertTrue(self.instance.send(1))
+        self.assertTrue(self.instance.send(0))

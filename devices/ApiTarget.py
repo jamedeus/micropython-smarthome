@@ -188,6 +188,11 @@ class ApiTarget(Device):
             # This allows turning off (would be skipped if state already == False)
             return True
 
+        # Prevent exception if current rule is string ("Disabled")
+        # TODO fix incorrect API response if turn_off called while rule is Disabled
+        elif type(self.current_rule) != dict:
+            return True
+
         # Get correct command for state argument
         if state:
             command = self.current_rule["on"]
