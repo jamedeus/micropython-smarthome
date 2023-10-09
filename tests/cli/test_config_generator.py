@@ -1101,9 +1101,17 @@ class TestGenerateConfigFile(TestCase):
             }
         }
 
-        # Write to disk, confirm file exists
-        self.generator.write_to_disk()
-        path = os.path.join(repo, 'config_files', 'unit-test-existing-config.json')
+        # Get path to config directory, create if doesn't exist
+        config_directory = os.path.join(repo, 'config_files')
+        if not os.path.exists(config_directory):
+            os.mkdir(config_directory)
+
+        # Mock get_cli_config to return config directory path, write to disk
+        with patch('config_generator.get_cli_config', return_value={'config_directory': config_directory}):
+            self.generator.write_to_disk()
+
+        # Confirm file exists
+        path = os.path.join(config_directory, 'unit-test-existing-config.json')
         self.assertTrue(os.path.exists(path))
 
         # Instantiate new generator with path to existing config, confirm edit_mode and config attributes
