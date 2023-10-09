@@ -392,6 +392,51 @@ class TestGenerateConfigFile(TestCase):
         self.assertEqual(self.generator.config['device1'], expected_device)
         self.assertEqual(self.generator.config['sensor1'], expected_sensor)
 
+    def test_delete_devices_and_sensors(self):
+        # Set partial config expected when user reaching targets prompt
+        self.generator.config = {
+            "metadata": {
+                "id": "Target Test",
+                "floor": "1",
+                "location": "Test Environment"
+            },
+            "wifi": {
+                "ssid": "mynet",
+                "password": "hunter2"
+            },
+            "device1": {
+                "_type": "mosfet",
+                "nickname": "Target1",
+                "default_rule": "Enabled",
+                "pin": "4",
+                "schedule": {}
+            },
+            "device2": {
+                "_type": "mosfet",
+                "nickname": "Target2",
+                "default_rule": "Enabled",
+                "pin": "13",
+                "schedule": {}
+            },
+            "sensor1": {
+                "_type": "pir",
+                "nickname": "Sensor",
+                "pin": "5",
+                "default_rule": "5",
+                "schedule": {},
+                "targets": []
+            }
+        }
+
+        # Mock user selecting both devices, run prompt
+        self.mock_ask.ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)']
+        with patch('questionary.checkbox', return_value=self.mock_ask):
+            self.generator.delete_devices_and_sensors()
+            self.assertTrue(self.mock_ask.called_once)
+
+        # Confirm both devices were deleted
+        self.assertEqual(list(self.generator.config.keys()), ["metadata", "wifi", "sensor1"])
+
     def test_configure_device_prompt(self):
         expected_output = {
             "_type": "dimmer",
@@ -1071,6 +1116,7 @@ class TestGenerateConfigFile(TestCase):
             'Edit metadata',
             'Edit wifi credentials',
             'Add devices and sensors',
+            'Delete devices and sensors',
             'Edit sensor targets',
             'Done'
         ]
@@ -1079,6 +1125,7 @@ class TestGenerateConfigFile(TestCase):
         with patch.object(generator, 'metadata_prompt') as mock_metadata_prompt, \
              patch.object(generator, 'wifi_prompt') as mock_wifi_prompt, \
              patch.object(generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
+             patch.object(generator, 'delete_devices_and_sensors') as mock_delete_devices_and_sensors, \
              patch.object(generator, 'select_sensor_targets') as mock_select_sensor_targets, \
              patch('config_generator.validate_full_config', return_value=True) as mock_validate_full_config, \
              patch('questionary.select', return_value=self.mock_ask):
@@ -1088,6 +1135,7 @@ class TestGenerateConfigFile(TestCase):
             self.assertTrue(mock_metadata_prompt.called_once)
             self.assertTrue(mock_wifi_prompt.called_once)
             self.assertTrue(mock_add_devices_and_sensors.called_once)
+            self.assertTrue(mock_delete_devices_and_sensors.called_once)
             self.assertTrue(mock_select_sensor_targets.called_once)
             self.assertTrue(mock_validate_full_config.called_once)
 

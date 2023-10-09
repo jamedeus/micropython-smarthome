@@ -15,6 +15,7 @@ from helper_functions import (
     valid_timestamp,
     is_device,
     is_sensor,
+    is_device_or_sensor,
     is_int,
     get_schedule_keywords_dict,
     get_existing_nodes,
@@ -108,7 +109,7 @@ class GenerateConfigFile:
                     "Edit metadata",
                     "Edit wifi credentials",
                     "Add devices and sensors",
-                    #"Delete devices and sensors",
+                    "Delete devices and sensors",
                     "Edit sensor targets",
                     "Done"
                 ]
@@ -129,6 +130,9 @@ class GenerateConfigFile:
             elif choice == 'Add devices and sensors':
                 # Prompt user to add devices and sensors
                 self.add_devices_and_sensors()
+                # Prompt user to delete existing devices and sensors
+            elif choice == 'Delete devices and sensors':
+                self.delete_devices_and_sensors()
             elif choice == 'Edit sensor targets':
                 # Prompt user to select targets for each sensor
                 self.select_sensor_targets()
@@ -192,6 +196,27 @@ class GenerateConfigFile:
             self.config[f'device{index}'] = instance
         for index, instance in enumerate(sensors, 1):
             self.config[f'sensor{index}'] = instance
+
+    def delete_devices_and_sensors(self):
+        # Get list of all sensor and device IDs
+        instances = [key for key in self.config.keys() if is_device_or_sensor(key)]
+
+        # Skip step if no instances
+        if len(instances) == 0:
+            return
+
+        # Map strings displayed for each option (syntax: "Nickname (type)") to their IDs
+        instances_map = {}
+        for key in instances:
+            display = f"{self.config[key]['nickname']} ({self.config[key]['_type']})"
+            instances_map[display] = key
+
+        # Prompt user to select all devices and sensors they wish to delete
+        delete = questionary.checkbox("Select devices and sensors to delete", choices=instances_map.keys()).ask()
+
+        # Delete instances from config file
+        for i in delete:
+            del self.config[instances_map[i]]
 
     # Prompt user to select from a list of valid device types
     # Used to get template in configure_device
@@ -368,7 +393,7 @@ class GenerateConfigFile:
     # with all configured devices as options. Add all checked devices
     # to sensor targets list.
     def select_sensor_targets(self):
-        # Get list of all sensor and device IDs
+        # Get lists of all sensor and device IDs
         sensors = [key for key in self.config.keys() if is_sensor(key)]
         devices = [key for key in self.config.keys() if is_device(key)]
 
