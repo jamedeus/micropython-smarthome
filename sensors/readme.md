@@ -31,6 +31,8 @@ All sensor classes **must** include a `condition_met` method, which determines w
 - `False` when targets should turn off
 - `None` when no change is needed
 
+Sensors may implement an optional `trigger` method which simulates the condition being met, causing target devices to turn on. This can only be called with the `trigger_sensor` API endpoint. If omitted the endpoint is disabled, which may be desirable in some cases - for example, triggering a Thermostat sensor would require arbitrarily changing the rule, which creates a confusing user experience (and already has its own endpoint). See [MotionSensor.py](sensors/MotionSensor.py) for an example trigger method.
+
 By default all sensors support the rules `Enabled` and `Disabled`. If more rules are required the sensor must include a `validator` method. This method accepts a rule as argument, returns `False` if it is invalid, and returns the rule if it is valid. Returning a modified rule is encouraged in some situations - for example, a class which expects an integer rule should return `int(rule)` to avoid incorrectly accepting string representations of integers.
 
 ### Sensor Manifest

@@ -36,3 +36,8 @@ class Dummy(Sensor):
             return False
         else:
             return None
+
+    # Allow API commands to simulate the sensor being triggered
+    def trigger(self):
+        self.set_rule("on")
+        return True

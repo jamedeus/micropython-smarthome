@@ -54,25 +54,9 @@ class Sensor(Instance):
             self.enable()
 
     # Allow API commands to simulate the sensor being triggered
+    # Disabled by default, must be overridden in supported subclasses
     def trigger(self):
-        if self._type == "pir":
-            self.motion_detected()
-            return True
-
-        elif self._type == "desktop":
-            self.current = "On"
-            self.refresh_group()
-            return True
-
-        elif self._type == "si7021":
-            return False
-
-        elif self._type == "dummy":
-            self.set_rule("on")
-            return True
-
-        elif self._type == "switch":
-            return False
+        return False
 
     # Called by Config after adding Sensor to Group. Appends functions to Group's post_action_routines list
     # Placeholder function for subclasses with no post-routines, overwritten if they do

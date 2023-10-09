@@ -117,3 +117,8 @@ class MotionSensor(Sensor):
 
         # Check conditions of all sensors in group
         self.refresh_group()
+
+    # Allow API commands to simulate the sensor being triggered
+    def trigger(self):
+        self.motion_detected()
+        return True

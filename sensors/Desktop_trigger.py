@@ -72,6 +72,12 @@ class Desktop_trigger(Sensor):
         else:
             return False
 
+    # Allow API commands to simulate the sensor being triggered
+    def trigger(self):
+        self.current = "On"
+        self.refresh_group()
+        return True
+
     # Desktop returns values other than "On" and "Off" in some situations (standby, lock screen,
     # etc), so condition_met cannot rely on a single get_monitor_state call. Instead, loop
     # continuously monitors and stores most-recent reliable response in self.current attribute.
