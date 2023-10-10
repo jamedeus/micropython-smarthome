@@ -261,9 +261,9 @@ class GenerateConfigFile:
 
     # Prompt user to select pin, add to used_pins list, return
     # Takes list of options as arg, removes already-used pins to prevent duplicates
-    def pin_prompt(self, valid_pins):
+    def pin_prompt(self, valid_pins, prompt="Select pin"):
         choices = [pin for pin in valid_pins if pin not in self.used_pins]
-        pin = questionary.select("Select pin", choices=choices).ask()
+        pin = questionary.select(prompt, choices=choices).ask()
         self.used_pins.append(pin)
         return pin
 
@@ -298,6 +298,9 @@ class GenerateConfigFile:
 
             elif i == "pin":
                 config[i] = self.pin_prompt(valid_device_pins)
+
+            elif i.startswith("pin_"):
+                config[i] = self.pin_prompt(valid_device_pins, f"Select {i.split('_')[1]} pin")
 
             elif i == "default_rule":
                 config[i] = default_rule_prompt_router(config)
@@ -352,6 +355,9 @@ class GenerateConfigFile:
 
             elif i == "pin":
                 config[i] = self.pin_prompt(valid_sensor_pins)
+
+            elif i.startswith("pin_"):
+                config[i] = self.pin_prompt(valid_sensor_pins, f"Select {i.split('_')[1]} pin")
 
             elif i == "default_rule":
                 config[i] = default_rule_prompt_router(config)

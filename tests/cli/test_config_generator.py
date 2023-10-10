@@ -670,7 +670,7 @@ class TestGenerateConfigFile(TestCase):
             self.assertEqual(self.generator.used_nicknames, ['Motion', 'Thermostat'])
             self.assertEqual(self.generator.used_pins, ['14'])
 
-        # Repeat test with thermostat
+    def test_configure_sensor_prompt_dummy(self):
         expected_output = {
             "_type": "dummy",
             "nickname": "Sunrise",
@@ -705,10 +705,10 @@ class TestGenerateConfigFile(TestCase):
             self.assertEqual(config, expected_output)
 
             # Confirm nickname and pin added to used lists
-            self.assertEqual(self.generator.used_nicknames, ['Motion', 'Thermostat', 'Sunrise'])
-            self.assertEqual(self.generator.used_pins, ['14'])
+            self.assertEqual(self.generator.used_nicknames, ['Sunrise'])
+            self.assertEqual(self.generator.used_pins, [])
 
-        # Repeat test with thermostat
+    def test_configure_sensor_prompt_desktop(self):
         expected_output = {
             "_type": "desktop",
             "nickname": "Computer Activity",
@@ -740,8 +740,45 @@ class TestGenerateConfigFile(TestCase):
             self.assertEqual(config, expected_output)
 
             # Confirm nickname and pin added to used lists
-            self.assertEqual(self.generator.used_nicknames, ['Motion', 'Thermostat', 'Sunrise', 'Computer Activity'])
-            self.assertEqual(self.generator.used_pins, ['14'])
+            self.assertEqual(self.generator.used_nicknames, ['Computer Activity'])
+            self.assertEqual(self.generator.used_pins, [])
+
+    def test_configure_sensor_prompt_load_cell(self):
+        expected_output = {
+            "_type": "load-cell",
+            "nickname": "Bed Sensor",
+            "default_rule": "10000",
+            "pin_data": "18",
+            "pin_clock": "19",
+            "schedule": {
+                "sunrise": "Disabled"
+            },
+            "targets": []
+        }
+
+        # Mock ask to return parameters in expected order
+        self.mock_ask.ask.side_effect = [
+            'LoadCell',
+            'Bed Sensor',
+            '10000',
+            '18',
+            '19',
+            'Yes',
+            'keyword',
+            'sunrise',
+            'Disabled',
+            'No'
+        ]
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+
+            # Run prompt, confirm output matches expected
+            config = self.generator.configure_sensor()
+            self.assertEqual(config, expected_output)
+
+            # Confirm nickname and pins added to used lists
+            self.assertEqual(self.generator.used_nicknames, ['Bed Sensor'])
+            self.assertEqual(self.generator.used_pins, ['18', '19'])
 
     def test_configure_sensor_failed_validation(self):
         # Invalid config object with unsupported default_rule
