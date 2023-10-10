@@ -46,6 +46,8 @@ def build_rule_prompt_maps():
             rule_prompt_map[_type] = on_off_rule_prompt
         elif prompt == "api_target":
             rule_prompt_map[_type] = api_target_rule_prompt
+        elif prompt == "string":
+            rule_prompt_map[_type] = string_rule_prompt
         else:
             rule_prompt_map[_type] = standard_rule_prompt
 
@@ -70,6 +72,23 @@ def schedule_rule_prompt_router(config):
 # Same prompt for default and schedule rules
 def standard_rule_prompt(config, rule_type):
     return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
+
+
+# Rule prompt for instances that support arbitrary strings in addition to standard rules
+# Default prompt: Require arbitrary string (standard rules are invalid)
+# Schedule prompt: Show standard rules in addition to string
+def string_rule_prompt(config, rule_type):
+    # Default rule prompt
+    if rule_type == "default":
+        return questionary.text("Enter rule").ask()
+
+    # Schedule rule prompt
+    else:
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'String']).ask()
+        if choice == 'String':
+            return questionary.text("Enter rule").ask()
+        else:
+            return choice
 
 
 # Rule prompt for instances that support "On" and "Off" in addition to standard rules

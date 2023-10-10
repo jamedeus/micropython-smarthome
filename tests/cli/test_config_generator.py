@@ -9,7 +9,9 @@ from config_rule_prompts import (
     api_call_prompt,
     api_target_schedule_rule_prompt,
     default_rule_prompt_router,
-    schedule_rule_prompt_router
+    schedule_rule_prompt_router,
+    int_rule_prompt,
+    string_rule_prompt
 )
 
 # Get paths to test dir, CLI dir, repo dir
@@ -1425,3 +1427,67 @@ class TestRegressions(TestCase):
         # Confirm used pins and nickname lists are now empty
         self.assertEqual(self.generator.used_pins, [])
         self.assertEqual(self.generator.used_nicknames, [])
+
+
+class TestRulePrompts(TestCase):
+    def setUp(self):
+        # Mock replaces .ask() method to simulate user input
+        self.mock_ask = MagicMock()
+
+    def test_int_rule_prompt(self):
+        # Create mock config object with min/max rules
+        config = {
+            'min_bright': '1',
+            'max_bright': '100'
+        }
+
+        # Mock user input for default rule
+        self.mock_ask.ask.return_value = '90'
+
+        # Run default prompt with mocked user input, confirm return value
+        with patch('questionary.text', return_value=self.mock_ask):
+            rule = int_rule_prompt(config, "default")
+            self.assertEqual(rule, '90')
+
+        # Mock user input for schedule rule
+        self.mock_ask.ask.return_value = 'Enabled'
+
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask):
+            rule = int_rule_prompt(config, "schedule")
+            self.assertEqual(rule, 'Enabled')
+
+        # Mock user input for schedule rule
+        self.mock_ask.ask.side_effect = ['Int', '50']
+
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+            rule = int_rule_prompt(config, "schedule")
+            self.assertEqual(rule, '50')
+
+    def test_string_rule_prompt(self):
+        # Mock user input for default rule
+        self.mock_ask.ask.return_value = 'http://192.168.1.123:8123/endpoint'
+
+        # Run default prompt with mocked user input, confirm return value
+        with patch('questionary.text', return_value=self.mock_ask):
+            rule = string_rule_prompt({}, "default")
+            self.assertEqual(rule, 'http://192.168.1.123:8123/endpoint')
+
+        # Mock user input for schedule rule
+        self.mock_ask.ask.return_value = 'Enabled'
+
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask):
+            rule = string_rule_prompt({}, "schedule")
+            self.assertEqual(rule, 'Enabled')
+
+        # Mock user input for schedule rule
+        self.mock_ask.ask.side_effect = ['String', 'http://192.168.1.123:8123/endpoint']
+
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+            rule = string_rule_prompt({}, "schedule")
+            self.assertEqual(rule, 'http://192.168.1.123:8123/endpoint')
