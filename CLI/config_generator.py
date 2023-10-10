@@ -48,8 +48,19 @@ class GenerateConfigFile:
             self.edit_mode = False
 
         else:
-            # Start with existing config file
-            with open(edit, 'r') as file:
+            # Resolve path to existing config file, check for errors
+            path = os.path.abspath(edit)
+            if not path.endswith(".json"):
+                print('Error: argument must be relative path to existing config.json')
+                print('Example usage: ./CLI/config_generator.py /path/to/existing_config.json')
+                raise SystemExit
+            elif not os.path.exists(path):
+                print(f'Error: Config file "{sys.argv[1]}" not found')
+                print('Example usage: ./CLI/config_generator.py /path/to/existing_config.json')
+                raise SystemExit
+
+            # Load existing config file
+            with open(path, 'r') as file:
                 self.config = json.load(file)
 
             # Parse already-used pins and nicknames (prevent duplicates)
@@ -92,14 +103,10 @@ class GenerateConfigFile:
         self.select_sensor_targets()
 
         # Validate finished config, print error if failed
-        valid = validate_full_config(self.config)
-        if valid is True:
-            self.passed_validation = True
+        self.validate()
+        if self.passed_validation:
             # Show final prompt (allows user to continue editing)
             self.finished_prompt()
-        else:
-            print(f'{Fore.RED}ERROR: {valid}{Fore.RESET}')
-            self.passed_validation = False
 
     def run_edit_prompt(self):
         # Prompt user to select action
@@ -141,6 +148,11 @@ class GenerateConfigFile:
                 break
 
         # Validate finished config, print error if failed
+        self.validate()
+
+    # Passes config object to validator, sets passed_validation attribute,
+    # prints error message if validation failed
+    def validate(self):
         valid = validate_full_config(self.config)
         if valid is True:
             self.passed_validation = True
@@ -485,8 +497,7 @@ class GenerateConfigFile:
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         # Instantiate in edit mode with path to existing config
-        path = os.path.abspath(sys.argv[1])
-        config = GenerateConfigFile(path)
+        config = GenerateConfigFile(sys.argv[1])
     else:
         config = GenerateConfigFile()
 

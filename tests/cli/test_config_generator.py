@@ -414,7 +414,7 @@ class TestGenerateConfigFile(TestCase):
         self.assertEqual(self.generator.config['sensor1'], expected_sensor)
 
     def test_delete_devices_and_sensors(self):
-        # Set partial config expected when user reaching targets prompt
+        # Simulte user editing completed config
         self.generator.config = {
             "metadata": {
                 "id": "Target Test",
@@ -460,6 +460,23 @@ class TestGenerateConfigFile(TestCase):
 
         # Confirm both devices were deleted
         self.assertEqual(list(self.generator.config.keys()), ["metadata", "wifi", "sensor1"])
+
+    def test_delete_devices_and_sensors_no_instances(self):
+        # Simulate editing config with no devices or sensors
+        self.generator.config = {
+            "metadata": {
+                "id": "Target Test",
+                "floor": "1",
+                "location": "Test Environment"
+            },
+            "wifi": {
+                "ssid": "mynet",
+                "password": "hunter2"
+            }
+        }
+
+        # Call method with no mocks, should return immeditely
+        self.generator.delete_devices_and_sensors()
 
     def test_configure_device_prompt(self):
         expected_output = {
@@ -1217,6 +1234,22 @@ class TestGenerateConfigFile(TestCase):
 
         # Delete test config
         os.remove(path)
+
+    def test_edit_invalid_config_path(self):
+        # Create non-json config file
+        with open('fake_config_file.txt', 'w'):
+            pass
+
+        # Attempt to instantiate with non-json config file, confirm raises error
+        with self.assertRaises(SystemExit):
+            GenerateConfigFile('/does/not/exist.json')
+
+        # Attempt to instantiate with invalid path, confirm raises error
+        with self.assertRaises(SystemExit):
+            GenerateConfigFile('/does/not/exist')
+
+        # Delete fake config
+        os.remove('fake_config_file.txt')
 
 
 class TestRegressions(TestCase):
