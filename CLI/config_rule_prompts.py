@@ -71,7 +71,11 @@ def schedule_rule_prompt_router(config):
 # Rule prompt for instances that only support standard rules ("Enabled" and "Disabled")
 # Same prompt for default and schedule rules
 def standard_rule_prompt(config, rule_type):
-    return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
+    # Default rule prompt
+    if rule_type == "default":
+        return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
+    else:
+        return questionary.select("Enter rule", choices=['Enabled', 'Disabled']).ask()
 
 
 # Rule prompt for instances that support arbitrary strings in addition to standard rules
@@ -80,7 +84,7 @@ def standard_rule_prompt(config, rule_type):
 def string_rule_prompt(config, rule_type):
     # Default rule prompt
     if rule_type == "default":
-        return questionary.text("Enter rule").ask()
+        return questionary.text("Enter default rule").ask()
 
     # Schedule rule prompt
     else:
@@ -101,7 +105,7 @@ def on_off_rule_prompt(config, rule_type):
 
     # Schedule rule prompt
     else:
-        return questionary.select("Enter default rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
+        return questionary.select("Enter rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
 
 
 # Rule prompt for instances that support float rules in addition to standard rules
