@@ -30,6 +30,7 @@ hardware_classes = {
         "relay": "Relay",
         "dumb-relay": "DumbRelay",
         "desktop": "Desktop_target",
+        "http-get": "HttpGet",
         "pwm": "LedStrip",
         "mosfet": "Mosfet",
         "api-target": "ApiTarget",
