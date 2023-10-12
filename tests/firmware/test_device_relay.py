@@ -42,5 +42,5 @@ class TestRelay(unittest.TestCase):
 
         # Change port to error port (mock receiver returns error for all requests on this port)
         # Confirm send method returns False
-        self.instance.ip = f"{config['mock_receiver']['ip']}:{config['mock_receiver']['error_port']}"
+        self.instance.uri = f"{config['mock_receiver']['ip']}:{config['mock_receiver']['error_port']}"
         self.assertFalse(self.instance.send(1))

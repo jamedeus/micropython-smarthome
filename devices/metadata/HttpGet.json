@@ -1,0 +1,19 @@
+{
+    "config_name": "http-get",
+    "class_name": "HttpGet",
+    "dependencies": [
+        "devices/HttpGet.py",
+        "devices/Device.py",
+        "core/Instance.py"
+    ],
+    "config_template": {
+        "_type": "http-get",
+        "nickname": "placeholder",
+        "default_rule": "placeholder",
+        "uri": "placeholder",
+        "on_path": "placeholder",
+        "off_path": "placeholder",
+        "schedule": {}
+    },
+    "rule_prompt": "standard"
+}
