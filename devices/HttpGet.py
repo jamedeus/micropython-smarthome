@@ -1,65 +1,38 @@
 import re
-import json
 import logging
 import urequests
 from Device import Device
 
 # Set name for module's log lines
-log = logging.getLogger("HttpGet")
+log = logging.getLogger("Http")
 
-url_pattern = re.compile(
-    r'^(https?:\/\/)'  # Optional http or https
-    r'(([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+)|'  # Either domain
-    r'((\d\d?\d?)\.(\d\d?\d?)\.(\d\d?\d?)\.(\d\d?\d?)))'  # or IP
-    r'(:\d\d?\d?\d?)?'  # Optional port number
-    r'(\/[a-zA-Z0-9\-._~!$&\'()*+,;=:@]+)*'  # Optional sub-paths
-    r'(\?[a-zA-Z0-9_&=.-]*)?'  # Optional querystring
+# Regular expression matches domain or IP with optional port number and sub-path
+uri_pattern = re.compile(
+    r'(([a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+)|'
+    r'((\d\d?\d?)\.(\d\d?\d?)\.(\d\d?\d?)\.(\d\d?\d?)))'
+    r'(:\d\d?\d?\d?)?'
+    r'(\/[a-zA-Z0-9\-._~!$&\'()*+,;=:@]+)*'
     r'$'
 )
 
 
-# Sends Http GET request
+# Extensible base class for devices that make HTTP requests
+# Takes URI (can be IP or domain) and 2 paths which are appended
+# to the URI for on and off commands respectively. Subclasses
+# should hardcode the on and off paths where possible to avoid
+# error-prone user configuration.
 class HttpGet(Device):
-    def __init__(self, name, nickname, _type, default_rule,):
+    def __init__(self, name, nickname, _type, default_rule, uri, on_path, off_path):
         super().__init__(name, nickname, _type, True, None, default_rule)
 
-        # Prevent instantiating with invalid default rule
-        if str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
-            raise AttributeError
+        # Can be IP or domain, remove protocol if present
+        self.uri = str(uri).replace('http://', '').replace('https://', '')
 
-        log.info(f"Instantiated HttpGet named {self.name}")
+        # Paths added to URI for on, off respectively
+        self.on_path = on_path
+        self.off_path = off_path
 
-    # Takes dict containing 2 entries named "on" and "off"
-    # Both entries must contain a valid URL
-    # "on" sent when self.send(1) called, "off" when self.send(0) called
-    def validator(self, rule):
-        if isinstance(rule, str):
-            try:
-                # Convert string rule to dict (if received from API)
-                rule = json.loads(rule)
-            except (TypeError, ValueError, OSError):
-                return False
-
-        if not isinstance(rule, dict):
-            return False
-
-        # Reject if more than 2 sub-rules
-        if not len(rule) == 2:
-            return False
-
-        for i in rule:
-            # Index must be "on" or "off"
-            if not i == "on" and not i == "off":
-                return False
-
-            # Value must be a valid URL
-            if not re.match(url_pattern, str(rule)):
-                return False
-
-        else:
-            # Iteration finished without a return False, rule is valid
-            return rule
+        log.info(f"Instantiated HttpGet named {self.name}: URI = {self.uri}")
 
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
@@ -70,15 +43,13 @@ class HttpGet(Device):
             # This allows turning off (would be skipped if state already == False)
             return True
 
-        # Get correct sub rule
-        if state:
-            url = self.current_rule["on"]
-        else:
-            url = self.current_rule["off"]
-
-        # Send request
         try:
-            response = urequests.get(url)
+            if state:
+                response = urequests.get(f'http://{self.uri}/{self.on_path}')
+                print(f"{self.name}: Turned on")
+            else:
+                response = urequests.get(f'http://{self.uri}/{self.off_path}')
+                print(f"{self.name}: Turned off")
         except OSError:
             # Wifi interruption, send failed
             return False

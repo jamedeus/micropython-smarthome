@@ -161,6 +161,7 @@ class TestInstantiation(TestCase):
             os.path.join(repo, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
             os.path.join(repo, 'devices', 'Relay.py'): 'Relay.py',
             os.path.join(repo, 'devices', 'DumbRelay.py'): 'DumbRelay.py',
+            os.path.join(repo, 'devices', 'HttpGet.py'): 'HttpGet.py',
             os.path.join(repo, 'devices', 'Desktop_target.py'): 'Desktop_target.py',
             os.path.join(repo, 'devices', 'LedStrip.py'): 'LedStrip.py',
             os.path.join(repo, 'devices', 'Mosfet.py'): 'Mosfet.py',
