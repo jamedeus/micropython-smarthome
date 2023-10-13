@@ -28,6 +28,11 @@ class HttpGet(Device):
         # Can be IP or domain, remove protocol if present
         self.uri = str(uri).replace('http://', '').replace('https://', '')
 
+        # Prevent instantiating with invalid URI
+        if not re.match(uri_pattern, self.uri):
+            log.critical(f"{self.name}: Received invalid URI: {self.uri}")
+            raise AttributeError
+
         # Paths added to URI for on, off respectively
         self.on_path = on_path
         self.off_path = off_path
