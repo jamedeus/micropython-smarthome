@@ -19,6 +19,7 @@ class TestRelay(unittest.TestCase):
     def test_01_initial_state(self):
         self.assertIsInstance(self.instance, Relay)
         self.assertTrue(self.instance.enabled)
+        self.assertEqual(self.instance.uri, mock_address)
 
     def test_02_turn_on(self):
         self.assertTrue(self.instance.send(1))
@@ -34,13 +35,13 @@ class TestRelay(unittest.TestCase):
         self.instance.enable()
 
     def test_05_network_errors(self):
-        # Instantiate with invalid IP, confirm send method returns False
-        test = Relay("device1", "device1", "relay", "enabled", "0.0.0.")
-        self.assertFalse(test.send(0))
-        self.assertFalse(test.send(1))
-        self.assertEqual(test.check_state(), "Network Error")
-
         # Change port to error port (mock receiver returns error for all requests on this port)
         # Confirm send method returns False
         self.instance.uri = f"{config['mock_receiver']['ip']}:{config['mock_receiver']['error_port']}"
         self.assertFalse(self.instance.send(1))
+
+        # Change to invalid IP, confirm send method returns False
+        self.instance.uri = "0.0.0."
+        self.assertFalse(self.instance.send(0))
+        self.assertFalse(self.instance.send(1))
+        self.assertEqual(self.instance.check_state(), "Network Error")

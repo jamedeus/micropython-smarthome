@@ -186,6 +186,7 @@ class TestInstantiation(TestCase):
             os.path.join(repo, 'tests', 'firmware', 'test_device_apitarget.py'): 'test_device_apitarget.py',
             os.path.join(repo, 'tests', 'firmware', 'test_device_wled.py'): 'test_device_wled.py',
             os.path.join(repo, 'tests', 'firmware', 'test_device_dumbrelay.py'): 'test_device_dumbrelay.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_device_http_get.py'): 'test_device_http_get.py',
             os.path.join(repo, 'tests', 'firmware', 'test_core_config.py'): 'test_core_config.py',
             os.path.join(repo, 'tests', 'firmware', 'test_api_api.py'): 'test_api_api.py',
             os.path.join(repo, 'tests', 'firmware', 'test_device_mosfet.py'): 'test_device_mosfet.py',
