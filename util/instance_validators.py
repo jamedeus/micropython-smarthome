@@ -172,20 +172,20 @@ def is_valid_api_sub_rule(rule):
         return False
 
 
-# Takes configured min_bright and max_bright, absolute limits for device
+# Takes configured min_rule and max_rule, absolute limits for device
 # Returns True if valid, error if invalid
-def min_max_brightness_validator(min_bright, max_bright, device_min, device_max):
+def min_max_rule_validator(min_rule, max_rule, device_min, device_max):
     try:
-        if int(min_bright) > int(max_bright):
-            return 'min_bright cannot be greater than max_bright'
-        elif int(min_bright) < device_min or int(max_bright) < device_min:
-            return f'Brightness limits cannot be less than {device_min}'
-        elif int(min_bright) > device_max or int(max_bright) > device_max:
-            return f'Brightness limits cannot be greater than {device_max}'
+        if int(min_rule) > int(max_rule):
+            return 'min_rule cannot be greater than max_rule'
+        elif int(min_rule) < device_min or int(max_rule) < device_min:
+            return f'Rule limits cannot be less than {device_min}'
+        elif int(min_rule) > device_max or int(max_rule) > device_max:
+            return f'Rule limits cannot be greater than {device_max}'
         else:
             return True
     except ValueError:
-        return f'Invalid brightness limits, both must be int between {device_min} and {device_max}'
+        return f'Invalid rule limits, both must be int between {device_min} and {device_max}'
 
 
 # Requires int between min/max, or fade/<int>/<int>
@@ -194,13 +194,13 @@ def min_max_brightness_validator(min_bright, max_bright, device_min, device_max)
 @add_default_rule_validator(['pwm'])
 def led_strip_validator(rule, **kwargs):
     try:
-        min_bright = kwargs['min_bright']
-        max_bright = kwargs['max_bright']
-        valid = min_max_brightness_validator(min_bright, max_bright, 0, 1023)
+        min_rule = kwargs['min_rule']
+        max_rule = kwargs['max_rule']
+        valid = min_max_rule_validator(min_rule, max_rule, 0, 1023)
         if valid is not True:
             return valid
     except KeyError:
-        return 'LedStrip missing required min_bright and/or max_bright property'
+        return 'LedStrip missing required min_rule and/or max_rule property'
 
     # Validate rule
     try:
@@ -211,7 +211,7 @@ def led_strip_validator(rule, **kwargs):
             if int(period) < 0 or int(target) < 0:
                 return False
 
-            if int(min_bright) <= int(target) <= int(max_bright):
+            if int(min_rule) <= int(target) <= int(max_rule):
                 return True
             else:
                 return False
@@ -219,7 +219,7 @@ def led_strip_validator(rule, **kwargs):
         elif isinstance(rule, bool):
             return False
 
-        elif int(min_bright) <= int(rule) <= int(max_bright):
+        elif int(min_rule) <= int(rule) <= int(max_rule):
             return True
 
         else:
@@ -235,14 +235,14 @@ def led_strip_validator(rule, **kwargs):
 @add_default_rule_validator(['dimmer', 'bulb'])
 def tplink_validator(rule, **kwargs):
     try:
-        # Validate brightness limits
-        min_bright = kwargs['min_bright']
-        max_bright = kwargs['max_bright']
-        valid = min_max_brightness_validator(min_bright, max_bright, 1, 100)
+        # Validate rule limits
+        min_rule = kwargs['min_rule']
+        max_rule = kwargs['max_rule']
+        valid = min_max_rule_validator(min_rule, max_rule, 1, 100)
         if valid is not True:
             return valid
     except KeyError:
-        return 'Tplink missing required min_bright and/or max_bright property'
+        return 'Tplink missing required min_rule and/or max_rule property'
 
     try:
         if str(rule).startswith("fade"):
@@ -252,7 +252,7 @@ def tplink_validator(rule, **kwargs):
             if int(period) < 0:
                 return False
 
-            elif int(min_bright) <= int(target) <= int(max_bright):
+            elif int(min_rule) <= int(target) <= int(max_rule):
                 return True
             else:
                 return False
@@ -261,7 +261,7 @@ def tplink_validator(rule, **kwargs):
         elif isinstance(rule, bool):
             return False
 
-        elif int(min_bright) <= int(rule) <= int(max_bright):
+        elif int(min_rule) <= int(rule) <= int(max_rule):
             return True
 
         else:
@@ -277,21 +277,21 @@ def tplink_validator(rule, **kwargs):
 @add_default_rule_validator(['wled'])
 def wled_validator(rule, **kwargs):
     try:
-        # Validate brightness limits
-        min_bright = kwargs['min_bright']
-        max_bright = kwargs['max_bright']
-        valid = min_max_brightness_validator(min_bright, max_bright, 1, 255)
+        # Validate rule limits
+        min_rule = kwargs['min_rule']
+        max_rule = kwargs['max_rule']
+        valid = min_max_rule_validator(min_rule, max_rule, 1, 255)
         if valid is not True:
             return valid
     except KeyError:
-        return 'Wled missing required min_bright and/or max_bright property'
+        return 'Wled missing required min_rule and/or max_rule property'
 
     try:
         # Reject "False" before reaching conditional below (would cast False to 0 and accept as valid rule)
         if isinstance(rule, bool):
             return False
 
-        elif int(min_bright) <= int(rule) <= int(max_bright):
+        elif int(min_rule) <= int(rule) <= int(max_rule):
             return True
 
         else:

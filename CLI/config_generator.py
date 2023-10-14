@@ -328,18 +328,18 @@ class GenerateConfigFile:
             elif i == "default_rule":
                 config[i] = default_rule_prompt_router(config)
 
-            elif i == "min_bright":
+            elif i == "min_rule":
                 config[i] = questionary.text(
-                    "Enter minimum brightness:",
+                    "Enter minimum rule:",
                     default=str(rule_limits_map[_type][0]),
                     validate=IntRange(*rule_limits_map[_type])
                 ).unsafe_ask()
 
-            elif i == "max_bright":
+            elif i == "max_rule":
                 config[i] = questionary.text(
-                    "Enter maximum brightness:",
+                    "Enter maximum rule:",
                     default=str(rule_limits_map[_type][1]),
-                    validate=IntRange(config['min_bright'], rule_limits_map[_type][1])
+                    validate=IntRange(config['min_rule'], rule_limits_map[_type][1])
                 ).unsafe_ask()
 
             # ApiTarget has own IP prompt (select friendly name from nodes in cli_config.json)

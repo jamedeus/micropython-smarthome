@@ -793,7 +793,7 @@ class TestEndpoints(TestCaseBackupRestore):
 
     def test_get_attributes(self):
         attributes = {
-            'min_bright': 0,
+            'min_rule': 0,
             'nickname': 'Cabinet Lights',
             'bright': 0,
             'scheduled_rule': 'disabled',
@@ -811,7 +811,7 @@ class TestEndpoints(TestCaseBackupRestore):
             'state': False,
             'name': 'device1',
             'triggered_by': ['sensor1'],
-            'max_bright': 1023,
+            'max_rule': 1023,
             '_type': 'pwm',
             'group': 'group1',
             'fading': False

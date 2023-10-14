@@ -4,9 +4,9 @@ from LedStrip import LedStrip
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
-    'min_bright': 0,
+    'min_rule': 0,
     'nickname': 'device1',
-    'max_bright': 1023,
+    'max_rule': 1023,
     '_type': 'pwm',
     'scheduled_rule': None,
     'current_rule': None,

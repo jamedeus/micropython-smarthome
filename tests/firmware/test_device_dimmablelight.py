@@ -8,7 +8,7 @@ class TestDimmableLight(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Instantiate with default_rule 50, min_bright 1, max_bright 100
+        # Instantiate with default_rule 50, min_rule 1, max_rule 100
         cls.instance = DimmableLight("device1", "device1", "DimmableLight", True, 50, 50, "1", "100")
 
         # Detect if mock send method was called
@@ -23,8 +23,8 @@ class TestDimmableLight(unittest.TestCase):
     def test_01_initial_state(self):
         # Confirm min/max cast to int
         self.assertIsInstance(self.instance, DimmableLight)
-        self.assertIsInstance(self.instance.min_bright, int)
-        self.assertIsInstance(self.instance.max_bright, int)
+        self.assertIsInstance(self.instance.min_rule, int)
+        self.assertIsInstance(self.instance.max_rule, int)
         self.assertFalse(self.instance.fading)
 
     def test_02_instantiate_with_invalid_min_max(self):
@@ -33,7 +33,7 @@ class TestDimmableLight(unittest.TestCase):
             DimmableLight("device1", "device1", "DimmableLight", True, 50, 500, "1", "100")
 
     def test_03_rule_validation_valid(self):
-        # Should accept int between min_bright and max_bright
+        # Should accept int between min_rule and max_rule
         self.assertEqual(self.instance.rule_validator(1), 1)
         self.assertEqual(self.instance.rule_validator(51), 51)
         self.assertEqual(self.instance.rule_validator(100), 100)
@@ -41,7 +41,7 @@ class TestDimmableLight(unittest.TestCase):
         # Should accept enabled and disabled (case-insensitive)
         self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
         self.assertEqual(self.instance.rule_validator("enabled"), "enabled")
-        # Should accept fade rules if target is between min_bright and max_bright
+        # Should accept fade rules if target is between min_rule and max_rule
         self.assertEqual(self.instance.rule_validator("fade/100/120"), "fade/100/120")
         self.assertEqual(self.instance.rule_validator("fade/1/120000"), "fade/1/120000")
 
@@ -52,12 +52,12 @@ class TestDimmableLight(unittest.TestCase):
         self.assertFalse(self.instance.rule_validator("string"))
         self.assertFalse(self.instance.rule_validator([51]))
         self.assertFalse(self.instance.rule_validator({51: 51}))
-        # Should reject integers less than min_bright or greater than max_bright
+        # Should reject integers less than min_rule or greater than max_rule
         self.assertFalse(self.instance.rule_validator(0))
         self.assertFalse(self.instance.rule_validator(-42))
         self.assertFalse(self.instance.rule_validator("-42"))
         self.assertFalse(self.instance.rule_validator(1337))
-        # Should reject fade rules with target less than min_bright or greater than max_bright
+        # Should reject fade rules with target less than min_rule or greater than max_rule
         self.assertFalse(self.instance.rule_validator(["fade", "50", "1200"]))
         self.assertFalse(self.instance.rule_validator("fade/2000/15"))
         self.assertFalse(self.instance.rule_validator("fade/-512/600"))
@@ -76,20 +76,20 @@ class TestDimmableLight(unittest.TestCase):
         )
 
     def test_06_increment_rule_out_of_range(self):
-        # Set rule to max_bright
+        # Set rule to max_rule
         self.instance.set_rule(100)
         # Increment should still return True
         self.assertTrue(self.instance.increment_rule(1))
         # Confirm rule did not change
         self.assertEqual(self.instance.current_rule, 100)
 
-        # Repeat for min_bright
+        # Repeat for min_rule
         self.instance.set_rule(1)
         self.assertTrue(self.instance.increment_rule(-1))
         self.assertEqual(self.instance.current_rule, 1)
 
     def test_07_set_invalid_rule(self):
-        # Attempt to set rule exceeding max_bright, should return False
+        # Attempt to set rule exceeding max_rule, should return False
         self.assertFalse(self.instance.set_rule(999))
 
     def test_08_set_rule_while_state_is_true(self):
@@ -150,8 +150,8 @@ class TestDimmableLight(unittest.TestCase):
         # Attempt to fade to 100 while disabled
         self.instance.current_rule = 'disabled'
         self.assertTrue(self.instance.set_rule('fade/100/3600'))
-        # Confirm timer created, starting brightness = min_bright
-        self.assertEqual(self.instance.fading['starting_brightness'], self.instance.min_bright)
+        # Confirm timer created, starting brightness = min_rule
+        self.assertEqual(self.instance.fading['starting_brightness'], self.instance.min_rule)
         self.assertIn(f'{self.instance.name}_fade', str(SoftwareTimer.timer.schedule))
         SoftwareTimer.timer.cancel(f'{self.instance.name}_fade')
 
@@ -291,8 +291,8 @@ class TestDimmableLight(unittest.TestCase):
         self.assertFalse(self.instance.fading)
 
     # Original issue: DimmableLight.start_fade handled current_rule == "disabled" by setting starting
-    # point to min_bright, but did not change current_rule. This resulted in fade_complete canceling
-    # the fade when the first step ran due to non-integer current_rule. Now calls set_rule(min_bright).
+    # point to min_rule, but did not change current_rule. This resulted in fade_complete canceling
+    # the fade when the first step ran due to non-integer current_rule. Now calls set_rule(min_rule).
     def test_18_regression_start_fade_while_rule_is_disabled(self):
         # Set current_rule to disabled
         self.instance.set_rule('disabled')
@@ -300,8 +300,8 @@ class TestDimmableLight(unittest.TestCase):
         # Start fade to max brightness in 10 minutes, confirm correct fade dict and current_rule
         self.instance.set_rule('fade/100/600')
         self.assertTrue(isinstance(self.instance.fading, dict))
-        self.assertEqual(self.instance.fading['starting_brightness'], self.instance.min_bright)
-        self.assertEqual(self.instance.current_rule, self.instance.min_bright)
+        self.assertEqual(self.instance.fading['starting_brightness'], self.instance.min_rule)
+        self.assertEqual(self.instance.current_rule, self.instance.min_rule)
 
         # Run first step of fade, confirm fade is not canceled
         self.instance.fade()

@@ -265,13 +265,13 @@ async function load_device_section(select) {
 
                     <div id="${id}-advanced_settings" class="collapse">
                         <div class="mb-2">
-                            <label for="${id}-min_bright" class="${id}"><b>Min brightness:</b></label>
-                            <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_bright" placeholder="1" value="1" required>
+                            <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
+                            <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_rule" placeholder="1" value="1" required>
                         </div>
 
                         <div class="mb-2">
-                            <label for="${id}-max_bright" class="${id}"><b>Max brightness:</b></label>
-                            <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_bright" placeholder="100" value="100" required>
+                            <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
+                            <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_rule" placeholder="100" value="100" required>
                         </div>
                     </div>`
 
@@ -296,13 +296,13 @@ async function load_device_section(select) {
 
                     <div id="${id}-advanced_settings" class="collapse">
                         <div class="mb-2">
-                            <label for="${id}-min_bright" class="${id}"><b>Min brightness:</b></label>
-                            <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_bright" placeholder="1" value="1" required>
+                            <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
+                            <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_rule" placeholder="1" value="1" required>
                         </div>
 
                         <div class="mb-2">
-                            <label for="${id}-max_bright" class="${id}"><b>Max brightness:</b></label>
-                            <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_bright" placeholder="255" value="255" required>
+                            <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
+                            <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_rule" placeholder="255" value="255" required>
                         </div>
                     </div>`
 
@@ -387,13 +387,13 @@ async function load_device_section(select) {
 
                     <div id="${id}-advanced_settings" class="collapse">
                         <div class="mb-2">
-                            <label for="${id}-min_bright" class="${id}"><b>Min brightness:</b></label>
-                            <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_bright" placeholder="1" value="1" required>
+                            <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
+                            <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_rule" placeholder="1" value="1" required>
                         </div>
 
                         <div class="mb-2">
-                            <label for="${id}-max_bright" class="${id}"><b>Max brightness:</b></label>
-                            <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_bright" placeholder="1023" value="1023" required>
+                            <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
+                            <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_rule" placeholder="1023" value="1023" required>
                         </div>
                     </div>`
 
@@ -481,8 +481,8 @@ async function load_device_section(select) {
 
     // Add listener for PWM max/min fields
     if (selected == "pwm") {
-        document.getElementById(`${id}-max_bright`).addEventListener('input', pwmLimits);
-        document.getElementById(`${id}-min_bright`).addEventListener('input', pwmLimits);
+        document.getElementById(`${id}-max_rule`).addEventListener('input', pwmLimits);
+        document.getElementById(`${id}-min_rule`).addEventListener('input', pwmLimits);
     };
 
     // Check if IrBlaster selected in any device dropdown

@@ -10,8 +10,8 @@
     "config_template": {
         "_type": "pwm",
         "nickname": "placeholder",
-        "min_bright": "placeholder",
-        "max_bright": "placeholder",
+        "min_rule": "placeholder",
+        "max_rule": "placeholder",
         "default_rule": "placeholder",
         "pin": "placeholder",
         "schedule": {}

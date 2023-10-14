@@ -7,11 +7,11 @@ log = logging.getLogger("DimmableLight")
 
 
 class DimmableLight(Device):
-    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule, min_bright, max_bright):
+    def __init__(self, name, nickname, _type, enabled, current_rule, default_rule, min_rule, max_rule):
         super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
 
-        self.min_bright = int(min_bright)
-        self.max_bright = int(max_bright)
+        self.min_rule = int(min_rule)
+        self.max_rule = int(max_rule)
 
         # Store parameters in dict while fade in progress
         self.fading = False
@@ -20,7 +20,7 @@ class DimmableLight(Device):
         if str(self.default_rule).lower() in ("enabled", "disabled"):
             log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
             raise AttributeError
-        elif int(self.default_rule) > self.max_bright or int(self.default_rule) < self.min_bright:
+        elif int(self.default_rule) > self.max_rule or int(self.default_rule) < self.min_rule:
             raise AttributeError
 
     def set_rule(self, rule):
@@ -70,10 +70,10 @@ class DimmableLight(Device):
             return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
 
         # Enforce limits
-        if new > self.max_bright:
-            new = self.max_bright
-        if new < self.min_bright:
-            new = self.min_bright
+        if new > self.max_rule:
+            new = self.max_rule
+        if new < self.min_rule:
+            new = self.min_rule
 
         return self.set_rule(new)
 
@@ -94,7 +94,7 @@ class DimmableLight(Device):
                 if int(period) < 0:
                     return False
 
-                if self.min_bright <= int(target) <= self.max_bright:
+                if self.min_rule <= int(target) <= self.max_rule:
                     return rule
                 else:
                     return False
@@ -104,7 +104,7 @@ class DimmableLight(Device):
                 return False
 
             # Accept brightness integer rule
-            elif self.min_bright <= int(rule) <= self.max_bright:
+            elif self.min_rule <= int(rule) <= self.max_rule:
                 return int(rule)
 
             # Subclasses may overwrite validator to accept additional rules (default: return False)
@@ -129,9 +129,9 @@ class DimmableLight(Device):
         self.print(f"fading to {target} in {period} seconds")
         log.info(f"{self.name}: fading to {target} in {period} seconds")
 
-        # Default to min_bright if device disabled when fade starts
+        # Default to min_rule if device disabled when fade starts
         if self.current_rule == "disabled":
-            self.set_rule(self.min_bright)
+            self.set_rule(self.min_rule)
 
         if int(target) == self.current_rule:
             self.print("Already at target brightness, skipping fade")
@@ -239,6 +239,6 @@ class DimmableLight(Device):
     # Called by Config.get_status to build API status response
     def get_status(self):
         status = super().get_status()
-        status['min'] = self.min_bright
-        status['max'] = self.max_bright
+        status['min'] = self.min_rule
+        status['max'] = self.max_rule
         return status

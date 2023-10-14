@@ -73,8 +73,8 @@ config_file = {
             "11:00": 35,
             "20:00": 90
         },
-        "min_bright": 1,
-        "max_bright": 255,
+        "min_rule": 1,
+        "max_rule": 255,
         "default_rule": 50,
         "nickname": "device1",
         "ip": mock_address

@@ -23,8 +23,8 @@
     "device1": {
         "_type": "pwm",
         "nickname": "device1",
-        "min_bright": 0,
-        "max_bright": 1023,
+        "min_rule": 0,
+        "max_rule": 1023,
         "default_rule": 512,
         "pin": 4,
         "schedule": {
@@ -45,8 +45,8 @@
     "device3": {
         "_type": "pwm",
         "nickname": "device3",
-        "min_bright": 0,
-        "max_bright": 1023,
+        "min_rule": 0,
+        "max_rule": 1023,
         "default_rule": 256,
         "pin": 18,
         "schedule": {

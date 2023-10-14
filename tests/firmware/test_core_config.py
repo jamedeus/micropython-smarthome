@@ -34,8 +34,8 @@ loaded_json = {
         'default_rule': 5
     },
     'device1': {
-        'max_bright': 1023,
-        'min_bright': '0',
+        'max_rule': 1023,
+        'min_rule': '0',
         'nickname': 'device1',
         'schedule': {
             'sunrise': 0,
@@ -306,8 +306,8 @@ class TestConfig(unittest.TestCase):
                 'nickname': 'test',
                 'pin': 4,
                 'default_rule': 50,
-                'min_bright': 0,
-                'max_bright': 1023,
+                'min_rule': 0,
+                'max_rule': 1023,
                 'schedule': {
                     '10:00': 50
                 }
@@ -336,8 +336,8 @@ class TestConfig(unittest.TestCase):
                 'nickname': 'test',
                 'pin': 4,
                 'default_rule': 50,
-                'min_bright': 0,
-                'max_bright': 1023,
+                'min_rule': 0,
+                'max_rule': 1023,
                 'schedule': {
                     '10:00': '9999',
                     'later': '999'
@@ -392,8 +392,8 @@ class TestConfig(unittest.TestCase):
                 'nickname': 'test',
                 'pin': 4,
                 'default_rule': '50',
-                'min_bright': 0,
-                'max_bright': 1023,
+                'min_rule': 0,
+                'max_rule': 1023,
                 'schedule': {}
             }
         }
@@ -447,8 +447,8 @@ class TestConfig(unittest.TestCase):
                 "_type": "pwm",
                 "nickname": "Countertop LEDs",
                 "pin": 19,
-                "min_bright": 0,
-                "max_bright": 1023,
+                "min_rule": 0,
+                "max_rule": 1023,
                 "default_rule": "enabled",
                 "schedule": {
                     "sunrise": "0",

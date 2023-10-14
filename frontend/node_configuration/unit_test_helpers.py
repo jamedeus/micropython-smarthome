@@ -245,8 +245,8 @@ request_payload = {
         '_type': 'dimmer',
         'ip': '192.168.1.105',
         'default_rule': 100,
-        'min_bright': '1',
-        'max_bright': '100',
+        'min_rule': '1',
+        'max_rule': '100',
         'schedule': {
             '08:00': '100',
             '22:00': '35'
@@ -257,8 +257,8 @@ request_payload = {
         '_type': 'bulb',
         'ip': '192.168.1.106',
         'default_rule': 75,
-        'min_bright': '1',
-        'max_bright': '100',
+        'min_rule': '1',
+        'max_rule': '100',
         'schedule': {
             '08:00': '100',
             '22:00': '35'
@@ -295,8 +295,8 @@ request_payload = {
         'nickname': 'Cabinet Lights',
         '_type': 'pwm',
         'pin': '26',
-        'min_bright': '0',
-        'max_bright': '1023',
+        'min_rule': '0',
+        'max_rule': '1023',
         'default_rule': 721,
         'schedule': {}
     },
@@ -311,8 +311,8 @@ request_payload = {
         'nickname': 'TV Bias Lights',
         '_type': 'wled',
         'ip': '192.168.1.110',
-        'min_bright': '1',
-        'max_bright': '255',
+        'min_rule': '1',
+        'max_rule': '255',
         'default_rule': 128,
         'schedule': {
             '08:00': '100'
@@ -357,8 +357,8 @@ test_config_1 = {
         "_type": "pwm",
         "nickname": "Cabinet Lights",
         "pin": "4",
-        "min_bright": "0",
-        "max_bright": "1023",
+        "min_rule": "0",
+        "max_rule": "1023",
         "default_rule": 1023,
         "schedule": {
             "22:00": "1023",
@@ -490,8 +490,8 @@ test_config_3 = {
         "_type": "pwm",
         "nickname": "Bathroom LEDs",
         "pin": "4",
-        "min_bright": "0",
-        "max_bright": "1023",
+        "min_rule": "0",
+        "max_rule": "1023",
         "default_rule": 0,
         "schedule": {
             "22:00": "1023",
@@ -589,8 +589,8 @@ test_config_1_edit_context = {
             "device1": {
                 "nickname": "Cabinet Lights",
                 "pin": "4",
-                "min_bright": "0",
-                "max_bright": "1023",
+                "min_rule": "0",
+                "max_rule": "1023",
                 "default_rule": 1023,
                 "schedule": {
                     "22:00": "1023",
@@ -998,8 +998,8 @@ test_config_3_edit_context = {
             "device1": {
                 "nickname": "Bathroom LEDs",
                 "pin": "4",
-                "min_bright": "0",
-                "max_bright": "1023",
+                "min_rule": "0",
+                "max_rule": "1023",
                 "default_rule": 0,
                 "schedule": {
                     "22:00": "1023",

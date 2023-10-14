@@ -38,6 +38,9 @@ from .unit_test_helpers import (
     simulated_read_position,
 )
 
+# Ensure CLI_SYNC is True (writes test configs to disk when created)
+settings.CLI_SYNC = True
+
 
 # Test the Node model
 class NodeTests(TestCaseBackupRestore):
@@ -686,7 +689,7 @@ class EditConfigTests(TestCaseBackupRestore):
         # Confirm all devices and sensors present
         self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor (Bath)"')
         self.assertContains(response, '<input type="text" class="form-control sensor2 nickname" id="sensor2-nickname" placeholder="" value="Motion Sensor (Entry)"')
-        self.assertContains(response, '<input type="text" class="form-control device1 pwm-limits" id="device1-max_bright" value="1023" required>')
+        self.assertContains(response, '<input type="text" class="form-control device1 pwm-limits" id="device1-max_rule" value="1023" required>')
         self.assertContains(response, '<input type="text" class="form-control device2 ip-input" id="device2-ip" placeholder="" value="192.168.1.239"')
         self.assertContains(response, '<input type="text" class="form-control device3 nickname" id="device3-nickname" placeholder="" value="Entry Light" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>')
 
@@ -2333,42 +2336,42 @@ class ValidateConfigTests(TestCaseBackupRestore):
         self.assertEqual(result, 'Thermostat tolerance must be int or float')
 
     def test_pwm_min_greater_than_max(self):
-        self.valid_config['device6']['min_bright'] = 1023
-        self.valid_config['device6']['max_bright'] = 500
+        self.valid_config['device6']['min_rule'] = 1023
+        self.valid_config['device6']['max_rule'] = 500
         self.valid_config['device6']['default_rule'] = 700
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'min_bright cannot be greater than max_bright')
+        self.assertEqual(result, 'min_rule cannot be greater than max_rule')
 
     def test_pwm_limits_negative(self):
-        self.valid_config['device6']['min_bright'] = -50
-        self.valid_config['device6']['max_bright'] = -5
+        self.valid_config['device6']['min_rule'] = -50
+        self.valid_config['device6']['max_rule'] = -5
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Brightness limits cannot be less than 0')
+        self.assertEqual(result, 'Rule limits cannot be less than 0')
 
     def test_pwm_limits_over_max(self):
-        self.valid_config['device6']['min_bright'] = 1023
-        self.valid_config['device6']['max_bright'] = 4096
+        self.valid_config['device6']['min_rule'] = 1023
+        self.valid_config['device6']['max_rule'] = 4096
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Brightness limits cannot be greater than 1023')
+        self.assertEqual(result, 'Rule limits cannot be greater than 1023')
 
     def test_pwm_invalid_default_rule(self):
-        self.valid_config['device6']['min_bright'] = 500
-        self.valid_config['device6']['max_bright'] = 1000
+        self.valid_config['device6']['min_rule'] = 500
+        self.valid_config['device6']['max_rule'] = 1000
         self.valid_config['device6']['default_rule'] = 1100
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Cabinet Lights: Invalid default rule 1100')
 
     def test_pwm_invalid_schedule_rule(self):
-        self.valid_config['device6']['min_bright'] = 500
-        self.valid_config['device6']['max_bright'] = 1000
+        self.valid_config['device6']['min_rule'] = 500
+        self.valid_config['device6']['max_rule'] = 1000
         self.valid_config['device6']['schedule']['01:00'] = 1023
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Cabinet Lights: Invalid schedule rule 1023')
 
     def test_pwm_noninteger_limit(self):
-        self.valid_config['device6']['min_bright'] = 'off'
+        self.valid_config['device6']['min_rule'] = 'off'
         result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Invalid brightness limits, both must be int between 0 and 1023')
+        self.assertEqual(result, 'Invalid rule limits, both must be int between 0 and 1023')
 
 
 # Test views used to manage schedule keywords from config overview

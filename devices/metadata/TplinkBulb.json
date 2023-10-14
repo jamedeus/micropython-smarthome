@@ -11,8 +11,8 @@
         "_type": "bulb",
         "nickname": "placeholder",
         "ip": "placeholder",
-        "min_bright": "placeholder",
-        "max_bright": "placeholder",
+        "min_rule": "placeholder",
+        "max_rule": "placeholder",
         "default_rule": "placeholder",
         "schedule": {}
     },

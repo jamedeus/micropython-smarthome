@@ -25,8 +25,8 @@
             "08:00": "100",
             "22:00": "35"
         },
-        "min_bright": "1",
-        "max_bright": "100"
+        "min_rule": "1",
+        "max_rule": "100"
     },
     "device2": {
         "nickname": "Lamp",
@@ -37,8 +37,8 @@
             "08:00": "100",
             "22:00": "35"
         },
-        "min_bright": "1",
-        "max_bright": "100"
+        "min_rule": "1",
+        "max_rule": "100"
     },
     "device3": {
         "nickname": "Porch Light",
@@ -73,8 +73,8 @@
         "nickname": "Cabinet Lights",
         "_type": "pwm",
         "pin": "26",
-        "min_bright": "0",
-        "max_bright": "1023",
+        "min_rule": "0",
+        "max_rule": "1023",
         "default_rule": 721,
         "schedule": {
 
@@ -97,8 +97,8 @@
         "schedule": {
             "08:00": "100"
         },
-        "min_bright": "1",
-        "max_bright": "255"
+        "min_rule": "1",
+        "max_rule": "255"
     },
     "device10": {
         "nickname": "Remote Control",

@@ -131,8 +131,8 @@ def float_rule_prompt(config, rule_type):
 # Default prompt: Require int rule (standard rules are invalid)
 # Schedule prompt: Show standard rules prompt in addition to int
 def int_rule_prompt(config, rule_type):
-    minimum = config['min_bright']
-    maximum = config['max_bright']
+    minimum = config['min_rule']
+    maximum = config['max_rule']
 
     # Default rule prompt
     if rule_type == "default":
@@ -151,8 +151,8 @@ def int_rule_prompt(config, rule_type):
 # Default prompt: Require int rule (fade and standard are invalid)
 # Schedule prompt: Show standard rules and fade prompt in addition to int
 def int_or_fade_rule_prompt(config, rule_type):
-    minimum = config['min_bright']
-    maximum = config['max_bright']
+    minimum = config['min_rule']
+    maximum = config['max_rule']
 
     # Default rule prompt
     if rule_type == "default":

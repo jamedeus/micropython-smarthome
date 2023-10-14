@@ -9,8 +9,8 @@ log = logging.getLogger("Tplink")
 
 # Used to control TP-Link Kasa dimmers + smart bulbs
 class Tplink(DimmableLight):
-    def __init__(self, name, nickname, _type, default_rule, min_bright, max_bright, ip):
-        super().__init__(name, nickname, _type, True, None, default_rule, min_bright, max_bright)
+    def __init__(self, name, nickname, _type, default_rule, min_rule, max_rule, ip):
+        super().__init__(name, nickname, _type, True, None, default_rule, min_rule, max_rule)
 
         self.ip = ip
 
