@@ -41,8 +41,16 @@ class TestHttpGet(unittest.TestCase):
         self.assertTrue(re.match(uri_pattern, '123.45.67.89:6500'))
         self.assertTrue(re.match(uri_pattern, '192.168.1.100:9999'))
 
+    def test_04_get_url(self):
+        # Get on URL, confirm correct
+        url = self.instance.get_url(1)
+        self.assertEqual(url, 'http://192.168.1.100/on')
+        # Get off URL, confirm correct
+        url = self.instance.get_url(0)
+        self.assertEqual(url, 'http://192.168.1.100/off')
+
     @cpython_only
-    def test_04_send_method(self):
+    def test_05_send_method(self):
         # Build mock response object
         response = urequests.Response()
         response.status_code = 200

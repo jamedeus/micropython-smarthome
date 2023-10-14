@@ -39,6 +39,19 @@ class HttpGet(Device):
 
         log.info(f"Instantiated HttpGet named {self.name}: URI = {self.uri}")
 
+    # Takes bool, returns on and off URLs for True and False respectively
+    def get_url(self, state):
+        if state:
+            return f'http://{self.uri}/{self.on_path}'
+        else:
+            return f'http://{self.uri}/{self.off_path}'
+
+    # Takes URL, makes request, returns response object
+    def request(self, url):
+        return urequests.get(url)
+
+    # Takes bool, turns on if True, turns off if False
+    # Returns True if HTTP response is 200, otherwise returns False
     def send(self, state=1):
         log.info(f"{self.name}: send method called, state = {state}")
 
@@ -49,11 +62,10 @@ class HttpGet(Device):
             return True
 
         try:
+            response = self.request(self.get_url(state))
             if state:
-                response = urequests.get(f'http://{self.uri}/{self.on_path}')
                 print(f"{self.name}: Turned on")
             else:
-                response = urequests.get(f'http://{self.uri}/{self.off_path}')
                 print(f"{self.name}: Turned off")
         except OSError:
             # Wifi interruption, send failed
