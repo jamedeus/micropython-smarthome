@@ -3,6 +3,6 @@ cli_config.json
 firmware/esp-idf/
 firmware/micropython/
 firmware/*.bin
-*.coverage
+*.coverage*
 .env
 *release.log

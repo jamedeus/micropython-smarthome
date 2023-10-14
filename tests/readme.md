@@ -60,3 +60,14 @@ Once the core tests complete the results will be printed followed by a menu used
 ## Mock Environment
 
 The mock environment runs firmware tests in cpython for coverage measurement, see [here](/tests/mock_environment/readme.md) for details. No hardware is required to run these tests.
+
+## Convenience script
+
+The [run_all_tests.sh](run_all_tests.sh) script automatically runs the CLI, frontend, and firmware tests (in mocked environment). Simply call the script:
+```
+./run_all_tests.sh
+```
+
+Separate coverage reports will be printed for each suite when the tests complete.
+
+Note: the mock command receiver must be set up before running this script, see [here](/tests/mock_environment/readme.md) for instructions.
