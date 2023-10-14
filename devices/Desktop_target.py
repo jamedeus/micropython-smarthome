@@ -24,13 +24,13 @@ class Desktop_target(HttpGet):
             response = self.request(self.get_url(state))
             if response.status_code == 200:
                 if state:
-                    print(f"{self.name}: Turned on")
+                    self.print("Turned on")
                 else:
-                    print(f"{self.name}: Turned off")
+                    self.print("Turned off")
                 return True
             # Off command 503 response indicates user is not idle
             elif response.status_code == 503 and not state:
-                print(f"{self.name}: User not idle, keeping screen on")
+                self.print("User not idle, keeping screen on")
                 return True
             else:
                 raise ValueError
@@ -40,7 +40,7 @@ class Desktop_target(HttpGet):
         except ValueError:
             # Unexpected response (different service running on port 5000), disable
             if self.enabled:
-                print(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+                self.print("Fatal error (unexpected response from desktop), disabling")
                 log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
                 self.disable()
 

@@ -2,7 +2,7 @@ import logging
 from machine import Pin
 from ir_tx import Player
 import uasyncio as asyncio
-from util import read_config_from_disk, write_config_to_disk
+from util import read_config_from_disk, write_config_to_disk, print_with_timestamp
 
 # Set name for module's log lines
 log = logging.getLogger("IrBlaster")
@@ -41,10 +41,13 @@ class IrBlaster():
         self.codes[target] = getattr(module, 'codes')
 
     def send(self, dev, key):
+        print_with_timestamp(f"IR Blaster: Sending IR key {key} to {dev}")
         try:
             self.ir.play(self.codes[dev.lower()][key.lower()])
+            print_with_timestamp("IR Blaster: Send success")
             return True
         except (KeyError, AttributeError):
+            print_with_timestamp("IR Blaster: Send fail")
             return False
 
     # Returns dict of existing macros formatted for readability
@@ -112,8 +115,10 @@ class IrBlaster():
 
     # Takes macro name, runs
     async def run_macro_coro(self, name):
+        print_with_timestamp("IR Blaster: run macro coro start")
         # Iterate actions and run each action
         for action in self.macros[name]:
             for i in range(0, int(action[3])):
                 self.send(action[0], action[1])
                 await asyncio.sleep_ms(int(action[2]))
+        print_with_timestamp("IR Blaster: run macro coro end")

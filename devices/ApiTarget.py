@@ -126,7 +126,7 @@ class ApiTarget(Device):
         if not str(valid_rule) == "False":
             self.current_rule = valid_rule
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
-            print(f"{self.name}: Rule changed to {self.current_rule}")
+            self.print(f"Rule changed to {self.current_rule}")
 
             # Rule just changed to disabled
             if self.current_rule == "disabled":
@@ -146,7 +146,7 @@ class ApiTarget(Device):
 
         else:
             log.error(f"{self.name}: Failed to change rule to {rule}")
-            print(f"{self.name}: Failed to change rule to {rule}")
+            self.print(f"Failed to change rule to {rule}")
             return False
 
     # Takes payload and response, writes multiline log with indent for readability
@@ -154,8 +154,8 @@ class ApiTarget(Device):
         log.error(f"""{self.name}: Send method failed
         Payload: {msg}
         Response: {err}""")
-        print(f"{self.name}: Send method failed with payload {msg}")
-        print(f"{self.name}: Response: {err}")
+        self.print(f"Send method failed with payload {msg}")
+        self.print(f"Response: {err}")
 
     def request(self, msg):
         s = socket.socket()

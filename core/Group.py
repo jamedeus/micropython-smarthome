@@ -1,4 +1,5 @@
 import logging
+from util import print_with_timestamp
 
 # Set name for module's log lines
 log = logging.getLogger("Group")
@@ -98,5 +99,5 @@ class Group():
     def refresh(self, arg=None):
         action = self.determine_correct_action(self.check_sensor_conditions())
         if action is not None:
-            print(f"{self.name}: Applying action: {action}")
+            print_with_timestamp(f"{self.name}: Applying action: {action}")
             self.apply_action(action)

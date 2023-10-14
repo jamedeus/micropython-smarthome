@@ -28,7 +28,7 @@ class DimmableLight(Device):
         valid_rule = self.rule_validator(rule)
         if str(valid_rule) == "False":
             log.error(f"{self.name}: Failed to change rule to {rule}")
-            print(f"{self.name}: Failed to change rule to {rule}")
+            self.print(f"Failed to change rule to {rule}")
             return False
 
         elif str(valid_rule).startswith("fade"):
@@ -44,7 +44,7 @@ class DimmableLight(Device):
                     self.fading = False
 
             self.current_rule = valid_rule
-            print(f"{self.name}: Rule changed to {self.current_rule}")
+            self.print(f"Rule changed to {self.current_rule}")
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
 
             # Abort fade if new rule exceeded target
@@ -121,12 +121,12 @@ class DimmableLight(Device):
         # If first rule on boot is fade, set target as current_rule (animation probably overdue)
         if self.current_rule is None:
             self.current_rule = int(target)
-            print(f"{self.name}: Rule changed to {self.current_rule}")
+            self.print(f"Rule changed to {self.current_rule}")
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
             return True
 
         # If rule changes to fade after boot, start fade and return first step as current_rule
-        print(f"{self.name}: fading to {target} in {period} seconds")
+        self.print(f"fading to {target} in {period} seconds")
         log.info(f"{self.name}: fading to {target} in {period} seconds")
 
         # Default to min_bright if device disabled when fade starts
@@ -134,8 +134,8 @@ class DimmableLight(Device):
             self.set_rule(self.min_bright)
 
         if int(target) == self.current_rule:
-            print("Already at target brightness, skipping fade")
-            log.info("Already at target brightness, skipping fade")
+            self.print("Already at target brightness, skipping fade")
+            log.info(f"{self.name}: Already at target brightness, skipping fade")
             return True
 
         # Find fade direction, get number of steps, period between steps

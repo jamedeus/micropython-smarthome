@@ -55,7 +55,7 @@ class LoadCell(Sensor):
     # Check condition every second
     async def monitor(self):
         while True:
-            print(f"Load cell monitor: {self.sensor.get_value()}")
+            self.print(f"Load cell monitor: {self.sensor.get_value()}")
             new = self.condition_met()
 
             # If condition changed, overwrite and refresh group

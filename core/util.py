@@ -1,4 +1,5 @@
 import os
+import time
 import json
 import logging
 import SoftwareTimer
@@ -58,7 +59,7 @@ def write_config_to_disk(conf):
 
 # Must accept arg (hardware Timer passes self as arg)
 def reboot(arg=None):
-    print("Reboot function called, rebooting...")
+    print_with_timestamp("Reboot function called, rebooting...")
     log.info("Reboot function called, rebooting...\n")
     from machine import reset
     reset()
@@ -82,9 +83,24 @@ def clear_log():
 # Called by SoftwareTimer every 60 seconds
 def check_log_size():
     if os.stat('app.log')[6] > 100000:
-        print("\nLog exceeded 100 KB, clearing...\n")
+        print_with_timestamp("\nLog exceeded 100 KB, clearing...\n")
         clear_log()
         log.info("Deleted old log (exceeded 100 KB size limit)")
 
     # Add back to queue
     SoftwareTimer.timer.create(60000, check_log_size, "check_log_size")
+
+
+# Returns current timestamp with YYYY-MM-DD HH:MM:SS format
+def get_timestamp():
+    ct = list(time.localtime())
+    # Add leading 0 to single-digit month, day, hour, min, sec
+    for i in range(1, 6):
+        if len(str(ct[i])) == 1:
+            ct[i] = "0" + str(ct[i])
+    return "{0}-{1}-{2} {3}:{4}:{5}".format(*ct)
+
+
+# Takes message, prints with prepended timestamp
+def print_with_timestamp(msg):
+    print(f"{get_timestamp()}: {msg}")

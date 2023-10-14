@@ -83,7 +83,7 @@ class MotionSensor(Sensor):
     # Interrupt routine, called when motion sensor triggered
     def motion_detected(self, pin=""):
         if not self.motion:
-            print(f"{self.name}: Motion detected")
+            self.print("Motion detected")
             log.debug(f"{self.name}: Motion detected")
 
         # Set motion attribute, start reset timer
@@ -103,7 +103,7 @@ class MotionSensor(Sensor):
                 off = float(self.current_rule) * 60000
                 SoftwareTimer.timer.create(off, self.reset_timer, self.name)
             except (ValueError, TypeError):
-                print(f"{self.name}: Failed to start reset timer, current_rule = {self.current_rule}")
+                self.print(f"Failed to start reset timer, current_rule = {self.current_rule}")
                 log.debug(f"{self.name}: Failed to start reset timer, current_rule = {self.current_rule}")
         else:
             # Stop reset timer (may be running from before delay set to None)

@@ -34,7 +34,7 @@ class Wled(DimmableLight):
 
         try:
             response = urequests.post(f'http://{self.ip}/json/state', json=self.get_payload(state))
-            print(f"{self.name}: brightness = {self.current_rule}, state = {state}")
+            self.print(f"brightness = {self.current_rule}, state = {state}")
         except OSError:
             # Wifi interruption, send failed
             return False

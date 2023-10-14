@@ -1,4 +1,5 @@
 import logging
+from util import print_with_timestamp
 
 # Set name for module's log lines
 log = logging.getLogger("Instance")
@@ -59,7 +60,7 @@ class Instance():
         if not str(valid_rule) == "False":
             self.current_rule = valid_rule
             log.info(f"{self.name}: Rule changed to {self.current_rule}")
-            print(f"{self.name}: Rule changed to {self.current_rule}")
+            self.print(f"Rule changed to {self.current_rule}")
 
             # Update instance attributes to reflect new rule
             # This method must be implemented by subclasses
@@ -69,7 +70,7 @@ class Instance():
 
         else:
             log.error(f"{self.name}: Failed to change rule to {rule}")
-            print(f"{self.name}: Failed to change rule to {rule}")
+            self.print(f"Failed to change rule to {rule}")
             return False
 
     # Placeholder function, intended to be overwritten by subclass apply_new_rule method
@@ -90,7 +91,7 @@ class Instance():
     # Called by SoftwareTimer tasks at each scheduled rule change
     def next_rule(self):
         log.debug(f"{self.name}: Scheduled rule change")
-        print(f"{self.name}: Scheduled rule change")
+        self.print("Scheduled rule change")
         if self.set_rule(self.rule_queue.pop(0)):
             # If new rule is valid, also change scheduled_rule
             self.scheduled_rule = self.current_rule
@@ -116,3 +117,7 @@ class Instance():
             'current_rule': self.current_rule,
             'scheduled_rule': self.scheduled_rule
         }
+
+    # Takes string, prints with prepended timestamp and instance name
+    def print(self, msg):
+        print_with_timestamp(f"{self.name}: {msg}")

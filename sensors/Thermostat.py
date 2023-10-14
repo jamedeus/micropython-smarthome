@@ -106,7 +106,7 @@ class Thermostat(Sensor):
     # Check if temperature exceeded threshold every 5 seconds
     async def monitor(self):
         while True:
-            print(f"Thermostat monitor: {self.fahrenheit()}")
+            self.print(f"Thermostat monitor: {self.fahrenheit()}")
             new = self.condition_met()
 
             # If condition changed, overwrite and refresh group
@@ -145,7 +145,7 @@ class Thermostat(Sensor):
             if self.recent_temps[0] < self.recent_temps[1] < self.recent_temps[2]:
                 # Temperature increasing, should be cooling
                 if self.mode == "cool" and self.condition_met() is True:
-                    print("Failed to start cooling - turning AC on again")
+                    self.print("Failed to start cooling - turning AC on again")
                     log.info(f"Failed to start cooling (recent_temps: {self.recent_temps}). Turning AC on again")
                     action = False
 
@@ -192,6 +192,8 @@ class Thermostat(Sensor):
             SoftwareTimer.timer.cancel(self.name)
             SoftwareTimer.timer.create(30000, self.audit, self.name)
 
+    # Return JSON-serializable dict containing state information
+    # Called by Config.get_status to build API status response
     def get_status(self):
         status = super().get_status()
         status['temp'] = self.fahrenheit()

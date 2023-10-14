@@ -48,7 +48,7 @@ class Desktop_trigger(Sensor):
             return response.json()
         else:
             # Response doesn't contain JSON (different service running on port 5000), disable
-            print(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+            self.print("Fatal error (unexpected response from desktop), disabling")
             log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
             self.disable()
             return False
@@ -61,7 +61,7 @@ class Desktop_trigger(Sensor):
             return False
         except ValueError:
             # Response doesn't contain JSON (different service running on port 5000), disable
-            print(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
+            self.print("Fatal error (unexpected response from desktop), disabling")
             log.info(f"{self.name}: Fatal error (unexpected response from desktop), disabling")
             self.disable()
             return False
@@ -95,7 +95,7 @@ class Desktop_trigger(Sensor):
 
                 # State changed, overwrite self.current with new reading
                 if new != self.current:
-                    print(f"{self.name}: Monitors changed from {self.current} to {new}")
+                    self.print(f"Monitors changed from {self.current} to {new}")
                     log.debug(f"{self.name}: Monitors changed from {self.current} to {new}")
                     self.current = new
 

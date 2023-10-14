@@ -22,7 +22,7 @@ class Sensor(Instance):
     def refresh_group(self):
         # Check conditions of all sensors in group
         if hasattr(self, 'group'):
-            print(f"{self.name}: Refreshing {self.group.name}")
+            self.print(f"Refreshing {self.group.name}")
             schedule(self.group._refresh, None)
 
     def enable(self):

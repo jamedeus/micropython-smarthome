@@ -9,7 +9,7 @@ from machine import Pin, Timer, RTC
 import SoftwareTimer
 from Group import Group
 from api_keys import ipgeo_key
-from util import is_device, is_sensor, is_device_or_sensor, reboot
+from util import is_device, is_sensor, is_device_or_sensor, reboot, print_with_timestamp
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -73,7 +73,7 @@ def instantiate_hardware(name, **kwargs):
 # Primarily used in unit testing to run a subset of methods.
 class Config():
     def __init__(self, conf, delay_setup=False):
-        print("\nInstantiating config object...\n")
+        print_with_timestamp("Instantiating config object...")
         log.info("Instantiating config object...")
         log.debug(f"Config file: {conf}")
 
@@ -145,7 +145,7 @@ class Config():
         # Get HH:MM timestamp of next reload, write to log
         self.reload_time = f"{time.localtime(next_reload + adjust)[3]}:{time.localtime(next_reload + adjust)[4]}"
         log.debug(f"Reload_schedule_rules callback scheduled for {self.reload_time} am")
-        print(f"Reload_schedule_rules callback scheduled for {self.reload_time} am")
+        print_with_timestamp(f"Reload_schedule_rules callback scheduled for {self.reload_time} am")
 
         # Add timer to queue
         SoftwareTimer.timer.create(ms_until_reload, self.reload_schedule_rules, "reload_schedule_rules")
@@ -200,11 +200,11 @@ class Config():
                 self.devices.append(instance)
             except AttributeError:
                 log.critical(f"Failed to instantiate {device} ({conf[device]['_type']}), params: {conf[device]}")
-                print(f"ERROR: Failed to instantiate {device} ({conf[device]['_type']}")
+                print_with_timestamp(f"ERROR: Failed to instantiate {device} ({conf[device]['_type']}")
                 pass
             except ValueError:
                 log.critical(f"Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
-                print(f"ERROR: Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
+                print_with_timestamp(f"ERROR: Failed to instantiate {device}, unsupported device type {conf[device]['_type']}")
 
         log.debug("Finished creating device instances")
 
@@ -232,11 +232,11 @@ class Config():
                 self.sensors.append(instance)
             except AttributeError:
                 log.critical(f"Failed to instantiate {sensor} ({conf[sensor]['_type']}, params: {conf[sensor]}")
-                print(f"ERROR: Failed to instantiate {sensor} ({conf[sensor]['_type']}")
+                print_with_timestamp(f"ERROR: Failed to instantiate {sensor} ({conf[sensor]['_type']}")
                 pass
             except ValueError:
                 log.critical(f"Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
-                print(f"ERROR: Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
+                print_with_timestamp(f"ERROR: Failed to instantiate {sensor}, unsupported sensor type {conf[sensor]['_type']}")
 
         log.debug("Finished creating sensor instances")
 
@@ -328,7 +328,7 @@ class Config():
         while not wlan.isconnected():
             continue
         else:
-            print(f"Successfully connected to {self.credentials[0]}")
+            print_with_timestamp(f"Successfully connected to {self.credentials[0]}")
             log.info(f"Successfully connected to {self.credentials[0]}")
 
         failed_attempts = 0
@@ -364,13 +364,13 @@ class Config():
 
             # Issue with response object
             except KeyError:
-                print(f'ERROR (ipgeolocation.io): {response.json()["message"]}')
+                print_with_timestamp(f'ERROR (ipgeolocation.io): {response.json()["message"]}')
                 log.error(f'ERROR (ipgeolocation.io): {response.json()["message"]}')
                 reboot()
 
             # Network issue
             except OSError:
-                print("Failed to set system time, retrying...")
+                print_with_timestamp("Failed to set system time, retrying...")
                 log.debug("Failed to set system time, retrying...")
                 failed_attempts += 1
                 if failed_attempts > 5:
@@ -521,7 +521,7 @@ class Config():
                 SoftwareTimer.timer.create(miliseconds, instance.next_rule, "scheduler")
                 gc.collect()
 
-        print(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
+        print_with_timestamp(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
         log.debug(f"Finished building queue, total timers = {len(SoftwareTimer.timer.queue)}")
 
     # Takes ID (device1, sensor2, etc), returns instance or False
@@ -548,7 +548,7 @@ class Config():
 
     # Called by timer every day at 3 am, regenerate timestamps for next day (epoch time)
     def reload_schedule_rules(self):
-        print("Reloading schedule rules...")
+        print_with_timestamp("Reloading schedule rules...")
         log.info("Callback: Reloading schedule rules")
         # Get up-to-date sunrise/sunset, set system clock (in case of daylight savings)
         self.api_calls()

@@ -72,14 +72,14 @@ class Tplink(DimmableLight):
 
             decrypted = self.decrypt(data[4:])  # Remove in final version (or put in debug conditional)
 
-            print(f"{self.name}: brightness = {self.current_rule}, state = {state}")
+            self.print(f"brightness = {self.current_rule}, state = {state}")
             log.debug(f"{self.name}: Success")
 
             # Tell calling function that request succeeded
             return True
 
         except Exception as ex:
-            print(f"Could not connect to host {self.ip}, exception: {ex}")
+            self.print(f"Could not connect to host {self.ip}, exception: {ex}")
             log.info(f"{self.name}: Could not connect to host {self.ip}")
 
             # Tell calling function that request failed

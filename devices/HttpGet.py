@@ -64,9 +64,9 @@ class HttpGet(Device):
         try:
             response = self.request(self.get_url(state))
             if state:
-                print(f"{self.name}: Turned on")
+                self.print("Turned on")
             else:
-                print(f"{self.name}: Turned off")
+                self.print("Turned off")
         except OSError:
             # Wifi interruption, send failed
             return False

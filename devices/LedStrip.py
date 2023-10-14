@@ -52,7 +52,7 @@ class LedStrip(DimmableLight):
                 self.pwm.duty(self.bright)
                 time.sleep_us(delay)
 
-            print(f"{self.name}: Faded down to {target}")
+            self.print(f"Faded down to {target}")
 
         # Fade UP
         else:
@@ -65,6 +65,6 @@ class LedStrip(DimmableLight):
                 self.pwm.duty(self.bright)
                 time.sleep_us(delay)
 
-            print(f"{self.name}: Faded up to {target}")
+            self.print(f"Faded up to {target}")
 
         return True  # Tell calling function that request succeeded

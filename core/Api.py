@@ -16,7 +16,8 @@ from util import (
     reboot,
     clear_log,
     read_config_from_disk,
-    write_config_to_disk
+    write_config_to_disk,
+    print_with_timestamp
 )
 
 # Set name for module's log lines
@@ -84,7 +85,7 @@ class Api:
 
     async def run(self):
         self.server = await asyncio.start_server(self.run_client, host=self.host, port=self.port, backlog=self.backlog)
-        print('API: Awaiting client connection.\n')
+        print_with_timestamp('API: Awaiting client connection.\n')
         log.info("API ready")
 
     async def run_client(self, sreader, swriter):
