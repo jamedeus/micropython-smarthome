@@ -121,7 +121,7 @@ class GenerateConfigFile:
                     "Edit sensor targets",
                     "Done"
                 ]
-            ).ask()
+            ).unsafe_ask()
             if choice == 'Edit metadata':
                 # Show metadata prompt with existing values pre-filled
                 self.metadata_prompt(
@@ -166,7 +166,7 @@ class GenerateConfigFile:
         print("\nFinished config:")
         print(json.dumps(self.config, indent=4))
 
-        choice = questionary.select("Continue editing?", choices=["Yes", "No"]).ask()
+        choice = questionary.select("Continue editing?", choices=["Yes", "No"]).unsafe_ask()
         if choice == "Yes":
             self.run_edit_prompt()
 
@@ -183,17 +183,28 @@ class GenerateConfigFile:
     # Prompt user for node name and location metadata, add to self.config
     # Optional arguments are used to set defaults when editing existing config
     def metadata_prompt(self, name="", floor="", location=""):
-        name = questionary.text("Enter a descriptive name for this node:", validate=MinLength(1), default=name).ask()
-        floor = questionary.text("Enter floor number:", validate=is_int, default=floor).ask()
-        location = questionary.text("Enter a brief note about the node's physical location:", default=location).ask()
+        name = questionary.text(
+            "Enter a descriptive name for this node:",
+            validate=MinLength(1),
+            default=name
+        ).unsafe_ask()
+        floor = questionary.text(
+            "Enter floor number:",
+            validate=is_int,
+            default=floor
+        ).unsafe_ask()
+        location = questionary.text(
+            "Enter a brief note about the node's physical location:",
+            default=location
+        ).unsafe_ask()
 
         self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
 
     # Prompt user for wifi credentials, add to self.config
     # Optional arguments are used to set defaults when editing existing config
     def wifi_prompt(self, ssid="", password=""):
-        ssid = questionary.text("Enter wifi SSID (2.4 GHz only):", validate=MinLength(1), default=ssid).ask()
-        password = questionary.password("Enter wifi password:", validate=MinLength(8), default=password).ask()
+        ssid = questionary.text("Enter wifi SSID (2.4 GHz only):", validate=MinLength(1), default=ssid).unsafe_ask()
+        password = questionary.password("Enter wifi password:", validate=MinLength(8), default=password).unsafe_ask()
 
         self.config['wifi'].update({'ssid': ssid, 'password': password})
 
@@ -205,7 +216,7 @@ class GenerateConfigFile:
         # Prompt user to configure devices and sensors
         # Output of each device/sensor prompt is added to lists above
         while True:
-            choice = questionary.select("\nAdd instances?", choices=self.category_options).ask()
+            choice = questionary.select("\nAdd instances?", choices=self.category_options).unsafe_ask()
             if choice == 'Device':
                 devices.append(self.configure_device())
             elif choice == 'Sensor':
@@ -237,7 +248,7 @@ class GenerateConfigFile:
             instances_map[display] = key
 
         # Prompt user to select all devices and sensors they wish to delete
-        delete = questionary.checkbox("Select devices and sensors to delete", choices=instances_map.keys()).ask()
+        delete = questionary.checkbox("Select devices and sensors to delete", choices=instances_map.keys()).unsafe_ask()
 
         # Delete instances from config file, remove pin/nickname from used lists
         for i in delete:
@@ -252,7 +263,7 @@ class GenerateConfigFile:
         return questionary.select(
             "Select device type",
             choices=self.device_type_options
-        ).ask()
+        ).unsafe_ask()
 
     # Prompt user to select from a list of valid sensor types
     # Used to get template in configure_sensor
@@ -260,14 +271,14 @@ class GenerateConfigFile:
         return questionary.select(
             "Select sensor type",
             choices=self.sensor_type_options
-        ).ask()
+        ).unsafe_ask()
 
     # Prompt user for a nickname, add to used_nicknames list, return
     def nickname_prompt(self):
         nickname = questionary.text(
             "Enter a memorable nickname:",
             validate=NicknameValidator(self.used_nicknames)
-        ).ask()
+        ).unsafe_ask()
         self.used_nicknames.append(nickname)
         return nickname
 
@@ -275,19 +286,19 @@ class GenerateConfigFile:
     # Takes list of options as arg, removes already-used pins to prevent duplicates
     def pin_prompt(self, valid_pins, prompt="Select pin"):
         choices = [pin for pin in valid_pins if pin not in self.used_pins]
-        pin = questionary.select(prompt, choices=choices).ask()
+        pin = questionary.select(prompt, choices=choices).unsafe_ask()
         self.used_pins.append(pin)
         return pin
 
     # Prompt user to enter an IP address, enforces syntax
     def ip_address_prompt(self):
-        return questionary.text("Enter IP address:", validate=valid_ip).ask()
+        return questionary.text("Enter IP address:", validate=valid_ip).unsafe_ask()
 
     # Prompt user to select from existing node friendly names
     # Returns IP of selected node
     def apitarget_ip_prompt(self):
         options = list(self.existing_nodes.keys())
-        target = questionary.select("Select target node", choices=options).ask()
+        target = questionary.select("Select target node", choices=options).unsafe_ask()
         return self.existing_nodes[target]['ip']
 
     # Prompt user to select device type and all required params.
@@ -322,14 +333,14 @@ class GenerateConfigFile:
                     "Enter minimum brightness:",
                     default=str(rule_limits_map[_type][0]),
                     validate=IntRange(*rule_limits_map[_type])
-                ).ask()
+                ).unsafe_ask()
 
             elif i == "max_bright":
                 config[i] = questionary.text(
                     "Enter maximum brightness:",
                     default=str(rule_limits_map[_type][1]),
                     validate=IntRange(config['min_bright'], rule_limits_map[_type][1])
-                ).ask()
+                ).unsafe_ask()
 
             # ApiTarget has own IP prompt (select friendly name from nodes in cli_config.json)
             elif i == "ip" and _type == "api-target":
@@ -378,10 +389,10 @@ class GenerateConfigFile:
                 config[i] = self.ip_address_prompt()
 
             elif i == "mode":
-                config[i] = questionary.select("Select mode", choices=['cool', 'heat']).ask()
+                config[i] = questionary.select("Select mode", choices=['cool', 'heat']).unsafe_ask()
 
             elif i == "tolerance":
-                config[i] = questionary.text("Enter temperature tolerance:", validate=FloatRange(0, 10)).ask()
+                config[i] = questionary.text("Enter temperature tolerance:", validate=FloatRange(0, 10)).unsafe_ask()
 
         # Prompt user to add schedule rules
         config = self.schedule_rule_prompt(config)
@@ -402,7 +413,7 @@ class GenerateConfigFile:
     def configure_ir_blaster(self):
         # Prompt user for pin and targets
         pin = self.pin_prompt(valid_device_pins)
-        targets = questionary.checkbox("Select target devices", choices=['tv', 'ac']).ask()
+        targets = questionary.checkbox("Select target devices", choices=['tv', 'ac']).unsafe_ask()
 
         # Add to config
         self.config['ir_blaster'] = {
@@ -453,7 +464,7 @@ class GenerateConfigFile:
                 options.append(questionary.Choice(display, checked=bool(device in self.config[sensor]['targets'])))
 
             prompt = f"\nSelect targets for {self.config[sensor]['nickname']} ({self.config[sensor]['_type']})"
-            targets = questionary.checkbox(prompt, choices=options).ask()
+            targets = questionary.checkbox(prompt, choices=options).unsafe_ask()
 
             # Add selection to config
             self.config[sensor]['targets'] = [targets_map[i] for i in targets]
@@ -462,10 +473,10 @@ class GenerateConfigFile:
     # user selects done. Returns config with all selected schedule rules.
     def schedule_rule_prompt(self, config):
         prompt = f"\nWould you like to add schedule rules for {config['nickname']}?"
-        if questionary.select(prompt, choices=['Yes', 'No']).ask() == 'Yes':
+        if questionary.select(prompt, choices=['Yes', 'No']).unsafe_ask() == 'Yes':
             while True:
                 config = self.add_schedule_rule(config)
-                choice = questionary.select("\nAdd another?", choices=['Yes', 'No']).ask()
+                choice = questionary.select("\nAdd another?", choices=['Yes', 'No']).unsafe_ask()
                 if choice == 'No':
                     break
         return config
@@ -484,14 +495,14 @@ class GenerateConfigFile:
         return config
 
     def schedule_rule_timestamp_prompt(self):
-        return questionary.text("Enter timestamp (HH:MM):", validate=valid_timestamp).ask()
+        return questionary.text("Enter timestamp (HH:MM):", validate=valid_timestamp).unsafe_ask()
 
     def schedule_rule_timestamp_or_keyword_prompt(self):
-        choice = questionary.select("\nTimestamp or keyword?", choices=['Timestamp', 'Keyword']).ask()
+        choice = questionary.select("\nTimestamp or keyword?", choices=['Timestamp', 'Keyword']).unsafe_ask()
         if choice == 'Timestamp':
             return self.schedule_rule_timestamp_prompt()
         else:
-            return questionary.select("\nSelect keyword", choices=self.schedule_keyword_options).ask()
+            return questionary.select("\nSelect keyword", choices=self.schedule_keyword_options).unsafe_ask()
 
 
 if __name__ == '__main__':
@@ -501,7 +512,10 @@ if __name__ == '__main__':
     else:
         config = GenerateConfigFile()
 
-    config.run_prompt()
+    try:
+        config.run_prompt()
+    except KeyboardInterrupt:
+        raise SystemExit
 
     # Write to disk if passed validation
     if config.passed_validation:

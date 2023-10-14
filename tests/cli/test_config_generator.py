@@ -304,7 +304,7 @@ class TestGenerateConfigFile(TestCase):
 
     def test_finished_prompt(self):
         # Simulate user selecting No
-        self.mock_ask.ask.return_value = 'No'
+        self.mock_ask.unsafe_ask.return_value = 'No'
         with patch.object(self.generator, 'run_edit_prompt') as mock_run_edit_prompt, \
              patch('questionary.select', return_value=self.mock_ask):
 
@@ -313,7 +313,7 @@ class TestGenerateConfigFile(TestCase):
             mock_run_edit_prompt.assert_not_called()
 
         # Simulate user selecting Yes
-        self.mock_ask.ask.return_value = 'Yes'
+        self.mock_ask.unsafe_ask.return_value = 'Yes'
         with patch.object(self.generator, 'run_edit_prompt') as mock_run_edit_prompt, \
              patch('questionary.select', return_value=self.mock_ask):
 
@@ -323,7 +323,7 @@ class TestGenerateConfigFile(TestCase):
 
     def test_metadata_prompt(self):
         # Mock responses to the ID, Floor, and Location prompts
-        self.mock_ask.ask.side_effect = ['Test ID', '2', 'Test Environment']
+        self.mock_ask.unsafe_ask.side_effect = ['Test ID', '2', 'Test Environment']
         with patch('questionary.text', return_value=self.mock_ask):
             self.generator.metadata_prompt()
 
@@ -334,7 +334,7 @@ class TestGenerateConfigFile(TestCase):
 
     def test_wifi_prompt(self):
         # Mock responses to the SSID and Password prompts
-        self.mock_ask.ask.side_effect = ['MyNetwork', 'hunter2']
+        self.mock_ask.unsafe_ask.side_effect = ['MyNetwork', 'hunter2']
         with patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.password', return_value=self.mock_ask):
             self.generator.wifi_prompt()
@@ -344,13 +344,13 @@ class TestGenerateConfigFile(TestCase):
         self.assertEqual(self.generator.config['wifi']['password'], 'hunter2')
 
     def test_sensor_type(self):
-        self.mock_ask.ask.return_value = 'MotionSensor'
+        self.mock_ask.unsafe_ask.return_value = 'MotionSensor'
 
         with patch('questionary.select', return_value=self.mock_ask):
             self.assertEqual(self.generator.sensor_type(), 'MotionSensor')
 
     def test_device_type(self):
-        self.mock_ask.ask.return_value = 'Dimmer'
+        self.mock_ask.unsafe_ask.return_value = 'Dimmer'
 
         with patch('questionary.select', return_value=self.mock_ask):
             self.assertEqual(self.generator.device_type(), 'Dimmer')
@@ -360,7 +360,7 @@ class TestGenerateConfigFile(TestCase):
         self.generator.used_nicknames = ['Used']
 
         # Mock ask to return a different nickname
-        self.mock_ask.ask.return_value = 'Unused'
+        self.mock_ask.unsafe_ask.return_value = 'Unused'
         with patch('questionary.text', return_value=self.mock_ask):
             # Confirm returns new nickname, new nickname added to used_nicknames
             response = self.generator.nickname_prompt()
@@ -395,7 +395,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock user input
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'Device',
             'Sensor',
             'Done'
@@ -455,7 +455,7 @@ class TestGenerateConfigFile(TestCase):
         self.generator.used_nicknames = ["Target1", "Target2", "Sensor"]
 
         # Mock user selecting both devices, run prompt
-        self.mock_ask.ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)']
+        self.mock_ask.unsafe_ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)']
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.delete_devices_and_sensors()
             self.assertTrue(self.mock_ask.called_once)
@@ -496,7 +496,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock ask to return parameters in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'Dimmer',
             'Overhead Lights',
             '192.168.1.123',
@@ -540,7 +540,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock ask to return parameters in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'Mosfet',
             'Mosfet',
             'Enabled',
@@ -582,7 +582,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock ask to return user input in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'No',
             '192.168.1.123',
             '1',
@@ -619,7 +619,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock ask to return parameters in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'MotionSensor',
             'Motion',
             '5',
@@ -665,7 +665,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock ask to return parameters in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'Thermostat',
             'Thermostat',
             '70',
@@ -702,7 +702,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock ask to return parameters in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'Dummy',
             'Sunrise',
             'On',
@@ -740,7 +740,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock ask to return parameters in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'DesktopTrigger',
             'Computer Activity',
             'Enabled',
@@ -776,7 +776,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock ask to return parameters in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'LoadCell',
             'Bed Sensor',
             '10000',
@@ -819,7 +819,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock ask to return user input in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'No',
             'On',
             'No'
@@ -877,7 +877,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock user input
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'IR Blaster',
             '4',
             ['ac', 'tv'],
@@ -934,7 +934,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Mock responses to sensor target prompt
-        self.mock_ask.ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)']
+        self.mock_ask.unsafe_ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)']
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.select_sensor_targets()
             self.assertTrue(self.mock_ask.called_once)
@@ -980,7 +980,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Call schedule rule prompt with simulated user input
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'Keyword',
             'sunrise',
             'Enabled'
@@ -1007,7 +1007,7 @@ class TestGenerateConfigFile(TestCase):
 
         # Call schedule rule prompt with simulated user input
         # Should not ask keyword or timestamp (no keywords available)
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             '10:00',
             'Enabled'
         ]
@@ -1023,7 +1023,7 @@ class TestGenerateConfigFile(TestCase):
         self.generator.existing_nodes = mock_cli_config['nodes']
 
         # Simulate user selecting first option, confirm correct IP returned
-        self.mock_ask.ask.side_effect = ['node1']
+        self.mock_ask.unsafe_ask.side_effect = ['node1']
         with patch('questionary.select', return_value=self.mock_ask):
             output = self.generator.apitarget_ip_prompt()
             self.assertEqual(output, '192.168.1.123')
@@ -1040,7 +1040,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Simulate user declining schedule rule prompt
-        self.mock_ask.ask.side_effect = ['No']
+        self.mock_ask.unsafe_ask.side_effect = ['No']
         with patch('questionary.select', return_value=self.mock_ask), \
              patch.object(self.generator, 'apitarget_ip_prompt') as mock_ip_prompt:
 
@@ -1065,7 +1065,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Call API target rule prompt with simulated user input, confirm correct rule returned
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'API Call',
             True,
             'device1',
@@ -1085,7 +1085,7 @@ class TestGenerateConfigFile(TestCase):
             self.assertEqual(rule, {"on": ["enable", "device1"], "off": ["set_rule", "sensor1", "50"]})
 
         # Call again with simulated input selecting IR Blaster options, confirm correct rule returned
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'API Call',
             True,
             'IR Blaster',
@@ -1102,7 +1102,7 @@ class TestGenerateConfigFile(TestCase):
             self.assertEqual(rule, {"on": ["ir_key", "tv", "power"], "off": ["ignore"]})
 
         # Call schedule rule router with simulated input selecting 'Enabled' option
-        self.mock_ask.ask.side_effect = ['Enabled']
+        self.mock_ask.unsafe_ask.side_effect = ['Enabled']
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
@@ -1112,7 +1112,7 @@ class TestGenerateConfigFile(TestCase):
             self.assertEqual(rule, 'Enabled')
 
         # Call default rule router with simulated input selecting ignore option + endpoint requiring extra arg
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             False,
             True,
             'sensor5',
@@ -1200,7 +1200,7 @@ class TestGenerateConfigFile(TestCase):
         self.assertEqual(generator.config, self.generator.config)
 
         # Simulate user selecting each option in edit prompt
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'Edit metadata',
             'Edit wifi credentials',
             'Add devices and sensors',
@@ -1279,7 +1279,7 @@ class TestRegressions(TestCase):
         }
 
         # Mock ask to return parameters in expected order
-        self.mock_ask.ask.side_effect = [
+        self.mock_ask.unsafe_ask.side_effect = [
             'Thermostat',
             'Thermostat',
             '70',
@@ -1317,7 +1317,7 @@ class TestRegressions(TestCase):
         }
 
         # Call default rule router with simulated float rule input
-        self.mock_ask.ask.side_effect = ['69.5']
+        self.mock_ask.unsafe_ask.side_effect = ['69.5']
         with patch('questionary.text', return_value=self.mock_ask), \
              patch('config_rule_prompts.IntRange') as mock_int_range, \
              patch('config_rule_prompts.FloatRange') as mock_float_range:
@@ -1329,7 +1329,7 @@ class TestRegressions(TestCase):
             self.assertFalse(mock_int_range.called)
 
         # Call schedule rule router with simulated float rule input
-        self.mock_ask.ask.side_effect = ['Float', '69.5']
+        self.mock_ask.unsafe_ask.side_effect = ['Float', '69.5']
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('config_rule_prompts.IntRange') as mock_int_range, \
@@ -1352,7 +1352,7 @@ class TestRegressions(TestCase):
         }
 
         # Call default rule router with simulated float rule input
-        self.mock_ask.ask.side_effect = ['5.5']
+        self.mock_ask.unsafe_ask.side_effect = ['5.5']
         with patch('questionary.text', return_value=self.mock_ask), \
              patch('config_rule_prompts.IntRange') as mock_int_range, \
              patch('config_rule_prompts.FloatRange') as mock_float_range:
@@ -1364,7 +1364,7 @@ class TestRegressions(TestCase):
             self.assertFalse(mock_int_range.called)
 
         # Call schedule rule router with simulated float rule input
-        self.mock_ask.ask.side_effect = ['Float', '5.5']
+        self.mock_ask.unsafe_ask.side_effect = ['Float', '5.5']
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('config_rule_prompts.IntRange') as mock_int_range, \
@@ -1419,7 +1419,7 @@ class TestRegressions(TestCase):
         self.generator.used_nicknames = ["Target1", "Target2", "Sensor"]
 
         # Mock user deleting all devices and sensors, run prompt
-        self.mock_ask.ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)', 'Sensor (pir)']
+        self.mock_ask.unsafe_ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)', 'Sensor (pir)']
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.delete_devices_and_sensors()
             self.assertTrue(self.mock_ask.called_once)
@@ -1442,7 +1442,7 @@ class TestRulePrompts(TestCase):
         }
 
         # Mock user input for default rule
-        self.mock_ask.ask.return_value = '90'
+        self.mock_ask.unsafe_ask.return_value = '90'
 
         # Run default prompt with mocked user input, confirm return value
         with patch('questionary.text', return_value=self.mock_ask):
@@ -1450,7 +1450,7 @@ class TestRulePrompts(TestCase):
             self.assertEqual(rule, '90')
 
         # Mock user input for schedule rule
-        self.mock_ask.ask.return_value = 'Enabled'
+        self.mock_ask.unsafe_ask.return_value = 'Enabled'
 
         # Run schedule prompt with mocked user input, confirm return value
         with patch('questionary.select', return_value=self.mock_ask):
@@ -1458,7 +1458,7 @@ class TestRulePrompts(TestCase):
             self.assertEqual(rule, 'Enabled')
 
         # Mock user input for schedule rule
-        self.mock_ask.ask.side_effect = ['Int', '50']
+        self.mock_ask.unsafe_ask.side_effect = ['Int', '50']
 
         # Run schedule prompt with mocked user input, confirm return value
         with patch('questionary.select', return_value=self.mock_ask), \
@@ -1468,7 +1468,7 @@ class TestRulePrompts(TestCase):
 
     def test_string_rule_prompt(self):
         # Mock user input for default rule
-        self.mock_ask.ask.return_value = 'http://192.168.1.123:8123/endpoint'
+        self.mock_ask.unsafe_ask.return_value = 'http://192.168.1.123:8123/endpoint'
 
         # Run default prompt with mocked user input, confirm return value
         with patch('questionary.text', return_value=self.mock_ask):
@@ -1476,7 +1476,7 @@ class TestRulePrompts(TestCase):
             self.assertEqual(rule, 'http://192.168.1.123:8123/endpoint')
 
         # Mock user input for schedule rule
-        self.mock_ask.ask.return_value = 'Enabled'
+        self.mock_ask.unsafe_ask.return_value = 'Enabled'
 
         # Run schedule prompt with mocked user input, confirm return value
         with patch('questionary.select', return_value=self.mock_ask):
@@ -1484,7 +1484,7 @@ class TestRulePrompts(TestCase):
             self.assertEqual(rule, 'Enabled')
 
         # Mock user input for schedule rule
-        self.mock_ask.ask.side_effect = ['String', 'http://192.168.1.123:8123/endpoint']
+        self.mock_ask.unsafe_ask.side_effect = ['String', 'http://192.168.1.123:8123/endpoint']
 
         # Run schedule prompt with mocked user input, confirm return value
         with patch('questionary.select', return_value=self.mock_ask), \

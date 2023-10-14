@@ -73,9 +73,9 @@ def schedule_rule_prompt_router(config):
 def standard_rule_prompt(config, rule_type):
     # Default rule prompt
     if rule_type == "default":
-        return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).ask()
+        return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).unsafe_ask()
     else:
-        return questionary.select("Enter rule", choices=['Enabled', 'Disabled']).ask()
+        return questionary.select("Enter rule", choices=['Enabled', 'Disabled']).unsafe_ask()
 
 
 # Rule prompt for instances that support arbitrary strings in addition to standard rules
@@ -84,13 +84,13 @@ def standard_rule_prompt(config, rule_type):
 def string_rule_prompt(config, rule_type):
     # Default rule prompt
     if rule_type == "default":
-        return questionary.text("Enter default rule:").ask()
+        return questionary.text("Enter default rule:").unsafe_ask()
 
     # Schedule rule prompt
     else:
-        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'String']).ask()
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'String']).unsafe_ask()
         if choice == 'String':
-            return questionary.text("Enter rule:").ask()
+            return questionary.text("Enter rule:").unsafe_ask()
         else:
             return choice
 
@@ -101,11 +101,11 @@ def string_rule_prompt(config, rule_type):
 def on_off_rule_prompt(config, rule_type):
     # Default rule prompt
     if rule_type == "default":
-        return questionary.select("Enter default rule", choices=['On', 'Off']).ask()
+        return questionary.select("Enter default rule", choices=['On', 'Off']).unsafe_ask()
 
     # Schedule rule prompt
     else:
-        return questionary.select("Enter rule", choices=['Enabled', 'Disabled', 'On', 'Off']).ask()
+        return questionary.select("Enter rule", choices=['Enabled', 'Disabled', 'On', 'Off']).unsafe_ask()
 
 
 # Rule prompt for instances that support float rules in addition to standard rules
@@ -116,13 +116,13 @@ def float_rule_prompt(config, rule_type):
 
     # Default rule prompt
     if rule_type == "default":
-        return questionary.text("Enter default rule:", validate=FloatRange(minimum, maximum)).ask()
+        return questionary.text("Enter default rule:", validate=FloatRange(minimum, maximum)).unsafe_ask()
 
     # Schedule rule prompt
     else:
-        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Float']).ask()
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Float']).unsafe_ask()
         if choice == 'Float':
-            return questionary.text("Enter rule:", validate=FloatRange(minimum, maximum)).ask()
+            return questionary.text("Enter rule:", validate=FloatRange(minimum, maximum)).unsafe_ask()
         else:
             return choice
 
@@ -136,13 +136,13 @@ def int_rule_prompt(config, rule_type):
 
     # Default rule prompt
     if rule_type == "default":
-        return questionary.text("Enter default rule:", validate=IntRange(minimum, maximum)).ask()
+        return questionary.text("Enter default rule:", validate=IntRange(minimum, maximum)).unsafe_ask()
 
     # Schedule rule prompt
     else:
-        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int']).ask()
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int']).unsafe_ask()
         if choice == 'Int':
-            return questionary.text("Enter rule:", validate=IntRange(minimum, maximum)).ask()
+            return questionary.text("Enter rule:", validate=IntRange(minimum, maximum)).unsafe_ask()
         else:
             return choice
 
@@ -156,16 +156,16 @@ def int_or_fade_rule_prompt(config, rule_type):
 
     # Default rule prompt
     if rule_type == "default":
-        return questionary.text("Enter default rule:", validate=IntRange(minimum, maximum)).ask()
+        return questionary.text("Enter default rule:", validate=IntRange(minimum, maximum)).unsafe_ask()
 
     # Schedule rule prompt
     else:
-        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int', 'Fade']).ask()
+        choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int', 'Fade']).unsafe_ask()
         if choice == 'Int':
-            return questionary.text("Enter rule:", validate=IntRange(minimum, maximum)).ask()
+            return questionary.text("Enter rule:", validate=IntRange(minimum, maximum)).unsafe_ask()
         if choice == 'Fade':
-            target = questionary.text("Enter target brightness:", validate=IntRange(minimum, maximum)).ask()
-            period = questionary.text("Enter duration in seconds:", validate=IntRange(1, 86400)).ask()
+            target = questionary.text("Enter target brightness:", validate=IntRange(minimum, maximum)).unsafe_ask()
+            period = questionary.text("Enter duration in seconds:", validate=IntRange(1, 86400)).unsafe_ask()
             return f'fade/{target}/{period}'
         else:
             return choice
@@ -187,7 +187,7 @@ def api_target_rule_prompt(config, rule_type):
 # Shows standard rule options in addition to API call option
 # Only used for schedule rules, enabled/disabled are invalid as default_rule
 def api_target_schedule_rule_prompt(config):
-    choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'API Call']).ask()
+    choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'API Call']).unsafe_ask()
     if choice == 'API Call':
         return api_call_rule_prompt(config)
     else:
@@ -197,14 +197,14 @@ def api_target_schedule_rule_prompt(config):
 # Prompt user to select API call parameters for both ON and OFF actions
 # Returns complete ApiTarget rule dict
 def api_call_rule_prompt(config):
-    if questionary.confirm("Should an API call be made when the device is turned ON?").ask():
+    if questionary.confirm("Should an API call be made when the device is turned ON?").unsafe_ask():
         print('\nAPI Target ON action')
         on_action = api_call_prompt(config)
         print()
     else:
         on_action = ['ignore']
 
-    if questionary.confirm("Should an API call be made when the device is turned OFF?").ask():
+    if questionary.confirm("Should an API call be made when the device is turned OFF?").unsafe_ask():
         print('\nAPI Target OFF action')
         off_action = api_call_prompt(config)
     else:
@@ -226,12 +226,12 @@ def api_call_prompt(config):
         options.append('IR Blaster')
 
     # Prompt user to select target instance, truncate _type param
-    instance = questionary.select("Select target instance", choices=options).ask()
+    instance = questionary.select("Select target instance", choices=options).unsafe_ask()
     instance = instance.split(" ")[0]
 
     # Prompt user to select API endpoint (options based on instance selection)
     if is_device(instance):
-        endpoint = questionary.select("Select endpoint", choices=device_endpoints).ask()
+        endpoint = questionary.select("Select endpoint", choices=device_endpoints).unsafe_ask()
 
     elif is_sensor(instance):
         # Remove trigger_sensor option if target does not support
@@ -241,11 +241,11 @@ def api_call_prompt(config):
             options.remove('trigger_sensor')
         else:
             options = sensor_endpoints
-        endpoint = questionary.select("Select endpoint", choices=options).ask()
+        endpoint = questionary.select("Select endpoint", choices=options).unsafe_ask()
 
     elif instance == 'IR':
-        target = questionary.select("Select IR target", choices=config['ir_blaster']['target']).ask()
-        key = questionary.select("Select key", choices=ir_blaster_options[target]).ask()
+        target = questionary.select("Select IR target", choices=config['ir_blaster']['target']).unsafe_ask()
+        key = questionary.select("Select key", choices=ir_blaster_options[target]).unsafe_ask()
         rule = ['ir_key', target, key]
 
     # Prompt user to add additional arg required by some endpoints
@@ -253,7 +253,7 @@ def api_call_prompt(config):
         rule = [endpoint, instance]
 
         if endpoint in ['enable_in', 'disable_in']:
-            rule.append(questionary.text("Enter delay in seconds:", validate=IntRange(1, 86400)).ask())
+            rule.append(questionary.text("Enter delay in seconds:", validate=IntRange(1, 86400)).unsafe_ask())
         elif endpoint == 'set_rule':
             # Call correct rule prompt for target instance type
             rule.append(schedule_rule_prompt_router(config[instance]))
