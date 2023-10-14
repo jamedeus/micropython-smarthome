@@ -3,6 +3,7 @@
     "class_name": "Relay",
     "dependencies": [
         "devices/Relay.py",
+        "devices/HttpGet.py",
         "devices/Device.py",
         "core/Instance.py"
     ],
