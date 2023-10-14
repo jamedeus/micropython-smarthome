@@ -42,7 +42,7 @@
     },
     "device3": {
         "nickname": "Porch Light",
-        "_type": "relay",
+        "_type": "tasmota-relay",
         "ip": "192.168.1.107",
         "default_rule": "enabled",
         "schedule": {

@@ -48,7 +48,7 @@ config1_status_object = {
         'device2': {
             'current_rule': 'enabled',
             'enabled': True,
-            'type': 'relay',
+            'type': 'tasmota-relay',
             'schedule': {
                 '05:00': 'enabled',
                 '22:00': 'disabled'
@@ -112,7 +112,7 @@ config1_api_context = {
         'device2': {
             'current_rule': 'enabled',
             'enabled': True,
-            'type': 'relay',
+            'type': 'tasmota-relay',
             'schedule': {
                 '05:00': 'enabled',
                 '22:00': 'disabled'
@@ -389,7 +389,7 @@ config3_status_object = {
         'device3': {
             'current_rule': 'disabled',
             'enabled': False,
-            'type': 'relay',
+            'type': 'tasmota-relay',
             'schedule': {
                 '05:00': 'enabled',
                 '23:00': 'disabled'
@@ -401,7 +401,7 @@ config3_status_object = {
         'device2': {
             'current_rule': 'disabled',
             'enabled': False,
-            'type': 'relay',
+            'type': 'tasmota-relay',
             'schedule': {
                 '05:00': 'enabled',
                 '22:00': 'disabled'
@@ -479,7 +479,7 @@ config3_api_context = {
         'device3': {
             'current_rule': 'disabled',
             'enabled': False,
-            'type': 'relay',
+            'type': 'tasmota-relay',
             'schedule': {
                 '05:00': 'enabled',
                 '23:00': 'disabled'
@@ -491,7 +491,7 @@ config3_api_context = {
         'device2': {
             'current_rule': 'disabled',
             'enabled': False,
-            'type': 'relay',
+            'type': 'tasmota-relay',
             'schedule': {
                 '05:00': 'enabled',
                 '22:00': 'disabled'

@@ -1,6 +1,6 @@
 import json
 import unittest
-from Relay import Relay
+from TasmotaRelay import TasmotaRelay
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
@@ -10,14 +10,14 @@ with open('config.json', 'r') as file:
 mock_address = f"{config['mock_receiver']['ip']}:{config['mock_receiver']['port']}"
 
 
-class TestRelay(unittest.TestCase):
+class TestTasmotaRelay(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.instance = Relay("device1", "device1", "relay", "enabled", mock_address)
+        cls.instance = TasmotaRelay("device1", "device1", "tasmota-relay", "enabled", mock_address)
 
     def test_01_initial_state(self):
-        self.assertIsInstance(self.instance, Relay)
+        self.assertIsInstance(self.instance, TasmotaRelay)
         self.assertTrue(self.instance.enabled)
         self.assertEqual(self.instance.uri, mock_address)
 

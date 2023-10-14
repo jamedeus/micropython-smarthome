@@ -266,7 +266,7 @@ request_payload = {
     },
     'device3': {
         'nickname': 'Porch Light',
-        '_type': 'relay',
+        '_type': 'tasmota-relay',
         'ip': '192.168.1.107',
         'default_rule': 'enabled',
         'schedule': {
@@ -368,7 +368,7 @@ test_config_1 = {
         }
     },
     "device2": {
-        "_type": "relay",
+        "_type": "tasmota-relay",
         "nickname": "Overhead Lights",
         "ip": "192.168.1.217",
         "default_rule": "enabled",
@@ -501,7 +501,7 @@ test_config_3 = {
         }
     },
     "device2": {
-        "_type": "relay",
+        "_type": "tasmota-relay",
         "nickname": "Bathroom Lights",
         "ip": "192.168.1.239",
         "default_rule": "enabled",
@@ -511,7 +511,7 @@ test_config_3 = {
         }
     },
     "device3": {
-        "_type": "relay",
+        "_type": "tasmota-relay",
         "nickname": "Entry Light",
         "ip": "192.168.1.202",
         "default_rule": "enabled",
@@ -608,7 +608,7 @@ test_config_1_edit_context = {
                     "05:00": "enabled",
                     "22:00": "disabled"
                 },
-                "type": "relay"
+                "type": "tasmota-relay"
             }
         },
         "instances": {
@@ -623,7 +623,7 @@ test_config_1_edit_context = {
                 }
             },
             "device2": {
-                "type": "relay",
+                "type": "tasmota-relay",
                 "nickname": "Overhead Lights",
                 "schedule": {
                     "05:00": "enabled",
@@ -657,7 +657,7 @@ test_config_1_edit_context = {
                 "turn_on",
                 "turn_off"
             ],
-            "device2-Overhead Lights (relay)": [
+            "device2-Overhead Lights (tasmota-relay)": [
                 "enable",
                 "disable",
                 "enable_in",
@@ -717,7 +717,7 @@ test_config_1_edit_context = {
                 "turn_on",
                 "turn_off"
             ],
-            "device2-Bathroom Lights (relay)": [
+            "device2-Bathroom Lights (tasmota-relay)": [
                 "enable",
                 "disable",
                 "enable_in",
@@ -727,7 +727,7 @@ test_config_1_edit_context = {
                 "turn_on",
                 "turn_off"
             ],
-            "device3-Entry Light (relay)": [
+            "device3-Entry Light (tasmota-relay)": [
                 "enable",
                 "disable",
                 "enable_in",
@@ -871,7 +871,7 @@ test_config_2_edit_context = {
                 "turn_on",
                 "turn_off"
             ],
-            "device2-Overhead Lights (relay)": [
+            "device2-Overhead Lights (tasmota-relay)": [
                 "enable",
                 "disable",
                 "enable_in",
@@ -903,7 +903,7 @@ test_config_2_edit_context = {
                 "turn_on",
                 "turn_off"
             ],
-            "device2-Bathroom Lights (relay)": [
+            "device2-Bathroom Lights (tasmota-relay)": [
                 "enable",
                 "disable",
                 "enable_in",
@@ -913,7 +913,7 @@ test_config_2_edit_context = {
                 "turn_on",
                 "turn_off"
             ],
-            "device3-Entry Light (relay)": [
+            "device3-Entry Light (tasmota-relay)": [
                 "enable",
                 "disable",
                 "enable_in",
@@ -1017,7 +1017,7 @@ test_config_3_edit_context = {
                     "05:00": "enabled",
                     "22:00": "disabled"
                 },
-                "type": "relay"
+                "type": "tasmota-relay"
             },
             "device3": {
                 "nickname": "Entry Light",
@@ -1027,7 +1027,7 @@ test_config_3_edit_context = {
                     "05:00": "enabled",
                     "23:00": "disabled"
                 },
-                "type": "relay"
+                "type": "tasmota-relay"
             }
         },
         "instances": {
@@ -1042,7 +1042,7 @@ test_config_3_edit_context = {
                 }
             },
             "device2": {
-                "type": "relay",
+                "type": "tasmota-relay",
                 "nickname": "Bathroom Lights",
                 "schedule": {
                     "05:00": "enabled",
@@ -1050,7 +1050,7 @@ test_config_3_edit_context = {
                 }
             },
             "device3": {
-                "type": "relay",
+                "type": "tasmota-relay",
                 "nickname": "Entry Light",
                 "schedule": {
                     "05:00": "enabled",
@@ -1091,7 +1091,7 @@ test_config_3_edit_context = {
                 "turn_on",
                 "turn_off"
             ],
-            "device2-Bathroom Lights (relay)": [
+            "device2-Bathroom Lights (tasmota-relay)": [
                 "enable",
                 "disable",
                 "enable_in",
@@ -1101,7 +1101,7 @@ test_config_3_edit_context = {
                 "turn_on",
                 "turn_off"
             ],
-            "device3-Entry Light (relay)": [
+            "device3-Entry Light (tasmota-relay)": [
                 "enable",
                 "disable",
                 "enable_in",
@@ -1142,7 +1142,7 @@ test_config_3_edit_context = {
                 "turn_on",
                 "turn_off"
             ],
-            "device2-Overhead Lights (relay)": [
+            "device2-Overhead Lights (tasmota-relay)": [
                 "enable",
                 "disable",
                 "enable_in",

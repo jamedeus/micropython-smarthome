@@ -22,7 +22,7 @@ module("DumbRelay.py", base_path="../devices")
 module("IrBlaster.py", base_path="../devices")
 module("LedStrip.py", base_path="../devices")
 module("Mosfet.py", base_path="../devices")
-module("Relay.py", base_path="../devices")
+module("TasmotaRelay.py", base_path="../devices")
 module("Tplink.py", base_path="../devices")
 module("Wled.py", base_path="../devices")
 

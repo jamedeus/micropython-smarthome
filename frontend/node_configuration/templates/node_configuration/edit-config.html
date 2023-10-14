@@ -344,7 +344,7 @@
                                     <option value="clear" disabled>Select device type</option>
                                     <option value="dimmer" {% if params.type == "dimmer" %} selected {% endif %}>TP-Link Dimmer</option>
                                     <option value="bulb" {% if params.type == "bulb" %} selected {% endif %}>TP-Link Bulb</option>
-                                    <option value="relay" {% if params.type == "relay" %} selected {% endif %}>Smart Relay</option>
+                                    <option value="tasmota-relay" {% if params.type == "tasmota-relay" %} selected {% endif %}>Tasmota Relay</option>
                                     <option value="dumb-relay" {% if params.type == "dumb-relay" %} selected {% endif %}>Relay</option>
                                     <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
                                     <option value="pwm" {% if params.type == "pwm" %} selected {% endif %}>LED Strip</option>
@@ -398,7 +398,7 @@
                                         </div>
                                     </div>
 
-                                {% elif params.type == "relay" %}
+                                {% elif params.type == "tasmota-relay" %}
 
                                     <div class="mb-2">
                                         <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
@@ -598,7 +598,7 @@
                                     <option value="clear">Select device type</option>
                                     <option value="dimmer">TP-Link Dimmer</option>
                                     <option value="bulb">TP-Link Bulb</option>
-                                    <option value="relay">Smart Relay</option>
+                                    <option value="tasmota-relay">Tasmota Relay</option>
                                     <option value="dumb-relay">Relay</option>
                                     <option value="desktop">Desktop</option>
                                     <option value="pwm">LED Strip</option>

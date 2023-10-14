@@ -81,7 +81,7 @@ mock_status_object = {
         'device2': {
             'current_rule': 'enabled',
             'enabled': True,
-            'type': 'relay',
+            'type': 'tasmota-relay',
             'schedule': {
                 '05:00': 'enabled',
                 '22:00': 'disabled'

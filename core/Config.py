@@ -27,7 +27,7 @@ hardware_classes = {
     "devices": {
         "dimmer": "Tplink",
         "bulb": "Tplink",
-        "relay": "Relay",
+        "tasmota-relay": "TasmotaRelay",
         "dumb-relay": "DumbRelay",
         "desktop": "Desktop_target",
         "http-get": "HttpGet",

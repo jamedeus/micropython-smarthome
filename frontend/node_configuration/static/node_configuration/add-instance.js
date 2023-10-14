@@ -306,7 +306,7 @@ async function load_device_section(select) {
                         </div>
                     </div>`
 
-    } else if (selected == "desktop" || selected == "relay") {
+    } else if (selected == "desktop" || selected == "tasmota-relay") {
         template += `<div class="mb-2">
                         <label for="${id}-ip" class="${id}"><b>IP:</b></label>
                         <input type="text" class="form-control ${id} ip-input" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
@@ -473,7 +473,7 @@ async function load_device_section(select) {
     };
 
     // Add listeners to format IP field while typing, validate when focus leaves
-    if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "relay" || selected == "wled") {
+    if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "tasmota-relay" || selected == "wled") {
         ip = document.getElementById(`${id}-ip`);
         ip.addEventListener('input', formatIp);
         ip.addEventListener('blur', validateIp);
@@ -552,7 +552,7 @@ async function load_next_device(button) {
                                     <option value="clear">Select device type</option>
                                     <option value="dimmer">TP-Link Dimmer</option>
                                     <option value="bulb">TP-Link Bulb</option>
-                                    <option value="relay">Smart Relay</option>
+                                    <option value="tasmota-relay">Tasmota Relay</option>
                                     <option value="dumb-relay">Relay</option>
                                     <option value="desktop">Desktop</option>
                                     <option value="pwm">LED Strip</option>

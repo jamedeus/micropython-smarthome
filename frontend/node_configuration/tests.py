@@ -1196,7 +1196,7 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                     "turn_on",
                     "turn_off"
                 ],
-                "device2-Overhead Lights (relay)": [
+                "device2-Overhead Lights (tasmota-relay)": [
                     "enable",
                     "disable",
                     "enable_in",
@@ -1256,7 +1256,7 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                     "turn_on",
                     "turn_off"
                 ],
-                "device2-Bathroom Lights (relay)": [
+                "device2-Bathroom Lights (tasmota-relay)": [
                     "enable",
                     "disable",
                     "enable_in",
@@ -1266,7 +1266,7 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                     "turn_on",
                     "turn_off"
                 ],
-                "device3-Entry Light (relay)": [
+                "device3-Entry Light (tasmota-relay)": [
                     "enable",
                     "disable",
                     "enable_in",
@@ -1329,7 +1329,7 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                     "turn_on",
                     "turn_off"
                 ],
-                "device2-Overhead Lights (relay)": [
+                "device2-Overhead Lights (tasmota-relay)": [
                     "enable",
                     "disable",
                     "enable_in",
@@ -1389,7 +1389,7 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                     "turn_on",
                     "turn_off"
                 ],
-                "device2-Bathroom Lights (relay)": [
+                "device2-Bathroom Lights (tasmota-relay)": [
                     "enable",
                     "disable",
                     "enable_in",
@@ -1399,7 +1399,7 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                     "turn_on",
                     "turn_off"
                 ],
-                "device3-Entry Light (relay)": [
+                "device3-Entry Light (tasmota-relay)": [
                     "enable",
                     "disable",
                     "enable_in",
@@ -2019,7 +2019,7 @@ class GetModulesTests(TestCaseBackupRestore):
             os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Mosfet.py'): 'Mosfet.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'TasmotaRelay.py'): 'TasmotaRelay.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Dummy.py'): 'Dummy.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
@@ -2067,7 +2067,7 @@ class GetModulesTests(TestCaseBackupRestore):
             os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Mosfet.py'): 'Mosfet.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'TasmotaRelay.py'): 'TasmotaRelay.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Dummy.py'): 'Dummy.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
@@ -2100,7 +2100,7 @@ class GetModulesTests(TestCaseBackupRestore):
             os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Wled.py'): 'Wled.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Mosfet.py'): 'Mosfet.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'TasmotaRelay.py'): 'TasmotaRelay.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Dummy.py'): 'Dummy.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
@@ -2137,7 +2137,7 @@ class GetModulesTests(TestCaseBackupRestore):
 
         expected_modules = {
             os.path.join(settings.REPO_DIR, 'devices', 'ApiTarget.py'): 'ApiTarget.py',
-            os.path.join(settings.REPO_DIR, 'devices', 'Relay.py'): 'Relay.py',
+            os.path.join(settings.REPO_DIR, 'devices', 'TasmotaRelay.py'): 'TasmotaRelay.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
             os.path.join(settings.REPO_DIR, 'devices', 'Device.py'): 'Device.py',
             os.path.join(settings.REPO_DIR, 'sensors', 'Switch.py'): 'Switch.py',

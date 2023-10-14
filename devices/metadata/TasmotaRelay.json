@@ -1,14 +1,14 @@
 {
-    "config_name": "relay",
-    "class_name": "Relay",
+    "config_name": "tasmota-relay",
+    "class_name": "TasmotaRelay",
     "dependencies": [
-        "devices/Relay.py",
+        "devices/TasmotaRelay.py",
         "devices/HttpGet.py",
         "devices/Device.py",
         "core/Instance.py"
     ],
     "config_template": {
-        "_type": "relay",
+        "_type": "tasmota-relay",
         "nickname": "placeholder",
         "ip": "placeholder",
         "default_rule": "placeholder",
