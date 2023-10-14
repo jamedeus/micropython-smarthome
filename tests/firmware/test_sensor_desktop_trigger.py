@@ -171,6 +171,8 @@ class TestDesktopTrigger(unittest.TestCase):
             # Simulate MotionSensor triggered
             self.pir.motion = True
             # Change response to Off, wait for monitor to read
+            # Must call twice (mock receiver alternates between idle/not idle responses)
+            urequests.get(f'http://{url}/off')
             urequests.get(f'http://{url}/off')
             await asyncio.sleep(1.0)
 

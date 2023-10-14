@@ -19,7 +19,7 @@ class Desktop_trigger(Sensor):
 
         # Find desktop target so monitor loop (below) can update target's state attribute when screen turn on/off
         for i in self.targets:
-            if i._type == "desktop" and i.ip == self.ip:
+            if i._type == "desktop" and i.uri == f"{self.ip}:{self.port}":
                 self.desktop_target = i
                 break
         else:

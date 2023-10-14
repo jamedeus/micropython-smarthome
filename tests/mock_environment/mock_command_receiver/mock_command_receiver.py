@@ -104,11 +104,18 @@ def monitor_on():
 
 
 # Desktop integration - turn screen off
+# Response alternates between user idle/NOT idle to allow testing both
 @app.get("/off")
 def monitor_off():
-    global desktop_state
-    desktop_state = 'Off'
-    return {'state': 'off'}, 200
+    global desktop_idle_time_toggle
+    if desktop_idle_time_toggle:
+        desktop_idle_time_toggle = False
+        global desktop_state
+        desktop_state = 'Off'
+        return {'state': 'off'}, 200
+    else:
+        desktop_idle_time_toggle = True
+        return {'state': 'user not idle'}, 503
 
 
 # Desktop integration - simulate dpms Disabled
