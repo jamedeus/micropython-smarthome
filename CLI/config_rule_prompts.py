@@ -84,13 +84,13 @@ def standard_rule_prompt(config, rule_type):
 def string_rule_prompt(config, rule_type):
     # Default rule prompt
     if rule_type == "default":
-        return questionary.text("Enter default rule").ask()
+        return questionary.text("Enter default rule:").ask()
 
     # Schedule rule prompt
     else:
         choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'String']).ask()
         if choice == 'String':
-            return questionary.text("Enter rule").ask()
+            return questionary.text("Enter rule:").ask()
         else:
             return choice
 
@@ -116,13 +116,13 @@ def float_rule_prompt(config, rule_type):
 
     # Default rule prompt
     if rule_type == "default":
-        return questionary.text("Enter default rule", validate=FloatRange(minimum, maximum)).ask()
+        return questionary.text("Enter default rule:", validate=FloatRange(minimum, maximum)).ask()
 
     # Schedule rule prompt
     else:
         choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Float']).ask()
         if choice == 'Float':
-            return questionary.text("Enter rule", validate=FloatRange(minimum, maximum)).ask()
+            return questionary.text("Enter rule:", validate=FloatRange(minimum, maximum)).ask()
         else:
             return choice
 
@@ -136,13 +136,13 @@ def int_rule_prompt(config, rule_type):
 
     # Default rule prompt
     if rule_type == "default":
-        return questionary.text("Enter default rule", validate=IntRange(minimum, maximum)).ask()
+        return questionary.text("Enter default rule:", validate=IntRange(minimum, maximum)).ask()
 
     # Schedule rule prompt
     else:
         choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int']).ask()
         if choice == 'Int':
-            return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
+            return questionary.text("Enter rule:", validate=IntRange(minimum, maximum)).ask()
         else:
             return choice
 
@@ -156,16 +156,16 @@ def int_or_fade_rule_prompt(config, rule_type):
 
     # Default rule prompt
     if rule_type == "default":
-        return questionary.text("Enter default rule", validate=IntRange(minimum, maximum)).ask()
+        return questionary.text("Enter default rule:", validate=IntRange(minimum, maximum)).ask()
 
     # Schedule rule prompt
     else:
         choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'Int', 'Fade']).ask()
         if choice == 'Int':
-            return questionary.text("Enter rule", validate=IntRange(minimum, maximum)).ask()
+            return questionary.text("Enter rule:", validate=IntRange(minimum, maximum)).ask()
         if choice == 'Fade':
-            target = questionary.text("Enter target brightness", validate=IntRange(minimum, maximum)).ask()
-            period = questionary.text("Enter duration in seconds", validate=IntRange(1, 86400)).ask()
+            target = questionary.text("Enter target brightness:", validate=IntRange(minimum, maximum)).ask()
+            period = questionary.text("Enter duration in seconds:", validate=IntRange(1, 86400)).ask()
             return f'fade/{target}/{period}'
         else:
             return choice
@@ -253,7 +253,7 @@ def api_call_prompt(config):
         rule = [endpoint, instance]
 
         if endpoint in ['enable_in', 'disable_in']:
-            rule.append(questionary.text("Enter delay in seconds", validate=IntRange(1, 86400)).ask())
+            rule.append(questionary.text("Enter delay in seconds:", validate=IntRange(1, 86400)).ask())
         elif endpoint == 'set_rule':
             # Call correct rule prompt for target instance type
             rule.append(schedule_rule_prompt_router(config[instance]))

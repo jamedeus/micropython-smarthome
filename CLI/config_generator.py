@@ -183,17 +183,17 @@ class GenerateConfigFile:
     # Prompt user for node name and location metadata, add to self.config
     # Optional arguments are used to set defaults when editing existing config
     def metadata_prompt(self, name="", floor="", location=""):
-        name = questionary.text("Enter a descriptive name for this node", validate=MinLength(1), default=name).ask()
-        floor = questionary.text("Enter floor number", validate=is_int, default=floor).ask()
-        location = questionary.text("Enter a brief description of the node's physical location", default=location).ask()
+        name = questionary.text("Enter a descriptive name for this node:", validate=MinLength(1), default=name).ask()
+        floor = questionary.text("Enter floor number:", validate=is_int, default=floor).ask()
+        location = questionary.text("Enter a brief note about the node's physical location:", default=location).ask()
 
         self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
 
     # Prompt user for wifi credentials, add to self.config
     # Optional arguments are used to set defaults when editing existing config
     def wifi_prompt(self, ssid="", password=""):
-        ssid = questionary.text("Enter wifi SSID (2.4 GHz only)", validate=MinLength(1), default=ssid).ask()
-        password = questionary.password("Enter wifi password", validate=MinLength(8), default=password).ask()
+        ssid = questionary.text("Enter wifi SSID (2.4 GHz only):", validate=MinLength(1), default=ssid).ask()
+        password = questionary.password("Enter wifi password:", validate=MinLength(8), default=password).ask()
 
         self.config['wifi'].update({'ssid': ssid, 'password': password})
 
@@ -265,7 +265,7 @@ class GenerateConfigFile:
     # Prompt user for a nickname, add to used_nicknames list, return
     def nickname_prompt(self):
         nickname = questionary.text(
-            "Enter a memorable nickname",
+            "Enter a memorable nickname:",
             validate=NicknameValidator(self.used_nicknames)
         ).ask()
         self.used_nicknames.append(nickname)
@@ -281,7 +281,7 @@ class GenerateConfigFile:
 
     # Prompt user to enter an IP address, enforces syntax
     def ip_address_prompt(self):
-        return questionary.text("Enter IP address", validate=valid_ip).ask()
+        return questionary.text("Enter IP address:", validate=valid_ip).ask()
 
     # Prompt user to select from existing node friendly names
     # Returns IP of selected node
@@ -319,14 +319,14 @@ class GenerateConfigFile:
 
             elif i == "min_bright":
                 config[i] = questionary.text(
-                    "Enter minimum brightness",
+                    "Enter minimum brightness:",
                     default=str(rule_limits_map[_type][0]),
                     validate=IntRange(*rule_limits_map[_type])
                 ).ask()
 
             elif i == "max_bright":
                 config[i] = questionary.text(
-                    "Enter maximum brightness",
+                    "Enter maximum brightness:",
                     default=str(rule_limits_map[_type][1]),
                     validate=IntRange(config['min_bright'], rule_limits_map[_type][1])
                 ).ask()
@@ -381,7 +381,7 @@ class GenerateConfigFile:
                 config[i] = questionary.select("Select mode", choices=['cool', 'heat']).ask()
 
             elif i == "tolerance":
-                config[i] = questionary.text("Enter temperature tolerance", validate=FloatRange(0, 10)).ask()
+                config[i] = questionary.text("Enter temperature tolerance:", validate=FloatRange(0, 10)).ask()
 
         # Prompt user to add schedule rules
         config = self.schedule_rule_prompt(config)
@@ -484,7 +484,7 @@ class GenerateConfigFile:
         return config
 
     def schedule_rule_timestamp_prompt(self):
-        return questionary.text("Enter timestamp (HH:MM)", validate=valid_timestamp).ask()
+        return questionary.text("Enter timestamp (HH:MM):", validate=valid_timestamp).ask()
 
     def schedule_rule_timestamp_or_keyword_prompt(self):
         choice = questionary.select("\nTimestamp or keyword?", choices=['Timestamp', 'Keyword']).ask()
