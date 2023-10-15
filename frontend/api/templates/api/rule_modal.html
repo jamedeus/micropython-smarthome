@@ -61,8 +61,8 @@
             <label for="rule-input" class="form-label">Keyword</label>
             <select class="form-select" id="rule-input" name="rule-input" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
                 <option disabled {% if rule == "" %}selected{% endif %}>Select rule</option>
-                <option value="enabled" {% if rule == "Enabled" %}selected{% endif %}>Enabled</option>
-                <option value="disabled" {% if rule == "Disabled" %}selected{% endif %}>Disabled</option>
+                <option value="enabled" {% if rule|lower == "enabled" %}selected{% endif %}>Enabled</option>
+                <option value="disabled" {% if rule|lower == "disabled" %}selected{% endif %}>Disabled</option>
             </select>
         </div>
 
@@ -71,10 +71,10 @@
             <label for="rule-input" class="form-label">Keyword</label>
             <select class="form-select" id="rule-input" name="rule-input" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
                 <option disabled {% if rule == "" %}selected{% endif %}>Select rule</option>
-                <option value="enabled" {% if rule == "Enabled" %}selected{% endif %}>Enabled</option>
-                <option value="disabled" {% if rule == "Disabled" %}selected{% endif %}>Disabled</option>
-                <option value="on" {% if rule == "On" %}selected{% endif %}>On</option>
-                <option value="off" {% if rule == "Off" %}selected{% endif %}>Off</option>
+                <option value="enabled" {% if rule|lower == "enabled" %}selected{% endif %}>Enabled</option>
+                <option value="disabled" {% if rule|lower == "disabled" %}selected{% endif %}>Disabled</option>
+                <option value="on" {% if rule|lower == "on" %}selected{% endif %}>On</option>
+                <option value="off" {% if rule|lower == "off" %}selected{% endif %}>Off</option>
             </select>
         </div>
 
