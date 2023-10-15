@@ -307,40 +307,14 @@ function load_sensor_section(select) {
     render_template(id, type, type_metadata, template);
 
     // Check if Thermostat selected in any sensor dropdown
-    sensors = document.getElementsByClassName("sensorType");
+    const sensors = [...document.getElementsByClassName("sensorType")];
+    thermostat_configured = sensors.some(sensor => sensor.value === "si7021");
 
-    var found = false;
-    for (sensor of sensors) {
-        if (sensor.value == "si7021") {
-            found = true;
-        };
-    };
-
-    // If Thermostat selected, disable Thermostat option in all dropdowns (cannot have more than 1)
-    if (!found) {
-        thermostat_configured = false;
-
-        for (sensor of document.getElementsByClassName("sensorType")) {
-            for (option of sensor.children) {
-                if (option.value == "si7021") {
-                    option.disabled = false;
-                };
-            };
-        };
-
-    // If Thermostat not selected enable Thermostat option in all dropdowns
-    } else {
-        thermostat_configured = true;
-
-        for (sensor of document.getElementsByClassName("sensorType")) {
-            if (sensor == select) { continue };
-            for (option of sensor.children) {
-                if (option.value == "si7021") {
-                    option.disabled = true;
-                };
-            };
-        };
-    };
+    // If Thermostat selected disable option in all dropdowns, otherwise enable
+    // Runs every time to catch type change from Thermostat to other
+    document.querySelectorAll(".sensorType option[value='si7021']").forEach(
+        option => option.disabled = thermostat_configured
+    );
 
     // If instance already exists, wipe params and re-populate (type changed)
     if (instances["sensors"][id]) {
@@ -374,40 +348,14 @@ function load_device_section(select) {
     render_template(id, type, type_metadata, template);
 
     // Check if IrBlaster selected in any device dropdown
-    devices = document.getElementsByClassName("deviceType");
+    const devices = [...document.getElementsByClassName("deviceType")];
+    ir_blaster_configured = devices.some(device => device.value === "ir-blaster");
 
-    var found = false;
-    for (device of devices) {
-        if (device.value == "ir-blaster") {
-            found = true;
-        };
-    };
-
-    // If IrBlaster selected, disable IrBlaster option in all dropdowns (cannot have more than 1)
-    if (!found) {
-        ir_blaster_configured = false;
-
-        for (device of document.getElementsByClassName("deviceType")) {
-            for (option of device.children) {
-                if (option.value == "ir-blaster") {
-                    option.disabled = false;
-                };
-            };
-        };
-
-    // If IrBlaster not selected enable IrBlaster option in all dropdowns
-    } else {
-        ir_blaster_configured = true;
-
-        for (device of document.getElementsByClassName("deviceType")) {
-            if (device == select) { continue };
-            for (option of device.children) {
-                if (option.value == "ir-blaster") {
-                    option.disabled = true;
-                };
-            };
-        };
-    };
+    // If IrBlaster selected disable option in all dropdowns, otherwise enable
+    // Runs every time to catch type change from IrBlaster to other
+    document.querySelectorAll(".deviceType option[value='ir-blaster']").forEach(
+        option => option.disabled = ir_blaster_configured
+    );
 
     // If instance already exists, wipe params and re-populate (type changed)
     if (instances["devices"][id]) {
