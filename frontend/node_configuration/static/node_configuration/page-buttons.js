@@ -1,12 +1,12 @@
 document.getElementById('page1-button').addEventListener("click", function(e) {
     e.preventDefault();
 
-    // Confirm all nickname fields are populated (prevent blank titles on page2-3)
+    // Confirm all nickname fields are populated (prevent blank titles on pages 2-3)
     var nicknames = document.getElementsByClassName('nickname');
     var valid = true;
 
+    // If nickname field is blank, add red highlight + listener to remove highlight on input
     for (i=0; i<nicknames.length; i++) {
-        // If field is blank, add red highlight + listener to remove highlight on input
         if (nicknames[i].value == "") {
             nicknames[i].classList.add("is-invalid");
             nicknames[i].scrollIntoView({behavior: "smooth"});
@@ -17,7 +17,7 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
         };
     };
 
-    // If blank fields exist, don't proceed to page2
+    // Don't proceed to page2 if blank fields exist
     if (!valid) { return };
 
     // Get array of all sensor target selection divs on page2
@@ -25,160 +25,43 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 
     // Find device instances that require updates
     for (device in instances['devices']) {
+        // Get device nickname and type
+        const nickname = instances['devices'][device]['output']['nickname'];
+        const type = instances['devices'][device]['output']['type'];
 
         // If device is new, add target select options on page2, add schedule rules card on page3
         if (instances['devices'][device].new) {
             // Skip IrBlaster (can't be targeted, doesn't support schedule rules)
             if (instances['devices'][device]['output']['type'] == 'ir-blaster') { continue };
-
-            // Get new device nickname and type
-            const nickname = instances['devices'][device]['output']['nickname'];
-            const type = instances['devices'][device]['output']['type'];
-
-            // Add option to all sensor target select cards on page2
-            for (sensor of sensors) {
-                const sen_id = sensor.id.split("-")[0];
-
-                template = `<input type='checkbox' class='form-check-input ${sen_id} ${device} target' id='target-${sen_id}-${device}' value='target-${sen_id}-${device}'>
-                            <label for='target-${sen_id}-${device}' class='form-check-label ${sen_id} ${device} target-label'>${nickname}</label>
-                            <br class='${device}'>`;
-
-                sensor.insertAdjacentHTML('beforeend', template);
-            };
-
-            // Add schedule rule section for the new device to page3
-            template = create_schedule_rule_section(device, nickname, type);
-            document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
-
-            // Prevent duplicates if user goes back to page 1
-            instances['devices'][device].new = false;
+            handle_new_device(device, nickname, type);
 
         // If device nickname changed, but type did not change (targets + rules don't need to be cleared)
         } else if (instances['devices'][device].name_changed && ! instances['devices'][device].modified) {
-            // Change name on schedule rules card
-            document.getElementById(`${device}-rules-label`).innerHTML = `<b>${instances['devices'][device]['output']['nickname']}</b>`;
-
-            // Change text on all target options
-            target_labels = document.getElementsByClassName(`${device} target-label`);
-            for (i=0; i<target_labels.length; i++) {
-                target_labels[i].innerHTML = `${instances['devices'][device]['output']['nickname']}`;
-            };
-
-            instances['devices'][device].name_changed = false;
+            rename_device(device, nickname);
 
         // If device type changed, change type displayed on page2 and page3
         } else if (instances['devices'][device].modified) {
-            target_checks = document.getElementsByClassName(`${device} target`);
-            target_labels = document.getElementsByClassName(`${device} target-label`);
-
-            // If device was changed to IrBlaster, remove all target options
-            if (instances['devices'][device]['output']['type'] == 'ir-blaster') {
-                const max = target_checks.length;
-                for (i=0; i<max; i++) {
-                    target_checks[0].remove();
-                    target_labels[0].nextSibling.remove();
-                    target_labels[0].nextSibling.remove();
-                    target_labels[0].remove();
-                };
-
-            // Otherwise, uncheck all target option boxes and change label text
-            } else {
-                for (i=0; i<target_checks.length; i++) {
-                    target_checks[i].checked = false;
-                    target_labels[i].innerHTML = `${instances['devices'][device]['output']['nickname']}`;
-                };
-            };
-
-            // Change name and tooltip on schedule rules card
-            document.getElementById(`${device}-rules-label`).title = `${device} - ${instances['devices'][device]['output']['type']}`;
-            document.getElementById(`${device}-rules-label`).innerHTML = `<b>${instances['devices'][device]['output']['nickname']}</b>`;
-
-            // Clear existing schedule rules (likely invalid after type change)
-            template = `<tr>
-                            <th style='text-align: center;'>Time</th>
-                            <th style='text-align: center;'>Rule</th>
-                        </tr>`;
-            document.getElementById(`${device}-rules`).innerHTML = template
-            document.getElementById(`${device}-rules`).classList.add('d-none');
-
-            // Prevent running again (unless device type changes again)
-            instances['devices'][device].modified = false;
+            change_device_type(device, nickname, type);
         };
     };
 
-
-
     // Find sensor instances that require updates
     for (sensor in instances['sensors']) {
+        // Get sensor nickname and type
+        const nickname = instances['sensors'][sensor]['output']['nickname'];
+        const type = instances['sensors'][sensor]['output']['type'];
+
         // If sensor is new, add target select card to page2
         if (instances['sensors'][sensor].new) {
-            // Get new sensor nickname and type
-            const nickname = instances['sensors'][sensor]['output']['nickname'];
-            const type = instances['sensors'][sensor]['output']['type'];
-
-            // Target select card opening div
-            var template =  `<div class='card ${sensor}'>
-                                <div class='card-body'>
-                                    <label id='${sensor}-targets-label' for='${sensor}-targets' class='card-title sensor-targets-label ${sensor}'><b>${nickname}</b> targets:</label>
-                                    <div id='${sensor}-targets' class='form-check sensor-targets ${sensor}'>`
-
-            // Iterate devices, add checkbox for each to new sensor card
-            for (device in instances['devices']) {
-                // Do not add if device is IrBlaster (cannot be targeted)
-                if (instances['devices'][device]['output']['type'] == "ir-blaster") { continue };
-
-                template += `<input type='checkbox' class='form-check-input ${device} ${sensor} target' id='target-${sensor}-${device}' value='target-${sensor}-${device}'>
-                            <label for='target-${sensor}-${device}' class='form-check-label ${device} ${sensor} target-label'>${instances['devices'][device]['output']['nickname']}</label><br>`;
-            };
-
-            // Close div, add to DOM
-            template += "</div></div></div></br>"
-            document.getElementById("page2-cards").insertAdjacentHTML('beforeend', template);
-
-            // Add schedule rule section for the new sensor to page3
-            template = create_schedule_rule_section(sensor, nickname, type);
-            document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
-
-            // Prevent duplicates if user goes back to page 1
-            instances['sensors'][sensor].new = false;
+            handle_new_sensor(sensor, nickname, type);
 
         // If sensor nickname changed, but type did not change (targets + rules don't need to be cleared)
         } else if (instances['sensors'][sensor].name_changed && ! instances['sensors'][sensor].modified) {
-            // Change name on schedule rules card
-            document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${instances['sensors'][sensor]['output']['nickname']}</b>`;
-
-            // Change name on targets card
-            document.getElementById(`${sensor}-targets-label`).innerHTML = `<b>${instances['sensors'][sensor]['output']['nickname']}</b> targets:`;
-
-            instances['sensors'][sensor].name_changed = false;
+            rename_sensor(sensor, nickname);
 
         // If sensor type changed, change type displayed on page2 and page3
         } else if (instances['sensors'][sensor].modified) {
-            // Uncheck all target boxes
-            for (el of document.getElementById(`${sensor}-targets`).children) {
-                // Children contains inputs, their labels, and line breaks - only process inputs
-                if (el.classList.contains("form-check-input")) {
-                    el.checked = false;
-                };
-            };
-
-            // Change nickname and type on target card
-            document.getElementById(`${sensor}-targets-label`).innerHTML = `<b>${instances['sensors'][sensor]['output']['nickname']}</b> targets:`;
-
-            // Change name and tooltip on schedule rules card
-            document.getElementById(`${sensor}-rules-label`).title = `${sensor} - ${instances['sensors'][sensor]['output']['type']}`;
-            document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${instances['sensors'][sensor]['output']['nickname']}</b>`;
-
-            // Clear existing schedule rules (likely invalid after type change)
-            template = `<tr>
-                            <th style='text-align: center;'>Time</th>
-                            <th style='text-align: center;'>Rule</th>
-                        </tr>`;
-            document.getElementById(`${sensor}-rules`).innerHTML = template
-            document.getElementById(`${sensor}-rules`).classList.add('d-none');
-
-            // Prevent running again (unless user changes type again)
-            instances['sensors'][sensor].modified = false;
+            change_sensor_type(sensor, nickname, type);
         };
     };
 
@@ -189,12 +72,168 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 });
 
 
+// Takes new device ID, nickname, and type
+// Adds target select option to all cards on page 2
+// Adds schedule rules card to page 3
+function handle_new_device(device, nickname, type) {
+    // Add checkbox for device to all sensor target select cards (page2)
+    for (sensor of sensors) {
+        const sen_id = sensor.id.split("-")[0];
+
+        template = `<input type='checkbox' class='form-check-input ${sen_id} ${device} target' id='target-${sen_id}-${device}' value='target-${sen_id}-${device}'>
+                    <label for='target-${sen_id}-${device}' class='form-check-label ${sen_id} ${device} target-label'>${nickname}</label>
+                    <br class='${device}'>`;
+
+        sensor.insertAdjacentHTML('beforeend', template);
+    };
+
+    // Add schedule rule section for the new device to page3
+    template = create_schedule_rule_section(device, nickname, type);
+    document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
+
+    // Prevent duplicates if user goes back to page 1
+    instances['devices'][device].new = false;
+};
+
+
+// Takes device ID and nickname
+// Changes nickname on target select options, schedule rules card
+function rename_device(device, nickname) {
+    // Change name on schedule rules card
+    document.getElementById(`${device}-rules-label`).innerHTML = `<b>${nickname}</b>`;
+
+    // Change text on all target options
+    target_labels = document.getElementsByClassName(`${device} target-label`);
+    for (i=0; i<target_labels.length; i++) {
+        target_labels[i].innerHTML = `${nickname}`;
+    };
+
+    instances['devices'][device].name_changed = false;
+};
+
+
+// Takes device ID, nickname, and type
+// Changes type displayed on target select options, schedule rules card
+function change_device_type(device, nickname, type) {
+    target_checks = document.getElementsByClassName(`${device} target`);
+    target_labels = document.getElementsByClassName(`${device} target-label`);
+
+    // If device was changed to IrBlaster, remove all target options
+    if (type == 'ir-blaster') {
+        const max = target_checks.length;
+        for (i=0; i<max; i++) {
+            target_checks[0].remove();
+            target_labels[0].nextSibling.remove();
+            target_labels[0].nextSibling.remove();
+            target_labels[0].remove();
+        };
+
+        // Otherwise, uncheck all target option boxes and change label text
+    } else {
+        for (i=0; i<target_checks.length; i++) {
+            target_checks[i].checked = false;
+            target_labels[i].innerHTML = `${nickname}`;
+        };
+    };
+
+    // Change name and tooltip on schedule rules card
+    document.getElementById(`${device}-rules-label`).title = `${device} - ${type}`;
+    document.getElementById(`${device}-rules-label`).innerHTML = `<b>${nickname}</b>`;
+
+    // Clear existing schedule rules (likely invalid after type change)
+    template = `<tr>
+                    <th style='text-align: center;'>Time</th>
+                    <th style='text-align: center;'>Rule</th>
+                </tr>`;
+    document.getElementById(`${device}-rules`).innerHTML = template
+    document.getElementById(`${device}-rules`).classList.add('d-none');
+
+    // Prevent running again (unless device type changes again)
+    instances['devices'][device].modified = false;
+}
+
+
+// Takes new sensor ID, nickname, and type
+// Adds target select card to page 2
+function handle_new_sensor(sensor, nickname, type) {
+    // Target select card opening div
+    var template =  `<div class='card ${sensor}'>
+                         <div class='card-body'>
+                             <label id='${sensor}-targets-label' for='${sensor}-targets' class='card-title sensor-targets-label ${sensor}'><b>${nickname}</b> targets:</label>
+                             <div id='${sensor}-targets' class='form-check sensor-targets ${sensor}'>`
+
+    // Iterate devices, add checkbox for each to new sensor card
+    for (device in instances['devices']) {
+        // Do not add if device is IrBlaster (cannot be targeted)
+        if (instances['devices'][device]['output']['type'] == "ir-blaster") { continue };
+
+        template += `<input type='checkbox' class='form-check-input ${device} ${sensor} target' id='target-${sensor}-${device}' value='target-${sensor}-${device}'>
+                     <label for='target-${sensor}-${device}' class='form-check-label ${device} ${sensor} target-label'>${instances['devices'][device]['output']['nickname']}</label><br>`;
+    };
+
+    // Close div, add to DOM
+    template += "</div></div></div></br>"
+    document.getElementById("page2-cards").insertAdjacentHTML('beforeend', template);
+
+    // Add schedule rule section for the new sensor to page3
+    template = create_schedule_rule_section(sensor, nickname, type);
+    document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
+
+    // Prevent duplicates if user goes back to page 1
+    instances['sensors'][sensor].new = false;
+};
+
+
+// Takes sensor ID and nickname
+// Changes nickname on target select card, schedule rules card
+function rename_sensor(sensor, nickname) {
+    // Change name on schedule rules card
+    document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${nickname}</b>`;
+
+    // Change name on targets card
+    document.getElementById(`${sensor}-targets-label`).innerHTML = `<b>${nickname}</b> targets:`;
+
+    instances['sensors'][sensor].name_changed = false;
+};
+
+
+// Takes sensor ID, nickname, and type
+// Changes type displayed on target select options, schedule rules card
+function change_sensor_type(sensor, nickname, type) {
+    // Uncheck all target boxes
+    for (el of document.getElementById(`${sensor}-targets`).children) {
+        // Children contains inputs, their labels, and line breaks - only process inputs
+        if (el.classList.contains("form-check-input")) {
+            el.checked = false;
+        };
+    };
+
+    // Change nickname and type on target card
+    document.getElementById(`${sensor}-targets-label`).innerHTML = `<b>${nickname}</b> targets:`;
+
+    // Change name and tooltip on schedule rules card
+    document.getElementById(`${sensor}-rules-label`).title = `${sensor} - ${type}`;
+    document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${nickname}</b>`;
+
+    // Clear existing schedule rules (likely invalid after type change)
+    template = `<tr>
+                    <th style='text-align: center;'>Time</th>
+                    <th style='text-align: center;'>Rule</th>
+                </tr>`;
+    document.getElementById(`${sensor}-rules`).innerHTML = template
+    document.getElementById(`${sensor}-rules`).classList.add('d-none');
+
+    // Prevent running again (unless user changes type again)
+    instances['sensors'][sensor].modified = false;
+};
+
+
 // Takes device/sensor ID, nickname, and type
 // Returns template for schedule rules section on page 3
 function create_schedule_rule_section(id, nickname, type) {
     return `<div class='card mb-4 ${id}'>
                 <div class='card-body text-center'>
-                    <label id='${sensor}-rules-label' class='card-title schedule-rule-card ${id}' title='${id} - ${type}'>
+                    <label id='${id}-rules-label' class='card-title schedule-rule-card ${id}' title='${id} - ${type}'>
                         <b>${nickname}</b>
                     </label>
                     <table id='${id}-rules' class='table table-borderless ${id} d-none'>
