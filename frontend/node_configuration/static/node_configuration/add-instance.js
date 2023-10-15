@@ -154,77 +154,157 @@ function create_advanced_settings_dimmable_light(id, min, max) {
 }
 
 
-// Called when user selects sensor type from dropdown
-async function load_sensor_section(select) {
-    // Get ID of sensor
-    const id = select.id.split("-")[0];
-
-    // Get user selection
-    const selected = document.getElementById(select.id).value
-
+// Takes device or sensor ID, type, metadata entry, and category (device or sensor)
+// Returns config card template with appropriate input elements
+function get_template(id, type, type_metadata, category) {
     // Add nickname section to template, other sections added below as needed
     var template = create_nickname_input(id);
 
-    // Build template for sensor type selected by user
-    if (selected == "pir") {
-        template += create_pin_dropdown_sensor(id);
-        template += create_slider_rule_input(id, '0', '60', '0', '60', 'float', '0.5', '0.5');
+    // Add non-rule input fields
+    type_metadata.params.forEach(function(param) {
+        if (param == "pin" && category == "sensor") {
+            template += create_pin_dropdown_sensor(id);
+        } else if (param == "pin" && category == "device") {
+            template += create_pin_dropdown_device(id);
+        } else if (param == "ip" && type != "api-target") {
+            template += create_ip_input(id);
+        }
+    });
 
-    } else if (selected == "switch") {
-        template += create_pin_dropdown_sensor(id);
+    // Add rule input field
+    if (type_metadata.prompt == 'int_or_fade') {
+        // Get actual minimum/maximum rules
+        const min = type_metadata.rule_limits[0];
+        const max = type_metadata.rule_limits[1];
+        // Calculate button step size (should always move display value by 1)
+        const button_step = parseInt(max / 100);
+        // Add slider template with display-max 100, actual value matches actual max
+        template += create_slider_rule_input(id, min, max, min, '100', 'int', '1', button_step);
+        template += create_advanced_settings_dimmable_light(id, min, max);
+
+    } else if (type_metadata.prompt == 'float_range') {
+        // Get actual minimum/maximum rules
+        const min = type_metadata.rule_limits[0];
+        const max = type_metadata.rule_limits[1];
+        // Add slider template with display min and max from metadata
+        template += create_slider_rule_input(id, min, max, min, max, 'float', '0.5', '0.5');
+
+    } else if (type_metadata.prompt == 'standard') {
         template += create_standard_rule_input(id);
 
-    } else if (selected == "desktop") {
-        template += create_ip_input(id);
-        template += create_standard_rule_input(id);
-
-    } else if (selected == "dummy") {
+    } else if (type_metadata.prompt == 'on_off') {
         template += create_on_off_rule_input(id);
-    } else if (selected == "si7021") {
-        template += create_slider_rule_input(id, '65', '80', '65', '80', 'float', '0.5', '0.5');
-        template += `<div class="mb-2">
-                        <label class="form-label ${id}" for="${id}-mode"><b>Mode:</b></label>
-                        <select id="${id}-mode" class="form-select mb-3 ${id}" required>
-                            <option value="cool" id="cool">Cool</option>
-                            <option value="heat" id="heat">Heat</option>
-                        </select>
-                    </div>
+    };
 
-                    <div class="mb-2">
-                        <label for="${id}-tolerance" class="${id}"><b>Tolerance:</b></label>
-                        <input type="text" class="form-control ${id} thermostat" id="${id}-tolerance" placeholder="" required>
+    // Add type-specific components
+    if (type == "si7021") {
+        template += `<div class="mb-2">
+                         <label class="form-label ${id}" for="${id}-mode"><b>Mode:</b></label>
+                         <select id="${id}-mode" class="form-select mb-3 ${id}" required>
+                             <option value="cool" id="cool">Cool</option>
+                             <option value="heat" id="heat">Heat</option>
+                         </select>
+                     </div>
+
+                     <div class="mb-2">
+                         <label for="${id}-tolerance" class="${id}"><b>Tolerance:</b></label>
+                         <input type="text" class="form-control ${id} thermostat" id="${id}-tolerance" placeholder="" required>
+                     </div>`
+
+    } else if (type == "api-target") {
+        template += `<div class="mb-2">
+                         <label for="${id}-ip" class="${id}"><b>Target Node:</b></label>
+                         <select id="${id}-ip" class="form-select mb-3 ${id}" onchange="api_target_selected(this)">
+                             <option value="" selected="selected" selected></option>`
+
+        for (var x in ApiTargetOptions) {
+            if (x == "addresses") { continue };
+            template +=    `<option value="${ApiTargetOptions["addresses"][x]}">${x}</option>`
+        };
+
+        template += `</select>
+                     </div>
+
+                     <div class="mb-2 text-center">
+                         <button id="${id}-default_rule-button" class="btn btn-secondary mt-3 ${id}" onclick="open_rule_modal(this);" data-target="${id}-default_rule" disabled>Set rule</button>
+                     </div>
+
+                     <div class="mb-2 text-center">
+                         <label for="${id}-default_rule" class="${id}" style="display:none;"><b>Default Rule:</b></label>
+                         <input type="default_rule" class="form-control ${id}" id="${id}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('${id}-default_rule button').dataset.original = this.value;" required>
+                     </div>`
+
+    } else if (type == "ir-blaster") {
+        template += create_pin_dropdown_device(id);
+        template = `<div class="mb-2">
+                        <label for="${id}-remotes" class="${id}"><b>Virtual remotes:</b></label>
+                        <div id="${id}-remotes" class="form-check ${id}">
+                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-tv" id="checkbox-tv">
+                            <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
+                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-ac" id="checkbox-ac">
+                            <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
+                        </div>
                     </div>`
     };
 
-    // Disable "Select sensor type" option after selection made
-    if (selected != "clear") {
-        select.children[0].disabled = true;
-    };
+    return template;
+};
 
+
+// Takes device or sensor ID, type, metadata entry, and completed template
+// Inserts template into card, instantiates elements, adds listeners
+function render_template(id, type, type_metadata, template) {
     // Insert template into div, scroll down until visible
     document.querySelector(`.${id} .configParams`).innerHTML = template;
     document.querySelector(`.${id} .configParams`).scrollIntoView({behavior: "smooth"});
 
-    if (selected == "pir" || selected == "si7021") {
+    // Instantiate slider if added
+    if (type_metadata.prompt == 'float_range' || type_metadata.prompt == 'int_or_fade') {
         add_new_slider(`${id}-default_rule`);
     };
 
     // Disable already-used pins in the new pin dropdown
-    if (selected == "pir" || selected == "switch") {
+    if (type_metadata.params.includes('pin')) {
         preventDuplicatePins();
     };
 
     // Add listeners to format IP field while typing, validate when focus leaves
-    if (selected == "desktop") {
+    if (type_metadata.params.includes('ip')) {
         ip = document.getElementById(`${id}-ip`);
         ip.addEventListener('input', formatIp);
         ip.addEventListener('blur', validateIp);
     };
 
     // Add listener to constrain tolerance field
-    if (selected == "si7021") {
+    if (type == "si7021") {
         document.getElementById(`${id}-tolerance`).addEventListener('input', thermostatToleranceLimit);
     };
+
+    // Add listener for PWM max/min fields
+    if (type == "pwm") {
+        document.getElementById(`${id}-max_rule`).addEventListener('input', pwmLimits);
+        document.getElementById(`${id}-min_rule`).addEventListener('input', pwmLimits);
+    };
+}
+
+
+// Called when user selects sensor type from dropdown
+function load_sensor_section(select) {
+    // Get ID of sensor
+    const id = select.id.split("-")[0];
+
+    // Get user-selected type + metadata
+    const type = document.getElementById(select.id).value
+    const type_metadata = metadata['sensors'][type];
+
+    // Disable "Select sensor type" option after selection made
+    if (type != "clear") {
+        select.children[0].disabled = true;
+    };
+
+    // Render template for currently-selected sensor type
+    var template = get_template(id, type, type_metadata, 'sensor');
+    render_template(id, type, type_metadata, template);
 
     // Check if Thermostat selected in any sensor dropdown
     sensors = document.getElementsByClassName("sensorType");
@@ -262,12 +342,13 @@ async function load_sensor_section(select) {
         };
     };
 
+    // If instance already exists, wipe params and re-populate (type changed)
     if (instances["sensors"][id]) {
-        // If instance already exists, wipe params and re-populate (type changed)
         instances["sensors"][id].getParams();
         instances["sensors"][id].modified = true;
+
+    // If new sensor, create instance
     } else {
-        // If new sensor, create instance
         instances["sensors"][id] = new Sensor(id);
     };
 };
@@ -275,107 +356,22 @@ async function load_sensor_section(select) {
 
 
 // Called when user selects device type from dropdown
-async function load_device_section(select) {
+function load_device_section(select) {
     // Get ID of device
     const id = select.id.split("-")[0];
 
-    // Get user selection
-    const selected = document.getElementById(select.id).value
-
-    // Add nickname section to template, other sections added below as needed
-    var template = create_nickname_input(id);
-
-    // Build template for device type selected by user
-    if (selected == "dimmer" || selected == "bulb") {
-        template += create_ip_input(id);
-        template += create_slider_rule_input(id, '1', '100', '1', '100', 'int', '1', '1');
-        template += create_advanced_settings_dimmable_light(id, '1', '100');
-
-    } else if (selected == "wled") {
-        template += create_ip_input(id);
-        template += create_slider_rule_input(id, '1', '255', '1', '100', 'int', '1', '1');
-        template += create_advanced_settings_dimmable_light(id, '1', '255');
-
-    } else if (selected == "desktop" || selected == "tasmota-relay") {
-        template += create_ip_input(id);
-        template += create_standard_rule_input(id);
-
-    } else if (selected == "mosfet" || selected == "dumb-relay") {
-        template += create_pin_dropdown_device(id);
-        template += create_standard_rule_input(id);
-
-    } else if (selected == "pwm") {
-        template += create_pin_dropdown_device(id);
-        template += create_slider_rule_input(id, '0', '1023', '0', '100', 'int', '1', '10');
-        template += create_advanced_settings_dimmable_light(id, '0', '1023');
-
-    } else if (selected == "api-target") {
-        template += `<div class="mb-2">
-                        <label for="${id}-ip" class="${id}"><b>Target Node:</b></label>
-                        <select id="${id}-ip" class="form-select mb-3 ${id}" onchange="api_target_selected(this)">
-                            <option value="" selected="selected" selected></option>`
-
-        for (var x in ApiTargetOptions) {
-            if (x == "addresses") { continue };
-            template +=    `<option value="${ApiTargetOptions["addresses"][x]}">${x}</option>`
-        };
-
-        template +=     `</select>
-                    </div>
-
-                    <div class="mb-2 text-center">
-                        <button id="${id}-default_rule-button" class="btn btn-secondary mt-3 ${id}" onclick="open_rule_modal(this);" data-target="${id}-default_rule" disabled>Set rule</button>
-                    </div>
-
-                    <div class="mb-2 text-center">
-                        <label for="${id}-default_rule" class="${id}" style="display:none;"><b>Default Rule:</b></label>
-                        <input type="default_rule" class="form-control ${id}" id="${id}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('${id}-default_rule-button').dataset.original = this.value;" required>
-                    </div>`
-
-    } else if (selected == "ir-blaster") {
-        template += create_pin_dropdown_device(id);
-        template = `<div class="mb-2">
-                        <label for="${id}-remotes" class="${id}"><b>Virtual remotes:</b></label>
-                        <div id="${id}-remotes" class="form-check ${id}">
-                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-tv" id="checkbox-tv">
-                            <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
-                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-ac" id="checkbox-ac">
-                            <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
-                        </div>
-                    </div>`
-
-    };
+    // Get user-selected type + metadata
+    const type = document.getElementById(select.id).value;
+    const type_metadata = metadata['devices'][type];
 
     // Disable "Select device type" option after selection made
-    if (selected != "clear") {
+    if (type != "clear") {
         select.children[0].disabled = true;
     };
 
-    // Insert template into div, scroll down until visible
-    document.querySelector(`.${id} .configParams`).innerHTML = template;
-    document.querySelector(`.${id} .configParams`).scrollIntoView({behavior: "smooth"});
-
-    if (selected == "dimmer" || selected == "bulb" || selected == "pwm" || selected == "wled") {
-        add_new_slider(`${id}-default_rule`);
-    };
-
-    // Disable already-used pins in the new pin dropdown
-    if (selected == "mosfet" || selected == "dumb-relay" || selected == "pwm" || selected == "ir-blaster") {
-        preventDuplicatePins();
-    };
-
-    // Add listeners to format IP field while typing, validate when focus leaves
-    if (selected == "dimmer" || selected == "bulb" || selected == "desktop" || selected == "tasmota-relay" || selected == "wled") {
-        ip = document.getElementById(`${id}-ip`);
-        ip.addEventListener('input', formatIp);
-        ip.addEventListener('blur', validateIp);
-    };
-
-    // Add listener for PWM max/min fields
-    if (selected == "pwm") {
-        document.getElementById(`${id}-max_rule`).addEventListener('input', pwmLimits);
-        document.getElementById(`${id}-min_rule`).addEventListener('input', pwmLimits);
-    };
+    // Render template for currently-selected device type
+    var template = get_template(id, type, type_metadata, 'device');
+    render_template(id, type, type_metadata, template);
 
     // Check if IrBlaster selected in any device dropdown
     devices = document.getElementsByClassName("deviceType");
@@ -413,12 +409,13 @@ async function load_device_section(select) {
         };
     };
 
+    // If instance already exists, wipe params and re-populate (type changed)
     if (instances["devices"][id]) {
-        // If instance already exists, wipe params and re-populate (type changed)
         instances["devices"][id].getParams();
         instances["devices"][id].modified = true;
+
+    // If new device, create instance
     } else {
-        // If new device, create instance
         instances["devices"][id] = new Device(id);
     };
 };

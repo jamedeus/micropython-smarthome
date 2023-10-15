@@ -18,7 +18,8 @@ from helper_functions import (
     is_sensor,
     valid_ip,
     get_schedule_keywords_dict,
-    get_config_filename
+    get_config_filename,
+    get_device_and_sensor_metadata
 )
 
 # Env var constants
@@ -193,10 +194,53 @@ def config_overview(request):
     return render(request, 'node_configuration/overview.html', context)
 
 
+# Returns context object with relevant parameters from device and sensor metadata
+# Used to populate configuration divs with appropriate inputs based on type
+def get_metadata_context():
+    # Get object containing all device/sensor metadata
+    metadata = get_device_and_sensor_metadata()
+    context = {'devices': {}, 'sensors': {}}
+
+    for i in metadata['devices']:
+        config_name = i['config_name']
+        template = i['config_template']
+        # Extract params which require user input
+        params = [i for i in template.keys() if i not in ['_type', 'nickname', 'default_rule', 'schedule', 'targets']]
+        context['devices'][config_name] = {}
+        context['devices'][config_name]['_type'] = config_name
+        context['devices'][config_name]['prompt'] = i['rule_prompt']
+        context['devices'][config_name]['params'] = params
+
+        # Add rule limits if present
+        if 'rule_limits' in i.keys():
+            context['devices'][config_name]['rule_limits'] = i['rule_limits']
+
+    for i in metadata['sensors']:
+        config_name = i['config_name']
+        template = i['config_template']
+        # Extract params which require user input
+        params = [i for i in template.keys() if i not in ['_type', 'nickname', 'default_rule', 'schedule', 'targets']]
+        context['sensors'][config_name] = {}
+        context['sensors'][config_name]['_type'] = config_name
+        context['sensors'][config_name]['prompt'] = i['rule_prompt']
+        context['sensors'][config_name]['params'] = params
+
+        # Add rule limits if present
+        if 'rule_limits' in i.keys():
+            context['sensors'][config_name]['rule_limits'] = i['rule_limits']
+
+    # Add ir blaster template to prevent error
+    # TODO ir blaster in device section causes multiple issues, needs own section
+    context['devices']['ir-blaster'] = {'params': [], 'prompt': '', '_type': 'ir-blaster'}
+
+    return context
+
+
 def new_config(request):
     context = {
         "config": {"TITLE": "Create New Config"},
-        "api_target_options": get_api_target_menu_options()
+        "api_target_options": get_api_target_menu_options(),
+        "metadata": get_metadata_context()
     }
 
     # Add default wifi credentials if configured

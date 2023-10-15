@@ -950,6 +950,7 @@
     </div>
 
     {{ api_target_options|json_script:"context" }}
+    {{ metadata|json_script:"metadata" }}
 
     <script>
         // Hide everything except first page
@@ -958,6 +959,9 @@
 
         // Get object used to populate api-target options from context
         const ApiTargetOptions = JSON.parse(document.getElementById("context").textContent);
+
+        // Get device/sensor metadata object, used to determine input elements for each type
+        const metadata = JSON.parse(document.getElementById("metadata").textContent);
 
         // Store parameters used to re-upload config after editing
         const target_ip = "{{ config.IP }}";
