@@ -30,13 +30,18 @@
     <!-- Rule Input -->
     <div class="col-12 col-md-6">
 
-    {% if type in "dimmer,bulb,wled,pwm,pir,si7021" %}
+    {% if prompt == "float_range" %}
         <div class="text-center">
             <label for="rule-input" class="form-label">Rule</label>
             <input type="text" class="form-control" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
         </div>
 
-    {% if type in "dimmer,bulb,pwm" %}
+    {% elif prompt == "int_or_fade" %}
+        <div class="text-center">
+            <label for="rule-input" class="form-label">Rule</label>
+            <input type="text" class="form-control" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+        </div>
+
         <!-- Fade duration input -->
         <div id="duration-input" class="text-center {% if not fade %} d-none {% endif %}">
             <label for="duration" class="form-label mt-2">Duration (seconds)</label>
@@ -50,9 +55,8 @@
             </div>
             <label class="me-auto form-check-label" for="toggle-rule-mode">Fade</label>
         </div>
-    {% endif %}
 
-    {% elif type in "tasmota-relay,dumb-relay,desktop,mosfet,switch" %}
+    {% elif prompt == "standard" %}
         <div class="text-center">
             <label for="rule-input" class="form-label">Keyword</label>
             <select class="form-select" id="rule-input" name="rule-input" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
@@ -62,7 +66,7 @@
             </select>
         </div>
 
-    {% elif type == "dummy" %}
+    {% elif prompt == "on_off" %}
         <div class="text-center">
             <label for="rule-input" class="form-label">Keyword</label>
             <select class="form-select" id="rule-input" name="rule-input" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
@@ -74,7 +78,7 @@
             </select>
         </div>
 
-    {% elif type == "api-target" %}
+    {% elif prompt == "api_target" %}
         <div class="text-center">
             {# Hidden input with expected rule ID #}
             <input type="text" id="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" style="display:none;">

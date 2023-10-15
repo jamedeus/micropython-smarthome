@@ -71,9 +71,9 @@ async function open_schedule_rule_modal(payload) {
     var result = await fetch('/edit_rule', {
         method: 'POST',
         body: JSON.stringify(payload),
-                             headers: { 'Accept': 'application/json, text/plain, */*',
-                                 'Content-Type': 'application/json',
-                             'X-CSRFToken': getCookie('csrftoken') }
+        headers: { 'Accept': 'application/json, text/plain, */*',
+                   'Content-Type': 'application/json',
+                   'X-CSRFToken': getCookie('csrftoken') }
     });
 
     // Load response into modal body

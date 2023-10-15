@@ -8,10 +8,16 @@ from django.views.decorators.csrf import ensure_csrf_cookie
 from node_configuration.views import requires_post
 from node_configuration.models import Node, ScheduleKeyword
 from node_configuration.get_api_target_menu_options import get_api_target_menu_options
-from helper_functions import valid_ip, valid_timestamp, is_device, get_schedule_keywords_dict
 from Webrepl import Webrepl
 from api.models import Macro
 from api_endpoints import endpoint_map
+from helper_functions import (
+    valid_ip,
+    valid_timestamp,
+    is_device,
+    get_schedule_keywords_dict,
+    get_device_and_sensor_metadata
+)
 
 
 # Decorator looks up target node, returns error if does not exist
@@ -25,6 +31,22 @@ def get_target_node(func):
             return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
         return func(request, node, **kwargs)
     return wrapper
+
+
+# Returns mapping dict with device/sensor types as key, prompt type as value
+# Dynamically generated from json metadata files for each instance type
+def get_metadata_prompt_map():
+    # Get object containing metadata for all device and sensor types
+    metadata = get_device_and_sensor_metadata()
+    # Combine into single list
+    metadata = metadata['devices'] + metadata['sensors']
+
+    # Build mapping dict with types as keys, prompts as value
+    context = {}
+    for i in metadata:
+        context[i["config_name"]] = i["rule_prompt"]
+
+    return context
 
 
 # Receives schedule params in post, renders rule_modal template
@@ -47,7 +69,11 @@ def edit_rule(request):
     # Add schedule keywords
     data['schedule_keywords'] = get_schedule_keywords_dict()
 
-    print(data)
+    # Add prompt type
+    prompt_map = get_metadata_prompt_map()
+    data['prompt'] = prompt_map[data['type']]
+
+    print(json.dumps(data, indent=4))
 
     return render(request, 'api/rule_modal.html', data)
 
