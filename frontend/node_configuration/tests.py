@@ -643,7 +643,7 @@ class EditConfigTests(TestCaseBackupRestore):
         # Confirm title, heading, and edit mode
         self.assertContains(response, '<title>Editing Test1</title>')
         self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test1</h1>')
-        self.assertContains(response, 'const edit_existing = true;')
+        self.assertEqual(response.context['edit_existing'], True)
 
         # Confirm all devices and sensors present
         self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>')
@@ -662,7 +662,7 @@ class EditConfigTests(TestCaseBackupRestore):
         # Confirm title, heading, and edit mode
         self.assertContains(response, '<title>Editing Test2</title>')
         self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test2</h1>')
-        self.assertContains(response, 'const edit_existing = true;')
+        self.assertEqual(response.context['edit_existing'], True)
 
         # Confirm all devices and sensors present
         self.assertContains(response, '<input type="text" class="form-control sensor1 thermostat" id="sensor1-tolerance" placeholder="" value="0.5" required>')
@@ -684,7 +684,7 @@ class EditConfigTests(TestCaseBackupRestore):
         # Confirm title, heading, and edit mode
         self.assertContains(response, '<title>Editing Test3</title>')
         self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test3</h1>')
-        self.assertContains(response, 'const edit_existing = true;')
+        self.assertEqual(response.context['edit_existing'], True)
 
         # Confirm all devices and sensors present
         self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor (Bath)"')
@@ -712,7 +712,7 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
         # Confirm correct context (empty) + api target menu options + edit_existing set correctly
         self.assertEqual(response.context['config'], {"TITLE": "Create New Config"})
         self.assertEqual(response.context['api_target_options'], get_api_target_menu_options())
-        self.assertContains(response, 'const edit_existing = false;')
+        self.assertEqual(response.context['edit_existing'], False)
 
         # Confirm wifi fields empty
         self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Create New Config</h1>')
@@ -730,7 +730,7 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
         # Confirm context contains credentials + edit_existing set correctly
         expected_response = {"TITLE": "Create New Config", 'wifi': {'password': 'hunter2', 'ssid': 'AzureDiamond'}}
         self.assertEqual(response.context['config'], expected_response)
-        self.assertContains(response, 'const edit_existing = false;')
+        self.assertEqual(response.context['edit_existing'], False)
 
         # Confirm wifi fields pre-filled
         self.assertContains(response, 'name="ssid" value="AzureDiamond" onchange="open_toast()" required>')

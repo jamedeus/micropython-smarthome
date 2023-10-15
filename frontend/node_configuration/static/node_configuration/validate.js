@@ -1,5 +1,5 @@
 // Listens on name input, warns when duplicate name entered
-async function check_duplicate(el) {
+async function prevent_duplicate_friendly_name(el) {
     // Skip check if editing and name is original name
     if (!edit_existing || el.value.toLowerCase() != orig_name) {
         // Send input value to backend

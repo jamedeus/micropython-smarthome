@@ -240,7 +240,8 @@ def new_config(request):
     context = {
         "config": {"TITLE": "Create New Config"},
         "api_target_options": get_api_target_menu_options(),
-        "metadata": get_metadata_context()
+        "metadata": get_metadata_context(),
+        "edit_existing": False
     }
 
     # Add default wifi credentials if configured
@@ -323,7 +324,8 @@ def edit_config(request, name):
     context = {
         "config": config,
         "api_target_options": api_target_options,
-        "metadata": get_metadata_context()
+        "metadata": get_metadata_context(),
+        "edit_existing": True
     }
 
     print(json.dumps(context, indent=4))

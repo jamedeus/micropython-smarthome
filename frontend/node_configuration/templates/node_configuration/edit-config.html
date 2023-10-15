@@ -94,7 +94,7 @@
                     <h2>Metadata</h2>
                     <div class="mb-2">
                         <label for="friendlyName"><b>Name:</b></label>
-                        <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{config.NAME}}" oninput="check_duplicate(this)" aria-describedby="friendlyName-feedback" required>
+                        <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{config.NAME}}" oninput="prevent_duplicate_friendly_name(this)" aria-describedby="friendlyName-feedback" required>
                         <div id="friendlyName-feedback" class="invalid-feedback">
                             Name must be unique
                         </div>
@@ -977,6 +977,7 @@
 
     {{ api_target_options|json_script:"context" }}
     {{ metadata|json_script:"metadata" }}
+    {{ edit_existing|json_script:"edit_existing" }}
 
     <script>
         // Hide everything except first page
@@ -989,6 +990,13 @@
         // Get device/sensor metadata object, used to determine input elements for each type
         const metadata = JSON.parse(document.getElementById("metadata").textContent);
 
+        // Get var passed to submit_form function, controls whether config is re-uploaded
+        const edit_existing = JSON.parse(document.getElementById("edit_existing").textContent);
+        // If editing get original name (prevents rejecting existing name as duplicate)
+        if (edit_existing) {
+            var orig_name = document.getElementById('friendlyName').value.toLowerCase();
+        };
+
         // Store parameters used to re-upload config after editing
         const target_ip = "{{ config.IP }}";
         const target_filename = "{{ config.FILENAME }}";
@@ -998,15 +1006,6 @@
         document.addEventListener('input', function() {
             changes_made = true;
         }, { once: true });
-
-        {# Set var passed to submit_form function, controls whether config is re-uploaded or not #}
-        {# For new configs length will be 1 if no default password set, otherwise 2. Existing configs have min length of 9 #}
-        {% if config|length <= 2 %}
-        const edit_existing = false;
-        {% else %}
-        const edit_existing = true;
-        const orig_name = "{{config.NAME}}".toLowerCase();
-        {% endif %}
 
         // Create modal objects
         const uploadModal = new bootstrap.Modal(document.getElementById('upload-modal'));
