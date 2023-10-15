@@ -15,7 +15,146 @@ Array.from(document.getElementsByClassName("sensorType")).forEach(function(senso
 });
 
 
+// Takes id (int), returns nickname input template
+function create_nickname_input(id) {
+    return `<div class="mb-2">
+    <label for="${id}-nickname" class="${id}"><b>Nickname:</b></label>
+    <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
+    </div>`
+}
 
+
+// Takes id (int), returns dropdown template with options for all sensor pins
+function create_pin_dropdown_sensor(id) {
+    return `<div class="mb-2">
+                <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
+                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
+                    <option selected disabled>Select pin</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="21">21</option>
+                    <option value="22">22</option>
+                    <option value="23">23</option>
+                    <option value="25">25</option>
+                    <option value="26">26</option>
+                    <option value="27">27</option>
+                    <option value="32">32</option>
+                    <option value="33">33</option>
+                    <option value="34">34</option>
+                    <option value="35">35</option>
+                    <option value="36">36</option>
+                    <option value="39">39</option>
+                </select>
+            </div>`
+};
+
+
+// Takes id (int), returns dropdown template with options for all device pins
+function create_pin_dropdown_device(id) {
+    return `<div class="mb-2">
+                <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
+                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
+                    <option selected disabled>Select pin</option>
+                    <option value="4">4</option>
+                    <option value="13">13</option>
+                    <option value="16">16</option>
+                    <option value="17">17</option>
+                    <option value="18">18</option>
+                    <option value="19">19</option>
+                    <option value="21">21</option>
+                    <option value="22">22</option>
+                    <option value="23">23</option>
+                    <option value="25">25</option>
+                    <option value="26">26</option>
+                    <option value="27">27</option>
+                    <option value="32">32</option>
+                    <option value="33">33</option>
+                </select>
+            </div>`
+};
+
+
+// Takes id (int), returns dropdown template with standard rule options
+function create_standard_rule_input(id) {
+    return `<div class="mb-2">
+                <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
+                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" required>
+                    <option value="enabled">Enabled</option>
+                    <option value="disabled">Disabled</option>
+                </select>
+            </div>`
+};
+
+
+// Takes id (int), returns dropdown template with on and off options
+function create_on_off_rule_input(id) {
+    return `<div class="mb-2">
+                <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
+                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" required>
+                    <option>Select default rule</option>
+                    <option value="on">On</option>
+                    <option value="off">Off</option>
+                </select>
+            </div>`
+};
+
+
+// Returns slider template with values configured by args
+// min/max: the value limits for the slider, should match device/sensor limits
+// display_min/display_max: the values displayed, actual values are scaled to this range
+// display_type: int or float, determines whether decimal is shown
+// step: int or float, controls step size for slider
+// button_step: int or float, controls step size for +/- buttons
+function create_slider_rule_input(id, min, max, display_min, display_max, display_type, step, button_step) {
+    return `<div class="mb-2">
+                <label for="${id}-default_rule" class="mt-1 ${id}"><b>Default Rule:</b></label>
+                <div class="d-flex flex-row align-items-center my-2">
+                    <button id="${id}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="${button_step}"><i class="bi-dash-lg"></i></button>
+                    <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="${min}" max="${max}" data-displaymin="${display_min}" data-displaymax="${display_max}" data-displaytype="${display_type}" step="${step}" value="" autocomplete="off">
+                    <button id="${id}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="${button_step}"><i class="bi-plus-lg"></i></button>
+                </div>
+            </div>`
+}
+
+
+// Takes id (int), returns input with IPv4 regex
+function create_ip_input(id) {
+    return `<div class="mb-2">
+                <label for="${id}-ip" class="${id}"><b>IP:</b></label>
+                <input type="text" class="form-control ${id} ip-input" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
+            </div>`
+}
+
+
+// Takes id, min, max (all int), returns advanced settings collapse
+// div template with inputs to configure min_rule, max_rule
+function create_advanced_settings_dimmable_light(id, min, max) {
+    return `<div class="mt-3 text-center">
+                <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#${id}-advanced_settings" role="button" aria-expanded="false" aria-controls="${id}-advanced_settings">Advanced</a>
+            </div>
+
+            <div id="${id}-advanced_settings" class="collapse">
+                <div class="mb-2">
+                    <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
+                    <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_rule" placeholder="${min}" value="${min}" required>
+                </div>
+
+                <div class="mb-2">
+                    <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
+                    <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_rule" placeholder="${max}" value="${max}" required>
+                </div>
+            </div>`
+}
+
+
+// Called when user selects sensor type from dropdown
 async function load_sensor_section(select) {
     // Get ID of sensor
     const id = select.id.split("-")[0];
@@ -24,120 +163,26 @@ async function load_sensor_section(select) {
     const selected = document.getElementById(select.id).value
 
     // Add nickname section to template, other sections added below as needed
-    var template = `<div class="mb-2">
-                        <label for="${id}-nickname" class="${id}"><b>Nickname:</b></label>
-                        <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
-                    </div>`
+    var template = create_nickname_input(id);
 
-    // Get template for sensor type selected by user
+    // Build template for sensor type selected by user
     if (selected == "pir") {
-        template += `<div class="mb-2">
-                        <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
-                        <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                            <option selected disabled>Select pin</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="13">13</option>
-                            <option value="14">14</option>
-                            <option value="15">15</option>
-                            <option value="16">16</option>
-                            <option value="17">17</option>
-                            <option value="18">18</option>
-                            <option value="19">19</option>
-                            <option value="21">21</option>
-                            <option value="22">22</option>
-                            <option value="23">23</option>
-                            <option value="25">25</option>
-                            <option value="26">26</option>
-                            <option value="27">27</option>
-                            <option value="32">32</option>
-                            <option value="33">33</option>
-                            <option value="34">34</option>
-                            <option value="35">35</option>
-                            <option value="36">36</option>
-                            <option value="39">39</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="${id}-default_rule" class="mt-1 ${id}"><b>Default Rule:</b></label>
-                        <div class="d-flex flex-row align-items-center my-2">
-                            <button id="${id}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                            <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="" autocomplete="off">
-                            <button id="${id}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                        </div>
-                    </div>`
+        template += create_pin_dropdown_sensor(id);
+        template += create_slider_rule_input(id, '0', '60', '0', '60', 'float', '0.5', '0.5');
 
     } else if (selected == "switch") {
-        template += `<div class="mb-2">
-                        <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
-                        <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                            <option selected disabled>Select pin</option>
-                            <option value="4">4</option>
-                            <option value="5">5</option>
-                            <option value="13">13</option>
-                            <option value="14">14</option>
-                            <option value="15">15</option>
-                            <option value="16">16</option>
-                            <option value="17">17</option>
-                            <option value="18">18</option>
-                            <option value="19">19</option>
-                            <option value="21">21</option>
-                            <option value="22">22</option>
-                            <option value="23">23</option>
-                            <option value="25">25</option>
-                            <option value="26">26</option>
-                            <option value="27">27</option>
-                            <option value="32">32</option>
-                            <option value="33">33</option>
-                            <option value="34">34</option>
-                            <option value="35">35</option>
-                            <option value="36">36</option>
-                            <option value="39">39</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
-                        <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" required>
-                            <option value="enabled">Enabled</option>
-                            <option value="disabled">Disabled</option>
-                    </div>`
+        template += create_pin_dropdown_sensor(id);
+        template += create_standard_rule_input(id);
 
     } else if (selected == "desktop") {
-        template += `<div class="mb-2">
-                        <label for="${id}-ip" class="${id}"><b>IP:</b></label>
-                        <input type="text" class="form-control ${id} ip-input" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
-                        <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" required>
-                            <option value="enabled">Enabled</option>
-                            <option value="disabled">Disabled</option>
-                        </select>
-                    </div>`
+        template += create_ip_input(id);
+        template += create_standard_rule_input(id);
 
     } else if (selected == "dummy") {
-        template += `<div class="mb-2">
-                        <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
-                        <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" required>
-                            <option>Select default rule</option>
-                            <option value="on">On</option>
-                            <option value="off">Off</option>
-                        </select>
-                    </div>`
+        template += create_on_off_rule_input(id);
     } else if (selected == "si7021") {
+        template += create_slider_rule_input(id, '65', '80', '65', '80', 'float', '0.5', '0.5');
         template += `<div class="mb-2">
-                        <label for="${id}-default_rule" class="mt-1 ${id}"><b>Default Rule:</b></label>
-                        <div class="d-flex flex-row align-items-center my-2">
-                            <button id="${id}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                            <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="" autocomplete="off">
-                            <button id="${id}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="mb-2">
                         <label class="form-label ${id}" for="${id}-mode"><b>Mode:</b></label>
                         <select id="${id}-mode" class="form-select mb-3 ${id}" required>
                             <option value="cool" id="cool">Cool</option>
@@ -187,7 +232,6 @@ async function load_sensor_section(select) {
     var found = false;
     for (sensor of sensors) {
         if (sensor.value == "si7021") {
-            console.log('found')
             found = true;
         };
     };
@@ -230,6 +274,7 @@ async function load_sensor_section(select) {
 
 
 
+// Called when user selects device type from dropdown
 async function load_device_section(select) {
     // Get ID of device
     const id = select.id.split("-")[0];
@@ -238,164 +283,31 @@ async function load_device_section(select) {
     const selected = document.getElementById(select.id).value
 
     // Add nickname section to template, other sections added below as needed
-    var template = `<div class="mb-2">
-                        <label for="${id}-nickname" class="${id}"><b>Nickname:</b></label>
-                        <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
-                    </div>`
+    var template = create_nickname_input(id);
 
-    // Get template for device type selected by user
+    // Build template for device type selected by user
     if (selected == "dimmer" || selected == "bulb") {
-        template += `<div class="mb-2">
-                        <label for="${id}-ip" class="${id}"><b>IP:</b></label>
-                        <input type="text" class="form-control ${id} ip-input" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="${id}-default_rule" class="mt-1 ${id}"><b>Default Rule:</b></label>
-                        <div class="d-flex flex-row align-items-center my-2">
-                            <button id="${id}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                            <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="" autocomplete="off">
-                            <button id="${id}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="mt-3 text-center">
-                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#${id}-advanced_settings" role="button" aria-expanded="false" aria-controls="${id}-advanced_settings">Advanced</a>
-                    </div>
-
-                    <div id="${id}-advanced_settings" class="collapse">
-                        <div class="mb-2">
-                            <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
-                            <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_rule" placeholder="1" value="1" required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
-                            <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_rule" placeholder="100" value="100" required>
-                        </div>
-                    </div>`
+        template += create_ip_input(id);
+        template += create_slider_rule_input(id, '1', '100', '1', '100', 'int', '1', '1');
+        template += create_advanced_settings_dimmable_light(id, '1', '100');
 
     } else if (selected == "wled") {
-        template += `<div class="mb-2">
-                        <label for="${id}-ip" class="${id}"><b>IP:</b></label>
-                        <input type="text" class="form-control ${id} ip-input" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="${id}-default_rule" class="mt-1 ${id}"><b>Default Rule:</b></label>
-                        <div class="d-flex flex-row align-items-center my-2">
-                            <button id="${id}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                            <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="" autocomplete="off">
-                            <button id="${id}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="mt-3 text-center">
-                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#${id}-advanced_settings" role="button" aria-expanded="false" aria-controls="${id}-advanced_settings">Advanced</a>
-                    </div>
-
-                    <div id="${id}-advanced_settings" class="collapse">
-                        <div class="mb-2">
-                            <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
-                            <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_rule" placeholder="1" value="1" required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
-                            <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_rule" placeholder="255" value="255" required>
-                        </div>
-                    </div>`
+        template += create_ip_input(id);
+        template += create_slider_rule_input(id, '1', '255', '1', '100', 'int', '1', '1');
+        template += create_advanced_settings_dimmable_light(id, '1', '255');
 
     } else if (selected == "desktop" || selected == "tasmota-relay") {
-        template += `<div class="mb-2">
-                        <label for="${id}-ip" class="${id}"><b>IP:</b></label>
-                        <input type="text" class="form-control ${id} ip-input" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
-                        <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" required>
-                            <option value="enabled">Enabled</option>
-                            <option value="disabled">Disabled</option>
-                        </select>
-                    </div>`
+        template += create_ip_input(id);
+        template += create_standard_rule_input(id);
 
     } else if (selected == "mosfet" || selected == "dumb-relay") {
-        template += `<div class="mb-2">
-                        <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
-                        <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                            <option selected disabled>Select pin</option>
-                            <option value="4">4</option>
-                            <option value="13">13</option>
-                            <option value="16">16</option>
-                            <option value="17">17</option>
-                            <option value="18">18</option>
-                            <option value="19">19</option>
-                            <option value="21">21</option>
-                            <option value="22">22</option>
-                            <option value="23">23</option>
-                            <option value="25">25</option>
-                            <option value="26">26</option>
-                            <option value="27">27</option>
-                            <option value="32">32</option>
-                            <option value="33">33</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
-                        <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" required>
-                            <option value="enabled">Enabled</option>
-                            <option value="disabled">Disabled</option>
-                        </select>
-                    </div>`
+        template += create_pin_dropdown_device(id);
+        template += create_standard_rule_input(id);
 
     } else if (selected == "pwm") {
-        template += `<div class="mb-2">
-                        <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
-                        <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                            <option selected disabled>Select pin</option>
-                            <option value="4">4</option>
-                            <option value="13">13</option>
-                            <option value="16">16</option>
-                            <option value="17">17</option>
-                            <option value="18">18</option>
-                            <option value="19">19</option>
-                            <option value="21">21</option>
-                            <option value="22">22</option>
-                            <option value="23">23</option>
-                            <option value="25">25</option>
-                            <option value="26">26</option>
-                            <option value="27">27</option>
-                            <option value="32">32</option>
-                            <option value="33">33</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-2">
-                        <label for="${id}-default_rule" class="mt-1 ${id}"><b>Default Rule:</b></label>
-                        <div class="d-flex flex-row align-items-center my-2">
-                            <button id="${id}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-dash-lg"></i></button>
-                            <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="0.5" value="512" autocomplete="off">
-                            <button id="${id}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-plus-lg"></i></button>
-                        </div>
-                    </div>
-
-                    <div class="mt-3 text-center">
-                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#${id}-advanced_settings" role="button" aria-expanded="false" aria-controls="${id}-advanced_settings">Advanced</a>
-                    </div>
-
-                    <div id="${id}-advanced_settings" class="collapse">
-                        <div class="mb-2">
-                            <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
-                            <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_rule" placeholder="1" value="1" required>
-                        </div>
-
-                        <div class="mb-2">
-                            <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
-                            <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_rule" placeholder="1023" value="1023" required>
-                        </div>
-                    </div>`
+        template += create_pin_dropdown_device(id);
+        template += create_slider_rule_input(id, '0', '1023', '0', '100', 'int', '1', '10');
+        template += create_advanced_settings_dimmable_light(id, '0', '1023');
 
     } else if (selected == "api-target") {
         template += `<div class="mb-2">
@@ -421,28 +333,8 @@ async function load_device_section(select) {
                     </div>`
 
     } else if (selected == "ir-blaster") {
+        template += create_pin_dropdown_device(id);
         template = `<div class="mb-2">
-                        <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
-                        <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                            <option selected disabled>Select pin</option>
-                            <option value="4">4</option>
-                            <option value="13">13</option>
-                            <option value="16">16</option>
-                            <option value="17">17</option>
-                            <option value="18">18</option>
-                            <option value="19">19</option>
-                            <option value="21">21</option>
-                            <option value="22">22</option>
-                            <option value="23">23</option>
-                            <option value="25">25</option>
-                            <option value="26">26</option>
-                            <option value="27">27</option>
-                            <option value="32">32</option>
-                            <option value="33">33</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-2">
                         <label for="${id}-remotes" class="${id}"><b>Virtual remotes:</b></label>
                         <div id="${id}-remotes" class="form-check ${id}">
                             <input class="form-check-input ir-target" type="checkbox" value="irblaster-tv" id="checkbox-tv">
@@ -532,7 +424,7 @@ async function load_device_section(select) {
 };
 
 
-
+// Called when user clicks + button under devices
 async function load_next_device(button) {
     // Get index of clicked button
     const index = parseInt(button.id.replace("addDeviceButton", ""));
@@ -591,6 +483,7 @@ async function load_next_device(button) {
 
 
 
+// Called when user clicks + button under sensors
 async function load_next_sensor(button) {
     // Get index of clicked button
     const index = parseInt(button.id.replace("addSensorButton", ""));
