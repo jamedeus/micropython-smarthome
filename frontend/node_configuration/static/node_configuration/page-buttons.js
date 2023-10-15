@@ -31,38 +31,26 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             // Skip IrBlaster (can't be targeted, doesn't support schedule rules)
             if (instances['devices'][device]['output']['type'] == 'ir-blaster') { continue };
 
+            // Get new device nickname and type
+            const nickname = instances['devices'][device]['output']['nickname'];
+            const type = instances['devices'][device]['output']['type'];
+
             // Add option to all sensor target select cards on page2
             for (sensor of sensors) {
                 const sen_id = sensor.id.split("-")[0];
 
                 template = `<input type='checkbox' class='form-check-input ${sen_id} ${device} target' id='target-${sen_id}-${device}' value='target-${sen_id}-${device}'>
-                            <label for='target-${sen_id}-${device}' class='form-check-label ${sen_id} ${device} target-label'>${instances['devices'][device]['output']['nickname']}</label>
+                            <label for='target-${sen_id}-${device}' class='form-check-label ${sen_id} ${device} target-label'>${nickname}</label>
                             <br class='${device}'>`;
 
                 sensor.insertAdjacentHTML('beforeend', template);
             };
 
             // Add schedule rule section for the new device to page3
-            template = `<div class='card mb-4 ${device}'>
-                            <div class='card-body text-center'>
-                                <label id='${device}-rules-label' class='card-title schedule-rule-card ${device}' title='${device} - ${instances['devices'][device]['output']['type']}'>
-                                    <b>${instances['devices'][device]['output']['nickname']}</b>
-                                </label>
-                                <table id='${device}-rules' class='table table-borderless ${device} d-none'>
-                                    <tr>
-                                        <th style='text-align: center;'>Time</th>
-                                        <th style='text-align: center;'>Rule</th>
-                                    </tr>
-                                </table>
-                                <div>
-                                    <button type="button" class="btn btn-secondary add ${device}" id="${device}-add-rule" data-type="${instances['devices'][device]['output']['type']}" onclick="add_new_rule(this)">Add Rule</i></button>
-                                </div>
-                            </div>
-                        </div>`;
-
+            template = create_schedule_rule_section(device, nickname, type);
             document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
 
-            // Prevent adding duplicates
+            // Prevent duplicates if user goes back to page 1
             instances['devices'][device].new = false;
 
         // If device nickname changed, but type did not change (targets + rules don't need to be cleared)
@@ -124,10 +112,14 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
     for (sensor in instances['sensors']) {
         // If sensor is new, add target select card to page2
         if (instances['sensors'][sensor].new) {
-            // Card opening div
+            // Get new sensor nickname and type
+            const nickname = instances['sensors'][sensor]['output']['nickname'];
+            const type = instances['sensors'][sensor]['output']['type'];
+
+            // Target select card opening div
             var template =  `<div class='card ${sensor}'>
                                 <div class='card-body'>
-                                    <label id='${sensor}-targets-label' for='${sensor}-targets' class='card-title sensor-targets-label ${sensor}'><b>${instances['sensors'][sensor]['output']["nickname"]}</b> targets:</label>
+                                    <label id='${sensor}-targets-label' for='${sensor}-targets' class='card-title sensor-targets-label ${sensor}'><b>${nickname}</b> targets:</label>
                                     <div id='${sensor}-targets' class='form-check sensor-targets ${sensor}'>`
 
             // Iterate devices, add checkbox for each to new sensor card
@@ -144,25 +136,10 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             document.getElementById("page2-cards").insertAdjacentHTML('beforeend', template);
 
             // Add schedule rule section for the new sensor to page3
-            template = `<div class='card mb-4 ${sensor}'>
-                            <div class='card-body text-center'>
-                                <label id='${sensor}-rules-label' class='card-title schedule-rule-card ${sensor}' title='${sensor} - ${instances['sensors'][sensor]['output']['type']}'>
-                                    <b>${instances['sensors'][sensor]['output']['nickname']}</b>
-                                </label>
-                                <table id='${sensor}-rules' class='table table-borderless ${sensor} d-none'>
-                                    <tr>
-                                        <th style='text-align: center;'>Time</th>
-                                        <th style='text-align: center;'>Rule</th>
-                                    </tr>
-                                </table>
-                                <div>
-                                    <button type="button" class="btn btn-secondary add ${sensor}" id="${sensor}-add-rule" data-type="${instances['sensors'][sensor]['output']['type']}" onclick="add_new_rule(this)">Add Rule</i></button>
-                                </div>
-                            </div>
-                        </div>`;
+            template = create_schedule_rule_section(sensor, nickname, type);
             document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
 
-            // Prevent adding duplicates if user goes back to page1
+            // Prevent duplicates if user goes back to page 1
             instances['sensors'][sensor].new = false;
 
         // If sensor nickname changed, but type did not change (targets + rules don't need to be cleared)
@@ -212,6 +189,27 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 });
 
 
+// Takes device/sensor ID, nickname, and type
+// Returns template for schedule rules section on page 3
+function create_schedule_rule_section(id, nickname, type) {
+    return `<div class='card mb-4 ${id}'>
+                <div class='card-body text-center'>
+                    <label id='${sensor}-rules-label' class='card-title schedule-rule-card ${id}' title='${id} - ${type}'>
+                        <b>${nickname}</b>
+                    </label>
+                    <table id='${id}-rules' class='table table-borderless ${id} d-none'>
+                        <tr>
+                            <th style='text-align: center;'>Time</th>
+                            <th style='text-align: center;'>Rule</th>
+                        </tr>
+                    </table>
+                    <div>
+                        <button type="button" class="btn btn-secondary add ${id}" id="${id}-add-rule" data-type="${type}" onclick="add_new_rule(this)">Add Rule</i></button>
+                    </div>
+                </div>
+            </div>`;
+};
+
 
 document.getElementById('page2-button').addEventListener("click", function(e) {
     e.preventDefault();
@@ -224,6 +222,7 @@ document.getElementById('page2-button').addEventListener("click", function(e) {
     // Update sliders (fix incorrect width caused by display: none)
     $('input[type="range"]').rangeslider('update', true);
 });
+
 
 document.getElementById('page1-back-button').addEventListener("click", function(e) {
     // If user changed any inputs, show warning before redirecting to overview
@@ -239,6 +238,7 @@ document.getElementById('page1-back-button').addEventListener("click", function(
     };
 });
 
+
 document.getElementById('page2-back-button').addEventListener("click", function(e) {
     e.preventDefault();
 
@@ -250,6 +250,7 @@ document.getElementById('page2-back-button').addEventListener("click", function(
     // Update sliders (fix incorrect width caused by display: none)
     $('input[type="range"]').rangeslider('update', true);
 });
+
 
 document.getElementById('page3-back-button').addEventListener("click", function(e) {
     e.preventDefault();
