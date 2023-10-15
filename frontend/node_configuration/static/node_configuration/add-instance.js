@@ -18,9 +18,9 @@ Array.from(document.getElementsByClassName("sensorType")).forEach(function(senso
 // Takes id (int), returns nickname input template
 function create_nickname_input(id) {
     return `<div class="mb-2">
-    <label for="${id}-nickname" class="${id}"><b>Nickname:</b></label>
-    <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
-    </div>`
+                <label for="${id}-nickname" class="${id}"><b>Nickname:</b></label>
+                <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
+            </div>`
 }
 
 
@@ -306,15 +306,8 @@ function load_sensor_section(select) {
     var template = get_template(id, type, type_metadata, 'sensor');
     render_template(id, type, type_metadata, template);
 
-    // Check if Thermostat selected in any sensor dropdown
-    const sensors = [...document.getElementsByClassName("sensorType")];
-    thermostat_configured = sensors.some(sensor => sensor.value === "si7021");
-
-    // If Thermostat selected disable option in all dropdowns, otherwise enable
-    // Runs every time to catch type change from Thermostat to other
-    document.querySelectorAll(".sensorType option[value='si7021']").forEach(
-        option => option.disabled = thermostat_configured
-    );
+    // Disable Thermostat dropdown options if selected (can't have multiple)
+    preventDuplicateThermostat();
 
     // If instance already exists, wipe params and re-populate (type changed)
     if (instances["sensors"][id]) {
@@ -347,15 +340,8 @@ function load_device_section(select) {
     var template = get_template(id, type, type_metadata, 'device');
     render_template(id, type, type_metadata, template);
 
-    // Check if IrBlaster selected in any device dropdown
-    const devices = [...document.getElementsByClassName("deviceType")];
-    ir_blaster_configured = devices.some(device => device.value === "ir-blaster");
-
-    // If IrBlaster selected disable option in all dropdowns, otherwise enable
-    // Runs every time to catch type change from IrBlaster to other
-    document.querySelectorAll(".deviceType option[value='ir-blaster']").forEach(
-        option => option.disabled = ir_blaster_configured
-    );
+    // Disable IrBlaster dropdown options if selected (can't have multiple)
+    preventDuplicateIrBlaster();
 
     // If instance already exists, wipe params and re-populate (type changed)
     if (instances["devices"][id]) {

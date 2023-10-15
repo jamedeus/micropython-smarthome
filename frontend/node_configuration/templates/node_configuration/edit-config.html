@@ -993,22 +993,6 @@
         const target_ip = "{{ config.IP }}";
         const target_filename = "{{ config.FILENAME }}";
 
-        // Track if an IrBlaster is configured (cannot have multiple)
-        ir_blaster_configured = false;
-        for (device of document.getElementsByClassName("deviceType")) {
-            if (device.value == "ir-blaster") {
-                ir_blaster_configured = true;
-            };
-        };
-
-        // Track if a Thermostat is configured (cannot have multiple)
-        thermostat_configured = false;
-        for (sensor of document.getElementsByClassName("sensorType")) {
-            if (sensor.value == "si7021") {
-                thermostat_configured = true;
-            };
-        };
-
         // Track if user made changes (triggers warning before going back to overview)
         let changes_made = false;
         document.addEventListener('input', function() {

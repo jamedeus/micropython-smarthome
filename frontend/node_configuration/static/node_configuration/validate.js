@@ -168,3 +168,37 @@ function thermostatToleranceLimit(event) {
     event.target.value = input;
 };
 document.querySelectorAll('.thermostat').forEach(input => input.addEventListener('input', thermostatToleranceLimit));
+
+// Checks if Thermostat selected in any dropdowns (cannot have multiple)
+// Disables all Thermostat options if already selected, otherwise enables
+// Runs on load and when user selects a sensor type
+function preventDuplicateThermostat() {
+    // Check if Thermostat selected in any sensor dropdown
+    const sensors = [...document.getElementsByClassName("sensorType")];
+    thermostat_configured = sensors.some(sensor => sensor.value === "si7021");
+
+    // If Thermostat selected disable option in all dropdowns, otherwise enable
+    // Runs every time to catch type change from Thermostat to other
+    document.querySelectorAll(".sensorType option[value='si7021']").forEach(
+        option => option.disabled = thermostat_configured
+    );
+}
+var thermostat_configured = false;
+preventDuplicateThermostat();
+
+// Checks if IrBlaster selected in any dropdowns (cannot have multiple)
+// Disables all IrBlaster options if already selected, otherwise enables
+// Runs on load and when user selects a sensor type
+function preventDuplicateIrBlaster() {
+    // Check if IrBlaster selected in any device dropdown
+    const devices = [...document.getElementsByClassName("deviceType")];
+    ir_blaster_configured = devices.some(device => device.value === "ir-blaster");
+
+    // If IrBlaster selected disable option in all dropdowns, otherwise enable
+    // Runs every time to catch type change from IrBlaster to other
+    document.querySelectorAll(".deviceType option[value='ir-blaster']").forEach(
+        option => option.disabled = ir_blaster_configured
+    );
+}
+var ir_blaster_configured = false;
+preventDuplicateIrBlaster();
