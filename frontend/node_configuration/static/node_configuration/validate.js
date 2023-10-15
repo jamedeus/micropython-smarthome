@@ -129,21 +129,26 @@ function validateIp(event) {
 // Validate IP fields when focus leaves
 document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('blur', validateIp));
 
-// Constrain PWM max/min fields to valid integer range
-function pwmLimits(event) {
-    // Remove everything except digits, 4 digit max
-    let input = parseInt(event.target.value.replace(/[^\d]/g, '').substring(0,4));
-    if (input > 1023) {
-        input = 1023;
-    } else if (input < 0) {
-        input = 0;
+// Constrain rule max/min fields to valid integer range
+function ruleLimits(event) {
+    // Read absolute limits from dataset attributes
+    const min = parseInt(event.target.dataset.min);
+    const max = parseInt(event.target.dataset.max);
+
+    // Remove everything except digits
+    let input = parseInt(event.target.value.replace(/[^\d]/g, ''));
+    // Constrain to limits from dataset
+    if (input > max) {
+        input = max;
+    } else if (input < min) {
+        input = min;
     } else if (isNaN(input)) {
         input = "";
     };
 
     event.target.value = input;
 };
-document.querySelectorAll('.pwm-limits').forEach(input => input.addEventListener('input', pwmLimits));
+document.querySelectorAll('.rule-limits').forEach(input => input.addEventListener('input', ruleLimits));
 
 // Constrain Thermostat tolerance field to 0.1 - 10.0 degrees
 function thermostatToleranceLimit(event) {

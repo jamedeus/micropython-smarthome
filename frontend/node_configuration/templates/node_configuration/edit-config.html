@@ -386,17 +386,41 @@
                                         <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#device{{forloop.counter}}-advanced_settings" role="button" aria-expanded="false" aria-controls="device{{forloop.counter}}-advanced_settings">Advanced</a>
                                     </div>
 
+                                    {# TODO temporary hack to look up rule limits in metadata #}
+                                    {# Eventually this whole conditional will be replaced and cards #}
+                                    {# will be generated based on metadata + modified context #}
+                                    {% if params.type == "dimmer" or params.type == "bulb" %}
+                                    {% with limits=metadata.devices.dimmer.rule_limits %}
+
                                     <div id="device{{forloop.counter}}-advanced_settings" class="collapse">
                                         <div class="mb-2">
                                             <label for="device{{ forloop.counter }}-min_rule" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" required>
+                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
                                         </div>
 
                                         <div class="mb-2">
                                             <label for="device{{ forloop.counter }}-max_rule" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" required>
+                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
                                         </div>
                                     </div>
+
+                                    {% endwith %}
+                                    {% else %}
+                                    {% with limits=metadata.devices.wled.rule_limits %}
+
+                                    <div id="device{{forloop.counter}}-advanced_settings" class="collapse">
+                                        <div class="mb-2">
+                                            <label for="device{{ forloop.counter }}-min_rule" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
+                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label for="device{{ forloop.counter }}-max_rule" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
+                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
+                                        </div>
+                                    </div>
+                                    {% endwith %}
+                                    {% endif %}
 
                                 {% elif params.type == "tasmota-relay" %}
 
@@ -463,6 +487,7 @@
                                     </div>
 
                                 {% elif params.type == "pwm" %}
+                                    {% with limits=metadata.devices.pwm.rule_limits %}
 
                                     <div class="mb-2">
                                         <label for="device{{forloop.counter}}-pin" class="device{{forloop.counter}}"><b>Pin:</b></label>
@@ -501,14 +526,15 @@
                                     <div id="device{{forloop.counter}}-advanced_settings" class="collapse">
                                         <div class="mb-2">
                                             <label for="device{{ forloop.counter }}-min_rule" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" required>
+                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
                                         </div>
 
                                         <div class="mb-2">
                                             <label for="device{{ forloop.counter }}-max_rule" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} pwm-limits" id="device{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" required>
+                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
                                         </div>
                                     </div>
+                                    {% endwith %}
 
                                 {% elif params.type == "mosfet" %}
 

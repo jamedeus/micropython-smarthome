@@ -143,12 +143,12 @@ function create_advanced_settings_dimmable_light(id, min, max) {
             <div id="${id}-advanced_settings" class="collapse">
                 <div class="mb-2">
                     <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
-                    <input type="min" class="form-control ${id} pwm-limits" id="${id}-min_rule" placeholder="${min}" value="${min}" required>
+                    <input type="min" class="form-control ${id} rule-limits" id="${id}-min_rule" placeholder="${min}" value="${min}" data-min="${min}" data-max="${max}" required>
                 </div>
 
                 <div class="mb-2">
                     <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
-                    <input type="text" class="form-control ${id} pwm-limits" id="${id}-max_rule" placeholder="${max}" value="${max}" required>
+                    <input type="text" class="form-control ${id} rule-limits" id="${id}-max_rule" placeholder="${max}" value="${max}" data-min="${min}" data-max="${max}" required>
                 </div>
             </div>`
 }
@@ -280,10 +280,10 @@ function render_template(id, type, type_metadata, template) {
         document.getElementById(`${id}-tolerance`).addEventListener('input', thermostatToleranceLimit);
     };
 
-    // Add listener for PWM max/min fields
-    if (type == "pwm") {
-        document.getElementById(`${id}-max_rule`).addEventListener('input', pwmLimits);
-        document.getElementById(`${id}-min_rule`).addEventListener('input', pwmLimits);
+    // Add listener for rule max/min fields in advanced settings collapse
+    if (type_metadata.prompt == 'int_or_fade') {
+        document.getElementById(`${id}-max_rule`).addEventListener('input', ruleLimits);
+        document.getElementById(`${id}-min_rule`).addEventListener('input', ruleLimits);
     };
 }
 

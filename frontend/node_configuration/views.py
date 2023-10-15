@@ -320,7 +320,11 @@ def edit_config(request, name):
 
     api_target_options = get_api_target_menu_options(target.friendly_name)
 
-    context = {"config": config, "api_target_options": api_target_options}
+    context = {
+        "config": config,
+        "api_target_options": api_target_options,
+        "metadata": get_metadata_context()
+    }
 
     print(json.dumps(context, indent=4))
 
