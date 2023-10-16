@@ -79,8 +79,8 @@ def add_generic_validator(func):
     return wrapper
 
 
-@add_schedule_rule_validator(["tasmota-relay", "dumb-relay", "desktop", "mosfet", "switch"])
-@add_default_rule_validator(["tasmota-relay", "dumb-relay", "desktop", "mosfet", "switch"])
+@add_schedule_rule_validator(["tasmota-relay", "dumb-relay", "desktop", "mosfet", "switch", "http-get"])
+@add_default_rule_validator(["tasmota-relay", "dumb-relay", "desktop", "mosfet", "switch", "http-get"])
 def generic_validator(rule, **kwargs):
     if str(rule).lower() == "enabled" or str(rule).lower() == "disabled":
         return True
