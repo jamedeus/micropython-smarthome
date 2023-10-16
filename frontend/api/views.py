@@ -49,6 +49,23 @@ def get_metadata_prompt_map():
     return context
 
 
+# Returns mapping dict with device/sensor types as key, rule limits as value
+# Dynamically generated from json metadata files for each instance type
+def get_metadata_limits_map():
+    # Get object containing metadata for all device and sensor types
+    metadata = get_device_and_sensor_metadata()
+    # Combine into single list
+    metadata = metadata['devices'] + metadata['sensors']
+
+    # Build mapping dict with types as keys, rule limits as value
+    context = {}
+    for i in metadata:
+        if "rule_limits" in i.keys():
+            context[i["config_name"]] = i["rule_limits"]
+
+    return context
+
+
 # Receives schedule params in post, renders rule_modal template
 def edit_rule(request):
     if request.method == "POST":
@@ -197,6 +214,19 @@ def api(request, node, recording=False):
 
     if recording:
         status["metadata"]["recording"] = recording
+
+    # Add prompt type and rule_limits from metadata
+    prompt_map = get_metadata_prompt_map()
+    limits_map = get_metadata_limits_map()
+    for i in status['devices']:
+        status['devices'][i]['prompt'] = prompt_map[status['devices'][i]['type']]
+        if 'min_rule' in status['devices'][i].keys():
+            status['devices'][i]['min_rule'] = prompt_map[status['devices'][i]['type']]
+    for i in status['sensors']:
+        status['sensors'][i]['prompt'] = prompt_map[status['sensors'][i]['type']]
+        if status['sensors'][i]['prompt'] == "float_range":
+            status['sensors'][i]['min_rule'] = limits_map[status['sensors'][i]['type']][0]
+            status['sensors'][i]['max_rule'] = limits_map[status['sensors'][i]['type']][1]
 
     print(json.dumps(status, indent=4))
 

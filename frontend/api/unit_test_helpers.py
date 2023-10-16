@@ -89,7 +89,10 @@ config1_api_context = {
             },
             'scheduled_rule': 2.0,
             'nickname': 'Motion Sensor',
-            'condition_met': True
+            'condition_met': True,
+            'prompt': 'float_range',
+            'max_rule': 60,
+            'min_rule': 0
         }
     },
     'devices': {
@@ -107,7 +110,8 @@ config1_api_context = {
             'nickname': 'Cabinet Lights',
             'turned_on': True,
             "max": 1023,
-            "min": 0
+            "min": 0,
+            'prompt': 'int_or_fade'
         },
         'device2': {
             'current_rule': 'enabled',
@@ -119,7 +123,8 @@ config1_api_context = {
             },
             'scheduled_rule': 'enabled',
             'nickname': 'Overhead Lights',
-            'turned_on': True
+            'turned_on': True,
+            'prompt': 'standard'
         }
     }
 }
@@ -254,7 +259,10 @@ config2_api_context = {
             },
             'current_rule': 74.0,
             'temp': -52.32999,
-            'type': 'si7021'
+            'type': 'si7021',
+            'prompt': 'float_range',
+            'min_rule': 65,
+            'max_rule': 80
         }
     },
     'devices': {
@@ -279,7 +287,8 @@ config2_api_context = {
                 ]
             },
             'nickname': 'Air Conditioner',
-            'turned_on': False
+            'turned_on': False,
+            'prompt': 'api_target'
         }
     },
     'api_target_options': {
@@ -442,7 +451,10 @@ config3_api_context = {
             },
             'scheduled_rule': 2.0,
             'nickname': 'Motion Sensor (Bath)',
-            'condition_met': True
+            'condition_met': True,
+            'prompt': 'float_range',
+            'max_rule': 60,
+            'min_rule': 0
         },
         'sensor2': {
             'current_rule': 1.0,
@@ -456,7 +468,10 @@ config3_api_context = {
             },
             'scheduled_rule': 1.0,
             'nickname': 'Motion Sensor (Entry)',
-            'condition_met': False
+            'condition_met': False,
+            'prompt': 'float_range',
+            'max_rule': 60,
+            'min_rule': 0
         }
     },
     'devices': {
@@ -474,7 +489,8 @@ config3_api_context = {
             'nickname': 'Bathroom LEDs',
             'turned_on': True,
             "max": 1023,
-            "min": 0
+            "min": 0,
+            'prompt': 'int_or_fade'
         },
         'device3': {
             'current_rule': 'disabled',
@@ -486,7 +502,8 @@ config3_api_context = {
             },
             'scheduled_rule': 'disabled',
             'nickname': 'Entry Light',
-            'turned_on': False
+            'turned_on': False,
+            'prompt': 'standard'
         },
         'device2': {
             'current_rule': 'disabled',
@@ -498,7 +515,8 @@ config3_api_context = {
             },
             'scheduled_rule': 'disabled',
             'nickname': 'Bathroom Lights',
-            'turned_on': True
+            'turned_on': True,
+            'prompt': 'standard'
         }
     }
 }
