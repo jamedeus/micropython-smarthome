@@ -12,6 +12,9 @@ _provision()
     # Get all node friendly names in space-seperated list
     node_opts=$(cat "$script_dir/cli_config.json" | jq '.nodes | keys | .[]' | sed 's/"//g' | sed -z 's/\n/ /g')
 
+    # Read config directory from cli_config.json
+    config_dir=`cat "$script_dir/cli_config.json" | jq .config_directory | sed 's/"//g'`
+
     # Group options into categories
     ip_opts="--ip"
     password_opts="--password"
@@ -109,7 +112,7 @@ _provision()
     # Display config files if prev is a config flag (user must select config file before next option)
     for i in $config_opts; do
         if [[ $i == $prev ]]; then
-            config_files=$(ls -CF $script_dir/../config/*.json)
+            config_files=$(ls -CF $config_dir)
             COMPREPLY=( $(compgen -W "${config_files}" ${cur}) )
         fi
     done
