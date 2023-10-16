@@ -82,14 +82,13 @@ class TestArgParser(TestCase):
         self.assertFalse(args.password)
 
     def test_manual_parameters(self):
-        mock_file = mock_open(read_data=json.dumps({}))
-        cli_args = ['', '--config', '../config/node1.json', '--ip', '192.168.1.123', '--password', 'hunter2']
-        with patch.object(sys, 'argv', cli_args), \
-             patch('builtins.open', mock_file):
+        open('node1.json', 'w')
+        cli_args = ['', '--config', 'node1.json', '--ip', '192.168.1.123', '--password', 'hunter2']
+        with patch.object(sys, 'argv', cli_args):
             args, parser = parse_args()
 
         # Confirm parameters matched to correct args
-        self.assertEqual(args.config.read(), json.dumps({}))
+        self.assertEqual(args.config, 'node1.json')
         self.assertEqual(args.ip, '192.168.1.123')
         self.assertEqual(args.password, 'hunter2')
 
@@ -97,21 +96,41 @@ class TestArgParser(TestCase):
         self.assertFalse(args.all)
         self.assertFalse(args.test)
         self.assertFalse(args.node)
+        os.remove('node1.json')
+
+    def test_manual_parameters_config_relative_path(self):
+        config_path = os.path.join(mock_cli_config['config_directory'], 'node1.json')
+        open(config_path, 'w')
+        cli_args = ['', '--config', 'node1.json', '--ip', '192.168.1.123', '--password', 'hunter2']
+        with patch.object(sys, 'argv', cli_args):
+            args, parser = parse_args()
+
+        # Confirm parameters matched to correct args
+        self.assertEqual(args.config, os.path.abspath(config_path))
+        self.assertEqual(args.ip, '192.168.1.123')
+        self.assertEqual(args.password, 'hunter2')
+
+        # Confirm all other args empty
+        self.assertFalse(args.all)
+        self.assertFalse(args.test)
+        self.assertFalse(args.node)
+        os.remove(config_path)
 
     def test_invalid_ip(self):
-        mock_file = mock_open(read_data=json.dumps({}))
-        with patch.object(sys, 'argv', ['', '--config', '../config/node1.json', '--ip', '192.168.1']), \
-             patch('builtins.open', mock_file), \
+        with patch.object(sys, 'argv', ['', '--config', 'node1.json', '--ip', '192.168.1']), \
              self.assertRaises(SystemExit):
 
             parse_args()
 
     def test_missing_config_file(self):
-        mock_file = mock_open(read_data=json.dumps({}))
         with patch.object(sys, 'argv', ['', '--ip', '192.168.1.123']), \
-             patch('builtins.open', mock_file), \
              self.assertRaises(SystemExit):
 
+            parse_args()
+
+    def test_invalid_config_file(self):
+        with patch.object(sys, 'argv', ['', '--config', 'does_not_exist.json', '--ip', '192.168.1.123']), \
+             self.assertRaises(SystemExit):
             parse_args()
 
 
@@ -237,7 +256,7 @@ class TestInstantiation(TestCase):
 
         # Mock args with manually specified config file, IP, password
         args = Namespace(
-            config=mock_file,
+            config=mock_file.name,
             ip='192.168.1.123',
             node=None,
             all=None,

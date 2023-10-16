@@ -39,7 +39,7 @@ The password flag is optional and works with all modes''',
     )
 
     manual_group = parser.add_argument_group('Manual')
-    manual_group.add_argument('--config', type=argparse.FileType('r'), metavar='config', help='Path to config file')
+    manual_group.add_argument('--config', metavar='config', help='Path to config file')
     manual_group.add_argument('--ip', type=validate_ip, metavar='IP', help='Target IP address')
 
     node_group = parser.add_argument_group('Node Name (pick one)')
@@ -54,6 +54,16 @@ The password flag is optional and works with all modes''',
     parser.add_argument('--password', metavar='<...>', help='Webrepl password (uses default if omitted)')
 
     args = parser.parse_args()
+
+    # If config arg used confirm path is valid
+    if bool(args.config):
+        # If file not found check if it exists in config_directory
+        if not os.path.exists(args.config):
+            args.config = os.path.join(cli_config['config_directory'], args.config)
+            if not os.path.exists(args.config):
+                # Throw error if still not found in config directory
+                parser.error('Could not find config file')
+
     if bool(args.config) != bool(args.ip):
         parser.print_help()
         parser.error('Must specify both --config and --ip')
@@ -83,14 +93,15 @@ class Provisioner():
 
         # Upload given config file to given IP address
         elif args.config and args.ip:
-            config = json.load(args.config)
+            with open(args.config, 'r') as file:
+                config = json.load(file)
             modules = get_modules(config, repo)
             result = provision(args.ip, self.passwd, config, modules)
             print(result['message'])
 
             # Add to cli_config.json if upload successful
             if result['status'] == 200:
-                add_node_to_cli_config(config['metadata']['id'], args.config.name, args.ip)
+                add_node_to_cli_config(config['metadata']['id'], args.config, args.ip)
 
         else:
             parser.print_help()
