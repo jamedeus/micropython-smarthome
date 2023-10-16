@@ -1,0 +1,27 @@
+<div class="mb-2">
+    <label for="sensor{{forloop.counter}}-pin" class="sensor{{forloop.counter}}"><b>Pin:</b></label>
+    <select id="sensor{{forloop.counter}}-pin" class="form-select sensor{{forloop.counter}} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
+        <option disabled>Select pin</option>
+        <option value="4" {% if params.pin == "4"  %} selected {% endif %}>4</option>
+        <option value="5" {% if params.pin == "5"  %} selected {% endif %}>5</option>
+        <option value="13" {% if params.pin == "13"  %} selected {% endif %}>13</option>
+        <option value="14" {% if params.pin == "14"  %} selected {% endif %}>14</option>
+        <option value="15" {% if params.pin == "15"  %} selected {% endif %}>15</option>
+        <option value="16" {% if params.pin == "16"  %} selected {% endif %}>16</option>
+        <option value="17" {% if params.pin == "17"  %} selected {% endif %}>17</option>
+        <option value="18" {% if params.pin == "18"  %} selected {% endif %}>18</option>
+        <option value="19" {% if params.pin == "19"  %} selected {% endif %}>19</option>
+        <option value="21" {% if params.pin == "21"  %} selected {% endif %}>21</option>
+        <option value="22" {% if params.pin == "22"  %} selected {% endif %}>22</option>
+        <option value="23" {% if params.pin == "23"  %} selected {% endif %}>23</option>
+        <option value="25" {% if params.pin == "25"  %} selected {% endif %}>25</option>
+        <option value="26" {% if params.pin == "26"  %} selected {% endif %}>26</option>
+        <option value="27" {% if params.pin == "27"  %} selected {% endif %}>27</option>
+        <option value="32" {% if params.pin == "32"  %} selected {% endif %}>32</option>
+        <option value="33" {% if params.pin == "33"  %} selected {% endif %}>33</option>
+        <option value="34" {% if params.pin == "34"  %} selected {% endif %}>34</option>
+        <option value="35" {% if params.pin == "35"  %} selected {% endif %}>35</option>
+        <option value="36" {% if params.pin == "36"  %} selected {% endif %}>36</option>
+        <option value="39" {% if params.pin == "39"  %} selected {% endif %}>39</option>
+    </select>
+</div>

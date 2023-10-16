@@ -1,0 +1,8 @@
+<div class="mb-2">
+    <label for="{{category}}{{forloop.counter}}-default_rule" class="{{category}}{{forloop.counter}}"><b>Default Rule:</b></label>
+    <select id="{{category}}{{forloop.counter}}-default_rule" class="form-select {{category}}{{forloop.counter}}" autocomplete="off" required>
+        <option disabled>Select default rule</option>
+        <option value="on" {% if params.default_rule|lower == "on" %} selected {% endif %}>On</option>
+        <option value="off" {% if params.default_rule|lower == "off" %} selected {% endif %}>Off</option>
+    </select>
+</div>

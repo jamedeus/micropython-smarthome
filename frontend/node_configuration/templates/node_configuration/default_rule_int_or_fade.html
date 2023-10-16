@@ -1,0 +1,28 @@
+{# TODO remove widthratio hack #}
+{# Used to perform division in template #}
+{# Calculates step that is ~1% of full range #}
+<div class="mb-2">
+    <label for="{{category}}{{forloop.counter}}-default_rule" class="mt-1 {{category}}{{forloop.counter}}"><b>Default Rule:</b></label>
+    <div class="d-flex flex-row align-items-center my-2">
+        <button id="{{category}}{{forloop.counter}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio limits.1 100 1|floatformat:"0" %}"><i class="bi-dash-lg"></i></button>
+        <input id="{{category}}{{forloop.counter}}-default_rule" type="range" class="{{category}}{{forloop.counter}} mx-auto" min="{{ limits.0 }}" max="{{ limits.1 }}" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" autocomplete="off">
+        <button id="{{category}}{{forloop.counter}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio limits.1 100 1|floatformat:"0" %}"><i class="bi-plus-lg"></i></button>
+    </div>
+</div>
+
+{# Advanced settings collapse #}
+<div class="mt-3 text-center">
+    <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#{{category}}{{forloop.counter}}-advanced_settings" role="button" aria-expanded="false" aria-controls="{{category}}{{forloop.counter}}-advanced_settings">Advanced</a>
+</div>
+
+<div id="{{category}}{{forloop.counter}}-advanced_settings" class="collapse">
+    <div class="mb-2">
+        <label for="{{category}}{{ forloop.counter }}-min_rule" class="{{category}}{{forloop.counter}}"><b>Min brightness:</b></label>
+        <input type="text" class="form-control {{category}}{{forloop.counter}} rule-limits" id="{{category}}{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
+    </div>
+
+    <div class="mb-2">
+        <label for="{{category}}{{ forloop.counter }}-max_rule" class="{{category}}{{forloop.counter}}"><b>Max brightness:</b></label>
+        <input type="text" class="form-control {{category}}{{forloop.counter}} rule-limits" id="{{category}}{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
+    </div>
+</div>

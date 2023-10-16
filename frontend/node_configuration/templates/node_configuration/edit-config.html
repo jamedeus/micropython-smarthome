@@ -160,119 +160,22 @@
                                     </div>
 
                                 {% if params.type == "pir" %}
-
-                                    <div class="mb-2">
-                                        <label for="sensor{{forloop.counter}}-pin" class="sensor{{forloop.counter}}"><b>Pin:</b></label>
-                                        <select id="sensor{{forloop.counter}}-pin" class="form-select sensor{{forloop.counter}} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                                            <option disabled>Select pin</option>
-                                            <option value="4" {% if params.pin == "4"  %} selected {% endif %}>4</option>
-                                            <option value="5" {% if params.pin == "5"  %} selected {% endif %}>5</option>
-                                            <option value="13" {% if params.pin == "13"  %} selected {% endif %}>13</option>
-                                            <option value="14" {% if params.pin == "14"  %} selected {% endif %}>14</option>
-                                            <option value="15" {% if params.pin == "15"  %} selected {% endif %}>15</option>
-                                            <option value="16" {% if params.pin == "16"  %} selected {% endif %}>16</option>
-                                            <option value="17" {% if params.pin == "17"  %} selected {% endif %}>17</option>
-                                            <option value="18" {% if params.pin == "18"  %} selected {% endif %}>18</option>
-                                            <option value="19" {% if params.pin == "19"  %} selected {% endif %}>19</option>
-                                            <option value="21" {% if params.pin == "21"  %} selected {% endif %}>21</option>
-                                            <option value="22" {% if params.pin == "22"  %} selected {% endif %}>22</option>
-                                            <option value="23" {% if params.pin == "23"  %} selected {% endif %}>23</option>
-                                            <option value="25" {% if params.pin == "25"  %} selected {% endif %}>25</option>
-                                            <option value="26" {% if params.pin == "26"  %} selected {% endif %}>26</option>
-                                            <option value="27" {% if params.pin == "27"  %} selected {% endif %}>27</option>
-                                            <option value="32" {% if params.pin == "32"  %} selected {% endif %}>32</option>
-                                            <option value="33" {% if params.pin == "33"  %} selected {% endif %}>33</option>
-                                            <option value="34" {% if params.pin == "34"  %} selected {% endif %}>34</option>
-                                            <option value="35" {% if params.pin == "35"  %} selected {% endif %}>35</option>
-                                            <option value="36" {% if params.pin == "36"  %} selected {% endif %}>36</option>
-                                            <option value="39" {% if params.pin == "39"  %} selected {% endif %}>39</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="sensor{{forloop.counter}}-default_rule" class="mt-1 sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{sensor}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                            <input id="sensor{{forloop.counter}}-default_rule" type="range" class="sensor{{forloop.counter}} mx-auto" min="0" max="60" data-displaymin="0" data-displaymax="60" data-displaytype="float" step="0.5" value="{{params.default_rule}}" autocomplete="off">
-                                            <button id="{{sensor}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </div>
+                                    {% include "node_configuration/sensor_pin_select.html" %}
+                                    {% include "node_configuration/default_rule_float_range.html" with step="0.5" min="0" max="60" dmin="0" dmax="60" category="sensor" %}
 
                                 {% elif params.type == "switch" %}
-
-                                    <div class="mb-2">
-                                        <label for="sensor{{forloop.counter}}-pin" class="sensor{{forloop.counter}}"><b>Pin:</b></label>
-                                        <select id="sensor{{forloop.counter}}-pin" class="form-select sensor{{forloop.counter}} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                                            <option disabled>Select pin</option>
-                                            <option value="4" {% if params.pin == "4"  %} selected {% endif %}>4</option>
-                                            <option value="5" {% if params.pin == "5"  %} selected {% endif %}>5</option>
-                                            <option value="13" {% if params.pin == "13"  %} selected {% endif %}>13</option>
-                                            <option value="14" {% if params.pin == "14"  %} selected {% endif %}>14</option>
-                                            <option value="15" {% if params.pin == "15"  %} selected {% endif %}>15</option>
-                                            <option value="16" {% if params.pin == "16"  %} selected {% endif %}>16</option>
-                                            <option value="17" {% if params.pin == "17"  %} selected {% endif %}>17</option>
-                                            <option value="18" {% if params.pin == "18"  %} selected {% endif %}>18</option>
-                                            <option value="19" {% if params.pin == "19"  %} selected {% endif %}>19</option>
-                                            <option value="21" {% if params.pin == "21"  %} selected {% endif %}>21</option>
-                                            <option value="22" {% if params.pin == "22"  %} selected {% endif %}>22</option>
-                                            <option value="23" {% if params.pin == "23"  %} selected {% endif %}>23</option>
-                                            <option value="25" {% if params.pin == "25"  %} selected {% endif %}>25</option>
-                                            <option value="26" {% if params.pin == "26"  %} selected {% endif %}>26</option>
-                                            <option value="27" {% if params.pin == "27"  %} selected {% endif %}>27</option>
-                                            <option value="32" {% if params.pin == "32"  %} selected {% endif %}>32</option>
-                                            <option value="33" {% if params.pin == "33"  %} selected {% endif %}>33</option>
-                                            <option value="34" {% if params.pin == "34"  %} selected {% endif %}>34</option>
-                                            <option value="35" {% if params.pin == "35"  %} selected {% endif %}>35</option>
-                                            <option value="36" {% if params.pin == "36"  %} selected {% endif %}>36</option>
-                                            <option value="39" {% if params.pin == "39"  %} selected {% endif %}>39</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="sensor{{forloop.counter}}-default_rule" class="sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <select id="sensor{{forloop.counter}}-default_rule" class="form-select sensor{{forloop.counter}}" autocomplete="off" required>
-                                            <option disabled>Select default rule</option>
-                                            <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                        </select>
-                                    </div>
+                                    {% include "node_configuration/sensor_pin_select.html" %}
+                                    {% include "node_configuration/default_rule_standard.html" with category="sensor" %}
 
                                 {% elif params.type == "dummy" %}
-
-                                    <div class="mb-2">
-                                        <label for="sensor{{forloop.counter}}-default_rule" class="sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <select id="sensor{{forloop.counter}}-default_rule" class="form-select sensor{{forloop.counter}}" autocomplete="off" required>
-                                            <option disabled>Select default rule</option>
-                                            <option value="on" {% if params.default_rule|lower == "on" %} selected {% endif %}>On</option>
-                                            <option value="off" {% if params.default_rule|lower == "off" %} selected {% endif %}>Off</option>
-                                        </select>
-                                    </div>
+                                    {% include "node_configuration/default_rule_on_off.html" with category="sensor" %}
 
                                 {% elif params.type == "desktop" %}
-
-                                    <div class="mb-2">
-                                        <label for="sensor{{forloop.counter}}-ip" class="sensor{{forloop.counter}}"><b>IP:</b></label>                                                    <input type="text" class="form-control sensor{{forloop.counter}} ip-input" id="sensor{{forloop.counter}}-ip" placeholder="" value="{{params.ip}}" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="sensor{{forloop.counter}}-default_rule" class="sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <select id="sensor{{forloop.counter}}-default_rule" class="form-select sensor{{forloop.counter}}" autocomplete="off" required>
-                                            <option disabled>Select default rule</option>
-                                            <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                        </select>
-                                    </div>
+                                    {% include "node_configuration/ip_address_input.html" with category="sensor" %}
+                                    {% include "node_configuration/default_rule_standard.html" with category="sensor" %}
 
                                 {% elif params.type == "si7021" %}
-
-                                    <div class="mb-2">
-                                        <label for="sensor{{forloop.counter}}-default_rule" class="mt-1 sensor{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{sensor}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                            <input id="sensor{{forloop.counter}}-default_rule" type="range" class="sensor{{forloop.counter}} mx-auto" min="65" max="80" data-displaymin="65" data-displaymax="80" data-displaytype="float" step="0.5" value="{{params.default_rule}}" autocomplete="off">
-                                            <button id="{{sensor}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </div>
+                                    {% include "node_configuration/default_rule_float_range.html" with step="0.5" min="65" max="80" dmin="65" dmax="80" category="sensor" %}
 
                                     <div class="mb-2">
                                         <label class="form-label sensor{{forloop.counter}}" for="sensor{{forloop.counter}}-mode"><b>Mode:</b></label>
@@ -363,210 +266,38 @@
                                     </div>
 
                                 {% if params.type == "dimmer" or params.type == "bulb" or params.type == "wled" %}
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
-                                        <input type="text" class="form-control device{{forloop.counter}} ip-input" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="device{{forloop.counter}}-default_rule" class="mt-1 device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{device}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-dash-lg"></i></button>
-                                            {% if params.type == "wled" %}
-                                            <input id="device{{forloop.counter}}-default_rule" type="range" class="device{{forloop.counter}} mx-auto" min="1" max="255" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" autocomplete="off">
-                                            {% else %}
-                                            <input id="device{{forloop.counter}}-default_rule" type="range" class="device{{forloop.counter}} mx-auto" min="1" max="100" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" autocomplete="off">
-                                            {% endif %}
-                                            <button id="{{device}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="1"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-3 text-center">
-                                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#device{{forloop.counter}}-advanced_settings" role="button" aria-expanded="false" aria-controls="device{{forloop.counter}}-advanced_settings">Advanced</a>
-                                    </div>
-
-                                    {# TODO temporary hack to look up rule limits in metadata #}
-                                    {# Eventually this whole conditional will be replaced and cards #}
-                                    {# will be generated based on metadata + modified context #}
+                                    {% include "node_configuration/ip_address_input.html" with category="device" %}
                                     {% if params.type == "dimmer" or params.type == "bulb" %}
-                                    {% with limits=metadata.devices.dimmer.rule_limits %}
-
-                                    <div id="device{{forloop.counter}}-advanced_settings" class="collapse">
-                                        <div class="mb-2">
-                                            <label for="device{{ forloop.counter }}-min_rule" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
-                                        </div>
-
-                                        <div class="mb-2">
-                                            <label for="device{{ forloop.counter }}-max_rule" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
-                                        </div>
-                                    </div>
-
-                                    {% endwith %}
-                                    {% else %}
-                                    {% with limits=metadata.devices.wled.rule_limits %}
-
-                                    <div id="device{{forloop.counter}}-advanced_settings" class="collapse">
-                                        <div class="mb-2">
-                                            <label for="device{{ forloop.counter }}-min_rule" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
-                                        </div>
-
-                                        <div class="mb-2">
-                                            <label for="device{{ forloop.counter }}-max_rule" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
-                                        </div>
-                                    </div>
-                                    {% endwith %}
+                                        {% with limits=metadata.devices.dimmer.rule_limits %}
+                                            {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}
+                                        {% endwith %}
+                                    {% elif params.type == "wled" %}
+                                        {% with limits=metadata.devices.wled.rule_limits %}
+                                            {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}
+                                        {% endwith %}
                                     {% endif %}
 
                                 {% elif params.type == "tasmota-relay" %}
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
-                                        <input type="text" class="form-control device{{forloop.counter}} ip-input" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <select id="device{{ forloop.counter }}-default_rule" class="form-select device{{forloop.counter}}" autocomplete="off" required>
-                                            <option disabled>Select default rule</option>
-                                            <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                        </select>
-                                    </div>
+                                    {% include "node_configuration/ip_address_input.html" with category="device" %}
+                                    {% include "node_configuration/default_rule_standard.html" with category="device" %}
 
                                 {% elif params.type == "dumb-relay" %}
-
-                                    <div class="mb-2">
-                                        <label for="device{{forloop.counter}}-pin" class="device{{forloop.counter}}"><b>Pin:</b></label>
-                                        <select id="device{{forloop.counter}}-pin" class="form-select device{{forloop.counter}} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                                            <option disabled>Select pin</option>
-                                            <option value="4" {% if params.pin == "4"  %} selected {% endif %}>4</option>
-                                            <option value="13" {% if params.pin == "13"  %} selected {% endif %}>13</option>
-                                            <option value="16" {% if params.pin == "16"  %} selected {% endif %}>16</option>
-                                            <option value="17" {% if params.pin == "17"  %} selected {% endif %}>17</option>
-                                            <option value="18" {% if params.pin == "18"  %} selected {% endif %}>18</option>
-                                            <option value="19" {% if params.pin == "19"  %} selected {% endif %}>19</option>
-                                            <option value="21" {% if params.pin == "21"  %} selected {% endif %}>21</option>
-                                            <option value="22" {% if params.pin == "22"  %} selected {% endif %}>22</option>
-                                            <option value="23" {% if params.pin == "23"  %} selected {% endif %}>23</option>
-                                            <option value="25" {% if params.pin == "25"  %} selected {% endif %}>25</option>
-                                            <option value="26" {% if params.pin == "26"  %} selected {% endif %}>26</option>
-                                            <option value="27" {% if params.pin == "27"  %} selected {% endif %}>27</option>
-                                            <option value="32" {% if params.pin == "32"  %} selected {% endif %}>32</option>
-                                            <option value="33" {% if params.pin == "33"  %} selected {% endif %}>33</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <select id="device{{ forloop.counter }}-default_rule" class="form-select device{{forloop.counter}}" autocomplete="off" required>
-                                            <option disabled>Select default rule</option>
-                                            <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                        </select>
-                                    </div>
+                                    {% include "node_configuration/device_pin_select.html" with index=forloop.counter %}
+                                    {% include "node_configuration/default_rule_standard.html" with category="device" %}
 
                                 {% elif params.type == "desktop" %}
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>IP:</b></label>
-                                        <input type="text" class="form-control device{{forloop.counter}} ip-input" id="device{{ forloop.counter }}-ip" placeholder="" value="{{params.ip}}" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <select id="device{{ forloop.counter }}-default_rule" class="form-select device{{forloop.counter}}" autocomplete="off" required>
-                                            <option disabled>Select default rule</option>
-                                            <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                        </select>
-                                    </div>
+                                    {% include "node_configuration/ip_address_input.html" with category="device" %}
+                                    {% include "node_configuration/default_rule_standard.html" with category="device" %}
 
                                 {% elif params.type == "pwm" %}
                                     {% with limits=metadata.devices.pwm.rule_limits %}
-
-                                    <div class="mb-2">
-                                        <label for="device{{forloop.counter}}-pin" class="device{{forloop.counter}}"><b>Pin:</b></label>
-                                        <select id="device{{forloop.counter}}-pin" class="form-select device{{forloop.counter}} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                                            <option disabled>Select pin</option>
-                                            <option value="4" {% if params.pin == "4"  %} selected {% endif %}>4</option>
-                                            <option value="13" {% if params.pin == "13"  %} selected {% endif %}>13</option>
-                                            <option value="16" {% if params.pin == "16"  %} selected {% endif %}>16</option>
-                                            <option value="17" {% if params.pin == "17"  %} selected {% endif %}>17</option>
-                                            <option value="18" {% if params.pin == "18"  %} selected {% endif %}>18</option>
-                                            <option value="19" {% if params.pin == "19"  %} selected {% endif %}>19</option>
-                                            <option value="21" {% if params.pin == "21"  %} selected {% endif %}>21</option>
-                                            <option value="22" {% if params.pin == "22"  %} selected {% endif %}>22</option>
-                                            <option value="23" {% if params.pin == "23"  %} selected {% endif %}>23</option>
-                                            <option value="25" {% if params.pin == "25"  %} selected {% endif %}>25</option>
-                                            <option value="26" {% if params.pin == "26"  %} selected {% endif %}>26</option>
-                                            <option value="27" {% if params.pin == "27"  %} selected {% endif %}>27</option>
-                                            <option value="32" {% if params.pin == "32"  %} selected {% endif %}>32</option>
-                                            <option value="33" {% if params.pin == "33"  %} selected {% endif %}>33</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="device{{forloop.counter}}-default_rule" class="mt-1 device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <div class="d-flex flex-row align-items-center my-2">
-                                            <button id="{{device}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-dash-lg"></i></button>
-                                            <input id="device{{forloop.counter}}-default_rule" type="range" class="device{{forloop.counter}} mx-auto" min="0" max="1023" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="0.5" value="{{params.default_rule}}" autocomplete="off">
-                                            <button id="{{device}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="10"><i class="bi-plus-lg"></i></button>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-3 text-center">
-                                        <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#device{{forloop.counter}}-advanced_settings" role="button" aria-expanded="false" aria-controls="device{{forloop.counter}}-advanced_settings">Advanced</a>
-                                    </div>
-
-                                    <div id="device{{forloop.counter}}-advanced_settings" class="collapse">
-                                        <div class="mb-2">
-                                            <label for="device{{ forloop.counter }}-min_rule" class="device{{forloop.counter}}"><b>Min brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
-                                        </div>
-
-                                        <div class="mb-2">
-                                            <label for="device{{ forloop.counter }}-max_rule" class="device{{forloop.counter}}"><b>Max brightness:</b></label>
-                                            <input type="text" class="form-control device{{forloop.counter}} rule-limits" id="device{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ limits.0 }}" data-max="{{ limits.1 }}" required>
-                                        </div>
-                                    </div>
+                                        {% include "node_configuration/device_pin_select.html" with index=forloop.counter %}
+                                        {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}
                                     {% endwith %}
 
                                 {% elif params.type == "mosfet" %}
-
-                                    <div class="mb-2">
-                                        <label for="device{{forloop.counter}}-pin" class="device{{forloop.counter}}"><b>Pin:</b></label>
-                                        <select id="device{{forloop.counter}}-pin" class="form-select device{{forloop.counter}}" autocomplete="off" onchange="pinSelected(this)" required>
-                                            <option disabled>Select pin</option>
-                                            <option value="4" {% if params.pin == "4"  %} selected {% endif %}>4</option>
-                                            <option value="13" {% if params.pin == "13"  %} selected {% endif %}>13</option>
-                                            <option value="16" {% if params.pin == "16"  %} selected {% endif %}>16</option>
-                                            <option value="17" {% if params.pin == "17"  %} selected {% endif %}>17</option>
-                                            <option value="18" {% if params.pin == "18"  %} selected {% endif %}>18</option>
-                                            <option value="19" {% if params.pin == "19"  %} selected {% endif %}>19</option>
-                                            <option value="21" {% if params.pin == "21"  %} selected {% endif %}>21</option>
-                                            <option value="22" {% if params.pin == "22"  %} selected {% endif %}>22</option>
-                                            <option value="23" {% if params.pin == "23"  %} selected {% endif %}>23</option>
-                                            <option value="25" {% if params.pin == "25"  %} selected {% endif %}>25</option>
-                                            <option value="26" {% if params.pin == "26"  %} selected {% endif %}>26</option>
-                                            <option value="27" {% if params.pin == "27"  %} selected {% endif %}>27</option>
-                                            <option value="32" {% if params.pin == "32"  %} selected {% endif %}>32</option>
-                                            <option value="33" {% if params.pin == "33"  %} selected {% endif %}>33</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}"><b>Default Rule:</b></label>
-                                        <select id="device{{ forloop.counter }}-default_rule" class="form-select device{{forloop.counter}}" autocomplete="off" required>
-                                            <option disabled>Select default rule</option>
-                                            <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
-                                            <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>
-                                        </select>
-                                    </div>
+                                    {% include "node_configuration/device_pin_select.html" with index=forloop.counter %}
+                                    {% include "node_configuration/default_rule_standard.html" with category="device" %}
 
                                 {% elif params.type == "api-target" %}
 
@@ -635,26 +366,7 @@
                                 </div>
 
                                 <div class="card-body device{{config.devices|length|add:1}} configParams">
-                                    <div class="mb-2">
-                                        <label for="device{{ config.devices|length|add:1 }}-pin" class="device{{config.devices|length|add:1}}"><b>Pin:</b></label>
-                                        <select id="device{{ config.devices|length|add:1 }}-pin" class="form-select device{{config.devices|length|add:1}} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
-                                            <option disabled>Select pin</option>
-                                            <option value="4" {% if config.ir_blaster.pin == "4"  %} selected {% endif %}>4</option>
-                                            <option value="13" {% if config.ir_blaster.pin == "13"  %} selected {% endif %}>13</option>
-                                            <option value="16" {% if config.ir_blaster.pin == "16"  %} selected {% endif %}>16</option>
-                                            <option value="17" {% if config.ir_blaster.pin == "17"  %} selected {% endif %}>17</option>
-                                            <option value="18" {% if config.ir_blaster.pin == "18"  %} selected {% endif %}>18</option>
-                                            <option value="19" {% if config.ir_blaster.pin == "19"  %} selected {% endif %}>19</option>
-                                            <option value="21" {% if config.ir_blaster.pin == "21"  %} selected {% endif %}>21</option>
-                                            <option value="22" {% if config.ir_blaster.pin == "22"  %} selected {% endif %}>22</option>
-                                            <option value="23" {% if config.ir_blaster.pin == "23"  %} selected {% endif %}>23</option>
-                                            <option value="25" {% if config.ir_blaster.pin == "25"  %} selected {% endif %}>25</option>
-                                            <option value="26" {% if config.ir_blaster.pin == "26"  %} selected {% endif %}>26</option>
-                                            <option value="27" {% if config.ir_blaster.pin == "27"  %} selected {% endif %}>27</option>
-                                            <option value="32" {% if config.ir_blaster.pin == "32"  %} selected {% endif %}>32</option>
-                                            <option value="33" {% if config.ir_blaster.pin == "33"  %} selected {% endif %}>33</option>
-                                        </select>
-                                    </div>
+                                    {% include "node_configuration/device_pin_select.html" with index=config.devices|length|add:1 %}
 
                                     <div class="mb-2">
                                         <label for="device{{ config.devices|length|add:1 }}-remotes" class="device{{config.devices|length|add:1}}"><b>Virtual remotes:</b></label>
