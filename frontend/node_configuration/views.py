@@ -272,6 +272,8 @@ def edit_config(request, name):
     instances = {}
     delete = []
 
+    metadata = get_metadata_context()
+
     for i in config:
         if is_sensor(i):
             # Add to instances
@@ -283,6 +285,7 @@ def edit_config(request, name):
             # Add to sensors, change _type to type (django template limitation)
             sensors[i] = config[i]
             sensors[i]["type"] = config[i]["_type"]
+            sensors[i]["metadata"] = metadata["sensors"][config[i]["_type"]]
             del sensors[i]["_type"]
 
             # Add to delete list
@@ -301,6 +304,7 @@ def edit_config(request, name):
             # Add to devices, change _type to type (django template limitation)
             devices[i] = config[i]
             devices[i]["type"] = config[i]["_type"]
+            devices[i]["metadata"] = metadata["devices"][config[i]["_type"]]
             del devices[i]["_type"]
 
             # Correct ApiTarget rule syntax
@@ -324,7 +328,7 @@ def edit_config(request, name):
     context = {
         "config": config,
         "api_target_options": api_target_options,
-        "metadata": get_metadata_context(),
+        "metadata": metadata,
         "edit_existing": True
     }
 

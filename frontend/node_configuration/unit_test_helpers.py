@@ -582,7 +582,13 @@ test_config_1_edit_context = {
                     "10:00": "2",
                     "22:00": "2"
                 },
-                "type": "pir"
+                "type": "pir",
+                "metadata": {
+                    "_type": "pir",
+                    "params": ["pin"],
+                    "prompt": "float_range",
+                    "rule_limits": [0, 60]
+                },
             }
         },
         "devices": {
@@ -598,7 +604,13 @@ test_config_1_edit_context = {
                     "00:00": "fade/32/7200",
                     "05:00": "Disabled"
                 },
-                "type": "pwm"
+                "type": "pwm",
+                "metadata": {
+                    "_type": "pwm",
+                    "params": ["min_rule", "max_rule", "pin"],
+                    "prompt": "int_or_fade",
+                    "rule_limits": [0, 1023]
+                },
             },
             "device2": {
                 "nickname": "Overhead Lights",
@@ -608,7 +620,12 @@ test_config_1_edit_context = {
                     "05:00": "enabled",
                     "22:00": "disabled"
                 },
-                "type": "tasmota-relay"
+                "type": "tasmota-relay",
+                "metadata": {
+                    "_type": "tasmota-relay",
+                    "params": ["ip"],
+                    "prompt": "standard"
+                },
             }
         },
         "instances": {
@@ -797,7 +814,13 @@ test_config_2_edit_context = {
                     "device1"
                 ],
                 "schedule": {},
-                "type": "si7021"
+                "type": "si7021",
+                "metadata": {
+                    "_type": "si7021",
+                    "params": ["mode", "tolerance"],
+                    "prompt": "float_range",
+                    "rule_limits": [65, 80]
+                },
             }
         },
         "devices": {
@@ -809,7 +832,12 @@ test_config_2_edit_context = {
                     "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
                     "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
                 },
-                "type": "api-target"
+                "type": "api-target",
+                "metadata": {
+                    "_type": "api-target",
+                    "params": ["ip"],
+                    "prompt": "api_target"
+                },
             }
         },
         "instances": {
@@ -979,7 +1007,13 @@ test_config_3_edit_context = {
                     "10:00": "2",
                     "22:00": "2"
                 },
-                "type": "pir"
+                "type": "pir",
+                "metadata": {
+                    "_type": "pir",
+                    "params": ["pin"],
+                    "prompt": "float_range",
+                    "rule_limits": [0, 60]
+                },
             },
             "sensor2": {
                 "nickname": "Motion Sensor (Entry)",
@@ -991,7 +1025,13 @@ test_config_3_edit_context = {
                 "schedule": {
                     "00:00": "1"
                 },
-                "type": "pir"
+                "type": "pir",
+                "metadata": {
+                    "_type": "pir",
+                    "params": ["pin"],
+                    "prompt": "float_range",
+                    "rule_limits": [0, 60]
+                },
             }
         },
         "devices": {
@@ -1007,7 +1047,13 @@ test_config_3_edit_context = {
                     "00:00": "fade/32/7200",
                     "05:00": "Disabled"
                 },
-                "type": "pwm"
+                "type": "pwm",
+                "metadata": {
+                    "_type": "pwm",
+                    "params": ["min_rule", "max_rule", "pin"],
+                    "prompt": "int_or_fade",
+                    "rule_limits": [0, 1023]
+                },
             },
             "device2": {
                 "nickname": "Bathroom Lights",
@@ -1017,7 +1063,12 @@ test_config_3_edit_context = {
                     "05:00": "enabled",
                     "22:00": "disabled"
                 },
-                "type": "tasmota-relay"
+                "type": "tasmota-relay",
+                "metadata": {
+                    "_type": "tasmota-relay",
+                    "params": ["ip"],
+                    "prompt": "standard"
+                },
             },
             "device3": {
                 "nickname": "Entry Light",
@@ -1027,7 +1078,12 @@ test_config_3_edit_context = {
                     "05:00": "enabled",
                     "23:00": "disabled"
                 },
-                "type": "tasmota-relay"
+                "type": "tasmota-relay",
+                "metadata": {
+                    "_type": "tasmota-relay",
+                    "params": ["ip"],
+                    "prompt": "standard"
+                },
             }
         },
         "instances": {

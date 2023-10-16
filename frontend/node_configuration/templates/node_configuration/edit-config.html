@@ -159,23 +159,32 @@
                                         <div id="sensor-nickname-feedback" class="invalid-feedback">Name already in use</div>
                                     </div>
 
-                                {% if params.type == "pir" %}
-                                    {% include "node_configuration/sensor_pin_select.html" %}
-                                    {% include "node_configuration/default_rule_float_range.html" with step="0.5" min="0" max="60" dmin="0" dmax="60" category="sensor" %}
+                                {# Add non-rule parameter inputs #}
+                                {% if "pin" in params %}
+                                    {% include "node_configuration/sensor_pin_select.html" with index=forloop.counter %}
+                                {% endif %}
 
-                                {% elif params.type == "switch" %}
-                                    {% include "node_configuration/sensor_pin_select.html" %}
-                                    {% include "node_configuration/default_rule_standard.html" with category="sensor" %}
-
-                                {% elif params.type == "dummy" %}
-                                    {% include "node_configuration/default_rule_on_off.html" with category="sensor" %}
-
-                                {% elif params.type == "desktop" %}
+                                {% if "ip" in params %}
                                     {% include "node_configuration/ip_address_input.html" with category="sensor" %}
+                                {% endif %}
+
+                                {# Add default rule input #}
+                                {% if params.metadata.prompt == "float_range" %}
+                                    {% if params.type == "pir" %}
+                                        {% include "node_configuration/default_rule_float_range.html" with step="0.5" min="0" max="60" dmin="0" dmax="60" category="sensor" %}
+                                    {% elif params.type == "si7021" %}
+                                        {% include "node_configuration/default_rule_float_range.html" with step="0.5" min="65" max="80" dmin="65" dmax="80" category="sensor" %}
+                                    {% endif %}
+
+                                {% elif params.metadata.prompt == "standard" %}
                                     {% include "node_configuration/default_rule_standard.html" with category="sensor" %}
 
-                                {% elif params.type == "si7021" %}
-                                    {% include "node_configuration/default_rule_float_range.html" with step="0.5" min="65" max="80" dmin="65" dmax="80" category="sensor" %}
+                                {% elif params.metadata.prompt == "on_off" %}
+                                    {% include "node_configuration/default_rule_on_off.html" with category="sensor" %}
+                                {% endif %}
+
+                                {# Add Thermostat-specific inputs #}
+                                {% if params.type == "si7021" %}
 
                                     <div class="mb-2">
                                         <label class="form-label sensor{{forloop.counter}}" for="sensor{{forloop.counter}}-mode"><b>Mode:</b></label>
@@ -216,6 +225,7 @@
                         </div>
                     {% endfor %}
 
+                    {# If no sensor cards, add button to create card #}
                     {% if config.sensors|length == 0 %}
                     <div class="text-center">
                         <button onclick="load_next_sensor(this)" type="button" id="addSensorButton0" class="btn-secondary btn my-3">Add</button>
@@ -265,38 +275,20 @@
                                         <div id="sensor-nickname-feedback" class="invalid-feedback">Name already in use</div>
                                     </div>
 
-                                {% if params.type == "dimmer" or params.type == "bulb" or params.type == "wled" %}
-                                    {% include "node_configuration/ip_address_input.html" with category="device" %}
-                                    {% if params.type == "dimmer" or params.type == "bulb" %}
-                                        {% with limits=metadata.devices.dimmer.rule_limits %}
-                                            {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}
-                                        {% endwith %}
-                                    {% elif params.type == "wled" %}
-                                        {% with limits=metadata.devices.wled.rule_limits %}
-                                            {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}
-                                        {% endwith %}
-                                    {% endif %}
-
-                                {% elif params.type == "tasmota-relay" %}
-                                    {% include "node_configuration/ip_address_input.html" with category="device" %}
-                                    {% include "node_configuration/default_rule_standard.html" with category="device" %}
-
-                                {% elif params.type == "dumb-relay" %}
+                                {# Add non-rule parameter inputs #}
+                                {% if "pin" in params %}
                                     {% include "node_configuration/device_pin_select.html" with index=forloop.counter %}
-                                    {% include "node_configuration/default_rule_standard.html" with category="device" %}
+                                {% endif %}
 
-                                {% elif params.type == "desktop" %}
+                                {% if "ip" in params %}
                                     {% include "node_configuration/ip_address_input.html" with category="device" %}
-                                    {% include "node_configuration/default_rule_standard.html" with category="device" %}
+                                {% endif %}
 
-                                {% elif params.type == "pwm" %}
-                                    {% with limits=metadata.devices.pwm.rule_limits %}
-                                        {% include "node_configuration/device_pin_select.html" with index=forloop.counter %}
-                                        {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}
-                                    {% endwith %}
+                                {# Add default rule input #}
+                                {% if params.metadata.prompt == "int_or_fade" %}
+                                    {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}
 
-                                {% elif params.type == "mosfet" %}
-                                    {% include "node_configuration/device_pin_select.html" with index=forloop.counter %}
+                                {% elif params.metadata.prompt == "standard" %}
                                     {% include "node_configuration/default_rule_standard.html" with category="device" %}
 
                                 {% elif params.type == "api-target" %}
@@ -387,6 +379,7 @@
 
                     {% endif %}
 
+                    {# If no device cards, add button to create card #}
                     {% if config.devices|length == 0 and not config.ir_blaster %}
                     <div class="text-center">
                         <button onclick="load_next_device(this)" type="button" id="addDeviceButton0" class="btn-secondary btn my-3">Add</button>
