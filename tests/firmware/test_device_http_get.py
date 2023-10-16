@@ -75,3 +75,14 @@ class TestHttpGet(unittest.TestCase):
             self.assertFalse(self.instance.send(1))
             self.assertTrue(mock_request.called_once)
             self.assertEqual(mock_request.call_args_list[0][0][0], 'http://192.168.1.100/on')
+
+    # Original bug: get_url concatenates URI and on/off_path separated by
+    # a forward slash (/). If on/off_path already started with a forward
+    # slash this added an extra slash (//), which causes 404 error on some
+    # target devices. Init method now removes leading forward slash.
+    def test_06_regression_double_forward_slash(self):
+        # Instantiate with forward slash on both paths
+        test = HttpGet("device1", "device1", "HttpGet", "Enabled", "http://192.168.1.100", "/on", "/off")
+        # Confirm forward slashes were removed
+        self.assertEqual(test.on_path, 'on')
+        self.assertEqual(test.off_path, 'off')

@@ -6,8 +6,8 @@ from HttpGet import HttpGet
 log = logging.getLogger("TasmotaRelay")
 
 # Paths used by Tasmota to turn on, off
-on_path = '/cm?cmnd=Power%20On'
-off_path = '/cm?cmnd=Power%20Off'
+on_path = 'cm?cmnd=Power%20On'
+off_path = 'cm?cmnd=Power%20Off'
 
 
 # Used for Sonoff relays running Tasmota

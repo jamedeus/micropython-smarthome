@@ -37,6 +37,12 @@ class HttpGet(Device):
         self.on_path = on_path
         self.off_path = off_path
 
+        # Remove leading / (prevent double)
+        if self.on_path.startswith('/'):
+            self.on_path = self.on_path[1:]
+        if self.off_path.startswith('/'):
+            self.off_path = self.off_path[1:]
+
         log.info(f"Instantiated HttpGet named {self.name}: URI = {self.uri}")
 
     # Takes bool, returns on and off URLs for True and False respectively

@@ -34,7 +34,12 @@ class TestTasmotaRelay(unittest.TestCase):
         self.assertTrue(self.instance.send(1))
         self.instance.enable()
 
-    def test_05_network_errors(self):
+    def test_06_get_url(self):
+        # Confirm both URLs are correct
+        self.assertEqual(self.instance.get_url(0), f'http://{mock_address}/cm?cmnd=Power%20Off')
+        self.assertEqual(self.instance.get_url(1), f'http://{mock_address}/cm?cmnd=Power%20On')
+
+    def test_06_network_errors(self):
         # Change port to error port (mock receiver returns error for all requests on this port)
         # Confirm send method returns False
         self.instance.uri = f"{config['mock_receiver']['ip']}:{config['mock_receiver']['error_port']}"
@@ -45,3 +50,6 @@ class TestTasmotaRelay(unittest.TestCase):
         self.assertFalse(self.instance.send(0))
         self.assertFalse(self.instance.send(1))
         self.assertEqual(self.instance.check_state(), "Network Error")
+
+        # Revert URI
+        self.instance.uri = mock_address
