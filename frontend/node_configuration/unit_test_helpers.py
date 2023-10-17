@@ -584,7 +584,8 @@ test_config_1_edit_context = {
                 },
                 "type": "pir",
                 "metadata": {
-                    "_type": "pir",
+                    "type": "pir",
+                    "name": "MotionSensor",
                     "params": ["pin"],
                     "prompt": "float_range",
                     "rule_limits": [0, 60]
@@ -606,7 +607,8 @@ test_config_1_edit_context = {
                 },
                 "type": "pwm",
                 "metadata": {
-                    "_type": "pwm",
+                    "type": "pwm",
+                    "name": "LedStrip",
                     "params": ["min_rule", "max_rule", "pin"],
                     "prompt": "int_or_fade",
                     "rule_limits": [0, 1023]
@@ -622,7 +624,8 @@ test_config_1_edit_context = {
                 },
                 "type": "tasmota-relay",
                 "metadata": {
-                    "_type": "tasmota-relay",
+                    "type": "tasmota-relay",
+                    "name": "TasmotaRelay",
                     "params": ["ip"],
                     "prompt": "standard"
                 },
@@ -816,7 +819,8 @@ test_config_2_edit_context = {
                 "schedule": {},
                 "type": "si7021",
                 "metadata": {
-                    "_type": "si7021",
+                    "type": "si7021",
+                    "name": "Thermostat",
                     "params": ["mode", "tolerance"],
                     "prompt": "float_range",
                     "rule_limits": [65, 80]
@@ -834,7 +838,8 @@ test_config_2_edit_context = {
                 },
                 "type": "api-target",
                 "metadata": {
-                    "_type": "api-target",
+                    "type": "api-target",
+                    "name": "ApiTarget",
                     "params": ["ip"],
                     "prompt": "api_target"
                 },
@@ -1009,7 +1014,8 @@ test_config_3_edit_context = {
                 },
                 "type": "pir",
                 "metadata": {
-                    "_type": "pir",
+                    "type": "pir",
+                    "name": "MotionSensor",
                     "params": ["pin"],
                     "prompt": "float_range",
                     "rule_limits": [0, 60]
@@ -1027,7 +1033,8 @@ test_config_3_edit_context = {
                 },
                 "type": "pir",
                 "metadata": {
-                    "_type": "pir",
+                    "type": "pir",
+                    "name": "MotionSensor",
                     "params": ["pin"],
                     "prompt": "float_range",
                     "rule_limits": [0, 60]
@@ -1049,7 +1056,8 @@ test_config_3_edit_context = {
                 },
                 "type": "pwm",
                 "metadata": {
-                    "_type": "pwm",
+                    "type": "pwm",
+                    "name": "LedStrip",
                     "params": ["min_rule", "max_rule", "pin"],
                     "prompt": "int_or_fade",
                     "rule_limits": [0, 1023]
@@ -1065,7 +1073,8 @@ test_config_3_edit_context = {
                 },
                 "type": "tasmota-relay",
                 "metadata": {
-                    "_type": "tasmota-relay",
+                    "type": "tasmota-relay",
+                    "name": "TasmotaRelay",
                     "params": ["ip"],
                     "prompt": "standard"
                 },
@@ -1080,7 +1089,8 @@ test_config_3_edit_context = {
                 },
                 "type": "tasmota-relay",
                 "metadata": {
-                    "_type": "tasmota-relay",
+                    "type": "tasmota-relay",
+                    "name": "TasmotaRelay",
                     "params": ["ip"],
                     "prompt": "standard"
                 },

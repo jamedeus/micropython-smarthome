@@ -207,7 +207,8 @@ def get_metadata_context():
         # Extract params which require user input
         params = [i for i in template.keys() if i not in ['_type', 'nickname', 'default_rule', 'schedule', 'targets']]
         context['devices'][config_name] = {}
-        context['devices'][config_name]['_type'] = config_name
+        context['devices'][config_name]['type'] = config_name
+        context['devices'][config_name]['name'] = i['class_name']
         context['devices'][config_name]['prompt'] = i['rule_prompt']
         context['devices'][config_name]['params'] = params
 
@@ -221,7 +222,8 @@ def get_metadata_context():
         # Extract params which require user input
         params = [i for i in template.keys() if i not in ['_type', 'nickname', 'default_rule', 'schedule', 'targets']]
         context['sensors'][config_name] = {}
-        context['sensors'][config_name]['_type'] = config_name
+        context['sensors'][config_name]['type'] = config_name
+        context['sensors'][config_name]['name'] = i['class_name']
         context['sensors'][config_name]['prompt'] = i['rule_prompt']
         context['sensors'][config_name]['params'] = params
 
@@ -231,7 +233,7 @@ def get_metadata_context():
 
     # Add ir blaster template to prevent error
     # TODO ir blaster in device section causes multiple issues, needs own section
-    context['devices']['ir-blaster'] = {'params': [], 'prompt': '', '_type': 'ir-blaster'}
+    context['devices']['ir-blaster'] = {'params': [], 'prompt': '', 'type': 'ir-blaster', 'name': 'Ir Blaster'}
 
     return context
 

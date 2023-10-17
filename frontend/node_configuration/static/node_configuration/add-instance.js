@@ -360,6 +360,13 @@ async function load_next_device(button) {
     // Get index of clicked button
     const index = parseInt(button.id.replace("addDeviceButton", ""));
 
+    // Generate device type options from metadata
+    let options = "";
+    for (device in metadata.devices) {
+        options += `<option value="${metadata['devices'][device]['type']}">${metadata['devices'][device]['name']}</option>`;
+    };
+
+    // Create card template with all options, correct index
     // Ternary expression adds top margin to all except first card
     var template = `<div id="addDeviceDiv${index + 1}" class="device${index + 1} fade-in ${ index ? "mt-5" : "" }">
                         <div class="card">
@@ -373,19 +380,9 @@ async function load_next_device(button) {
                                 <div>
                                     <select onchange="load_device_section(this)" id="device${index + 1}-type" class="form-select deviceType device${index + 1} instanceType" required>
                                     <option value="clear">Select device type</option>
-                                    <option value="dimmer">TP-Link Dimmer</option>
-                                    <option value="bulb">TP-Link Bulb</option>
-                                    <option value="tasmota-relay">Tasmota Relay</option>
-                                    <option value="dumb-relay">Relay</option>
-                                    <option value="desktop">Desktop</option>
-                                    <option value="pwm">LED Strip</option>
-                                    <option value="mosfet">Mosfet</option>
-                                    <option value="wled">WLED</option>
-                                    <option value="api-target">Api Command</option>
-                                    <option value="ir-blaster" ${ ir_blaster_configured ? "disabled" : ""}>IR Blaster</option>
+                                    ${options}
                                     </select>
                                 </div>
-
                                 <div class="card-body device${index + 1} configParams"></div>
                             </div>
                         </div>
@@ -407,6 +404,9 @@ async function load_next_device(button) {
     document.getElementById("devices").insertAdjacentHTML('beforeend', template);
     document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
 
+    // Disable IrBlaster dropdown options if selected (can't have multiple)
+    preventDuplicateIrBlaster();
+
     // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
     await sleep(400);
     document.getElementById(`addDeviceDiv${index + 1}`).classList.remove('fade-in');
@@ -419,6 +419,13 @@ async function load_next_sensor(button) {
     // Get index of clicked button
     const index = parseInt(button.id.replace("addSensorButton", ""));
 
+    // Generate sensor type options from metadata
+    let options = "";
+    for (sensor in metadata.sensors) {
+        options += `<option value="${metadata['sensors'][sensor]['type']}">${metadata['sensors'][sensor]['name']}</option>`;
+    };
+
+    // Create card template with all options, correct index
     // Ternary expression adds top margin to all except first card
     var template = `<div id="addSensorDiv${index + 1}" class="sensor${index + 1} fade-in ${ index ? "mt-5" : "" }">
                         <div class="card">
@@ -432,11 +439,7 @@ async function load_next_sensor(button) {
                                 <div>
                                     <select onchange="load_sensor_section(this)" id="sensor${index + 1}-type" class="form-select sensorType sensor${index + 1} instanceType" required>
                                     <option value="clear">Select sensor type</option>
-                                    <option value="pir">Motion Sensor</option>
-                                    <option value="switch">Switch</option>
-                                    <option value="dummy">Dummy</option>
-                                    <option value="desktop">Desktop</option>
-                                    <option value="si7021" ${ thermostat_configured ? "disabled" : ""}>Thermostat</option>
+                                    ${options}
                                     </select>
                                 </div>
 
@@ -460,6 +463,9 @@ async function load_next_sensor(button) {
     // Render div, scroll down until visible
     document.getElementById("sensors").insertAdjacentHTML('beforeend', template);
     document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
+
+    // Disable Thermostat dropdown options if selected (can't have multiple)
+    preventDuplicateThermostat();
 
     // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
     await sleep(400);

@@ -1,0 +1,10 @@
+<label for="device{{index}}-type" class="form-label device{{index}}"><b>Type:</b></label>
+<div>
+    <select onchange="load_device_section(this)" id="device{{index}}-type" class="form-select deviceType device{{index}} instanceType" autocomplete="off" required>
+    <option value="clear" disabled>Select device type</option>
+    {# Add option for each device in metadata object #}
+    {% for device, metadata in metadata.devices.items %}
+        <option value="{{metadata.type}}" {% if selected == metadata.type %} selected {% endif %}>{{metadata.name}}</option>
+    {% endfor %}
+    </select>
+</div>

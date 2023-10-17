@@ -140,17 +140,7 @@
                                     <button class="btn my-auto pe-2 sensor{{forloop.counter}} delete" id="sensor{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
 
-                                <label for="sensor{{forloop.counter}}-type" class="form-label sensor{{forloop.counter}}"><b>Type:</b></label>
-                                <div>
-                                    <select onchange="load_sensor_section(this)" id="sensor{{forloop.counter}}-type" class="form-select sensorType sensor{{forloop.counter}} instanceType" autocomplete="off" required>
-                                    <option value="clear" disabled>Select sensor type</option>
-                                    <option value="pir" {% if params.type == "pir" %} selected {% endif %}>Motion Sensor</option>
-                                    <option value="switch" {% if params.type == "switch" %} selected {% endif %}>Switch</option>
-                                    <option value="dummy" {% if params.type == "dummy" %} selected {% endif %}>Dummy</option>
-                                    <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
-                                    <option value="si7021" {% if params.type == "si7021" %} selected {% endif %}>Thermostat</option>
-                                    </select>
-                                </div>
+                                {% include "node_configuration/sensor_type_dropdown.html" with index=forloop.counter selected=params.type %}
 
                                 <div class="card-body sensor{{forloop.counter}} configParams">
                                     <div class="mb-2">
@@ -251,22 +241,7 @@
                                     <button class="btn my-auto pe-2 device{{forloop.counter}} delete" id="device{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
 
-                                <label for="device{{forloop.counter}}-type" class="form-label device{{forloop.counter}}"><b>Type:</b></label>
-                                <div>
-                                    <select onchange="load_device_section(this)" id="device{{forloop.counter}}-type" class="form-select deviceType device{{forloop.counter}} instanceType" autocomplete="off" required>
-                                    <option value="clear" disabled>Select device type</option>
-                                    <option value="dimmer" {% if params.type == "dimmer" %} selected {% endif %}>TP-Link Dimmer</option>
-                                    <option value="bulb" {% if params.type == "bulb" %} selected {% endif %}>TP-Link Bulb</option>
-                                    <option value="tasmota-relay" {% if params.type == "tasmota-relay" %} selected {% endif %}>Tasmota Relay</option>
-                                    <option value="dumb-relay" {% if params.type == "dumb-relay" %} selected {% endif %}>Relay</option>
-                                    <option value="desktop" {% if params.type == "desktop" %} selected {% endif %}>Desktop</option>
-                                    <option value="pwm" {% if params.type == "pwm" %} selected {% endif %}>LED Strip</option>
-                                    <option value="mosfet" {% if params.type == "mosfet" %} selected {% endif %}>Mosfet</option>
-                                    <option value="wled" {% if params.type == "wled" %} selected {% endif %}>WLED</option>
-                                    <option value="api-target" {% if params.type == "api-target" %} selected {% endif %}>Api Command</option>
-                                    <option value="ir-blaster">IR Blaster</option>
-                                    </select>
-                                </div>
+                                {% include "node_configuration/device_type_dropdown.html" with index=forloop.counter selected=params.type %}
 
                                 <div class="card-body device{{forloop.counter}} configParams">
                                     <div class="mb-2">
@@ -341,21 +316,7 @@
                                     <h4 class="card-title mx-auto my-auto device{{config.devices|length|add:1}}">device{{ config.devices|length|add:1 }}</h4>
                                     <button class="btn my-auto pe-2 device{{config.devices|length|add:1}} delete" id="device{{ config.devices|length|add:1 }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label for="device{{config.devices|length|add:1}}-type" class="form-label device{{config.devices|length|add:1}}"><b>Type:</b></label>
-                                <div>
-                                    <select onchange="load_device_section(this)" id="device{{config.devices|length|add:1}}-type" class="form-select deviceType device{{config.devices|length|add:1}} instanceType" required>
-                                    <option value="clear">Select device type</option>
-                                    <option value="dimmer">TP-Link Dimmer</option>
-                                    <option value="bulb">TP-Link Bulb</option>
-                                    <option value="tasmota-relay">Tasmota Relay</option>
-                                    <option value="dumb-relay">Relay</option>
-                                    <option value="desktop">Desktop</option>
-                                    <option value="pwm">LED Strip</option>
-                                    <option value="mosfet">Mosfet</option>
-                                    <option value="api-target">Api Command</option>
-                                    <option value="ir-blaster" selected>IR Blaster</option>
-                                    </select>
-                                </div>
+                                {% include "node_configuration/device_type_dropdown.html" with index=forloop.counter selected="ir-blaster" %}
 
                                 <div class="card-body device{{config.devices|length|add:1}} configParams">
                                     {% include "node_configuration/device_pin_select.html" with index=config.devices|length|add:1 %}
