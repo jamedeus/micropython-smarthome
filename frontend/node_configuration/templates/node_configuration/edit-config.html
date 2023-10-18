@@ -259,6 +259,10 @@
                                     {% include "node_configuration/ip_address_input.html" with category="device" %}
                                 {% endif %}
 
+                                {% if "uri" in params %}
+                                    {% include "node_configuration/uri_input.html" with category="device" %}
+                                {% endif %}
+
                                 {# Add default rule input #}
                                 {% if params.metadata.prompt == "int_or_fade" %}
                                     {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}

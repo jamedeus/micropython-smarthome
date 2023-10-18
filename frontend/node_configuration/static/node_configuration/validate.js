@@ -117,8 +117,8 @@ function formatIp(event) {
 // Add listener to all IP fields
 document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('input', formatIp));
 
-// Highlight IP fields that fail regex
-function validateIp(event) {
+// Highlight fields that fail regex, add listener to remove highlight on input
+function validateField(event) {
     if (!event.target.validity.valid) {
         event.target.classList.add('is-invalid');
         event.target.addEventListener("input", (e) => {
@@ -126,8 +126,8 @@ function validateIp(event) {
         }, { once: true });
     };
 };
-// Validate IP fields when focus leaves
-document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('blur', validateIp));
+// Validate fields when focus leaves
+document.querySelectorAll('.validate').forEach(input => input.addEventListener('blur', validateField));
 
 // Constrain rule max/min fields to valid integer range
 function ruleLimits(event) {

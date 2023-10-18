@@ -44,7 +44,7 @@
                         {% for config in not_uploaded %}
                             <tr id="{{config}}">
                                 <td class="min align-middle"><span class="form-control text-center">{{config}}</span></td>
-                                <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" class="form-control ip-input text-center" data-submit="upload-{{config}}" required></td>
+                                <td><input type="text" id="{{config}}-ip" placeholder="xxx.xxx.x.xxx" name="{{config}}-ip" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" class="form-control ip-input validate text-center" data-submit="upload-{{config}}" required></td>
                                 <td class="min align-middle"><button type="button" class="btn-primary btn btn-sm" id="upload-{{config}}" onclick="set_upload_target(this);" disabled>Upload</button></td>
                                 <td class="min align-middle"><button type="button" class="btn-danger btn btn-sm" onclick="del_config('{{config}}');"><i class="bi-trash"></i></button></td>
                             </tr>
@@ -270,7 +270,7 @@
                     {# hacky way to make this compatible with listeners (format + validation + submit-on-enter) #}
                     <div id="prompt">
                         <label for="restore-ip"><b>IP Address:</b></label>
-                        <input type="text" class="form-control modal-input ip-input" id="restore-ip" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" data-submit="upload-restore" required>
+                        <input type="text" class="form-control modal-input ip-input validate" id="restore-ip" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" data-submit="upload-restore" required>
                     </div>
                     <div id="loading" class="d-none mx-auto">
                         <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
@@ -331,7 +331,7 @@
 
                     <div id="change-ip-prompt">
                         <label for="new-ip"><b>New IP:</b></label>
-                        <input type="text" class="form-control modal-input ip-input text-center" id="new_ip-input" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" data-submit="upload-new_ip" required>
+                        <input type="text" class="form-control modal-input ip-input validate text-center" id="new_ip-input" placeholder="" name="ip" autocomplete="off" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" data-submit="upload-new_ip" required>
                     </div>
                     <div id="change-ip-loading" class="d-none mx-auto">
                         <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">

@@ -690,7 +690,7 @@ class EditConfigTests(TestCaseBackupRestore):
         self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor (Bath)"')
         self.assertContains(response, '<input type="text" class="form-control sensor2 nickname" id="sensor2-nickname" placeholder="" value="Motion Sensor (Entry)"')
         self.assertContains(response, '<input type="text" class="form-control device1 rule-limits" id="device1-max_rule" value="1023" data-min="0" data-max="1023" required>')
-        self.assertContains(response, '<input type="text" class="form-control device2 ip-input" id="device2-ip" placeholder="" value="192.168.1.239"')
+        self.assertContains(response, '<input type="text" class="form-control device2 ip-input validate" id="device2-ip" placeholder="" value="192.168.1.239"')
         self.assertContains(response, '<input type="text" class="form-control device3 nickname" id="device3-nickname" placeholder="" value="Entry Light" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>')
 
     # Original bug: Did not catch DoesNotExist error, leading to traceback

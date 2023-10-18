@@ -128,7 +128,7 @@ function create_slider_rule_input(id, min, max, display_min, display_max, displa
 function create_ip_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-ip" class="${id}"><b>IP:</b></label>
-                <input type="text" class="form-control ${id} ip-input" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
+                <input type="text" class="form-control ${id} ip-input validate" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
             </div>`
 }
 
