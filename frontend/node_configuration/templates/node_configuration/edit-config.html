@@ -446,41 +446,10 @@
         <!-- Schedule rule modal opened when user clicks rule parameter -->
         {% include "api/schedule_rule_modal.html" %}
 
-        <!-- Loading modal displayed while waiting on upload -->
-
-        <div class="modal fade" id="upload-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered" >
-                <div class="modal-content">
-                    <div class="modal-header" style="border-bottom: 0px;">
-                        <h3 class="mx-auto" id="upload-modal-title">Uploading...</h3>
-                    </div>
-                    <div class="modal-body d-flex justify-content-center mb-4" id="upload-modal-body">
-                        <div class="spinner-border" style="width: 3rem; height: 3rem;" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Error modal displayed when upload fails -->
-
-        <div class="modal fade" id="error-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered" >
-                <div class="modal-content">
-                    <div class="modal-header" style="border-bottom: 0px;">
-                        <h3 class="mx-auto" id="error-modal-title">Error</h3>
-                    </div>
-                    <div class="modal-body d-flex justify-content-center flex-column mx-auto" id="error-modal-body">
-                    </div>
-                    <div class="modal-footer d-flex justify-content-center" id="error-modal-footer">
-                    </div>
-                </div>
-            </div>
-        </div>
+        {# Add loading and error modals #}
+        {% include "node_configuration/upload_modals.html" %}
 
         <!-- Overwrite duplicate modal dialog -->
-
         <div class="modal fade" id="duplicate-modal" tabindex="-1">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
