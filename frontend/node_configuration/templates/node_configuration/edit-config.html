@@ -160,11 +160,7 @@
 
                                 {# Add default rule input #}
                                 {% if params.metadata.prompt == "float_range" %}
-                                    {% if params.type == "pir" %}
-                                        {% include "node_configuration/default_rule_float_range.html" with step="0.5" min="0" max="60" dmin="0" dmax="60" category="sensor" %}
-                                    {% elif params.type == "si7021" %}
-                                        {% include "node_configuration/default_rule_float_range.html" with step="0.5" min="65" max="80" dmin="65" dmax="80" category="sensor" %}
-                                    {% endif %}
+                                    {% include "node_configuration/default_rule_float_range.html" with step="0.5" category="sensor" %}
 
                                 {% elif params.metadata.prompt == "standard" %}
                                     {% include "node_configuration/default_rule_standard.html" with category="sensor" %}

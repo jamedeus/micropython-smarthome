@@ -2,7 +2,7 @@
     <label for="{{category}}{{forloop.counter}}-default_rule" class="mt-1 {{category}}{{forloop.counter}}"><b>Default Rule:</b></label>
     <div class="d-flex flex-row align-items-center my-2">
         <button id="{{category}}{{forloop.counter}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{{step}}"><i class="bi-dash-lg"></i></button>
-        <input id="{{category}}{{forloop.counter}}-default_rule" type="range" class="{{category}}{{forloop.counter}} mx-auto" min="{{min}}" max="{{max}}" data-displaymin="{{dmin}}" data-displaymax="{{dmax}}" data-displaytype="float" step="{{step}}" value="{{params.default_rule}}" autocomplete="off">
+        <input id="{{category}}{{forloop.counter}}-default_rule" type="range" class="{{category}}{{forloop.counter}} mx-auto" min="{{ params.metadata.rule_limits.0 }}" max="{{ params.metadata.rule_limits.1 }}" data-displaymin="{{ params.metadata.rule_limits.0 }}" data-displaymax="{{ params.metadata.rule_limits.1 }}" data-displaytype="float" step="{{step}}" value="{{params.default_rule}}" autocomplete="off">
         <button id="{{category}}{{forloop.counter}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{{step}}"><i class="bi-plus-lg"></i></button>
     </div>
 </div>
