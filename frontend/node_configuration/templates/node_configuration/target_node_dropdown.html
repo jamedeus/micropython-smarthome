@@ -1,0 +1,9 @@
+<div class="mb-2">
+    <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>Target Node:</b></label>
+    <select id="device{{ forloop.counter }}-ip" class="form-select mb-3 device{{forloop.counter}}" onchange="api_target_selected(this)">
+        <option value="" selected="selected"></option>
+        {% for node, ip in api_target_options.addresses.items %}
+            <option value="{{ip}}" {% if params.ip == ip %}selected{% endif %}>{{node}}</option>
+        {% endfor %}
+    </select>
+</div>

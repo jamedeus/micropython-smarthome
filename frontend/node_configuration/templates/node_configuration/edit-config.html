@@ -252,7 +252,12 @@
                                 {% endif %}
 
                                 {% if "ip" in params %}
-                                    {% include "node_configuration/ip_address_input.html" with category="device" %}
+                                    {% if params.type != "api-target" %}
+                                        {% include "node_configuration/ip_address_input.html" with category="device" %}
+                                    {% else %}
+                                        {# ApiTarget gets dropdown of existing node names instead of open-ended IP input #}
+                                        {% include "node_configuration/target_node_dropdown.html" %}
+                                    {% endif %}
                                 {% endif %}
 
                                 {% if "uri" in params %}
@@ -267,16 +272,6 @@
                                     {% include "node_configuration/default_rule_standard.html" with category="device" %}
 
                                 {% elif params.type == "api-target" %}
-
-                                    <div class="mb-2">
-                                        <label for="device{{ forloop.counter }}-ip" class="device{{forloop.counter}}"><b>Target Node:</b></label>
-                                        <select id="device{{ forloop.counter }}-ip" class="form-select mb-3 device{{forloop.counter}}" onchange="api_target_selected(this)">
-                                            <option value="" selected="selected"></option>
-                                            {% for node, ip in api_target_options.addresses.items %}
-                                                <option value="{{ip}}" {% if params.ip == ip %}selected{% endif %}>{{node}}</option>
-                                            {% endfor %}
-                                        </select>
-                                    </div>
 
                                     <div class="mb-2 text-center">
                                         <button id="device{{ forloop.counter }}-default_rule-button" class="btn btn-secondary mt-3 device{{forloop.counter}}" onclick="open_rule_modal(this);" type="button" data-original="{{params.default_rule}}" data-target="device{{ forloop.counter }}-default_rule">Set rule</button>
