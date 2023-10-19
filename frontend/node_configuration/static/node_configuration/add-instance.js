@@ -272,7 +272,7 @@ function render_template(id, type, type_metadata, template) {
     if (type_metadata.params.includes('ip')) {
         ip = document.getElementById(`${id}-ip`);
         ip.addEventListener('input', formatIp);
-        ip.addEventListener('blur', validateIp);
+        ip.addEventListener('blur', validateField);
     };
 
     // Add listener to constrain tolerance field
@@ -309,15 +309,9 @@ function load_sensor_section(select) {
     // Disable Thermostat dropdown options if selected (can't have multiple)
     preventDuplicateThermostat();
 
-    // If instance already exists, wipe params and re-populate (type changed)
-    if (instances["sensors"][id]) {
-        instances["sensors"][id].getParams();
-        instances["sensors"][id].modified = true;
-
-    // If new sensor, create instance
-    } else {
-        instances["sensors"][id] = new Sensor(id);
-    };
+    // Wipe instance params and re-populate (type changed)
+    instances["sensors"][id].getParams();
+    instances["sensors"][id].modified = true;
 };
 
 
@@ -343,22 +337,16 @@ function load_device_section(select) {
     // Disable IrBlaster dropdown options if selected (can't have multiple)
     preventDuplicateIrBlaster();
 
-    // If instance already exists, wipe params and re-populate (type changed)
-    if (instances["devices"][id]) {
-        instances["devices"][id].getParams();
-        instances["devices"][id].modified = true;
-
-    // If new device, create instance
-    } else {
-        instances["devices"][id] = new Device(id);
-    };
+    // Wipe instance params and re-populate (type changed)
+    instances["devices"][id].getParams();
+    instances["devices"][id].modified = true;
 };
 
 
 // Called when user clicks + button under devices
-async function load_next_device(button) {
-    // Get index of clicked button
-    const index = parseInt(button.id.replace("addDeviceButton", ""));
+async function load_next_device() {
+    // Get number of existing devices
+    const index = parseInt(Object.keys(instances.devices).length);
 
     // Generate device type options from metadata
     let options = "";
@@ -385,26 +373,17 @@ async function load_next_device(button) {
                                 <div class="card-body device${index + 1} configParams"></div>
                             </div>
                         </div>
-
-                        <div class="text-center position-relative">
-                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton${index + 1}" class="btn-secondary btn mt-3 device${index + 1}">Add another</button>
-                        </div>
                     </div>`;
 
-    if (index > 0) {
-        // Hide clicked button
-        button.style.display = "none";
-    } else {
-        // Remove clicked button
-        button.parentElement.remove();
-    };
-
     // Render div, scroll down until visible
-    document.getElementById("devices").insertAdjacentHTML('beforeend', template);
+    document.getElementById("addDeviceButton").insertAdjacentHTML('beforebegin', template);
     document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
 
     // Disable IrBlaster dropdown options if selected (can't have multiple)
     preventDuplicateIrBlaster();
+
+    // Create device instance
+    instances["devices"][`device${index + 1}`] = new Device(`device${index + 1}`);
 
     // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
     await sleep(400);
@@ -414,9 +393,9 @@ async function load_next_device(button) {
 
 
 // Called when user clicks + button under sensors
-async function load_next_sensor(button) {
-    // Get index of clicked button
-    const index = parseInt(button.id.replace("addSensorButton", ""));
+async function load_next_sensor() {
+    // Get number of existing sensors
+    const index = parseInt(Object.keys(instances.sensors).length);
 
     // Generate sensor type options from metadata
     let options = "";
@@ -444,26 +423,17 @@ async function load_next_sensor(button) {
                                 <div class="card-body sensor${index + 1} configParams"></div>
                             </div>
                         </div>
-
-                        <div class="text-center position-relative">
-                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton${index + 1}" class="btn-secondary btn mt-3 sensor${index + 1}">Add another</button>
-                        </div>
                     </div>`;
 
-    if (index > 0) {
-        // Hide clicked button
-        button.style.display = "none";
-    } else {
-        // Remove clicked button
-        button.parentElement.remove();
-    };
-
     // Render div, scroll down until visible
-    document.getElementById("sensors").insertAdjacentHTML('beforeend', template);
+    document.getElementById("addSensorButton").insertAdjacentHTML('beforebegin', template);
     document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
 
     // Disable Thermostat dropdown options if selected (can't have multiple)
     preventDuplicateThermostat();
+
+    // Create sensor instance
+    instances["sensors"][`sensor${index + 1}`] = new Sensor(`sensor${index + 1}`);
 
     // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
     await sleep(400);
@@ -481,21 +451,12 @@ async function delete_animation(cards, num) {
         // Slide up all cards below, wait for animation to complete
         for (i=parseInt(num)+1; i<cards.length; i++) {
             cards[i].children[0].classList.add('slide-up');
-            cards[i].children[1].classList.add('slide-up');
         };
         await sleep(800);
 
         // Prevent cards jumping higher when hidden card is actually deleted
         for (i=parseInt(num)+1; i<cards.length; i++) {
             cards[i].children[0].classList.remove('slide-up');
-            cards[i].children[1].classList.remove('slide-up');
-        };
-
-        // If removing first card, remove top margin from second (new-first) card
-        if (num == 1) {
-            try {
-                cards[2].classList.remove("mt-5");
-            } catch(err) {}; // Prevent error when deleting last card
         };
         resolve();
     });
@@ -583,6 +544,9 @@ async function remove_instance(el) {
         animation_height = document.getElementById(`addSensorDiv${num}`).clientHeight / remPx + 3;
     };
 
+    // Remove last element in column (button under cards)
+    cards.pop();
+
     // Set CSS var used in slide-up animation
     document.documentElement.style.setProperty('--animation-height', `${animation_height}rem`);
 
@@ -600,33 +564,6 @@ async function remove_instance(el) {
     // Delete card + all options on page2-3
     for (i=0; i<elements.length; i++) {
         elements[i].remove();
-    };
-
-    // If bottom card deleted, un-hide "Add another" button in new bottom div
-    try {
-        if (parseInt(num)+1 == cards.length) {
-            if (target.startsWith('device')) {
-                document.getElementById(`addDeviceButton${num-1}`).classList.add('fade-in');
-                document.getElementById(`addDeviceButton${num-1}`).style.display = "initial";
-            } else {
-                document.getElementById(`addSensorButton${num-1}`).classList.add('fade-in');
-                document.getElementById(`addSensorButton${num-1}`).style.display = "initial";
-            };
-        };
-
-    // If no cards remaining, insert button
-    } catch(err) {
-        if (target.startsWith('device')) {
-            template = `<div class="text-center">
-                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton0" class="btn-secondary btn my-3 fade-in">Add</button>
-                        </div>`
-            document.getElementById("devices").insertAdjacentHTML('beforeend', template);
-        } else {
-            template = `<div class="text-center">
-                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton0" class="btn-secondary btn my-3 fade-in">Add</button>
-                        </div>`
-            document.getElementById("sensors").insertAdjacentHTML('beforeend', template);
-        };
     };
 
     // Re-enable delete buttons

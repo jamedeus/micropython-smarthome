@@ -130,25 +130,13 @@
                         {# Add card with dynamically-selected input components based on sensor metadata #}
                         {% include "node_configuration/instance_card.html" with id="addSensorDiv" category="sensor" %}
 
-                        {% if forloop.last %}
-                        <div class="text-center position-relative">
-                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn mt-3 sensor{{forloop.counter}}">Add another</button>
-                        </div>
-                        {% else %}
-                        <div class="text-center position-relative">
-                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn mt-3 sensor{{forloop.counter}}" style="display:none">Add another</button>
-                        </div>
-                        {% endif  %}
-
                         </div>
                     {% endfor %}
 
-                    {# If no sensor cards, add button to create card #}
-                    {% if config.sensors|length == 0 %}
-                    <div class="text-center">
-                        <button onclick="load_next_sensor(this)" type="button" id="addSensorButton0" class="btn-secondary btn my-3">Add</button>
+                    <!-- Button used to add another sensor card -->
+                    <div id="addSensorButton" class="text-center position-relative">
+                        <button onclick="load_next_sensor()" type="button" class="btn-secondary btn mb-3">Add Sensor</button>
                     </div>
-                    {% endif %}
                 </div>
 
                 <div id="devices" class="col-sm">
@@ -158,23 +146,13 @@
 
                         {# Add card with dynamically-selected input components based on device metadata #}
                         {% include "node_configuration/instance_card.html" with id="addDeviceDiv" category="device" %}
-
-                        {% if forloop.last and not config.ir_blaster %}
-                        <div class="text-center position-relative">
-                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn mt-3 device{{forloop.counter}}">Add another</button>
-                        </div>
-                        {% else %}
-                        <div class="text-center position-relative">
-                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn mt-3 device{{forloop.counter}}" style="display:none">Add another</button>
-                        </div>
-                        {% endif  %}
                     </div>
 
                     {% endfor %}
 
                     {% if config.ir_blaster %}
 
-                    <div id="addDeviceDiv{{ config.devices|length|add:1 }}" class="device{{config.devices|length|add:1}} {% if config.devices|length %}mt-5{% endif %}">
+                    <div id="addDeviceDiv{{ config.devices|length|add:1 }}" class="device{{config.devices|length|add:1}} mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -199,19 +177,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="text-center position-relative">
-                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ config.devices|length|add:1 }}" class="btn-secondary btn my-3 device{{config.devices|length|add:1}}">Add another</button>
-                        </div>
                     </div>
 
                     {% endif %}
 
-                    {# If no device cards, add button to create card #}
-                    {% if config.devices|length == 0 and not config.ir_blaster %}
-                    <div class="text-center">
-                        <button onclick="load_next_device(this)" type="button" id="addDeviceButton0" class="btn-secondary btn my-3">Add</button>
+                    <!-- Button used to add another device card -->
+                    <div id="addDeviceButton" class="text-center position-relative">
+                        <button onclick="load_next_device()" type="button" class="btn-secondary btn mb-3">Add Device</button>
                     </div>
-                    {% endif %}
 
                 </div>
             </div>
