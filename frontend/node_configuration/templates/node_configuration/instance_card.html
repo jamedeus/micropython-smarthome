@@ -1,0 +1,92 @@
+<div id="{{id}}{{ forloop.counter }}" class="mb-4 {{category}}{{forloop.counter}}">
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between">
+            <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
+            <h4 class="card-title mx-auto my-auto {{category}}{{forloop.counter}}">{{category}}{{ forloop.counter }}</h4>
+            <button class="btn my-auto pe-2 {{category}}{{forloop.counter}} delete" id="{{category}}{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+        </div>
+
+        {# Add correct instance type dropdown #}
+        {% if category == "sensor" %}
+            {% include "node_configuration/sensor_type_dropdown.html" with index=forloop.counter selected=params.type %}
+        {% else %}
+            {% include "node_configuration/device_type_dropdown.html" with index=forloop.counter selected=params.type %}
+        {% endif %}
+
+        <div class="card-body {{category}}{{forloop.counter}} configParams">
+            <div class="mb-2">
+                <label for="{{category}}{{forloop.counter}}-nickname" class="{{category}}{{forloop.counter}}"><b>Nickname:</b></label>
+                <input type="text" class="form-control {{category}}{{forloop.counter}} nickname" id="{{category}}{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
+                <div id="{{category}}-nickname-feedback" class="invalid-feedback">Name already in use</div>
+            </div>
+
+        {# Add non-rule parameter inputs #}
+        {% if "pin" in params %}
+            {% if category == "sensor" %}
+                {% include "node_configuration/sensor_pin_select.html" with index=forloop.counter %}
+            {% else %}
+                {% include "node_configuration/device_pin_select.html" with index=forloop.counter %}
+            {% endif %}
+        {% endif %}
+
+        {% if "ip" in params %}
+            {% if params.metadata.prompt != "api_target" %}
+                {# Default: Add text field with IP validator, accepts any IPv4 address #}
+                {% include "node_configuration/ip_address_input.html" %}
+            {% else %}
+                {# ApiTarget: Add dropdown of existing node names instead of open-ended IP input #}
+                {% include "node_configuration/target_node_dropdown.html" %}
+            {% endif %}
+        {% endif %}
+
+        {% if "uri" in params %}
+            {% include "node_configuration/uri_input.html" %}
+        {% endif %}
+
+        {# Add default rule input #}
+        {% if params.metadata.prompt == "standard" %}
+            {% include "node_configuration/default_rule_standard.html" %}
+
+        {% elif params.metadata.prompt == "on_off" %}
+            {% include "node_configuration/default_rule_on_off.html" %}
+
+        {% elif params.metadata.prompt == "float_range" %}
+            {% include "node_configuration/default_rule_float_range.html" with step="0.5" %}
+
+        {% elif params.metadata.prompt == "int_or_fade" or params.metadata.prompt == "int_range" %}
+            {% include "node_configuration/default_rule_int_or_fade.html" %}
+
+        {% elif params.metadata.prompt == "api_target" %}
+            {% include "node_configuration/default_rule_api_target.html" %}
+
+        {% endif %}
+
+        {# Add Thermostat-specific inputs #}
+        {% if params.type == "si7021" %}
+
+            <div class="mb-2">
+                <label class="form-label sensor{{forloop.counter}}" for="sensor{{forloop.counter}}-mode"><b>Mode:</b></label>
+                <select id="sensor{{forloop.counter}}-mode" class="form-select mb-3 sensor{{forloop.counter}}" required>
+                    {% if params.mode == "cool" %}
+                        <option value="cool" id="cool" selected>Cool</option>
+                        <option value="heat" id="heat">Heat</option>
+                    {% elif params.mode == "heat" %}
+                        <option value="cool" id="cool">Cool</option>
+                        <option value="heat" id="heat" selected>Heat</option>
+                    {% else %}
+                        <option value="cool" id="cool">Cool</option>
+                        <option value="heat" id="heat">Heat</option>
+                    {% endif %}
+                </select>
+            </div>
+
+            <div class="mb-2">
+                <label for="sensor{{forloop.counter}}-tolerance" class="sensor{{forloop.counter}}"><b>Tolerance:</b></label>
+                <input type="text" class="form-control sensor{{forloop.counter}} thermostat" id="sensor{{forloop.counter}}-tolerance" placeholder="" value="{{params.tolerance}}" required>
+            </div>
+
+        {% endif %}
+        </div>
+    </div>
+</div>
