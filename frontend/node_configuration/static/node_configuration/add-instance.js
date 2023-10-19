@@ -442,8 +442,10 @@ async function load_next_sensor() {
 
 
 
-// Delete instance animation - takes array of divs + num, fades out the div at num, slides up all subsequent divs
-async function delete_animation(cards, num) {
+// Delete instance card animation
+// Takes array of card divs, index of card to delete, add instance button
+// Fades out card to delete, slides up all cards below + add button
+async function delete_animation(cards, num, button) {
     return new Promise(async resolve => {
         // Fade out card to be deleted
         cards[num].classList.add('fade-out');
@@ -452,12 +454,14 @@ async function delete_animation(cards, num) {
         for (i=parseInt(num)+1; i<cards.length; i++) {
             cards[i].children[0].classList.add('slide-up');
         };
+        button.classList.add('slide-up');
         await sleep(800);
 
         // Prevent cards jumping higher when hidden card is actually deleted
         for (i=parseInt(num)+1; i<cards.length; i++) {
             cards[i].children[0].classList.remove('slide-up');
         };
+        button.classList.remove('slide-up');
         resolve();
     });
 };
@@ -527,21 +531,24 @@ async function remove_instance(el) {
     var target = el.id.split("-")[0];
 
     // Get pixel value of 1rem (used in animation)
-    remPx = parseFloat(getComputedStyle(document.documentElement).fontSize)
+    const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize)
 
-    // Delete target from instances, get object with all cards of same type (device/sensor), get index of deleted card
+    // Delete target from instances
+    // Get index of target, array of all cards, and add button for delete animation
     if (target.startsWith("device")) {
         delete instances['devices'][target];
         var num = target.replace("device", "");
         var cards = Array.from(document.getElementById("devices").children);
-        // Get height of card to be deleted + 3rem (gap between cards)
-        animation_height = document.getElementById(`addDeviceDiv${num}`).clientHeight / remPx + 3;
+        var button = document.getElementById('addDeviceButton');
+        // Get height of card to be deleted + 1.5rem (gap between cards)
+        var animation_height = document.getElementById(`addDeviceDiv${num}`).clientHeight / remPx + 1.5;
     } else {
         delete instances['sensors'][target];
         var num = target.replace("sensor", "");
         var cards = Array.from(document.getElementById("sensors").children);
-        // Get height of card to be deleted + 3rem (gap between cards)
-        animation_height = document.getElementById(`addSensorDiv${num}`).clientHeight / remPx + 3;
+        var button = document.getElementById('addSensorButton');
+        // Get height of card to be deleted + 1.5rem (gap between cards)
+        var animation_height = document.getElementById(`addSensorDiv${num}`).clientHeight / remPx + 1.5;
     };
 
     // Remove last element in column (button under cards)
@@ -551,15 +558,13 @@ async function remove_instance(el) {
     document.documentElement.style.setProperty('--animation-height', `${animation_height}rem`);
 
     // Disable all delete buttons until finished, prevent user deleting multiple at same time
-    for (button of document.getElementsByClassName("delete")) {
-        button.disabled = true;
-    }
+    document.querySelectorAll('.delete').forEach(button => button.disabled = true);
 
     // Get all elements with deleted card's class (used to delete later, must get before other card classes change)
     let elements = document.querySelectorAll(`.${target}`);
 
     // Update all other card's IDs and classes while running animation
-    await Promise.all([delete_animation(cards, num), update_ids(cards, num, target)])
+    await Promise.all([delete_animation(cards, num, button), update_ids(cards, num, target)])
 
     // Delete card + all options on page2-3
     for (i=0; i<elements.length; i++) {
@@ -567,9 +572,7 @@ async function remove_instance(el) {
     };
 
     // Re-enable delete buttons
-    for (button of document.getElementsByClassName("delete")) {
-        button.disabled = false;
-    }
+    document.querySelectorAll('.delete').forEach(button => button.disabled = false);
 
     // Rebuild self-target options with new instance IDs
     get_self_target_options();
