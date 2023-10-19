@@ -367,8 +367,7 @@ async function load_next_device(button) {
     };
 
     // Create card template with all options, correct index
-    // Ternary expression adds top margin to all except first card
-    var template = `<div id="addDeviceDiv${index + 1}" class="device${index + 1} fade-in ${ index ? "mt-5" : "" }">
+    var template = `<div id="addDeviceDiv${index + 1}" class="device${index + 1} fade-in mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -388,16 +387,16 @@ async function load_next_device(button) {
                         </div>
 
                         <div class="text-center position-relative">
-                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton${index + 1}" class="btn-secondary btn my-3 device${index + 1}">Add another</button>
+                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton${index + 1}" class="btn-secondary btn mt-3 device${index + 1}">Add another</button>
                         </div>
-                    </div>`
+                    </div>`;
 
     if (index > 0) {
         // Hide clicked button
         button.style.display = "none";
     } else {
         // Remove clicked button
-        button.parentElement.remove()
+        button.parentElement.remove();
     };
 
     // Render div, scroll down until visible
@@ -426,8 +425,7 @@ async function load_next_sensor(button) {
     };
 
     // Create card template with all options, correct index
-    // Ternary expression adds top margin to all except first card
-    var template = `<div id="addSensorDiv${index + 1}" class="sensor${index + 1} fade-in ${ index ? "mt-5" : "" }">
+    var template = `<div id="addSensorDiv${index + 1}" class="sensor${index + 1} fade-in mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -448,16 +446,16 @@ async function load_next_sensor(button) {
                         </div>
 
                         <div class="text-center position-relative">
-                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton${index + 1}" class="btn-secondary btn my-3 sensor${index + 1}">Add another</button>
+                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton${index + 1}" class="btn-secondary btn mt-3 sensor${index + 1}">Add another</button>
                         </div>
-                    </div>`
+                    </div>`;
 
     if (index > 0) {
         // Hide clicked button
         button.style.display = "none";
     } else {
         // Remove clicked button
-        button.parentElement.remove()
+        button.parentElement.remove();
     };
 
     // Render div, scroll down until visible

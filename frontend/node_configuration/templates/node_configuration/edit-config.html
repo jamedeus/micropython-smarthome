@@ -127,11 +127,7 @@
 
                     {% for sensor, params in config.sensors.items %}
 
-                        {% if forloop.first %}
-                        <div id="addSensorDiv1" class="sensor{{forloop.counter}}">
-                        {% else %}
-                        <div id="addSensorDiv{{ forloop.counter }}" class="mt-5 sensor{{forloop.counter}}">
-                        {% endif %}
+                        <div id="addSensorDiv{{ forloop.counter }}" class="mb-4 sensor{{forloop.counter}}">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -204,11 +200,11 @@
 
                         {% if forloop.last %}
                         <div class="text-center position-relative">
-                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn my-3 sensor{{forloop.counter}}">Add another</button>
+                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn mt-3 sensor{{forloop.counter}}">Add another</button>
                         </div>
                         {% else %}
                         <div class="text-center position-relative">
-                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn my-3 sensor{{forloop.counter}}" style="display:none">Add another</button>
+                            <button onclick="load_next_sensor(this)" type="button" id="addSensorButton{{ forloop.counter }}" class="btn-secondary btn mt-3 sensor{{forloop.counter}}" style="display:none">Add another</button>
                         </div>
                         {% endif  %}
 
@@ -228,11 +224,7 @@
 
                     {% for device, params in config.devices.items %}
 
-                        {% if forloop.first %}
-                        <div id="addDeviceDiv1" class="device1">
-                        {% else %}
-                        <div id="addDeviceDiv{{ forloop.counter }}" class="device{{forloop.counter}} mt-5">
-                        {% endif %}
+                        <div id="addDeviceDiv{{ forloop.counter }}" class="device{{forloop.counter}} mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
@@ -292,11 +284,11 @@
 
                         {% if forloop.last and not config.ir_blaster %}
                         <div class="text-center position-relative">
-                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn my-3 device{{forloop.counter}}">Add another</button>
+                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn mt-3 device{{forloop.counter}}">Add another</button>
                         </div>
                         {% else %}
                         <div class="text-center position-relative">
-                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn my-3 device{{forloop.counter}}" style="display:none">Add another</button>
+                            <button onclick="load_next_device(this)" type="button" id="addDeviceButton{{ forloop.counter }}" class="btn-secondary btn mt-3 device{{forloop.counter}}" style="display:none">Add another</button>
                         </div>
                         {% endif  %}
                     </div>
