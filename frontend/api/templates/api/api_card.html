@@ -775,33 +775,7 @@
     </div>
 
      <!-- Schedule rule modal -->
-    <div class="modal fade" id="schedule-rule-modal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered" style="max-width:750px">
-            <div class="modal-content">
-                <div class="modal-header justify-content-between">
-                    <button type="button" class="btn-close" style="visibility:hidden;"></button>
-                    <h5 class="modal-title">Schedule Rule</h5>
-                    <button type="button" class="btn-close" id="schedule-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body d-flex flex-column" id="rule-modal-body">
-                <!-- Populated by template when opened -->
-                </div>
-                <div id="rule-footer" class="modal-footer mx-auto">
-                    <div id="rule-buttons">
-                        <button type="button" id="add-rule" class="btn btn-success" onclick="add_rule()">Submit</button>
-                        <button type="button" id="del-rule" class="btn btn-danger" onclick="delete_rule()">Delete</button>
-                    </div>
-                    <div id="rule-loading" class="m-0 d-none">
-                        <div class="sk-flow">
-                            <div class="sk-flow-dot my-auto"></div>
-                            <div class="sk-flow-dot my-auto"></div>
-                            <div class="sk-flow-dot my-auto"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    {% include "api/schedule_rule_modal.html" %}
 
      <!-- Start fade modal -->
     <div class="modal fade" id="start-fade-modal" tabindex="-1">
