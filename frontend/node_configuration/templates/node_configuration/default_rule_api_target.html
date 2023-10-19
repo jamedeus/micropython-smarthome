@@ -1,0 +1,9 @@
+<div class="mb-2 text-center">
+    <button id="device{{ forloop.counter }}-default_rule-button" class="btn btn-secondary mt-3 device{{forloop.counter}}" onclick="open_rule_modal(this);" type="button" data-original="{{params.default_rule}}" data-target="device{{ forloop.counter }}-default_rule">Set rule</button>
+</div>
+
+{# Hidden field receives rule from modal, onchange adds to button dataset attr (repopulate modal if reopened) #}
+<div class="mb-2 text-center">
+    <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}" style="display:none;"><b>Default Rule:</b></label>
+    <input type="default_rule" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-default_rule" placeholder="" style="display:none;" value="{{params.default_rule}}" onchange="document.getElementById('device{{forloop.counter}}-default_rule-button').dataset.original = this.value;" required>
+</div>

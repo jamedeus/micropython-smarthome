@@ -159,14 +159,18 @@
                                 {% endif %}
 
                                 {# Add default rule input #}
-                                {% if params.metadata.prompt == "float_range" %}
-                                    {% include "node_configuration/default_rule_float_range.html" with step="0.5" category="sensor" %}
-
-                                {% elif params.metadata.prompt == "standard" %}
+                                {% if params.metadata.prompt == "standard" %}
                                     {% include "node_configuration/default_rule_standard.html" with category="sensor" %}
 
                                 {% elif params.metadata.prompt == "on_off" %}
                                     {% include "node_configuration/default_rule_on_off.html" with category="sensor" %}
+
+                                {% elif params.metadata.prompt == "float_range" %}
+                                    {% include "node_configuration/default_rule_float_range.html" with step="0.5" category="sensor" %}
+
+                                {% elif params.metadata.prompt == "int_or_fade" %}
+                                    {% include "node_configuration/default_rule_int_or_fade.html" with category="sensor" %}
+
                                 {% endif %}
 
                                 {# Add Thermostat-specific inputs #}
@@ -252,10 +256,11 @@
                                 {% endif %}
 
                                 {% if "ip" in params %}
-                                    {% if params.type != "api-target" %}
+                                    {% if params.metadata.prompt != "api_target" %}
+                                        {# Default: Add text field with IP validator, accepts any IPv4 address #}
                                         {% include "node_configuration/ip_address_input.html" with category="device" %}
                                     {% else %}
-                                        {# ApiTarget gets dropdown of existing node names instead of open-ended IP input #}
+                                        {# ApiTarget: Add dropdown of existing node names instead of open-ended IP input #}
                                         {% include "node_configuration/target_node_dropdown.html" %}
                                     {% endif %}
                                 {% endif %}
@@ -265,23 +270,20 @@
                                 {% endif %}
 
                                 {# Add default rule input #}
-                                {% if params.metadata.prompt == "int_or_fade" %}
-                                    {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}
-
-                                {% elif params.metadata.prompt == "standard" %}
+                                {% if params.metadata.prompt == "standard" %}
                                     {% include "node_configuration/default_rule_standard.html" with category="device" %}
 
-                                {% elif params.type == "api-target" %}
+                                {% elif params.metadata.prompt == "on_off" %}
+                                    {% include "node_configuration/default_rule_on_off.html" with category="device" %}
 
-                                    <div class="mb-2 text-center">
-                                        <button id="device{{ forloop.counter }}-default_rule-button" class="btn btn-secondary mt-3 device{{forloop.counter}}" onclick="open_rule_modal(this);" type="button" data-original="{{params.default_rule}}" data-target="device{{ forloop.counter }}-default_rule">Set rule</button>
-                                    </div>
+                                {% elif params.metadata.prompt == "float_range" %}
+                                    {% include "node_configuration/default_rule_float_range.html" with step="0.5" category="device" %}
 
-                                    {# Hidden field receives rule from modal, onchange adds to button dataset attr (repopulate modal if reopened) #}
-                                    <div class="mb-2 text-center">
-                                        <label for="device{{ forloop.counter }}-default_rule" class="device{{forloop.counter}}" style="display:none;"><b>Default Rule:</b></label>
-                                        <input type="default_rule" class="form-control device{{forloop.counter}}" id="device{{ forloop.counter }}-default_rule" placeholder="" style="display:none;" value="{{params.default_rule}}" onchange="document.getElementById('device{{forloop.counter}}-default_rule-button').dataset.original = this.value;" required>
-                                    </div>
+                                {% elif params.metadata.prompt == "int_or_fade" or params.metadata.prompt == "int_range" %}
+                                    {% include "node_configuration/default_rule_int_or_fade.html" with category="device" %}
+
+                                {% elif params.metadata.prompt == "api_target" %}
+                                    {% include "node_configuration/default_rule_api_target.html" %}
 
                                 {% endif %}
                                 </div>
