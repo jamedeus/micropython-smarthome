@@ -73,10 +73,9 @@
         </script>
 
         <div class="row">
-
-<!--      SENSORS      -->
+            <!-- SENSORS -->
             <div id="sensor-cards" class="col-sm">
-
+                {# Add card for each sensor in status object #}
                 {% for sensor, params in context.sensors.items %}
                     {% include "api/instance_card.html" with instance=sensor category="sensor" %}
 
@@ -111,17 +110,17 @@
                 {% endfor %}
             </div>
 
-<!--      DEVICES      -->
+            <!-- DEVICES -->
             <div id="device-cards" class="col-sm">
-
+                {# Add card for each device in status object #}
                 {% for device, params in context.devices.items %}
                     {% include "api/instance_card.html" with instance=device category="device" %}
                 {% endfor %}
 
+                {# Add IR Blaster remote cards if configured #}
                 {% if context.metadata.ir_blaster == True %}
-
+                    {# If target node ONLY has IR blaster, close device column, start new column for remotes #}
                     {% if context.sensors|length == 0 and context.devices|length == 0 %}
-                        {# If target node ONLY has IR blaster, close device column, start new column for remotes #}
                         </div>
                         <div id="remote-cards">
                     {% endif %}
@@ -247,7 +246,6 @@
     {% endif %}
 
     <!-- Debug modal, opened from menu on each card -->
-
     <div class="modal fade" id="debug-modal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -263,7 +261,6 @@
     </div>
 
     <!-- Error modal displayed when unable to connect to target node -->
-
     <div class="modal fade" id="error-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -284,7 +281,6 @@
     </div>
 
     <!-- Toggle modal used for enable_in, disable_in endpoints -->
-
     <div class="modal fade" id="toggle-modal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
