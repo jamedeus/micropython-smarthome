@@ -78,37 +78,7 @@
             <div id="sensor-cards" class="col-sm">
 
                 {% for sensor, params in context.sensors.items %}
-
-                    <div id="{{sensor}}-card" class="card">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between">
-                                {% if params.condition_met %}
-                                <button class="btn btn-outline-secondary trigger-button my-auto me-auto trigger-on" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
-                                {% else %}
-                                <button class="btn btn-outline-secondary trigger-button my-auto me-auto" id="{{sensor}}-trigger" autocomplete="off" onclick="trigger(this)"><i class="bi-exclamation-lg"></i></button>
-                                {% endif %}
-                                <h4 class="card-title mx-auto my-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
-                                <div class="dropdown ms-auto my-auto">
-                                    <button type="button" class="btn btn-outline-secondary menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
-                                    <ul id="{{sensor}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{sensor}}-menu-button">
-                                        {% if params.enabled %}
-                                            <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
-                                        {% else %}
-                                            <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
-                                        {% endif %}
-                                        <li><a id="{{sensor}}-schedule-toggle" class="dropdown-item" onclick="open_schedule_toggle(this);">Schedule Toggle</a></li>
-                                        <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
-                                        <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
-                                        <li><a id="{{sensor}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            {% if params.enabled %}
-                                <div class="collapse show" id="{{sensor}}-body">
-                            {% else %}
-                                <div class="collapse" id="{{sensor}}-body">
-                            {% endif %}
+                    {% include "api/instance_card.html" with instance=sensor %}
 
                             <!-- Rule slider -->
                             {% if params.prompt == "float_range" %}
@@ -171,44 +141,7 @@
             <div id="device-cards" class="col-sm">
 
                 {% for device, params in context.devices.items %}
-
-                    <div id="{{device}}-card" class="card">
-                        <div class="card-body d-flex flex-column">
-                            <div class="d-flex justify-content-between">
-                                {% if params.turned_on %}
-                                    <button class="btn btn-outline-secondary power-button my-auto me-auto toggle-on" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
-                                {% else %}
-                                    <button class="btn btn-outline-secondary power-button my-auto me-auto" id="{{device}}-power-state" autocomplete="off" onclick="power(this)"><i class="bi-lightbulb"></i></button>
-                                {% endif %}
-                                <h4 class="card-title mx-auto my-auto" id="{{device}}-title">{{ params.nickname }}</h4>
-
-                                <div class="dropdown my-auto ms-auto">
-                                    <button type="button" class="btn btn-outline-secondary menu-button" id="{{device}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
-                                    <ul id="{{device}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{device}}-menu-button">
-                                        {% if params.enabled %}
-                                            <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
-                                        {% else %}
-                                            <li><a id="{{device}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
-                                        {% endif %}
-                                        <li><a id="{{device}}-schedule-toggle" class="dropdown-item" onclick="open_schedule_toggle(this);">Schedule Toggle</a></li>
-                                        <li><a id="{{device}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
-                                        {% if params.type == "api-target" %}
-                                            <li><a id="{{device}}-current_rule-button" class="dropdown-item" data-target="{{device}}-current_rule" data-original="{{params.current_rule}}" onclick="open_rule_modal(this);">Change rule</a></li>
-                                        {% endif %}
-                                        {% if params.type in "dimmer,bulb,pwm" %}
-                                            <li><a id="{{device}}-start-fade" class="dropdown-item" onclick="open_fade_modal(this);">Start Fade</a></li>
-                                        {% endif %}
-                                        <li><a id="{{device}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-
-                            {% if params.enabled %}
-                                <div class="collapse show" id="{{device}}-body">
-                            {% else %}
-                                <div class="collapse" id="{{device}}-body">
-                            {% endif %}
-
+                    {% include "api/instance_card.html" with instance=device %}
                             <!-- Rule slider -->
                             {% if params.prompt in "int_or_fade, float_range" %}
 
