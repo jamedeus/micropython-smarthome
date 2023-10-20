@@ -239,6 +239,6 @@ class DimmableLight(Device):
     # Called by Config.get_status to build API status response
     def get_status(self):
         status = super().get_status()
-        status['min'] = self.min_rule
-        status['max'] = self.max_rule
+        status['min_rule'] = self.min_rule
+        status['max_rule'] = self.max_rule
         return status

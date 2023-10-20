@@ -42,8 +42,8 @@ config1_status_object = {
             'scheduled_rule': 'disabled',
             'nickname': 'Cabinet Lights',
             'turned_on': True,
-            "max": 1023,
-            "min": 0
+            'max_rule': 1023,
+            'min_rule': 0
         },
         'device2': {
             'current_rule': 'enabled',
@@ -109,8 +109,8 @@ config1_api_context = {
             'scheduled_rule': 'disabled',
             'nickname': 'Cabinet Lights',
             'turned_on': True,
-            "max": 1023,
-            "min": 0,
+            'max_rule': 1023,
+            'min_rule': 0,
             'prompt': 'int_or_fade'
         },
         'device2': {
@@ -400,8 +400,8 @@ config3_status_object = {
             'scheduled_rule': 256,
             'nickname': 'Bathroom LEDs',
             'turned_on': True,
-            "max": 1023,
-            "min": 0
+            'max_rule': 1023,
+            'min_rule': 0
         },
         'device3': {
             'current_rule': 'disabled',
@@ -496,8 +496,8 @@ config3_api_context = {
             'scheduled_rule': 256,
             'nickname': 'Bathroom LEDs',
             'turned_on': True,
-            "max": 1023,
-            "min": 0,
+            'max_rule': 1023,
+            'min_rule': 0,
             'prompt': 'int_or_fade'
         },
         'device3': {

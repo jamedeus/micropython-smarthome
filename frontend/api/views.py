@@ -220,8 +220,6 @@ def api(request, node, recording=False):
     limits_map = get_metadata_limits_map()
     for i in status['devices']:
         status['devices'][i]['prompt'] = prompt_map[status['devices'][i]['type']]
-        if 'min_rule' in status['devices'][i].keys():
-            status['devices'][i]['min_rule'] = prompt_map[status['devices'][i]['type']]
     for i in status['sensors']:
         status['sensors'][i]['prompt'] = prompt_map[status['sensors'][i]['type']]
         if status['sensors'][i]['prompt'] == "float_range":

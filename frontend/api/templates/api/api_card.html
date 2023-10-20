@@ -78,33 +78,7 @@
             <div id="sensor-cards" class="col-sm">
 
                 {% for sensor, params in context.sensors.items %}
-                    {% include "api/instance_card.html" with instance=sensor %}
-
-                            <!-- Rule slider -->
-                            {% if params.prompt == "float_range" %}
-
-                                <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
-                                    <button id="{{sensor}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
-                                    <input id="{{sensor}}-rule" type="range" class="current-rule-slider mx-auto" min="{{params.min_rule}}" max="{{params.max_rule}}" data-displaymin="{{params.min_rule}}" data-displaymax="{{params.max_rule}}" data-displaytype="float" step="0.5" value="{{params.current_rule}}" autocomplete="off">
-                                    <button id="{{sensor}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
-                                </div>
-
-                            {% endif %}
-
-                            {# Disble trigger button for sensors which don't support endpoint #}
-                            {# TODO this should be configured in metadata to avoid hardcoded types #}
-                            {% if params.type in "switch, load-cell" %}
-                                <script>
-                                    // Disable trigger button (trigger not supported but still need to see state)
-                                    document.getElementById("{{sensor}}-trigger").disabled = true;
-                                </script>
-                            {% endif %}
-
-                            {# Add schedule rules collapse #}
-                            {% include "api/schedule_rule_section.html" with instance=sensor %}
-                        </div>
-                    </div>
-                    </div></br>
+                    {% include "api/instance_card.html" with instance=sensor category="sensor" %}
 
                     {# Thermostat: add climate data card above sensor card #}
                     {% if params.type == "si7021" %}
@@ -141,29 +115,7 @@
             <div id="device-cards" class="col-sm">
 
                 {% for device, params in context.devices.items %}
-                    {% include "api/instance_card.html" with instance=device %}
-                            <!-- Rule slider -->
-                            {% if params.prompt in "int_or_fade, float_range" %}
-
-                                <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
-                                    <button id="{{device}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.max 100 1|floatformat:"0" %}"><i class="bi-dash-lg"></i></button>
-                                    <input id="{{device}}-rule" type="range" class="current-rule-slider mx-auto" min="{{params.min}}" max="{{params.max}}" data-displaymin="1" data-displaymax="100" data-displaytype="int" value="{{params.current_rule}}" autocomplete="off">
-                                    <button id="{{device}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.max 100 1|floatformat:"0" %}"><i class="bi-plus-lg"></i></button>
-                                </div>
-
-                            {% elif params.prompt == "api_target" %}
-
-                                <div style="display:none;">
-                                    <input id="{{device}}-current_rule" type="text" autocomplete="off" value="{{params.current_rule}}" onchange="change_api_target_rule(this);">
-                                </div>
-
-                            {% endif %}
-
-                            {# Add schedule rules collapse #}
-                            {% include "api/schedule_rule_section.html" with instance=device %}
-                        </div>
-                    </div>
-                    </div></br>
+                    {% include "api/instance_card.html" with instance=device category="device" %}
                 {% endfor %}
 
                 {% if context.metadata.ir_blaster == True %}

@@ -48,3 +48,42 @@
         {% else %}
             <div class="collapse" id="{{instance}}-body">
         {% endif %}
+
+        {# Add rule input based on prompt type #}
+        {% if params.prompt == "float_range" %}
+            <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
+                <button id="{{instance}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
+                <input id="{{instance}}-rule" type="range" class="current-rule-slider mx-auto" min="{{params.min_rule}}" max="{{params.max_rule}}" data-displaymin="{{params.min_rule}}" data-displaymax="{{params.max_rule}}" data-displaytype="float" step="0.5" value="{{params.current_rule}}" autocomplete="off">
+                <button id="{{instance}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
+            </div>
+
+        {% elif params.prompt == "int_or_fade" %}
+            <div class="d-flex flex-row align-items-center mt-4 mb-4 pb-3">
+                <button id="{{instance}}-rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.max_rule 100 1|floatformat:"0" %}"><i class="bi-dash-lg"></i></button>
+                <input id="{{instance}}-rule" type="range" class="current-rule-slider mx-auto" min="{{params.min_rule}}" max="{{params.max_rule}}" data-displaymin="1" data-displaymax="100" data-displaytype="int" value="{{params.current_rule}}" autocomplete="off">
+                <button id="{{instance}}-rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.max_rule 100 1|floatformat:"0" %}"><i class="bi-plus-lg"></i></button>
+            </div>
+
+        {% elif params.prompt == "api_target" %}
+            <div style="display:none;">
+                <input id="{{instance}}-current_rule" type="text" autocomplete="off" value="{{params.current_rule}}" onchange="change_api_target_rule(this);">
+            </div>
+
+        {% endif %}
+
+        {% if category == "sensor" %}
+            {# Disble trigger button for sensors which don't support endpoint #}
+            {# TODO this should be configured in metadata to avoid hardcoded types #}
+            {% if params.type in "switch, load-cell" %}
+                <script>
+                    // Disable trigger button (trigger not supported but still need to see state)
+                    document.getElementById("{{instance}}-trigger").disabled = true;
+                </script>
+            {% endif %}
+        {% endif %}
+
+        {# Add schedule rules collapse #}
+        {% include "api/schedule_rule_section.html" with instance=device %}
+    </div>
+</div>
+</div></br>
