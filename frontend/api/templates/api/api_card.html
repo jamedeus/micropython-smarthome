@@ -110,69 +110,6 @@
                                 <div class="collapse" id="{{sensor}}-body">
                             {% endif %}
 
-                            {# Thermostat has 2 cards (current climate data + sensor card) #}
-                            {% if params.type == "si7021" %}
-                                <table class="table table-borderless mt-3">
-                                    <tbody>
-                                        <tr>
-                                            <th class="text-center w-50 pb-0">Temperature</th>
-                                            <th class="text-center w-50 pb-0">Humidity</th>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-center fs-5" id="temperature">{{params.temp|floatformat:"2"}}</td>
-                                            <td class="text-center fs-5" id="humidity">{{params.humid|floatformat:"2"}}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-
-                                <!-- Close climate data card, start new card for thermostat -->
-                                </div></div></div></br>
-
-                                <script>
-                                    // Change previous card title to "Climate Data", old title will be reused in new card below
-                                    document.getElementById("{{sensor}}-title").innerHTML = "Climate Data";
-
-                                    // Prevent collapsed climate data card if page loaded while thermostat disabled
-                                    document.getElementById("{{sensor}}-body").classList.add("show");
-
-                                    // Prevent collapsing climate data card when disabling sensor
-                                    document.getElementById("{{sensor}}-body").id = "climate-data-body";
-                                    document.getElementById("{{sensor}}-card").id = "climate-data-card";
-
-                                    // Remove enable/disable toggle, will be moved to new card below
-                                    document.getElementById("{{sensor}}-trigger").remove();
-                                    document.getElementById("{{sensor}}-menu-button").parentElement.remove();
-                                </script>
-
-                                <div id="{{sensor}}-card" class="card">
-                                    <div class="card-body d-flex flex-column">
-                                        <div class="d-flex justify-content-between">
-                                            <button class="btn btn-outline-secondary trigger-button my-auto me-auto" id="{{sensor}}-trigger" style="visibility: hidden;" disabled><i class="bi-exclamation-lg"></i></button>
-                                            <h4 class="card-title mx-auto" id="{{sensor}}-title">{{ params.nickname }}</h4>
-
-                                            <div class="dropdown ms-auto my-auto">
-                                                <button type="button" class="btn btn-outline-secondary menu-button" id="{{sensor}}-menu-button" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi-list"></i></button>
-                                                <ul id="{{sensor}}-menu" class="dropdown-menu dropdown-menu-end" aria-labelledby="{{sensor}}-menu-button">
-                                                    {% if params.enabled %}
-                                                        <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Disable</a></li>
-                                                    {% else %}
-                                                        <li><a id="{{sensor}}-enable" class="dropdown-item" onclick="enable_disable_handler(this);">Enable</a></li>
-                                                    {% endif %}
-                                                    <li><a id="{{sensor}}-reset" class="dropdown-item" onclick="reset(this);">Reset rule</a></li>
-                                                    <li><a id="{{sensor}}-targets" class="dropdown-item" onclick="show_targets(this);">Show targets</a></li>
-                                                    <li><a class="dropdown-item" onclick="chartModal.show();">View history</a></li>
-                                                    <li><a id="{{sensor}}-debug" class="dropdown-item" onclick="debug(this);">Debug</a></li>
-                                                </ul>
-                                            </div>
-                                        </div>
-
-                                        {% if params.enabled %}
-                                            <div class="collapse show" id="{{sensor}}-body">
-                                        {% else %}
-                                            <div class="collapse" id="{{sensor}}-body">
-                                        {% endif %}
-                            {% endif %}
-
                             <!-- Rule slider -->
                             {% if params.prompt == "float_range" %}
 
@@ -232,6 +169,35 @@
                         </div>
                     </div>
                     </div></br>
+
+                    {# Thermostat: add climate data card above sensor card #}
+                    {% if params.type == "si7021" %}
+                        <script>
+                            const card = document.getElementById("{{sensor}}-card");
+                            const template = `<div id="climate-data-card" class="card">
+                                                  <div class="card-body d-flex flex-column">
+                                                      <div class="d-flex justify-content-between">
+                                                          <h4 class="card-title mx-auto my-auto">Climate Data</h4>
+                                                      </div>
+                                                      <div id="climate-data-body">
+                                                          <table class="table table-borderless mt-3">
+                                                              <tbody>
+                                                                  <tr>
+                                                                      <th class="text-center w-50 pb-0">Temperature</th>
+                                                                      <th class="text-center w-50 pb-0">Humidity</th>
+                                                                  </tr>
+                                                                  <tr>
+                                                                      <td class="text-center fs-5" id="temperature">{{params.temp|floatformat:"2"}}</td>
+                                                                      <td class="text-center fs-5" id="humidity">{{params.humid|floatformat:"2"}}</td>
+                                                                  </tr>
+                                                              </tbody>
+                                                          </table>
+                                                      </div>
+                                                  </div>
+                                              </div></br>`;
+                            card.insertAdjacentHTML('beforebegin', template);
+                        </script>
+                    {% endif %}
                 {% endfor %}
             </div>
 
