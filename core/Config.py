@@ -296,6 +296,10 @@ class Config():
             "sensors": {}
         }
 
+        # Add IR targets if IR Blaster configured
+        if "ir_blaster" in self.__dict__:
+            status_dict["metadata"]["ir_targets"] = self.ir_blaster.target
+
         # Iterate devices, add get_status return value, add schedule rules
         for i in self.devices:
             status_dict["devices"][i.name] = i.get_status()

@@ -137,6 +137,10 @@ config2_status_object = {
         'floor': '2',
         'location': 'Bedroom',
         'ir_blaster': True,
+        'ir_targets': [
+            'tv',
+            'ac'
+        ],
         "schedule_keywords": {
             "sunrise": "06:00",
             "sunset": "18:00"
@@ -228,6 +232,10 @@ config2_api_context = {
         'floor': '2',
         'location': 'Bedroom',
         'ir_blaster': True,
+        'ir_targets': [
+            'tv',
+            'ac'
+        ],
         'ir_macros': {
             'macro1': [
                 'tv power 500 1',
