@@ -126,11 +126,8 @@
                     <h2 class="text-center">Add Sensors</h2>
 
                     {% for sensor, params in config.sensors.items %}
-
                         {# Add card with dynamically-selected input components based on sensor metadata #}
                         {% include "node_configuration/instance_card.html" with id="addSensorDiv" category="sensor" %}
-
-                        </div>
                     {% endfor %}
 
                     <!-- Button used to add another sensor card -->
@@ -143,11 +140,8 @@
                     <h2 class="text-center">Add Devices</h2>
 
                     {% for device, params in config.devices.items %}
-
                         {# Add card with dynamically-selected input components based on device metadata #}
                         {% include "node_configuration/instance_card.html" with id="addDeviceDiv" category="device" %}
-                    </div>
-
                     {% endfor %}
 
                     {% if config.ir_blaster %}
@@ -185,10 +179,10 @@
                     <div id="addDeviceButton" class="text-center position-relative">
                         <button onclick="load_next_device()" type="button" class="btn-secondary btn mb-3">Add Device</button>
                     </div>
-
                 </div>
             </div>
 
+            <!-- Change page buttons -->
             <div class="d-flex justify-content-between mx-3 mt-auto">
                 <button id="page1-back-button" type="button" class="btn btn-secondary mb-3">Back</button>
                 <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
@@ -200,27 +194,26 @@
             <div id="page2-cards">
                 <h3>Select targets for each sensor</h3>
 
+                {# Add targets card for each existing sensor #}
                 {% for sensor, params in config.sensors.items %}
-
                     <div class="card mb-4 {{sensor}}">
                         <div class="card-body">
                             <label id="{{sensor}}-targets-label" for="{{sensor}}-targets" class="card-title {{sensor}}"><b>{{ params.nickname }}</b> targets:</label>
                             <div id="{{sensor}}-targets" class="form-check sensor-targets {{sensor}}">
 
+                                {# Add option for each existing device #}
                                 {% for device, dparams in config.devices.items %}
-
                                     <input type="checkbox" class="form-check-input {{sensor}} {{device}} target" id="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %}>
                                     <label for="target-{{sensor}}-{{device}}" class="form-check-label {{sensor}} {{device}} target-label">{{ dparams.nickname }}</label>
                                     <br class="{{device}}">
-
                                 {% endfor %}
                             </div>
                         </div>
                     </div>
-
                 {% endfor %}
             </div>
 
+            <!-- Change page buttons -->
             <div class="d-flex justify-content-between mx-3 mt-auto">
                 <button id="page2-back-button" type="button" class="btn btn-primary mb-3">Back</button>
                 <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
@@ -232,8 +225,8 @@
             <h3>Add schedule rules (optional)</h3>
                 <div id="page3-cards">
 
+                {# Add schedule rules card for each existing device and sensor #}
                 {% for instance, params in config.instances.items %}
-
                     <div class="card mb-4 {{instance}}">
                         <div class="card-body text-center">
                             <label id="{{instance}}-rules-label" class="card-title schedule-rule-card {{instance}}" title="{{instance}} - {{params.type}}">
@@ -245,47 +238,44 @@
                                     <th style="text-align: center;">Rule</th>
                                 </tr>
 
-                            {% if params.schedule.items|length > 0 %}
-                            {% for time, rule in params.schedule.items %}
+                                {# Add each existing schedule rule to table #}
+                                {% if params.schedule.items|length > 0 %}
+                                    {% for time, rule in params.schedule.items %}
+                                        <tr id="{{instance}}-row-{{forloop.counter}}" class="{{instance}}">
+                                            <td>
+                                                <span class="form-control time {{instance}}" id="{{instance}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{time}}</span>
+                                            </td>
 
-                                <tr id="{{instance}}-row-{{forloop.counter}}" class="{{instance}}">
-                                    <td>
-                                        <span class="form-control time {{instance}}" id="{{instance}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{time}}</span>
-                                    </td>
+                                            {% if params.type == "api-target" %}
+                                                <td>
+                                                    <span class="form-control {{instance}}" id="{{instance}}-rule{{forloop.counter}}-button" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">click to view</span>
+                                                    <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}" style="display:none;">
+                                                </td>
 
-                                    {% if params.type == "api-target" %}
+                                            {% else %}
+                                                <td>
+                                                    <span class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{rule}}</span>
+                                                </td>
+                                            {% endif %}
 
-                                    <td>
-                                        <span class="form-control {{instance}}" id="{{instance}}-rule{{forloop.counter}}-button" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">click to view</span>
-                                        <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}" style="display:none;">
-                                    </td>
-
-                                    {% else %}
-
-                                    <td>
-                                        <span class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);">{{rule}}</span>
-                                    </td>
-
-                                    {% endif %}
-
-                                    <td class="min">
-                                        <button type="button" class="btn btn-sm btn-primary mt-1" id="{{instance}}-edit{{forloop.counter}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button>
-                                    </td>
-                                </tr>
-
-                            {% endfor %}
-                            {% endif %}
-
+                                            <td class="min">
+                                                <button type="button" class="btn btn-sm btn-primary mt-1" id="{{instance}}-edit{{forloop.counter}}" data-type="{{params.type}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
                             </table>
+
+                            {# Add button to open rule modal #}
                             <div>
                                 <button type="button" class="btn btn-secondary {{instance}}" id="{{instance}}-add-rule" data-type="{{params.type}}" onclick="add_new_rule(this)">Add Rule</i></button>
                             </div>
                         </div>
                     </div>
-
                 {% endfor %}
-
                 </div>
+
+            <!-- Change page buttons -->
             <div class="d-flex justify-content-between mx-3 mt-auto">
                 <button id="page3-back-button" type="button" class="btn btn-primary mb-3">Back</button>
                 <button id="submit-button" type="submit" class="btn btn-primary mb-3">Submit</button>
