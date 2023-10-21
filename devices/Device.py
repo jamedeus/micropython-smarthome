@@ -39,8 +39,7 @@ class Device(Instance):
         if self.state:
             self.send(0)
             self.state = False
-
-        self.enabled = False
+        super().disable()
 
     # Called by set_rule after current_rule changed
     # Updates instance attributes to reflect new rule

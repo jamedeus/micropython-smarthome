@@ -54,6 +54,9 @@ class Instance():
             else:
                 self.set_rule(self.default_rule)
 
+    def disable(self):
+        self.enabled = False
+
     def set_rule(self, rule):
         # Check if rule is valid using subclass method - may return a modified rule (ie cast str to int)
         valid_rule = self.rule_validator(rule)

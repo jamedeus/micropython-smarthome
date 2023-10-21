@@ -32,7 +32,7 @@ class Sensor(Instance):
         self.refresh_group()
 
     def disable(self):
-        self.enabled = False
+        super().disable()
 
         # Check conditions of all sensors in group
         self.refresh_group()
