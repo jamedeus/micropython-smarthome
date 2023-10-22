@@ -4,6 +4,12 @@
     width: 960px;
   }
 }
+/* Limit width to 50% on desktop but not mobile */
+@media (min-width: 768px) {
+  .max-width-md-50 {
+    max-width: 50%;
+  }
+}
 /* Remove border around disabled buttons */
 .btn:disabled, .btn:active {
   border-color: transparent !important;

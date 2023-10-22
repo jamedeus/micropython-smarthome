@@ -170,6 +170,9 @@ request_payload = {
     'floor': '0',
     'ssid': 'mynetwork',
     'password': 'hunter2',
+    'irblaster_configured': 'on',
+    'ir_blaster_pin': '23',
+    'irblaster-tv': 'on',
     'sensor1': {
         '_type': 'pir',
         'nickname': 'Motion',
@@ -319,13 +322,6 @@ request_payload = {
         }
     },
     'device9': {
-        '_type': 'ir-blaster',
-        'pin': '23',
-        'target': [
-            'tv'
-        ]
-    },
-    'device10': {
         'nickname': 'Remote Control',
         '_type': 'api-target',
         'ip': '127.0.0.1',

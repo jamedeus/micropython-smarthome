@@ -100,7 +100,7 @@
         "min_rule": "1",
         "max_rule": "255"
     },
-    "device10": {
+    "device9": {
         "nickname": "Remote Control",
         "_type": "api-target",
         "ip": "127.0.0.1",

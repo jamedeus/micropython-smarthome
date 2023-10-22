@@ -185,20 +185,3 @@ function preventDuplicateThermostat() {
 }
 var thermostat_configured = false;
 preventDuplicateThermostat();
-
-// Checks if IrBlaster selected in any dropdowns (cannot have multiple)
-// Disables all IrBlaster options if already selected, otherwise enables
-// Runs on load and when user selects a sensor type
-function preventDuplicateIrBlaster() {
-    // Check if IrBlaster selected in any device dropdown
-    const devices = [...document.getElementsByClassName("deviceType")];
-    ir_blaster_configured = devices.some(device => device.value === "ir-blaster");
-
-    // If IrBlaster selected disable option in all dropdowns, otherwise enable
-    // Runs every time to catch type change from IrBlaster to other
-    document.querySelectorAll(".deviceType option[value='ir-blaster']").forEach(
-        option => option.disabled = ir_blaster_configured
-    );
-}
-var ir_blaster_configured = false;
-preventDuplicateIrBlaster();

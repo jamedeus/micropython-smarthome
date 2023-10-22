@@ -1,4 +1,4 @@
-// Store class instances created when device/sensor types are selected from dropdown
+// Store class instances created each time a device/sensor is added
 var instances = {"sensors": {}, "devices": {}}
 
 // Populate instances with existing device + sensor cards (if editing config)
@@ -232,19 +232,7 @@ function get_template(id, type, type_metadata, category) {
                      <div class="mb-2 text-center">
                          <label for="${id}-default_rule" class="${id}" style="display:none;"><b>Default Rule:</b></label>
                          <input type="default_rule" class="form-control ${id}" id="${id}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('${id}-default_rule button').dataset.original = this.value;" required>
-                     </div>`
-
-    } else if (type == "ir-blaster") {
-        template += create_pin_dropdown_device(id);
-        template = `<div class="mb-2">
-                        <label for="${id}-remotes" class="${id}"><b>Virtual remotes:</b></label>
-                        <div id="${id}-remotes" class="form-check ${id}">
-                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-tv" id="checkbox-tv">
-                            <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
-                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-ac" id="checkbox-ac">
-                            <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
-                        </div>
-                    </div>`
+                         </div>`
     };
 
     return template;
@@ -334,9 +322,6 @@ function load_device_section(select) {
     var template = get_template(id, type, type_metadata, 'device');
     render_template(id, type, type_metadata, template);
 
-    // Disable IrBlaster dropdown options if selected (can't have multiple)
-    preventDuplicateIrBlaster();
-
     // Wipe instance params and re-populate (type changed)
     instances["devices"][id].getParams();
     instances["devices"][id].modified = true;
@@ -378,9 +363,6 @@ async function load_next_device() {
     // Render div, scroll down until visible
     document.getElementById("addDeviceButton").insertAdjacentHTML('beforebegin', template);
     document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
-
-    // Disable IrBlaster dropdown options if selected (can't have multiple)
-    preventDuplicateIrBlaster();
 
     // Create device instance
     instances["devices"][`device${index + 1}`] = new Device(`device${index + 1}`);

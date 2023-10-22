@@ -119,9 +119,51 @@
                         <input type="password" class="form-control" id="password" placeholder="" name="password" value="{{config.wifi.password}}" onchange="open_toast()" required>
                     </div>
                 </div>
+
+                <div id="ir_blaster_row" class="max-width-md-50 mx-auto">
+                    <p class="text-center mt-5">
+                        <button type="button" class="btn btn-secondary" data-selected="{% if config.ir_blaster %}true{% else %}false{% endif %}" data-bs-toggle="collapse" data-bs-target="#ir_blaster" aria-expanded="false" aria-controls="ir_blaster" onclick="select_ir_blaster(this);">
+                            Add IR Blaster
+                        </button>
+                    </p>
+                    <div class="collapse {% if config.ir_blaster %}show{% endif %} text-center" id="ir_blaster">
+                        <div id="ir_blaster_config" class="card mb-3">
+                            <div class="card-body mx-auto">
+                                <h2>IR Blaster</h2>
+                                <input name="irblaster_configured" type="checkbox" class="d-none" id="irblaster_configured" {% if config.ir_blaster %} checked {% endif %}>
+
+                                {% include "node_configuration/device_pin_select.html" with index="0" name="ir_blaster_pin" pin=config.ir_blaster.pin %}
+
+                                <div class="mb-2">
+                                    <label for="device{{ config.devices|length|add:1 }}-remotes" class="device{{config.devices|length|add:1}}"><b>Virtual remotes:</b></label>
+                                    <div id="device{{ config.devices|length|add:1 }}-remotes" class="form-check device{{config.devices|length|add:1}}">
+                                        <input class="form-check-input" type="checkbox" name="irblaster-tv" id="checkbox-tv" {% if "tv" in config.ir_blaster.target %}checked{% endif %}>
+                                        <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
+                                        <input class="form-check-input" type="checkbox" name="irblaster-ac" id="checkbox-ac" {% if "ac" in config.ir_blaster.target %}checked{% endif %}>
+                                        <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                        const irblaster_configured = document.getElementById('irblaster_configured');
+                        function select_ir_blaster(button) {
+                            if (button.dataset.selected === 'true') {
+                                button.dataset.selected = 'false';
+                                irblaster_configured.checked = false;
+                            } else {
+                                button.dataset.selected = 'true';
+                                irblaster_configured.checked = true;
+                            };
+                            console.log(button.dataset.selected);
+                        };
+                    </script>
+                </div>
+
             </form>
 
-            <div class="row">
+            <div class="row mt-3">
                 <div id="sensors" class="col-sm">
                     <h2 class="text-center">Add Sensors</h2>
 
@@ -143,37 +185,6 @@
                         {# Add card with dynamically-selected input components based on device metadata #}
                         {% include "node_configuration/instance_card.html" with id="addDeviceDiv" category="device" %}
                     {% endfor %}
-
-                    {% if config.ir_blaster %}
-
-                    <div id="addDeviceDiv{{ config.devices|length|add:1 }}" class="device{{config.devices|length|add:1}} mb-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                                    <h4 class="card-title mx-auto my-auto device{{config.devices|length|add:1}}">device{{ config.devices|length|add:1 }}</h4>
-                                    <button class="btn my-auto pe-2 device{{config.devices|length|add:1}} delete" id="device{{ config.devices|length|add:1 }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
-                                </div>
-                                {% include "node_configuration/device_type_dropdown.html" with index=forloop.counter selected="ir-blaster" %}
-
-                                <div class="card-body device{{config.devices|length|add:1}} configParams">
-                                    {% include "node_configuration/device_pin_select.html" with index=config.devices|length|add:1 %}
-
-                                    <div class="mb-2">
-                                        <label for="device{{ config.devices|length|add:1 }}-remotes" class="device{{config.devices|length|add:1}}"><b>Virtual remotes:</b></label>
-                                        <div id="device{{ config.devices|length|add:1 }}-remotes" class="form-check device{{config.devices|length|add:1}}">
-                                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-tv" id="checkbox-tv" {% if "tv" in config.ir_blaster.target %}checked{% endif %}>
-                                            <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
-                                            <input class="form-check-input ir-target" type="checkbox" value="irblaster-ac" id="checkbox-ac" {% if "ac" in config.ir_blaster.target %}checked{% endif %}>
-                                            <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {% endif %}
 
                     <!-- Button used to add another device card -->
                     <div id="addDeviceButton" class="text-center position-relative">

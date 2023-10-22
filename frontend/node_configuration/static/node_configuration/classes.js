@@ -66,37 +66,9 @@ class Device extends Instance {
     getParams() {
         super.getParams();
 
-        // Populate IrBlaster target list from checkbox inputs
-        if (this.output._type == "ir-blaster") {
-            delete this.output.tv;
-            delete this.output.ac;
-            this.getIrTargets();
-
         // Int default_rule required by some device types
-        } else if (["dimmer", "bulb", "pwm", "wled"].includes(this.output._type)) {
+        if (["dimmer", "bulb", "pwm", "wled"].includes(this.output._type)) {
             this.output.default_rule = parseInt(this.output.default_rule);
-        };
-    };
-
-    getScheduleRules() {
-        // IR Blaster does not support schedule rules
-        if (this.output._type != "ir-blaster") {
-            super.getScheduleRules()
-        };
-    };
-
-    // Populate target parameter in output JSON config with list of IR targets
-    getIrTargets() {
-        if (this.output._type != "ir-blaster") { return };
-
-        var checks = document.getElementsByClassName('ir-target');
-
-        this.output.target = [];
-
-        for (let i=0; i < checks.length; i++) {
-            if (checks[i].checked) {
-                this.output.target.push(checks[i].value.split("-")[1]);
-            };
         };
     };
 };

@@ -231,10 +231,6 @@ def get_metadata_context():
         if 'rule_limits' in i.keys():
             context['sensors'][config_name]['rule_limits'] = i['rule_limits']
 
-    # Add ir blaster template to prevent error
-    # TODO ir blaster in device section causes multiple issues, needs own section
-    context['devices']['ir-blaster'] = {'params': [], 'prompt': '', 'type': 'ir-blaster', 'name': 'Ir Blaster'}
-
     return context
 
 
@@ -410,13 +406,8 @@ def generate_config_file(data, edit_existing=False):
 
     # Add all devices and sensors to config
     for i in data:
-        # IrBlaster handled different than devices (not triggered by sensors, does not have _type)
-        if is_device(i) and data[i]["_type"] == "ir-blaster":
-            config["ir_blaster"] = data[i]
-            del config["ir_blaster"]["_type"]
-
         # Convert ApiTarget rules to correct format
-        elif is_device(i) and data[i]["_type"] == "api-target":
+        if is_device(i) and data[i]["_type"] == "api-target":
             config[i] = data[i]
             config[i]["default_rule"] = json.loads(config[i]["default_rule"])
             for rule in config[i]["schedule"]:
@@ -425,6 +416,14 @@ def generate_config_file(data, edit_existing=False):
         # No changes needed for all other devices and sensors
         elif is_device_or_sensor(i):
             config[i] = data[i]
+
+    # Add IR Blaster config if present
+    if "irblaster_configured" in data.keys():
+        config["ir_blaster"] = {"pin": "", "target": []}
+        config["ir_blaster"]["pin"] = data["ir_blaster_pin"]
+        for target in [key for key in data.keys() if key.startswith('irblaster-')]:
+            codes = target.split('-')[1]
+            config["ir_blaster"]["target"].append(codes)
 
     print("Output:")
     print(json.dumps(config, indent=4))

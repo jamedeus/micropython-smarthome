@@ -31,8 +31,6 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 
         // If device is new, add target select options on page2, add schedule rules card on page3
         if (instances['devices'][device].new) {
-            // Skip IrBlaster (can't be targeted, doesn't support schedule rules)
-            if (instances['devices'][device]['output']['_type'] == 'ir-blaster') { continue };
             handle_new_device(device, nickname, type);
 
         // If device nickname changed, but type did not change (targets + rules don't need to be cleared)
@@ -118,22 +116,10 @@ function change_device_type(device, nickname, type) {
     target_checks = document.getElementsByClassName(`${device} target`);
     target_labels = document.getElementsByClassName(`${device} target-label`);
 
-    // If device was changed to IrBlaster, remove all target options
-    if (type == 'ir-blaster') {
-        const max = target_checks.length;
-        for (i=0; i<max; i++) {
-            target_checks[0].remove();
-            target_labels[0].nextSibling.remove();
-            target_labels[0].nextSibling.remove();
-            target_labels[0].remove();
-        };
-
-        // Otherwise, uncheck all target option boxes and change label text
-    } else {
-        for (i=0; i<target_checks.length; i++) {
-            target_checks[i].checked = false;
-            target_labels[i].innerHTML = `${nickname}`;
-        };
+    // Uncheck all target option boxes and change label text
+    for (i=0; i<target_checks.length; i++) {
+        target_checks[i].checked = false;
+        target_labels[i].innerHTML = `${nickname}`;
     };
 
     // Change name and tooltip on schedule rules card
@@ -164,9 +150,6 @@ function handle_new_sensor(sensor, nickname, type) {
 
     // Iterate devices, add checkbox for each to new sensor card
     for (device in instances['devices']) {
-        // Do not add if device is IrBlaster (cannot be targeted)
-        if (instances['devices'][device]['output']['_type'] == "ir-blaster") { continue };
-
         template += `<input type='checkbox' class='form-check-input ${device} ${sensor} target' id='target-${sensor}-${device}' value='target-${sensor}-${device}'>
                      <label for='target-${sensor}-${device}' class='form-check-label ${device} ${sensor} target-label'>${instances['devices'][device]['output']['nickname']}</label><br>`;
     };

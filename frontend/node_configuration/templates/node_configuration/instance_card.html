@@ -27,7 +27,7 @@
                     {% if category == "sensor" %}
                         {% include "node_configuration/sensor_pin_select.html" with index=forloop.counter %}
                     {% else %}
-                        {% include "node_configuration/device_pin_select.html" with index=forloop.counter %}
+                        {% include "node_configuration/device_pin_select.html" with index=forloop.counter pin=params.pin %}
                     {% endif %}
                 {% endif %}
 

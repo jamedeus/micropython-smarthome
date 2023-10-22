@@ -666,7 +666,7 @@ class EditConfigTests(TestCaseBackupRestore):
 
         # Confirm all devices and sensors present
         self.assertContains(response, '<input type="text" class="form-control sensor1 thermostat" id="sensor1-tolerance" placeholder="" value="0.5" required>')
-        self.assertContains(response, '<input class="form-check-input ir-target" type="checkbox" value="irblaster-ac" id="checkbox-ac" checked>')
+        self.assertContains(response, '<input class="form-check-input" type="checkbox" name="irblaster-ac" id="checkbox-ac" checked>')
         self.assertContains(response, '<option value="192.168.1.124" selected>self-target</option>')
 
     def test_edit_config_3(self):
