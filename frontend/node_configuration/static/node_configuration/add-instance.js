@@ -330,8 +330,8 @@ function load_device_section(select) {
 
 // Called when user clicks + button under devices
 async function load_next_device() {
-    // Get number of existing devices
-    const index = parseInt(Object.keys(instances.devices).length);
+    // Get index of new device (number of existing + 1)
+    const index = parseInt(Object.keys(instances.devices).length) + 1;
 
     // Generate device type options from metadata
     let options = "";
@@ -340,44 +340,44 @@ async function load_next_device() {
     };
 
     // Create card template with all options, correct index
-    var template = `<div id="addDeviceDiv${index + 1}" class="device${index + 1} fade-in mb-4">
+    var template = `<div id="addDeviceDiv${index}" class="device${index} fade-in mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
                                     <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                                    <h4 class="card-title mx-auto my-auto device${index + 1}">device${index + 1}</h4>
-                                    <button class="btn my-auto pe-2 device${index + 1} delete" id="device${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <h4 class="card-title mx-auto my-auto device${index}">device${index}</h4>
+                                    <button class="btn my-auto pe-2 device${index} delete" id="device${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label for="device${index + 1}-type" class="form-label device${index + 1}"><b>Type:</b></label>
+                                <label for="device${index}-type" class="form-label device${index}"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_device_section(this)" id="device${index + 1}-type" class="form-select deviceType device${index + 1} instanceType" required>
+                                    <select onchange="load_device_section(this)" id="device${index}-type" class="form-select deviceType device${index} instanceType" required>
                                     <option value="clear">Select device type</option>
                                     ${options}
                                     </select>
                                 </div>
-                                <div class="card-body device${index + 1} configParams"></div>
+                                <div class="card-body device${index} configParams"></div>
                             </div>
                         </div>
                     </div>`;
 
     // Render div, scroll down until visible
     document.getElementById("addDeviceButton").insertAdjacentHTML('beforebegin', template);
-    document.getElementById("addDeviceDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
+    document.getElementById("addDeviceDiv" + (index)).scrollIntoView({behavior: "smooth"});
 
     // Create device instance
-    instances["devices"][`device${index + 1}`] = new Device(`device${index + 1}`);
+    instances["devices"][`device${index}`] = new Device(`device${index}`);
 
     // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
     await sleep(400);
-    document.getElementById(`addDeviceDiv${index + 1}`).classList.remove('fade-in');
+    document.getElementById(`addDeviceDiv${index}`).classList.remove('fade-in');
 };
 
 
 
 // Called when user clicks + button under sensors
 async function load_next_sensor() {
-    // Get number of existing sensors
-    const index = parseInt(Object.keys(instances.sensors).length);
+    // Get index of new sensor (number of existing + 1)
+    const index = parseInt(Object.keys(instances.sensors).length) + 1;
 
     // Generate sensor type options from metadata
     let options = "";
@@ -386,40 +386,40 @@ async function load_next_sensor() {
     };
 
     // Create card template with all options, correct index
-    var template = `<div id="addSensorDiv${index + 1}" class="sensor${index + 1} fade-in mb-4">
+    var template = `<div id="addSensorDiv${index}" class="sensor${index} fade-in mb-4">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
                                     <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                                    <h4 class="card-title mx-auto my-auto sensor${index + 1}">sensor${index + 1}</h4>
-                                    <button class="btn my-auto pe-2 sensor${index + 1} delete" id="sensor${index + 1}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <h4 class="card-title mx-auto my-auto sensor${index}">sensor${index}</h4>
+                                    <button class="btn my-auto pe-2 sensor${index} delete" id="sensor${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label for="sensor${index + 1}-type" class="form-label sensor${index + 1}"><b>Type:</b></label>
+                                <label for="sensor${index}-type" class="form-label sensor${index}"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_sensor_section(this)" id="sensor${index + 1}-type" class="form-select sensorType sensor${index + 1} instanceType" required>
+                                    <select onchange="load_sensor_section(this)" id="sensor${index}-type" class="form-select sensorType sensor${index} instanceType" required>
                                     <option value="clear">Select sensor type</option>
                                     ${options}
                                     </select>
                                 </div>
 
-                                <div class="card-body sensor${index + 1} configParams"></div>
+                                <div class="card-body sensor${index} configParams"></div>
                             </div>
                         </div>
                     </div>`;
 
     // Render div, scroll down until visible
     document.getElementById("addSensorButton").insertAdjacentHTML('beforebegin', template);
-    document.getElementById("addSensorDiv" + (index + 1)).scrollIntoView({behavior: "smooth"});
+    document.getElementById("addSensorDiv" + (index)).scrollIntoView({behavior: "smooth"});
 
     // Disable Thermostat dropdown options if selected (can't have multiple)
     preventDuplicateThermostat();
 
     // Create sensor instance
-    instances["sensors"][`sensor${index + 1}`] = new Sensor(`sensor${index + 1}`);
+    instances["sensors"][`sensor${index}`] = new Sensor(`sensor${index}`);
 
     // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
     await sleep(400);
-    document.getElementById(`addSensorDiv${index + 1}`).classList.remove('fade-in');
+    document.getElementById(`addSensorDiv${index}`).classList.remove('fade-in');
 };
 
 
