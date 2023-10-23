@@ -2,7 +2,7 @@
     "metadata": {
         "id": "Unit Test Config",
         "location": "build pipeline",
-        "floor": "0",
+        "floor": 0,
         "schedule_keywords": {
             "sunrise": "06:00",
             "sunset": "18:00"
@@ -20,7 +20,7 @@
         "nickname": "Overhead",
         "_type": "dimmer",
         "ip": "192.168.1.105",
-        "default_rule": 100,
+        "default_rule": "100",
         "schedule": {
             "08:00": "100",
             "22:00": "35"
@@ -32,7 +32,7 @@
         "nickname": "Lamp",
         "_type": "bulb",
         "ip": "192.168.1.106",
-        "default_rule": 75,
+        "default_rule": "75",
         "schedule": {
             "08:00": "100",
             "22:00": "35"
@@ -75,7 +75,7 @@
         "pin": "26",
         "min_rule": "0",
         "max_rule": "1023",
-        "default_rule": 721,
+        "default_rule": "721",
         "schedule": {
 
         }
@@ -93,7 +93,7 @@
         "nickname": "TV Bias Lights",
         "_type": "wled",
         "ip": "192.168.1.110",
-        "default_rule": 128,
+        "default_rule": "128",
         "schedule": {
             "08:00": "100"
         },
@@ -135,7 +135,7 @@
         "_type": "pir",
         "nickname": "Motion",
         "pin": "4",
-        "default_rule": 5,
+        "default_rule": "5",
         "targets": [
             "device1",
             "device2",
@@ -193,7 +193,7 @@
         "nickname": "Temperature",
         "mode": "cool",
         "tolerance": "3",
-        "default_rule": 71,
+        "default_rule": "71",
         "targets": [
             "device4",
             "device7"

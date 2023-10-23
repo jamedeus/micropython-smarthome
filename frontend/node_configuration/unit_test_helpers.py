@@ -6,6 +6,7 @@ import tempfile
 from django.conf import settings
 from django.test import Client, TestCase
 from .models import Config, Node
+from validation_constants import config_templates
 from helper_functions import get_cli_config, write_cli_config, load_unit_test_config
 
 
@@ -165,171 +166,183 @@ def simulate_corrupt_filesystem_upload(self, src_file, dst_file):
 # Simulated input from user creating config with frontend
 # Used by GenerateConfigFileTests, DeleteConfigTests, DuplicateDetectionTests
 request_payload = {
-    'friendlyName': 'Unit Test Config',
-    'location': 'build pipeline',
-    'floor': '0',
-    'ssid': 'mynetwork',
-    'password': 'hunter2',
-    'irblaster_configured': 'on',
-    'ir_blaster_pin': '23',
-    'irblaster-tv': 'on',
-    'sensor1': {
-        '_type': 'pir',
-        'nickname': 'Motion',
-        'pin': '4',
-        'default_rule': 5,
-        'targets': [
-            'device1',
-            'device2',
-            'device5',
-            'device6'
-        ],
-        'schedule': {
-            '08:00': '5',
-            '22:00': '1'
+    "TITLE": "Create New Config",
+    "metadata": {
+        "id": "Unit Test Config",
+        "floor": "0",
+        "location": "build pipeline",
+        "schedule_keywords": {
+            "sunrise": "06:00",
+            "sunset": "18:00"
         }
     },
-    'sensor2': {
-        '_type': 'switch',
-        'nickname': 'Switch',
-        'pin': '5',
-        'default_rule': 'enabled',
-        'targets': [
-            'device4',
-            'device7'
-        ],
-        'schedule': {}
+    "wifi": {
+        "ssid": "mynetwork",
+        "password": "hunter2"
     },
-    'sensor3': {
-        '_type': 'dummy',
-        'nickname': 'Override',
-        'default_rule': 'on',
-        'targets': [
-            'device3'
-        ],
-        'schedule': {
-            '06:00': 'on',
-            '18:00': 'off'
+    "ir_blaster": {
+        "pin": "23",
+        "target": [
+            "tv"
+        ]
+    },
+    "device1": {
+        "_type": "dimmer",
+        "nickname": "Overhead",
+        "ip": "192.168.1.105",
+        "min_rule": "1",
+        "max_rule": "100",
+        "default_rule": "100",
+        "schedule": {
+            "08:00": "100",
+            "22:00": "35"
         }
     },
-    'sensor4': {
-        '_type': 'desktop',
-        'nickname': 'Activity',
-        'ip': '192.168.1.150',
-        'default_rule': 'enabled',
-        'targets': [
-            'device1',
-            'device2',
-            'device5',
-            'device6'
-        ],
-        'schedule': {
-            '08:00': 'enabled',
-            '22:00': 'disabled'
+    "device2": {
+        "_type": "bulb",
+        "nickname": "Lamp",
+        "ip": "192.168.1.106",
+        "min_rule": "1",
+        "max_rule": "100",
+        "default_rule": "75",
+        "schedule": {
+            "08:00": "100",
+            "22:00": "35"
         }
     },
-    'sensor5': {
-        '_type': 'si7021',
-        'nickname': 'Temperature',
-        'mode': 'cool',
-        'tolerance': '3',
-        'default_rule': 71,
-        'targets': [
-            'device4',
-            'device7'
-        ],
-        'schedule': {
-            '08:00': '73',
-            '22:00': '69'
+    "device3": {
+        "_type": "tasmota-relay",
+        "nickname": "Porch Light",
+        "ip": "192.168.1.107",
+        "default_rule": "enabled",
+        "schedule": {
+            "06:00": "disabled",
+            "18:00": "enabled"
         }
     },
-    'device1': {
-        'nickname': 'Overhead',
-        '_type': 'dimmer',
-        'ip': '192.168.1.105',
-        'default_rule': 100,
-        'min_rule': '1',
-        'max_rule': '100',
-        'schedule': {
-            '08:00': '100',
-            '22:00': '35'
+    "device4": {
+        "_type": "dumb-relay",
+        "nickname": "Fan",
+        "default_rule": "disabled",
+        "pin": "18",
+        "schedule": {}
+    },
+    "device5": {
+        "_type": "desktop",
+        "nickname": "Screen",
+        "ip": "192.168.1.150",
+        "default_rule": "enabled",
+        "schedule": {
+            "08:00": "enabled",
+            "22:00": "disabled"
         }
     },
-    'device2': {
-        'nickname': 'Lamp',
-        '_type': 'bulb',
-        'ip': '192.168.1.106',
-        'default_rule': 75,
-        'min_rule': '1',
-        'max_rule': '100',
-        'schedule': {
-            '08:00': '100',
-            '22:00': '35'
+    "device6": {
+        "_type": "pwm",
+        "nickname": "Cabinet Lights",
+        "min_rule": "0",
+        "max_rule": "1023",
+        "default_rule": "721",
+        "pin": "26",
+        "schedule": {}
+    },
+    "device7": {
+        "_type": "mosfet",
+        "nickname": "Humidifier",
+        "default_rule": "disabled",
+        "pin": "19",
+        "schedule": {}
+    },
+    "device8": {
+        "_type": "wled",
+        "nickname": "TV Bias Lights",
+        "ip": "192.168.1.110",
+        "min_rule": "1",
+        "max_rule": "255",
+        "default_rule": "128",
+        "schedule": {
+            "08:00": "100"
         }
     },
-    'device3': {
-        'nickname': 'Porch Light',
-        '_type': 'tasmota-relay',
-        'ip': '192.168.1.107',
-        'default_rule': 'enabled',
-        'schedule': {
-            '06:00': 'disabled',
-            '18:00': 'enabled'
+    "device9": {
+        "_type": "api-target",
+        "nickname": "Remote Control",
+        "ip": "127.0.0.1",
+        "default_rule": "{\"on\":[\"ir_key\",\"tv\",\"power\"],\"off\":[\"ir_key\",\"tv\",\"power\"]}",
+        "schedule": {
+            "22:00": "{\"on\":[\"ir_key\",\"tv\",\"power\"],\"off\":[\"ir_key\",\"tv\",\"power\"]}"
         }
     },
-    'device4': {
-        'nickname': 'Fan',
-        '_type': 'dumb-relay',
-        'pin': '18',
-        'default_rule': 'disabled',
-        'schedule': {}
+    "sensor1": {
+        "_type": "pir",
+        "nickname": "Motion",
+        "default_rule": "5",
+        "pin": "4",
+        "schedule": {
+            "08:00": "5",
+            "22:00": "1"
+        },
+        "targets": [
+            "device1",
+            "device2",
+            "device5",
+            "device6"
+        ]
     },
-    'device5': {
-        'nickname': 'Screen',
-        '_type': 'desktop',
-        'ip': '192.168.1.150',
-        'default_rule': 'enabled',
-        'schedule': {
-            '08:00': 'enabled',
-            '22:00': 'disabled'
-        }
+    "sensor2": {
+        "_type": "switch",
+        "nickname": "Switch",
+        "default_rule": "enabled",
+        "pin": "5",
+        "schedule": {},
+        "targets": [
+            "device4",
+            "device7"
+        ]
     },
-    'device6': {
-        'nickname': 'Cabinet Lights',
-        '_type': 'pwm',
-        'pin': '26',
-        'min_rule': '0',
-        'max_rule': '1023',
-        'default_rule': 721,
-        'schedule': {}
+    "sensor3": {
+        "_type": "dummy",
+        "nickname": "Override",
+        "default_rule": "on",
+        "schedule": {
+            "06:00": "on",
+            "18:00": "off"
+        },
+        "targets": [
+            "device3"
+        ]
     },
-    'device7': {
-        'nickname': 'Humidifier',
-        '_type': 'mosfet',
-        'pin': '19',
-        'default_rule': 'disabled',
-        'schedule': {}
+    "sensor4": {
+        "_type": "desktop",
+        "nickname": "Activity",
+        "default_rule": "enabled",
+        "ip": "192.168.1.150",
+        "schedule": {
+            "08:00": "enabled",
+            "22:00": "disabled"
+        },
+        "targets": [
+            "device1",
+            "device2",
+            "device5",
+            "device6"
+        ]
     },
-    'device8': {
-        'nickname': 'TV Bias Lights',
-        '_type': 'wled',
-        'ip': '192.168.1.110',
-        'min_rule': '1',
-        'max_rule': '255',
-        'default_rule': 128,
-        'schedule': {
-            '08:00': '100'
-        }
-    },
-    'device9': {
-        'nickname': 'Remote Control',
-        '_type': 'api-target',
-        'ip': '127.0.0.1',
-        'default_rule': '{"on":["ir_key","tv","power"],"off":["ir_key","tv","power"]}',
-        'schedule': {
-            '22:00': '{"on":["ir_key","tv","power"],"off":["ir_key","tv","power"]}'
-        }
-    },
+    "sensor5": {
+        "_type": "si7021",
+        "nickname": "Temperature",
+        "default_rule": "71",
+        "mode": "cool",
+        "tolerance": "3",
+        "schedule": {
+            "08:00": "73",
+            "22:00": "69"
+        },
+        "targets": [
+            "device4",
+            "device7"
+        ]
+    }
 }
 
 
@@ -773,7 +786,8 @@ test_config_1_edit_context = {
             ],
             "ignore": {}
         }
-    }
+    },
+    "templates": config_templates
 }
 
 
@@ -972,7 +986,8 @@ test_config_2_edit_context = {
             ],
             "ignore": {}
         }
-    }
+    },
+    "templates": config_templates
 }
 
 
@@ -1253,5 +1268,6 @@ test_config_3_edit_context = {
             },
             "ignore": {}
         }
-    }
+    },
+    "templates": config_templates
 }

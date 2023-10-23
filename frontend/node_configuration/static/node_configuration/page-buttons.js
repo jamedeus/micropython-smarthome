@@ -78,7 +78,7 @@ function handle_new_device(device, nickname, type) {
     for (sensor of sensors) {
         const sen_id = sensor.id.split("-")[0];
 
-        template = `<input type='checkbox' class='form-check-input ${sen_id} ${device} target' id='target-${sen_id}-${device}' value='target-${sen_id}-${device}'>
+        template = `<input type='checkbox' class='form-check-input ${sen_id} ${device} target' id='target-${sen_id}-${device}' value='target-${sen_id}-${device}' oninput="update_config_targets(this);">
                     <label for='target-${sen_id}-${device}' class='form-check-label ${sen_id} ${device} target-label'>${nickname}</label>
                     <br class='${device}'>`;
 
@@ -150,7 +150,7 @@ function handle_new_sensor(sensor, nickname, type) {
 
     // Iterate devices, add checkbox for each to new sensor card
     for (device in instances['devices']) {
-        template += `<input type='checkbox' class='form-check-input ${device} ${sensor} target' id='target-${sensor}-${device}' value='target-${sensor}-${device}'>
+        template += `<input type='checkbox' class='form-check-input ${device} ${sensor} target' id='target-${sensor}-${device}' value='target-${sensor}-${device}' oninput="update_config_targets(this);">
                      <label for='target-${sensor}-${device}' class='form-check-label ${device} ${sensor} target-label'>${instances['devices'][device]['output']['nickname']}</label><br>`;
     };
 

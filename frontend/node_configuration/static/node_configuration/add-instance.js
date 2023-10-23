@@ -19,7 +19,7 @@ Array.from(document.getElementsByClassName("sensorType")).forEach(function(senso
 function create_nickname_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-nickname" class="${id}"><b>Nickname:</b></label>
-                <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
+                <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" required>
             </div>`
 }
 
@@ -28,7 +28,7 @@ function create_nickname_input(id) {
 function create_pin_dropdown_sensor(id) {
     return `<div class="mb-2">
                 <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
-                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
+                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" required>
                     <option selected disabled>Select pin</option>
                     <option value="4">4</option>
                     <option value="5">5</option>
@@ -60,7 +60,7 @@ function create_pin_dropdown_sensor(id) {
 function create_pin_dropdown_device(id) {
     return `<div class="mb-2">
                 <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
-                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" required>
+                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" required>
                     <option selected disabled>Select pin</option>
                     <option value="4">4</option>
                     <option value="13">13</option>
@@ -85,7 +85,7 @@ function create_pin_dropdown_device(id) {
 function create_standard_rule_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
-                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" required>
+                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" oninput="update_config(this);" required>
                     <option value="enabled">Enabled</option>
                     <option value="disabled">Disabled</option>
                 </select>
@@ -97,7 +97,7 @@ function create_standard_rule_input(id) {
 function create_on_off_rule_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
-                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" required>
+                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" oninput="update_config(this);" required>
                     <option>Select default rule</option>
                     <option value="on">On</option>
                     <option value="off">Off</option>
@@ -117,7 +117,7 @@ function create_slider_rule_input(id, min, max, display_min, display_max, displa
                 <label for="${id}-default_rule" class="mt-1 ${id}"><b>Default Rule:</b></label>
                 <div class="d-flex flex-row align-items-center my-2">
                     <button id="${id}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="${button_step}"><i class="bi-dash-lg"></i></button>
-                    <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="${min}" max="${max}" data-displaymin="${display_min}" data-displaymax="${display_max}" data-displaytype="${display_type}" step="${step}" value="" autocomplete="off">
+                    <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="${min}" max="${max}" data-displaymin="${display_min}" data-displaymax="${display_max}" data-displaytype="${display_type}" step="${step}" value="" oninput="update_config(this);" autocomplete="off">
                     <button id="${id}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="${button_step}"><i class="bi-plus-lg"></i></button>
                 </div>
             </div>`
@@ -128,13 +128,15 @@ function create_slider_rule_input(id, min, max, display_min, display_max, displa
 function create_ip_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-ip" class="${id}"><b>IP:</b></label>
-                <input type="text" class="form-control ${id} ip-input validate" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" required>
+                <input type="text" class="form-control ${id} ip-input validate" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" oninput="update_config(this);" required>
             </div>`
 }
 
 
 // Takes id, min, max (all int), returns advanced settings collapse
 // div template with inputs to configure min_rule, max_rule
+// BUG update_config listener adds raw value before constrained to range
+// ie if max=100 and user enters 1000 then 1000 is added to config, 100 shown on screen
 function create_advanced_settings_dimmable_light(id, min, max) {
     return `<div class="mt-3 text-center">
                 <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#${id}-advanced_settings" role="button" aria-expanded="false" aria-controls="${id}-advanced_settings">Advanced</a>
@@ -143,12 +145,12 @@ function create_advanced_settings_dimmable_light(id, min, max) {
             <div id="${id}-advanced_settings" class="collapse">
                 <div class="mb-2">
                     <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
-                    <input type="min" class="form-control ${id} rule-limits" id="${id}-min_rule" placeholder="${min}" value="${min}" data-min="${min}" data-max="${max}" required>
+                    <input type="min" class="form-control ${id} rule-limits" id="${id}-min_rule" placeholder="${min}" value="${min}" data-min="${min}" data-max="${max}" oninput="update_config(this);" required>
                 </div>
 
                 <div class="mb-2">
                     <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
-                    <input type="text" class="form-control ${id} rule-limits" id="${id}-max_rule" placeholder="${max}" value="${max}" data-min="${min}" data-max="${max}" required>
+                    <input type="text" class="form-control ${id} rule-limits" id="${id}-max_rule" placeholder="${max}" value="${max}" data-min="${min}" data-max="${max}" oninput="update_config(this);" required>
                 </div>
             </div>`
 }
@@ -200,7 +202,7 @@ function get_template(id, type, type_metadata, category) {
     if (type == "si7021") {
         template += `<div class="mb-2">
                          <label class="form-label ${id}" for="${id}-mode"><b>Mode:</b></label>
-                         <select id="${id}-mode" class="form-select mb-3 ${id}" required>
+                         <select id="${id}-mode" class="form-select mb-3 ${id}" oninput="update_config(this);" required>
                              <option value="cool" id="cool">Cool</option>
                              <option value="heat" id="heat">Heat</option>
                          </select>
@@ -208,13 +210,13 @@ function get_template(id, type, type_metadata, category) {
 
                      <div class="mb-2">
                          <label for="${id}-tolerance" class="${id}"><b>Tolerance:</b></label>
-                         <input type="text" class="form-control ${id} thermostat" id="${id}-tolerance" placeholder="" required>
+                         <input type="text" class="form-control ${id} thermostat" id="${id}-tolerance" placeholder="" oninput="update_config(this);" required>
                      </div>`
 
     } else if (type == "api-target") {
         template += `<div class="mb-2">
                          <label for="${id}-ip" class="${id}"><b>Target Node:</b></label>
-                         <select id="${id}-ip" class="form-select mb-3 ${id}" onchange="api_target_selected(this)">
+                         <select id="${id}-ip" class="form-select mb-3 ${id}" onchange="api_target_selected(this)" oninput="update_config(this);">
                              <option value="" selected="selected" selected></option>`
 
         for (var x in ApiTargetOptions) {
@@ -231,7 +233,7 @@ function get_template(id, type, type_metadata, category) {
 
                      <div class="mb-2 text-center">
                          <label for="${id}-default_rule" class="${id}" style="display:none;"><b>Default Rule:</b></label>
-                         <input type="default_rule" class="form-control ${id}" id="${id}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('${id}-default_rule button').dataset.original = this.value;" required>
+                         <input type="default_rule" class="form-control ${id}" id="${id}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('${id}-default_rule-button').dataset.original = this.value; update_config(this);" required>
                          </div>`
     };
 
@@ -300,6 +302,10 @@ function load_sensor_section(select) {
     // Wipe instance params and re-populate (type changed)
     instances["sensors"][id].getParams();
     instances["sensors"][id].modified = true;
+
+    // Add correct template to config object
+    // TODO fix context, simplify lookup
+    config[id] = templates['sensor'][metadata['sensors'][type]['name']]
 };
 
 
@@ -325,6 +331,10 @@ function load_device_section(select) {
     // Wipe instance params and re-populate (type changed)
     instances["devices"][id].getParams();
     instances["devices"][id].modified = true;
+
+    // Add correct template to config object
+    // TODO fix context, simplify lookup
+    config[id] = templates['device'][metadata['devices'][type]['name']]
 };
 
 
@@ -332,6 +342,9 @@ function load_device_section(select) {
 async function load_next_device() {
     // Get index of new device (number of existing + 1)
     const index = parseInt(Object.keys(instances.devices).length) + 1;
+
+    // Add section to config object
+    config[`device${index}`] = {};
 
     // Generate device type options from metadata
     let options = "";
@@ -378,6 +391,9 @@ async function load_next_device() {
 async function load_next_sensor() {
     // Get index of new sensor (number of existing + 1)
     const index = parseInt(Object.keys(instances.sensors).length) + 1;
+
+    // Add section to config object
+    config[`sensor${index}`] = {};
 
     // Generate sensor type options from metadata
     let options = "";
@@ -491,14 +507,21 @@ function update_ids(cards, num, target) {
             };
 
             // Delete class instance, re-instantiate with new ID, set new to false to prevent duplicates on page2 + page3
+            // Adjust ID in config object
             if (target.startsWith('device')) {
                 delete instances['devices'][`device${i}`];
                 instances['devices'][`device${i-1}`] = new Device(`device${i-1}`);
                 instances['devices'][`device${i-1}`].new = false;
+
+                config[`device${i-1}`] = config[`device${i}`];
+                delete config[`device${i}`];
             } else {
                 delete instances['sensors'][`sensor${i}`];
                 instances['sensors'][`sensor${i-1}`] = new Sensor(`sensor${i-1}`);
                 instances['sensors'][`sensor${i-1}`].new = false;
+
+                config[`sensor${i-1}`] = config[`sensor${i}`];
+                delete config[`sensor${i}`];
             };
         };
         resolve();
@@ -518,6 +541,7 @@ async function remove_instance(el) {
     // Delete target from instances
     // Get index of target, array of all cards, and add button for delete animation
     if (target.startsWith("device")) {
+        delete config[target];
         delete instances['devices'][target];
         var num = target.replace("device", "");
         var cards = Array.from(document.getElementById("devices").children);
@@ -525,6 +549,7 @@ async function remove_instance(el) {
         // Get height of card to be deleted + 1.5rem (gap between cards)
         var animation_height = document.getElementById(`addDeviceDiv${num}`).clientHeight / remPx + 1.5;
     } else {
+        delete config[target];
         delete instances['sensors'][target];
         var num = target.replace("sensor", "");
         var cards = Array.from(document.getElementById("sensors").children);

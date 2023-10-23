@@ -11,6 +11,7 @@ from Webrepl import Webrepl
 from provision_tools import get_modules, provision
 from .get_api_target_menu_options import get_api_target_menu_options
 from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords, set_gps_coords
+from validation_constants import config_templates
 from validate_config import validate_full_config
 from helper_functions import (
     is_device_or_sensor,
@@ -235,8 +236,21 @@ def get_metadata_context():
 
 
 def new_config(request):
+    # Create context with config skeleton
     context = {
-        "config": {"TITLE": "Create New Config"},
+        "config": {
+            "TITLE": "Create New Config",
+            'metadata': {
+                'id': '',
+                'floor': '',
+                'location': '',
+                'schedule_keywords': get_schedule_keywords_dict()
+            },
+            'wifi': {
+                'ssid': '',
+                'password': ''
+            },
+        },
         "api_target_options": get_api_target_menu_options(),
         "metadata": get_metadata_context(),
         "edit_existing": False
@@ -245,9 +259,11 @@ def new_config(request):
     # Add default wifi credentials if configured
     if len(WifiCredentials.objects.all()) > 0:
         default = WifiCredentials.objects.all()[0]
-        context["config"]["wifi"] = {}
         context["config"]["wifi"]["ssid"] = default.ssid
         context["config"]["wifi"]["password"] = default.password
+
+    # Add device and sensor config templates
+    context['templates'] = config_templates
 
     return render(request, 'node_configuration/edit-config.html', context)
 
@@ -330,6 +346,9 @@ def edit_config(request, name):
         "edit_existing": True
     }
 
+    # Add device and sensor config templates
+    context['templates'] = config_templates
+
     print(json.dumps(context, indent=4))
 
     return render(request, 'node_configuration/edit-config.html', context)
@@ -369,8 +388,15 @@ def generate_config_file(data, edit_existing=False):
     print("Input:")
     print(json.dumps(data, indent=4))
 
+    # Delete title, only used for template
+    del data['TITLE']
+
+    # Cast floor to int (required by validator)
+    # TODO does this really matter? Why was the validator added?
+    data['metadata']['floor'] = int(data['metadata']['floor'])
+
     # Get filename (all lowercase, replace spaces with hyphens)
-    filename = get_config_filename(data["friendlyName"])
+    filename = get_config_filename(data["metadata"]["id"])
 
     print(f"\nFilename: {filename}\n")
 
@@ -382,66 +408,38 @@ def generate_config_file(data, edit_existing=False):
             return JsonResponse({'Error': 'Config not found'}, safe=False, status=404)
 
     # Prevent overwriting existing config, unless editing existing
-    if not edit_existing and is_duplicate(filename, data["friendlyName"]):
+    if not edit_existing and is_duplicate(filename, data["metadata"]["id"]):
         return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
-
-    # Populate metadata and credentials directly from JSON
-    config = {
-        "metadata": {
-            "id": data["friendlyName"],
-            "location": data["location"],
-            "floor": data["floor"],
-            "schedule_keywords": get_schedule_keywords_dict()
-        },
-        "wifi": {
-            "ssid": data["ssid"],
-            "password": data["password"]
-        }
-    }
 
     # If default location set, add coordinates to config
     if len(GpsCoordinates.objects.all()) > 0:
         location = GpsCoordinates.objects.all()[0]
-        config["metadata"]["gps"] = {"lat": str(location.lat), "lon": str(location.lon)}
+        data["metadata"]["gps"] = {"lat": str(location.lat), "lon": str(location.lon)}
 
-    # Add all devices and sensors to config
-    for i in data:
-        # Convert ApiTarget rules to correct format
-        if is_device(i) and data[i]["_type"] == "api-target":
-            config[i] = data[i]
-            config[i]["default_rule"] = json.loads(config[i]["default_rule"])
-            for rule in config[i]["schedule"]:
-                config[i]["schedule"][rule] = json.loads(config[i]["schedule"][rule])
-
-        # No changes needed for all other devices and sensors
-        elif is_device_or_sensor(i):
-            config[i] = data[i]
-
-    # Add IR Blaster config if present
-    if "irblaster_configured" in data.keys():
-        config["ir_blaster"] = {"pin": "", "target": []}
-        config["ir_blaster"]["pin"] = data["ir_blaster_pin"]
-        for target in [key for key in data.keys() if key.startswith('irblaster-')]:
-            codes = target.split('-')[1]
-            config["ir_blaster"]["target"].append(codes)
+    # If config contains ApiTarget, convert string rules to dict
+    for i in [i for i in data.keys() if is_device(i)]:
+        if data[i]['_type'] == 'api-target':
+            data[i]['default_rule'] = json.loads(data[i]['default_rule'])
+            for rule in data[i]['schedule']:
+                data[i]['schedule'][rule] = json.loads(data[i]['schedule'][rule])
 
     print("Output:")
-    print(json.dumps(config, indent=4))
+    print(json.dumps(data, indent=4))
 
     # Validate completed config, return error if invalid
-    valid = validate_full_config(config)
+    valid = validate_full_config(data)
     if valid is not True:
         print(f"\nERROR: {valid}\n")
         return JsonResponse({'Error': valid}, safe=False, status=400)
 
     # If creating new config, add to models + write to disk
     if not edit_existing:
-        new = Config.objects.create(config=config, filename=filename)
+        new = Config.objects.create(config=data, filename=filename)
         new.write_to_disk()
 
     # If modifying old config, update JSON object and write to disk
     else:
-        model_entry.config = config
+        model_entry.config = data
         model_entry.save()
 
     return JsonResponse("Config created.", safe=False, status=200)

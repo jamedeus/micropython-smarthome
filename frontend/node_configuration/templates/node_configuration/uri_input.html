@@ -1,4 +1,4 @@
 <div class="mb-2">
     <label for="{{category}}{{forloop.counter}}-uri" class="{{category}}{{forloop.counter}}"><b>URI:</b></label>
-    <input type="text" class="form-control {{category}}{{forloop.counter}} validate" id="{{category}}{{forloop.counter}}-uri" placeholder="IP address or URL" value="{{params.uri}}" pattern="(?:(?:http|https):\/\/)?(?:\S+(?::\S*)?@)?(?:(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?::\d{1,5})?|(?:(?:http|https):\/\/)?[a-zA-Z0-9.]+(?:-[a-zA-Z0-9]+)*(?:\.[a-zA-Z]{2,6})+(?:\/\S*)?" required>
+    <input type="text" class="form-control {{category}}{{forloop.counter}} validate" id="{{category}}{{forloop.counter}}-uri" placeholder="IP address or URL" value="{{params.uri}}" pattern="(?:(?:http|https):\/\/)?(?:\S+(?::\S*)?@)?(?:(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?::\d{1,5})?|(?:(?:http|https):\/\/)?[a-zA-Z0-9.]+(?:-[a-zA-Z0-9]+)*(?:\.[a-zA-Z]{2,6})+(?:\/\S*)?" oninput="update_config(this);" required>
 </div>

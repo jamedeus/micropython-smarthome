@@ -94,29 +94,29 @@
                     <h2>Metadata</h2>
                     <div class="mb-2">
                         <label for="friendlyName"><b>Name:</b></label>
-                        <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{config.NAME}}" oninput="prevent_duplicate_friendly_name(this)" aria-describedby="friendlyName-feedback" required>
+                        <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{config.NAME}}" oninput="prevent_duplicate_friendly_name(this);update_config_metadata(this);" aria-describedby="friendlyName-feedback" required>
                         <div id="friendlyName-feedback" class="invalid-feedback">
                             Name must be unique
                         </div>
                     </div>
                     <div class="mb-2">
                         <label for="location"><b>Location:</b></label>
-                        <input type="text" class="form-control" id="location" placeholder="" name="location" value="{{config.metadata.location}}" required>
+                        <input type="text" class="form-control" id="location" placeholder="" name="location" value="{{config.metadata.location}}" oninput="update_config_metadata(this);" required>
                     </div>
                     <div class="mb-2">
                         <label for="floor"><b>Floor:</b></label>
-                        <input type="text" class="form-control" id="floor" placeholder="" name="floor" value="{{config.metadata.floor}}" required>
+                        <input type="text" class="form-control" id="floor" placeholder="" name="floor" value="{{config.metadata.floor}}" oninput="update_config_metadata(this);" required>
                     </div>
                 </div>
                 <div class="mb-4">
                     <h2>Wifi</h2>
                     <div class="mb-2">
                         <label for="ssid"><b>SSID:</b></label>
-                        <input type="text" class="form-control" id="ssid" placeholder="" name="ssid" value="{{config.wifi.ssid}}" onchange="open_toast()" required>
+                        <input type="text" class="form-control" id="ssid" placeholder="" name="ssid" value="{{config.wifi.ssid}}" onchange="open_toast()" oninput="update_config_wifi(this);" required>
                     </div>
                     <div class="mb-2">
                         <label for="password"><b>Password:</b></label>
-                        <input type="password" class="form-control" id="password" placeholder="" name="password" value="{{config.wifi.password}}" onchange="open_toast()" required>
+                        <input type="password" class="form-control" id="password" placeholder="" name="password" value="{{config.wifi.password}}" onchange="open_toast()" oninput="update_config_wifi(this);" required>
                     </div>
                 </div>
 
@@ -137,9 +137,9 @@
                                 <div class="mb-2">
                                     <label for="device{{ config.devices|length|add:1 }}-remotes" class="device{{config.devices|length|add:1}}"><b>Virtual remotes:</b></label>
                                     <div id="device{{ config.devices|length|add:1 }}-remotes" class="form-check device{{config.devices|length|add:1}}">
-                                        <input class="form-check-input" type="checkbox" name="irblaster-tv" id="checkbox-tv" {% if "tv" in config.ir_blaster.target %}checked{% endif %}>
+                                        <input class="form-check-input ir_target" type="checkbox" name="irblaster-tv" id="checkbox-tv" {% if "tv" in config.ir_blaster.target %}checked{% endif %}>
                                         <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
-                                        <input class="form-check-input" type="checkbox" name="irblaster-ac" id="checkbox-ac" {% if "ac" in config.ir_blaster.target %}checked{% endif %}>
+                                        <input class="form-check-input ir_target" type="checkbox" name="irblaster-ac" id="checkbox-ac" {% if "ac" in config.ir_blaster.target %}checked{% endif %}>
                                         <label class="form-check-label" for="checkbox-ac">AC (Whynter)</label>
                                     </div>
                                 </div>
@@ -152,11 +152,24 @@
                             if (button.dataset.selected === 'true') {
                                 button.dataset.selected = 'false';
                                 irblaster_configured.checked = false;
+                                get_ir_blaster_params(false);
                             } else {
                                 button.dataset.selected = 'true';
                                 irblaster_configured.checked = true;
+                                get_ir_blaster_params(true);
                             };
                             console.log(button.dataset.selected);
+                        };
+
+                        // Takes bool, remove IR Blaster from config if False, add and get params if True
+                        function get_ir_blaster_params(enabled) {
+                            if (!enabled) {
+                                delete config['ir_blaster'];
+                            } else {
+                                config['ir_blaster'] = {
+                                    'pin': document.getElementById('device0-pin').value,
+                                };
+                            };
                         };
                     </script>
                 </div>
@@ -214,7 +227,7 @@
 
                                 {# Add option for each existing device #}
                                 {% for device, dparams in config.devices.items %}
-                                    <input type="checkbox" class="form-check-input {{sensor}} {{device}} target" id="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %}>
+                                    <input type="checkbox" class="form-check-input {{sensor}} {{device}} target" id="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %} oninput="update_config_targets(this);">
                                     <label for="target-{{sensor}}-{{device}}" class="form-check-label {{sensor}} {{device}} target-label">{{ dparams.nickname }}</label>
                                     <br class="{{device}}">
                                 {% endfor %}
@@ -335,6 +348,8 @@
     {{ api_target_options|json_script:"context" }}
     {{ metadata|json_script:"metadata" }}
     {{ edit_existing|json_script:"edit_existing" }}
+    {{ config|json_script:"config" }}
+    {{ templates|json_script:"templates" }}
 
     <script>
         // Hide everything except first page
@@ -357,6 +372,46 @@
         // Store parameters used to re-upload config after editing
         const target_ip = "{{ config.IP }}";
         const target_filename = "{{ config.FILENAME }}";
+
+        // Store full config, templates used to add new devices and sensors
+        const config = JSON.parse(document.getElementById("config").textContent);
+        const templates = JSON.parse(document.getElementById("templates").textContent);
+
+        // Called when any metadata field modified, adds value to config object
+        function update_config_metadata(input) {
+            if (input.id === "friendlyName") {
+                var param = "id";
+            } else {
+                var param = input.id;
+            };
+            config['metadata'][param] = input.value;
+        };
+
+        // Called when any wifi field modified, adds value to config object
+        function update_config_wifi(input) {
+            config['wifi'][input.id] = input.value;
+        };
+
+        // Called when any device/sensor field  modified, adds value to config object
+        // TODO doesn't work for slider +/- buttons
+        function update_config(input) {
+            // Get instance ID, param name
+            const [id, param] = input.id.split('-');
+
+            // Add to config object
+            config[id][param] = input.value;
+        };
+
+        // Called when any target box checked or unchecked, adds value to config object
+        function update_config_targets(input) {
+            const [_, sensor, device] = input.id.split('-');
+            if (input.checked) {
+                config[sensor]['targets'].push(device);
+            } else {
+                // Remove existing value if box unchecked
+                config[sensor]['targets'] = config[sensor]['targets'].filter(item => item !== device);
+            };
+        };
 
         // Track if user made changes (triggers warning before going back to overview)
         let changes_made = false;

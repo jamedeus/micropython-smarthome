@@ -5,7 +5,7 @@
     <label for="{{category}}{{forloop.counter}}-default_rule" class="mt-1 {{category}}{{forloop.counter}}"><b>Default Rule:</b></label>
     <div class="d-flex flex-row align-items-center my-2">
         <button id="{{category}}{{forloop.counter}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-dash-lg"></i></button>
-        <input id="{{category}}{{forloop.counter}}-default_rule" type="range" class="{{category}}{{forloop.counter}} mx-auto" min="{{ params.metadata.rule_limits.0 }}" max="{{ params.metadata.rule_limits.1 }}" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" autocomplete="off">
+        <input id="{{category}}{{forloop.counter}}-default_rule" type="range" class="{{category}}{{forloop.counter}} mx-auto" min="{{ params.metadata.rule_limits.0 }}" max="{{ params.metadata.rule_limits.1 }}" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" oninput="update_config(this);" autocomplete="off">
         <button id="{{category}}{{forloop.counter}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-plus-lg"></i></button>
     </div>
 </div>
@@ -18,11 +18,11 @@
 <div id="{{category}}{{forloop.counter}}-advanced_settings" class="collapse">
     <div class="mb-2">
         <label for="{{category}}{{ forloop.counter }}-min_rule" class="{{category}}{{forloop.counter}}"><b>Min brightness:</b></label>
-        <input type="text" class="form-control {{category}}{{forloop.counter}} rule-limits" id="{{category}}{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ params.metadata.rule_limits.0 }}" data-max="{{ params.metadata.rule_limits.1 }}" required>
+        <input type="text" class="form-control {{category}}{{forloop.counter}} rule-limits" id="{{category}}{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ params.metadata.rule_limits.0 }}" data-max="{{ params.metadata.rule_limits.1 }}" oninput="update_config(this);" required>
     </div>
 
     <div class="mb-2">
         <label for="{{category}}{{ forloop.counter }}-max_rule" class="{{category}}{{forloop.counter}}"><b>Max brightness:</b></label>
-        <input type="text" class="form-control {{category}}{{forloop.counter}} rule-limits" id="{{category}}{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ params.metadata.rule_limits.0 }}" data-max="{{ params.metadata.rule_limits.1 }}" required>
+        <input type="text" class="form-control {{category}}{{forloop.counter}} rule-limits" id="{{category}}{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ params.metadata.rule_limits.0 }}" data-max="{{ params.metadata.rule_limits.1 }}" oninput="update_config(this);" required>
     </div>
 </div>

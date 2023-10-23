@@ -1,25 +1,56 @@
 // Takes true (edit existing config and reupload) or false (create new config)
 async function submit_form(edit) {
-    const value = Object.fromEntries(new FormData(document.getElementById("form")).entries());
-
-    // Update all instance properties before adding to request body
+    // Update all instance properties, add schedule rules to config
     for (sensor in instances['sensors']) {
         instances['sensors'][sensor].update();
-        value[sensor] = instances.sensors[sensor].output;
+
+        // Add schedule rules to output object
+        config[sensor]['schedule'] = instances['sensors'][sensor]['output']['schedule'];
+
+        // Add missing parameters (if any) to output object
+        for (param in config[sensor]) {
+            if (config[sensor][param] === 'placeholder') {
+                config[sensor][param] = instances['sensors'][sensor]['output'][param];
+            };
+        };
     };
 
     for (device in instances['devices']) {
         instances['devices'][device].update();
-        value[device] = instances.devices[device].output;
+
+        // Add schedule rules to output object
+        config[device]['schedule'] = instances['devices'][device]['output']['schedule'];
+
+        // Add missing parameters (if any) to output object
+        for (param in config[device]) {
+            if (config[device][param] === 'placeholder') {
+                config[device][param] = instances['devices'][device]['output'][param];
+            };
+        };
     };
 
-    console.log(value)
+    // Add IR Blaster config if present
+    if (irblaster_configured) {
+        config['ir_blaster'] = {
+            'pin': document.getElementById('device0-pin').value,
+            'target': []
+        };
+        document.querySelectorAll('.ir_target').forEach(function(target) {
+            if (target.checked) {
+                config['ir_blaster']['target'].push(target.id.split('-')[1]);
+            };
+        });
+    } else {
+        delete config['ir_blaster'];
+    };
+
+    console.log(config)
 
     // Generate config file from form data
     if (edit) {
-        var response = await send_post_request("generate_config_file/True", value);
+        var response = await send_post_request("generate_config_file/True", config);
     } else {
-        var response = await send_post_request("generate_config_file", value);
+        var response = await send_post_request("generate_config_file", config);
     };
 
     // If successfully created new config, redirect to overview

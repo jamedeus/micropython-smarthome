@@ -18,7 +18,7 @@
             <div class="card-body {{category}}{{forloop.counter}} configParams">
                 <div class="mb-2">
                     <label for="{{category}}{{forloop.counter}}-nickname" class="{{category}}{{forloop.counter}}"><b>Nickname:</b></label>
-                    <input type="text" class="form-control {{category}}{{forloop.counter}} nickname" id="{{category}}{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event)" required>
+                    <input type="text" class="form-control {{category}}{{forloop.counter}} nickname" id="{{category}}{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" required>
                     <div id="{{category}}-nickname-feedback" class="invalid-feedback">Name already in use</div>
                 </div>
 
@@ -83,7 +83,7 @@
 
                     <div class="mb-2">
                         <label for="sensor{{forloop.counter}}-tolerance" class="sensor{{forloop.counter}}"><b>Tolerance:</b></label>
-                        <input type="text" class="form-control sensor{{forloop.counter}} thermostat" id="sensor{{forloop.counter}}-tolerance" placeholder="" value="{{params.tolerance}}" required>
+                        <input type="text" class="form-control sensor{{forloop.counter}} thermostat" id="sensor{{forloop.counter}}-tolerance" placeholder="" value="{{params.tolerance}}" oninput="update_config(this);" required>
                     </div>
                 {% endif %}
             </div>
