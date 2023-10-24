@@ -1,6 +1,9 @@
 {% load static %}
 {% load pwa %}
 {% load combine_dicts %}
+{% load is_device %}
+{% load is_sensor %}
+{% load only_digits %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -180,9 +183,11 @@
                 <div id="sensors" class="col-sm">
                     <h2 class="text-center">Add Sensors</h2>
 
-                    {% for sensor, params in sensors.items %}
-                        {# Add card with dynamically-selected input components based on sensor metadata #}
-                        {% include "node_configuration/instance_card.html" with id="addSensorDiv" category="sensor" %}
+                    {% for instance, params in config.items %}
+                        {% if instance|is_sensor %}
+                            {# Add card with dynamically-selected input components based on sensor metadata #}
+                            {% include "node_configuration/instance_card.html" with id="addSensorDiv" category="sensor" index=instance|only_digits %}
+                        {% endif %}
                     {% endfor %}
 
                     <!-- Button used to add another sensor card -->
@@ -194,9 +199,11 @@
                 <div id="devices" class="col-sm">
                     <h2 class="text-center">Add Devices</h2>
 
-                    {% for device, params in devices.items %}
-                        {# Add card with dynamically-selected input components based on device metadata #}
-                        {% include "node_configuration/instance_card.html" with id="addDeviceDiv" category="device" %}
+                    {% for instance, params in config.items %}
+                        {% if instance|is_device %}
+                            {# Add card with dynamically-selected input components based on device metadata #}
+                            {% include "node_configuration/instance_card.html" with id="addDeviceDiv" category="device" index=instance|only_digits %}
+                        {% endif %}
                     {% endfor %}
 
                     <!-- Button used to add another device card -->
@@ -219,21 +226,25 @@
                 <h3>Select targets for each sensor</h3>
 
                 {# Add targets card for each existing sensor #}
-                {% for sensor, params in sensors.items %}
+                {% for sensor, params in config.items %}
+                {% if sensor|is_sensor %}
                     <div class="card mb-4 {{sensor}}">
                         <div class="card-body">
                             <label id="{{sensor}}-targets-label" for="{{sensor}}-targets" class="card-title {{sensor}}"><b>{{ params.nickname }}</b> targets:</label>
                             <div id="{{sensor}}-targets" class="form-check sensor-targets {{sensor}}">
 
                                 {# Add option for each existing device #}
-                                {% for device, dparams in devices.items %}
+                                {% for device, dparams in config.items %}
+                                {% if device|is_device %}
                                     <input type="checkbox" class="form-check-input {{sensor}} {{device}} target" id="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %} oninput="update_config_targets(this);">
                                     <label for="target-{{sensor}}-{{device}}" class="form-check-label {{sensor}} {{device}} target-label">{{ dparams.nickname }}</label>
                                     <br class="{{device}}">
+                                {% endif %}
                                 {% endfor %}
                             </div>
                         </div>
                     </div>
+                {% endif %}
                 {% endfor %}
             </div>
 
@@ -250,9 +261,8 @@
                 <div id="page3-cards">
 
                 {# Add schedule rules card for each existing device and sensor #}
-                {% if devices %}
-                {% with instances=devices|combine_dicts:sensors %}
-                {% for instance, params in instances.items %}
+                {% for instance, params in config.items %}
+                {% if instance|is_sensor or instance|is_device %}
                     <div class="card mb-4 {{instance}}">
                         <div class="card-body text-center">
                             <label id="{{instance}}-rules-label" class="card-title schedule-rule-card {{instance}}" title="{{instance}} - {{params.type}}">
@@ -298,9 +308,8 @@
                             </div>
                         </div>
                     </div>
-                {% endfor %}
-                {% endwith %}
                 {% endif %}
+                {% endfor %}
                 </div>
 
             <!-- Change page buttons -->

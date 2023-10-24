@@ -279,34 +279,28 @@ def edit_config(request, name):
     # Load config from database
     config = target.config.config
 
-    # Create objects to build context subkeys
-    sensors = {}
-    devices = {}
-
     # Load device and sensor metadata
     metadata = get_metadata_context()
 
     for i in config:
         if is_sensor(i):
-            # Add each sensor, change _type to type (django template limitation)
-            sensors[i] = config[i].copy()
-            sensors[i]["type"] = config.copy()[i]["_type"]
-            sensors[i]["metadata"] = metadata["sensors"][config[i]["_type"]]
-            del sensors[i]["_type"]
+            # Add metadata for each sensor, change _type to type (django template limitation)
+            config[i]["type"] = config[i]["_type"]
+            config[i]["metadata"] = metadata["sensors"][config[i]["_type"]]
+            del config[i]["_type"]
 
         elif is_device(i):
-            # Add each device, change _type to type (django template limitation)
-            devices[i] = config[i].copy()
-            devices[i]["type"] = config.copy()[i]["_type"]
-            devices[i]["metadata"] = metadata["devices"][config[i]["_type"]]
-            del devices[i]["_type"]
+            # Add metadata for each device, change _type to type (django template limitation)
+            config[i]["type"] = config[i]["_type"]
+            config[i]["metadata"] = metadata["devices"][config[i]["_type"]]
+            del config[i]["_type"]
 
             # Correct ApiTarget rule syntax
-            if devices[i]["type"] == "api-target":
-                devices[i]["default_rule"] = json.dumps(devices[i]["default_rule"])
+            if config[i]["type"] == "api-target":
+                config[i]["default_rule"] = json.dumps(config[i]["default_rule"])
 
-                for rule in devices[i]["schedule"]:
-                    devices[i]["schedule"][rule] = json.dumps(devices[i]["schedule"][rule])
+                for rule in config[i]["schedule"]:
+                    config[i]["schedule"][rule] = json.dumps(config[i]["schedule"][rule])
 
     # Build context object:
     # - IP and FILENAME: Used to reupload config
@@ -327,11 +321,6 @@ def edit_config(request, name):
         "templates": config_templates,
         "api_target_options": get_api_target_menu_options(target.friendly_name),
     }
-
-    # Add completed dicts to context with keys sorted alphabetically
-    # Template relies on forloop.counter to determine ID, will not match config if not alphabetical
-    context["sensors"] = {sensor: sensors[sensor] for sensor in sorted(sensors)}
-    context["devices"] = {device: devices[device] for device in sorted(devices)}
 
     print(json.dumps(context, indent=4))
 
@@ -396,6 +385,14 @@ def generate_config_file(data, edit_existing=False):
     if len(GpsCoordinates.objects.all()) > 0:
         location = GpsCoordinates.objects.all()[0]
         data["metadata"]["gps"] = {"lat": str(location.lat), "lon": str(location.lon)}
+
+    # Replace type parameters with _type, remove metadata
+    for i in [i for i in data.keys() if is_device_or_sensor(i)]:
+        if "type" in data[i].keys():
+            data[i]["_type"] = data[i]["type"]
+            del data[i]["type"]
+        if "metadata" in data[i].keys():
+            del data[i]["metadata"]
 
     # If config contains ApiTarget, convert string rules to dict
     for i in [i for i in data.keys() if is_device(i)]:

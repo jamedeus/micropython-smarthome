@@ -1,33 +1,33 @@
-<div id="{{id}}{{ forloop.counter }}" class="mb-4 {{category}}{{forloop.counter}}">
+<div id="{{id}}{{index}}" class="mb-4 {{category}}{{index}}">
     <div class="card">
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                <h4 class="card-title mx-auto my-auto {{category}}{{forloop.counter}}">{{category}}{{ forloop.counter }}</h4>
-                <button class="btn my-auto pe-2 {{category}}{{forloop.counter}} delete" id="{{category}}{{ forloop.counter }}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                <h4 class="card-title mx-auto my-auto {{category}}{{index}}">{{category}}{{index}}</h4>
+                <button class="btn my-auto pe-2 {{category}}{{index}} delete" id="{{category}}{{index}}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
             </div>
 
             {# Add correct instance type dropdown with correct option pre-selected #}
             {% if category == "sensor" %}
-                {% include "node_configuration/sensor_type_dropdown.html" with index=forloop.counter selected=params.type %}
+                {% include "node_configuration/sensor_type_dropdown.html" with selected=params.type %}
             {% else %}
-                {% include "node_configuration/device_type_dropdown.html" with index=forloop.counter selected=params.type %}
+                {% include "node_configuration/device_type_dropdown.html" with selected=params.type %}
             {% endif %}
 
             {# Add card body with nickname input #}
-            <div class="card-body {{category}}{{forloop.counter}} configParams">
+            <div class="card-body {{category}}{{index}} configParams">
                 <div class="mb-2">
-                    <label for="{{category}}{{forloop.counter}}-nickname" class="{{category}}{{forloop.counter}}"><b>Nickname:</b></label>
-                    <input type="text" class="form-control {{category}}{{forloop.counter}} nickname" id="{{category}}{{forloop.counter}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" required>
+                    <label for="{{category}}{{index}}-nickname" class="{{category}}{{index}}"><b>Nickname:</b></label>
+                    <input type="text" class="form-control {{category}}{{index}} nickname" id="{{category}}{{index}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" required>
                     <div id="{{category}}-nickname-feedback" class="invalid-feedback">Name already in use</div>
                 </div>
 
                 {# Add correct input for each config parameter #}
                 {% if "pin" in params %}
                     {% if category == "sensor" %}
-                        {% include "node_configuration/sensor_pin_select.html" with index=forloop.counter %}
+                        {% include "node_configuration/sensor_pin_select.html" %}
                     {% else %}
-                        {% include "node_configuration/device_pin_select.html" with index=forloop.counter pin=params.pin %}
+                        {% include "node_configuration/device_pin_select.html" with pin=params.pin %}
                     {% endif %}
                 {% endif %}
 
@@ -66,8 +66,8 @@
                 {# Add Thermostat-specific inputs #}
                 {% if params.type == "si7021" %}
                     <div class="mb-2">
-                        <label class="form-label sensor{{forloop.counter}}" for="sensor{{forloop.counter}}-mode"><b>Mode:</b></label>
-                        <select id="sensor{{forloop.counter}}-mode" class="form-select mb-3 sensor{{forloop.counter}}" required>
+                        <label class="form-label sensor{{index}}" for="sensor{{index}}-mode"><b>Mode:</b></label>
+                        <select id="sensor{{index}}-mode" class="form-select mb-3 sensor{{index}}" required>
                             {% if params.mode == "cool" %}
                                 <option value="cool" id="cool" selected>Cool</option>
                                 <option value="heat" id="heat">Heat</option>
@@ -82,8 +82,8 @@
                     </div>
 
                     <div class="mb-2">
-                        <label for="sensor{{forloop.counter}}-tolerance" class="sensor{{forloop.counter}}"><b>Tolerance:</b></label>
-                        <input type="text" class="form-control sensor{{forloop.counter}} thermostat" id="sensor{{forloop.counter}}-tolerance" placeholder="" value="{{params.tolerance}}" oninput="update_config(this);" required>
+                        <label for="sensor{{index}}-tolerance" class="sensor{{index}}"><b>Tolerance:</b></label>
+                        <input type="text" class="form-control sensor{{index}} thermostat" id="sensor{{index}}-tolerance" placeholder="" value="{{params.tolerance}}" oninput="update_config(this);" required>
                     </div>
                 {% endif %}
             </div>

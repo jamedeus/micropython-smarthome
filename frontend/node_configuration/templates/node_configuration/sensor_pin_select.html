@@ -1,6 +1,6 @@
 <div class="mb-2">
-    <label for="sensor{{forloop.counter}}-pin" class="sensor{{forloop.counter}}"><b>Pin:</b></label>
-    <select id="sensor{{forloop.counter}}-pin" class="form-select sensor{{forloop.counter}} pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" required>
+    <label for="sensor{{index}}-pin" class="sensor{{index}}"><b>Pin:</b></label>
+    <select id="sensor{{index}}-pin" class="form-select sensor{{index}} pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" required>
         <option disabled>Select pin</option>
         <option value="4" {% if params.pin == "4"  %} selected {% endif %}>4</option>
         <option value="5" {% if params.pin == "5"  %} selected {% endif %}>5</option>

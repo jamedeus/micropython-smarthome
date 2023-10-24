@@ -2,27 +2,27 @@
 {# Used to perform division in template #}
 {# Calculates step that is ~1% of full range #}
 <div class="mb-2">
-    <label for="{{category}}{{forloop.counter}}-default_rule" class="mt-1 {{category}}{{forloop.counter}}"><b>Default Rule:</b></label>
+    <label for="{{category}}{{index}}-default_rule" class="mt-1 {{category}}{{index}}"><b>Default Rule:</b></label>
     <div class="d-flex flex-row align-items-center my-2">
-        <button id="{{category}}{{forloop.counter}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-dash-lg"></i></button>
-        <input id="{{category}}{{forloop.counter}}-default_rule" type="range" class="{{category}}{{forloop.counter}} mx-auto" min="{{ params.metadata.rule_limits.0 }}" max="{{ params.metadata.rule_limits.1 }}" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" oninput="update_config(this);" autocomplete="off">
-        <button id="{{category}}{{forloop.counter}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-plus-lg"></i></button>
+        <button id="{{category}}{{index}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-dash-lg"></i></button>
+        <input id="{{category}}{{index}}-default_rule" type="range" class="{{category}}{{index}} mx-auto" min="{{ params.metadata.rule_limits.0 }}" max="{{ params.metadata.rule_limits.1 }}" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" oninput="update_config(this);" autocomplete="off">
+        <button id="{{category}}{{index}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio params.metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-plus-lg"></i></button>
     </div>
 </div>
 
 {# Advanced settings collapse #}
 <div class="mt-3 text-center">
-    <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#{{category}}{{forloop.counter}}-advanced_settings" role="button" aria-expanded="false" aria-controls="{{category}}{{forloop.counter}}-advanced_settings">Advanced</a>
+    <a class="text-decoration-none text-dim" data-bs-toggle="collapse" href="#{{category}}{{index}}-advanced_settings" role="button" aria-expanded="false" aria-controls="{{category}}{{index}}-advanced_settings">Advanced</a>
 </div>
 
-<div id="{{category}}{{forloop.counter}}-advanced_settings" class="collapse">
+<div id="{{category}}{{index}}-advanced_settings" class="collapse">
     <div class="mb-2">
-        <label for="{{category}}{{ forloop.counter }}-min_rule" class="{{category}}{{forloop.counter}}"><b>Min brightness:</b></label>
-        <input type="text" class="form-control {{category}}{{forloop.counter}} rule-limits" id="{{category}}{{ forloop.counter }}-min_rule" value="{{params.min_rule}}" data-min="{{ params.metadata.rule_limits.0 }}" data-max="{{ params.metadata.rule_limits.1 }}" oninput="update_config(this);" required>
+        <label for="{{category}}{{ index }}-min_rule" class="{{category}}{{index}}"><b>Min brightness:</b></label>
+        <input type="text" class="form-control {{category}}{{index}} rule-limits" id="{{category}}{{ index }}-min_rule" value="{{params.min_rule}}" data-min="{{ params.metadata.rule_limits.0 }}" data-max="{{ params.metadata.rule_limits.1 }}" oninput="update_config(this);" required>
     </div>
 
     <div class="mb-2">
-        <label for="{{category}}{{ forloop.counter }}-max_rule" class="{{category}}{{forloop.counter}}"><b>Max brightness:</b></label>
-        <input type="text" class="form-control {{category}}{{forloop.counter}} rule-limits" id="{{category}}{{ forloop.counter }}-max_rule" value="{{params.max_rule}}" data-min="{{ params.metadata.rule_limits.0 }}" data-max="{{ params.metadata.rule_limits.1 }}" oninput="update_config(this);" required>
+        <label for="{{category}}{{ index }}-max_rule" class="{{category}}{{index}}"><b>Max brightness:</b></label>
+        <input type="text" class="form-control {{category}}{{index}} rule-limits" id="{{category}}{{ index }}-max_rule" value="{{params.max_rule}}" data-min="{{ params.metadata.rule_limits.0 }}" data-max="{{ params.metadata.rule_limits.1 }}" oninput="update_config(this);" required>
     </div>
 </div>
