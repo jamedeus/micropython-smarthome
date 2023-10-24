@@ -163,7 +163,7 @@ function get_template(id, type, type_metadata, category) {
     var template = create_nickname_input(id);
 
     // Add non-rule input fields
-    type_metadata.params.forEach(function(param) {
+    Object.keys(type_metadata.config_template).forEach(function(param) {
         if (param == "pin" && category == "sensor") {
             template += create_pin_dropdown_sensor(id);
         } else if (param == "pin" && category == "device") {
@@ -174,7 +174,7 @@ function get_template(id, type, type_metadata, category) {
     });
 
     // Add rule input field
-    if (type_metadata.prompt == 'int_or_fade') {
+    if (type_metadata.rule_prompt == 'int_or_fade') {
         // Get actual minimum/maximum rules
         const min = type_metadata.rule_limits[0];
         const max = type_metadata.rule_limits[1];
@@ -184,17 +184,17 @@ function get_template(id, type, type_metadata, category) {
         template += create_slider_rule_input(id, min, max, min, '100', 'int', '1', button_step);
         template += create_advanced_settings_dimmable_light(id, min, max);
 
-    } else if (type_metadata.prompt == 'float_range') {
+    } else if (type_metadata.rule_prompt == 'float_range') {
         // Get actual minimum/maximum rules
         const min = type_metadata.rule_limits[0];
         const max = type_metadata.rule_limits[1];
         // Add slider template with display min and max from metadata
         template += create_slider_rule_input(id, min, max, min, max, 'float', '0.5', '0.5');
 
-    } else if (type_metadata.prompt == 'standard') {
+    } else if (type_metadata.rule_prompt == 'standard') {
         template += create_standard_rule_input(id);
 
-    } else if (type_metadata.prompt == 'on_off') {
+    } else if (type_metadata.rule_prompt == 'on_off') {
         template += create_on_off_rule_input(id);
     };
 
@@ -249,17 +249,17 @@ function render_template(id, type, type_metadata, template) {
     document.querySelector(`.${id} .configParams`).scrollIntoView({behavior: "smooth"});
 
     // Instantiate slider if added
-    if (type_metadata.prompt == 'float_range' || type_metadata.prompt == 'int_or_fade') {
+    if (type_metadata.rule_prompt == 'float_range' || type_metadata.rule_prompt == 'int_or_fade') {
         add_new_slider(`${id}-default_rule`);
     };
 
     // Disable already-used pins in the new pin dropdown
-    if (type_metadata.params.includes('pin')) {
+    if (Object.keys(type_metadata.config_template).includes('pin')) {
         preventDuplicatePins();
     };
 
     // Add listeners to format IP field while typing, validate when focus leaves
-    if (type_metadata.params.includes('ip')) {
+    if (Object.keys(type_metadata.config_template).includes('ip')) {
         ip = document.getElementById(`${id}-ip`);
         ip.addEventListener('input', formatIp);
         ip.addEventListener('blur', validateField);
@@ -271,7 +271,7 @@ function render_template(id, type, type_metadata, template) {
     };
 
     // Add listener for rule max/min fields in advanced settings collapse
-    if (type_metadata.prompt == 'int_or_fade') {
+    if (type_metadata.rule_prompt == 'int_or_fade') {
         document.getElementById(`${id}-max_rule`).addEventListener('input', ruleLimits);
         document.getElementById(`${id}-min_rule`).addEventListener('input', ruleLimits);
     };
@@ -305,7 +305,7 @@ function load_sensor_section(select) {
 
     // Add correct template to config object
     // TODO fix context, simplify lookup
-    config[id] = templates['sensor'][metadata['sensors'][type]['name']]
+    config[id] = templates['sensor'][metadata['sensors'][type]['config_name']]
 };
 
 
@@ -334,7 +334,7 @@ function load_device_section(select) {
 
     // Add correct template to config object
     // TODO fix context, simplify lookup
-    config[id] = templates['device'][metadata['devices'][type]['name']]
+    config[id] = templates['device'][metadata['devices'][type]['config_name']]
 };
 
 
@@ -349,7 +349,7 @@ async function load_next_device() {
     // Generate device type options from metadata
     let options = "";
     for (device in metadata.devices) {
-        options += `<option value="${metadata['devices'][device]['type']}">${metadata['devices'][device]['name']}</option>`;
+        options += `<option value="${metadata['devices'][device]['config_name']}">${metadata['devices'][device]['class_name']}</option>`;
     };
 
     // Create card template with all options, correct index
@@ -398,7 +398,7 @@ async function load_next_sensor() {
     // Generate sensor type options from metadata
     let options = "";
     for (sensor in metadata.sensors) {
-        options += `<option value="${metadata['sensors'][sensor]['type']}">${metadata['sensors'][sensor]['name']}</option>`;
+        options += `<option value="${metadata['sensors'][sensor]['config_name']}">${metadata['sensors'][sensor]['class_name']}</option>`;
     };
 
     // Create card template with all options, correct index

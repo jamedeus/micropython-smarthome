@@ -195,42 +195,18 @@ def config_overview(request):
     return render(request, 'node_configuration/overview.html', context)
 
 
-# Returns context object with relevant parameters from device and sensor metadata
+# Returns context object with all device and sensor metadata keyed by _type param
 # Used to populate configuration divs with appropriate inputs based on type
 def get_metadata_context():
     # Get object containing all device/sensor metadata
     metadata = get_device_and_sensor_metadata()
     context = {'devices': {}, 'sensors': {}}
 
+    # Iterate list of dicts, add each to dict with _type as key
     for i in metadata['devices']:
-        config_name = i['config_name']
-        template = i['config_template']
-        # Extract params which require user input
-        params = [i for i in template.keys() if i not in ['_type', 'nickname', 'default_rule', 'schedule', 'targets']]
-        context['devices'][config_name] = {}
-        context['devices'][config_name]['type'] = config_name
-        context['devices'][config_name]['name'] = i['class_name']
-        context['devices'][config_name]['prompt'] = i['rule_prompt']
-        context['devices'][config_name]['params'] = params
-
-        # Add rule limits if present
-        if 'rule_limits' in i.keys():
-            context['devices'][config_name]['rule_limits'] = i['rule_limits']
-
+        context['devices'][i['config_name']] = i
     for i in metadata['sensors']:
-        config_name = i['config_name']
-        template = i['config_template']
-        # Extract params which require user input
-        params = [i for i in template.keys() if i not in ['_type', 'nickname', 'default_rule', 'schedule', 'targets']]
-        context['sensors'][config_name] = {}
-        context['sensors'][config_name]['type'] = config_name
-        context['sensors'][config_name]['name'] = i['class_name']
-        context['sensors'][config_name]['prompt'] = i['rule_prompt']
-        context['sensors'][config_name]['params'] = params
-
-        # Add rule limits if present
-        if 'rule_limits' in i.keys():
-            context['sensors'][config_name]['rule_limits'] = i['rule_limits']
+        context['sensors'][i['config_name']] = i
 
     return context
 

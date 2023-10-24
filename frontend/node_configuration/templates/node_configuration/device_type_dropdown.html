@@ -4,7 +4,7 @@
     <option value="clear" disabled>Select device type</option>
     {# Add option for each device in metadata object #}
     {% for device, metadata in metadata.devices.items %}
-        <option value="{{metadata.type}}" {% if selected == metadata.type %} selected {% endif %}>{{metadata.name}}</option>
+        <option value="{{metadata.config_name}}" {% if selected == metadata.config_name %} selected {% endif %}>{{metadata.class_name}}</option>
     {% endfor %}
     </select>
 </div>

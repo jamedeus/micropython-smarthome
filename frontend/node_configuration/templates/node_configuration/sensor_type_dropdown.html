@@ -3,8 +3,8 @@
     <select onchange="load_sensor_section(this)" id="sensor{{index}}-type" class="form-select sensorType sensor{{index}} instanceType" autocomplete="off" required>
     <option value="clear" disabled>Select sensor type</option>
     {# Add option for each sensor in metadata object #}
-    {% for device, metadata in metadata.sensors.items %}
-        <option value="{{metadata.type}}" {% if selected == metadata.type %} selected {% endif %}>{{metadata.name}}</option>
+    {% for sensor, metadata in metadata.sensors.items %}
+        <option value="{{metadata.config_name}}" {% if selected == metadata.config_name %} selected {% endif %}>{{metadata.class_name}}</option>
     {% endfor %}
     </select>
 </div>

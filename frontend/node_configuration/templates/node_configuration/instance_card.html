@@ -32,7 +32,7 @@
                 {% endif %}
 
                 {% if "ip" in params %}
-                    {% if params.metadata.prompt != "api_target" %}
+                    {% if params.metadata.rule_prompt != "api_target" %}
                         {# Default: Add text field with IP validator, accepts any IPv4 address #}
                         {% include "node_configuration/ip_address_input.html" %}
                     {% else %}
@@ -46,19 +46,19 @@
                 {% endif %}
 
                 {# Add correct default rule input #}
-                {% if params.metadata.prompt == "standard" %}
+                {% if params.metadata.rule_prompt == "standard" %}
                     {% include "node_configuration/default_rule_standard.html" %}
 
-                {% elif params.metadata.prompt == "on_off" %}
+                {% elif params.metadata.rule_prompt == "on_off" %}
                     {% include "node_configuration/default_rule_on_off.html" %}
 
-                {% elif params.metadata.prompt == "float_range" %}
+                {% elif params.metadata.rule_prompt == "float_range" %}
                     {% include "node_configuration/default_rule_float_range.html" with step="0.5" %}
 
-                {% elif params.metadata.prompt == "int_or_fade" or params.metadata.prompt == "int_range" %}
+                {% elif params.metadata.rule_prompt == "int_or_fade" or params.metadata.rule_prompt == "int_range" %}
                     {% include "node_configuration/default_rule_int_or_fade.html" %}
 
-                {% elif params.metadata.prompt == "api_target" %}
+                {% elif params.metadata.rule_prompt == "api_target" %}
                     {% include "node_configuration/default_rule_api_target.html" %}
 
                 {% endif %}
