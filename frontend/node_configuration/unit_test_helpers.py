@@ -791,8 +791,7 @@ test_config_1_edit_context = {
             ],
             "ignore": {}
         }
-    },
-    "templates": config_templates
+    }
 }
 
 
@@ -996,8 +995,7 @@ test_config_2_edit_context = {
             ],
             "ignore": {}
         }
-    },
-    "templates": config_templates
+    }
 }
 
 
@@ -1293,6 +1291,5 @@ test_config_3_edit_context = {
             },
             "ignore": {}
         }
-    },
-    "templates": config_templates
+    }
 }

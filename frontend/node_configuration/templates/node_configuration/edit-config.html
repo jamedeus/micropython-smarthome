@@ -362,7 +362,6 @@
     {{ metadata|json_script:"metadata" }}
     {{ edit_existing|json_script:"edit_existing" }}
     {{ config|json_script:"config" }}
-    {{ templates|json_script:"templates" }}
 
     <script>
         // Hide everything except first page
@@ -373,6 +372,7 @@
         const ApiTargetOptions = JSON.parse(document.getElementById("api_target_options").textContent);
 
         // Get device/sensor metadata object, used to determine input elements for each type
+        // Contains config templates for each device/sensor, added to output object when selected
         const metadata = JSON.parse(document.getElementById("metadata").textContent);
 
         // Get var passed to submit_form function, controls whether config is re-uploaded
@@ -386,9 +386,8 @@
         const target_ip = "{{ IP }}";
         const target_filename = "{{ FILENAME }}";
 
-        // Store full config, templates used to add new devices and sensors
+        // Store full config file
         const config = JSON.parse(document.getElementById("config").textContent);
-        const templates = JSON.parse(document.getElementById("templates").textContent);
 
         // Called when any metadata field modified, adds value to config object
         function update_config_metadata(input) {

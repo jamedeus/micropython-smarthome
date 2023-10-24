@@ -238,9 +238,6 @@ def new_config(request):
         context["config"]["wifi"]["ssid"] = default.ssid
         context["config"]["wifi"]["password"] = default.password
 
-    # Add device and sensor config templates
-    context['templates'] = config_templates
-
     print(json.dumps(context, indent=4))
 
     return render(request, 'node_configuration/edit-config.html', context)
@@ -280,7 +277,6 @@ def edit_config(request, name):
     # - edit_existing: Tells submit function to reupload config
     # - config: Full existing config object
     # - metadata: Device and Sensor metadata, determines input types for new cards
-    # - templates: Device and Sensor config templates, added to config when new card added
     # - api_target_options: Used to populate dropdowns in api-target rule modal
     context = {
         "IP": target.ip,
@@ -290,7 +286,6 @@ def edit_config(request, name):
         "edit_existing": True,
         "config": config,
         "metadata": metadata,
-        "templates": config_templates,
         "api_target_options": get_api_target_menu_options(target.friendly_name),
     }
 

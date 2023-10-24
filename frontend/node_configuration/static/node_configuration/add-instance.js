@@ -304,8 +304,7 @@ function load_sensor_section(select) {
     instances["sensors"][id].modified = true;
 
     // Add correct template to config object
-    // TODO fix context, simplify lookup
-    config[id] = templates['sensor'][metadata['sensors'][type]['config_name']]
+    config[id] = metadata['sensors'][type]['config_template'];
 };
 
 
@@ -333,8 +332,7 @@ function load_device_section(select) {
     instances["devices"][id].modified = true;
 
     // Add correct template to config object
-    // TODO fix context, simplify lookup
-    config[id] = templates['device'][metadata['devices'][type]['config_name']]
+    config[id] = metadata['devices'][type]['config_template'];
 };
 
 
