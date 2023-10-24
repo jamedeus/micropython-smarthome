@@ -143,7 +143,11 @@
                         </div>
                     </div>
                     <script>
+                        // Hidden checkbox that determines whether IR Blaster added to config
                         const irblaster_configured = document.getElementById('irblaster_configured');
+
+                        // Called when user expands/collapses IR Blaster div
+                        // Toggles hidden checkbox and updates IR Blaster config section
                         function select_ir_blaster(button) {
                             if (button.dataset.selected === 'true') {
                                 button.dataset.selected = 'false';
@@ -154,7 +158,6 @@
                                 irblaster_configured.checked = true;
                                 get_ir_blaster_params(true);
                             };
-                            console.log(button.dataset.selected);
                         };
 
                         // Takes bool, remove IR Blaster from config if False, add and get params if True

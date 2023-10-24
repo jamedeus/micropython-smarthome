@@ -30,7 +30,7 @@ async function submit_form(edit) {
     };
 
     // Add IR Blaster config if present
-    if (irblaster_configured) {
+    if (irblaster_configured.checked) {
         config['ir_blaster'] = {
             'pin': document.getElementById('device0-pin').value,
             'target': []
