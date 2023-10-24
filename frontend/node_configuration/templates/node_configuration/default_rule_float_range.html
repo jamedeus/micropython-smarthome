@@ -2,7 +2,7 @@
     <label for="{{category}}{{index}}-default_rule" class="mt-1 {{category}}{{index}}"><b>Default Rule:</b></label>
     <div class="d-flex flex-row align-items-center my-2">
         <button id="{{category}}{{index}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{{step}}"><i class="bi-dash-lg"></i></button>
-        <input id="{{category}}{{index}}-default_rule" type="range" class="{{category}}{{index}} mx-auto" min="{{ params.metadata.rule_limits.0 }}" max="{{ params.metadata.rule_limits.1 }}" data-displaymin="{{ params.metadata.rule_limits.0 }}" data-displaymax="{{ params.metadata.rule_limits.1 }}" data-displaytype="float" step="{{step}}" value="{{params.default_rule}}" oninput="update_config(this);" autocomplete="off">
+        <input id="{{category}}{{index}}-default_rule" type="range" class="{{category}}{{index}} mx-auto" min="{{ instance_metadata.rule_limits.0 }}" max="{{ instance_metadata.rule_limits.1 }}" data-displaymin="{{ instance_metadata.rule_limits.0 }}" data-displaymax="{{ instance_metadata.rule_limits.1 }}" data-displaytype="float" step="{{step}}" value="{{params.default_rule}}" oninput="update_config(this);" autocomplete="off">
         <button id="{{category}}{{index}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{{step}}"><i class="bi-plus-lg"></i></button>
     </div>
 </div>

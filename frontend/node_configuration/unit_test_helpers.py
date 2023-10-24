@@ -589,27 +589,6 @@ test_config_1_edit_context = {
                 "22:01": "fade/256/7140",
                 "00:00": "fade/32/7200",
                 "05:00": "Disabled"
-            },
-            "metadata": {
-                "config_name": "pwm",
-                "class_name": "LedStrip",
-                "dependencies": [
-                    "devices/LedStrip.py",
-                    "devices/DimmableLight.py",
-                    "devices/Device.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "pwm",
-                    "nickname": "placeholder",
-                    "min_rule": "placeholder",
-                    "max_rule": "placeholder",
-                    "default_rule": "placeholder",
-                    "pin": "placeholder",
-                    "schedule": {}
-                },
-                "rule_prompt": "int_or_fade",
-                "rule_limits": [0, 1023]
             }
         },
         "device2": {
@@ -620,24 +599,6 @@ test_config_1_edit_context = {
             "schedule": {
                 "05:00": "enabled",
                 "22:00": "disabled"
-            },
-            "metadata": {
-                "config_name": "tasmota-relay",
-                "class_name": "TasmotaRelay",
-                "dependencies": [
-                    "devices/TasmotaRelay.py",
-                    "devices/HttpGet.py",
-                    "devices/Device.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "tasmota-relay",
-                    "nickname": "placeholder",
-                    "ip": "placeholder",
-                    "default_rule": "placeholder",
-                    "schedule": {}
-                },
-                "rule_prompt": "standard"
             }
         },
         "sensor1": {
@@ -652,25 +613,6 @@ test_config_1_edit_context = {
             "schedule": {
                 "10:00": "2",
                 "22:00": "2"
-            },
-            "metadata": {
-                "config_name": "pir",
-                "class_name": "MotionSensor",
-                "dependencies": [
-                    "sensors/MotionSensor.py",
-                    "sensors/Sensor.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "pir",
-                    "nickname": "placeholder",
-                    "default_rule": "placeholder",
-                    "pin": "placeholder",
-                    "schedule": {},
-                    "targets": []
-                },
-                "rule_prompt": "float_range",
-                "rule_limits": [0, 60]
             }
         }
     },
@@ -822,23 +764,6 @@ test_config_2_edit_context = {
             "schedule": {
                 "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
                 "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
-            },
-            "metadata": {
-                "config_name": "api-target",
-                "class_name": "ApiTarget",
-                "dependencies": [
-                    "devices/ApiTarget.py",
-                    "devices/Device.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "api-target",
-                    "nickname": "placeholder",
-                    "ip": "placeholder",
-                    "default_rule": "placeholder",
-                    "schedule": {}
-                },
-                "rule_prompt": "api_target"
             }
         },
         "sensor1": {
@@ -850,27 +775,7 @@ test_config_2_edit_context = {
             "targets": [
                 "device1"
             ],
-            "schedule": {},
-            "metadata": {
-                "config_name": "si7021",
-                "class_name": "Thermostat",
-                "dependencies": [
-                    "sensors/Thermostat.py",
-                    "sensors/Sensor.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "si7021",
-                    "nickname": "placeholder",
-                    "default_rule": "placeholder",
-                    "mode": "placeholder",
-                    "tolerance": "placeholder",
-                    "schedule": {},
-                    "targets": []
-                },
-                "rule_prompt": "float_range",
-                "rule_limits": [65, 80]
-            }
+            "schedule": {}
         },
         "ir_blaster": {
             "nickname": "",
@@ -1030,27 +935,6 @@ test_config_3_edit_context = {
                 "22:01": "fade/256/7140",
                 "00:00": "fade/32/7200",
                 "05:00": "Disabled"
-            },
-            "metadata": {
-                "config_name": "pwm",
-                "class_name": "LedStrip",
-                "dependencies": [
-                    "devices/LedStrip.py",
-                    "devices/DimmableLight.py",
-                    "devices/Device.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "pwm",
-                    "nickname": "placeholder",
-                    "min_rule": "placeholder",
-                    "max_rule": "placeholder",
-                    "default_rule": "placeholder",
-                    "pin": "placeholder",
-                    "schedule": {}
-                },
-                "rule_prompt": "int_or_fade",
-                "rule_limits": [0, 1023]
             }
         },
         "device2": {
@@ -1061,24 +945,6 @@ test_config_3_edit_context = {
             "schedule": {
                 "05:00": "enabled",
                 "22:00": "disabled"
-            },
-            "metadata": {
-                "config_name": "tasmota-relay",
-                "class_name": "TasmotaRelay",
-                "dependencies": [
-                    "devices/TasmotaRelay.py",
-                    "devices/HttpGet.py",
-                    "devices/Device.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "tasmota-relay",
-                    "nickname": "placeholder",
-                    "ip": "placeholder",
-                    "default_rule": "placeholder",
-                    "schedule": {}
-                },
-                "rule_prompt": "standard"
             }
         },
         "device3": {
@@ -1089,24 +955,6 @@ test_config_3_edit_context = {
             "schedule": {
                 "05:00": "enabled",
                 "23:00": "disabled"
-            },
-            "metadata": {
-                "config_name": "tasmota-relay",
-                "class_name": "TasmotaRelay",
-                "dependencies": [
-                    "devices/TasmotaRelay.py",
-                    "devices/HttpGet.py",
-                    "devices/Device.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "tasmota-relay",
-                    "nickname": "placeholder",
-                    "ip": "placeholder",
-                    "default_rule": "placeholder",
-                    "schedule": {}
-                },
-                "rule_prompt": "standard"
             }
         },
         "sensor1": {
@@ -1121,25 +969,6 @@ test_config_3_edit_context = {
             "schedule": {
                 "10:00": "2",
                 "22:00": "2"
-            },
-            "metadata": {
-                "config_name": "pir",
-                "class_name": "MotionSensor",
-                "dependencies": [
-                    "sensors/MotionSensor.py",
-                    "sensors/Sensor.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "pir",
-                    "nickname": "placeholder",
-                    "default_rule": "placeholder",
-                    "pin": "placeholder",
-                    "schedule": {},
-                    "targets": []
-                },
-                "rule_prompt": "float_range",
-                "rule_limits": [0, 60]
             }
         },
         "sensor2": {
@@ -1152,25 +981,6 @@ test_config_3_edit_context = {
             ],
             "schedule": {
                 "00:00": "1"
-            },
-            "metadata": {
-                "config_name": "pir",
-                "class_name": "MotionSensor",
-                "dependencies": [
-                    "sensors/MotionSensor.py",
-                    "sensors/Sensor.py",
-                    "core/Instance.py"
-                ],
-                "config_template": {
-                    "_type": "pir",
-                    "nickname": "placeholder",
-                    "default_rule": "placeholder",
-                    "pin": "placeholder",
-                    "schedule": {},
-                    "targets": []
-                },
-                "rule_prompt": "float_range",
-                "rule_limits": [0, 60]
             }
         }
     },

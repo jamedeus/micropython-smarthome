@@ -4,6 +4,7 @@
 {% load is_device %}
 {% load is_sensor %}
 {% load only_digits %}
+{% load get_metadata %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -186,7 +187,7 @@
                     {% for instance, params in config.items %}
                         {% if instance|is_sensor %}
                             {# Add card with dynamically-selected input components based on sensor metadata #}
-                            {% include "node_configuration/instance_card.html" with id="addSensorDiv" category="sensor" index=instance|only_digits %}
+                            {% include "node_configuration/instance_card.html" with id="addSensorDiv" category="sensor" index=instance|only_digits instance_metadata=metadata|get_metadata:params %}
                         {% endif %}
                     {% endfor %}
 
@@ -202,7 +203,7 @@
                     {% for instance, params in config.items %}
                         {% if instance|is_device %}
                             {# Add card with dynamically-selected input components based on device metadata #}
-                            {% include "node_configuration/instance_card.html" with id="addDeviceDiv" category="device" index=instance|only_digits %}
+                            {% include "node_configuration/instance_card.html" with id="addDeviceDiv" category="device" index=instance|only_digits instance_metadata=metadata|get_metadata:params %}
                         {% endif %}
                     {% endfor %}
 
@@ -263,9 +264,10 @@
                 {# Add schedule rules card for each existing device and sensor #}
                 {% for instance, params in config.items %}
                 {% if instance|is_sensor or instance|is_device %}
+                {% with instance_metadata=metadata|get_metadata:params %}
                     <div class="card mb-4 {{instance}}">
                         <div class="card-body text-center">
-                            <label id="{{instance}}-rules-label" class="card-title schedule-rule-card {{instance}}" title="{{instance}} - {{params.metadata.config_name}}">
+                            <label id="{{instance}}-rules-label" class="card-title schedule-rule-card {{instance}}" title="{{instance}} - {{instance_metadata.config_name}}">
                                 <b>{{ params.nickname }}</b>
                             </label>
                             <table id="{{instance}}-rules" class="table table-borderless {{instance}} {% if params.schedule.items|length == 0 %} d-none {% endif %}">
@@ -279,23 +281,23 @@
                                     {% for time, rule in params.schedule.items %}
                                         <tr id="{{instance}}-row-{{forloop.counter}}" class="{{instance}}">
                                             <td>
-                                                <span class="form-control time {{instance}}" id="{{instance}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{params.metadata.config_name}}" onclick="edit_existing_rule(this);">{{time}}</span>
+                                                <span class="form-control time {{instance}}" id="{{instance}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{instance_metadata.config_name}}" onclick="edit_existing_rule(this);">{{time}}</span>
                                             </td>
 
-                                            {% if params.metadata.config_name == "api-target" %}
+                                            {% if instance_metadata.config_name == "api-target" %}
                                                 <td>
-                                                    <span class="form-control {{instance}}" id="{{instance}}-rule{{forloop.counter}}-button" data-original="{{rule}}" data-type="{{params.metadata.config_name}}" onclick="edit_existing_rule(this);">click to view</span>
-                                                    <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.metadata.config_name}}" style="display:none;">
+                                                    <span class="form-control {{instance}}" id="{{instance}}-rule{{forloop.counter}}-button" data-original="{{rule}}" data-type="{{instance_metadata.config_name}}" onclick="edit_existing_rule(this);">click to view</span>
+                                                    <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{instance_metadata.config_name}}" style="display:none;">
                                                 </td>
 
                                             {% else %}
                                                 <td>
-                                                    <span class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{params.metadata.config_name}}" onclick="edit_existing_rule(this);">{{rule}}</span>
+                                                    <span class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{instance_metadata.config_name}}" onclick="edit_existing_rule(this);">{{rule}}</span>
                                                 </td>
                                             {% endif %}
 
                                             <td class="min">
-                                                <button type="button" class="btn btn-sm btn-primary mt-1" id="{{instance}}-edit{{forloop.counter}}" data-type="{{params.metadata.config_name}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button>
+                                                <button type="button" class="btn btn-sm btn-primary mt-1" id="{{instance}}-edit{{forloop.counter}}" data-type="{{instance_metadata.config_name}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button>
                                             </td>
                                         </tr>
                                     {% endfor %}
@@ -304,10 +306,11 @@
 
                             {# Add button to open rule modal #}
                             <div>
-                                <button type="button" class="btn btn-secondary {{instance}}" id="{{instance}}-add-rule" data-type="{{params.metadata.config_name}}" onclick="add_new_rule(this)">Add Rule</i></button>
+                                <button type="button" class="btn btn-secondary {{instance}}" id="{{instance}}-add-rule" data-type="{{instance_metadata.config_name}}" onclick="add_new_rule(this)">Add Rule</i></button>
                             </div>
                         </div>
                     </div>
+                {% endwith %}
                 {% endif %}
                 {% endfor %}
                 </div>

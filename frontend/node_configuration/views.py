@@ -255,21 +255,13 @@ def edit_config(request, name):
     # Load device and sensor metadata
     metadata = get_metadata_context()
 
+    # Correct ApiTarget rule syntax
     for i in config:
-        if is_sensor(i):
-            # Add metadata for each sensor
-            config[i]["metadata"] = metadata["sensors"][config[i]["_type"]]
+        if is_device(i) and config[i]["_type"] == "api-target":
+            config[i]["default_rule"] = json.dumps(config[i]["default_rule"])
 
-        elif is_device(i):
-            # Add metadata for each device
-            config[i]["metadata"] = metadata["devices"][config[i]["_type"]]
-
-            # Correct ApiTarget rule syntax
-            if config[i]["_type"] == "api-target":
-                config[i]["default_rule"] = json.dumps(config[i]["default_rule"])
-
-                for rule in config[i]["schedule"]:
-                    config[i]["schedule"][rule] = json.dumps(config[i]["schedule"][rule])
+            for rule in config[i]["schedule"]:
+                config[i]["schedule"][rule] = json.dumps(config[i]["schedule"][rule])
 
     # Build context object:
     # - IP and FILENAME: Used to reupload config
@@ -352,11 +344,6 @@ def generate_config_file(data, edit_existing=False):
     if len(GpsCoordinates.objects.all()) > 0:
         location = GpsCoordinates.objects.all()[0]
         data["metadata"]["gps"] = {"lat": str(location.lat), "lon": str(location.lon)}
-
-    # Remove metadata from device and sensor sections
-    for i in [i for i in data.keys() if is_device_or_sensor(i)]:
-        if "metadata" in data[i].keys():
-            del data[i]["metadata"]
 
     # If config contains ApiTarget, convert string rules to dict
     for i in [i for i in data.keys() if is_device(i)]:
