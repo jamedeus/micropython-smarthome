@@ -4,11 +4,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    {% if config|length == 2 %}
-    <title>Create new config file</title>
-    {% else %}
-    <title>{{ config.TITLE }}</title>
-    {% endif %}
+    <title>{{ TITLE }}</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% progressive_web_app_meta %}
@@ -86,7 +82,7 @@
     </script>
 
     <div class="container d-flex flex-column vh-100">
-        <h1 class="text-center pt-3 pb-4">{{ config.TITLE }}</h1>
+        <h1 class="text-center pt-3 pb-4">{{ TITLE }}</h1>
 
         <div id="page1" class="d-flex flex-column h-100">
             <form id="form" onkeydown="return event.key != 'Enter';">
@@ -94,7 +90,7 @@
                     <h2>Metadata</h2>
                     <div class="mb-2">
                         <label for="friendlyName"><b>Name:</b></label>
-                        <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{config.NAME}}" oninput="prevent_duplicate_friendly_name(this);update_config_metadata(this);" aria-describedby="friendlyName-feedback" required>
+                        <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{NAME}}" oninput="prevent_duplicate_friendly_name(this);update_config_metadata(this);" aria-describedby="friendlyName-feedback" required>
                         <div id="friendlyName-feedback" class="invalid-feedback">
                             Name must be unique
                         </div>
@@ -135,8 +131,8 @@
                                 {% include "node_configuration/device_pin_select.html" with index="0" name="ir_blaster_pin" pin=config.ir_blaster.pin %}
 
                                 <div class="mb-2">
-                                    <label for="device{{ config.devices|length|add:1 }}-remotes" class="device{{config.devices|length|add:1}}"><b>Virtual remotes:</b></label>
-                                    <div id="device{{ config.devices|length|add:1 }}-remotes" class="form-check device{{config.devices|length|add:1}}">
+                                    <label for="ir-remotes"><b>Virtual remotes:</b></label>
+                                    <div id="ir-remotes" class="form-check">
                                         <input class="form-check-input ir_target" type="checkbox" name="irblaster-tv" id="checkbox-tv" {% if "tv" in config.ir_blaster.target %}checked{% endif %}>
                                         <label class="form-check-label" for="checkbox-tv">TV (Samsung)</label></br>
                                         <input class="form-check-input ir_target" type="checkbox" name="irblaster-ac" id="checkbox-ac" {% if "ac" in config.ir_blaster.target %}checked{% endif %}>
@@ -180,7 +176,7 @@
                 <div id="sensors" class="col-sm">
                     <h2 class="text-center">Add Sensors</h2>
 
-                    {% for sensor, params in config.sensors.items %}
+                    {% for sensor, params in sensors.items %}
                         {# Add card with dynamically-selected input components based on sensor metadata #}
                         {% include "node_configuration/instance_card.html" with id="addSensorDiv" category="sensor" %}
                     {% endfor %}
@@ -194,7 +190,7 @@
                 <div id="devices" class="col-sm">
                     <h2 class="text-center">Add Devices</h2>
 
-                    {% for device, params in config.devices.items %}
+                    {% for device, params in devices.items %}
                         {# Add card with dynamically-selected input components based on device metadata #}
                         {% include "node_configuration/instance_card.html" with id="addDeviceDiv" category="device" %}
                     {% endfor %}
@@ -219,14 +215,14 @@
                 <h3>Select targets for each sensor</h3>
 
                 {# Add targets card for each existing sensor #}
-                {% for sensor, params in config.sensors.items %}
+                {% for sensor, params in sensors.items %}
                     <div class="card mb-4 {{sensor}}">
                         <div class="card-body">
                             <label id="{{sensor}}-targets-label" for="{{sensor}}-targets" class="card-title {{sensor}}"><b>{{ params.nickname }}</b> targets:</label>
                             <div id="{{sensor}}-targets" class="form-check sensor-targets {{sensor}}">
 
                                 {# Add option for each existing device #}
-                                {% for device, dparams in config.devices.items %}
+                                {% for device, dparams in devices.items %}
                                     <input type="checkbox" class="form-check-input {{sensor}} {{device}} target" id="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %} oninput="update_config_targets(this);">
                                     <label for="target-{{sensor}}-{{device}}" class="form-check-label {{sensor}} {{device}} target-label">{{ dparams.nickname }}</label>
                                     <br class="{{device}}">
@@ -250,7 +246,7 @@
                 <div id="page3-cards">
 
                 {# Add schedule rules card for each existing device and sensor #}
-                {% for instance, params in config.instances.items %}
+                {% for instance, params in instances.items %}
                     <div class="card mb-4 {{instance}}">
                         <div class="card-body text-center">
                             <label id="{{instance}}-rules-label" class="card-title schedule-rule-card {{instance}}" title="{{instance}} - {{params.type}}">
@@ -370,8 +366,8 @@
         };
 
         // Store parameters used to re-upload config after editing
-        const target_ip = "{{ config.IP }}";
-        const target_filename = "{{ config.FILENAME }}";
+        const target_ip = "{{ IP }}";
+        const target_filename = "{{ FILENAME }}";
 
         // Store full config, templates used to add new devices and sensors
         const config = JSON.parse(document.getElementById("config").textContent);

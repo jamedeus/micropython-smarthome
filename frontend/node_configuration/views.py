@@ -238,8 +238,8 @@ def get_metadata_context():
 def new_config(request):
     # Create context with config skeleton
     context = {
+        "TITLE": "Create New Config",
         "config": {
-            "TITLE": "Create New Config",
             'metadata': {
                 'id': '',
                 'floor': '',
@@ -265,6 +265,8 @@ def new_config(request):
     # Add device and sensor config templates
     context['templates'] = config_templates
 
+    print(json.dumps(context, indent=4))
+
     return render(request, 'node_configuration/edit-config.html', context)
 
 
@@ -274,50 +276,41 @@ def edit_config(request, name):
     except Node.DoesNotExist:
         return JsonResponse({'Error': f'{name} node not found'}, safe=False, status=404)
 
+    # Load config from database
     config = target.config.config
 
-    config["NAME"] = target.friendly_name
-    config["TITLE"] = f"Editing {target.friendly_name}"
-    config["IP"] = target.ip
-    config["FILENAME"] = target.config.filename
-
+    # Create objects to build context subkeys
     sensors = {}
     devices = {}
     instances = {}
-    delete = []
 
+    # Load device and sensor metadata
     metadata = get_metadata_context()
 
     for i in config:
         if is_sensor(i):
-            # Add to instances
+            # Add each sensor to instances
             instances[i] = {}
-            instances[i]["type"] = config[i]["_type"]
-            instances[i]["nickname"] = config[i]["nickname"]
-            instances[i]["schedule"] = config[i]["schedule"]
+            instances[i]["type"] = config.copy()[i]["_type"]
+            instances[i]["nickname"] = config.copy()[i]["nickname"]
+            instances[i]["schedule"] = config.copy()[i]["schedule"]
 
             # Add to sensors, change _type to type (django template limitation)
-            sensors[i] = config[i]
-            sensors[i]["type"] = config[i]["_type"]
+            sensors[i] = config[i].copy()
+            sensors[i]["type"] = config.copy()[i]["_type"]
             sensors[i]["metadata"] = metadata["sensors"][config[i]["_type"]]
             del sensors[i]["_type"]
 
-            # Add to delete list
-            delete.append(i)
-
         elif is_device(i):
-            # Add to instances
+            # Add each device to instances
             instances[i] = {}
-            instances[i]["type"] = config[i]["_type"]
-            instances[i]["nickname"] = config[i]["nickname"]
-            instances[i]["schedule"] = config[i]["schedule"]
-
-            # Add to delete list
-            delete.append(i)
+            instances[i]["type"] = config.copy()[i]["_type"]
+            instances[i]["nickname"] = config.copy()[i]["nickname"]
+            instances[i]["schedule"] = config.copy()[i]["schedule"]
 
             # Add to devices, change _type to type (django template limitation)
-            devices[i] = config[i]
-            devices[i]["type"] = config[i]["_type"]
+            devices[i] = config[i].copy()
+            devices[i]["type"] = config.copy()[i]["_type"]
             devices[i]["metadata"] = metadata["devices"][config[i]["_type"]]
             del devices[i]["_type"]
 
@@ -328,26 +321,31 @@ def edit_config(request, name):
                 for rule in instances[i]["schedule"]:
                     instances[i]["schedule"][rule] = json.dumps(instances[i]["schedule"][rule])
 
-    for i in delete:
-        del config[i]
+    # Build context object:
+    # - IP and FILENAME: Used to reupload config
+    # - NAME and TITLE: Used by django template
+    # - edit_existing: Tells submit function to reupload config
+    # - config: Full existing config object
+    # - metadata: Device and Sensor metadata, determines input types for new cards
+    # - templates: Device and Sensor config templates, added to config when new card added
+    # - api_target_options: Used to populate dropdowns in api-target rule modal
+    context = {
+        "IP": target.ip,
+        "NAME": target.friendly_name,
+        "TITLE": f"Editing {target.friendly_name}",
+        "FILENAME": target.config.filename,
+        "edit_existing": True,
+        "config": config,
+        "metadata": metadata,
+        "templates": config_templates,
+        "api_target_options": get_api_target_menu_options(target.friendly_name),
+    }
 
     # Add completed dicts to context with keys sorted alphabetically
     # Template relies on forloop.counter to determine ID, will not match config if not alphabetical
-    config["sensors"] = {sensor: sensors[sensor] for sensor in sorted(sensors)}
-    config["devices"] = {device: devices[device] for device in sorted(devices)}
-    config["instances"] = {instance: instances[instance] for instance in sorted(instances)}
-
-    api_target_options = get_api_target_menu_options(target.friendly_name)
-
-    context = {
-        "config": config,
-        "api_target_options": api_target_options,
-        "metadata": metadata,
-        "edit_existing": True
-    }
-
-    # Add device and sensor config templates
-    context['templates'] = config_templates
+    context["sensors"] = {sensor: sensors[sensor] for sensor in sorted(sensors)}
+    context["devices"] = {device: devices[device] for device in sorted(devices)}
+    context["instances"] = {instance: instances[instance] for instance in sorted(instances)}
 
     print(json.dumps(context, indent=4))
 
@@ -387,9 +385,6 @@ def check_duplicate(data):
 def generate_config_file(data, edit_existing=False):
     print("Input:")
     print(json.dumps(data, indent=4))
-
-    # Delete title, only used for template
-    del data['TITLE']
 
     # Cast floor to int (required by validator)
     # TODO does this really matter? Why was the validator added?

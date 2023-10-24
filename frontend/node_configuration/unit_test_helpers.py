@@ -166,7 +166,6 @@ def simulate_corrupt_filesystem_upload(self, src_file, dst_file):
 # Simulated input from user creating config with frontend
 # Used by GenerateConfigFileTests, DeleteConfigTests, DuplicateDetectionTests
 request_payload = {
-    "TITLE": "Create New Config",
     "metadata": {
         "id": "Unit Test Config",
         "floor": "0",
@@ -560,112 +559,98 @@ test_config_3 = {
 
 # Full context objects returned by edit_config view for each of the 3 test configs
 test_config_1_edit_context = {
-    "config": {
-        "metadata": {
-            "id": "Test1",
-            "location": "Inside cabinet above microwave",
-            "floor": "1",
-            "schedule_keywords": {
-                "sunrise": "06:00",
-                "sunset": "18:00"
-            }
-        },
-        "wifi": {
-            "ssid": "mynetwork",
-            "password": "hunter2"
-        },
-        "NAME": "Test1",
-        "TITLE": "Editing Test1",
-        "IP": "192.168.1.123",
-        "FILENAME": "test1.json",
-        "sensors": {
-            "sensor1": {
-                "nickname": "Motion Sensor",
-                "pin": "15",
-                "default_rule": "2",
-                "targets": [
-                    "device1",
-                    "device2"
-                ],
-                "schedule": {
-                    "10:00": "2",
-                    "22:00": "2"
-                },
+    "NAME": "Test1",
+    "TITLE": "Editing Test1",
+    "IP": "192.168.1.123",
+    "FILENAME": "test1.json",
+    "config": test_config_1,
+    "sensors": {
+        "sensor1": {
+            "nickname": "Motion Sensor",
+            "pin": "15",
+            "default_rule": "2",
+            "targets": [
+                "device1",
+                "device2"
+            ],
+            "schedule": {
+                "10:00": "2",
+                "22:00": "2"
+            },
+            "type": "pir",
+            "metadata": {
                 "type": "pir",
-                "metadata": {
-                    "type": "pir",
-                    "name": "MotionSensor",
-                    "params": ["pin"],
-                    "prompt": "float_range",
-                    "rule_limits": [0, 60]
-                },
+                "name": "MotionSensor",
+                "params": ["pin"],
+                "prompt": "float_range",
+                "rule_limits": [0, 60]
+            }
+        }
+    },
+    "devices": {
+        "device1": {
+            "nickname": "Cabinet Lights",
+            "pin": "4",
+            "min_rule": "0",
+            "max_rule": "1023",
+            "default_rule": 1023,
+            "schedule": {
+                "22:00": "1023",
+                "22:01": "fade/256/7140",
+                "00:00": "fade/32/7200",
+                "05:00": "Disabled"
+            },
+            "type": "pwm",
+            "metadata": {
+                "type": "pwm",
+                "name": "LedStrip",
+                "params": ["min_rule", "max_rule", "pin"],
+                "prompt": "int_or_fade",
+                "rule_limits": [0, 1023]
             }
         },
-        "devices": {
-            "device1": {
-                "nickname": "Cabinet Lights",
-                "pin": "4",
-                "min_rule": "0",
-                "max_rule": "1023",
-                "default_rule": 1023,
-                "schedule": {
-                    "22:00": "1023",
-                    "22:01": "fade/256/7140",
-                    "00:00": "fade/32/7200",
-                    "05:00": "Disabled"
-                },
-                "type": "pwm",
-                "metadata": {
-                    "type": "pwm",
-                    "name": "LedStrip",
-                    "params": ["min_rule", "max_rule", "pin"],
-                    "prompt": "int_or_fade",
-                    "rule_limits": [0, 1023]
-                },
+        "device2": {
+            "nickname": "Overhead Lights",
+            "ip": "192.168.1.217",
+            "default_rule": "enabled",
+            "schedule": {
+                "05:00": "enabled",
+                "22:00": "disabled"
             },
-            "device2": {
-                "nickname": "Overhead Lights",
-                "ip": "192.168.1.217",
-                "default_rule": "enabled",
-                "schedule": {
-                    "05:00": "enabled",
-                    "22:00": "disabled"
-                },
+            "type": "tasmota-relay",
+            "metadata": {
                 "type": "tasmota-relay",
-                "metadata": {
-                    "type": "tasmota-relay",
-                    "name": "TasmotaRelay",
-                    "params": ["ip"],
-                    "prompt": "standard"
-                },
+                "name": "TasmotaRelay",
+                "params": ["ip"],
+                "prompt": "standard"
+            }
+        }
+    },
+    "instances": {
+        "device1": {
+            "type": "pwm",
+            "nickname": "Cabinet Lights",
+            "schedule": {
+                "22:00": "1023",
+                "22:01": "fade/256/7140",
+                "00:00": "fade/32/7200",
+                "05:00": "Disabled"
             }
         },
-        "instances": {
-            "device1": {
-                "type": "pwm",
-                "nickname": "Cabinet Lights",
-                "schedule": {
-                    "22:00": "1023",
-                    "22:01": "fade/256/7140",
-                    "00:00": "fade/32/7200",
-                    "05:00": "Disabled"
-                }
-            },
-            "device2": {
-                "type": "tasmota-relay",
-                "nickname": "Overhead Lights",
-                "schedule": {
-                    "05:00": "enabled",
-                    "22:00": "disabled"
-                }
-            },
-            "sensor1": {
-                "type": "pir",
-                "nickname": "Motion Sensor",
-                "schedule": {
-                    "10:00": "2",
-                    "22:00": "2"
-                }
+        "device2": {
+            "type": "tasmota-relay",
+            "nickname": "Overhead Lights",
+            "schedule": {
+                "05:00": "enabled",
+                "22:00": "disabled"
+            }
+        },
+        "sensor1": {
+            "type": "pir",
+            "nickname": "Motion Sensor",
+            "schedule": {
+                "10:00": "2",
+                "22:00": "2"
             }
         }
     },
@@ -792,6 +777,10 @@ test_config_1_edit_context = {
 
 
 test_config_2_edit_context = {
+    "NAME": "Test2",
+    "TITLE": "Editing Test2",
+    "IP": "192.168.1.124",
+    "FILENAME": "test2.json",
     "config": {
         "metadata": {
             "id": "Test2",
@@ -806,69 +795,97 @@ test_config_2_edit_context = {
             "ssid": "mynetwork",
             "password": "hunter2"
         },
+        "device1": {
+            "nickname": "Air Conditioner",
+            "_type": "api-target",
+            "ip": "192.168.1.124",
+            "default_rule": {
+                "on": [
+                    "ir_key",
+                    "ac",
+                    "start"
+                ],
+                "off": [
+                    "ir_key",
+                    "ac",
+                    "stop"
+                ]
+            },
+            "schedule": {
+                "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
+                "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
+            }
+        },
+        "sensor1": {
+            "_type": "si7021",
+            "nickname": "Thermostat",
+            "mode": "cool",
+            "tolerance": "0.5",
+            "default_rule": 74,
+            "targets": [
+                "device1"
+            ],
+            "schedule": {}
+        },
         "ir_blaster": {
             "nickname": "",
             "pin": "19",
             "target": [
                 "ac"
             ]
-        },
-        "NAME": "Test2",
-        "TITLE": "Editing Test2",
-        "IP": "192.168.1.124",
-        "FILENAME": "test2.json",
-        "sensors": {
-            "sensor1": {
-                "nickname": "Thermostat",
-                "mode": "cool",
-                "tolerance": "0.5",
-                "default_rule": 74,
-                "targets": [
-                    "device1"
-                ],
-                "schedule": {},
+        }
+    },
+    "sensors": {
+        "sensor1": {
+            "nickname": "Thermostat",
+            "mode": "cool",
+            "tolerance": "0.5",
+            "default_rule": 74,
+            "targets": [
+                "device1"
+            ],
+            "schedule": {},
+            "type": "si7021",
+            "metadata": {
                 "type": "si7021",
-                "metadata": {
-                    "type": "si7021",
-                    "name": "Thermostat",
-                    "params": ["mode", "tolerance"],
-                    "prompt": "float_range",
-                    "rule_limits": [65, 80]
-                },
+                "name": "Thermostat",
+                "params": ["mode", "tolerance"],
+                "prompt": "float_range",
+                "rule_limits": [65, 80]
             }
-        },
-        "devices": {
-            "device1": {
-                "nickname": "Air Conditioner",
-                "ip": "192.168.1.124",
-                "default_rule": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
-                "schedule": {
-                    "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
-                    "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
-                },
-                "type": "api-target",
-                "metadata": {
-                    "type": "api-target",
-                    "name": "ApiTarget",
-                    "params": ["ip"],
-                    "prompt": "api_target"
-                },
-            }
-        },
-        "instances": {
-            "device1": {
-                "type": "api-target",
-                "nickname": "Air Conditioner",
-                "schedule": {
-                    "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
-                    "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
-                }
+        }
+    },
+    "devices": {
+        "device1": {
+            "nickname": "Air Conditioner",
+            "ip": "192.168.1.124",
+            "default_rule": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
+            "schedule": {
+                "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
+                "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
             },
-            "sensor1": {
-                "type": "si7021",
-                "nickname": "Thermostat",
-                "schedule": {}
+            "type": "api-target",
+            "metadata": {
+                "type": "api-target",
+                "name": "ApiTarget",
+                "params": ["ip"],
+                "prompt": "api_target"
             }
+        }
+    },
+    "instances": {
+        "device1": {
+            "type": "api-target",
+            "nickname": "Air Conditioner",
+            "schedule": {
+                "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
+                "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
+            }
+        },
+        "sensor1": {
+            "type": "si7021",
+            "nickname": "Thermostat",
+            "schedule": {}
         }
     },
     "api_target_options": {
@@ -992,162 +1009,148 @@ test_config_2_edit_context = {
 
 
 test_config_3_edit_context = {
-    "config": {
-        "metadata": {
-            "id": "Test3",
-            "location": "Inside cabinet under sink",
-            "floor": "1",
-            "schedule_keywords": {
-                "sunrise": "06:00",
-                "sunset": "18:00"
-            }
-        },
-        "wifi": {
-            "ssid": "mynetwork",
-            "password": "hunter2"
-        },
-        "NAME": "Test3",
-        "TITLE": "Editing Test3",
-        "IP": "192.168.1.125",
-        "FILENAME": "test3.json",
-        "sensors": {
-            "sensor1": {
-                "nickname": "Motion Sensor (Bath)",
-                "pin": "15",
-                "default_rule": "2",
-                "targets": [
-                    "device1",
-                    "device2"
-                ],
-                "schedule": {
-                    "10:00": "2",
-                    "22:00": "2"
-                },
-                "type": "pir",
-                "metadata": {
-                    "type": "pir",
-                    "name": "MotionSensor",
-                    "params": ["pin"],
-                    "prompt": "float_range",
-                    "rule_limits": [0, 60]
-                },
+    "NAME": "Test3",
+    "TITLE": "Editing Test3",
+    "IP": "192.168.1.125",
+    "FILENAME": "test3.json",
+    "config": test_config_3,
+    "sensors": {
+        "sensor1": {
+            "nickname": "Motion Sensor (Bath)",
+            "pin": "15",
+            "default_rule": "2",
+            "targets": [
+                "device1",
+                "device2"
+            ],
+            "schedule": {
+                "10:00": "2",
+                "22:00": "2"
             },
-            "sensor2": {
-                "nickname": "Motion Sensor (Entry)",
-                "pin": "16",
-                "default_rule": "1",
-                "targets": [
-                    "device3"
-                ],
-                "schedule": {
-                    "00:00": "1"
-                },
+            "type": "pir",
+            "metadata": {
                 "type": "pir",
-                "metadata": {
-                    "type": "pir",
-                    "name": "MotionSensor",
-                    "params": ["pin"],
-                    "prompt": "float_range",
-                    "rule_limits": [0, 60]
-                },
+                "name": "MotionSensor",
+                "params": ["pin"],
+                "prompt": "float_range",
+                "rule_limits": [0, 60]
             }
         },
-        "devices": {
-            "device1": {
-                "nickname": "Bathroom LEDs",
-                "pin": "4",
-                "min_rule": "0",
-                "max_rule": "1023",
-                "default_rule": 0,
-                "schedule": {
-                    "22:00": "1023",
-                    "22:01": "fade/256/7140",
-                    "00:00": "fade/32/7200",
-                    "05:00": "Disabled"
-                },
+        "sensor2": {
+            "nickname": "Motion Sensor (Entry)",
+            "pin": "16",
+            "default_rule": "1",
+            "targets": [
+                "device3"
+            ],
+            "schedule": {
+                "00:00": "1"
+            },
+            "type": "pir",
+            "metadata": {
+                "type": "pir",
+                "name": "MotionSensor",
+                "params": ["pin"],
+                "prompt": "float_range",
+                "rule_limits": [0, 60]
+            }
+        }
+    },
+    "devices": {
+        "device1": {
+            "nickname": "Bathroom LEDs",
+            "pin": "4",
+            "min_rule": "0",
+            "max_rule": "1023",
+            "default_rule": 0,
+            "schedule": {
+                "22:00": "1023",
+                "22:01": "fade/256/7140",
+                "00:00": "fade/32/7200",
+                "05:00": "Disabled"
+            },
+            "type": "pwm",
+            "metadata": {
                 "type": "pwm",
-                "metadata": {
-                    "type": "pwm",
-                    "name": "LedStrip",
-                    "params": ["min_rule", "max_rule", "pin"],
-                    "prompt": "int_or_fade",
-                    "rule_limits": [0, 1023]
-                },
-            },
-            "device2": {
-                "nickname": "Bathroom Lights",
-                "ip": "192.168.1.239",
-                "default_rule": "enabled",
-                "schedule": {
-                    "05:00": "enabled",
-                    "22:00": "disabled"
-                },
-                "type": "tasmota-relay",
-                "metadata": {
-                    "type": "tasmota-relay",
-                    "name": "TasmotaRelay",
-                    "params": ["ip"],
-                    "prompt": "standard"
-                },
-            },
-            "device3": {
-                "nickname": "Entry Light",
-                "ip": "192.168.1.202",
-                "default_rule": "enabled",
-                "schedule": {
-                    "05:00": "enabled",
-                    "23:00": "disabled"
-                },
-                "type": "tasmota-relay",
-                "metadata": {
-                    "type": "tasmota-relay",
-                    "name": "TasmotaRelay",
-                    "params": ["ip"],
-                    "prompt": "standard"
-                },
+                "name": "LedStrip",
+                "params": ["min_rule", "max_rule", "pin"],
+                "prompt": "int_or_fade",
+                "rule_limits": [0, 1023]
             }
         },
-        "instances": {
-            "device1": {
-                "type": "pwm",
-                "nickname": "Bathroom LEDs",
-                "schedule": {
-                    "22:00": "1023",
-                    "22:01": "fade/256/7140",
-                    "00:00": "fade/32/7200",
-                    "05:00": "Disabled"
-                }
+        "device2": {
+            "nickname": "Bathroom Lights",
+            "ip": "192.168.1.239",
+            "default_rule": "enabled",
+            "schedule": {
+                "05:00": "enabled",
+                "22:00": "disabled"
             },
-            "device2": {
+            "type": "tasmota-relay",
+            "metadata": {
                 "type": "tasmota-relay",
-                "nickname": "Bathroom Lights",
-                "schedule": {
-                    "05:00": "enabled",
-                    "22:00": "disabled"
-                }
+                "name": "TasmotaRelay",
+                "params": ["ip"],
+                "prompt": "standard"
+            }
+        },
+        "device3": {
+            "nickname": "Entry Light",
+            "ip": "192.168.1.202",
+            "default_rule": "enabled",
+            "schedule": {
+                "05:00": "enabled",
+                "23:00": "disabled"
             },
-            "device3": {
+            "type": "tasmota-relay",
+            "metadata": {
                 "type": "tasmota-relay",
-                "nickname": "Entry Light",
-                "schedule": {
-                    "05:00": "enabled",
-                    "23:00": "disabled"
-                }
-            },
-            "sensor1": {
-                "type": "pir",
-                "nickname": "Motion Sensor (Bath)",
-                "schedule": {
-                    "10:00": "2",
-                    "22:00": "2"
-                }
-            },
-            "sensor2": {
-                "type": "pir",
-                "nickname": "Motion Sensor (Entry)",
-                "schedule": {
-                    "00:00": "1"
-                }
+                "name": "TasmotaRelay",
+                "params": ["ip"],
+                "prompt": "standard"
+            }
+        }
+    },
+    "instances": {
+        "device1": {
+            "type": "pwm",
+            "nickname": "Bathroom LEDs",
+            "schedule": {
+                "22:00": "1023",
+                "22:01": "fade/256/7140",
+                "00:00": "fade/32/7200",
+                "05:00": "Disabled"
+            }
+        },
+        "device2": {
+            "type": "tasmota-relay",
+            "nickname": "Bathroom Lights",
+            "schedule": {
+                "05:00": "enabled",
+                "22:00": "disabled"
+            }
+        },
+        "device3": {
+            "type": "tasmota-relay",
+            "nickname": "Entry Light",
+            "schedule": {
+                "05:00": "enabled",
+                "23:00": "disabled"
+            }
+        },
+        "sensor1": {
+            "type": "pir",
+            "nickname": "Motion Sensor (Bath)",
+            "schedule": {
+                "10:00": "2",
+                "22:00": "2"
+            }
+        },
+        "sensor2": {
+            "type": "pir",
+            "nickname": "Motion Sensor (Entry)",
+            "schedule": {
+                "00:00": "1"
             }
         }
     },
