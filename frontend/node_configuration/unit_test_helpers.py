@@ -626,34 +626,6 @@ test_config_1_edit_context = {
             }
         }
     },
-    "instances": {
-        "device1": {
-            "type": "pwm",
-            "nickname": "Cabinet Lights",
-            "schedule": {
-                "22:00": "1023",
-                "22:01": "fade/256/7140",
-                "00:00": "fade/32/7200",
-                "05:00": "Disabled"
-            }
-        },
-        "device2": {
-            "type": "tasmota-relay",
-            "nickname": "Overhead Lights",
-            "schedule": {
-                "05:00": "enabled",
-                "22:00": "disabled"
-            }
-        },
-        "sensor1": {
-            "type": "pir",
-            "nickname": "Motion Sensor",
-            "schedule": {
-                "10:00": "2",
-                "22:00": "2"
-            }
-        }
-    },
     "api_target_options": {
         "addresses": {
             "self-target": "192.168.1.123",
@@ -871,21 +843,6 @@ test_config_2_edit_context = {
                 "params": ["ip"],
                 "prompt": "api_target"
             }
-        }
-    },
-    "instances": {
-        "device1": {
-            "type": "api-target",
-            "nickname": "Air Conditioner",
-            "schedule": {
-                "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
-                "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
-            }
-        },
-        "sensor1": {
-            "type": "si7021",
-            "nickname": "Thermostat",
-            "schedule": {}
         }
     },
     "api_target_options": {
@@ -1108,49 +1065,6 @@ test_config_3_edit_context = {
                 "name": "TasmotaRelay",
                 "params": ["ip"],
                 "prompt": "standard"
-            }
-        }
-    },
-    "instances": {
-        "device1": {
-            "type": "pwm",
-            "nickname": "Bathroom LEDs",
-            "schedule": {
-                "22:00": "1023",
-                "22:01": "fade/256/7140",
-                "00:00": "fade/32/7200",
-                "05:00": "Disabled"
-            }
-        },
-        "device2": {
-            "type": "tasmota-relay",
-            "nickname": "Bathroom Lights",
-            "schedule": {
-                "05:00": "enabled",
-                "22:00": "disabled"
-            }
-        },
-        "device3": {
-            "type": "tasmota-relay",
-            "nickname": "Entry Light",
-            "schedule": {
-                "05:00": "enabled",
-                "23:00": "disabled"
-            }
-        },
-        "sensor1": {
-            "type": "pir",
-            "nickname": "Motion Sensor (Bath)",
-            "schedule": {
-                "10:00": "2",
-                "22:00": "2"
-            }
-        },
-        "sensor2": {
-            "type": "pir",
-            "nickname": "Motion Sensor (Entry)",
-            "schedule": {
-                "00:00": "1"
             }
         }
     },

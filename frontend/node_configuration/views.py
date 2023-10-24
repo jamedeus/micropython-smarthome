@@ -282,33 +282,20 @@ def edit_config(request, name):
     # Create objects to build context subkeys
     sensors = {}
     devices = {}
-    instances = {}
 
     # Load device and sensor metadata
     metadata = get_metadata_context()
 
     for i in config:
         if is_sensor(i):
-            # Add each sensor to instances
-            instances[i] = {}
-            instances[i]["type"] = config.copy()[i]["_type"]
-            instances[i]["nickname"] = config.copy()[i]["nickname"]
-            instances[i]["schedule"] = config.copy()[i]["schedule"]
-
-            # Add to sensors, change _type to type (django template limitation)
+            # Add each sensor, change _type to type (django template limitation)
             sensors[i] = config[i].copy()
             sensors[i]["type"] = config.copy()[i]["_type"]
             sensors[i]["metadata"] = metadata["sensors"][config[i]["_type"]]
             del sensors[i]["_type"]
 
         elif is_device(i):
-            # Add each device to instances
-            instances[i] = {}
-            instances[i]["type"] = config.copy()[i]["_type"]
-            instances[i]["nickname"] = config.copy()[i]["nickname"]
-            instances[i]["schedule"] = config.copy()[i]["schedule"]
-
-            # Add to devices, change _type to type (django template limitation)
+            # Add each device, change _type to type (django template limitation)
             devices[i] = config[i].copy()
             devices[i]["type"] = config.copy()[i]["_type"]
             devices[i]["metadata"] = metadata["devices"][config[i]["_type"]]
@@ -318,8 +305,8 @@ def edit_config(request, name):
             if devices[i]["type"] == "api-target":
                 devices[i]["default_rule"] = json.dumps(devices[i]["default_rule"])
 
-                for rule in instances[i]["schedule"]:
-                    instances[i]["schedule"][rule] = json.dumps(instances[i]["schedule"][rule])
+                for rule in devices[i]["schedule"]:
+                    devices[i]["schedule"][rule] = json.dumps(devices[i]["schedule"][rule])
 
     # Build context object:
     # - IP and FILENAME: Used to reupload config
@@ -345,7 +332,6 @@ def edit_config(request, name):
     # Template relies on forloop.counter to determine ID, will not match config if not alphabetical
     context["sensors"] = {sensor: sensors[sensor] for sensor in sorted(sensors)}
     context["devices"] = {device: devices[device] for device in sorted(devices)}
-    context["instances"] = {instance: instances[instance] for instance in sorted(instances)}
 
     print(json.dumps(context, indent=4))
 

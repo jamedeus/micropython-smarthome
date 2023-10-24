@@ -1,5 +1,6 @@
 {% load static %}
 {% load pwa %}
+{% load combine_dicts %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -249,6 +250,8 @@
                 <div id="page3-cards">
 
                 {# Add schedule rules card for each existing device and sensor #}
+                {% if devices %}
+                {% with instances=devices|combine_dicts:sensors %}
                 {% for instance, params in instances.items %}
                     <div class="card mb-4 {{instance}}">
                         <div class="card-body text-center">
@@ -296,6 +299,8 @@
                         </div>
                     </div>
                 {% endfor %}
+                {% endwith %}
+                {% endif %}
                 </div>
 
             <!-- Change page buttons -->
@@ -344,7 +349,7 @@
         </div>
     </div>
 
-    {{ api_target_options|json_script:"context" }}
+    {{ api_target_options|json_script:"api_target_options" }}
     {{ metadata|json_script:"metadata" }}
     {{ edit_existing|json_script:"edit_existing" }}
     {{ config|json_script:"config" }}
@@ -356,7 +361,7 @@
         document.getElementById('page3').style.display = 'none';
 
         // Get object used to populate api-target options from context
-        const ApiTargetOptions = JSON.parse(document.getElementById("context").textContent);
+        const ApiTargetOptions = JSON.parse(document.getElementById("api_target_options").textContent);
 
         // Get device/sensor metadata object, used to determine input elements for each type
         const metadata = JSON.parse(document.getElementById("metadata").textContent);
