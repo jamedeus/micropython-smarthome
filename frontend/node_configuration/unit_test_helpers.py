@@ -578,7 +578,7 @@ test_config_1_edit_context = {
             "password": "hunter2"
         },
         "device1": {
-            "type": "pwm",
+            "_type": "pwm",
             "nickname": "Cabinet Lights",
             "pin": "4",
             "min_rule": "0",
@@ -613,7 +613,7 @@ test_config_1_edit_context = {
             }
         },
         "device2": {
-            "type": "tasmota-relay",
+            "_type": "tasmota-relay",
             "nickname": "Overhead Lights",
             "ip": "192.168.1.217",
             "default_rule": "enabled",
@@ -641,7 +641,7 @@ test_config_1_edit_context = {
             }
         },
         "sensor1": {
-            "type": "pir",
+            "_type": "pir",
             "nickname": "Motion Sensor",
             "pin": "15",
             "default_rule": "2",
@@ -817,7 +817,7 @@ test_config_2_edit_context = {
         },
         "device1": {
             "nickname": "Air Conditioner",
-            "type": "api-target",
+            "_type": "api-target",
             "ip": "192.168.1.124",
             "default_rule": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
             "schedule": {
@@ -843,7 +843,7 @@ test_config_2_edit_context = {
             }
         },
         "sensor1": {
-            "type": "si7021",
+            "_type": "si7021",
             "nickname": "Thermostat",
             "mode": "cool",
             "tolerance": "0.5",
@@ -1021,7 +1021,7 @@ test_config_3_edit_context = {
             "password": "hunter2"
         },
         "device1": {
-            "type": "pwm",
+            "_type": "pwm",
             "nickname": "Bathroom LEDs",
             "pin": "4",
             "min_rule": "0",
@@ -1056,7 +1056,7 @@ test_config_3_edit_context = {
             }
         },
         "device2": {
-            "type": "tasmota-relay",
+            "_type": "tasmota-relay",
             "nickname": "Bathroom Lights",
             "ip": "192.168.1.239",
             "default_rule": "enabled",
@@ -1084,7 +1084,7 @@ test_config_3_edit_context = {
             }
         },
         "device3": {
-            "type": "tasmota-relay",
+            "_type": "tasmota-relay",
             "nickname": "Entry Light",
             "ip": "192.168.1.202",
             "default_rule": "enabled",
@@ -1112,7 +1112,7 @@ test_config_3_edit_context = {
             }
         },
         "sensor1": {
-            "type": "pir",
+            "_type": "pir",
             "nickname": "Motion Sensor (Bath)",
             "pin": "15",
             "default_rule": "2",
@@ -1145,7 +1145,7 @@ test_config_3_edit_context = {
             }
         },
         "sensor2": {
-            "type": "pir",
+            "_type": "pir",
             "nickname": "Motion Sensor (Entry)",
             "pin": "16",
             "default_rule": "1",

@@ -260,19 +260,15 @@ def edit_config(request, name):
 
     for i in config:
         if is_sensor(i):
-            # Add metadata for each sensor, change _type to type (django template limitation)
-            config[i]["type"] = config[i]["_type"]
+            # Add metadata for each sensor
             config[i]["metadata"] = metadata["sensors"][config[i]["_type"]]
-            del config[i]["_type"]
 
         elif is_device(i):
-            # Add metadata for each device, change _type to type (django template limitation)
-            config[i]["type"] = config[i]["_type"]
+            # Add metadata for each device
             config[i]["metadata"] = metadata["devices"][config[i]["_type"]]
-            del config[i]["_type"]
 
             # Correct ApiTarget rule syntax
-            if config[i]["type"] == "api-target":
+            if config[i]["_type"] == "api-target":
                 config[i]["default_rule"] = json.dumps(config[i]["default_rule"])
 
                 for rule in config[i]["schedule"]:
@@ -362,11 +358,8 @@ def generate_config_file(data, edit_existing=False):
         location = GpsCoordinates.objects.all()[0]
         data["metadata"]["gps"] = {"lat": str(location.lat), "lon": str(location.lon)}
 
-    # Replace type parameters with _type, remove metadata
+    # Remove metadata from device and sensor sections
     for i in [i for i in data.keys() if is_device_or_sensor(i)]:
-        if "type" in data[i].keys():
-            data[i]["_type"] = data[i]["type"]
-            del data[i]["type"]
         if "metadata" in data[i].keys():
             del data[i]["metadata"]
 

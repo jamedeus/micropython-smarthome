@@ -9,9 +9,9 @@
 
             {# Add correct instance type dropdown with correct option pre-selected #}
             {% if category == "sensor" %}
-                {% include "node_configuration/sensor_type_dropdown.html" with selected=params.type %}
+                {% include "node_configuration/sensor_type_dropdown.html" with selected=params.metadata.config_name %}
             {% else %}
-                {% include "node_configuration/device_type_dropdown.html" with selected=params.type %}
+                {% include "node_configuration/device_type_dropdown.html" with selected=params.metadata.config_name %}
             {% endif %}
 
             {# Add card body with nickname input #}
@@ -64,7 +64,7 @@
                 {% endif %}
 
                 {# Add Thermostat-specific inputs #}
-                {% if params.type == "si7021" %}
+                {% if params.metadata.config_name == "si7021" %}
                     <div class="mb-2">
                         <label class="form-label sensor{{index}}" for="sensor{{index}}-mode"><b>Mode:</b></label>
                         <select id="sensor{{index}}-mode" class="form-select mb-3 sensor{{index}}" required>
