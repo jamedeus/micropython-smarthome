@@ -85,8 +85,11 @@ async function rule_slider_increment(button) {
         return false;
     };
 
-    const current = parseFloat(document.getElementById(target).value);
+    // Get reference to target slider, current value
+    const slider = document.getElementById(target);
+    const current = parseFloat(slider.value);
 
+    // Increment/decrement current value
     if (button.id.split("-")[2] == "up") {
         var new_rule = current + parseFloat(button.dataset.stepsize);
     } else {
@@ -94,9 +97,12 @@ async function rule_slider_increment(button) {
     };
 
     // Update slider position
-    document.getElementById(target).value = new_rule;
+    slider.value = new_rule;
     $('input[type="range"]').rangeslider('update', true);
     // Select handle element closest to slider, update current rule displayed
     var $handle = $('.rangeslider__handle', document.getElementById(target).nextSibling);
     $handle[0].textContent = get_display_value(document.getElementById(target));
+
+    // Trigger listener that updates config object
+    trigger_input_event(slider);
 };
