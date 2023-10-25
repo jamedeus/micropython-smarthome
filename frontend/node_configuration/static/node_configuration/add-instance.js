@@ -245,8 +245,9 @@ function get_template(id, type, type_metadata, category) {
 // Inserts template into card, instantiates elements, adds listeners
 function render_template(id, type, type_metadata, template) {
     // Insert template into div, scroll down until visible
-    document.querySelector(`.${id} .configParams`).innerHTML = template;
-    document.querySelector(`.${id} .configParams`).scrollIntoView({behavior: "smooth"});
+    const card = document.querySelector(`.${id} .configParams`);
+    card.innerHTML = template;
+    card.scrollIntoView({behavior: "smooth"});
 
     // Instantiate slider if added
     if (type_metadata.rule_prompt == 'float_range' || type_metadata.rule_prompt == 'int_or_fade') {
@@ -275,6 +276,9 @@ function render_template(id, type, type_metadata, template) {
         document.getElementById(`${id}-max_rule`).addEventListener('input', ruleLimits);
         document.getElementById(`${id}-min_rule`).addEventListener('input', ruleLimits);
     };
+
+    // Return reference to card
+    return card
 }
 
 
@@ -294,7 +298,7 @@ function load_sensor_section(select) {
 
     // Render template for currently-selected sensor type
     var template = get_template(id, type, type_metadata, 'sensor');
-    render_template(id, type, type_metadata, template);
+    const card = render_template(id, type, type_metadata, template);
 
     // Disable Thermostat dropdown options if selected (can't have multiple)
     preventDuplicateThermostat();
@@ -305,6 +309,10 @@ function load_sensor_section(select) {
 
     // Add correct template to config object
     config[id] = metadata['sensors'][type]['config_template'];
+
+    // Trigger listeners that update config object on all inputs
+    card.querySelectorAll("input").forEach(input => trigger_input_event(input));
+    card.querySelectorAll("select").forEach(input => trigger_input_event(input));
 };
 
 
@@ -325,7 +333,7 @@ function load_device_section(select) {
 
     // Render template for currently-selected device type
     var template = get_template(id, type, type_metadata, 'device');
-    render_template(id, type, type_metadata, template);
+    const card = render_template(id, type, type_metadata, template);
 
     // Wipe instance params and re-populate (type changed)
     instances["devices"][id].getParams();
@@ -333,6 +341,10 @@ function load_device_section(select) {
 
     // Add correct template to config object
     config[id] = metadata['devices'][type]['config_template'];
+
+    // Trigger listeners that update config object on all inputs
+    card.querySelectorAll("input").forEach(input => trigger_input_event(input));
+    card.querySelectorAll("select").forEach(input => trigger_input_event(input));
 };
 
 
