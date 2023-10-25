@@ -237,59 +237,6 @@
         <div id="page3" class="flex-column h-100">
             <h3>Add schedule rules (optional)</h3>
                 <div id="page3-cards">
-
-                {# Add schedule rules card for each existing device and sensor #}
-                {% for instance, params in config.items %}
-                {% if instance|is_sensor or instance|is_device %}
-                {% with instance_metadata=metadata|get_metadata:params %}
-                    <div class="card mb-4 {{instance}}">
-                        <div class="card-body text-center">
-                            <label id="{{instance}}-rules-label" class="card-title schedule-rule-card {{instance}}" title="{{instance}} - {{instance_metadata.config_name}}">
-                                <b>{{ params.nickname }}</b>
-                            </label>
-                            <table id="{{instance}}-rules" class="table table-borderless {{instance}} {% if params.schedule.items|length == 0 %} d-none {% endif %}">
-                                <tr>
-                                    <th style="text-align: center;">Time</th>
-                                    <th style="text-align: center;">Rule</th>
-                                </tr>
-
-                                {# Add each existing schedule rule to table #}
-                                {% if params.schedule.items|length > 0 %}
-                                    {% for time, rule in params.schedule.items %}
-                                        <tr id="{{instance}}-row-{{forloop.counter}}" class="{{instance}}">
-                                            <td>
-                                                <span class="form-control time {{instance}}" id="{{instance}}-rule{{forloop.counter}}-time" data-original="{{time}}" data-type="{{instance_metadata.config_name}}" onclick="edit_existing_rule(this);">{{time}}</span>
-                                            </td>
-
-                                            {% if instance_metadata.config_name == "api-target" %}
-                                                <td>
-                                                    <span class="form-control {{instance}}" id="{{instance}}-rule{{forloop.counter}}-button" data-original="{{rule}}" data-type="{{instance_metadata.config_name}}" onclick="edit_existing_rule(this);">click to view</span>
-                                                    <input type="text" class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{instance_metadata.config_name}}" style="display:none;">
-                                                </td>
-
-                                            {% else %}
-                                                <td>
-                                                    <span class="form-control rule {{instance}}" id="{{instance}}-rule{{forloop.counter}}" data-original="{{rule}}" data-type="{{instance_metadata.config_name}}" onclick="edit_existing_rule(this);">{{rule}}</span>
-                                                </td>
-                                            {% endif %}
-
-                                            <td class="min">
-                                                <button type="button" class="btn btn-sm btn-primary mt-1" id="{{instance}}-edit{{forloop.counter}}" data-type="{{instance_metadata.config_name}}" onclick="edit_existing_rule(this);"><i class="bi-pencil"></i></button>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                {% endif %}
-                            </table>
-
-                            {# Add button to open rule modal #}
-                            <div>
-                                <button type="button" class="btn btn-secondary {{instance}}" id="{{instance}}-add-rule" data-type="{{instance_metadata.config_name}}" onclick="add_new_rule(this)">Add Rule</i></button>
-                            </div>
-                        </div>
-                    </div>
-                {% endwith %}
-                {% endif %}
-                {% endfor %}
                 </div>
 
             <!-- Change page buttons -->

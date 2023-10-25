@@ -18,8 +18,8 @@ function get_target_card_template(sensor, config, devices) {
     // Populate div opening
     var template = `<div class='card ${sensor}'>
                         <div class='card-body'>
-                            <label id='${sensor}-targets-label' for='${sensor}-targets' class='card-title sensor-targets-label ${sensor}'><b>${nickname} (${type})</b> targets:</label>
-                            <div id='${sensor}-targets' class='form-check sensor-targets ${sensor}'>`
+                            <label id='${sensor}-targets-label' for='${sensor}-targets' class='card-title'><b>${nickname} (${type})</b> targets:</label>
+                            <div id='${sensor}-targets' class='form-check'>`
 
     // Iterate devices, add option for each
     for (device in devices) {
@@ -32,8 +32,8 @@ function get_target_card_template(sensor, config, devices) {
         };
     };
 
-    // Close div, return
-    template += "</div></div></div></br>"
+    // Close div, return template
+    template += "</div></div></div></br>";
     return template
 };
 
@@ -60,6 +60,45 @@ function show_page_2() {
 };
 
 
+function show_page_3() {
+    // Get objects containing only devices and sensors
+    const devices = filterObject(config, 'device');
+    const sensors = filterObject(config, 'sensor');
+
+    // Clear page3 div
+    const target_section = document.getElementById('page3-cards');
+    target_section.innerHTML = "";
+
+    // Iterate sensors, add schedule rules card for each with existing rules
+    for (sensor in sensors) {
+        // Add empty schedule rule section
+        const template = create_schedule_rule_section(sensor, config[sensor]['nickname'], config[sensor]['_type']);
+        target_section.insertAdjacentHTML('beforeend', template);
+
+        // Add each existing rule to section
+        for (rule in config[sensor]['schedule']) {
+            add_new_row(sensor, rule, config[sensor]['schedule'][rule], config[sensor]['_type']);
+        };
+    };
+
+    // Iterate sensors, add schedule rules card for each with existing rules
+    for (device in devices) {
+        // Add empty schedule rule section
+        const template = create_schedule_rule_section(device, config[device]['nickname'], config[device]['_type']);
+        target_section.insertAdjacentHTML('beforeend', template);
+
+        // Add each existing rule to section
+        for (rule in config[device]['schedule']) {
+            add_new_row(device, rule, config[device]['schedule'][rule], config[device]['_type']);
+        };
+    };
+
+    // Show page3
+    document.getElementById("page3").classList.add("d-flex");
+    document.getElementById("page2").classList.remove("d-flex");
+    document.getElementById("page2").style.display = "none";
+};
+
 
 document.getElementById('page1-button').addEventListener("click", function(e) {
     e.preventDefault();
@@ -82,9 +121,6 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 
     // Don't proceed to page2 if blank fields exist
     if (!valid) { return };
-
-    // Get array of all sensor target selection divs on page2
-    sensors = document.getElementsByClassName("sensor-targets");
 
     // Find device instances that require updates
     for (device in instances['devices']) {
@@ -135,10 +171,6 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
 // Adds target select option to all cards on page 2
 // Adds schedule rules card to page 3
 function handle_new_device(device, nickname, type) {
-    // Add schedule rule section for the new device to page3
-    template = create_schedule_rule_section(device, nickname, type);
-    document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
-
     // Prevent duplicates if user goes back to page 1
     instances['devices'][device].new = false;
 };
@@ -147,9 +179,6 @@ function handle_new_device(device, nickname, type) {
 // Takes device ID and nickname
 // Changes nickname on target select options, schedule rules card
 function rename_device(device, nickname, type) {
-    // Change name on schedule rules card
-    document.getElementById(`${device}-rules-label`).innerHTML = `<b>${nickname} (${type})</b>`;
-
     instances['devices'][device].name_changed = false;
 };
 
@@ -157,18 +186,6 @@ function rename_device(device, nickname, type) {
 // Takes device ID, nickname, and type
 // Changes type displayed on target select options, schedule rules card
 function change_device_type(device, nickname, type) {
-    // Change name and tooltip on schedule rules card
-    document.getElementById(`${device}-rules-label`).title = `${device} - ${type}`;
-    document.getElementById(`${device}-rules-label`).innerHTML = `<b>${nickname} (${type})</b>`;
-
-    // Clear existing schedule rules (likely invalid after type change)
-    template = `<tr>
-                    <th style='text-align: center;'>Time</th>
-                    <th style='text-align: center;'>Rule</th>
-                </tr>`;
-    document.getElementById(`${device}-rules`).innerHTML = template
-    document.getElementById(`${device}-rules`).classList.add('d-none');
-
     // Prevent running again (unless device type changes again)
     instances['devices'][device].modified = false;
 }
@@ -177,10 +194,6 @@ function change_device_type(device, nickname, type) {
 // Takes new sensor ID, nickname, and type
 // Adds target select card to page 2
 function handle_new_sensor(sensor, nickname, type) {
-    // Add schedule rule section for the new sensor to page3
-    template = create_schedule_rule_section(sensor, nickname, type);
-    document.getElementById("page3-cards").insertAdjacentHTML('beforeend', template);
-
     // Prevent duplicates if user goes back to page 1
     instances['sensors'][sensor].new = false;
 };
@@ -189,9 +202,6 @@ function handle_new_sensor(sensor, nickname, type) {
 // Takes sensor ID and nickname
 // Changes nickname on target select card, schedule rules card
 function rename_sensor(sensor, nickname, type) {
-    // Change name on schedule rules card
-    document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${nickname} (${type})</b>`;
-
     instances['sensors'][sensor].name_changed = false;
 };
 
@@ -199,18 +209,6 @@ function rename_sensor(sensor, nickname, type) {
 // Takes sensor ID, nickname, and type
 // Changes type displayed on target select options, schedule rules card
 function change_sensor_type(sensor, nickname, type) {
-    // Change name and tooltip on schedule rules card
-    document.getElementById(`${sensor}-rules-label`).title = `${sensor} - ${type}`;
-    document.getElementById(`${sensor}-rules-label`).innerHTML = `<b>${nickname} (${type})</b>`;
-
-    // Clear existing schedule rules (likely invalid after type change)
-    template = `<tr>
-                    <th style='text-align: center;'>Time</th>
-                    <th style='text-align: center;'>Rule</th>
-                </tr>`;
-    document.getElementById(`${sensor}-rules`).innerHTML = template
-    document.getElementById(`${sensor}-rules`).classList.add('d-none');
-
     // Prevent running again (unless user changes type again)
     instances['sensors'][sensor].modified = false;
 };
@@ -241,10 +239,8 @@ function create_schedule_rule_section(id, nickname, type) {
 document.getElementById('page2-button').addEventListener("click", function(e) {
     e.preventDefault();
 
-    // Show page3
-    document.getElementById("page3").classList.add("d-flex");
-    document.getElementById("page2").classList.remove("d-flex");
-    document.getElementById("page2").style.display = "none";
+    // Generate schedule rule cards, show page 3
+    show_page_3();
 
     // Update sliders (fix incorrect width caused by display: none)
     $('input[type="range"]').rangeslider('update', true);
