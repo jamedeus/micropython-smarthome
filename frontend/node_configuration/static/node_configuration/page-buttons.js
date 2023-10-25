@@ -141,9 +141,6 @@ function show_page_2() {
     document.getElementById("page1").classList.add("d-none");
     document.getElementById("page3").classList.remove("d-flex");
     document.getElementById("page3").classList.add("d-none");
-
-    // Update instances (transitional function, will be removed)
-    update_instances();
 };
 
 // Page 2 next button handler, renders schedule rules cards and shows page 3
@@ -191,95 +188,4 @@ function show_page_3() {
 
     // Update sliders (fix incorrect width caused by display: none)
     $('input[type="range"]').rangeslider('update', true);
-};
-
-
-// TODO transitional function, remove
-function update_instances() {
-    // Find device instances that require updates
-    for (device in instances['devices']) {
-        // Get device nickname and type
-        const nickname = instances['devices'][device]['output']['nickname'];
-        const type = instances['devices'][device]['output']['_type'];
-
-        // If device is new, add target select options on page2, add schedule rules card on page3
-        if (instances['devices'][device].new) {
-            handle_new_device(device, nickname, type);
-
-        // If device nickname changed, but type did not change (targets + rules don't need to be cleared)
-        } else if (instances['devices'][device].name_changed && ! instances['devices'][device].modified) {
-            rename_device(device, nickname, type);
-
-        // If device type changed, change type displayed on page2 and page3
-        } else if (instances['devices'][device].modified) {
-            change_device_type(device, nickname, type);
-        };
-    };
-
-    // Find sensor instances that require updates
-    for (sensor in instances['sensors']) {
-        // Get sensor nickname and type
-        const nickname = instances['sensors'][sensor]['output']['nickname'];
-        const type = instances['sensors'][sensor]['output']['_type'];
-
-        // If sensor is new, add target select card to page2
-        if (instances['sensors'][sensor].new) {
-            handle_new_sensor(sensor, nickname, type);
-
-        // If sensor nickname changed, but type did not change (targets + rules don't need to be cleared)
-        } else if (instances['sensors'][sensor].name_changed && ! instances['sensors'][sensor].modified) {
-            rename_sensor(sensor, nickname, type);
-
-        // If sensor type changed, change type displayed on page2 and page3
-        } else if (instances['sensors'][sensor].modified) {
-            change_sensor_type(sensor, nickname, type);
-        };
-    };
-};
-
-
-// Takes new device ID, nickname, and type
-// Adds target select option to all cards on page 2
-// Adds schedule rules card to page 3
-function handle_new_device(device, nickname, type) {
-    // Prevent duplicates if user goes back to page 1
-    instances['devices'][device].new = false;
-};
-
-
-// Takes device ID and nickname
-// Changes nickname on target select options, schedule rules card
-function rename_device(device, nickname, type) {
-    instances['devices'][device].name_changed = false;
-};
-
-
-// Takes device ID, nickname, and type
-// Changes type displayed on target select options, schedule rules card
-function change_device_type(device, nickname, type) {
-    // Prevent running again (unless device type changes again)
-    instances['devices'][device].modified = false;
-}
-
-
-// Takes new sensor ID, nickname, and type
-// Adds target select card to page 2
-function handle_new_sensor(sensor, nickname, type) {
-    // Prevent duplicates if user goes back to page 1
-    instances['sensors'][sensor].new = false;
-};
-
-
-// Takes sensor ID and nickname
-// Changes nickname on target select card, schedule rules card
-function rename_sensor(sensor, nickname, type) {
-    instances['sensors'][sensor].name_changed = false;
-};
-
-
-// Takes sensor ID, nickname, and type
-// Changes type displayed on target select options, schedule rules card
-function change_sensor_type(sensor, nickname, type) {
-    // Prevent running again (unless user changes type again)
-    instances['sensors'][sensor].modified = false;
 };

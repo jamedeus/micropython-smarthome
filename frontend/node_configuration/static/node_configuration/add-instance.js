@@ -1,25 +1,8 @@
-// Store class instances created each time a device/sensor is added
-var instances = {"sensors": {}, "devices": {}}
-
-// Populate instances with existing device + sensor cards (if editing config)
-Array.from(document.getElementsByClassName("deviceType")).forEach(function(device) {
-    const id = device.id.split("-")[0];
-    instances["devices"][id] = new Device(id);
-    instances["devices"][id].new = false;
-});
-
-Array.from(document.getElementsByClassName("sensorType")).forEach(function(sensor) {
-    const id = sensor.id.split("-")[0];
-    instances["sensors"][id] = new Sensor(id);
-    instances["sensors"][id].new = false;
-});
-
-
 // Takes id (int), returns nickname input template
 function create_nickname_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-nickname" class="${id}"><b>Nickname:</b></label>
-                <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="${id}" data-param="nickname" required>
+                <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="${id}" data-param="nickname" required>
             </div>`
 }
 
@@ -303,10 +286,6 @@ function load_sensor_section(select) {
     // Disable Thermostat dropdown options if selected (can't have multiple)
     preventDuplicateThermostat();
 
-    // Wipe instance params and re-populate (type changed)
-    instances["sensors"][id].getParams();
-    instances["sensors"][id].modified = true;
-
     // Add correct template to config object
     config[id] = metadata['sensors'][type]['config_template'];
 
@@ -335,10 +314,6 @@ function load_device_section(select) {
     var template = get_template(id, type, type_metadata, 'device');
     const card = render_template(id, type, type_metadata, template);
 
-    // Wipe instance params and re-populate (type changed)
-    instances["devices"][id].getParams();
-    instances["devices"][id].modified = true;
-
     // Add correct template to config object
     config[id] = metadata['devices'][type]['config_template'];
 
@@ -351,7 +326,7 @@ function load_device_section(select) {
 // Called when user clicks + button under devices
 async function load_next_device() {
     // Get index of new device (number of existing + 1)
-    const index = parseInt(Object.keys(instances.devices).length) + 1;
+    const index = Object.keys(filterObject(config, 'device')).length + 1;
 
     // Add section to config object
     config[`device${index}`] = {};
@@ -387,9 +362,6 @@ async function load_next_device() {
     document.getElementById("addDeviceButton").insertAdjacentHTML('beforebegin', template);
     document.getElementById("addDeviceDiv" + (index)).scrollIntoView({behavior: "smooth"});
 
-    // Create device instance
-    instances["devices"][`device${index}`] = new Device(`device${index}`);
-
     // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
     await sleep(400);
     document.getElementById(`addDeviceDiv${index}`).classList.remove('fade-in');
@@ -400,7 +372,7 @@ async function load_next_device() {
 // Called when user clicks + button under sensors
 async function load_next_sensor() {
     // Get index of new sensor (number of existing + 1)
-    const index = parseInt(Object.keys(instances.sensors).length) + 1;
+    const index = Object.keys(filterObject(config, 'sensor')).length + 1;
 
     // Add section to config object
     config[`sensor${index}`] = {};
@@ -439,9 +411,6 @@ async function load_next_sensor() {
 
     // Disable Thermostat dropdown options if selected (can't have multiple)
     preventDuplicateThermostat();
-
-    // Create sensor instance
-    instances["sensors"][`sensor${index}`] = new Sensor(`sensor${index}`);
 
     // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
     await sleep(400);
@@ -516,20 +485,11 @@ function update_ids(cards, num, target) {
                 elements[el].classList.add(target.replace(num, i-1))
             };
 
-            // Delete class instance, re-instantiate with new ID, set new to false to prevent duplicates on page2 + page3
-            // Adjust ID in config object
+            // Adjust IDs in config object
             if (target.startsWith('device')) {
-                delete instances['devices'][`device${i}`];
-                instances['devices'][`device${i-1}`] = new Device(`device${i-1}`);
-                instances['devices'][`device${i-1}`].new = false;
-
                 config[`device${i-1}`] = config[`device${i}`];
                 delete config[`device${i}`];
             } else {
-                delete instances['sensors'][`sensor${i}`];
-                instances['sensors'][`sensor${i-1}`] = new Sensor(`sensor${i-1}`);
-                instances['sensors'][`sensor${i-1}`].new = false;
-
                 config[`sensor${i-1}`] = config[`sensor${i}`];
                 delete config[`sensor${i}`];
             };
@@ -548,11 +508,9 @@ async function remove_instance(el) {
     // Get pixel value of 1rem (used in animation)
     const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize)
 
-    // Delete target from instances
-    // Get index of target, array of all cards, and add button for delete animation
+    // Remove from config, get elements for delete animation
     if (target.startsWith("device")) {
         delete config[target];
-        delete instances['devices'][target];
         var num = target.replace("device", "");
         var cards = Array.from(document.getElementById("devices").children);
         var button = document.getElementById('addDeviceButton');
@@ -560,7 +518,6 @@ async function remove_instance(el) {
         var animation_height = document.getElementById(`addDeviceDiv${num}`).clientHeight / remPx + 1.5;
     } else {
         delete config[target];
-        delete instances['sensors'][target];
         var num = target.replace("sensor", "");
         var cards = Array.from(document.getElementById("sensors").children);
         var button = document.getElementById('addSensorButton');

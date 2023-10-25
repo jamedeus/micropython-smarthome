@@ -15,22 +15,26 @@ async function prevent_duplicate_friendly_name(el) {
     };
 };
 
-// Called on input for all nickname fields, highlight red if same as existing nickname
+// Input listener for all nickname fields, adds red highlight if nickname is duplicate
 function prevent_duplicate_nickname(event) {
     // Get ID of modified input (prevent comparing against self)
     const id = event.target.id.split("-")[0];
 
-    // Iterate all other devices/sensors, check if identical name exists
-    for (const category in instances) {
-        for (const item in instances[category]) {
-            // If not same instance and same nickname, add highlight + listener to remove
-            if (item != id && instances[category][item].output.nickname.toLowerCase() == event.target.value.toLowerCase()) {
-                event.target.classList.add('is-invalid');
-                event.target.addEventListener("input", (e) => {
-                    e.target.classList.remove("is-invalid");
-                }, { once: true });
-            };
-        };
+    // Get nickname that user just entered
+    const nickname = event.target.value;
+
+    // Get all existing nicknames in lowercase (case-insensitive comparison)
+    const existingNicknames = Object.entries(config).filter(([key, value]) => {
+        // Select all keys with nickname attribute except current target
+        return value.nickname && key !== id;
+    }).map(([key, value]) => value.nickname.toLowerCase());
+
+    // Add invalid highlight + listener to remove if nickname is duplicate
+    if (existingNicknames.includes(nickname.toLowerCase())) {
+        event.target.classList.add('is-invalid');
+        event.target.addEventListener("input", (e) => {
+            e.target.classList.remove("is-invalid");
+        }, { once: true });
     };
 };
 

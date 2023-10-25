@@ -1,24 +1,5 @@
 // Takes true (edit existing config and reupload) or false (create new config)
 async function submit_form(edit) {
-    // Update all instance properties, add missing params (if any) to config
-    for (sensor in instances['sensors']) {
-        instances['sensors'][sensor].update();
-        for (param in config[sensor]) {
-            if (config[sensor][param] === 'placeholder') {
-                config[sensor][param] = instances['sensors'][sensor]['output'][param];
-            };
-        };
-    };
-
-    for (device in instances['devices']) {
-        instances['devices'][device].update();
-        for (param in config[device]) {
-            if (config[device][param] === 'placeholder') {
-                config[device][param] = instances['devices'][device]['output'][param];
-            };
-        };
-    };
-
     // Add IR Blaster config if present
     // TODO add a listener that does this automatically
     if (irblaster_configured.checked) {
