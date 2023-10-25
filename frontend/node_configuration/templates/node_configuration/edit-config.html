@@ -412,6 +412,19 @@
             };
         };
 
+        // Takes input element, sends input event
+        // Used to trigger listener that updates config object
+        function trigger_input_event(element) {
+            const input = new Event('input');
+            element.dispatchEvent(input);
+        };
+
+        // Trigger listener on all input elements when page loads
+        // Prevents autocompleted fields (ie metadata, wifi) being lost after page refresh
+        window.onload = function() {
+            document.querySelectorAll('input').forEach(input => trigger_input_event(input));
+        };
+
         // Track if user made changes (triggers warning before going back to overview)
         let changes_made = false;
         document.addEventListener('input', function() {
