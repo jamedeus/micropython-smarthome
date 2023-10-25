@@ -224,29 +224,6 @@
 
         <div id="page2" class="flex-column h-100">
             <div id="page2-cards">
-                <h3>Select targets for each sensor</h3>
-
-                {# Add targets card for each existing sensor #}
-                {% for sensor, params in config.items %}
-                {% if sensor|is_sensor %}
-                    <div class="card mb-4 {{sensor}}">
-                        <div class="card-body">
-                            <label id="{{sensor}}-targets-label" for="{{sensor}}-targets" class="card-title {{sensor}}"><b>{{ params.nickname }}</b> targets:</label>
-                            <div id="{{sensor}}-targets" class="form-check sensor-targets {{sensor}}">
-
-                                {# Add option for each existing device #}
-                                {% for device, dparams in config.items %}
-                                {% if device|is_device %}
-                                    <input type="checkbox" class="form-check-input {{sensor}} {{device}} target" id="target-{{sensor}}-{{device}}" value="target-{{sensor}}-{{device}}" {% if device in params.targets %}checked{% endif %} oninput="update_config_targets(this);">
-                                    <label for="target-{{sensor}}-{{device}}" class="form-check-label {{sensor}} {{device}} target-label">{{ dparams.nickname }}</label>
-                                    <br class="{{device}}">
-                                {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                {% endif %}
-                {% endfor %}
             </div>
 
             <!-- Change page buttons -->

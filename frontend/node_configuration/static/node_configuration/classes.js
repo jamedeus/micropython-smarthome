@@ -75,31 +75,12 @@ class Device extends Instance {
 
 
 class Sensor extends Instance {
-    update() {
-        super.update();
-        this.getTargets();
-    };
-
     getParams() {
         super.getParams();
 
         // Float default_rule required by some sensor types
         if (["pir", "si7021"].includes(this.output._type)) {
             this.output.default_rule = parseFloat(this.output.default_rule);
-        };
-    };
-
-    // Populate target parameter in output JSON config with list of device IDs
-    getTargets() {
-        // Get array of target check boxes
-        var checks = document.getElementsByClassName(`target ${this.id}`);
-
-        // Add ID of all checked targets to list in config object
-        this.output.targets = [];
-        for (let i=0; i < checks.length; i++) {
-            if (checks[i].checked) {
-                this.output.targets.push(checks[i].value.split("-")[2]);
-            };
         };
     };
 };
