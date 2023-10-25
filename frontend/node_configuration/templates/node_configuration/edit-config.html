@@ -216,9 +216,9 @@
 
             <!-- Change page buttons -->
             <div class="d-flex justify-content-between mx-3 mt-auto">
-                <button id="page1-back-button" type="button" class="btn btn-secondary mb-3">Back</button>
+                <button onclick="show_overview();" type="button" class="btn btn-secondary mb-3">Back</button>
                 <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
-                <button id="page1-button" type="button" class="btn btn-primary mb-3">Next</button>
+                <button onclick="show_page_2();" type="button" class="btn btn-primary mb-3">Next</button>
             </div>
         </div>
 
@@ -228,9 +228,9 @@
 
             <!-- Change page buttons -->
             <div class="d-flex justify-content-between mx-3 mt-auto">
-                <button id="page2-back-button" type="button" class="btn btn-primary mb-3">Back</button>
+                <button onclick="show_page_1();" type="button" class="btn btn-primary mb-3">Back</button>
                 <button type="button" class="btn btn-primary mb-3" style="visibility: hidden;">Submit</button>
-                <button id="page2-button" type="button" class="btn btn-primary mb-3">Next</button>
+                <button onclick="show_page_3();" type="button" class="btn btn-primary mb-3">Next</button>
             </div>
         </div>
 
@@ -241,7 +241,7 @@
 
             <!-- Change page buttons -->
             <div class="d-flex justify-content-between mx-3 mt-auto">
-                <button id="page3-back-button" type="button" class="btn btn-primary mb-3">Back</button>
+                <button onclick="show_page_2();" type="button" class="btn btn-primary mb-3">Back</button>
                 <button id="submit-button" type="submit" class="btn btn-primary mb-3">Submit</button>
                 <button type="button" class="btn btn-secondary mb-3" disabled>Next</button>
             </div>

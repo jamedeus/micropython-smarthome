@@ -9,6 +9,28 @@ function filterObject(obj, prefix) {
 };
 
 
+// Returns True if any nickname fields are empty, otherwise False
+function blank_nicknames_exist() {
+    // Confirm all nickname fields are populated (prevent blank titles on pages 2-3)
+    var nicknames = document.getElementsByClassName('nickname');
+    var missing = false;
+
+    // If nickname field is blank, add red highlight + listener to remove highlight on input
+    for (i=0; i<nicknames.length; i++) {
+        if (nicknames[i].value == "") {
+            nicknames[i].classList.add("is-invalid");
+            nicknames[i].scrollIntoView({behavior: "smooth"});
+            nicknames[i].addEventListener("input", (e) => {
+                e.target.classList.remove("is-invalid");
+            }, { once: true });
+            missing = true;
+        };
+    };
+
+    return missing;
+};
+
+
 // Takes sensor ID, sensor config section, object of all device sections
 // Returns sensor targets card with existing target devices pre-selected
 function get_target_card_template(sensor, config, devices) {
@@ -38,7 +60,65 @@ function get_target_card_template(sensor, config, devices) {
 };
 
 
+// Takes device/sensor ID, nickname, and type
+// Returns template for schedule rules section on page 3
+function create_schedule_rule_section(id, nickname, type) {
+    return `<div class='card mb-4 ${id}'>
+    <div class='card-body text-center'>
+    <label id='${id}-rules-label' class='card-title schedule-rule-card ${id}' title='${id} - ${type}'>
+    <b>${nickname} (${type})</b>
+    </label>
+    <table id='${id}-rules' class='table table-borderless ${id} d-none'>
+    <tr>
+    <th style='text-align: center;'>Time</th>
+    <th style='text-align: center;'>Rule</th>
+    </tr>
+    </table>
+    <div>
+    <button type="button" class="btn btn-secondary add ${id}" id="${id}-add-rule" data-type="${type}" onclick="add_new_rule(this)">Add Rule</i></button>
+    </div>
+    </div>
+    </div>`;
+};
+
+
+// Page 1 back button handler, exits config editor
+function show_overview() {
+    // If user changed any inputs, show warning before redirecting to overview
+    if (changes_made) {
+        const body = "<p class='text-center'>Your changes will be lost if you go back - are you sure?</p>";
+        const footer = `<button type="button" id="yes-button" class="btn btn-danger" data-bs-dismiss="modal" onclick="window.location.replace('/config_overview');">Go Back</button>
+        <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Editing</button>`;
+        show_modal(errorModal, "Warning", body, footer);
+
+        // Skip warning if no changes
+    } else {
+        window.location.replace("/config_overview");
+    };
+};
+
+
+// Page 2 back button handler, shows page 1
+function show_page_1() {
+    // Show page 1
+    document.getElementById("page1").classList.remove("d-none");
+    document.getElementById("page1").classList.add("d-flex");
+    // Hide pages 2 and 3
+    document.getElementById("page2").classList.remove("d-flex");
+    document.getElementById("page2").classList.add("d-none");
+    document.getElementById("page3").classList.remove("d-flex");
+    document.getElementById("page3").classList.add("d-none");
+
+    // Update sliders (fix incorrect width caused by display: none)
+    $('input[type="range"]').rangeslider('update', true);
+}
+
+
+// Page 1 next button handler, renders target select cards and shows page 2
 function show_page_2() {
+    // Don't proceed to page2 if blank nickname fields exist
+    if (blank_nicknames_exist()) { return };
+
     // Get objects containing only devices and sensors
     const devices = filterObject(config, 'device');
     const sensors = filterObject(config, 'sensor');
@@ -53,13 +133,20 @@ function show_page_2() {
         target_section.insertAdjacentHTML('beforeend', template);
     };
 
-    // Show page2
+    // Show page 2
+    document.getElementById("page2").classList.remove("d-none");
     document.getElementById("page2").classList.add("d-flex");
+    // Hide pages 1 and 3
     document.getElementById("page1").classList.remove("d-flex");
-    document.getElementById("page1").style.display = "none";
+    document.getElementById("page1").classList.add("d-none");
+    document.getElementById("page3").classList.remove("d-flex");
+    document.getElementById("page3").classList.add("d-none");
+
+    // Update instances (transitional function, will be removed)
+    update_instances();
 };
 
-
+// Page 2 next button handler, renders schedule rules cards and shows page 3
 function show_page_3() {
     // Get objects containing only devices and sensors
     const devices = filterObject(config, 'device');
@@ -93,35 +180,22 @@ function show_page_3() {
         };
     };
 
-    // Show page3
+    // Show page 3
+    document.getElementById("page3").classList.remove("d-none");
     document.getElementById("page3").classList.add("d-flex");
+    // Hide pages 1 and 2
+    document.getElementById("page1").classList.remove("d-flex");
+    document.getElementById("page1").classList.add("d-none");
     document.getElementById("page2").classList.remove("d-flex");
-    document.getElementById("page2").style.display = "none";
+    document.getElementById("page2").classList.add("d-none");
+
+    // Update sliders (fix incorrect width caused by display: none)
+    $('input[type="range"]').rangeslider('update', true);
 };
 
 
-document.getElementById('page1-button').addEventListener("click", function(e) {
-    e.preventDefault();
-
-    // Confirm all nickname fields are populated (prevent blank titles on pages 2-3)
-    var nicknames = document.getElementsByClassName('nickname');
-    var valid = true;
-
-    // If nickname field is blank, add red highlight + listener to remove highlight on input
-    for (i=0; i<nicknames.length; i++) {
-        if (nicknames[i].value == "") {
-            nicknames[i].classList.add("is-invalid");
-            nicknames[i].scrollIntoView({behavior: "smooth"});
-            nicknames[i].addEventListener("input", (e) => {
-                e.target.classList.remove("is-invalid");
-            }, { once: true });
-            valid = false;
-        };
-    };
-
-    // Don't proceed to page2 if blank fields exist
-    if (!valid) { return };
-
+// TODO transitional function, remove
+function update_instances() {
     // Find device instances that require updates
     for (device in instances['devices']) {
         // Get device nickname and type
@@ -161,10 +235,7 @@ document.getElementById('page1-button').addEventListener("click", function(e) {
             change_sensor_type(sensor, nickname, type);
         };
     };
-
-    // Generate target select cards, show page
-    show_page_2();
-});
+};
 
 
 // Takes new device ID, nickname, and type
@@ -212,74 +283,3 @@ function change_sensor_type(sensor, nickname, type) {
     // Prevent running again (unless user changes type again)
     instances['sensors'][sensor].modified = false;
 };
-
-
-// Takes device/sensor ID, nickname, and type
-// Returns template for schedule rules section on page 3
-function create_schedule_rule_section(id, nickname, type) {
-    return `<div class='card mb-4 ${id}'>
-                <div class='card-body text-center'>
-                    <label id='${id}-rules-label' class='card-title schedule-rule-card ${id}' title='${id} - ${type}'>
-                        <b>${nickname} (${type})</b>
-                    </label>
-                    <table id='${id}-rules' class='table table-borderless ${id} d-none'>
-                        <tr>
-                            <th style='text-align: center;'>Time</th>
-                            <th style='text-align: center;'>Rule</th>
-                        </tr>
-                    </table>
-                    <div>
-                        <button type="button" class="btn btn-secondary add ${id}" id="${id}-add-rule" data-type="${type}" onclick="add_new_rule(this)">Add Rule</i></button>
-                    </div>
-                </div>
-            </div>`;
-};
-
-
-document.getElementById('page2-button').addEventListener("click", function(e) {
-    e.preventDefault();
-
-    // Generate schedule rule cards, show page 3
-    show_page_3();
-
-    // Update sliders (fix incorrect width caused by display: none)
-    $('input[type="range"]').rangeslider('update', true);
-});
-
-
-document.getElementById('page1-back-button').addEventListener("click", function(e) {
-    // If user changed any inputs, show warning before redirecting to overview
-    if (changes_made) {
-        const body = "<p class='text-center'>Your changes will be lost if you go back - are you sure?</p>";
-        const footer = `<button type="button" id="yes-button" class="btn btn-danger" data-bs-dismiss="modal" onclick="window.location.replace('/config_overview');">Go Back</button>
-                        <button type="button" id="no-button" class="btn btn-secondary" data-bs-dismiss="modal">Keep Editing</button>`;
-        show_modal(errorModal, "Warning", body, footer);
-
-    // Skip warning if no changes
-    } else {
-        window.location.replace("/config_overview");
-    };
-});
-
-
-document.getElementById('page2-back-button').addEventListener("click", function(e) {
-    e.preventDefault();
-
-    // Show page1
-    document.getElementById("page1").classList.add("d-flex");
-    document.getElementById("page2").classList.remove("d-flex");
-    document.getElementById("page2").style.display = "none";
-
-    // Update sliders (fix incorrect width caused by display: none)
-    $('input[type="range"]').rangeslider('update', true);
-});
-
-
-document.getElementById('page3-back-button').addEventListener("click", function(e) {
-    e.preventDefault();
-
-    // Show page2
-    document.getElementById("page2").classList.add("d-flex");
-    document.getElementById("page3").classList.remove("d-flex");
-    document.getElementById("page3").style.display = "none";
-});
