@@ -23,7 +23,6 @@ class Instance {
     // Update all parameters, called before sending to backend
     update() {
         this.getParams();
-        this.getScheduleRules();
     };
 
     // Create JSON config object from user-selected parameters
@@ -42,21 +41,6 @@ class Instance {
                 const name = input.id.split("-")[1];
                 this.output[name] = input.value;
             } catch(err) {};
-        };
-    };
-
-    // Add schedule rule time:value pairs to all instances in output JSON config
-    getScheduleRules() {
-        var timestamps = document.getElementsByClassName(`time ${this.id}`);
-        var rules = document.getElementsByClassName(`rule ${this.id}`);
-
-        this.output.schedule = {};
-
-        for (let i=0; i < rules.length; i++) {
-            // Don't add if either field is empty
-            if (timestamps[i].dataset.original.length > 0 && rules[i].dataset.original.length > 0) {
-                this.output.schedule[timestamps[i].dataset.original] = rules[i].dataset.original;
-            };
         };
     };
 }

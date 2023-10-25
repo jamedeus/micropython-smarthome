@@ -1,4 +1,5 @@
 // Handler for add button in schedule rules dropdown, used to create new rules and edit existing
+// TODO eliminate hardcoded type
 async function add_rule() {
     // Get target device/sensor + type
     const target = add_button.dataset.target;
@@ -42,6 +43,8 @@ async function add_rule() {
     if (original_timestamp == '') {
         // Add to schedule rules table
         add_new_row(target, timestamp, rule, type);
+        // Add rule to config object
+        config[target]['schedule'][timestamp] = rule;
 
     // Modified existing rule
     } else if (original_timestamp != timestamp || rule_field.dataset.original != rule) {
@@ -56,6 +59,10 @@ async function add_rule() {
         if (type === "api-target") {
             document.getElementById(`${target}-rule${num}`).innerHTML = "click to view";
         };
+
+        // Replace rule in config object
+        delete config[target]['schedule'][original_timestamp];
+        config[target]['schedule'][timestamp] = rule;
     };
 
     // Hide modal
@@ -68,6 +75,10 @@ async function delete_rule() {
     // Get target device/sensor and rule index
     const target = delete_button.dataset.target;
     const rule = delete_button.dataset.number;
+
+    // Remove rule from config object
+    const timestamp = document.getElementById(`${target}-rule${rule}-time`).dataset.original;
+    delete config[target]['schedule'][timestamp];
 
     // Delete row from schedule rules table
     document.getElementById(`${target}-row-${rule}`).remove();
