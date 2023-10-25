@@ -95,29 +95,29 @@
                     <h2>Metadata</h2>
                     <div class="mb-2">
                         <label for="friendlyName"><b>Name:</b></label>
-                        <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{NAME}}" oninput="prevent_duplicate_friendly_name(this);update_config_metadata(this);" aria-describedby="friendlyName-feedback" required>
+                        <input type="text" class="form-control" id="friendlyName" placeholder="" name="friendlyName" value="{{NAME}}" oninput="prevent_duplicate_friendly_name(this);update_config(this);" data-section="metadata" data-param="id" aria-describedby="friendlyName-feedback" required>
                         <div id="friendlyName-feedback" class="invalid-feedback">
                             Name must be unique
                         </div>
                     </div>
                     <div class="mb-2">
                         <label for="location"><b>Location:</b></label>
-                        <input type="text" class="form-control" id="location" placeholder="" name="location" value="{{config.metadata.location}}" oninput="update_config_metadata(this);" required>
+                        <input type="text" class="form-control" id="location" placeholder="" name="location" value="{{config.metadata.location}}" oninput="update_config(this);" data-section="metadata" data-param="location" required>
                     </div>
                     <div class="mb-2">
                         <label for="floor"><b>Floor:</b></label>
-                        <input type="text" class="form-control" id="floor" placeholder="" name="floor" value="{{config.metadata.floor}}" oninput="update_config_metadata(this);" required>
+                        <input type="text" class="form-control" id="floor" placeholder="" name="floor" value="{{config.metadata.floor}}" oninput="update_config(this);" data-section="metadata" data-param="floor" required>
                     </div>
                 </div>
                 <div class="mb-4">
                     <h2>Wifi</h2>
                     <div class="mb-2">
                         <label for="ssid"><b>SSID:</b></label>
-                        <input type="text" class="form-control" id="ssid" placeholder="" name="ssid" value="{{config.wifi.ssid}}" onchange="open_toast()" oninput="update_config_wifi(this);" required>
+                        <input type="text" class="form-control" id="ssid" placeholder="" name="ssid" value="{{config.wifi.ssid}}" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>
                     </div>
                     <div class="mb-2">
                         <label for="password"><b>Password:</b></label>
-                        <input type="password" class="form-control" id="password" placeholder="" name="password" value="{{config.wifi.password}}" onchange="open_toast()" oninput="update_config_wifi(this);" required>
+                        <input type="password" class="form-control" id="password" placeholder="" name="password" value="{{config.wifi.password}}" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>
                     </div>
                 </div>
 
@@ -392,29 +392,13 @@
         // Store full config file
         const config = JSON.parse(document.getElementById("config").textContent);
 
-        // Called when any metadata field modified, adds value to config object
-        function update_config_metadata(input) {
-            if (input.id === "friendlyName") {
-                var param = "id";
-            } else {
-                var param = input.id;
-            };
-            config['metadata'][param] = input.value;
-        };
-
-        // Called when any wifi field modified, adds value to config object
-        function update_config_wifi(input) {
-            config['wifi'][input.id] = input.value;
-        };
-
-        // Called when any device/sensor field  modified, adds value to config object
+        // Called when any field on page 1 is update, adds value to config object
         // TODO doesn't work for slider +/- buttons
         function update_config(input) {
-            // Get instance ID, param name
-            const [id, param] = input.id.split('-');
-
-            // Add to config object
-            config[id][param] = input.value;
+            // Add value to config key specified in dataset attributes
+            const section = input.dataset.section;
+            const param = input.dataset.param;
+            config[section][param] = input.value;
         };
 
         // Called when any target box checked or unchecked, adds value to config object

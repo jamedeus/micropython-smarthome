@@ -19,7 +19,7 @@ Array.from(document.getElementsByClassName("sensorType")).forEach(function(senso
 function create_nickname_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-nickname" class="${id}"><b>Nickname:</b></label>
-                <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" required>
+                <input type="text" class="form-control ${id} nickname" id="${id}-nickname" placeholder="" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="${id}" data-param="nickname" required>
             </div>`
 }
 
@@ -28,7 +28,7 @@ function create_nickname_input(id) {
 function create_pin_dropdown_sensor(id) {
     return `<div class="mb-2">
                 <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
-                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" required>
+                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="${id}" data-param="pin" required>
                     <option selected disabled>Select pin</option>
                     <option value="4">4</option>
                     <option value="5">5</option>
@@ -60,7 +60,7 @@ function create_pin_dropdown_sensor(id) {
 function create_pin_dropdown_device(id) {
     return `<div class="mb-2">
                 <label for="${id}-pin" class="${id}"><b>Pin:</b></label>
-                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" required>
+                <select id="${id}-pin" class="form-select ${id} pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="${id}" data-param="pin" required>
                     <option selected disabled>Select pin</option>
                     <option value="4">4</option>
                     <option value="13">13</option>
@@ -85,7 +85,7 @@ function create_pin_dropdown_device(id) {
 function create_standard_rule_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
-                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" oninput="update_config(this);" required>
+                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" oninput="update_config(this);" data-section="${id}" data-param="default_rule" required>
                     <option value="enabled">Enabled</option>
                     <option value="disabled">Disabled</option>
                 </select>
@@ -97,7 +97,7 @@ function create_standard_rule_input(id) {
 function create_on_off_rule_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-default_rule" class="${id}"><b>Default Rule:</b></label>
-                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" oninput="update_config(this);" required>
+                <select id="${id}-default_rule" class="form-select ${id}" autocomplete="off" oninput="update_config(this);" data-section="${id}" data-param="default_rule" required>
                     <option>Select default rule</option>
                     <option value="on">On</option>
                     <option value="off">Off</option>
@@ -117,7 +117,7 @@ function create_slider_rule_input(id, min, max, display_min, display_max, displa
                 <label for="${id}-default_rule" class="mt-1 ${id}"><b>Default Rule:</b></label>
                 <div class="d-flex flex-row align-items-center my-2">
                     <button id="${id}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="${button_step}"><i class="bi-dash-lg"></i></button>
-                    <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="${min}" max="${max}" data-displaymin="${display_min}" data-displaymax="${display_max}" data-displaytype="${display_type}" step="${step}" value="" oninput="update_config(this);" autocomplete="off">
+                    <input id="${id}-default_rule" type="range" class="${id} mx-auto" min="${min}" max="${max}" data-displaymin="${display_min}" data-displaymax="${display_max}" data-displaytype="${display_type}" step="${step}" value="" oninput="update_config(this);" autocomplete="off" data-section="${id}" data-param="default_rule">
                     <button id="${id}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="${button_step}"><i class="bi-plus-lg"></i></button>
                 </div>
             </div>`
@@ -128,7 +128,7 @@ function create_slider_rule_input(id, min, max, display_min, display_max, displa
 function create_ip_input(id) {
     return `<div class="mb-2">
                 <label for="${id}-ip" class="${id}"><b>IP:</b></label>
-                <input type="text" class="form-control ${id} ip-input validate" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" oninput="update_config(this);" required>
+                <input type="text" class="form-control ${id} ip-input validate" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" oninput="update_config(this);" data-section="${id}" data-param="ip" required>
             </div>`
 }
 
@@ -145,12 +145,12 @@ function create_advanced_settings_dimmable_light(id, min, max) {
             <div id="${id}-advanced_settings" class="collapse">
                 <div class="mb-2">
                     <label for="${id}-min_rule" class="${id}"><b>Min brightness:</b></label>
-                    <input type="min" class="form-control ${id} rule-limits" id="${id}-min_rule" placeholder="${min}" value="${min}" data-min="${min}" data-max="${max}" oninput="update_config(this);" required>
+                    <input type="min" class="form-control ${id} rule-limits" id="${id}-min_rule" placeholder="${min}" value="${min}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="min_rule" required>
                 </div>
 
                 <div class="mb-2">
                     <label for="${id}-max_rule" class="${id}"><b>Max brightness:</b></label>
-                    <input type="text" class="form-control ${id} rule-limits" id="${id}-max_rule" placeholder="${max}" value="${max}" data-min="${min}" data-max="${max}" oninput="update_config(this);" required>
+                    <input type="text" class="form-control ${id} rule-limits" id="${id}-max_rule" placeholder="${max}" value="${max}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="max_rule" required>
                 </div>
             </div>`
 }
@@ -202,7 +202,7 @@ function get_template(id, type, type_metadata, category) {
     if (type == "si7021") {
         template += `<div class="mb-2">
                          <label class="form-label ${id}" for="${id}-mode"><b>Mode:</b></label>
-                         <select id="${id}-mode" class="form-select mb-3 ${id}" oninput="update_config(this);" required>
+                         <select id="${id}-mode" class="form-select mb-3 ${id}" oninput="update_config(this);" data-section="${id}" data-param="mode" required>
                              <option value="cool" id="cool">Cool</option>
                              <option value="heat" id="heat">Heat</option>
                          </select>
@@ -210,13 +210,13 @@ function get_template(id, type, type_metadata, category) {
 
                      <div class="mb-2">
                          <label for="${id}-tolerance" class="${id}"><b>Tolerance:</b></label>
-                         <input type="text" class="form-control ${id} thermostat" id="${id}-tolerance" placeholder="" oninput="update_config(this);" required>
+                         <input type="text" class="form-control ${id} thermostat" id="${id}-tolerance" placeholder="" oninput="update_config(this);" data-section="${id}" data-param="tolerance" required>
                      </div>`
 
     } else if (type == "api-target") {
         template += `<div class="mb-2">
                          <label for="${id}-ip" class="${id}"><b>Target Node:</b></label>
-                         <select id="${id}-ip" class="form-select mb-3 ${id}" onchange="api_target_selected(this)" oninput="update_config(this);">
+                         <select id="${id}-ip" class="form-select mb-3 ${id}" onchange="api_target_selected(this)" oninput="update_config(this);" data-section="${id}" data-param="ip">
                              <option value="" selected="selected" selected></option>`
 
         for (var x in ApiTargetOptions) {
@@ -233,7 +233,7 @@ function get_template(id, type, type_metadata, category) {
 
                      <div class="mb-2 text-center">
                          <label for="${id}-default_rule" class="${id}" style="display:none;"><b>Default Rule:</b></label>
-                         <input type="default_rule" class="form-control ${id}" id="${id}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('${id}-default_rule-button').dataset.original = this.value; update_config(this);" required>
+                         <input type="default_rule" class="form-control ${id}" id="${id}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('${id}-default_rule-button').dataset.original = this.value; update_config(this);" data-section="${id}" data-param="defaut_rule" required>
                          </div>`
     };
 
@@ -361,7 +361,7 @@ async function load_next_device() {
                                 </div>
                                 <label for="device${index}-type" class="form-label device${index}"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_device_section(this)" id="device${index}-type" class="form-select deviceType device${index} instanceType" required>
+                                    <select onchange="load_device_section(this)" id="device${index}-type" class="form-select deviceType device${index} instanceType" data-section="device${index}" data-param="_type" required>
                                     <option value="clear">Select device type</option>
                                     ${options}
                                     </select>
@@ -410,7 +410,7 @@ async function load_next_sensor() {
                                 </div>
                                 <label for="sensor${index}-type" class="form-label sensor${index}"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_sensor_section(this)" id="sensor${index}-type" class="form-select sensorType sensor${index} instanceType" required>
+                                    <select onchange="load_sensor_section(this)" id="sensor${index}-type" class="form-select sensorType sensor${index} instanceType" data-section="sensor${index}" data-param="_type" required>
                                     <option value="clear">Select sensor type</option>
                                     ${options}
                                     </select>

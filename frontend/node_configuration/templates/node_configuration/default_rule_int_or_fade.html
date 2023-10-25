@@ -5,7 +5,7 @@
     <label for="{{category}}{{index}}-default_rule" class="mt-1 {{category}}{{index}}"><b>Default Rule:</b></label>
     <div class="d-flex flex-row align-items-center my-2">
         <button id="{{category}}{{index}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio instance_metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-dash-lg"></i></button>
-        <input id="{{category}}{{index}}-default_rule" type="range" class="{{category}}{{index}} mx-auto" min="{{ instance_metadata.rule_limits.0 }}" max="{{ instance_metadata.rule_limits.1 }}" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" oninput="update_config(this);" autocomplete="off">
+        <input id="{{category}}{{index}}-default_rule" type="range" class="{{category}}{{index}} mx-auto" min="{{ instance_metadata.rule_limits.0 }}" max="{{ instance_metadata.rule_limits.1 }}" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="default_rule" autocomplete="off">
         <button id="{{category}}{{index}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio instance_metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-plus-lg"></i></button>
     </div>
 </div>
@@ -18,11 +18,11 @@
 <div id="{{category}}{{index}}-advanced_settings" class="collapse">
     <div class="mb-2">
         <label for="{{category}}{{ index }}-min_rule" class="{{category}}{{index}}"><b>Min brightness:</b></label>
-        <input type="text" class="form-control {{category}}{{index}} rule-limits" id="{{category}}{{ index }}-min_rule" value="{{params.min_rule}}" data-min="{{ instance_metadata.rule_limits.0 }}" data-max="{{ instance_metadata.rule_limits.1 }}" oninput="update_config(this);" required>
+        <input type="text" class="form-control {{category}}{{index}} rule-limits" id="{{category}}{{ index }}-min_rule" value="{{params.min_rule}}" data-min="{{ instance_metadata.rule_limits.0 }}" data-max="{{ instance_metadata.rule_limits.1 }}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="min_rule" required>
     </div>
 
     <div class="mb-2">
         <label for="{{category}}{{ index }}-max_rule" class="{{category}}{{index}}"><b>Max brightness:</b></label>
-        <input type="text" class="form-control {{category}}{{index}} rule-limits" id="{{category}}{{ index }}-max_rule" value="{{params.max_rule}}" data-min="{{ instance_metadata.rule_limits.0 }}" data-max="{{ instance_metadata.rule_limits.1 }}" oninput="update_config(this);" required>
+        <input type="text" class="form-control {{category}}{{index}} rule-limits" id="{{category}}{{ index }}-max_rule" value="{{params.max_rule}}" data-min="{{ instance_metadata.rule_limits.0 }}" data-max="{{ instance_metadata.rule_limits.1 }}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="max_rule" required>
     </div>
 </div>

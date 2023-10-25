@@ -5,5 +5,5 @@
 {# Hidden field receives rule from modal, onchange adds to button dataset attr (repopulate modal if reopened) #}
 <div class="mb-2 text-center">
     <label for="device{{ index }}-default_rule" class="device{{index}}" style="display:none;"><b>Default Rule:</b></label>
-    <input type="default_rule" class="form-control device{{index}}" id="device{{ index }}-default_rule" placeholder="" style="display:none;" value="{{params.default_rule}}" onchange="document.getElementById('device{{index}}-default_rule-button').dataset.original = this.value;" oninput="update_config(this);" required>
+    <input type="default_rule" class="form-control device{{index}}" id="device{{ index }}-default_rule" placeholder="" style="display:none;" value="{{params.default_rule}}" onchange="document.getElementById('device{{index}}-default_rule-button').dataset.original = this.value;" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="default_rule" required>
 </div>

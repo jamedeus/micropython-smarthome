@@ -1,6 +1,6 @@
 <label for="sensor{{index}}-type" class="form-label sensor{{index}}"><b>Type:</b></label>
 <div>
-    <select onchange="load_sensor_section(this)" id="sensor{{index}}-type" class="form-select sensorType sensor{{index}} instanceType" autocomplete="off" required>
+    <select onchange="load_sensor_section(this)" id="sensor{{index}}-type" class="form-select sensorType sensor{{index}} instanceType" autocomplete="off" data-section="{{category}}{{index}}" data-param="_type" required>
     <option value="clear" disabled>Select sensor type</option>
     {# Add option for each sensor in metadata object #}
     {% for sensor, metadata in metadata.sensors.items %}

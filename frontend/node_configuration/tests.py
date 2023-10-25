@@ -646,8 +646,8 @@ class EditConfigTests(TestCaseBackupRestore):
         self.assertEqual(response.context['edit_existing'], True)
 
         # Confirm all devices and sensors present
-        self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" required>')
-        self.assertContains(response, '<input type="text" class="form-control device1 nickname" id="device1-nickname" placeholder="" value="Cabinet Lights" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" required>')
+        self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="sensor1" data-param="nickname" required>')
+        self.assertContains(response, '<input type="text" class="form-control device1 nickname" id="device1-nickname" placeholder="" value="Cabinet Lights" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="device1" data-param="nickname" required>')
 
     def test_edit_config_2(self):
         # Request page, confirm correct template used
@@ -665,7 +665,7 @@ class EditConfigTests(TestCaseBackupRestore):
         self.assertEqual(response.context['edit_existing'], True)
 
         # Confirm all devices and sensors present
-        self.assertContains(response, '<input type="text" class="form-control sensor1 thermostat" id="sensor1-tolerance" placeholder="" value="0.5" oninput="update_config(this);" required>')
+        self.assertContains(response, '<input type="text" class="form-control sensor1 thermostat" id="sensor1-tolerance" placeholder="" value="0.5" oninput="update_config(this);" data-section="sensor1" data-param="tolerance" required>')
         self.assertContains(response, '<input class="form-check-input ir_target" type="checkbox" name="irblaster-ac" id="checkbox-ac" checked>')
         self.assertContains(response, '<option value="192.168.1.124" selected>self-target</option>')
 
@@ -688,9 +688,9 @@ class EditConfigTests(TestCaseBackupRestore):
         # Confirm all devices and sensors present
         self.assertContains(response, '<input type="text" class="form-control sensor1 nickname" id="sensor1-nickname" placeholder="" value="Motion Sensor (Bath)"')
         self.assertContains(response, '<input type="text" class="form-control sensor2 nickname" id="sensor2-nickname" placeholder="" value="Motion Sensor (Entry)"')
-        self.assertContains(response, '<input type="text" class="form-control device1 rule-limits" id="device1-max_rule" value="1023" data-min="0" data-max="1023" oninput="update_config(this);" required>')
+        self.assertContains(response, '<input type="text" class="form-control device1 rule-limits" id="device1-max_rule" value="1023" data-min="0" data-max="1023" oninput="update_config(this);" data-section="device1" data-param="max_rule" required>')
         self.assertContains(response, '<input type="text" class="form-control device2 ip-input validate" id="device2-ip" placeholder="" value="192.168.1.239"')
-        self.assertContains(response, '<input type="text" class="form-control device3 nickname" id="device3-nickname" placeholder="" value="Entry Light" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" required>')
+        self.assertContains(response, '<input type="text" class="form-control device3 nickname" id="device3-nickname" placeholder="" value="Entry Light" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="device3" data-param="nickname" required>')
 
     # Original bug: Did not catch DoesNotExist error, leading to traceback
     # if target config was deleted by another client before clicking edit
@@ -725,8 +725,8 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
 
         # Confirm wifi fields empty
         self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Create New Config</h1>')
-        self.assertContains(response, 'name="ssid" value="" onchange="open_toast()" oninput="update_config_wifi(this);" required>')
-        self.assertContains(response, 'name="password" value="" onchange="open_toast()" oninput="update_config_wifi(this);" required>')
+        self.assertContains(response, 'name="ssid" value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
+        self.assertContains(response, 'name="password" value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
 
     def test_with_default_wifi(self):
         # Set default wifi credentials
@@ -751,8 +751,8 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
         self.assertEqual(response.context['edit_existing'], False)
 
         # Confirm wifi fields pre-filled
-        self.assertContains(response, 'name="ssid" value="AzureDiamond" onchange="open_toast()" oninput="update_config_wifi(this);" required>')
-        self.assertContains(response, 'name="password" value="hunter2" onchange="open_toast()" oninput="update_config_wifi(this);" required>')
+        self.assertContains(response, 'name="ssid" value="AzureDiamond" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
+        self.assertContains(response, 'name="password" value="hunter2" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
 
 
 # Test main overview page
