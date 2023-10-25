@@ -1,21 +1,5 @@
 // Takes true (edit existing config and reupload) or false (create new config)
 async function submit_form(edit) {
-    // Add IR Blaster config if present
-    // TODO add a listener that does this automatically
-    if (irblaster_configured.checked) {
-        config['ir_blaster'] = {
-            'pin': document.getElementById('device0-pin').value,
-            'target': []
-        };
-        document.querySelectorAll('.ir_target').forEach(function(target) {
-            if (target.checked) {
-                config['ir_blaster']['target'].push(target.id.split('-')[1]);
-            };
-        });
-    } else {
-        delete config['ir_blaster'];
-    };
-
     console.log(config)
 
     // Generate config file from form data
