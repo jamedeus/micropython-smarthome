@@ -234,7 +234,7 @@ function get_input_element(section, param) {
 // Inserts template into card, instantiates elements, adds listeners
 function render_template(id, type, type_metadata, template) {
     // Insert template into div, scroll down until visible
-    const card = document.querySelector(`.${id} .configParams`);
+    const card = document.getElementById(`${id}-params`);
     card.innerHTML = template;
     card.scrollIntoView({behavior: "smooth"});
 
@@ -343,13 +343,13 @@ async function load_next_device() {
     };
 
     // Create card template with all options, correct index
-    var template = `<div id="addDeviceDiv${index}" class="device${index} fade-in mb-4">
+    var template = `<div id="addDeviceDiv${index}" class="fade-in mb-4" data-section="device${index}">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
                                     <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                                    <h4 class="card-title device${index} mx-auto my-auto">device${index}</h4>
-                                    <button class="btn my-auto pe-2 delete device${index}" id="device${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <h4 id="device${index}-title" class="card-title mx-auto my-auto">device${index}</h4>
+                                    <button class="btn my-auto pe-2 delete" data-section="device${index}" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
                                 <label class="form-label"><b>Type:</b></label>
                                 <div>
@@ -358,7 +358,7 @@ async function load_next_device() {
                                     ${options}
                                     </select>
                                 </div>
-                                <div class="card-body device${index} configParams"></div>
+                                <div id="device${index}-params" class="card-body" data-section="device${index}"></div>
                             </div>
                         </div>
                     </div>`;
@@ -388,13 +388,13 @@ async function load_next_sensor() {
     };
 
     // Create card template with all options, correct index
-    var template = `<div id="addSensorDiv${index}" class="sensor${index} fade-in mb-4">
+    var template = `<div id="addSensorDiv${index}" class="fade-in mb-4" data-section="sensor${index}">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
                                     <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                                    <h4 class="card-title sensor${index} mx-auto my-auto">sensor${index}</h4>
-                                    <button class="btn my-auto pe-2 delete sensor${index}" id="sensor${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <h4 id="sensor${index}-title" class="card-title mx-auto my-auto">sensor${index}</h4>
+                                    <button class="btn my-auto pe-2 delete" data-section="sensor${index}" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
                                 <label class="form-label"><b>Type:</b></label>
                                 <div>
@@ -404,7 +404,7 @@ async function load_next_sensor() {
                                     </select>
                                 </div>
 
-                                <div class="card-body sensor${index} configParams"></div>
+                                <div id="sensor${index}-params" class="card-body" data-section="sensor${index}"></div>
                             </div>
                         </div>
                     </div>`;
@@ -450,53 +450,34 @@ async function delete_animation(cards, num, button) {
 // Runs when card deleted, decrement references to instance ID of all subsequent cards to prevent gap in indices
 // Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc
 function update_ids(cards, num, target) {
+    const category = target.replace(/[0-9]/g, '');
+
     // If target is device get object containing all sensor configs (used to update target IDs)
-    if (target.startsWith('device')) {
+    if (category === 'device') {
         var sensors = filterObject(config, 'sensor');
     };
 
     return new Promise(resolve => {
         // Iterate all cards after the deleted card
         for (i=parseInt(num)+1; i<cards.length; i++) {
-            // Get all elements associated with current card
-            let elements = document.querySelectorAll(`.${target.replace(num, i)}`);
-
-            // Decrement all instance ID references (device1, sensor2, etc) by 1
-            for (el=0; el<elements.length; el++) {
-                if (elements[el].hasAttribute("id")) {
-                    elements[el].id = elements[el].id.replace(i, i-1);
+            // Decrement config section attribute of all input elements
+            document.querySelectorAll(`[data-section="${target.replace(num, i)}"]`).forEach(el => {
+                el.dataset.section = `${target.replace(num, i-1)}`;
+                // Decrement ID if present
+                if (el.hasAttribute("id")) {
+                    el.id = el.id.replace(i, i-1);
                 };
+            });
 
-                if (elements[el].hasAttribute("for")) {
-                    elements[el].setAttribute("for", elements[el].getAttribute("for").replace(i, i-1));
-                };
-
-                if (elements[el].classList.contains("card-title") || elements[el].classList.contains("form-check-label")) {
-                    if (target.startsWith('device')) {
-                        elements[el].innerHTML = elements[el].innerHTML.replace(`device${i}`, `device${i-1}`);
-                    } else {
-                        elements[el].innerHTML = elements[el].innerHTML.replace(`sensor${i}`, `sensor${i-1}`);
-                    };
-                };
-
-                // Decrement class
-                elements[el].classList.remove(target.replace(num, i))
-                elements[el].classList.add(target.replace(num, i-1))
-
-                // Decrement all config section attributes and IDs
-                document.querySelectorAll(`[data-section="${target.replace(num, i)}"]`).forEach(el => {
-                    el.dataset.section = `${target.replace(num, i-1)}`;
-                    if (el.hasAttribute("id")) {
-                        el.id = el.id.replace(i, i-1);
-                    };
-                });
-            };
+            // Decrement card title text and ID
+            document.getElementById(`${category}${i}-title`).innerHTML = `${category}${i-1}`
+            document.getElementById(`${category}${i}-title`).id = `${category}${i-1}-title`
 
             // Adjust IDs in config object
-            if (target.startsWith('device')) {
-                config[`device${i-1}`] = JSON.parse(JSON.stringify(config[`device${i}`]));
-                delete config[`device${i}`];
+            config[`${category}${i-1}`] = JSON.parse(JSON.stringify(config[`${category}${i}`]));
+            delete config[`${category}${i}`];
 
+            if (category === 'device') {
                 // Adjust IDs of all sensor targets
                 for (sensor in sensors) {
                     if (config[sensor]['targets'].includes(`device${i}`)) {
@@ -504,9 +485,6 @@ function update_ids(cards, num, target) {
                         config[sensor]['targets'].push(`device${i-1}`);
                     };
                 };
-            } else {
-                config[`sensor${i-1}`] = config[`sensor${i}`];
-                delete config[`sensor${i}`];
             };
         };
         resolve();
@@ -528,7 +506,7 @@ function remove_device_from_targets(device) {
 // Called by delete button in top right corner of device/sensor cards
 async function remove_instance(el) {
     // Instance ID string (device1, sensor2, etc)
-    var target = el.id.split("-")[0];
+    var target = el.dataset.section;
 
     // Get pixel value of 1rem (used in animation)
     const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize)
@@ -540,7 +518,8 @@ async function remove_instance(el) {
         var cards = Array.from(document.getElementById("devices").children);
         var button = document.getElementById('addDeviceButton');
         // Get height of card to be deleted + 1.5rem (gap between cards)
-        var animation_height = document.getElementById(`addDeviceDiv${num}`).clientHeight / remPx + 1.5;
+        var card_div = document.getElementById(`addDeviceDiv${num}`);
+        var animation_height = card_div.clientHeight / remPx + 1.5;
         // Remove from sensor targets
         remove_device_from_targets(target);
     } else {
@@ -549,7 +528,8 @@ async function remove_instance(el) {
         var cards = Array.from(document.getElementById("sensors").children);
         var button = document.getElementById('addSensorButton');
         // Get height of card to be deleted + 1.5rem (gap between cards)
-        var animation_height = document.getElementById(`addSensorDiv${num}`).clientHeight / remPx + 1.5;
+        var card_div = document.getElementById(`addSensorDiv${num}`);
+        var animation_height = card_div.clientHeight / remPx + 1.5;
     };
 
     // Remove last element in column (button under cards)
@@ -561,16 +541,11 @@ async function remove_instance(el) {
     // Disable all delete buttons until finished, prevent user deleting multiple at same time
     document.querySelectorAll('.delete').forEach(button => button.disabled = true);
 
-    // Get all elements with deleted card's class (used to delete later, must get before other card classes change)
-    let elements = document.querySelectorAll(`.${target}`);
-
     // Update all other card's IDs and classes while running animation
     await Promise.all([delete_animation(cards, num, button), update_ids(cards, num, target)])
 
-    // Delete card + all options on page2-3
-    for (i=0; i<elements.length; i++) {
-        elements[i].remove();
-    };
+    // Delete card
+    card_div.remove();
 
     // Re-enable delete buttons
     document.querySelectorAll('.delete').forEach(button => button.disabled = false);
