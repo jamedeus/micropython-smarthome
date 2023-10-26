@@ -268,10 +268,10 @@ function render_template(id, type, type_metadata, template) {
 // Called when user selects sensor type from dropdown
 function load_sensor_section(select) {
     // Get ID of sensor
-    const id = select.id.split("-")[0];
+    const id = select.dataset.section;
 
     // Get user-selected type + metadata
-    const type = document.getElementById(select.id).value
+    const type = select.value
     const type_metadata = metadata['sensors'][type];
 
     // Disable "Select sensor type" option after selection made
@@ -299,10 +299,10 @@ function load_sensor_section(select) {
 // Called when user selects device type from dropdown
 function load_device_section(select) {
     // Get ID of device
-    const id = select.id.split("-")[0];
+    const id = select.dataset.section;
 
     // Get user-selected type + metadata
-    const type = document.getElementById(select.id).value;
+    const type = select.value
     const type_metadata = metadata['devices'][type];
 
     // Disable "Select device type" option after selection made
@@ -480,11 +480,19 @@ function update_ids(cards, num, target) {
                 // Decrement class
                 elements[el].classList.remove(target.replace(num, i))
                 elements[el].classList.add(target.replace(num, i-1))
+
+                // Decrement all config section attributes and IDs
+                document.querySelectorAll(`[data-section="${target.replace(num, i)}"]`).forEach(el => {
+                    el.dataset.section = `${target.replace(num, i-1)}`;
+                    if (el.hasAttribute("id")) {
+                        el.id = el.id.replace(i, i-1);
+                    };
+                });
             };
 
             // Adjust IDs in config object
             if (target.startsWith('device')) {
-                config[`device${i-1}`] = config[`device${i}`];
+                config[`device${i-1}`] = JSON.parse(JSON.stringify(config[`device${i}`]));
                 delete config[`device${i}`];
 
                 // Adjust IDs of all sensor targets
