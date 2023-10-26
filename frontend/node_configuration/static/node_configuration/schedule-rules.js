@@ -1,5 +1,4 @@
 // Handler for add button in schedule rules dropdown, used to create new rules and edit existing
-// TODO eliminate hardcoded type
 async function add_rule() {
     // Get target device/sensor + type
     const target = add_button.dataset.target;
@@ -20,10 +19,14 @@ async function add_rule() {
     let rule = rule_field.value;
 
     // If fade rule: convert to correct syntax
-    if (['dimmer', 'bulb', 'pwm'].includes(type)) {
+    if (metadata[`${target.replace(/[0-9]/g, '')}s`][type]['rule_prompt'] === 'int_or_fade') {
         if (document.getElementById('toggle-rule-mode').checked) {
-            // TODO handle empty duration field
-            const duration = document.getElementById('duration').value;
+            const duration_field = document.getElementById('duration');
+            const duration = duration_field.value;
+            if (duration.length == 0) {
+                show_tooltip(duration_field, "Required field");
+                return
+            };
             rule = `fade/${rule}/${duration}`;
         };
     };
