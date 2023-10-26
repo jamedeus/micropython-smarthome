@@ -1,6 +1,6 @@
 <div class="mb-2">
-    <label for="{{category}}{{index}}-default_rule" class="{{category}}{{index}}"><b>Default Rule:</b></label>
-    <select id="{{category}}{{index}}-default_rule" class="form-select {{category}}{{index}}" autocomplete="off" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="default_rule" required>
+    <label for="{{category}}{{index}}-default_rule"><b>Default Rule:</b></label>
+    <select id="{{category}}{{index}}-default_rule" class="form-select" autocomplete="off" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="default_rule" required>
         <option disabled>Select default rule</option>
         <option value="enabled" {% if params.default_rule|lower == "enabled" %} selected {% endif %}>Enabled</option>
         <option value="disabled" {% if params.default_rule|lower == "disabled" %} selected {% endif %}>Disabled</option>

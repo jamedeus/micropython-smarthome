@@ -3,8 +3,8 @@
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                <h4 class="card-title mx-auto my-auto {{category}}{{index}}">{{category}}{{index}}</h4>
-                <button class="btn my-auto pe-2 {{category}}{{index}} delete" id="{{category}}{{index}}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                <h4 class="card-title mx-auto my-auto">{{category}}{{index}}</h4>
+                <button class="btn my-auto pe-2 delete" id="{{category}}{{index}}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
             </div>
 
             {# Add correct instance type dropdown with correct option pre-selected #}
@@ -17,8 +17,8 @@
             {# Add card body with nickname input #}
             <div class="card-body {{category}}{{index}} configParams">
                 <div class="mb-2">
-                    <label for="{{category}}{{index}}-nickname" class="{{category}}{{index}}"><b>Nickname:</b></label>
-                    <input type="text" class="form-control {{category}}{{index}} nickname" id="{{category}}{{index}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="{{category}}{{index}}" data-param="nickname" required>
+                    <label for="{{category}}{{index}}-nickname"><b>Nickname:</b></label>
+                    <input type="text" class="form-control nickname" id="{{category}}{{index}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="{{category}}{{index}}" data-param="nickname" required>
                     <div id="{{category}}-nickname-feedback" class="invalid-feedback">Name already in use</div>
                 </div>
 
@@ -67,7 +67,7 @@
                 {% if instance_metadata.config_name == "si7021" %}
                     <div class="mb-2">
                         <label class="form-label sensor{{index}}" for="sensor{{index}}-mode"><b>Mode:</b></label>
-                        <select id="sensor{{index}}-mode" class="form-select mb-3 sensor{{index}}" data-section="{{category}}{{index}}" data-param="mode" required>
+                        <select id="sensor{{index}}-mode" class="form-select mb-3" data-section="{{category}}{{index}}" data-param="mode" required>
                             {% if params.mode == "cool" %}
                                 <option value="cool" id="cool" selected>Cool</option>
                                 <option value="heat" id="heat">Heat</option>
@@ -82,8 +82,8 @@
                     </div>
 
                     <div class="mb-2">
-                        <label for="sensor{{index}}-tolerance" class="sensor{{index}}"><b>Tolerance:</b></label>
-                        <input type="text" class="form-control sensor{{index}} thermostat" id="sensor{{index}}-tolerance" placeholder="" value="{{params.tolerance}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="tolerance" required>
+                        <label for="sensor{{index}}-tolerance"><b>Tolerance:</b></label>
+                        <input type="text" class="form-control thermostat" id="sensor{{index}}-tolerance" placeholder="" value="{{params.tolerance}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="tolerance" required>
                     </div>
                 {% endif %}
             </div>

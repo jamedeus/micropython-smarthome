@@ -1,6 +1,6 @@
 <div class="mb-2">
-    <label for="device{{index}}-pin" class="device{{index}}"><b>Pin:</b></label>
-    <select id="device{{index}}-pin" class="form-select device{{index}} pin-select" name="{{name}}" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="pin" required>
+    <label for="device{{index}}-pin"><b>Pin:</b></label>
+    <select id="device{{index}}-pin" class="form-select pin-select" name="{{name}}" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="pin" required>
         <option disabled selected>Select pin</option>
         <option value="4" {% if pin == "4"  %} selected {% endif %}>4</option>
         <option value="13" {% if pin == "13"  %} selected {% endif %}>13</option>
