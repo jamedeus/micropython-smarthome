@@ -20,7 +20,7 @@ async function submit_form(edit) {
 
     // If config with same name already exists, show modal allowing user to overwrite
     } else if (!edit && response.status == 409) {
-        handle_duplicate_prompt();
+        handle_duplicate_prompt(config.metadata.id);
 
     // If other error, display in alert
     } else {
@@ -34,8 +34,7 @@ async function submit_form(edit) {
 };
 
 // Show warning when config with same name already exists
-function handle_duplicate_prompt() {
-    const name = document.getElementById("friendlyName").value;
+function handle_duplicate_prompt(name) {
     show_modal(duplicateModal, false, `<p>You are about to overwrite <b>${name}</b>, an existing config.</p><p>This cannot be undone - are you sure?</p>`);
 
     // If overwrite confirmed delete existing config and resubmit form

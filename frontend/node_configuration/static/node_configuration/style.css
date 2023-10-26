@@ -164,7 +164,7 @@ td:last-child {
   /* Section background color override */
   /* List group (location suggestions) */
 }
-.dark #form input {
+.dark #metadata input {
   background-color: #31363b;
 }
 .dark .is-invalid ~ .invalid-feedback, .dark .is-invalid ~ .invalid-tooltip, .dark .was-validated :invalid ~ .invalid-feedback, .dark .was-validated :invalid ~ .invalid-tooltip {

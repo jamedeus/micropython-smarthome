@@ -38,6 +38,11 @@ function prevent_duplicate_nickname(event) {
     };
 };
 
+// Input listener for floor field, prevents entering letters + limits to 3 digits
+function prevent_non_numeric(event) {
+    event.target.value = event.target.value.replace(/[^\d]/g, '').substring(0,3);
+};
+
 // Called when pin is selected, disables same pin in all other dropdowns to prevent duplicates
 function pinSelected(element) {
     const dropdowns = document.querySelectorAll('.pin-select');
