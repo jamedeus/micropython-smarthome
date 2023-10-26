@@ -4,6 +4,7 @@ const upload_complete = `<svg class="checkmark mx-auto" xmlns="http://www.w3.org
                              <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
                          </svg>`
 
+
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -19,6 +20,7 @@ function getCookie(name) {
     return cookieValue;
 };
 
+
 async function send_post_request(url, body) {
     let csrftoken = getCookie('csrftoken');
 
@@ -32,6 +34,7 @@ async function send_post_request(url, body) {
 
     return response
 };
+
 
 // Show the modal with id modal, optionally change title/body/footer
 function show_modal(modal, title=false, body=false, footer=false) {show_modal
@@ -49,6 +52,7 @@ function show_modal(modal, title=false, body=false, footer=false) {show_modal
 
     modal.show();
 };
+
 
 // Used by both pages to upload config files to nodes
 async function upload() {
@@ -90,6 +94,7 @@ async function upload() {
         uploadModal.hide();
     };
 };
+
 
 // Shown when unable to upload because target node unreachable
 async function target_unreachable_prompt() {

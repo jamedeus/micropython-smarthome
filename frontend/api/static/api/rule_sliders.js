@@ -37,6 +37,7 @@ for (slider of $('input[type="range"]')) {
     };
 };
 
+
 // Read slider's data attributes, convert element's value to desired range as either float or int
 function get_display_value(slider) {
     // Get slider value range
@@ -56,12 +57,10 @@ function get_display_value(slider) {
 };
 
 
-
 // Maps value x in range to equivalent value in different range
 function map_range(x, in_min, in_max, out_min, out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
-
 
 
 // Enable reset option if current rule differs from scheduled
@@ -69,7 +68,6 @@ for (slider of document.getElementsByClassName("current-rule-slider")) {
     // Pass instance ID, current rule
     update_reset_option(slider.id.split("-")[0], slider.value);
 };
-
 
 
 // Enable reset option if current rule differs from scheduled

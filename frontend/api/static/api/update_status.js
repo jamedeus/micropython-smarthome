@@ -26,6 +26,7 @@ class Observer {
     };
 };
 
+
 // Called every 5 seconds, gets new status and updates page to reflect
 // Also detects offline nodes and shows unable to connect modal
 async function get_new_status() {
@@ -61,6 +62,7 @@ async function get_new_status() {
 };
 setInterval(get_new_status, 5000);
 
+
 // Iterate new and old status objects, find changes, call observer callbacks
 function update_status(oldStatus, newStatus) {
     for (let section in newStatus) {
@@ -75,9 +77,9 @@ function update_status(oldStatus, newStatus) {
 };
 
 
-
 // Instantiate observer, add callback for each param shown in frontend
 const monitor_status = new Observer();
+
 
 // Collapse/expand card to reflect disable/enable
 const update_enabled_state = monitor_status.subscribe("enabled", (new_status) => {
@@ -99,6 +101,7 @@ const update_enabled_state = monitor_status.subscribe("enabled", (new_status) =>
     };
 });
 
+
 // Run animation on power button
 const update_power_state = monitor_status.subscribe("turned_on", (new_status) => {
     // Get power button
@@ -117,6 +120,7 @@ const update_power_state = monitor_status.subscribe("turned_on", (new_status) =>
         console.log(`${new_status['instance']} turned off`);
     };
 });
+
 
 // Run animation on trigger button
 const update_condition_met = monitor_status.subscribe("condition_met", (new_status) => {
@@ -138,6 +142,7 @@ const update_condition_met = monitor_status.subscribe("condition_met", (new_stat
     };
 });
 
+
 // Update temperature in thermostat card
 const update_temperature = monitor_status.subscribe("temp", (new_status) => {
     console.log(`Temperature: ${new_status['value']['temp']}`)
@@ -154,11 +159,13 @@ const update_temperature = monitor_status.subscribe("temp", (new_status) => {
     temp_history_chart.update();
 });
 
+
 // Update humidity in thermostat card
 const update_humidity = monitor_status.subscribe("humid", (new_status) => {
     console.log(`Humidity: ${new_status['value']['humid']}`)
     document.getElementById("humidity").innerHTML = new_status['value']['humid'].toFixed(2);
 });
+
 
 // Called by both current_rule and scheduled_rule
 // Update rule slider, enable/disable reset option if different from/same as scheduled
@@ -184,15 +191,18 @@ function update_rules(new_status) {
     } catch(err) {};
 };
 
+
 const update_current_rule = monitor_status.subscribe("current_rule", (new_status) => {
     console.log(`${new_status['instance']} new rule: ${new_status["value"]["current_rule"]}`)
     update_rules(new_status);
 });
 
+
 const update_scheduled_rule = monitor_status.subscribe("scheduled_rule", (new_status) => {
     console.log(`${new_status['instance']} new scheduled rule: ${new_status["value"]["scheduled_rule"]}`)
     update_rules(new_status);
 });
+
 
 // Find new, deleted, or modified rules and update table to reflect
 const update_schedule_rules = monitor_status.subscribe("schedule", (new_status) => {

@@ -5,6 +5,7 @@ const add_button = document.getElementById('add-rule');
 // Used to identify HH:MM timestamp
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
 
+
 // Replace modal buttons with loading animation, prevent user submitting multiple times
 function loading_animation(start=true) {
     if (start) {

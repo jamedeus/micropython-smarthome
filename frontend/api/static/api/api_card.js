@@ -17,7 +17,6 @@ async function send_command(value) {
 };
 
 
-
 // Handler for back button (top-left)
 function back(node) {
     // Show loading animation
@@ -31,7 +30,6 @@ function back(node) {
         window.location.href = `/api/recording/${recording}`;
     };
 };
-
 
 
 // Handler for current_rule reset menu option
@@ -65,7 +63,6 @@ async function reset(el) {
 };
 
 
-
 // Handler for device enable/disable toggle
 async function enable_disable_handler(el) {
     const target = el.id.split("-")[0];
@@ -97,7 +94,6 @@ async function enable_disable_handler(el) {
         cardCollapse.toggle();
     };
 };
-
 
 
 // Handler for device power on/off toggle
@@ -138,7 +134,6 @@ async function power(el) {
 };
 
 
-
 // Handler for trigger sensor button
 async function trigger(el) {
     const target = el.id.split("-")[0];
@@ -161,7 +156,6 @@ async function trigger(el) {
         try{get_new_status()}catch(err){};
     };
 };
-
 
 
 // Highlight all targets of sensor when menu option clicked, dismiss highlights on next click
@@ -190,7 +184,6 @@ function show_targets(el) {
 };
 
 
-
 // Handler for debug menu option
 async function debug(el) {
     const target = el.id.split("-")[0];
@@ -209,7 +202,6 @@ async function debug(el) {
 };
 
 
-
 // Handler for Schedule Toggle menu option
 function open_schedule_toggle(el) {
     const target = el.id.split("-")[0];
@@ -225,7 +217,6 @@ function open_schedule_toggle(el) {
     document.getElementById('schedule-button').dataset.target = target
     toggleModal.show();
 }
-
 
 
 // Handler for enable_in/disable_in (toggle-modal)

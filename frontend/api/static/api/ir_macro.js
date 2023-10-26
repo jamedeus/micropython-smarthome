@@ -1,6 +1,10 @@
 // Stores actions from IR buttons clicked while recording macro
 var new_macro_actions = [];
 
+// Store macro name + changes made to macro in edit modal
+var editing_macro_name = "";
+var editing_macro_actions = {};
+
 
 // Called by start recording button under macro name input
 function start_recording_ir_macro() {
@@ -45,11 +49,6 @@ async function add_new_macro() {
     // Refresh page
     location.reload();
 };
-
-
-// Store macro name + changes made to macro in edit modal
-var editing_macro_name = "";
-var editing_macro_actions = {};
 
 
 // Called when user clicks edit IR macro button

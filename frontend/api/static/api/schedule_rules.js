@@ -1,6 +1,7 @@
 // Initialize toast, allows user to write new/deleted rules to disk
 const save_rules_toast = new bootstrap.Toast(document.getElementById("save_rules_toast"));
 
+
 // Replace 24h timestamps from template with 12h, skip keywords (sunrise etc)
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.schedule-rule.time').forEach(rule => {

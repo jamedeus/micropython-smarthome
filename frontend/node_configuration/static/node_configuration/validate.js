@@ -15,6 +15,7 @@ async function prevent_duplicate_friendly_name(el) {
     };
 };
 
+
 // Input listener for all nickname fields, adds red highlight if nickname is duplicate
 function prevent_duplicate_nickname(event) {
     // Get ID of modified input (prevent comparing against self)
@@ -38,10 +39,12 @@ function prevent_duplicate_nickname(event) {
     };
 };
 
+
 // Input listener for floor field, prevents entering letters + limits to 3 digits
 function prevent_non_numeric(event) {
     event.target.value = event.target.value.replace(/[^\d]/g, '').substring(0,3);
 };
+
 
 // Called when pin is selected, disables same pin in all other dropdowns to prevent duplicates
 function pinSelected(element) {
@@ -70,6 +73,7 @@ function pinSelected(element) {
     });
 };
 
+
 // Iterate all pin dropdowns and disable already-used pins
 function preventDuplicatePins() {
     dropdowns = document.querySelectorAll('.pin-select');
@@ -79,6 +83,7 @@ function preventDuplicatePins() {
 };
 // Run on load if editing
 if (edit_existing) { preventDuplicatePins() };
+
 
 // Format IP address as user types in field
 function formatIp(event) {
@@ -126,6 +131,7 @@ function formatIp(event) {
 // Add listener to all IP fields
 document.querySelectorAll('.ip-input').forEach(input => input.addEventListener('input', formatIp));
 
+
 // Highlight fields that fail regex, add listener to remove highlight on input
 function validateField(event) {
     if (!event.target.validity.valid) {
@@ -137,6 +143,7 @@ function validateField(event) {
 };
 // Validate fields when focus leaves
 document.querySelectorAll('.validate').forEach(input => input.addEventListener('blur', validateField));
+
 
 // Constrain rule max/min fields to valid integer range
 function ruleLimits(event) {
@@ -159,6 +166,7 @@ function ruleLimits(event) {
 };
 document.querySelectorAll('.rule-limits').forEach(input => input.addEventListener('input', ruleLimits));
 
+
 // Constrain Thermostat tolerance field to 0.1 - 10.0 degrees
 function thermostatToleranceLimit(event) {
     // Skip if key was backsace, delete, or period
@@ -177,6 +185,7 @@ function thermostatToleranceLimit(event) {
     event.target.value = input;
 };
 document.querySelectorAll('.thermostat').forEach(input => input.addEventListener('input', thermostatToleranceLimit));
+
 
 // Checks if Thermostat selected in any dropdowns (cannot have multiple)
 // Disables all Thermostat options if already selected, otherwise enables

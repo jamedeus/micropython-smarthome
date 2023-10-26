@@ -22,7 +22,6 @@ for (slider of $('input[type="range"]')) {
 };
 
 
-
 function add_new_slider(id) {
     slider = document.getElementById(id);
 
@@ -67,12 +66,10 @@ function get_display_value(slider) {
 };
 
 
-
 // Maps value x in range to equivalent value in different range
 function map_range(x, in_min, in_max, out_min, out_max) {
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
-
 
 
 // Handler for rule slider plus and minus buttons

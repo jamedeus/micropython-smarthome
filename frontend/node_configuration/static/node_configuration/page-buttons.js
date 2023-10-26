@@ -64,21 +64,21 @@ function get_target_card_template(sensor, config, devices) {
 // Returns template for schedule rules section on page 3
 function create_schedule_rule_section(id, nickname, type) {
     return `<div class='card mb-4 ${id}'>
-    <div class='card-body text-center'>
-    <label id='${id}-rules-label' class='card-title schedule-rule-card ${id}' title='${id} - ${type}'>
-    <b>${nickname} (${type})</b>
-    </label>
-    <table id='${id}-rules' class='table table-borderless ${id} d-none'>
-    <tr>
-    <th style='text-align: center;'>Time</th>
-    <th style='text-align: center;'>Rule</th>
-    </tr>
-    </table>
-    <div>
-    <button type="button" class="btn btn-secondary add ${id}" id="${id}-add-rule" data-type="${type}" onclick="add_new_rule(this)">Add Rule</i></button>
-    </div>
-    </div>
-    </div>`;
+                <div class='card-body text-center'>
+                    <label id='${id}-rules-label' class='card-title schedule-rule-card ${id}' title='${id} - ${type}'>
+                        <b>${nickname} (${type})</b>
+                    </label>
+                    <table id='${id}-rules' class='table table-borderless ${id} d-none'>
+                        <tr>
+                            <th style='text-align: center;'>Time</th>
+                            <th style='text-align: center;'>Rule</th>
+                        </tr>
+                    </table>
+                    <div>
+                        <button type="button" class="btn btn-secondary add ${id}" id="${id}-add-rule" data-type="${type}" onclick="add_new_rule(this)">Add Rule</i></button>
+                    </div>
+                </div>
+            </div>`;
 };
 
 
@@ -142,6 +142,7 @@ function show_page_2() {
     document.getElementById("page3").classList.remove("d-flex");
     document.getElementById("page3").classList.add("d-none");
 };
+
 
 // Page 2 next button handler, renders schedule rules cards and shows page 3
 function show_page_3() {

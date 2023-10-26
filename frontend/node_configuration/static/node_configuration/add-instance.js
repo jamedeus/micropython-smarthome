@@ -295,7 +295,6 @@ function load_sensor_section(select) {
 };
 
 
-
 // Called when user selects device type from dropdown
 function load_device_section(select) {
     // Get ID of device
@@ -368,7 +367,6 @@ async function load_next_device() {
 };
 
 
-
 // Called when user clicks + button under sensors
 async function load_next_sensor() {
     // Get index of new sensor (number of existing + 1)
@@ -418,7 +416,6 @@ async function load_next_sensor() {
 };
 
 
-
 // Delete instance card animation
 // Takes array of card divs, index of card to delete, add instance button
 // Fades out card to delete, slides up all cards below + add button
@@ -442,7 +439,6 @@ async function delete_animation(cards, num, button) {
         resolve();
     });
 };
-
 
 
 // Runs when card deleted, decrement references to instance ID of all subsequent cards to prevent gap in indices
