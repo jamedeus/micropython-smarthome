@@ -343,8 +343,8 @@ async function load_next_device() {
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
                                     <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                                    <h4 class="card-title mx-auto my-auto">device${index}</h4>
-                                    <button class="btn my-auto pe-2 delete" id="device${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <h4 class="card-title device${index} mx-auto my-auto">device${index}</h4>
+                                    <button class="btn my-auto pe-2 delete device${index}" id="device${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
                                 <label for="device${index}-type" class="form-label"><b>Type:</b></label>
                                 <div>
@@ -389,8 +389,8 @@ async function load_next_sensor() {
                             <div class="card-body">
                                 <div class="d-flex justify-content-between">
                                     <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                                    <h4 class="card-title mx-auto my-auto">sensor${index}</h4>
-                                    <button class="btn my-auto pe-2 delete" id="sensor${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                                    <h4 class="card-title sensor${index} mx-auto my-auto">sensor${index}</h4>
+                                    <button class="btn my-auto pe-2 delete sensor${index}" id="sensor${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
                                 <label for="sensor${index}-type" class="form-label"><b>Type:</b></label>
                                 <div>
@@ -472,14 +472,6 @@ function update_ids(cards, num, target) {
                     };
                 };
 
-                if (elements[el].classList.contains("form-check-input")) {
-                    if (target.startsWith('device')) {
-                        elements[el].value = elements[el].value.replace(`device${i}`, `device${i-1}`);
-                    } else {
-                        elements[el].value = elements[el].value.replace(`sensor${i}`, `sensor${i-1}`);
-                    };
-                };
-
                 // Decrement class
                 elements[el].classList.remove(target.replace(num, i))
                 elements[el].classList.add(target.replace(num, i-1))
@@ -497,7 +489,6 @@ function update_ids(cards, num, target) {
         resolve();
     });
 };
-
 
 
 // Called by delete button in top right corner of device/sensor cards

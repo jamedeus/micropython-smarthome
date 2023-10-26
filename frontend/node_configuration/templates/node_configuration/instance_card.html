@@ -3,8 +3,8 @@
         <div class="card-body">
             <div class="d-flex justify-content-between">
                 <button class="btn ps-2" style="visibility:hidden;"><i class="bi-x-lg"></i></button>
-                <h4 class="card-title mx-auto my-auto">{{category}}{{index}}</h4>
-                <button class="btn my-auto pe-2 delete" id="{{category}}{{index}}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
+                <h4 class="card-title {{category}}{{index}} mx-auto my-auto">{{category}}{{index}}</h4>
+                <button class="btn my-auto pe-2 delete {{category}}{{index}}" id="{{category}}{{index}}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
             </div>
 
             {# Add correct instance type dropdown with correct option pre-selected #}
