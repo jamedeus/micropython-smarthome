@@ -666,7 +666,7 @@ class EditConfigTests(TestCaseBackupRestore):
 
         # Confirm all devices and sensors present
         self.assertContains(response, '<input type="text" class="form-control sensor1 thermostat" id="sensor1-tolerance" placeholder="" value="0.5" oninput="update_config(this);" data-section="sensor1" data-param="tolerance" required>')
-        self.assertContains(response, '<input class="form-check-input ir_target" type="checkbox" name="irblaster-ac" id="checkbox-ac" checked oninput="update_config_ir_target(this)" autocomplete="off">')
+        self.assertContains(response, '<input class="form-check-input" type="checkbox" name="irblaster-ac" id="checkbox-ac" checked oninput="update_config_ir_target(this)" autocomplete="off">')
         self.assertContains(response, '<option value="192.168.1.124" selected>self-target</option>')
 
     def test_edit_config_3(self):
@@ -725,8 +725,8 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
 
         # Confirm wifi fields empty
         self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Create New Config</h1>')
-        self.assertContains(response, 'name="ssid" value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
-        self.assertContains(response, 'name="password" value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
+        self.assertContains(response, 'value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
+        self.assertContains(response, 'value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
 
     def test_with_default_wifi(self):
         # Set default wifi credentials
@@ -751,8 +751,8 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
         self.assertEqual(response.context['edit_existing'], False)
 
         # Confirm wifi fields pre-filled
-        self.assertContains(response, 'name="ssid" value="AzureDiamond" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
-        self.assertContains(response, 'name="password" value="hunter2" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
+        self.assertContains(response, 'value="AzureDiamond" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
+        self.assertContains(response, 'value="hunter2" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
 
 
 # Test main overview page
