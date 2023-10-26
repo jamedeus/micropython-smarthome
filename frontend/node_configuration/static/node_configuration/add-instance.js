@@ -448,6 +448,11 @@ async function delete_animation(cards, num, button) {
 // Runs when card deleted, decrement references to instance ID of all subsequent cards to prevent gap in indices
 // Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc
 function update_ids(cards, num, target) {
+    // If target is device get object containing all sensor configs (used to update target IDs)
+    if (target.startsWith('device')) {
+        var sensors = filterObject(config, 'sensor');
+    };
+
     return new Promise(resolve => {
         // Iterate all cards after the deleted card
         for (i=parseInt(num)+1; i<cards.length; i++) {
@@ -481,6 +486,14 @@ function update_ids(cards, num, target) {
             if (target.startsWith('device')) {
                 config[`device${i-1}`] = config[`device${i}`];
                 delete config[`device${i}`];
+
+                // Adjust IDs of all sensor targets
+                for (sensor in sensors) {
+                    if (config[sensor]['targets'].includes(`device${i}`)) {
+                        config[sensor]['targets'] = config[sensor]['targets'].filter(item => item !== `device${i}`);
+                        config[sensor]['targets'].push(`device${i-1}`);
+                    };
+                };
             } else {
                 config[`sensor${i-1}`] = config[`sensor${i}`];
                 delete config[`sensor${i}`];
@@ -489,6 +502,17 @@ function update_ids(cards, num, target) {
         resolve();
     });
 };
+
+
+// Takes device ID, removes from targets section of all sensors
+function remove_device_from_targets(device) {
+    // Get object containing all sensor sections
+    const sensors = filterObject(config, 'sensor');
+    // Remove device from all sensor targets
+    for (sensor in sensors) {
+        config[sensor]['targets'] = config[sensor]['targets'].filter(item => item !== device);
+    };
+}
 
 
 // Called by delete button in top right corner of device/sensor cards
@@ -507,6 +531,8 @@ async function remove_instance(el) {
         var button = document.getElementById('addDeviceButton');
         // Get height of card to be deleted + 1.5rem (gap between cards)
         var animation_height = document.getElementById(`addDeviceDiv${num}`).clientHeight / remPx + 1.5;
+        // Remove from sensor targets
+        remove_device_from_targets(target);
     } else {
         delete config[target];
         var num = target.replace("sensor", "");
