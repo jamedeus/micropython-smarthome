@@ -191,7 +191,7 @@
             </div>
         </div>
 
-        <div id="page2" class="flex-column h-100">
+        <div id="page2" class="flex-column h-100 d-none">
             <div id="page2-cards">
             </div>
 
@@ -203,7 +203,7 @@
             </div>
         </div>
 
-        <div id="page3" class="flex-column h-100">
+        <div id="page3" class="flex-column h-100 d-none">
             <h3>Add schedule rules (optional)</h3>
                 <div id="page3-cards">
                 </div>
@@ -211,7 +211,7 @@
             <!-- Change page buttons -->
             <div class="d-flex justify-content-between mx-3 mt-auto">
                 <button onclick="show_page_2();" type="button" class="btn btn-primary mb-3">Back</button>
-                <button id="submit-button" type="submit" class="btn btn-primary mb-3">Submit</button>
+                <button onclick="submit(this)" id="submit-button" type="submit" class="btn btn-primary mb-3">Submit</button>
                 <button type="button" class="btn btn-secondary mb-3" disabled>Next</button>
             </div>
         </div>
@@ -260,10 +260,6 @@
     {{ config|json_script:"config" }}
 
     <script>
-        // Hide everything except first page
-        document.getElementById('page2').style.display = 'none';
-        document.getElementById('page3').style.display = 'none';
-
         // Get object used to populate api-target options from context
         const ApiTargetOptions = JSON.parse(document.getElementById("api_target_options").textContent);
 
@@ -332,17 +328,6 @@
         function sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         };
-
-        // Submit
-        document.getElementById("submit-button").addEventListener("click", function(e) {
-            e.preventDefault();
-
-            // Disable submit button, prevent submitting multiple times
-            document.getElementById("submit-button").disabled = true;
-
-            // Create config from form contents
-            submit_form(edit_existing);
-        });
 
         // Initialize toast shown when user changes wifi credentials
         const set_credentials_toast = new bootstrap.Toast(document.getElementById("set_credentials_toast"));
