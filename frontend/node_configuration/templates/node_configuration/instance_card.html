@@ -66,8 +66,8 @@
                 {# Add Thermostat-specific inputs #}
                 {% if instance_metadata.config_name == "si7021" %}
                     <div class="mb-2">
-                        <label class="form-label sensor{{index}}" for="sensor{{index}}-mode"><b>Mode:</b></label>
-                        <select id="sensor{{index}}-mode" class="form-select mb-3" data-section="{{category}}{{index}}" data-param="mode" required>
+                        <label class="form-label sensor{{index}}"><b>Mode:</b></label>
+                        <select class="form-select mb-3" data-section="{{category}}{{index}}" data-param="mode" required>
                             {% if params.mode == "cool" %}
                                 <option value="cool" id="cool" selected>Cool</option>
                                 <option value="heat" id="heat">Heat</option>
@@ -82,8 +82,8 @@
                     </div>
 
                     <div class="mb-2">
-                        <label for="sensor{{index}}-tolerance"><b>Tolerance:</b></label>
-                        <input type="text" class="form-control thermostat" id="sensor{{index}}-tolerance" placeholder="" value="{{params.tolerance}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="tolerance" required>
+                        <label><b>Tolerance:</b></label>
+                        <input type="text" class="form-control thermostat" placeholder="" value="{{params.tolerance}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="tolerance" required>
                     </div>
                 {% endif %}
             </div>

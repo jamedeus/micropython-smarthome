@@ -127,13 +127,13 @@ function create_advanced_settings_dimmable_light(id, min, max) {
 
             <div id="${id}-advanced_settings" class="collapse">
                 <div class="mb-2">
-                    <label for="${id}-min_rule"><b>Min brightness:</b></label>
-                    <input type="min" class="form-control rule-limits" id="${id}-min_rule" placeholder="${min}" value="${min}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="min_rule" required>
+                    <label><b>Min brightness:</b></label>
+                    <input type="min" class="form-control rule-limits" placeholder="${min}" value="${min}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="min_rule" required>
                 </div>
 
                 <div class="mb-2">
-                    <label for="${id}-max_rule"><b>Max brightness:</b></label>
-                    <input type="text" class="form-control rule-limits" id="${id}-max_rule" placeholder="${max}" value="${max}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="max_rule" required>
+                    <label><b>Max brightness:</b></label>
+                    <input type="text" class="form-control rule-limits" placeholder="${max}" value="${max}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="max_rule" required>
                 </div>
             </div>`
 }
@@ -184,16 +184,16 @@ function get_template(id, type, type_metadata, category) {
     // Add type-specific components
     if (type == "si7021") {
         template += `<div class="mb-2">
-                         <label class="form-label" for="${id}-mode"><b>Mode:</b></label>
-                         <select id="${id}-mode" class="form-select mb-3" oninput="update_config(this);" data-section="${id}" data-param="mode" required>
+                         <label class="form-label"><b>Mode:</b></label>
+                         <select class="form-select mb-3" oninput="update_config(this);" data-section="${id}" data-param="mode" required>
                              <option value="cool" id="cool">Cool</option>
                              <option value="heat" id="heat">Heat</option>
                          </select>
                      </div>
 
                      <div class="mb-2">
-                         <label for="${id}-tolerance"><b>Tolerance:</b></label>
-                         <input type="text" class="form-control thermostat" id="${id}-tolerance" placeholder="" oninput="update_config(this);" data-section="${id}" data-param="tolerance" required>
+                         <label><b>Tolerance:</b></label>
+                         <input type="text" class="form-control thermostat" placeholder="" oninput="update_config(this);" data-section="${id}" data-param="tolerance" required>
                      </div>`
 
     } else if (type == "api-target") {
@@ -224,6 +224,12 @@ function get_template(id, type, type_metadata, category) {
 };
 
 
+// Takes config section and param, returns input element that sets param
+function get_input_element(section, param) {
+    return document.querySelector(`[data-section="${section}"][data-param="${param}"]`);
+}
+
+
 // Takes device or sensor ID, type, metadata entry, and completed template
 // Inserts template into card, instantiates elements, adds listeners
 function render_template(id, type, type_metadata, template) {
@@ -244,20 +250,20 @@ function render_template(id, type, type_metadata, template) {
 
     // Add listeners to format IP field while typing, validate when focus leaves
     if (Object.keys(type_metadata.config_template).includes('ip')) {
-        ip = document.getElementById(`${id}-ip`);
+        const ip = get_input_element(id, 'ip');
         ip.addEventListener('input', formatIp);
         ip.addEventListener('blur', validateField);
     };
 
     // Add listener to constrain tolerance field
     if (type == "si7021") {
-        document.getElementById(`${id}-tolerance`).addEventListener('input', thermostatToleranceLimit);
+        get_input_element(id, 'tolerance').addEventListener('input', thermostatToleranceLimit);
     };
 
     // Add listener for rule max/min fields in advanced settings collapse
     if (type_metadata.rule_prompt == 'int_or_fade') {
-        document.getElementById(`${id}-max_rule`).addEventListener('input', ruleLimits);
-        document.getElementById(`${id}-min_rule`).addEventListener('input', ruleLimits);
+        get_input_element(id, 'max_rule').addEventListener('input', ruleLimits);
+        get_input_element(id, 'min_rule').addEventListener('input', ruleLimits);
     };
 
     // Return reference to card
@@ -345,9 +351,9 @@ async function load_next_device() {
                                     <h4 class="card-title device${index} mx-auto my-auto">device${index}</h4>
                                     <button class="btn my-auto pe-2 delete device${index}" id="device${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label for="device${index}-type" class="form-label"><b>Type:</b></label>
+                                <label class="form-label"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_device_section(this)" id="device${index}-type" class="form-select" data-section="device${index}" data-param="_type" required>
+                                    <select onchange="load_device_section(this)" class="form-select" data-section="device${index}" data-param="_type" required>
                                     <option value="clear">Select device type</option>
                                     ${options}
                                     </select>
@@ -359,7 +365,7 @@ async function load_next_device() {
 
     // Render div, scroll down until visible
     document.getElementById("addDeviceButton").insertAdjacentHTML('beforebegin', template);
-    document.getElementById("addDeviceDiv" + (index)).scrollIntoView({behavior: "smooth"});
+    document.getElementById(`addDeviceDiv${index}`).scrollIntoView({behavior: "smooth"});
 
     // Wait for fade animation to complete, remove class (prevent conflict with fade-out if card is deleted)
     await sleep(400);
@@ -390,9 +396,9 @@ async function load_next_sensor() {
                                     <h4 class="card-title sensor${index} mx-auto my-auto">sensor${index}</h4>
                                     <button class="btn my-auto pe-2 delete sensor${index}" id="sensor${index}-remove" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label for="sensor${index}-type" class="form-label"><b>Type:</b></label>
+                                <label class="form-label"><b>Type:</b></label>
                                 <div>
-                                    <select onchange="load_sensor_section(this)" id="sensor${index}-type" class="form-select" data-section="sensor${index}" data-param="_type" required>
+                                    <select onchange="load_sensor_section(this)" class="form-select" data-section="sensor${index}" data-param="_type" required>
                                     <option value="clear">Select sensor type</option>
                                     ${options}
                                     </select>
@@ -405,7 +411,7 @@ async function load_next_sensor() {
 
     // Render div, scroll down until visible
     document.getElementById("addSensorButton").insertAdjacentHTML('beforebegin', template);
-    document.getElementById("addSensorDiv" + (index)).scrollIntoView({behavior: "smooth"});
+    document.getElementById(`addSensorDiv${index}`).scrollIntoView({behavior: "smooth"});
 
     // Disable Thermostat dropdown options if selected (can't have multiple)
     preventDuplicateThermostat();

@@ -1,6 +1,6 @@
-<label for="device{{index}}-type" class="form-label"><b>Type:</b></label>
+<label class="form-label"><b>Type:</b></label>
 <div>
-    <select onchange="load_device_section(this)" id="device{{index}}-type" class="form-select" autocomplete="off" data-section="{{category}}{{index}}" data-param="_type" required>
+    <select onchange="load_device_section(this)" class="form-select" autocomplete="off" data-section="{{category}}{{index}}" data-param="_type" required>
     <option value="clear" disabled>Select device type</option>
     {# Add option for each device in metadata object #}
     {% for device, metadata in metadata.devices.items %}

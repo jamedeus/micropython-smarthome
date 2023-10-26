@@ -19,7 +19,7 @@ async function prevent_duplicate_friendly_name(el) {
 // Input listener for all nickname fields, adds red highlight if nickname is duplicate
 function prevent_duplicate_nickname(event) {
     // Get ID of modified input (prevent comparing against self)
-    const id = event.target.id.split("-")[0];
+    const id = event.target.dataset.section;
 
     // Get nickname that user just entered
     const nickname = event.target.value;
