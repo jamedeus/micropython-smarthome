@@ -19,12 +19,16 @@
 
 <div id="{{category}}{{index}}-advanced_settings" class="collapse">
     <div class="mb-2">
-        <label><b>Min brightness:</b></label>
-        <input type="text" class="form-control rule-limits" value="{{params.min_rule}}" data-min="{{ instance_metadata.rule_limits.0 }}" data-max="{{ instance_metadata.rule_limits.1 }}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="min_rule" required>
+        <label class="w-100">
+            <b>Min brightness:</b>
+            <input type="text" class="form-control rule-limits" value="{{params.min_rule}}" data-min="{{ instance_metadata.rule_limits.0 }}" data-max="{{ instance_metadata.rule_limits.1 }}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="min_rule" required>
+        </label>
     </div>
 
     <div class="mb-2">
-        <label><b>Max brightness:</b></label>
-        <input type="text" class="form-control rule-limits" value="{{params.max_rule}}" data-min="{{ instance_metadata.rule_limits.0 }}" data-max="{{ instance_metadata.rule_limits.1 }}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="max_rule" required>
+        <label class="w-100">
+            <b>Max brightness:</b>
+            <input type="text" class="form-control rule-limits" value="{{params.max_rule}}" data-min="{{ instance_metadata.rule_limits.0 }}" data-max="{{ instance_metadata.rule_limits.1 }}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="max_rule" required>
+        </label>
     </div>
 </div>

@@ -67,17 +67,21 @@
 
                 {# Add Thermostat-specific inputs #}
                 {% if instance_metadata.config_name == "si7021" %}
-                    <div class="mb-2">
-                        <label class="form-label sensor{{index}}"><b>Mode:</b></label>
-                        <select class="form-select mb-3" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="mode" required>
-                            <option value="cool" {% if params.mode == "cool" %}selected{% endif %}>Cool</option>
-                            <option value="heat" {% if params.mode == "heat" %}selected{% endif %}>Heat</option>
-                        </select>
+                    <div class="mb-3">
+                        <label class="w-100">
+                            <b>Mode:</b>
+                            <select class="form-select" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="mode" required>
+                                <option value="cool" {% if params.mode == "cool" %}selected{% endif %}>Cool</option>
+                                <option value="heat" {% if params.mode == "heat" %}selected{% endif %}>Heat</option>
+                            </select>
+                        </label>
                     </div>
 
                     <div class="mb-2">
-                        <label><b>Tolerance:</b></label>
-                        <input type="text" class="form-control thermostat" placeholder="" value="{{params.tolerance}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="tolerance" required>
+                        <label class="w-100">
+                            <b>Tolerance:</b>
+                            <input type="text" class="form-control thermostat" placeholder="" value="{{params.tolerance}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="tolerance" required>
+                        </label>
                     </div>
                 {% endif %}
             </div>

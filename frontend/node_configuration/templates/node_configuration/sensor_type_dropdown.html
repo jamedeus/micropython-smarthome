@@ -1,10 +1,10 @@
-<label class="form-label"><b>Type:</b></label>
-<div>
-    <select onchange="load_sensor_section(this)" class="form-select" autocomplete="off" data-section="{{category}}{{index}}" data-param="_type" required>
-    <option value="clear" disabled>Select sensor type</option>
-    {# Add option for each sensor in metadata object #}
-    {% for sensor, metadata in metadata.sensors.items %}
-        <option value="{{metadata.config_name}}" {% if selected == metadata.config_name %} selected {% endif %}>{{metadata.class_name}}</option>
-    {% endfor %}
+<label class="w-100">
+    <b>Type:</b>
+    <select onchange="load_sensor_section(this)" class="form-select mt-2" autocomplete="off" data-section="{{category}}{{index}}" data-param="_type" required>
+        <option value="clear" disabled>Select sensor type</option>
+        {# Add option for each sensor in metadata object #}
+        {% for sensor, metadata in metadata.sensors.items %}
+            <option value="{{metadata.config_name}}" {% if selected == metadata.config_name %} selected {% endif %}>{{metadata.class_name}}</option>
+        {% endfor %}
     </select>
-</div>
+</label>

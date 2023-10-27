@@ -12,31 +12,33 @@ function create_nickname_input(id) {
 // Takes id (int), returns dropdown template with options for all sensor pins
 function create_pin_dropdown_sensor(id) {
     return `<div class="mb-2">
-                <label for="${id}-pin"><b>Pin:</b></label>
-                <select id="${id}-pin" class="form-select pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="${id}" data-param="pin" required>
-                    <option selected disabled>Select pin</option>
-                    <option value="4">4</option>
-                    <option value="5">5</option>
-                    <option value="13">13</option>
-                    <option value="14">14</option>
-                    <option value="15">15</option>
-                    <option value="16">16</option>
-                    <option value="17">17</option>
-                    <option value="18">18</option>
-                    <option value="19">19</option>
-                    <option value="21">21</option>
-                    <option value="22">22</option>
-                    <option value="23">23</option>
-                    <option value="25">25</option>
-                    <option value="26">26</option>
-                    <option value="27">27</option>
-                    <option value="32">32</option>
-                    <option value="33">33</option>
-                    <option value="34">34</option>
-                    <option value="35">35</option>
-                    <option value="36">36</option>
-                    <option value="39">39</option>
-                </select>
+                <label class="w-100">
+                    <b>Pin:</b>
+                    <select class="form-select pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="${id}" data-param="pin" required>
+                        <option selected disabled>Select pin</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="32">32</option>
+                        <option value="33">33</option>
+                        <option value="34">34</option>
+                        <option value="35">35</option>
+                        <option value="36">36</option>
+                        <option value="39">39</option>
+                    </select>
+                </label>
             </div>`
 };
 
@@ -44,24 +46,26 @@ function create_pin_dropdown_sensor(id) {
 // Takes id (int), returns dropdown template with options for all device pins
 function create_pin_dropdown_device(id) {
     return `<div class="mb-2">
-                <label for="${id}-pin"><b>Pin:</b></label>
-                <select id="${id}-pin" class="form-select pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="${id}" data-param="pin" required>
-                    <option selected disabled>Select pin</option>
-                    <option value="4">4</option>
-                    <option value="13">13</option>
-                    <option value="16">16</option>
-                    <option value="17">17</option>
-                    <option value="18">18</option>
-                    <option value="19">19</option>
-                    <option value="21">21</option>
-                    <option value="22">22</option>
-                    <option value="23">23</option>
-                    <option value="25">25</option>
-                    <option value="26">26</option>
-                    <option value="27">27</option>
-                    <option value="32">32</option>
-                    <option value="33">33</option>
-                </select>
+                <label class="w-100">
+                    <b>Pin:</b>
+                    <select class="form-select pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="${id}" data-param="pin" required>
+                        <option selected disabled>Select pin</option>
+                        <option value="4">4</option>
+                        <option value="13">13</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="32">32</option>
+                        <option value="33">33</option>
+                    </select>
+                </label>
             </div>`
 };
 
@@ -148,13 +152,17 @@ function create_advanced_settings_dimmable_light(id, min, max) {
 
             <div id="${id}-advanced_settings" class="collapse">
                 <div class="mb-2">
-                    <label><b>Min brightness:</b></label>
-                    <input type="min" class="form-control rule-limits" placeholder="${min}" value="${min}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="min_rule" required>
+                    <label class="w-100">
+                        <b>Min brightness:</b>
+                        <input type="min" class="form-control rule-limits" placeholder="${min}" value="${min}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="min_rule" required>
+                    </label>
                 </div>
 
                 <div class="mb-2">
-                    <label><b>Max brightness:</b></label>
-                    <input type="text" class="form-control rule-limits" placeholder="${max}" value="${max}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="max_rule" required>
+                    <label class="w-100">
+                        <b>Max brightness:</b>
+                        <input type="text" class="form-control rule-limits" placeholder="${max}" value="${max}" data-min="${min}" data-max="${max}" oninput="update_config(this);" data-section="${id}" data-param="max_rule" required>
+                    </label>
                 </div>
             </div>`
 }
@@ -206,17 +214,21 @@ function get_template(id, type, type_metadata, category) {
 
     // Add type-specific components
     if (type == "si7021") {
-        template += `<div class="mb-2">
-                         <label class="form-label"><b>Mode:</b></label>
-                         <select class="form-select mb-3" oninput="update_config(this);" data-section="${id}" data-param="mode" required>
-                             <option value="cool">Cool</option>
-                             <option value="heat">Heat</option>
-                         </select>
+        template += `<div class="mb-3">
+                         <label class="w-100">
+                             <b>Mode:</b>
+                             <select class="form-select" oninput="update_config(this);" data-section="${id}" data-param="mode" required>
+                                 <option value="cool">Cool</option>
+                                 <option value="heat">Heat</option>
+                             </select>
+                         </label>
                      </div>
 
                      <div class="mb-2">
-                         <label><b>Tolerance:</b></label>
-                         <input type="text" class="form-control thermostat" placeholder="" oninput="update_config(this);" data-section="${id}" data-param="tolerance" required>
+                         <label class="w-100">
+                             <b>Tolerance:</b>
+                             <input type="text" class="form-control thermostat" placeholder="" oninput="update_config(this);" data-section="${id}" data-param="tolerance" required>
+                         </label>
                      </div>`
 
     } else if (type == "api-target") {
@@ -375,13 +387,13 @@ async function load_next_device() {
                                     <h4 id="device${index}-title" class="card-title mx-auto my-auto">device${index}</h4>
                                     <button class="btn my-auto pe-2 delete" data-section="device${index}" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label class="form-label"><b>Type:</b></label>
-                                <div>
-                                    <select onchange="load_device_section(this)" class="form-select" data-section="device${index}" data-param="_type" required>
+                                <label class="w-100">
+                                    <b>Type:</b>
+                                    <select onchange="load_device_section(this)" class="form-select mt-2" data-section="device${index}" data-param="_type" required>
                                     <option value="clear">Select device type</option>
                                     ${options}
                                     </select>
-                                </div>
+                                </label>
                                 <div id="device${index}-params" class="card-body" data-section="device${index}"></div>
                             </div>
                         </div>
@@ -420,14 +432,13 @@ async function load_next_sensor() {
                                     <h4 id="sensor${index}-title" class="card-title mx-auto my-auto">sensor${index}</h4>
                                     <button class="btn my-auto pe-2 delete" data-section="sensor${index}" onclick="remove_instance(this)"><i class="bi-x-lg"></i></button>
                                 </div>
-                                <label class="form-label"><b>Type:</b></label>
-                                <div>
-                                    <select onchange="load_sensor_section(this)" class="form-select" data-section="sensor${index}" data-param="_type" required>
+                                <label class="w-100">
+                                    <b>Type:</b>
+                                    <select onchange="load_sensor_section(this)" class="form-select mt-2" data-section="sensor${index}" data-param="_type" required>
                                     <option value="clear">Select sensor type</option>
                                     ${options}
                                     </select>
-                                </div>
-
+                                </label>
                                 <div id="sensor${index}-params" class="card-body" data-section="sensor${index}"></div>
                             </div>
                         </div>
