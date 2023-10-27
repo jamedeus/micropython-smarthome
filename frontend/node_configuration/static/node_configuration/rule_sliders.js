@@ -74,31 +74,23 @@ function map_range(x, in_min, in_max, out_min, out_max) {
 
 // Handler for rule slider plus and minus buttons
 async function rule_slider_increment(button) {
-    if (button.id.endsWith("down")) {
-        var target = button.id.replace("-down", "");
-    } else if (button.id.endsWith("up")) {
-        var target = button.id.replace("-up", "");
-    } else {
-        return false;
-    };
-
     // Get reference to target slider, current value
-    const slider = document.getElementById(target);
+    const section = button.dataset.section;
+    const slider = document.querySelector(`[data-section="${section}"][data-param="default_rule"]`);
     const current = parseFloat(slider.value);
 
     // Increment/decrement current value
-    if (button.id.split("-")[2] == "up") {
-        var new_rule = current + parseFloat(button.dataset.stepsize);
+    if (button.dataset.direction === "up") {
+        slider.value = current + parseFloat(button.dataset.stepsize);
     } else {
-        var new_rule = current - parseFloat(button.dataset.stepsize);
+        slider.value = current - parseFloat(button.dataset.stepsize);
     };
 
     // Update slider position
-    slider.value = new_rule;
     $('input[type="range"]').rangeslider('update', true);
     // Select handle element closest to slider, update current rule displayed
-    var $handle = $('.rangeslider__handle', document.getElementById(target).nextSibling);
-    $handle[0].textContent = get_display_value(document.getElementById(target));
+    var $handle = $('.rangeslider__handle', slider.nextSibling);
+    $handle[0].textContent = get_display_value(slider);
 
     // Trigger listener that updates config object
     trigger_input_event(slider);

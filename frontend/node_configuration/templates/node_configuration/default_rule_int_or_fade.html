@@ -4,9 +4,9 @@
 <div class="mb-2">
     <label for="{{category}}{{index}}-default_rule" class="mt-1"><b>Default Rule:</b></label>
     <div class="d-flex flex-row align-items-center my-2">
-        <button id="{{category}}{{index}}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio instance_metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-dash-lg"></i></button>
+        <button class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-section="{{category}}{{index}}" data-direction="down" data-stepsize="{% widthratio instance_metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-dash-lg"></i></button>
         <input id="{{category}}{{index}}-default_rule" type="range" class="mx-auto" min="{{ instance_metadata.rule_limits.0 }}" max="{{ instance_metadata.rule_limits.1 }}" data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value="{{params.default_rule}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="default_rule" autocomplete="off">
-        <button id="{{category}}{{index}}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="{% widthratio instance_metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-plus-lg"></i></button>
+        <button class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-section="{{category}}{{index}}" data-direction="up" data-stepsize="{% widthratio instance_metadata.rule_limits.1 100 1|floatformat:"0" %}"><i class="bi-plus-lg"></i></button>
     </div>
 </div>
 

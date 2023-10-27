@@ -99,9 +99,9 @@ function create_slider_rule_input(id, min, max, display_min, display_max, displa
     return `<div class="mb-2">
                 <label for="${id}-default_rule" class="mt-1"><b>Default Rule:</b></label>
                 <div class="d-flex flex-row align-items-center my-2">
-                    <button id="${id}-default_rule-down" class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-stepsize="${button_step}"><i class="bi-dash-lg"></i></button>
+                    <button class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-section="${id}" data-direction="down" data-stepsize="${button_step}"><i class="bi-dash-lg"></i></button>
                     <input id="${id}-default_rule" type="range" class="mx-auto" min="${min}" max="${max}" data-displaymin="${display_min}" data-displaymax="${display_max}" data-displaytype="${display_type}" step="${step}" value="" oninput="update_config(this);" autocomplete="off" data-section="${id}" data-param="default_rule">
-                    <button id="${id}-default_rule-up" class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-stepsize="${button_step}"><i class="bi-plus-lg"></i></button>
+                    <button class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-section="${id}" data-direction="up" data-stepsize="${button_step}"><i class="bi-plus-lg"></i></button>
                 </div>
             </div>`
 }
