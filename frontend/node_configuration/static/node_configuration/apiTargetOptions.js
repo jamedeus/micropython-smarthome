@@ -16,6 +16,7 @@ if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').match
     });
 };
 
+
 function switch_page(el) {
     if (el.id == "on-button") {
         document.getElementById("on-action").style.display = "initial";
@@ -26,6 +27,8 @@ function switch_page(el) {
     };
 };
 
+
+// Called by submit button in ApiTarget rule modal
 function submit_api_rule(el) {
     var value = Object.fromEntries(new FormData(document.getElementById("api_rule_form")).entries());
     // Remove friendly name, leave only instance id (device1, sensor1, etc)
@@ -39,16 +42,18 @@ function submit_api_rule(el) {
 };
 
 
-// Called when user changes target node in dropdown
+// Called when user changes target node in edit page dropdown
 function api_target_selected(el) {
     if (el.value) {
-        document.getElementById(el.id.split("-")[0] + "-default_rule-button").disabled = false;
+        document.getElementById(`${el.dataset.section}-default_rule-button`).disabled = false;
         // Clear old rule so menu doesn't populate when opened
-        document.getElementById(el.id.split("-")[0] + "-default_rule").value = "";
+        document.getElementById(`${el.dataset.section}-default_rule`).value = "";
+        update_config(document.getElementById(`${el.dataset.section}-default_rule`));
     } else {
-        document.getElementById(el.id.split("-")[0] + "-default_rule-button").disabled = true;
+        document.getElementById(`${el.dataset.section}-default_rule-button`).disabled = true;
     };
-}
+};
+
 
 // Modal fields
 var instance_select_on = document.getElementById("instance-on");
@@ -59,6 +64,7 @@ var sub_command_select_on = document.getElementById("sub-command-on");
 var sub_command_select_off = document.getElementById("sub-command-off");
 var command_arg_on = document.getElementById("command-arg-on");
 var command_arg_off = document.getElementById("command-arg-off");
+
 
 function populate_command_on(target) {
     // Hide fields that are only used by certain commands
@@ -101,7 +107,8 @@ function populate_command_on(target) {
             command_select_on.options[command_select_on.options.length] = new Option(opt, opt);
         };
     };
-}
+};
+
 
 function populate_command_off(target) {
     // Hide fields that are only used by certain commands
@@ -110,7 +117,7 @@ function populate_command_off(target) {
     sub_command_select_off.disabled = true;
     sub_command_select_off.style.display = "none";
 
-    // empty command dropdown
+    // Empty command dropdown
     command_select_off.length = 1;
 
     var selected = instance_select_off.value;
@@ -144,7 +151,7 @@ function populate_command_off(target) {
             command_select_off.options[command_select_off.options.length] = new Option(opt, opt);
         };
     };
-}
+};
 
 
 function populate_sub_command_on(target) {
@@ -161,7 +168,7 @@ function populate_sub_command_on(target) {
     // Only run if sub-command dropdown is visible (shown when certain commands selected above)
     if (sub_command_select_on.disabled) {return};
 
-    // empty sub-command dropdown
+    // Empty sub-command dropdown
     sub_command_select_on.length = 1;
 
     var z = ApiTargetOptions[target][instance_select_on.value][selected];
@@ -170,7 +177,8 @@ function populate_sub_command_on(target) {
     for (var i = 0; i < z.length; i++) {
         sub_command_select_on.options[sub_command_select_on.options.length] = new Option(z[i], z[i]);
     }
-}
+};
+
 
 function populate_sub_command_off(target) {
     var selected = command_select_off.value;
@@ -186,19 +194,21 @@ function populate_sub_command_off(target) {
     // Only run if sub-command dropdown is visible (shown when certain commands selected above)
     if (sub_command_select_off.disabled) {return};
 
-    // empty sub-command dropdown
+    // Empty sub-command dropdown
     sub_command_select_off.length = 1;
 
     var z = ApiTargetOptions[target][instance_select_off.value][selected];
 
-    //display correct values
+    // Display correct values
     for (var i = 0; i < z.length; i++) {
         sub_command_select_off.options[sub_command_select_off.options.length] = new Option(z[i], z[i]);
     }
-}
+};
+
 
 // Initialize rule modal
 const apiRuleModal = new bootstrap.Modal(document.getElementById('api-rule-modal'));
+
 
 function open_rule_modal(el) {
     apiRuleModal.show();
@@ -206,20 +216,21 @@ function open_rule_modal(el) {
     // Get target device ID, use to get options from ApiTargetOptions object
     var target = el.id.split("-")[0];
 
-    // If user selected self-target, get options based on current devices and sensors
-    try {
-        const ip = document.getElementById(`${target}-ip`).value;
+    // Edit config page: ApiTargetOptions has different syntax (contains
+    // options for all existing nodes instead of just configured target)
+    if (typeof config !== 'undefined') {
+        // Get options for current devices and sensors if user selected self-target
+        const ip = get_input_element(target, 'ip').value;
         if (ip === "127.0.0.1" || ip === target_ip) {
             get_self_target_options();
         };
-    } catch(err) {};
 
-    // Options object has different syntax on provision page, use selected dropdown item as object key instead
-    if (!ApiTargetOptions[target]) {
-        target = document.getElementById(`${target}-ip`).selectedOptions[0].innerText;
+        // Replace device ID with text from selected dropdown item
+        target = get_input_element(target, 'ip').selectedOptions[0].innerText;
     };
 
     // Copy ID of hidden rule field to submit button (output destination for finished rule)
+    // This is current_rule on frontend, default_rule on edit page
     document.getElementById('submit-api-rule').dataset.target = el.dataset.target;
 
     // Clear all options from last time menu was opened
@@ -262,12 +273,13 @@ function open_rule_modal(el) {
 
     // Re-populate dropdowns from existing rule (if present)
     try {
-        var restore = JSON.parse(el.dataset.original);
+        var restore = JSON.parse(document.getElementById(el.dataset.target).value);
         reload_rule(target, restore);
     } catch(err) {
         console.log("No existing rule");
     };
 };
+
 
 // Reads existing rule, selects all corresponding dropdown options
 function reload_rule(target, rule) {
@@ -344,6 +356,7 @@ function reload_rule(target, rule) {
     };
 };
 
+
 function convert_api_target_rule(input) {
     var output = {'on': [], 'off': []};
 
@@ -381,16 +394,14 @@ function convert_api_target_rule(input) {
     return JSON.stringify(output);
 };
 
-// Called by change listener when submit_api_rule changes value of current_rule input
+
+// Called by change listener on hidden current_rule input (frontend only)
 async function change_api_target_rule(el) {
     console.log("Changing rule");
     const target = el.id.split("-")[0];
 
-    // Get rule, copy to dataset attribute (pre-populate modal next time opened)
+    // Get rule, send to node
     const rule = document.getElementById(`${target}-current_rule`).value;
-    document.getElementById(`${target}-current_rule-button`).dataset.original = rule
-
-    // API call
     var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': rule});
     result = await result.json();
 
@@ -399,7 +410,9 @@ async function change_api_target_rule(el) {
     };
 };
 
-// Called when user opens modal with "self-target" selected. Gets all valid commands for current devices and sensors, adds to object
+
+// Called when user opens modal on edit page with "self-target" selected
+// Gets all valid commands for current devices and sensors, adds to object
 function get_self_target_options() {
     // Clear existing options
     ApiTargetOptions['self-target'] = {}
@@ -416,7 +429,7 @@ function get_self_target_options() {
         if (devices[device]['_type'] == 'api-target') {
             ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule'];
         } else {
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off']
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'];
         };
     };
 
@@ -426,9 +439,9 @@ function get_self_target_options() {
 
         // Remove trigger command for sensors that don't support it
         if (sensors[sensor]['_type'] == "si7021" || sensors[sensor]['_type'] == "switch") {
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule'];
         } else {
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']
+            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor'];
         };
     };
 
@@ -503,4 +516,4 @@ window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
             };
         });
     }
-})
+});

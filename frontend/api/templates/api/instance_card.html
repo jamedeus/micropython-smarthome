@@ -24,7 +24,7 @@
                     {# Device: Add prompt-specific options if needed #}
                     {% else %}
                         {% if params.prompt == "api_target" %}
-                            <li><a id="{{instance}}-current_rule-button" class="dropdown-item" data-target="{{instance}}-current_rule" data-original="{{params.current_rule}}" onclick="open_rule_modal(this);">Change rule</a></li>
+                            <li><a id="{{instance}}-current_rule-button" class="dropdown-item" data-target="{{instance}}-current_rule" onclick="open_rule_modal(this);">Change rule</a></li>
                         {% endif %}
                         {% if params.prompt in "int_or_fade" %}
                             <li><a id="{{instance}}-start-fade" class="dropdown-item" onclick="open_fade_modal(this);">Start Fade</a></li>

@@ -1,9 +1,11 @@
-<div class="mb-2">
-    <label for="device{{ index }}-ip"><b>Target Node:</b></label>
-    <select id="device{{ index }}-ip" class="form-select mb-3" onchange="api_target_selected(this)">
-        <option value="" selected="selected"></option>
-        {% for node, ip in api_target_options.addresses.items %}
-            <option value="{{ip}}" {% if params.ip == ip %}selected{% endif %}>{{node}}</option>
-        {% endfor %}
-    </select>
+<div class="mb-3">
+    <label class="w-100">
+        <b>Target Node:</b>
+        <select class="form-select" onchange="api_target_selected(this);update_config(this);" data-section="{{category}}{{index}}" data-param="ip">
+            <option value="" selected="selected"></option>
+            {% for node, ip in api_target_options.addresses.items %}
+                <option value="{{ip}}" {% if params.ip == ip %}selected{% endif %}>{{node}}</option>
+            {% endfor %}
+        </select>
+    </label>
 </div>

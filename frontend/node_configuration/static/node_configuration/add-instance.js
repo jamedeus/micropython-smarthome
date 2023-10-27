@@ -220,27 +220,28 @@ function get_template(id, type, type_metadata, category) {
                      </div>`
 
     } else if (type == "api-target") {
-        template += `<div class="mb-2">
-                         <label for="${id}-ip"><b>Target Node:</b></label>
-                         <select id="${id}-ip" class="form-select mb-3" onchange="api_target_selected(this)" oninput="update_config(this);" data-section="${id}" data-param="ip">
-                             <option value="" selected="selected" selected></option>`
+        template += `<div class="mb-3">
+                         <label class="w-100">
+                            <b>Target Node:</b>
+                            <select class="form-select" onchange="api_target_selected(this);update_config(this);" data-section="${id}" data-param="ip">
+                                <option value="" selected="selected" selected></option>`
 
         for (var x in ApiTargetOptions) {
             if (x == "addresses") { continue };
-            template +=    `<option value="${ApiTargetOptions["addresses"][x]}">${x}</option>`
+            template += `       <option value="${ApiTargetOptions["addresses"][x]}">${x}</option>`
         };
 
-        template += `</select>
-                     </div>
+        template += `       </select>
+                        </label>
+                    </div>
 
-                     <div class="mb-2 text-center">
-                         <button id="${id}-default_rule-button" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" data-target="${id}-default_rule" disabled>Set rule</button>
-                     </div>
+                    <div class="mb-2 text-center">
+                        <button id="${id}-default_rule-button" class="btn btn-secondary mt-3" onclick="open_rule_modal(this);" data-target="${id}-default_rule" disabled>Set rule</button>
+                    </div>
 
-                     <div class="mb-2 text-center">
-                         <label for="${id}-default_rule" style="display:none;"><b>Default Rule:</b></label>
-                         <input type="default_rule" class="form-control" id="${id}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('${id}-default_rule-button').dataset.original = this.value; update_config(this);" data-section="${id}" data-param="defaut_rule" required>
-                     </div>`
+                    <div style="display:none;">
+                        <input type="text" id="${id}-default_rule" onchange="update_config(this);" data-section="${id}" data-param="default_rule" required>
+                    </div>`
     };
 
     return template;
