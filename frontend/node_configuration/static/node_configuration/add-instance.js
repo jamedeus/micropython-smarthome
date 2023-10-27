@@ -1,8 +1,10 @@
 // Takes id (int), returns nickname input template
 function create_nickname_input(id) {
     return `<div class="mb-2">
-                <label for="${id}-nickname"<b>Nickname:</b></label>
-                <input type="text" class="form-control nickname" id="${id}-nickname" placeholder="" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="${id}" data-param="nickname" required>
+                <label class="w-100">
+                    <b>Nickname:</b>
+                    <input type="text" class="form-control nickname" placeholder="" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="${id}" data-param="nickname" required>
+                </label>
             </div>`
 }
 
@@ -67,11 +69,13 @@ function create_pin_dropdown_device(id) {
 // Takes id (int), returns dropdown template with standard rule options
 function create_standard_rule_input(id) {
     return `<div class="mb-2">
-                <label for="${id}-default_rule"><b>Default Rule:</b></label>
-                <select id="${id}-default_rule" class="form-select" autocomplete="off" oninput="update_config(this);" data-section="${id}" data-param="default_rule" required>
-                    <option value="enabled">Enabled</option>
-                    <option value="disabled">Disabled</option>
-                </select>
+                <label class="w-100">
+                    <b>Default Rule:</b>
+                    <select class="form-select" oninput="update_config(this);" data-section="${id}" data-param="default_rule" autocomplete="off" required>
+                        <option value="enabled">Enabled</option>
+                        <option value="disabled">Disabled</option>
+                    </select>
+                </label>
             </div>`
 };
 
@@ -79,12 +83,14 @@ function create_standard_rule_input(id) {
 // Takes id (int), returns dropdown template with on and off options
 function create_on_off_rule_input(id) {
     return `<div class="mb-2">
-                <label for="${id}-default_rule"><b>Default Rule:</b></label>
-                <select id="${id}-default_rule" class="form-select" autocomplete="off" oninput="update_config(this);" data-section="${id}" data-param="default_rule" required>
-                    <option>Select default rule</option>
-                    <option value="on">On</option>
-                    <option value="off">Off</option>
-                </select>
+                <label class="w-100">
+                    <b>Default Rule:</b>
+                    <select class="form-select" oninput="update_config(this);" data-section="${id}" data-param="default_rule" autocomplete="off" required>
+                        <option>Select default rule</option>
+                        <option value="on">On</option>
+                        <option value="off">Off</option>
+                    </select>
+                </label>
             </div>`
 };
 
@@ -97,12 +103,14 @@ function create_on_off_rule_input(id) {
 // button_step: int or float, controls step size for +/- buttons
 function create_slider_rule_input(id, min, max, display_min, display_max, display_type, step, button_step) {
     return `<div class="mb-2">
-                <label for="${id}-default_rule" class="mt-1"><b>Default Rule:</b></label>
-                <div class="d-flex flex-row align-items-center my-2">
-                    <button class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-section="${id}" data-direction="down" data-stepsize="${button_step}"><i class="bi-dash-lg"></i></button>
-                    <input id="${id}-default_rule" type="range" class="mx-auto" min="${min}" max="${max}" data-displaymin="${display_min}" data-displaymax="${display_max}" data-displaytype="${display_type}" step="${step}" value="" oninput="update_config(this);" autocomplete="off" data-section="${id}" data-param="default_rule">
-                    <button class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-section="${id}" data-direction="up" data-stepsize="${button_step}"><i class="bi-plus-lg"></i></button>
-                </div>
+                <label class="mt-1 w-100">
+                    <b>Default Rule:</b>
+                    <div class="d-flex flex-row align-items-center my-2">
+                        <button class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-section="${id}" data-direction="down" data-stepsize="${button_step}"><i class="bi-dash-lg"></i></button>
+                        <input type="range" class="mx-auto" min="${min}" max="${max}" data-displaymin="${display_min}" data-displaymax="${display_max}" data-displaytype="${display_type}" step="${step}" value="" oninput="update_config(this);" autocomplete="off" data-section="${id}" data-param="default_rule">
+                        <button class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-section="${id}" data-direction="up" data-stepsize="${button_step}"><i class="bi-plus-lg"></i></button>
+                    </div>
+                </label>
             </div>`
 }
 
@@ -240,7 +248,7 @@ function render_template(id, type, type_metadata, template) {
 
     // Instantiate slider if added
     if (type_metadata.rule_prompt == 'float_range' || type_metadata.rule_prompt == 'int_or_fade') {
-        add_new_slider(`${id}-default_rule`);
+        add_new_slider(get_input_element(id, 'default_rule'));
     };
 
     // Disable already-used pins in the new pin dropdown

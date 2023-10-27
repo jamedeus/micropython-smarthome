@@ -1,48 +1,27 @@
 // Initialize all range sliders, add listeners
 for (slider of $('input[type="range"]')) {
-    // Initialize
-    $('#' + slider.id).rangeslider({
-        polyfill: false,
-        onInit: function() {
-        // Select handle element closest to slider, update displayed rule
-        $handle = $('.rangeslider__handle', this.$range);
-        $handle[0].textContent = get_display_value(slider);
-
-        this.$range[0].classList.add("mx-auto")
-        }
-    });
-
-    // Update current rule displayed while slider moves
-    $('#' + slider.id).on('input', function(e) {
-
-        // Select handle element closest to slider, update displayed rule
-        var $handle = $('.rangeslider__handle', e.target.nextSibling);
-        $handle[0].textContent = get_display_value(document.getElementById(e.target.id));
-    });
+    add_new_slider(slider);
 };
 
 
-function add_new_slider(id) {
-    slider = document.getElementById(id);
-
+// Takes slider, initializes and adds listener to update displayed value
+function add_new_slider(slider) {
     // Initialize
-    $('#' + id).rangeslider({
+    $(slider).rangeslider({
         polyfill: false,
         onInit: function() {
-        // Select handle element closest to slider, update displayed rule
-        $handle = $('.rangeslider__handle', this.$range);
-        $handle[0].textContent = get_display_value(slider);
-
-        this.$range[0].classList.add("mx-auto")
+            // Select handle element closest to slider, update displayed rule
+            $handle = $('.rangeslider__handle', this.$range);
+            $handle[0].textContent = get_display_value(slider);
+            this.$range[0].classList.add("mx-auto")
         }
     });
 
     // Update current rule displayed while slider moves
-    $('#' + id).on('input', function(e) {
-
+    $(slider).on('input', function(e) {
         // Select handle element closest to slider, update displayed rule
         var $handle = $('.rangeslider__handle', e.target.nextSibling);
-        $handle[0].textContent = get_display_value(document.getElementById(e.target.id));
+        $handle[0].textContent = get_display_value(e.target);
     });
 };
 
@@ -75,8 +54,7 @@ function map_range(x, in_min, in_max, out_min, out_max) {
 // Handler for rule slider plus and minus buttons
 async function rule_slider_increment(button) {
     // Get reference to target slider, current value
-    const section = button.dataset.section;
-    const slider = document.querySelector(`[data-section="${section}"][data-param="default_rule"]`);
+    const slider = get_input_element(button.dataset.section, 'default_rule');
     const current = parseFloat(slider.value);
 
     // Increment/decrement current value

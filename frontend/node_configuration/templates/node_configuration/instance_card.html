@@ -17,9 +17,11 @@
             {# Add card body with nickname input #}
             <div id="{{category}}{{index}}-params" class="card-body" data-section="{{category}}{{index}}">
                 <div class="mb-2">
-                    <label for="{{category}}{{index}}-nickname"><b>Nickname:</b></label>
-                    <input type="text" class="form-control nickname" id="{{category}}{{index}}-nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="{{category}}{{index}}" data-param="nickname" required>
-                    <div id="{{category}}-nickname-feedback" class="invalid-feedback">Name already in use</div>
+                    <label class="w-100">
+                        <b>Nickname:</b>
+                        <input type="text" class="form-control nickname" placeholder="" value="{{params.nickname}}" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="{{category}}{{index}}" data-param="nickname" required>
+                        <div class="invalid-feedback">Name already in use</div>
+                    </label>
                 </div>
 
                 {# Add correct input for each config parameter #}
