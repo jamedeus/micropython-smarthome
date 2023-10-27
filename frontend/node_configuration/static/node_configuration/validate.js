@@ -61,14 +61,15 @@ function pinSelected(element) {
     // Disable selected pins in all other dropdowns
     dropdowns.forEach(dropdown => {
         if (dropdown !== element) {
-        const currentValue = dropdown.value;
-        dropdown.querySelectorAll('option').forEach(option => {
-            // Disable if pin already used, enable if available
-            if (option.value && !usedPins.has(option.value)) {
-                option.disabled = false;
-            } else if (option.value && option.value !== currentValue) {
-                option.disabled = true;
-            }});
+            const currentValue = dropdown.value;
+            dropdown.querySelectorAll('option').forEach(option => {
+                // Disable if pin already used, enable if available
+                if (option.value && !usedPins.has(option.value)) {
+                    option.disabled = false;
+                } else if (option.value && option.value !== currentValue) {
+                    option.disabled = true;
+                };
+            });
         };
     });
 };

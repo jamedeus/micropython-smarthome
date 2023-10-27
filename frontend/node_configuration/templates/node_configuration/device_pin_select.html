@@ -1,20 +1,22 @@
 <div class="mb-2">
-    <label for="device{{index}}-pin"><b>Pin:</b></label>
-    <select id="device{{index}}-pin" class="form-select pin-select" name="{{name}}" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="pin" required>
-        <option disabled selected>Select pin</option>
-        <option value="4" {% if pin == "4"  %} selected {% endif %}>4</option>
-        <option value="13" {% if pin == "13"  %} selected {% endif %}>13</option>
-        <option value="16" {% if pin == "16"  %} selected {% endif %}>16</option>
-        <option value="17" {% if pin == "17"  %} selected {% endif %}>17</option>
-        <option value="18" {% if pin == "18"  %} selected {% endif %}>18</option>
-        <option value="19" {% if pin == "19"  %} selected {% endif %}>19</option>
-        <option value="21" {% if pin == "21"  %} selected {% endif %}>21</option>
-        <option value="22" {% if pin == "22"  %} selected {% endif %}>22</option>
-        <option value="23" {% if pin == "23"  %} selected {% endif %}>23</option>
-        <option value="25" {% if pin == "25"  %} selected {% endif %}>25</option>
-        <option value="26" {% if pin == "26"  %} selected {% endif %}>26</option>
-        <option value="27" {% if pin == "27"  %} selected {% endif %}>27</option>
-        <option value="32" {% if pin == "32"  %} selected {% endif %}>32</option>
-        <option value="33" {% if pin == "33"  %} selected {% endif %}>33</option>
-    </select>
+    <label>
+        <b>Pin:</b>
+        <select class="form-select pin-select" autocomplete="off" onchange="pinSelected(this)" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="pin" required>
+            <option disabled selected>Select pin</option>
+            <option value="4" {% if pin == "4"  %} selected {% endif %}>4</option>
+            <option value="13" {% if pin == "13"  %} selected {% endif %}>13</option>
+            <option value="16" {% if pin == "16"  %} selected {% endif %}>16</option>
+            <option value="17" {% if pin == "17"  %} selected {% endif %}>17</option>
+            <option value="18" {% if pin == "18"  %} selected {% endif %}>18</option>
+            <option value="19" {% if pin == "19"  %} selected {% endif %}>19</option>
+            <option value="21" {% if pin == "21"  %} selected {% endif %}>21</option>
+            <option value="22" {% if pin == "22"  %} selected {% endif %}>22</option>
+            <option value="23" {% if pin == "23"  %} selected {% endif %}>23</option>
+            <option value="25" {% if pin == "25"  %} selected {% endif %}>25</option>
+            <option value="26" {% if pin == "26"  %} selected {% endif %}>26</option>
+            <option value="27" {% if pin == "27"  %} selected {% endif %}>27</option>
+            <option value="32" {% if pin == "32"  %} selected {% endif %}>32</option>
+            <option value="33" {% if pin == "33"  %} selected {% endif %}>33</option>
+        </select>
+    </label>
 </div>
