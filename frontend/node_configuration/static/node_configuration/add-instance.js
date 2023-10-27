@@ -118,8 +118,21 @@ function create_slider_rule_input(id, min, max, display_min, display_max, displa
 // Takes id (int), returns input with IPv4 regex
 function create_ip_input(id) {
     return `<div class="mb-2">
-                <label for="${id}-ip"><b>IP:</b></label>
-                <input type="text" class="form-control ip-input validate" id="${id}-ip" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" oninput="update_config(this);" data-section="${id}" data-param="ip" required>
+                <label class="w-100">
+                    <b>IP:</b>
+                    <input type="text" class="form-control ip-input validate" placeholder="" pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$" oninput="update_config(this);" data-section="${id}" data-param="ip" required>
+                </label>
+            </div>`
+}
+
+
+// Takes id (int), returns input with URI regex (IP or domain)
+function create_uri_input(id) {
+    return `<div class="mb-2">
+                <label class="w-100">
+                    <b>URI:</b>
+                    <input type="text" class="form-control validate" placeholder="IP address or URL" pattern="(?:(?:http|https):\/\/)?(?:\S+(?::\S*)?@)?(?:(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?::\d{1,5})?|(?:(?:http|https):\/\/)?[a-zA-Z0-9.]+(?:-[a-zA-Z0-9]+)*(?:\.[a-zA-Z]{2,6})+(?:\/\S*)?" oninput="update_config(this);" data-section="${id}" data-param="uri" required>
+                </label>
             </div>`
 }
 
@@ -161,6 +174,8 @@ function get_template(id, type, type_metadata, category) {
             template += create_pin_dropdown_device(id);
         } else if (param == "ip" && type != "api-target") {
             template += create_ip_input(id);
+        } else if (param == "uri") {
+            template += create_uri_input(id);
         }
     });
 
