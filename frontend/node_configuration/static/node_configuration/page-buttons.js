@@ -46,11 +46,15 @@ function get_target_card_template(sensor, config, devices) {
     // Iterate devices, add option for each
     for (device in devices) {
         if (config['targets'].includes(device)) {
-            template += `<input type='checkbox' class='form-check-input' id='target-${sensor}-${device}' oninput="update_config_targets(this);" checked>
-                         <label for='target-${sensor}-${device}' class='form-check-label'>${devices[device]['nickname']}</label><br>`;
+            template += `<label>
+                             ${devices[device]['nickname']}
+                             <input type='checkbox' class='form-check-input' data-sensor='${sensor}' data-target='${device}' oninput="update_config_targets(this);" checked>
+                         </label><br>`;
         } else {
-            template += `<input type='checkbox' class='form-check-input' id='target-${sensor}-${device}' oninput="update_config_targets(this);">
-                         <label for='target-${sensor}-${device}' class='form-check-label'>${devices[device]['nickname']}</label><br>`;
+            template += `<label>
+                             ${devices[device]['nickname']}
+                             <input type='checkbox' class='form-check-input' data-sensor='${sensor}' data-target='${device}' oninput="update_config_targets(this);">
+                         </label><br>`;
         };
     };
 

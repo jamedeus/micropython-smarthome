@@ -291,7 +291,8 @@
 
         // Called when any target box checked or unchecked, adds value to config object
         function update_config_targets(input) {
-            const [_, sensor, device] = input.id.split('-');
+            const sensor = input.dataset.sensor;
+            const device = input.dataset.target;
             if (input.checked) {
                 config[sensor]['targets'].push(device);
             } else {
