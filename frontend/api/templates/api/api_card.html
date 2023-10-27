@@ -372,9 +372,26 @@
     {% if context.api_target_options %}
     <!-- Api-target set rule modal -->
     {% include "node_configuration/api_target_rule_modal.html" with target_instructions='Commands are sent to the target node, which is selected when creating a config file. This can only be changed by <a id="edit_target_link">editing</a> the config file.' %}
-    <script src="{% static 'node_configuration/apiTargetOptions.js' %}"></script>
+
+    <script src="{% static 'node_configuration/api_target_rule_modal.js' %}"></script>
     <script>
+        // Add link to edit current node config to ApiTarget modal help text
         document.getElementById('edit_target_link').href = "/edit_config/{{context.metadata.id}}";
+
+        // Called by change listener on hidden current_rule input, sends set_rule API call to node
+        async function change_api_target_rule(el) {
+            console.log("Changing rule");
+            const target = el.id.split("-")[0];
+
+            // Get rule, send to node
+            const rule = document.getElementById(`${target}-current_rule`).value;
+            var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': rule});
+            result = await result.json();
+
+            if (JSON.stringify(result).startsWith('{"ERROR')) {
+                console.log(JSON.stringify(result));
+            };
+        };
     </script>
     {% endif %}
 

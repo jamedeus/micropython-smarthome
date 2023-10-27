@@ -1,60 +1,3 @@
-// Set correct theme (light or dark)
-if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-    modal = document.getElementById('api-rule-modal');
-    // Buttons in ApiTarget rule modal
-    Array.from(modal.querySelectorAll('button')).forEach(function(button) {
-        if (button.classList.contains("btn-secondary")) {
-            button.classList.remove("btn-secondary");
-            button.classList.add("btn-dark");
-        };
-    });
-    Array.from(modal.querySelectorAll('label')).forEach(function(button) {
-        if (button.classList.contains("btn-outline-secondary")) {
-            button.classList.remove("btn-outline-secondary");
-            button.classList.add("btn-dark");
-        };
-    });
-};
-
-
-function switch_page(el) {
-    if (el.id == "on-button") {
-        document.getElementById("on-action").style.display = "initial";
-        document.getElementById("off-action").style.display = "none";
-    } else {
-        document.getElementById("on-action").style.display = "none";
-        document.getElementById("off-action").style.display = "initial";
-    };
-};
-
-
-// Called by submit button in ApiTarget rule modal
-function submit_api_rule(el) {
-    var value = Object.fromEntries(new FormData(document.getElementById("api_rule_form")).entries());
-    // Remove friendly name, leave only instance id (device1, sensor1, etc)
-    value["instance-on"] = value["instance-on"].split("-")[0]
-    value["instance-off"] = value["instance-off"].split("-")[0]
-    // Convert form object to correct format, set value of hidden rule field
-    document.getElementById(el.dataset.target).value = convert_api_target_rule(value);
-    // Trigger change listener, sends set_rule API call
-    var event = new Event('change');
-    document.getElementById(el.dataset.target).dispatchEvent(event);
-};
-
-
-// Called when user changes target node in edit page dropdown
-function api_target_selected(el) {
-    if (el.value) {
-        document.getElementById(`${el.dataset.section}-default_rule-button`).disabled = false;
-        // Clear old rule so menu doesn't populate when opened
-        document.getElementById(`${el.dataset.section}-default_rule`).value = "";
-        update_config(document.getElementById(`${el.dataset.section}-default_rule`));
-    } else {
-        document.getElementById(`${el.dataset.section}-default_rule-button`).disabled = true;
-    };
-};
-
-
 // Modal fields
 var instance_select_on = document.getElementById("instance-on");
 var instance_select_off = document.getElementById("instance-off");
@@ -64,6 +7,81 @@ var sub_command_select_on = document.getElementById("sub-command-on");
 var sub_command_select_off = document.getElementById("sub-command-off");
 var command_arg_on = document.getElementById("command-arg-on");
 var command_arg_off = document.getElementById("command-arg-off");
+
+// Initialize rule modal
+const apiRuleModal = new bootstrap.Modal(document.getElementById('api-rule-modal'));
+
+
+// Called by set rule button (edit page) or change rule dropdown option (frontend)
+function open_rule_modal(el) {
+    apiRuleModal.show();
+
+    // Get target device ID, use to get options from ApiTargetOptions object
+    var target = el.id.split("-")[0];
+
+    // Edit config page: ApiTargetOptions has different syntax (contains
+    // options for all existing nodes instead of just configured target)
+    if (typeof config !== 'undefined') {
+        // Get options for current devices and sensors if user selected self-target
+        const ip = get_input_element(target, 'ip').value;
+        if (ip === "127.0.0.1" || ip === target_ip) {
+            get_self_target_options();
+        };
+
+        // Replace device ID with text from selected dropdown item
+        target = get_input_element(target, 'ip').selectedOptions[0].innerText;
+    };
+
+    // Copy ID of hidden rule field to submit button (output destination for finished rule)
+    // This is current_rule on frontend, default_rule on edit page
+    document.getElementById('submit-api-rule').dataset.target = el.dataset.target;
+
+    // Clear all options from last time menu was opened
+    instance_select_on.length = 1;
+    instance_select_off.length = 1;
+    command_select_on.length = 1;
+    command_select_off.length = 1;
+    sub_command_select_on.length = 1;
+    sub_command_select_off.length = 1;
+    command_arg_on.value = "";
+    command_arg_off.value = "";
+
+    // Show on tab, hide off tab
+    document.getElementById("on-button").checked = true;
+    document.getElementById("on-action").style.display = "initial";
+    document.getElementById("off-action").style.display = "none";
+
+    // Hide fields that are only used by certain commands
+    command_arg_on.disabled = true;
+    command_arg_on.style.display = "none";
+    sub_command_select_on.disabled = true;
+    sub_command_select_on.style.display = "none";
+
+    command_arg_off.disabled = true;
+    command_arg_off.style.display = "none";
+    sub_command_select_off.disabled = true;
+    sub_command_select_off.style.display = "none";
+
+    // Populate instance dropdown
+    for (var x in ApiTargetOptions[target]) {
+        instance_select_on.options[instance_select_on.options.length] = new Option(x.substring(x.indexOf('-') + 1), x);
+        instance_select_off.options[instance_select_off.options.length] = new Option(x.substring(x.indexOf('-') + 1), x);
+    };
+
+    // Attach listeners to populate next dropdown after each selection
+    instance_select_on.onchange = function() {populate_command_on(target)};
+    instance_select_off.onchange = function() {populate_command_off(target)};
+    command_select_on.onchange = function() {populate_sub_command_on(target)};
+    command_select_off.onchange = function() {populate_sub_command_off(target)};
+
+    // Re-populate dropdowns from existing rule (if present)
+    try {
+        var restore = JSON.parse(document.getElementById(el.dataset.target).value);
+        reload_rule(target, restore);
+    } catch(err) {
+        console.log("No existing rule");
+    };
+};
 
 
 function populate_command_on(target) {
@@ -206,78 +224,29 @@ function populate_sub_command_off(target) {
 };
 
 
-// Initialize rule modal
-const apiRuleModal = new bootstrap.Modal(document.getElementById('api-rule-modal'));
-
-
-function open_rule_modal(el) {
-    apiRuleModal.show();
-
-    // Get target device ID, use to get options from ApiTargetOptions object
-    var target = el.id.split("-")[0];
-
-    // Edit config page: ApiTargetOptions has different syntax (contains
-    // options for all existing nodes instead of just configured target)
-    if (typeof config !== 'undefined') {
-        // Get options for current devices and sensors if user selected self-target
-        const ip = get_input_element(target, 'ip').value;
-        if (ip === "127.0.0.1" || ip === target_ip) {
-            get_self_target_options();
-        };
-
-        // Replace device ID with text from selected dropdown item
-        target = get_input_element(target, 'ip').selectedOptions[0].innerText;
+// Called by radio buttons under dropdowns in rule modal
+function switch_page(el) {
+    if (el.id == "on-button") {
+        document.getElementById("on-action").style.display = "initial";
+        document.getElementById("off-action").style.display = "none";
+    } else {
+        document.getElementById("on-action").style.display = "none";
+        document.getElementById("off-action").style.display = "initial";
     };
+};
 
-    // Copy ID of hidden rule field to submit button (output destination for finished rule)
-    // This is current_rule on frontend, default_rule on edit page
-    document.getElementById('submit-api-rule').dataset.target = el.dataset.target;
 
-    // Clear all options from last time menu was opened
-    instance_select_on.length = 1;
-    instance_select_off.length = 1;
-    command_select_on.length = 1;
-    command_select_off.length = 1;
-    sub_command_select_on.length = 1;
-    sub_command_select_off.length = 1;
-    command_arg_on.value = "";
-    command_arg_off.value = "";
-
-    // Show on tab, hide off tab
-    document.getElementById("on-button").checked = true;
-    document.getElementById("on-action").style.display = "initial";
-    document.getElementById("off-action").style.display = "none";
-
-    // Hide fields that are only used by certain commands
-    command_arg_on.disabled = true;
-    command_arg_on.style.display = "none";
-    sub_command_select_on.disabled = true;
-    sub_command_select_on.style.display = "none";
-
-    command_arg_off.disabled = true;
-    command_arg_off.style.display = "none";
-    sub_command_select_off.disabled = true;
-    sub_command_select_off.style.display = "none";
-
-    // Populate instance dropdown
-    for (var x in ApiTargetOptions[target]) {
-        instance_select_on.options[instance_select_on.options.length] = new Option(x.substring(x.indexOf('-') + 1), x);
-        instance_select_off.options[instance_select_off.options.length] = new Option(x.substring(x.indexOf('-') + 1), x);
-    };
-
-    // Attach listeners to populate next dropdown after each selection
-    instance_select_on.onchange = function() {populate_command_on(target)};
-    instance_select_off.onchange = function() {populate_command_off(target)};
-    command_select_on.onchange = function() {populate_sub_command_on(target)};
-    command_select_off.onchange = function() {populate_sub_command_off(target)};
-
-    // Re-populate dropdowns from existing rule (if present)
-    try {
-        var restore = JSON.parse(document.getElementById(el.dataset.target).value);
-        reload_rule(target, restore);
-    } catch(err) {
-        console.log("No existing rule");
-    };
+// Called by submit button in ApiTarget rule modal
+function submit_api_rule(el) {
+    var value = Object.fromEntries(new FormData(document.getElementById("api_rule_form")).entries());
+    // Remove friendly name, leave only instance id (device1, sensor1, etc)
+    value["instance-on"] = value["instance-on"].split("-")[0]
+    value["instance-off"] = value["instance-off"].split("-")[0]
+    // Convert form object to correct format, set value of hidden rule field
+    document.getElementById(el.dataset.target).value = convert_api_target_rule(value);
+    // Trigger change listener, sends set_rule API call
+    var event = new Event('change');
+    document.getElementById(el.dataset.target).dispatchEvent(event);
 };
 
 
@@ -395,78 +364,6 @@ function convert_api_target_rule(input) {
 };
 
 
-// Called by change listener on hidden current_rule input (frontend only)
-async function change_api_target_rule(el) {
-    console.log("Changing rule");
-    const target = el.id.split("-")[0];
-
-    // Get rule, send to node
-    const rule = document.getElementById(`${target}-current_rule`).value;
-    var result = await send_command({'command': 'set_rule', 'instance': target, 'rule': rule});
-    result = await result.json();
-
-    if (JSON.stringify(result).startsWith('{"ERROR')) {
-        console.log(JSON.stringify(result));
-    };
-};
-
-
-// Called when user opens modal on edit page with "self-target" selected
-// Gets all valid commands for current devices and sensors, adds to object
-function get_self_target_options() {
-    // Clear existing options
-    ApiTargetOptions['self-target'] = {}
-
-    // Get objects containing only devices and sensors
-    const devices = filterObject(config, 'device');
-    const sensors = filterObject(config, 'sensor');
-
-    // Add all device options
-    for (device in devices) {
-        const instance_string = `${device}-${devices[device]['nickname']} (${devices[device]['_type']})`;
-
-        // Remove on/off commands for ApiTarget (prevent turning self on/off in infinite loop)
-        if (devices[device]['_type'] == 'api-target') {
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule'];
-        } else {
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off'];
-        };
-    };
-
-    // Add all sensor options
-    for (sensor in sensors) {
-        const instance_string = `${sensor}-${sensors[sensor]['nickname']} (${sensors[sensor]['_type']})`;
-
-        // Remove trigger command for sensors that don't support it
-        if (sensors[sensor]['_type'] == "si7021" || sensors[sensor]['_type'] == "switch") {
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule'];
-        } else {
-            ApiTargetOptions['self-target'][instance_string] = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor'];
-        };
-    };
-
-    // Add IR Blaster options (if configured)
-    // TODO remove hardcoded options, load from metadata
-    if (config.ir_blaster) {
-        const tv_options = document.getElementById('checkbox-tv').checked;
-        const ac_options = document.getElementById('checkbox-ac').checked;
-
-        // Skip if neither is checked
-        if (tv_options || ac_options) {
-            const instance_string = 'ir_blaster-Ir Blaster'
-            ApiTargetOptions['self-target'][instance_string] = {}
-
-            if (tv_options) {
-                ApiTargetOptions['self-target'][instance_string]['tv'] = ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source']
-            };
-            if (ac_options) {
-                ApiTargetOptions['self-target'][instance_string]['ac'] = ['start', 'stop', 'off']
-            };
-        };
-    };
-};
-
-
 // Focus api rule modal when opened, allows closing with esc key
 // When schedule rule modal open, time field focus causes esc to close lower modal
 apiRuleModal._element.addEventListener('shown.bs.modal', function (event) {
@@ -483,7 +380,26 @@ apiRuleModal._element.addEventListener('hidden.bs.modal', function () {
 });
 
 
-// Listen for system theme changes
+// Set correct theme (light or dark, runs once on startup)
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    modal = document.getElementById('api-rule-modal');
+    // Buttons in ApiTarget rule modal
+    Array.from(modal.querySelectorAll('button')).forEach(function(button) {
+        if (button.classList.contains("btn-secondary")) {
+            button.classList.remove("btn-secondary");
+            button.classList.add("btn-dark");
+        };
+    });
+    Array.from(modal.querySelectorAll('label')).forEach(function(button) {
+        if (button.classList.contains("btn-outline-secondary")) {
+            button.classList.remove("btn-outline-secondary");
+            button.classList.add("btn-dark");
+        };
+    });
+};
+
+
+// Listen for system theme changes (responsive dark mode)
 window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
     if (e.matches) { // Returns True for dark mode, False otherwise
         // Buttons in ApiTarget rule modal
