@@ -1,6 +1,5 @@
 {% load static %}
 {% load pwa %}
-{% load combine_dicts %}
 {% load is_device %}
 {% load is_sensor %}
 {% load only_digits %}
@@ -132,7 +131,7 @@
                                 <h2>IR Blaster</h2>
                                 <input name="irblaster_configured" type="checkbox" class="d-none" id="irblaster_configured" {% if config.ir_blaster %} checked {% endif %}>
 
-                                {% include "node_configuration/device_pin_select.html" with index="0" name="ir_blaster_pin" pin=config.ir_blaster.pin %}
+                                {% include "node_configuration/device_pin_select.html" with index="ir_blaster" name="ir_blaster_pin" pin=config.ir_blaster.pin %}
 
                                 <div class="mb-2">
                                     <label for="ir-remotes"><b>Virtual remotes:</b></label>

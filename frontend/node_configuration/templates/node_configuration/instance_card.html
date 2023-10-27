@@ -70,16 +70,8 @@
                     <div class="mb-2">
                         <label class="form-label sensor{{index}}"><b>Mode:</b></label>
                         <select class="form-select mb-3" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="mode" required>
-                            {% if params.mode == "cool" %}
-                                <option value="cool" id="cool" selected>Cool</option>
-                                <option value="heat" id="heat">Heat</option>
-                            {% elif params.mode == "heat" %}
-                                <option value="cool" id="cool">Cool</option>
-                                <option value="heat" id="heat" selected>Heat</option>
-                            {% else %}
-                                <option value="cool" id="cool">Cool</option>
-                                <option value="heat" id="heat">Heat</option>
-                            {% endif %}
+                            <option value="cool" {% if params.mode == "cool" %}selected{% endif %}>Cool</option>
+                            <option value="heat" {% if params.mode == "heat" %}selected{% endif %}>Heat</option>
                         </select>
                     </div>
 

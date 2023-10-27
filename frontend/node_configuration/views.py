@@ -11,12 +11,9 @@ from Webrepl import Webrepl
 from provision_tools import get_modules, provision
 from .get_api_target_menu_options import get_api_target_menu_options
 from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords, set_gps_coords
-from validation_constants import config_templates
 from validate_config import validate_full_config
 from helper_functions import (
-    is_device_or_sensor,
     is_device,
-    is_sensor,
     valid_ip,
     get_schedule_keywords_dict,
     get_config_filename,

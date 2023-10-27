@@ -209,8 +209,8 @@ function get_template(id, type, type_metadata, category) {
         template += `<div class="mb-2">
                          <label class="form-label"><b>Mode:</b></label>
                          <select class="form-select mb-3" oninput="update_config(this);" data-section="${id}" data-param="mode" required>
-                             <option value="cool" id="cool">Cool</option>
-                             <option value="heat" id="heat">Heat</option>
+                             <option value="cool">Cool</option>
+                             <option value="heat">Heat</option>
                          </select>
                      </div>
 
@@ -240,7 +240,7 @@ function get_template(id, type, type_metadata, category) {
                      <div class="mb-2 text-center">
                          <label for="${id}-default_rule" style="display:none;"><b>Default Rule:</b></label>
                          <input type="default_rule" class="form-control" id="${id}-default_rule" placeholder="" style="display:none;" onchange="document.getElementById('${id}-default_rule-button').dataset.original = this.value; update_config(this);" data-section="${id}" data-param="defaut_rule" required>
-                         </div>`
+                     </div>`
     };
 
     return template;
