@@ -73,22 +73,29 @@ def edit_rule(request):
     else:
         return render(request, 'api/rule_modal.html')
 
+    # Fade rule: Split into separate params for each field
     if data['rule'].startswith('fade'):
         data['fade'] = True
         data['duration'] = data['rule'].split('/')[2]
         data['rule'] = data['rule'].split('/')[1]
 
+    # Show timestamp field by default (unless editing existing rule with keyword)
     if len(data['timestamp']) == 0 or valid_timestamp(data['timestamp']):
         data['show_timestamp'] = True
     else:
         data['show_timestamp'] = False
 
-    # Add schedule keywords
+    # Add options for schedule keyword dropdown
     data['schedule_keywords'] = get_schedule_keywords_dict()
 
     # Add prompt type
     prompt_map = get_metadata_prompt_map()
     data['prompt'] = prompt_map[data['type']]
+
+    # Add limits if range rule
+    limits_map = get_metadata_limits_map()
+    if data['type'] in limits_map.keys():
+        data['limits'] = limits_map[data['type']]
 
     print(json.dumps(data, indent=4))
 

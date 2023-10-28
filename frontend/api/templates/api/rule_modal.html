@@ -33,14 +33,24 @@
     {% if prompt == "float_range" %}
         <div class="text-center">
             <label for="rule-input" class="form-label">Rule</label>
-            <input type="text" class="form-control" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+            <div class="d-flex flex-row align-items-center my-3">
+                <input type="range" class="mx-auto" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" min="{{limits.0}}" max="{{limits.1}}" data-displaymin="{{limits.0}}" data-displaymax="{{limits.1}}" data-displaytype="float" step="0.5">
+            </div>
         </div>
+        <script>
+            add_new_slider(document.getElementById('rule-input'));
+        </script>
 
     {% elif prompt == "int_or_fade" %}
         <div class="text-center">
             <label for="rule-input" class="form-label">Rule</label>
-            <input type="text" class="form-control" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule">
+            <div class="d-flex flex-row align-items-center my-3">
+                <input type="range" class="mx-auto" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" min="{{limits.0}}" max="{{limits.1}}" data-displaymin="{{limits.0}}" data-displaymax="{{limits.1}}" data-displaytype="int" step="1">
+            </div>
         </div>
+        <script>
+            add_new_slider(document.getElementById('rule-input'));
+        </script>
 
         <!-- Fade duration input -->
         <div id="duration-input" class="text-center {% if not fade %} d-none {% endif %}">

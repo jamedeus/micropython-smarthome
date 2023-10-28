@@ -1,6 +1,7 @@
 // Constants for modal buttons
 const delete_button = document.getElementById('del-rule');
 const add_button = document.getElementById('add-rule');
+const modal_body = document.getElementById('rule-modal-body');
 
 // Used to identify HH:MM timestamp
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
@@ -78,8 +79,14 @@ async function open_schedule_rule_modal(payload) {
     });
 
     // Load response into modal body
-    document.getElementById('rule-modal-body').innerHTML = await result.text();
+    modal_body.innerHTML = await result.text();
     ruleModal.show();
+
+    // Run javascript in response (if present)
+    const script = modal_body.querySelector("script");
+    if (script) {
+        eval(script.textContent);
+    };
 
     // Focus time field
     await sleep(468);
