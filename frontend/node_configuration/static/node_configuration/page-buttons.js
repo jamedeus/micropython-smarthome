@@ -67,19 +67,19 @@ function get_target_card_template(sensor, config, devices) {
 // Takes device/sensor ID, nickname, and type
 // Returns template for schedule rules section on page 3
 function create_schedule_rule_section(id, nickname, type) {
-    return `<div class='card mb-4 ${id}'>
+    return `<div class='card mb-4'>
                 <div class='card-body text-center'>
-                    <label id='${id}-rules-label' class='card-title schedule-rule-card ${id}' title='${id} - ${type}'>
+                    <label id='${id}-rules-label' class='card-title schedule-rule-card' title='${id} - ${type}'>
                         <b>${nickname} (${type})</b>
                     </label>
-                    <table id='${id}-rules' class='table table-borderless ${id} d-none'>
+                    <table id='${id}-rules' class='table table-borderless d-none'>
                         <tr>
                             <th style='text-align: center;'>Time</th>
                             <th style='text-align: center;'>Rule</th>
                         </tr>
                     </table>
                     <div>
-                        <button type="button" class="btn btn-secondary add ${id}" id="${id}-add-rule" data-type="${type}" onclick="add_new_rule(this)">Add Rule</i></button>
+                        <button type="button" class="btn btn-secondary add" id="${id}-add-rule" data-type="${type}" onclick="add_new_rule(this)">Add Rule</i></button>
                     </div>
                 </div>
             </div>`;

@@ -93,7 +93,7 @@ async function open_schedule_rule_modal(payload) {
     document.getElementById(`timestamp`).focus();
 
     // Press enter to submit
-    document.getElementById('schedule-rule-modal').querySelectorAll('input').forEach(input => {
+    ruleModal._element.querySelectorAll('input').forEach(input => {
         input.addEventListener("keypress", function(event) {
             if (event.key === "Enter") {
                 add_rule();
