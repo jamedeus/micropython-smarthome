@@ -71,5 +71,5 @@ async function rule_slider_increment(button) {
     $handle[0].textContent = get_display_value(slider);
 
     // Trigger listener that updates config object
-    trigger_input_event(slider);
+    trigger_change_event(slider);
 };

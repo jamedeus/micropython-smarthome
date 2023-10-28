@@ -3,7 +3,7 @@
         <b>Default Rule:</b>
         <div class="d-flex flex-row align-items-center my-2">
             <button class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-section="{{category}}{{index}}" data-direction="down" data-stepsize="{{step}}"><i class="bi-dash-lg"></i></button>
-            <input type="range" class="mx-auto" min="{{ instance_metadata.rule_limits.0 }}" max="{{ instance_metadata.rule_limits.1 }}" data-displaymin="{{ instance_metadata.rule_limits.0 }}" data-displaymax="{{ instance_metadata.rule_limits.1 }}" data-displaytype="float" step="{{step}}" value="{{params.default_rule}}" oninput="update_config(this);" autocomplete="off" data-section="{{category}}{{index}}" data-param="default_rule">
+            <input type="range" class="mx-auto" min="{{ instance_metadata.rule_limits.0 }}" max="{{ instance_metadata.rule_limits.1 }}" data-displaymin="{{ instance_metadata.rule_limits.0 }}" data-displaymax="{{ instance_metadata.rule_limits.1 }}" data-displaytype="float" step="{{step}}" value="{{params.default_rule}}" onchange="update_config(this);" autocomplete="off" data-section="{{category}}{{index}}" data-param="default_rule">
             <button class="btn btn-sm ms-1" onclick="rule_slider_increment(this);" data-section="{{category}}{{index}}" data-direction="up" data-stepsize="{{step}}"><i class="bi-plus-lg"></i></button>
         </div>
     </label>

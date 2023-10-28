@@ -307,6 +307,13 @@
             element.dispatchEvent(input);
         };
 
+        // Takes input element, sends change event
+        // Used to trigger listener that updates config object
+        function trigger_change_event(element) {
+            const change = new Event('change');
+            element.dispatchEvent(change);
+        };
+
         // Trigger listener on all input elements when page loads
         // Prevents autocompleted fields (ie metadata, wifi) being lost after page refresh
         window.onload = function() {
