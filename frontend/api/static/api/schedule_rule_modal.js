@@ -78,17 +78,21 @@ async function open_schedule_rule_modal(payload) {
                    'X-CSRFToken': getCookie('csrftoken') }
     });
 
-    // Load response into modal body
-    modal_body.innerHTML = await result.text();
-    ruleModal.show();
+    // Change hidden modal display style (allows slider to calculate correct width)
+    document.getElementById('schedule-rule-modal').style.display = "block";
 
-    // Run javascript in response (if present)
+    // Load response into modal body, run javascript in response (if present)
+    modal_body.innerHTML = await result.text();
     const script = modal_body.querySelector("script");
     if (script) {
         eval(script.textContent);
     };
 
-    // Focus time field
+    // Reset display, show modal
+    document.getElementById('schedule-rule-modal').style.display = "none";
+    ruleModal.show();
+
+    // Focus time field when modal animation completes
     await sleep(468);
     document.getElementById(`timestamp`).focus();
 
