@@ -51,10 +51,11 @@ function map_range(x, in_min, in_max, out_min, out_max) {
 };
 
 
-// Handler for rule slider plus and minus buttons
+// Handler for rule slider plus and minus buttons, updates slider position
+// Used by both configuration page and frontend
 async function rule_slider_increment(button) {
     // Get reference to target slider, current value
-    const slider = get_input_element(button.dataset.section, 'default_rule');
+    const slider = button.parentElement.querySelector('input[type="range"]');
     const current = parseFloat(slider.value);
 
     // Increment/decrement current value
@@ -70,6 +71,16 @@ async function rule_slider_increment(button) {
     var $handle = $('.rangeslider__handle', slider.nextSibling);
     $handle[0].textContent = get_display_value(slider);
 
-    // Trigger listener that updates config object
-    trigger_change_event(slider);
+    // Call overridable post-routine function
+    // configuration: triggers change event on slider to update config
+    // frontend: sends increment_rule API call to target node
+    rule_slider_increment_post_routine(button, slider);
+};
+
+
+// Called by rule_slider_increment (overridden in api rule_sliders.js)
+function rule_slider_increment_post_routine(button, slider) {
+    // Trigger slider listener that updates config object
+    const change = new Event('change');
+    slider.dispatchEvent(change);
 };

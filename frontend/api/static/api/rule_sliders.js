@@ -33,33 +33,28 @@ function update_reset_option(id, current_rule) {
 };
 
 
-// Handler for rule slider plus and minus buttons
-async function rule_slider_increment(button) {
-    const target = button.id.split("-")[0];
-    const slider = document.getElementById(`${target}-rule`);
-    const current = parseFloat(slider.value);
+// Sends increment_rule API call when slider plus/minus buttons clicked
+// Called by rule_slider_increment (see node_configuration rule_sliders.js)
+async function rule_slider_increment_button_clicked(button, slider) {
+    // Only send API call for current rule (not schedule rules)
+    if (slider.classList.contains('current-rule-slider')) {
+        // Get ID of device/sensor, current rule
+        const target = button.dataset.section;
+        const current = parseFloat(slider.value);
 
-    // Get increment amount
-    if (button.id.split("-")[2] == "up") {
-        var increment = parseFloat(button.dataset.stepsize);
-    } else {
-        var increment = -parseFloat(button.dataset.stepsize);
+        // Get increment amount, new rule
+        if (button.dataset.direction == "up") {
+            var increment = parseFloat(button.dataset.stepsize);
+        } else {
+            var increment = -parseFloat(button.dataset.stepsize);
+        };
+        const new_rule = current + increment;
+
+        // Enable reset menu option if new rule differs from scheduled, otherwise disable
+        update_reset_option(target, new_rule);
+
+        // Fire API command
+        var result = await send_command({'command': 'increment_rule', 'instance': target, 'amount': increment.toString()});
+        result = await result.json();
     };
-
-    // Get new rule
-    const new_rule = current + increment;
-
-    // Update slider position
-    slider.value = new_rule;
-    $('input[type="range"]').rangeslider('update', true);
-    // Select handle element closest to slider, update current rule displayed
-    var $handle = $('.rangeslider__handle', slider.nextSibling);
-    $handle[0].textContent = get_display_value(slider);
-
-    // Enable reset menu option if new rule differs from scheduled, otherwise hide reset button
-    update_reset_option(target, new_rule);
-
-    // Fire API command
-    var result = await send_command({'command': 'increment_rule', 'instance': target, 'amount': increment.toString()});
-    result = await result.json();
 };

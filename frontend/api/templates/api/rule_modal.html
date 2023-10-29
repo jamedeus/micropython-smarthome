@@ -34,7 +34,9 @@
         <div class="text-center">
             <label for="rule-input" class="form-label">Rule</label>
             <div class="d-flex flex-row align-items-center my-3">
+                <button class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-section="{{target}}" data-direction="down" data-stepsize="0.5"><i class="bi-dash-lg"></i></button>
                 <input type="range" class="mx-auto" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" min="{{limits.0}}" max="{{limits.1}}" data-displaymin="{{limits.0}}" data-displaymax="{{limits.1}}" data-displaytype="float" step="0.5">
+                <button class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-section="{{target}}" data-direction="up" data-stepsize="0.5"><i class="bi-plus-lg"></i></button>
             </div>
         </div>
         <script>
@@ -45,7 +47,9 @@
         <div class="text-center">
             <label for="rule-input" class="form-label">Rule</label>
             <div class="d-flex flex-row align-items-center my-3">
-                <input type="range" class="mx-auto" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" min="{{limits.0}}" max="{{limits.1}}" data-displaymin="{{limits.0}}" data-displaymax="{{limits.1}}" data-displaytype="int" step="1">
+                <button class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-section="{{target}}" data-direction="down" data-stepsize="1"><i class="bi-dash-lg"></i></button>
+                <input type="range" class="mx-auto" id="rule-input" name="rule-input" value="{{rule}}" data-original="{{rule}}" data-bs-toggle="tooltip" data-bs-trigger="manual" title="Invalid rule" min="{{limits.0}}" max="{{limits.1}}" data-displaymin="0" data-displaymax="100" data-displaytype="int" step="1">
+                <button class="btn btn-sm me-1" onclick="rule_slider_increment(this);" data-section="{{target}}" data-direction="up" data-stepsize="1"><i class="bi-plus-lg"></i></button>
             </div>
         </div>
         <script>
