@@ -1,7 +1,5 @@
 // Initialize all range sliders, add listeners
 for (slider of $('input[type="range"]')) {
-    add_new_slider(slider);
-
     // Attach listener to current_rule sliders, but not schedule rule sliders
     if (!slider.classList.contains('schedule-rule')) {
         // Runs once when user releases click on slider
