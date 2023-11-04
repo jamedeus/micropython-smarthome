@@ -46,22 +46,21 @@ function get_self_target_options() {
     };
 
     // Add IR Blaster options (if configured)
-    // TODO remove hardcoded options, load from metadata
     if (config.ir_blaster) {
-        const tv_options = document.getElementById('checkbox-tv').checked;
-        const ac_options = document.getElementById('checkbox-ac').checked;
+        // Get NodeList of all IR target checkboxes
+        const targets = document.querySelectorAll(".ir-target");
 
-        // Skip if neither is checked
-        if (tv_options || ac_options) {
+        // Skip if all boxes are unchecked
+        if (Array.from(targets).some(checkbox => checkbox.checked)) {
             const instance_string = 'ir_blaster-Ir Blaster'
             ApiTargetOptions['self-target'][instance_string] = {}
 
-            if (tv_options) {
-                ApiTargetOptions['self-target'][instance_string]['tv'] = ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source']
-            };
-            if (ac_options) {
-                ApiTargetOptions['self-target'][instance_string]['ac'] = ['start', 'stop', 'off']
-            };
+            // Add options from ir_keys mapping dict for each checked box
+            targets.forEach(function(checkbox) {
+                if (checkbox.checked) {
+                    ApiTargetOptions['self-target'][instance_string][checkbox.dataset.target] = ir_keys[checkbox.dataset.target]
+                }
+            });
         };
     };
 };

@@ -1,6 +1,13 @@
 // Hidden checkbox that determines whether IR Blaster added to config
 const irblaster_configured = document.getElementById('irblaster_configured');
 
+// Maps name of IR target to array of available keys
+// TODO remove hardcoded keys once IrBlaster metadata written
+ir_keys = {
+    'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'],
+    'ac': ['start', 'stop', 'off']
+}
+
 // Called when user expands/collapses IR Blaster div
 // Toggles hidden checkbox and adds/remove ir_blaster config section
 function select_ir_blaster(button) {
@@ -22,11 +29,10 @@ function select_ir_blaster(button) {
 // Called when user checks/unchecks IR Blaster target, adds/removes target from config
 function update_config_ir_target(input) {
     if (config.ir_blaster) {
-        const target = input.id.split('-')[1];
         if (input.checked) {
-            config['ir_blaster']['target'].push(target);
+            config['ir_blaster']['target'].push(input.dataset.target);
         } else {
-            config['ir_blaster']['target'] = config['ir_blaster']['target'].filter(item => item !== target);
+            config['ir_blaster']['target'] = config['ir_blaster']['target'].filter(item => item !== input.dataset.target);
         };
     };
 };
