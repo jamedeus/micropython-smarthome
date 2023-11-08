@@ -666,7 +666,7 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'Thermostat',
+            'Si7021',
             'Thermostat',
             '70',
             'cool',
@@ -1280,7 +1280,7 @@ class TestRegressions(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'Thermostat',
+            'Si7021',
             'Thermostat',
             '70',
             'cool',
@@ -1299,8 +1299,8 @@ class TestRegressions(TestCase):
             config = self.generator.configure_sensor()
             self.assertEqual(config, sensor_config)
 
-        # Confirm Thermostat option removed from sensor type options
-        self.assertNotIn('Thermostat', self.generator.sensor_type_options)
+        # Confirm Si7021 option removed from sensor type options
+        self.assertNotIn('Si7021', self.generator.sensor_type_options)
 
     # Original bug: IntRange was used for PIR and Thermostat rules, preventing
     # float rules from being configured. Now uses FloatRange.

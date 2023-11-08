@@ -41,7 +41,8 @@ hardware_classes = {
         "desktop": "Desktop_trigger",
         "dummy": "Dummy",
         "load-cell": "LoadCell",
-        "si7021": "Thermostat",
+        "si7021": "Si7021",
+        "dht22": "Dht22",
         "switch": "Switch"
     }
 }

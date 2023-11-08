@@ -2,7 +2,7 @@ import unittest
 from machine import SoftI2C
 from Group import Group
 from Device import Device
-from Thermostat import Thermostat
+from Si7021 import Si7021
 
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
@@ -42,7 +42,7 @@ class TestThermostat(unittest.TestCase):
     def setUpClass(cls):
         # Create test instance, mock device, mock group
         cls.target = Device('device1', 'target', 'device', True, '70', '70')
-        cls.instance = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [cls.target])
+        cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, [cls.target])
         cls.group = MockGroup('group1', [cls.instance])
         cls.instance.group = cls.group
 
@@ -53,7 +53,7 @@ class TestThermostat(unittest.TestCase):
 
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
-        self.assertIsInstance(self.instance, Thermostat)
+        self.assertIsInstance(self.instance, Si7021)
         self.assertTrue(self.instance.enabled)
         self.assertIsInstance(self.instance.i2c, SoftI2C)
         self.assertEqual(self.instance.mode, "cool")
@@ -239,26 +239,26 @@ class TestThermostat(unittest.TestCase):
 
     def test_14_instantiate_with_all_modes(self):
         # Instantiate in heat mode
-        test = Thermostat("sensor1", "sensor1", "si7021", 74, "heat", 1, [])
+        test = Si7021("sensor1", "sensor1", "si7021", 74, "heat", 1, [])
         self.assertEqual(test.mode, "heat")
 
         # Instantiate in cool mode
-        test = Thermostat("sensor1", "sensor1", "si7021", 74, "cool", 1, [])
+        test = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, [])
         self.assertEqual(test.mode, "cool")
 
         # Instantiate with unsupported mode
         with self.assertRaises(ValueError):
-            Thermostat("sensor1", "sensor1", "si7021", 74, "invalid", 1, [])
+            Si7021("sensor1", "sensor1", "si7021", 74, "invalid", 1, [])
 
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
     def test_15_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
-            Thermostat("sensor1", "sensor1", "si7021", "enabled", "cool", 1, [])
+            Si7021("sensor1", "sensor1", "si7021", "enabled", "cool", 1, [])
 
         with self.assertRaises(AttributeError):
-            Thermostat("sensor1", "sensor1", "si7021", "disabled", "cool", 1, [])
+            Si7021("sensor1", "sensor1", "si7021", "disabled", "cool", 1, [])
 
     # Original bug: increment_rule cast argument to float inside try/except, relying
     # on exception to detect invalid argument. Since NaN is a valid float no exception

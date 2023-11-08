@@ -1,17 +1,19 @@
 {
-    "config_name": "si7021",
-    "class_name": "Thermostat",
+    "config_name": "dht22",
+    "class_name": "Dht22",
     "dependencies": [
+        "sensors/Dht22.py",
         "sensors/Thermostat.py",
         "sensors/Sensor.py",
         "core/Instance.py"
     ],
     "config_template": {
-        "_type": "si7021",
+        "_type": "dht22",
         "nickname": "placeholder",
         "default_rule": "placeholder",
         "mode": "placeholder",
         "tolerance": "placeholder",
+        "pin": "placeholder",
         "schedule": {},
         "targets": []
     },

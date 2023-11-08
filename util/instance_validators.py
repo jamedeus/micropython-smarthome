@@ -356,9 +356,9 @@ def motion_sensor_validator(rule, **kwargs):
 
 # Requires int or float between 65 and 80 (inclusive)
 # Also validates tolerance, must be int or float between 0.1 and 10
-@add_schedule_rule_validator(['si7021'])
+@add_schedule_rule_validator(['si7021', 'dht22'])
 @add_generic_validator
-@add_default_rule_validator(['si7021'])
+@add_default_rule_validator(['si7021', 'dht22'])
 def thermostat_validator(rule, **kwargs):
     # Validate tolerance
     try:

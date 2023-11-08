@@ -172,7 +172,6 @@ class TestInstantiation(TestCase):
             self.assertEqual(mock_provision.call_args[0][0], '192.168.1.123')
 
     def test_provision_unit_tests(self):
-        self.maxDiff = None
         # Expected test modules
         test_modules = {
             os.path.join(repo, 'devices', 'Tplink.py'): 'Tplink.py',
@@ -189,6 +188,8 @@ class TestInstantiation(TestCase):
             os.path.join(repo, 'sensors', 'MotionSensor.py'): 'MotionSensor.py',
             os.path.join(repo, 'sensors', 'Sensor.py'): 'Sensor.py',
             os.path.join(repo, 'sensors', 'Thermostat.py'): 'Thermostat.py',
+            os.path.join(repo, 'sensors', 'Si7021.py'): 'Si7021.py',
+            os.path.join(repo, 'sensors', 'Dht22.py'): 'Dht22.py',
             os.path.join(repo, 'sensors', 'Dummy.py'): 'Dummy.py',
             os.path.join(repo, 'sensors', 'LoadCell.py'): 'LoadCell.py',
             os.path.join(repo, 'sensors', 'Switch.py'): 'Switch.py',
@@ -321,6 +322,7 @@ class TestGetModules(TestCase):
             os.path.join(repo, 'devices', 'Tplink.py'): 'Tplink.py',
             os.path.join(repo, 'devices', 'Desktop_target.py'): 'Desktop_target.py',
             os.path.join(repo, 'sensors', 'Thermostat.py'): 'Thermostat.py',
+            os.path.join(repo, 'sensors', 'Si7021.py'): 'Si7021.py',
             os.path.join(repo, 'sensors', 'Sensor.py'): 'Sensor.py',
             os.path.join(repo, 'devices', 'LedStrip.py'): 'LedStrip.py',
             os.path.join(repo, 'devices', 'DimmableLight.py'): 'DimmableLight.py',
@@ -369,6 +371,7 @@ class TestGetModules(TestCase):
             os.path.join(repo, 'devices', 'Tplink.py'): 'Tplink.py',
             os.path.join(repo, 'devices', 'Desktop_target.py'): 'Desktop_target.py',
             os.path.join(repo, 'sensors', 'Thermostat.py'): 'Thermostat.py',
+            os.path.join(repo, 'sensors', 'Si7021.py'): 'Si7021.py',
             os.path.join(repo, 'sensors', 'Sensor.py'): 'Sensor.py',
             os.path.join(repo, 'devices', 'LedStrip.py'): 'LedStrip.py',
             os.path.join(repo, 'devices', 'DimmableLight.py'): 'DimmableLight.py',

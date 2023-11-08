@@ -1,8 +1,6 @@
 import logging
 from math import isnan
 import uasyncio as asyncio
-from machine import Pin, SoftI2C
-import si7021
 import SoftwareTimer
 from Sensor import Sensor
 
@@ -13,10 +11,6 @@ log = logging.getLogger("Thermostat")
 class Thermostat(Sensor):
     def __init__(self, name, nickname, _type, default_rule, mode, tolerance, targets):
         super().__init__(name, nickname, _type, True, default_rule, default_rule, targets)
-
-        # Setup I2C interface
-        self.i2c = SoftI2C(Pin(22), Pin(21))
-        self.temp_sensor = si7021.Si7021(self.i2c)
 
         if mode == "cool":
             self.mode = mode
@@ -39,8 +33,6 @@ class Thermostat(Sensor):
 
         # Start monitor loop (checks temp every 5 seconds)
         asyncio.create_task(self.monitor())
-
-        log.info(f"Instantiated Thermostat named {self.name}")
 
     # Recalculate on/off threshold temperatures after changing set temperature (current_rule)
     def get_threshold(self):
@@ -81,9 +73,6 @@ class Thermostat(Sensor):
             return {"ERROR": f"Unable to increment current rule ({self.current_rule})"}
 
         return self.set_rule(new)
-
-    def fahrenheit(self):
-        return si7021.convert_celcius_to_fahrenheit(self.temp_sensor.temperature)
 
     def condition_met(self):
         current = self.fahrenheit()
@@ -191,11 +180,3 @@ class Thermostat(Sensor):
             # False positive becomes likely if callback runs shortly after change, since only 2 readings are meaningful
             SoftwareTimer.timer.cancel(self.name)
             SoftwareTimer.timer.create(30000, self.audit, self.name)
-
-    # Return JSON-serializable dict containing state information
-    # Called by Config.get_status to build API status response
-    def get_status(self):
-        status = super().get_status()
-        status['temp'] = self.fahrenheit()
-        status['humid'] = self.temp_sensor.relative_humidity
-        return status
