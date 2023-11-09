@@ -419,6 +419,7 @@ class TestConfig(unittest.TestCase):
                 'nickname': 'test',
                 'mode': 'cool',
                 'tolerance': 5,
+                'units': 'fahrenheit',
                 'default_rule': '9999',
                 'schedule': {},
                 'targets': []

@@ -479,8 +479,8 @@ def turn_off(target, args):
 @app.route("get_temp")
 def get_temp(args):
     for sensor in app.config.sensors:
-        if sensor._type == "si7021":
-            return {"Temp": sensor.fahrenheit()}
+        if sensor._type in ["si7021", "dht22"]:
+            return {"Temp": sensor.get_temperature()}
     else:
         return {"ERROR": "No temperature sensor configured"}
 
@@ -488,8 +488,8 @@ def get_temp(args):
 @app.route("get_humid")
 def get_humid(args):
     for sensor in app.config.sensors:
-        if sensor._type == "si7021":
-            return {"Humidity": sensor.temp_sensor.relative_humidity}
+        if sensor._type in ["si7021", "dht22"]:
+            return {"Humidity": sensor.get_humidity()}
     else:
         return {"ERROR": "No temperature sensor configured"}
 
@@ -497,11 +497,11 @@ def get_humid(args):
 @app.route("get_climate_data")
 def get_climate_data(args):
     for sensor in app.config.sensors:
-        if sensor._type == "si7021":
-            data = {}
-            data["temp"] = sensor.fahrenheit()
-            data["humid"] = sensor.temp_sensor.relative_humidity
-            return data
+        if sensor._type in ["si7021", "dht22"]:
+            return {
+                "temp": sensor.get_temperature(),
+                "humid": sensor.get_humidity()
+            }
     else:
         return {"ERROR": "No temperature sensor configured"}
 

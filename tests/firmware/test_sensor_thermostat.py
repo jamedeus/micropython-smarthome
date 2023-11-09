@@ -7,6 +7,7 @@ from Si7021 import Si7021
 # Expected return value of get_attributes method just after instantiation
 expected_attributes = {
     'tolerance': 1.0,
+    'units': 'fahrenheit',
     'nickname': 'sensor1',
     '_type': 'si7021',
     'current': None,
@@ -42,7 +43,7 @@ class TestThermostat(unittest.TestCase):
     def setUpClass(cls):
         # Create test instance, mock device, mock group
         cls.target = Device('device1', 'target', 'device', True, '70', '70')
-        cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, [cls.target])
+        cls.instance = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, "fahrenheit", [cls.target])
         cls.group = MockGroup('group1', [cls.instance])
         cls.instance.group = cls.group
 
@@ -116,13 +117,13 @@ class TestThermostat(unittest.TestCase):
 
     def test_07_sensor(self):
         # Confirm sensor methods return float
-        self.assertIsInstance(self.instance.fahrenheit(), float)
+        self.assertIsInstance(self.instance.get_temperature(), float)
         self.assertIsInstance(self.instance.temp_sensor.temperature, float)
         self.assertIsInstance(self.instance.temp_sensor.relative_humidity, float)
 
     def test_08_condition_met_cool(self):
         # Set rule to match current temperature, confirm condition is None
-        current = self.instance.fahrenheit()
+        current = self.instance.get_temperature()
         self.instance.set_rule(current)
         self.assertEqual(self.instance.condition_met(), None)
 
@@ -139,7 +140,7 @@ class TestThermostat(unittest.TestCase):
     def test_09_condition_met_heat(self):
         # Set rule to match current temperature, confirm condition is None
         self.instance.mode = "heat"
-        current = self.instance.fahrenheit()
+        current = self.instance.get_temperature()
         self.instance.set_rule(current)
         self.assertEqual(self.instance.condition_met(), None)
 
@@ -157,7 +158,7 @@ class TestThermostat(unittest.TestCase):
         # Set tolerance to 5 degrees
         self.instance.tolerance = 5
         # Set rule to match current temperature, confirm condition is None
-        current = self.instance.fahrenheit()
+        current = self.instance.get_temperature()
         self.instance.set_rule(current)
         self.assertEqual(self.instance.condition_met(), None)
 
@@ -170,7 +171,7 @@ class TestThermostat(unittest.TestCase):
 
         # Set tolerance to 0.1 degrees, set rule to match current temperature
         self.instance.tolerance = 0.1
-        current = self.instance.fahrenheit()
+        current = self.instance.get_temperature()
         self.assertEqual(self.instance.condition_met(), None)
 
         # With tolerance set to 0.1 degrees, should turn on/off with very slight temperature change
@@ -189,7 +190,7 @@ class TestThermostat(unittest.TestCase):
         self.group.refresh_called = False
 
         # Get actual temperature to mock recent changes
-        current = self.instance.fahrenheit()
+        current = self.instance.get_temperature()
 
         # Mock temp increasing when heater should NOT be running
         self.instance.mode = 'heat'
@@ -239,26 +240,26 @@ class TestThermostat(unittest.TestCase):
 
     def test_14_instantiate_with_all_modes(self):
         # Instantiate in heat mode
-        test = Si7021("sensor1", "sensor1", "si7021", 74, "heat", 1, [])
+        test = Si7021("sensor1", "sensor1", "si7021", 74, "heat", 1, "fahrenheit", [])
         self.assertEqual(test.mode, "heat")
 
         # Instantiate in cool mode
-        test = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, [])
+        test = Si7021("sensor1", "sensor1", "si7021", 74, "cool", 1, "fahrenheit", [])
         self.assertEqual(test.mode, "cool")
 
         # Instantiate with unsupported mode
         with self.assertRaises(ValueError):
-            Si7021("sensor1", "sensor1", "si7021", 74, "invalid", 1, [])
+            Si7021("sensor1", "sensor1", "si7021", 74, "invalid", 1, "fahrenheit", [])
 
     # Original bug: Some sensors would crash or behave unexpectedly if default_rule was "enabled" or "disabled"
     # in various situations. These classes now raise exception in init method to prevent this.
     # It should no longer be possible to instantiate with invalid default_rule.
     def test_15_regression_invalid_default_rule(self):
         with self.assertRaises(AttributeError):
-            Si7021("sensor1", "sensor1", "si7021", "enabled", "cool", 1, [])
+            Si7021("sensor1", "sensor1", "si7021", "enabled", "cool", 1, "fahrenheit", [])
 
         with self.assertRaises(AttributeError):
-            Si7021("sensor1", "sensor1", "si7021", "disabled", "cool", 1, [])
+            Si7021("sensor1", "sensor1", "si7021", "disabled", "cool", 1, "fahrenheit", [])
 
     # Original bug: increment_rule cast argument to float inside try/except, relying
     # on exception to detect invalid argument. Since NaN is a valid float no exception
@@ -273,7 +274,7 @@ class TestThermostat(unittest.TestCase):
         self.assertEqual(response, {'ERROR': 'Invalid argument nan'})
         self.assertEqual(self.instance.current_rule, 70.0)
 
-    # Original bug: get_threshold was called by set_rule method, but enable method set
+    # Original bug: set_threshold was called by set_rule method, but enable method set
     # current_rule directly without calling set_rule. This could result in inaccurate
     # thresholds, effectively ignoring the current_rule.
     def test_17_regression_fail_to_update_thresholds(self):
@@ -297,7 +298,7 @@ class TestThermostat(unittest.TestCase):
 
     # Original bug: Enable method handled current_rule == 'disabled' by arbitrarily setting
     # scheduled_rule as current_rule with no validation. This made it possible for a string
-    # representation of float to be set as current_rule, raising exception when get_threshold
+    # representation of float to be set as current_rule, raising exception when set_threshold
     # method called. Now uses set_rule method to cast rule to required type.
     def test_18_regression_enable_sets_string_rule(self):
         # Set scheduled_rule to string representation of int
@@ -311,5 +312,5 @@ class TestThermostat(unittest.TestCase):
         self.instance.enable()
         self.assertEqual(self.instance.current_rule, 70.0)
 
-        # Call get_threshold method, should not crash
-        self.instance.get_threshold()
+        # Call set_threshold method, should not crash
+        self.instance.set_threshold()

@@ -13,6 +13,7 @@
         "default_rule": "placeholder",
         "mode": "placeholder",
         "tolerance": "placeholder",
+        "units": "placeholder",
         "pin": "placeholder",
         "schedule": {},
         "targets": []

@@ -391,6 +391,9 @@ class GenerateConfigFile:
             elif i == "mode":
                 config[i] = questionary.select("Select mode", choices=['cool', 'heat']).unsafe_ask()
 
+            elif i == "units":
+                config[i] = questionary.select("Select units", choices=['fahrenheit', 'celsius', 'kelvin']).unsafe_ask()
+
             elif i == "tolerance":
                 config[i] = questionary.text("Enter temperature tolerance:", validate=FloatRange(0, 10)).unsafe_ask()
 

@@ -658,6 +658,7 @@ class TestGenerateConfigFile(TestCase):
             "default_rule": "70",
             "mode": "cool",
             "tolerance": "1.5",
+            "units": "fahrenheit",
             "schedule": {
                 "10:00": "75"
             },
@@ -671,6 +672,7 @@ class TestGenerateConfigFile(TestCase):
             '70',
             'cool',
             '1.5',
+            'fahrenheit',
             'Yes',
             'Timestamp',
             '10:00',
@@ -1272,6 +1274,7 @@ class TestRegressions(TestCase):
             "default_rule": "70",
             "mode": "cool",
             "tolerance": "1.5",
+            "units": "fahrenheit",
             "schedule": {
                 "10:00": "75"
             },
@@ -1285,6 +1288,7 @@ class TestRegressions(TestCase):
             '70',
             'cool',
             '1.5',
+            'fahrenheit',
             'Yes',
             'Timestamp',
             '10:00',
