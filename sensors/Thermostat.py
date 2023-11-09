@@ -9,21 +9,29 @@ log = logging.getLogger("Thermostat")
 
 
 class Thermostat(Sensor):
-    def __init__(self, name, nickname, _type, default_rule, mode, tolerance, targets):
+    def __init__(self, name, nickname, _type, default_rule, mode, tolerance, units, targets):
         super().__init__(name, nickname, _type, True, default_rule, default_rule, targets)
 
-        if mode == "cool":
-            self.mode = mode
-        elif mode == "heat":
-            self.mode = mode
+        # Set cooling or heating mode, determines when targets turn on/off
+        # Cooling: Turn ON when measured temp exceeds rule, turn OFF when below rule
+        # Heating: Turn OFF when measured temp exceeds rule, turn ON when below rule
+        if mode.lower() in ["cool", "heat"]:
+            self.mode = mode.lower()
         else:
             raise ValueError
 
+        # Set temperature units
+        if units.lower() in ["celsius", "fahrenheit", "kelvin"]:
+            self.units = units.lower()
+        else:
+            raise ValueError
+
+        # Tolerance determines on/off thresholds (current_rule +/- tolerance)
         self.tolerance = float(tolerance)
 
         # Cast initial rule to float, get initial threshold
         self.current_rule = float(self.current_rule)
-        self.get_threshold()
+        self.set_threshold()
 
         # Store last 3 temperature readings, used to detect failed on/off command (ir command didn't reach ac, etc)
         self.recent_temps = []
@@ -34,8 +42,24 @@ class Thermostat(Sensor):
         # Start monitor loop (checks temp every 5 seconds)
         asyncio.create_task(self.monitor())
 
+    # Returns current temperature in configured units
+    def get_temperature(self):
+        try:
+            if self.units == "celsius":
+                return self.get_raw_temperature()
+            elif self.units == "fahrenheit":
+                return self.get_raw_temperature() * 1.8 + 32
+            elif self.units == "kelvin":
+                return self.get_raw_temperature() - 273.15
+        except TypeError:
+            return "Error: Unexpected reading from sensor"
+
+    # Placeholder, overwritten by subclasses which support humidity
+    def get_humidity(self):
+        return "Sensor does not support humidity"
+
     # Recalculate on/off threshold temperatures after changing set temperature (current_rule)
-    def get_threshold(self):
+    def set_threshold(self):
         if self.current_rule == "disabled":
             return True
 
@@ -51,7 +75,7 @@ class Thermostat(Sensor):
         valid = super().set_rule(rule)
 
         if valid:
-            self.get_threshold()
+            self.set_threshold()
             return True
         else:
             return False
@@ -75,7 +99,7 @@ class Thermostat(Sensor):
         return self.set_rule(new)
 
     def condition_met(self):
-        current = self.fahrenheit()
+        current = self.get_temperature()
 
         if self.mode == "cool":
             if current > self.on_threshold:
@@ -95,7 +119,7 @@ class Thermostat(Sensor):
     # Check if temperature exceeded threshold every 5 seconds
     async def monitor(self):
         while True:
-            self.print(f"Thermostat monitor: {self.fahrenheit()}")
+            self.print(f"Thermostat monitor: {self.get_temperature()}")
             new = self.condition_met()
 
             # If condition changed, overwrite and refresh group
@@ -121,7 +145,7 @@ class Thermostat(Sensor):
     # Overrides group's state attribute, forcing main loop to re-send on/off command
     def audit(self):
         # Add current temperature reading
-        self.recent_temps.append(self.fahrenheit())
+        self.recent_temps.append(self.get_temperature())
 
         if len(self.recent_temps) > 3:
             # Limit to 3 most recent
@@ -180,3 +204,12 @@ class Thermostat(Sensor):
             # False positive becomes likely if callback runs shortly after change, since only 2 readings are meaningful
             SoftwareTimer.timer.cancel(self.name)
             SoftwareTimer.timer.create(30000, self.audit, self.name)
+
+    # Return JSON-serializable dict containing state information
+    # Called by Config.get_status to build API status response
+    def get_status(self):
+        status = super().get_status()
+        status['temp'] = self.get_temperature()
+        status['units'] = self.units
+        status['humid'] = self.get_humidity()
+        return status

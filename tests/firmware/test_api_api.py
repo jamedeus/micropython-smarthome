@@ -46,6 +46,7 @@ config_file = {
         "default_rule": 70,
         "mode": "cool",
         "tolerance": 1,
+        "units": "fahrenheit",
         "nickname": "sensor1"
     },
     "sensor2": {
