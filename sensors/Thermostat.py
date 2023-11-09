@@ -7,6 +7,13 @@ from Sensor import Sensor
 # Set name for module's log lines
 log = logging.getLogger("Thermostat")
 
+# Map unit type to min, max supported temperature
+rule_limits = {
+    'fahrenheit': (65, 80),
+    'celsius': (18, 26),
+    'kelvin': (291, 300)
+}
+
 
 class Thermostat(Sensor):
     def __init__(self, name, nickname, _type, default_rule, mode, tolerance, units, targets):
@@ -134,11 +141,14 @@ class Thermostat(Sensor):
 
             await asyncio.sleep(5)
 
-    # Receive rule from API, validate, set and return True if valid, otherwise return False
+    # Receives rule from set_rule, returns rule if valid, otherwise returns False
     def validator(self, rule):
         try:
-            # Constrain to range 65-80
-            if 65 <= float(rule) <= 80:
+            # Constrain to correct temperature range for configured units
+            # Fahrenheit: 65-80 degrees
+            # Celsius: 18-26 degrees
+            # Kelvin: 291-300 degrees
+            if rule_limits[self.units][0] <= float(rule) <= rule_limits[self.units][1]:
                 return float(rule)
             else:
                 return False

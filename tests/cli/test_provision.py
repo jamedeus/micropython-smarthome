@@ -203,6 +203,8 @@ class TestInstantiation(TestCase):
             os.path.join(repo, 'tests', 'firmware', 'test_sensor_switch.py'): 'test_sensor_switch.py',
             os.path.join(repo, 'tests', 'firmware', 'test_sensor_sensor.py'): 'test_sensor_sensor.py',
             os.path.join(repo, 'tests', 'firmware', 'test_sensor_thermostat.py'): 'test_sensor_thermostat.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_sensor_si7021.py'): 'test_sensor_si7021.py',
+            os.path.join(repo, 'tests', 'firmware', 'test_sensor_dht22.py'): 'test_sensor_dht22.py',
             os.path.join(repo, 'tests', 'firmware', 'test_device_apitarget.py'): 'test_device_apitarget.py',
             os.path.join(repo, 'tests', 'firmware', 'test_device_wled.py'): 'test_device_wled.py',
             os.path.join(repo, 'tests', 'firmware', 'test_device_dumbrelay.py'): 'test_device_dumbrelay.py',
