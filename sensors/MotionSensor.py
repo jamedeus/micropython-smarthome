@@ -12,6 +12,11 @@ class MotionSensor(Sensor):
     def __init__(self, name, nickname, _type, default_rule, targets, pin):
         super().__init__(name, nickname, _type, True, None, default_rule, targets)
 
+        # Prevent instantiating with invalid default_rule
+        if str(self.default_rule).lower() in ("enabled", "disabled"):
+            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            raise AttributeError
+
         # Pin setup
         self.sensor = Pin(int(pin), Pin.IN, Pin.PULL_DOWN)
 

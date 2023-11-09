@@ -12,6 +12,11 @@ class Thermostat(Sensor):
     def __init__(self, name, nickname, _type, default_rule, mode, tolerance, units, targets):
         super().__init__(name, nickname, _type, True, default_rule, default_rule, targets)
 
+        # Prevent instantiating with invalid default_rule
+        if str(self.default_rule).lower() in ("enabled", "disabled"):
+            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            raise AttributeError
+
         # Set cooling or heating mode, determines when targets turn on/off
         # Cooling: Turn ON when measured temp exceeds rule, turn OFF when below rule
         # Heating: Turn OFF when measured temp exceeds rule, turn ON when below rule
@@ -50,7 +55,7 @@ class Thermostat(Sensor):
             elif self.units == "fahrenheit":
                 return self.get_raw_temperature() * 1.8 + 32
             elif self.units == "kelvin":
-                return self.get_raw_temperature() - 273.15
+                return self.get_raw_temperature() + 273.15
         except TypeError:
             return "Error: Unexpected reading from sensor"
 

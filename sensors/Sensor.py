@@ -10,11 +10,6 @@ class Sensor(Instance):
     def __init__(self, name, nickname, _type, enabled, current_rule, default_rule, targets):
         super().__init__(name, nickname, _type, enabled, current_rule, default_rule)
 
-        # Prevent instantiating with invalid default_rule
-        if self._type in ("pir", "si7021", "dummy") and str(self.default_rule).lower() in ("enabled", "disabled"):
-            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
-            raise AttributeError
-
         # List of Device instances controlled by Sensor, used by Config.build_groups
         # to determine which sensors belong in same Group instance
         self.targets = targets

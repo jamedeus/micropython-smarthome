@@ -9,6 +9,11 @@ class Dummy(Sensor):
     def __init__(self, name, nickname, _type, default_rule, targets):
         super().__init__(name, nickname, _type, True, None, default_rule, targets)
 
+        # Prevent instantiating with invalid default_rule
+        if str(self.default_rule).lower() in ("enabled", "disabled"):
+            log.critical(f"{self.name}: Received invalid default_rule: {self.default_rule}")
+            raise AttributeError
+
         log.info(f"Instantiated dummy sensor named {self.name}")
 
     # Accepts additional rules because they are the only factor determining if condition is met
