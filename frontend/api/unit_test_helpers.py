@@ -269,8 +269,8 @@ config2_api_context = {
             'temp': -52.32999,
             'type': 'si7021',
             'prompt': 'float_range',
-            'min_rule': 65,
-            'max_rule': 80
+            'min_rule': 18,
+            'max_rule': 27
         }
     },
     'devices': {

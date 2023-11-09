@@ -18,5 +18,5 @@
         "targets": []
     },
     "rule_prompt": "float_range",
-    "rule_limits": [65, 80]
+    "rule_limits": [18, 27]
 }

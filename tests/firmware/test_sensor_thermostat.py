@@ -74,21 +74,21 @@ class TestThermostat(unittest.TestCase):
         # Should accept enabled and disabled, case-insensitive
         self.assertEqual(self.instance.rule_validator("Disabled"), "disabled")
 
-        # Fahrenheit: should accept integers and floats between 65 and 80
+        # Fahrenheit: should accept integers and floats between 64.4 and 80.6
         self.instance.units = 'fahrenheit'
         self.assertEqual(self.instance.rule_validator(65.0), 65.0)
         self.assertEqual(self.instance.rule_validator(80), 80)
         self.assertEqual(self.instance.rule_validator("72"), 72)
 
-        # Celsius: should accept integers and floats between 18 and 26
+        # Celsius: should accept integers and floats between 18 and 27
         self.instance.units = 'celsius'
         self.assertEqual(self.instance.rule_validator(18.0), 18.0)
         self.assertEqual(self.instance.rule_validator(21), 21)
         self.assertEqual(self.instance.rule_validator("25"), 25)
 
-        # Kelvin: should accept integers and floats between 291 and 300
+        # Kelvin: should accept integers and floats between 291.15 and 300.15
         self.instance.units = 'kelvin'
-        self.assertEqual(self.instance.rule_validator(291.0), 291.0)
+        self.assertEqual(self.instance.rule_validator(291.15), 291.15)
         self.assertEqual(self.instance.rule_validator(297), 297)
         self.assertEqual(self.instance.rule_validator("300"), 300)
 

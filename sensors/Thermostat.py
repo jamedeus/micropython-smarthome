@@ -7,12 +7,21 @@ from Sensor import Sensor
 # Set name for module's log lines
 log = logging.getLogger("Thermostat")
 
-# Map unit type to min, max supported temperature
-rule_limits = {
-    'fahrenheit': (65, 80),
-    'celsius': (18, 26),
-    'kelvin': (291, 300)
-}
+
+def fahrenheit_to_celsius(fahrenheit):
+    return (fahrenheit - 32) * 5 / 9
+
+
+def kelvin_to_celsius(kelvin):
+    return kelvin - 273.15
+
+
+def celsius_to_fahrenheit(celsius):
+    return celsius * 1.8 + 32
+
+
+def celsius_to_kelvin(celsius):
+    return celsius + 273.15
 
 
 class Thermostat(Sensor):
@@ -60,9 +69,9 @@ class Thermostat(Sensor):
             if self.units == "celsius":
                 return self.get_raw_temperature()
             elif self.units == "fahrenheit":
-                return self.get_raw_temperature() * 1.8 + 32
+                return celsius_to_fahrenheit(self.get_raw_temperature())
             elif self.units == "kelvin":
-                return self.get_raw_temperature() + 273.15
+                return celsius_to_kelvin(self.get_raw_temperature())
         except TypeError:
             return "Error: Unexpected reading from sensor"
 
@@ -144,11 +153,17 @@ class Thermostat(Sensor):
     # Receives rule from set_rule, returns rule if valid, otherwise returns False
     def validator(self, rule):
         try:
-            # Constrain to correct temperature range for configured units
-            # Fahrenheit: 65-80 degrees
-            # Celsius: 18-26 degrees
-            # Kelvin: 291-300 degrees
-            if rule_limits[self.units][0] <= float(rule) <= rule_limits[self.units][1]:
+            # Convert rule to celsius if using different units
+            if self.units == 'fahrenheit':
+                converted_rule = round(fahrenheit_to_celsius(float(rule)), 1)
+            elif self.units == 'kelvin':
+                converted_rule = round(kelvin_to_celsius(float(rule)), 1)
+            else:
+                converted_rule = rule
+
+            # Constrain to range 18-27 celsius
+            if 18 <= float(converted_rule) <= 27:
+                # Return in original units if valid
                 return float(rule)
             else:
                 return False
