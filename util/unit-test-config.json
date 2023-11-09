@@ -193,6 +193,7 @@
         "nickname": "Temperature",
         "mode": "cool",
         "tolerance": "3",
+        "units": "fahrenheit",
         "default_rule": "71",
         "targets": [
             "device4",

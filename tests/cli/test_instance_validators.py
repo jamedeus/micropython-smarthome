@@ -178,7 +178,7 @@ class ValidatorErrorTests(TestCase):
         self.assertFalse(led_strip_validator('-50', min_rule='0', max_rule='1023'))
         self.assertFalse(tplink_validator('-50', min_rule='1', max_rule='100'))
         self.assertFalse(wled_validator('-50', min_rule='1', max_rule='255'))
-        self.assertFalse(thermostat_validator('50', tolerance=1))
+        self.assertFalse(thermostat_validator('50', tolerance=1, units='fahrenheit', mode='cool'))
 
     def test_invalid_rule_limits(self):
         # Confirm correct error when max_rule greater than device limit
@@ -212,19 +212,19 @@ class ValidatorErrorTests(TestCase):
     def test_thermostat_invalid_tolerance(self):
         # Confirm correct error for out of range tolerance
         self.assertEqual(
-            thermostat_validator('70', tolerance='13'),
+            thermostat_validator('70', tolerance='13', units='fahrenheit'),
             'Thermostat tolerance out of range (0.1 - 10.0)'
         )
 
         # Confirm correct error for string tolerance
         self.assertEqual(
-            thermostat_validator('70', tolerance='low'),
+            thermostat_validator('70', tolerance='low', units='fahrenheit'),
             'Thermostat tolerance must be int or float'
         )
 
         # Confirm correct error for missing tolerance
         self.assertEqual(
-            thermostat_validator('70'),
+            thermostat_validator('70', units='fahrenheit'),
             'Thermostat missing required tolerance property'
         )
 
@@ -232,7 +232,7 @@ class ValidatorErrorTests(TestCase):
         # Confirm string is rejected for correct types
         self.assertFalse(wled_validator('max', min_rule='1', max_rule='255'))
         self.assertFalse(motion_sensor_validator('max', min_rule='1', max_rule='100'))
-        self.assertFalse(thermostat_validator('max', tolerance=1))
+        self.assertFalse(thermostat_validator('max', tolerance=1, units='fahrenheit', mode='cool'))
 
     def test_invalid_keyword_rules(self):
         # Confirm wrong keywords are rejected for correct types

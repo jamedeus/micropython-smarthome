@@ -1,7 +1,13 @@
 import json
 from math import isnan
 from functools import wraps
-from helper_functions import is_device_or_sensor, is_sensor, is_device
+from helper_functions import (
+    is_device_or_sensor,
+    is_sensor,
+    is_device,
+    fahrenheit_to_celsius,
+    kelvin_to_celsius
+)
 
 
 # Map device and sensor types to validators for both default
@@ -354,8 +360,9 @@ def motion_sensor_validator(rule, **kwargs):
         return False
 
 
-# Requires int or float between 65 and 80 (inclusive)
-# Also validates tolerance, must be int or float between 0.1 and 10
+# Requires int or float rule between 18 and 27 celsius (inclusive)
+# If units param is not celsius rule will be converted to correct units
+# Also validates tolerance, (int/float between 0.1 and 10), mode, and units
 @add_schedule_rule_validator(['si7021', 'dht22'])
 @add_generic_validator
 @add_default_rule_validator(['si7021', 'dht22'])
@@ -369,10 +376,25 @@ def thermostat_validator(rule, **kwargs):
     except KeyError:
         return 'Thermostat missing required tolerance property'
 
+    # Validate mode
+    if kwargs['mode'] not in ['heat', 'cool']:
+        return 'Thermostat mode must be either "heat" or "cool"'
+
+    # Validate units
+    units = kwargs['units']
+    if units not in ['fahrenheit', 'celsius', 'kelvin']:
+        return 'Thermostat units must be "fahrenheit", "celsius", or "kelvin"'
+
     # Validate rule
     try:
-        # Constrain to range 65-80
-        if 65 <= float(rule) <= 80:
+        # Convert rule to celsius if using other units
+        if units == 'fahrenheit':
+            rule = fahrenheit_to_celsius(float(rule))
+        elif units == 'kelvin':
+            rule = kelvin_to_celsius(float(rule))
+
+        # Constrain to range 18-27 (celsius)
+        if 18 <= float(rule) <= 27:
             return True
         else:
             return False
