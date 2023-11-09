@@ -4,7 +4,7 @@ from machine import SoftI2C
 from Si7021 import Si7021
 
 
-class TestThermostat(unittest.TestCase):
+class TestSi7021(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):

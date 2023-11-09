@@ -3,7 +3,7 @@ import unittest
 from Dht22 import Dht22
 
 
-class TestThermostat(unittest.TestCase):
+class TestDht22(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
