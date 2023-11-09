@@ -35,7 +35,7 @@ Sensors may implement an optional `trigger` method which simulates the condition
 
 By default all sensors support the rules `Enabled` and `Disabled`. If more rules are required the sensor must include a `validator` method. This method accepts a rule as argument, returns `False` if it is invalid, and returns the rule if it is valid. Returning a modified rule is encouraged in some situations - for example, a class which expects an integer rule should return `int(rule)` to avoid incorrectly accepting string representations of integers.
 
-### Sensor Manifest
+### Sensor Metadata
 
 The JSON metadata must follow this syntax:
 ```

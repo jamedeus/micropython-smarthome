@@ -32,7 +32,7 @@ All device classes **must** include a `send` method which accepts a boolean argu
 
 By default all devices support the rules `Enabled` and `Disabled`. If more rules are required the device must include a `validator` method. This method accepts a rule as argument, returns `False` if it is invalid, and returns the rule if it is valid. Returning a modified rule is encouraged in some situations - for example, a class which expects an integer rule should return `int(rule)` to avoid incorrectly accepting string representations of integers.
 
-### Device Manifest
+### Device Metadata
 
 The JSON metadata must follow this syntax:
 ```
