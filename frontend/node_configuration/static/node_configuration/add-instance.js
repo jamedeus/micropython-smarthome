@@ -213,7 +213,7 @@ function get_template(id, type, type_metadata, category) {
     };
 
     // Add type-specific components
-    if (type == "si7021") {
+    if (type == "si7021" || type == "dht22") {
         template += `<div class="mb-3">
                          <label class="w-100">
                              <b>Mode:</b>
@@ -223,6 +223,17 @@ function get_template(id, type, type_metadata, category) {
                              </select>
                          </label>
                      </div>
+
+                    <div class="mb-3">
+                        <label class="w-100">
+                            <b>Units:</b>
+                            <select class="form-select" oninput="update_config(this);" data-section="${id}" data-param="units" required>
+                                <option value="fahrenheit">Fahrenheit</option>
+                                <option value="celsius">Celsius</option>
+                                <option value="kelvin">Kelvin</option>
+                            </select>
+                        </label>
+                    </div>
 
                      <div class="mb-2">
                          <label class="w-100">

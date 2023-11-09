@@ -333,6 +333,7 @@ request_payload = {
         "default_rule": "71",
         "mode": "cool",
         "tolerance": "3",
+        "units": "fahrenheit",
         "schedule": {
             "08:00": "73",
             "22:00": "69"
