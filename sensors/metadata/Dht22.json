@@ -10,10 +10,10 @@
     "config_template": {
         "_type": "dht22",
         "nickname": "placeholder",
+        "units": "placeholder",
         "default_rule": "placeholder",
         "mode": "placeholder",
         "tolerance": "placeholder",
-        "units": "placeholder",
         "pin": "placeholder",
         "schedule": {},
         "targets": []

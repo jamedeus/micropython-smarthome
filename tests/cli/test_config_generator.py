@@ -669,10 +669,10 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.unsafe_ask.side_effect = [
             'Si7021',
             'Thermostat',
+            'fahrenheit',
             '70',
             'cool',
             '1.5',
-            'fahrenheit',
             'Yes',
             'Timestamp',
             '10:00',
@@ -1285,10 +1285,10 @@ class TestRegressions(TestCase):
         self.mock_ask.unsafe_ask.side_effect = [
             'Si7021',
             'Thermostat',
+            'fahrenheit',
             '70',
             'cool',
             '1.5',
-            'fahrenheit',
             'Yes',
             'Timestamp',
             '10:00',

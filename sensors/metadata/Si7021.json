@@ -10,10 +10,10 @@
     "config_template": {
         "_type": "si7021",
         "nickname": "placeholder",
+        "units": "placeholder",
         "default_rule": "placeholder",
         "mode": "placeholder",
         "tolerance": "placeholder",
-        "units": "placeholder",
         "schedule": {},
         "targets": []
     },

@@ -177,3 +177,23 @@ def get_device_and_sensor_metadata():
             metadata['sensors'].append(json.load(file))
 
     return metadata
+
+
+# Takes temperature in celsius, returns in fahrenheit
+def celsius_to_fahrenheit(celsius):
+    return celsius * 1.8 + 32
+
+
+# Takes temperature in celsius, returns in kelvin
+def celsius_to_kelvin(celsius):
+    return celsius + 273.15
+
+
+# Takes temperature in fahrenheit, returns in celsius
+def fahrenheit_to_celsius(fahrenheit):
+    return (fahrenheit - 32) * 5 / 9
+
+
+# Takes temperature in kelvin, returns in celsius
+def kelvin_to_celsius(kelvin):
+    return kelvin - 273.15
