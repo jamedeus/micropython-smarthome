@@ -11,6 +11,7 @@ from config_rule_prompts import (
     default_rule_prompt_router,
     schedule_rule_prompt_router,
     int_rule_prompt,
+    float_rule_prompt,
     string_rule_prompt
 )
 
@@ -1469,6 +1470,39 @@ class TestRulePrompts(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
             rule = int_rule_prompt(config, "schedule")
             self.assertEqual(rule, '50')
+
+    def test_float_rule_prompt(self):
+        # Create mock config object with thermostat parameters
+        config = {
+            '_type': 'dht22',
+            'units': 'fahrenheit'
+        }
+
+        # Mock user input for default rule
+        self.mock_ask.unsafe_ask.return_value = '70'
+
+        # Run default prompt with mocked user input, confirm return value
+        with patch('questionary.text', return_value=self.mock_ask):
+            rule = float_rule_prompt(config, "default")
+            self.assertEqual(rule, '70')
+
+        # Mock user input for standard schedule rule
+        self.mock_ask.unsafe_ask.return_value = 'Enabled'
+
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask):
+            rule = float_rule_prompt(config, "schedule")
+            self.assertEqual(rule, 'Enabled')
+
+        # Change units to kelvin, mock user input for schedule rule
+        config['units'] = 'kelvin'
+        self.mock_ask.unsafe_ask.side_effect = ['Float', '300']
+
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+            rule = float_rule_prompt(config, "schedule")
+            self.assertEqual(rule, '300')
 
     def test_string_rule_prompt(self):
         # Mock user input for default rule

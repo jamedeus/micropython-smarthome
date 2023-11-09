@@ -9,6 +9,7 @@ from instance_validators import (
     dummy_validator,
     motion_sensor_validator,
     thermostat_validator,
+    load_cell_validator
 )
 
 
@@ -123,6 +124,19 @@ class ValidatorTests(TestCase):
         # Should accept None (converts to 0)
         self.assertTrue(motion_sensor_validator(None))
 
+    def test_thermostat_rules(self):
+        # Should accept Celsiues temperatures between 18 and 27 degrees
+        self.assertTrue(thermostat_validator('20', units='celsius', mode='cool', tolerance='1'))
+        # Should accept Kelvin temperatures between 291.15 and 300.15 degrees
+        self.assertTrue(thermostat_validator('295', units='kelvin', mode='cool', tolerance='1'))
+        # Should accept Fahrenheit temperatures between 65 and 80 degrees
+        self.assertTrue(thermostat_validator('69', units='fahrenheit', mode='cool', tolerance='1'))
+
+    def test_load_cell_rules(self):
+        # Should accept int or float
+        self.assertTrue(load_cell_validator(150000))
+        self.assertTrue(load_cell_validator(150000.0))
+
 
 # Confirm functions in validators.py correctly reject invalid rules
 class ValidatorErrorTests(TestCase):
@@ -178,6 +192,8 @@ class ValidatorErrorTests(TestCase):
         self.assertFalse(led_strip_validator('-50', min_rule='0', max_rule='1023'))
         self.assertFalse(tplink_validator('-50', min_rule='1', max_rule='100'))
         self.assertFalse(wled_validator('-50', min_rule='1', max_rule='255'))
+        self.assertFalse(thermostat_validator('30', tolerance=1, units='celsius', mode='cool'))
+        self.assertFalse(thermostat_validator('320', tolerance=1, units='kelvin', mode='cool'))
         self.assertFalse(thermostat_validator('50', tolerance=1, units='fahrenheit', mode='cool'))
 
     def test_invalid_rule_limits(self):
@@ -210,26 +226,41 @@ class ValidatorErrorTests(TestCase):
         )
 
     def test_thermostat_invalid_tolerance(self):
-        # Confirm correct error for out of range tolerance
+        # Confirm correct error for tolerance out of range
         self.assertEqual(
-            thermostat_validator('70', tolerance='13', units='fahrenheit'),
+            thermostat_validator('70', tolerance='13', units='fahrenheit', mode='cool'),
             'Thermostat tolerance out of range (0.1 - 10.0)'
         )
 
         # Confirm correct error for string tolerance
         self.assertEqual(
-            thermostat_validator('70', tolerance='low', units='fahrenheit'),
+            thermostat_validator('70', tolerance='low', units='fahrenheit', mode='cool'),
             'Thermostat tolerance must be int or float'
         )
 
         # Confirm correct error for missing tolerance
         self.assertEqual(
-            thermostat_validator('70', units='fahrenheit'),
+            thermostat_validator('70', units='fahrenheit', mode='cool'),
             'Thermostat missing required tolerance property'
+        )
+
+    def test_thermostat_invalid_mode(self):
+        # Confirm correct error for invalid mode
+        self.assertEqual(
+            thermostat_validator('70', tolerance='1', units='fahrenheit', mode='measure'),
+            'Thermostat mode must be either "heat" or "cool"'
+        )
+
+    def test_thermostat_invalid_units(self):
+        # Confirm correct error for invalid temperature units
+        self.assertEqual(
+            thermostat_validator('70', tolerance='1', units='imperial', mode='cool'),
+            'Thermostat units must be "fahrenheit", "celsius", or "kelvin"'
         )
 
     def test_invalid_noninteger_rules(self):
         # Confirm string is rejected for correct types
+        self.assertFalse(load_cell_validator('max'))
         self.assertFalse(wled_validator('max', min_rule='1', max_rule='255'))
         self.assertFalse(motion_sensor_validator('max', min_rule='1', max_rule='100'))
         self.assertFalse(thermostat_validator('max', tolerance=1, units='fahrenheit', mode='cool'))
@@ -240,11 +271,15 @@ class ValidatorErrorTests(TestCase):
         self.assertFalse(dummy_validator(50))
 
     def test_invalid_schedule_rules(self):
+        # Confirm default error message works correctly
         self.config['device6']['min_rule'] = 500
         self.config['device6']['max_rule'] = 1000
         self.config['device6']['schedule']['01:00'] = 1023
         result = validate_rules(self.config['device6'])
         self.assertEqual(result, 'Cabinet Lights: Invalid schedule rule 1023')
+
+        # Confirm validators which return own error message work correctly
+        # Placeholder, not currently possible
 
     # Original bug: Validators accepted "enabled" and "disabled" as valid
     # rules in all situations. Some device and sensor types do not support
@@ -327,3 +362,4 @@ class ValidatorErrorTests(TestCase):
     # NaN (which is a valid float, but breaks arithmetic) to be accepted.
     def test_regression_motion_sensor_accepts_nan(self):
         self.assertFalse(motion_sensor_validator(float('NaN'), min_rule='1', max_rule='100'))
+        self.assertFalse(load_cell_validator(float('NaN')))
