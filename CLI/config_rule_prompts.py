@@ -9,8 +9,7 @@ from helper_functions import (
     is_device_or_sensor,
     get_existing_nodes,
     get_device_and_sensor_metadata,
-    celsius_to_fahrenheit,
-    celsius_to_kelvin
+    convert_celsius_temperature
 )
 
 
@@ -114,16 +113,13 @@ def on_off_rule_prompt(config, rule_type):
 # Default prompt: Only show float prompt (standard rules are invalid)
 # Schedule prompt: Show standard rules in addition to float
 def float_rule_prompt(config, rule_type):
+    # Get rule limits from device/sensor metadata
     minimum, maximum = rule_limits_map[config['_type']]
 
     # Thermostat: Convert limits (celsius) to configured units
-    if 'units' in config.keys():
-        if config['units'] == 'fahrenheit':
-            minimum = celsius_to_fahrenheit(minimum)
-            maximum = celsius_to_fahrenheit(maximum)
-        elif config['units'] == 'kelvin':
-            minimum = celsius_to_kelvin(minimum)
-            maximum = celsius_to_kelvin(maximum)
+    if 'units' in config.keys() and config['units'] != 'celsius':
+        minimum = convert_celsius_temperature(minimum, config['units'])
+        maximum = convert_celsius_temperature(maximum, config['units'])
 
     # Default rule prompt
     if rule_type == "default":

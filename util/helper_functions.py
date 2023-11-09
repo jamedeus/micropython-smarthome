@@ -197,3 +197,11 @@ def fahrenheit_to_celsius(fahrenheit):
 # Takes temperature in kelvin, returns in celsius
 def kelvin_to_celsius(kelvin):
     return kelvin - 273.15
+
+
+# Takes temperature in celsius and desired units, returns in desired units
+def convert_celsius_temperature(celsius, units):
+    if units == 'fahrenheit':
+        return celsius_to_fahrenheit(celsius)
+    elif units == 'kelvin':
+        return celsius_to_kelvin(celsius)
