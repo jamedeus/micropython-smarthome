@@ -66,6 +66,7 @@ The port `9999` is used to simulate requests to TpLink Kasa devices. This cannot
 - [x] webrepl
 - [x] logging
 - [x] ubinascii
+- [x] dht
 
 The following are not currently mocked, but may be added in the future if tests for `_boot.py` are added:
 - [ ] uos
