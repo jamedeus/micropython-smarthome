@@ -1563,6 +1563,28 @@ class RuleModalTests(TestCaseBackupRestore):
         self.assertEqual(response.context['target'], 'sensor3')
         self.assertEqual(response.context['show_timestamp'], False)
 
+    def test_edit_thermostat_rule(self):
+        # Create payload for thermostat instance using Fahrenheit units
+        payload = {
+            "timestamp": "morning",
+            "rule": "71",
+            "type": "si7021",
+            "target": "sensor3",
+            "schedule_keywords": {
+                "sunrise": "05:55",
+                "sunset": "20:20"
+            },
+            "params": {
+                "units": "fahrenheit"
+            }
+        }
+        response = self.client.post('/edit_rule', payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'api/rule_modal.html')
+
+        # Confirm metadata rule limits (Celsius) were converted to Fahrenheit
+        self.assertEqual(response.context['limits'], [64, 80])
+
 
 # Test endpoints used to manage schedule keywords
 class ScheduleKeywordTests(TestCaseBackupRestore):

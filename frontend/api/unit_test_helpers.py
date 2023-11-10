@@ -156,12 +156,11 @@ config2_status_object = {
             ],
             'nickname': 'Thermostat',
             'condition_met': False,
-            'schedule': {
-
-            },
+            'schedule': {},
             'current_rule': 74,
             'temp': -52.32999,
-            'type': 'si7021'
+            'type': 'si7021',
+            'units': 'fahrenheit'
         }
     },
     'devices': {
@@ -269,8 +268,9 @@ config2_api_context = {
             'temp': -52.32999,
             'type': 'si7021',
             'prompt': 'float_range',
-            'min_rule': 18,
-            'max_rule': 27
+            'min_rule': 64,
+            'max_rule': 80,
+            'units': 'fahrenheit'
         }
     },
     'devices': {

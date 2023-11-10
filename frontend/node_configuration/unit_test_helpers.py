@@ -469,7 +469,8 @@ test_config_2 = {
         "targets": [
             "device1"
         ],
-        "schedule": {}
+        "schedule": {},
+        "units": "fahrenheit"
     },
     "ir_blaster": {
         "nickname": "",
@@ -776,7 +777,8 @@ test_config_2_edit_context = {
             "targets": [
                 "device1"
             ],
-            "schedule": {}
+            "schedule": {},
+            "units": "fahrenheit"
         },
         "ir_blaster": {
             "nickname": "",
