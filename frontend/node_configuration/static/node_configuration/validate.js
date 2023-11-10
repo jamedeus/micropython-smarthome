@@ -228,7 +228,6 @@ function convert_temperature(temperature, old_units, new_units) {
 
 // Handler for thermostat units dropdown, converts units displayed on rule sliders
 function update_thermostat_slider(input) {
-    // Get target sensor ID, config param, selected units, reference to rule slider
     // Get target sensor ID, old units, new units
     const target = input.dataset.section;
     const new_units = input.value;
@@ -240,24 +239,14 @@ function update_thermostat_slider(input) {
     const new_rule = convert_temperature(parseFloat(old_rule), old_units, new_units);
 
     // Change slider limits to new units
-    if (new_units == 'celsius') {
-        slider.min = 18;
-        slider.max = 27;
-        slider.dataset.displaymin = 18;
-        slider.dataset.displaymax = 27;
-
-    } else if (new_units == 'kelvin') {
-        slider.min = 291.15;
-        slider.max = 300.15;
-        slider.dataset.displaymin = 291.15;
-        slider.dataset.displaymax = 300.15;
-
-    } else if (new_units == 'fahrenheit') {
-        slider.min = 65;
-        slider.max = 80;
-        slider.dataset.displaymin = 65;
-        slider.dataset.displaymax = 80;
-    };
+    const type = config[target]['_type'];
+    const limits = metadata['sensors'][type]['rule_limits'];
+    new_min = parseInt(convert_temperature(limits[0], 'celsius', new_units));
+    new_max = parseInt(convert_temperature(limits[1], 'celsius', new_units));
+    slider.min = new_min;
+    slider.max = new_max;
+    slider.dataset.displaymin = new_min;
+    slider.dataset.displaymax = new_max;
 
     // Update slider value and config object to new units
     slider.value = new_rule;
