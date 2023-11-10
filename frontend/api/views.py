@@ -16,7 +16,8 @@ from helper_functions import (
     valid_timestamp,
     is_device,
     get_schedule_keywords_dict,
-    get_device_and_sensor_metadata
+    get_device_and_sensor_metadata,
+    convert_celsius_temperature
 )
 
 
@@ -96,6 +97,11 @@ def edit_rule(request):
     limits_map = get_metadata_limits_map()
     if data['type'] in limits_map.keys():
         data['limits'] = limits_map[data['type']]
+
+    # Thermostat: Convert limits to configured units
+    if 'units' in data['params'].keys():
+        data['limits'][0] = int(convert_celsius_temperature(data['limits'][0], data['params']['units']))
+        data['limits'][1] = int(convert_celsius_temperature(data['limits'][1], data['params']['units']))
 
     print(json.dumps(data, indent=4))
 
@@ -232,6 +238,11 @@ def api(request, node, recording=False):
         if status['sensors'][i]['prompt'] == "float_range":
             status['sensors'][i]['min_rule'] = limits_map[status['sensors'][i]['type']][0]
             status['sensors'][i]['max_rule'] = limits_map[status['sensors'][i]['type']][1]
+        # Thermostat: Convert limits to configured units
+        if 'units' in status['sensors'][i].keys():
+            units = status['sensors'][i]['units']
+            status['sensors'][i]['min_rule'] = int(convert_celsius_temperature(status['sensors'][i]['min_rule'], units))
+            status['sensors'][i]['max_rule'] = int(convert_celsius_temperature(status['sensors'][i]['max_rule'], units))
 
     print(json.dumps(status, indent=4))
 

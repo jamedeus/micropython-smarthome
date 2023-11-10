@@ -134,6 +134,14 @@ function edit_existing_rule(el) {
         'type': type,
         'target': target
     };
+
+    // Edit page: add current target config section
+    if (typeof config !== 'undefined') {
+        payload['params'] = config[target];
+    // Frontend: add current target status section
+    } else {
+        payload['params'] = target_node_status[target.replace(/[0-9]/g, '') + "s"][target];
+    };
     open_schedule_rule_modal(payload);
 };
 
@@ -157,6 +165,14 @@ function add_new_rule(el) {
         'rule': '',
         'type': type,
         'target': target
+    };
+
+    // Edit page: add current target config section
+    if (typeof config !== 'undefined') {
+        payload['params'] = config[target];
+    // Frontend: add current target status section
+    } else {
+        payload['params'] = target_node_status[target.replace(/[0-9]/g, '') + "s"][target];
     };
     open_schedule_rule_modal(payload);
 };

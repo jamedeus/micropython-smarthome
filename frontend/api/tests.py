@@ -1499,7 +1499,8 @@ class RuleModalTests(TestCaseBackupRestore):
             "schedule_keywords": {
                 "sunrise": "05:55",
                 "sunset": "20:20"
-            }
+            },
+            "params": {}
         }
         response = self.client.post('/edit_rule', payload)
         self.assertEqual(response.status_code, 200)
@@ -1522,7 +1523,8 @@ class RuleModalTests(TestCaseBackupRestore):
             "schedule_keywords": {
                 "sunrise": "05:55",
                 "sunset": "20:20"
-            }
+            },
+            "params": {}
         }
         response = self.client.post('/edit_rule', payload)
         self.assertEqual(response.status_code, 200)
@@ -1547,7 +1549,8 @@ class RuleModalTests(TestCaseBackupRestore):
             "schedule_keywords": {
                 "sunrise": "05:55",
                 "sunset": "20:20"
-            }
+            },
+            "params": {}
         }
         response = self.client.post('/edit_rule', payload)
         self.assertEqual(response.status_code, 200)
