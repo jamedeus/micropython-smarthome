@@ -204,3 +204,70 @@ function preventDuplicateThermostat() {
 }
 var thermostat_configured = false;
 preventDuplicateThermostat();
+
+
+// Takes temperature, old units, new units (options: celsius, fahrenheit, kelvin)
+function convert_temperature(temperature, old_units, new_units) {
+    // First convert to Celsius
+    if (old_units.toLowerCase() == 'fahrenheit') {
+        temperature = (temperature - 32) * 5 / 9;
+    } else if (old_units.toLowerCase() == 'kelvin') {
+        temperature = temperature - 273.15
+    };
+
+    // Convert Celsius to requested units
+    if (new_units.toLowerCase() == 'fahrenheit') {
+        temperature = temperature * 1.8 + 32;
+    } else if (new_units.toLowerCase() == 'kelvin') {
+        temperature = temperature + 273.15;
+    };
+
+    return temperature.toFixed(1);
+};
+
+
+// Handler for thermostat units dropdown, converts units displayed on rule sliders
+function update_thermostat_slider(input) {
+    // Get target sensor ID, config param, selected units, reference to rule slider
+    // Get target sensor ID, old units, new units
+    const target = input.dataset.section;
+    const new_units = input.value;
+    old_units = config[target]['units'];
+
+    // Get reference to slider, convert slider value to new units
+    const slider = document.querySelector(`[data-section="${target}"][data-param="default_rule"]`);
+    const old_rule = slider.value;
+    const new_rule = convert_temperature(parseFloat(old_rule), old_units, new_units);
+
+    // Change slider limits to new units
+    if (new_units == 'celsius') {
+        slider.min = 18;
+        slider.max = 27;
+        slider.dataset.displaymin = 18;
+        slider.dataset.displaymax = 27;
+
+    } else if (new_units == 'kelvin') {
+        slider.min = 291.15;
+        slider.max = 300.15;
+        slider.dataset.displaymin = 291.15;
+        slider.dataset.displaymax = 300.15;
+
+    } else if (new_units == 'fahrenheit') {
+        slider.min = 65;
+        slider.max = 80;
+        slider.dataset.displaymin = 65;
+        slider.dataset.displaymax = 80;
+    };
+
+    // Update slider value and config object to new units
+    slider.value = new_rule;
+    config[target]['default_rule'] = new_rule;
+
+    // Re-initialize slider so changes take effect
+    $('input[type="range"]').rangeslider('update', true);
+    const trigger = new Event('input');
+    slider.dispatchEvent(trigger);
+
+    console.log(`Old units: ${old_units}, New units: ${new_units}`);
+    console.log(`Old rule: ${old_rule}, New rule: ${new_rule}`);
+};

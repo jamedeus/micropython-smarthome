@@ -227,7 +227,7 @@ function get_template(id, type, type_metadata, category) {
                     <div class="mb-3">
                         <label class="w-100">
                             <b>Units:</b>
-                            <select class="form-select" oninput="update_config(this);" data-section="${id}" data-param="units" required>
+                            <select class="form-select" oninput="update_thermostat_slider(this);update_config(this);" data-section="${id}" data-param="units" required>
                                 <option value="fahrenheit">Fahrenheit</option>
                                 <option value="celsius">Celsius</option>
                                 <option value="kelvin">Kelvin</option>
