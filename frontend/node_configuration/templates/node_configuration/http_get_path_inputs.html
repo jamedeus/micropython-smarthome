@@ -1,0 +1,13 @@
+<div class="mb-2">
+    <label class="w-100">
+        <b>On path:</b>
+        <input type="text" class="form-control validate" placeholder="Appended to URI for on action" value="{{params.on_path}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="on_path" required>
+    </label>
+</div>
+
+<div class="mb-2">
+    <label class="w-100">
+        <b>Off path:</b>
+        <input type="text" class="form-control validate" placeholder="Appended to URI for off action" value="{{params.off_path}}" oninput="update_config(this);" data-section="{{category}}{{index}}" data-param="off_path" required>
+    </label>
+</div>

@@ -168,6 +168,24 @@ function create_advanced_settings_dimmable_light(id, min, max) {
 }
 
 
+// Takes ID, returns on_path and off_path inputs for HttpGet device
+function create_http_get_path_inputs(id) {
+    return `<div class="mb-2">
+                <label class="w-100">
+                    <b>On path:</b>
+                    <input type="text" class="form-control validate" placeholder="Appended to URI for on action" value="" oninput="update_config(this);" data-section="${id}" data-param="on_path" required>
+                </label>
+            </div>
+
+            <div class="mb-2">
+                <label class="w-100">
+                    <b>Off path:</b>
+                    <input type="text" class="form-control validate" placeholder="Appended to URI for off action" value="" oninput="update_config(this);" data-section="${id}" data-param="off_path" required>
+                </label>
+            </div>`
+};
+
+
 // Takes device or sensor ID, type, metadata entry, and category (device or sensor)
 // Returns config card template with appropriate input elements
 function get_template(id, type, type_metadata, category) {
@@ -184,7 +202,9 @@ function get_template(id, type, type_metadata, category) {
             template += create_ip_input(id);
         } else if (param == "uri") {
             template += create_uri_input(id);
-        }
+        } else if (param == "on_path") {
+            template += create_http_get_path_inputs(id);
+        };
     });
 
     // Add rule input field

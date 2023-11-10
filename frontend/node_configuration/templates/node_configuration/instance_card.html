@@ -47,6 +47,10 @@
                     {% include "node_configuration/uri_input.html" %}
                 {% endif %}
 
+                {% if "on_path" in params and "off_path" in params %}
+                    {% include "node_configuration/http_get_path_inputs.html" %}
+                {% endif %}
+
                 {# Add correct default rule input #}
                 {% if instance_metadata.rule_prompt == "standard" %}
                     {% include "node_configuration/default_rule_standard.html" %}
