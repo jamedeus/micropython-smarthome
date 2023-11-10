@@ -34,49 +34,27 @@ def get_target_node(func):
     return wrapper
 
 
-# Returns mapping dict with device/sensor types as key, prompt type as value
+# Returns mapping dict with device/sensor types as key, metadata dict as value
 # Dynamically generated from json metadata files for each instance type
-def get_metadata_prompt_map():
+def get_metadata_map():
     # Get object containing metadata for all device and sensor types
     metadata = get_device_and_sensor_metadata()
     # Combine into single list
     metadata = metadata['devices'] + metadata['sensors']
 
-    # Build mapping dict with types as keys, prompts as value
+    # Build mapping dict with types as keys, dict of relevant metadata params as values
     context = {}
     for i in metadata:
-        context[i["config_name"]] = i["rule_prompt"]
-
-    return context
-
-
-# Returns mapping dict with device/sensor types as key, rule limits as value
-# Dynamically generated from json metadata files for each instance type
-def get_metadata_limits_map():
-    # Get object containing metadata for all device and sensor types
-    metadata = get_device_and_sensor_metadata()
-    # Combine into single list
-    metadata = metadata['devices'] + metadata['sensors']
-
-    # Build mapping dict with types as keys, rule limits as value
-    context = {}
-    for i in metadata:
+        name = i["config_name"]
+        # Add rule prompt
+        context[name] = {}
+        context[name]['prompt'] = i["rule_prompt"]
+        # Add rule limits for instances which support numeric rule
         if "rule_limits" in i.keys():
-            context[i["config_name"]] = i["rule_limits"]
-
-    return context
-
-
-# Returns mapping dict with sensor types as key, triggerable bool as value
-# Dynamically generated from json metadata files for each instance type
-def get_metadata_trigger_map():
-    # Get object containing metadata for all device and sensor types
-    metadata = get_device_and_sensor_metadata()
-
-    # Build mapping dict with sensor types as keys, triggerable bool as values
-    context = {}
-    for i in metadata['sensors']:
-        context[i["config_name"]] = i["triggerable"]
+            context[name]['limits'] = i["rule_limits"]
+        # Add triggerable param for all sensors
+        if "triggerable" in i.keys():
+            context[name]['triggerable'] = i["triggerable"]
 
     return context
 
@@ -103,14 +81,13 @@ def edit_rule(request):
     # Add options for schedule keyword dropdown
     data['schedule_keywords'] = get_schedule_keywords_dict()
 
-    # Add prompt type
-    prompt_map = get_metadata_prompt_map()
-    data['prompt'] = prompt_map[data['type']]
+    # Get dict with instance types as keys, dict of relevant metadata as values
+    metadata_map = get_metadata_map()
 
-    # Add limits if range rule
-    limits_map = get_metadata_limits_map()
-    if data['type'] in limits_map.keys():
-        data['limits'] = limits_map[data['type']]
+    # Add prompt type, add limits if range rule
+    data['prompt'] = metadata_map[data['type']]['prompt']
+    if 'limits' in metadata_map[data['type']].keys():
+        data['limits'] = metadata_map[data['type']]['limits']
 
     # Thermostat: Convert limits to configured units
     if 'units' in data['params'].keys():
@@ -242,24 +219,29 @@ def api(request, node, recording=False):
     if recording:
         status["metadata"]["recording"] = recording
 
-    # Add prompt type and rule_limits from metadata
-    prompt_map = get_metadata_prompt_map()
-    limits_map = get_metadata_limits_map()
-    trigger_map = get_metadata_trigger_map()
+    # Get dict with instance types as keys, dict of relevant metadata as values
+    metadata_map = get_metadata_map()
+
+    # Add prompt type from metadata to all devices
     for i in status['devices']:
-        status['devices'][i]['prompt'] = prompt_map[status['devices'][i]['type']]
+        device_type = status['devices'][i]['type']
+        status['devices'][i]['prompt'] = metadata_map[device_type]['prompt']
+
+    # Add prompt type, triggerable bool, and limits (if range rule) to all sensors
     for i in status['sensors']:
-        status['sensors'][i]['prompt'] = prompt_map[status['sensors'][i]['type']]
+        sensor_type = status['sensors'][i]['type']
+        status['sensors'][i]['prompt'] = metadata_map[sensor_type]['prompt']
+        # Add limits if range rule
         if status['sensors'][i]['prompt'] == "float_range":
-            status['sensors'][i]['min_rule'] = limits_map[status['sensors'][i]['type']][0]
-            status['sensors'][i]['max_rule'] = limits_map[status['sensors'][i]['type']][1]
+            status['sensors'][i]['min_rule'] = metadata_map[sensor_type]['limits'][0]
+            status['sensors'][i]['max_rule'] = metadata_map[sensor_type]['limits'][1]
         # Thermostat: Convert limits to configured units
         if 'units' in status['sensors'][i].keys():
             units = status['sensors'][i]['units']
             status['sensors'][i]['min_rule'] = int(convert_celsius_temperature(status['sensors'][i]['min_rule'], units))
             status['sensors'][i]['max_rule'] = int(convert_celsius_temperature(status['sensors'][i]['max_rule'], units))
         # Add triggerable param (disables trigger button if false)
-        status['sensors'][i]['triggerable'] = trigger_map[status['sensors'][i]['type']]
+        status['sensors'][i]['triggerable'] = metadata_map[sensor_type]['triggerable']
 
     print(json.dumps(status, indent=4))
 
