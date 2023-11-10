@@ -55,7 +55,8 @@ The JSON metadata must follow this syntax:
         "targets": []
     },
     "rule_prompt": "",
-    "rule_limits": []
+    "rule_limits": [],
+    "triggerable": bool
 }
 ```
 
@@ -75,6 +76,7 @@ Parameters:
     - `int_or_fade`: User may select an integer, fade rule, "Enabled", or "Disabled"
     - `on_off`: User may select "On", "Off", "Enabled", or "Disabled"
 - `rule_limits`: Required for sensors which accept int/float rules, ignored for all others. Should contain 2 integers representing the minimum and maximum supported rules.
+- `triggerable`: Bool, determines whether the `trigger_sensor` API endpoint is supported. If False the frontend trigger button will be disabled.
 
 ### Integrating with client-side tools
 

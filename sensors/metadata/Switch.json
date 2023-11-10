@@ -14,5 +14,6 @@
         "schedule": {},
         "targets": []
     },
-    "rule_prompt": "standard"
+    "rule_prompt": "standard",
+    "triggerable": false
 }

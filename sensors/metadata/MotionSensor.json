@@ -15,5 +15,6 @@
         "targets": []
     },
     "rule_prompt": "float_range",
-    "rule_limits": [0, 60]
+    "rule_limits": [0, 60],
+    "triggerable": true
 }

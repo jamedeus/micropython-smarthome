@@ -67,8 +67,7 @@
 
         {% if category == "sensor" %}
             {# Disble trigger button for sensors which don't support endpoint #}
-            {# TODO this should be configured in metadata to avoid hardcoded types #}
-            {% if params.type in "switch, load-cell" %}
+            {% if not params.triggerable %}
                 <script>
                     // Disable trigger button (trigger not supported but still need to see state)
                     document.getElementById("{{instance}}-trigger").disabled = true;

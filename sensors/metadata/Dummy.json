@@ -13,5 +13,6 @@
         "schedule": {},
         "targets": []
     },
-    "rule_prompt": "on_off"
+    "rule_prompt": "on_off",
+    "triggerable": true
 }

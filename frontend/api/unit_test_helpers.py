@@ -92,7 +92,8 @@ config1_api_context = {
             'condition_met': True,
             'prompt': 'float_range',
             'max_rule': 60,
-            'min_rule': 0
+            'min_rule': 0,
+            'triggerable': True
         }
     },
     'devices': {
@@ -270,7 +271,8 @@ config2_api_context = {
             'prompt': 'float_range',
             'min_rule': 64,
             'max_rule': 80,
-            'units': 'fahrenheit'
+            'units': 'fahrenheit',
+            'triggerable': False
         }
     },
     'devices': {
@@ -462,7 +464,8 @@ config3_api_context = {
             'condition_met': True,
             'prompt': 'float_range',
             'max_rule': 60,
-            'min_rule': 0
+            'min_rule': 0,
+            'triggerable': True
         },
         'sensor2': {
             'current_rule': 1.0,
@@ -479,7 +482,8 @@ config3_api_context = {
             'condition_met': False,
             'prompt': 'float_range',
             'max_rule': 60,
-            'min_rule': 0
+            'min_rule': 0,
+            'triggerable': True
         }
     },
     'devices': {

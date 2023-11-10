@@ -67,6 +67,20 @@ def get_metadata_limits_map():
     return context
 
 
+# Returns mapping dict with sensor types as key, triggerable bool as value
+# Dynamically generated from json metadata files for each instance type
+def get_metadata_trigger_map():
+    # Get object containing metadata for all device and sensor types
+    metadata = get_device_and_sensor_metadata()
+
+    # Build mapping dict with sensor types as keys, triggerable bool as values
+    context = {}
+    for i in metadata['sensors']:
+        context[i["config_name"]] = i["triggerable"]
+
+    return context
+
+
 # Receives schedule params in post, renders rule_modal template
 def edit_rule(request):
     if request.method == "POST":
@@ -231,6 +245,7 @@ def api(request, node, recording=False):
     # Add prompt type and rule_limits from metadata
     prompt_map = get_metadata_prompt_map()
     limits_map = get_metadata_limits_map()
+    trigger_map = get_metadata_trigger_map()
     for i in status['devices']:
         status['devices'][i]['prompt'] = prompt_map[status['devices'][i]['type']]
     for i in status['sensors']:
@@ -243,6 +258,8 @@ def api(request, node, recording=False):
             units = status['sensors'][i]['units']
             status['sensors'][i]['min_rule'] = int(convert_celsius_temperature(status['sensors'][i]['min_rule'], units))
             status['sensors'][i]['max_rule'] = int(convert_celsius_temperature(status['sensors'][i]['max_rule'], units))
+        # Add triggerable param (disables trigger button if false)
+        status['sensors'][i]['triggerable'] = trigger_map[status['sensors'][i]['type']]
 
     print(json.dumps(status, indent=4))
 
