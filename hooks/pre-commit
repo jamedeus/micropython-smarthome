@@ -10,6 +10,11 @@
 #   overview page in django frontend)
 
 
+# Skip if not on master branch
+if [[ `git branch --show-current` != "master" ]]; then
+    exit
+fi
+
 # Check if static files are included in commit
 STATIC_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E "^(frontend/api/static/api/|frontend/node_configuration/static/node_configuration/)")
 

@@ -75,6 +75,8 @@ build:
     - "export NEW_TAG=$(echo $LAST_TAG | awk -F. '{$NF = $NF + 1;} 1' OFS=.)"
     - 'docker build --platform linux/arm64 -t $IMAGE_NAME:$NEW_TAG . -f frontend/docker/Dockerfile'
   rules:
+    - if: '$CI_COMMIT_BRANCH != "master"'
+      when: never
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
       when: never
     - changes:
@@ -93,6 +95,8 @@ deploy:
     - 'sed -i "s|$IMAGE_NAME:[0-9]*\.[0-9]*|$IMAGE_NAME:$LAST_TAG|g" /home/pi/docker/docker-compose.yaml'
     - 'docker compose -f /home/pi/docker/docker-compose.yaml up -d'
   rules:
+    - if: '$CI_COMMIT_BRANCH != "master"'
+      when: never
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
       when: never
     - changes:

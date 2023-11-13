@@ -10,6 +10,12 @@
 # SMARTHOME_ACCESS_TOKEN=your-access-token
 
 
+# Skip if not on master branch
+if [[ `git branch --show-current` != "master" ]]; then
+    exit
+fi
+
+
 # Check if firmware files are includes in commit
 FIRMWARE_FILES=$(git diff --name-only HEAD^ HEAD | grep -E "^(devices/|sensors/|lib/|core/|firmware/|lib/|setup.html)")
 
