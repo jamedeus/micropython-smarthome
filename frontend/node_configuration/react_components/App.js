@@ -16,9 +16,9 @@ class App extends React.Component {
 
     componentDidMount() {
         // Overwrite state with config received from context (if present)
-        const configJson = document.getElementById('root').getAttribute('data-config');
-        if (configJson) {
-            const config = JSON.parse(configJson);
+        const config = JSON.parse(document.getElementById("config").textContent);
+        console.log(config)
+        if (config) {
             this.setState({ ...config });
         }
     }

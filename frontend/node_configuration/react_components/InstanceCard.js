@@ -81,7 +81,7 @@ class InstanceCard extends React.Component {
     render() {
         // Index is the instance ID, config is section from state object
         const { id, category, config } = this.props;
-        const globalMetadata = window.metadata; // Accessing the global metadata from index.html
+        const globalMetadata = metadata; // Accessing the global metadata from index.html
 
         console.log(config)
 

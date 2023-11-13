@@ -172,6 +172,8 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'node_modules', 'jquery', 'dist'),
     os.path.join(BASE_DIR, 'node_modules', 'smoothscroll-polyfill', 'dist'),
     os.path.join(BASE_DIR, 'node_modules', 'rangeslider.js', 'dist'),
+    os.path.join(BASE_DIR, 'node_modules', 'react', 'umd'),
+    os.path.join(BASE_DIR, 'node_modules', 'react-dom', 'umd'),
 ]
 
 # Default primary key field type
