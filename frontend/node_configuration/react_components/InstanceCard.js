@@ -1,16 +1,16 @@
 import React from 'react';
-import NicknameInput from './NicknameInput';
-import IPInput from './IPInput';
-import URIInput from './URIInput';
-import HttpGetPathInputs from './HttpGetPathInputs';
-import ThermostatParamInputs from './ThermostatParamInputs';
-import SensorPinSelect from './SensorPinSelect';
-import DevicePinSelect from './DevicePinSelect';
-import DefaultRuleStandard from './DefaultRuleStandard';
-import DefaultRuleFloatRange from './DefaultRuleFloatRange';
-import DefaultRuleIntRange from './DefaultRuleIntRange';
-import DefaultRuleOnOff from './DefaultRuleOnOff';
-import DefaultRuleApiTarget from './DefaultRuleApiTarget';
+import NicknameInput from './inputs/NicknameInput';
+import IPInput from './inputs/IPInput';
+import URIInput from './inputs/URIInput';
+import HttpGetPathInputs from './inputs/HttpGetPathInputs';
+import ThermostatParamInputs from './inputs/ThermostatParamInputs';
+import SensorPinSelect from './inputs/SensorPinSelect';
+import DevicePinSelect from './inputs/DevicePinSelect';
+import DefaultRuleStandard from './inputs/DefaultRuleStandard';
+import DefaultRuleFloatRange from './inputs/DefaultRuleFloatRange';
+import DefaultRuleIntRange from './inputs/DefaultRuleIntRange';
+import DefaultRuleOnOff from './inputs/DefaultRuleOnOff';
+import DefaultRuleApiTarget from './inputs/DefaultRuleApiTarget';
 
 class InstanceCard extends React.Component {
     renderInputs = (config, category, globalMetadata) => {
