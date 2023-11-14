@@ -86,7 +86,7 @@ class InstanceCard extends React.Component {
         console.log(config)
 
         return (
-            <div className="fade-in mb-4">
+            <div id={`${id}-card`} className="mb-4 instance-card">
                 <div className="card">
                 <div className="card-body">
                     <div className="d-flex justify-content-between">

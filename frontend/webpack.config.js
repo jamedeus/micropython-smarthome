@@ -13,7 +13,8 @@ const config = {
     },
     externals: {
         'react': 'React',
-        'react-dom': 'ReactDOM'
+        'react-dom': 'ReactDOM',
+        'react-transition-group': 'ReactTransitionGroup'
     },
     devServer: {
         open: true,
@@ -31,6 +32,11 @@ const config = {
                 use: {
                     loader: 'babel-loader',
                 },
+
+            },
+            {
+                test: /\.css$/i,
+                use: ['style-loader', 'css-loader'],
             },
 
             // Add your rules for custom modules here

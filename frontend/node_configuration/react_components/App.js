@@ -1,5 +1,7 @@
 import React from 'react';
 import InstanceCard from './InstanceCard';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import './Animation.css';
 
 
 // Takes object and key prefix, returns all keys that begin with prefix
@@ -84,33 +86,45 @@ class App extends React.Component {
 
     // Render 2 column layout with device and sensor cards
     renderLayout = () => {
-        const deviceEntries = Object.entries(this.state)
-        .filter(([key, _]) => key.startsWith('device'))
-        .map(([key, config]) => (
-            <InstanceCard
-                key={key}
-                id={key}
-                category="device"
-                config={config}
-                onDelete={() => this.deleteInstance(key)}
-                onInputChange={(paramName, value) => this.handleInputChange(key, paramName, value)}
-                onTypeChange={(event) => this.changeInstanceType(key, "device", event)}
-            />
-        ));
+        const deviceEntries = (
+            <TransitionGroup className="device-container">
+                {Object.entries(this.state)
+                .filter(([key, _]) => key.startsWith('device'))
+                .map(([key, config]) => (
+                    <CSSTransition key={key} timeout={500} classNames="fade">
+                        <InstanceCard
+                            key={key}
+                            id={key}
+                            category="device"
+                            config={config}
+                            onDelete={() => this.deleteInstance(key)}
+                            onInputChange={(paramName, value) => this.handleInputChange(key, paramName, value)}
+                            onTypeChange={(event) => this.changeInstanceType(key, "device", event)}
+                        />
+                    </CSSTransition>
+                ))}
+            </TransitionGroup>
+        );
 
-        const sensorEntries = Object.entries(this.state)
-        .filter(([key, _]) => key.startsWith('sensor'))
-        .map(([key, config]) => (
-            <InstanceCard
-                key={key}
-                id={key}
-                category="sensor"
-                config={config}
-                onDelete={() => this.deleteInstance(key)}
-                onInputChange={(paramName, value) => this.handleInputChange(key, paramName, value)}
-                onTypeChange={(event) => this.changeInstanceType(key, "sensor", event)}
-            />
-        ));
+        const sensorEntries = (
+            <TransitionGroup className="sensor-container">
+                {Object.entries(this.state)
+                .filter(([key, _]) => key.startsWith('sensor'))
+                .map(([key, config]) => (
+                    <CSSTransition key={key} timeout={500} classNames="fade">
+                        <InstanceCard
+                            key={key}
+                            id={key}
+                            category="sensor"
+                            config={config}
+                            onDelete={() => this.deleteInstance(key)}
+                            onInputChange={(paramName, value) => this.handleInputChange(key, paramName, value)}
+                            onTypeChange={(event) => this.changeInstanceType(key, "sensor", event)}
+                        />
+                    </CSSTransition>
+                ))}
+            </TransitionGroup>
+        );
 
         return (
             <>
@@ -120,16 +134,16 @@ class App extends React.Component {
                     <div className="row mt-3">
                         <div id="sensors" className="col-sm">
                             <h2 className="text-center">Add Sensors</h2>
-                            <div id="addSensorButton" className="text-center position-relative">
+                            {sensorEntries}
+                            <div id="add_sensor" className="text-center position-relative">
                                 <button className="btn-secondary btn mb-3" onClick={() => this.addInstance('sensor')}>Add Sensor</button>
-                                {sensorEntries}
                             </div>
                         </div>
                         <div id="devices" className="col-sm">
                             <h2 className="text-center">Add Devices</h2>
-                            <div id="addDeviceButton" className="text-center position-relative">
+                            {deviceEntries}
+                            <div id="add_device" className="text-center position-relative">
                                 <button className="btn-secondary btn mb-3" onClick={() => this.addInstance('device')}>Add Device</button>
-                                {deviceEntries}
                             </div>
                         </div>
                     </div>

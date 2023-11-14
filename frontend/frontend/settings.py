@@ -174,6 +174,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'node_modules', 'rangeslider.js', 'dist'),
     os.path.join(BASE_DIR, 'node_modules', 'react', 'umd'),
     os.path.join(BASE_DIR, 'node_modules', 'react-dom', 'umd'),
+    os.path.join(BASE_DIR, 'node_modules', 'react-transition-group', 'dist'),
 ]
 
 # Default primary key field type
