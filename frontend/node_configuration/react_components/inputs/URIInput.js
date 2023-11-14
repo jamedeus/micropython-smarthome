@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function URIInput({ id, value, onChange }) {
+function URIInput({ key, param, value, onChange }) {
     return (
         <InputWrapper label="URI">
             <input
@@ -10,7 +10,7 @@ function URIInput({ id, value, onChange }) {
                 placeholder="IP address or URL"
                 value={value}
                 pattern="(?:(?:http|https):\/\/)?(?:\S+(?::\S*)?@)?(?:(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?::\d{1,5})?|(?:(?:http|https):\/\/)?[a-zA-Z0-9.]+(?:-[a-zA-Z0-9]+)*(?:\.[a-zA-Z]{2,6})+(?:\/\S*)?"
-                onChange={(e) => onChange(id, e.target.value)}
+                onChange={(e) => onChange(param, e.target.value)}
                 required
             />
         </InputWrapper>

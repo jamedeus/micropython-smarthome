@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function HttpGetPathInputs({ id, on_path, off_path, onChange }) {
+function HttpGetPathInputs({ key, param, on_path, off_path, onChange }) {
     return (
         <>
             <InputWrapper label="On path">
@@ -10,7 +10,7 @@ function HttpGetPathInputs({ id, on_path, off_path, onChange }) {
                     className="form-control validate"
                     placeholder="Appended to URI for on action"
                     value={on_path}
-                    onChange={(e) => onChange(e.target.value)}
+                    onChange={(e) => onChange("on_path", e.target.value)}
                     required
                 />
             </InputWrapper>
@@ -21,7 +21,7 @@ function HttpGetPathInputs({ id, on_path, off_path, onChange }) {
                     className="form-control validate"
                     placeholder="Appended to URI for off action"
                     value={off_path}
-                    onChange={(e) => onChange(e.target.value)}
+                    onChange={(e) => onChange("off_path", e.target.value)}
                     required
                 />
             </InputWrapper>

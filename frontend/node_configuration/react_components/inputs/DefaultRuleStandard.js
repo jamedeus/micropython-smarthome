@@ -1,11 +1,11 @@
 import React from 'react';
 
-function DefaultRuleStandard({ id, value, onChange }) {
+function DefaultRuleStandard({ key, param, value, onChange }) {
     return (
         <div className="mb-2">
             <label className="w-100">
                 <b>Default Rule:</b>
-                <select className="form-select" value={value} autoComplete="off" onChange={(e) => onChange(id, e.target.value)} required>
+                <select className="form-select" value={value} autoComplete="off" onChange={(e) => onChange(param, e.target.value)} required>
                     <option disabled>Select default rule</option>
                     <option value="enabled">Enabled</option>
                     <option value="disabled">Disabled</option>

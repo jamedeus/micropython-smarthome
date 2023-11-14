@@ -13,47 +13,47 @@ import DefaultRuleOnOff from './inputs/DefaultRuleOnOff';
 import DefaultRuleApiTarget from './inputs/DefaultRuleApiTarget';
 
 class InstanceCard extends React.Component {
-    renderInputs = (config, category, globalMetadata) => {
+    renderInputs = (id, config, category, globalMetadata) => {
         let inputs = [];
 
         if (config.nickname !== undefined) {
-            inputs.push(<NicknameInput key="nickname" id="nickname" value={config.nickname} onChange={this.props.onInputChange} />);
+            inputs.push(<NicknameInput key={id} param="nickname" value={config.nickname} onChange={this.props.onInputChange} />);
         }
 
         if (config.pin !== undefined) {
             // Is device if no targets key
             if (config.targets === undefined) {
-                inputs.push(<DevicePinSelect key="pin" id="pin" value={config.pin} onChange={this.props.onInputChange} />);
+                inputs.push(<DevicePinSelect key={id} param="pin" value={config.pin} onChange={this.props.onInputChange} />);
             // Otherwise is sensor
             } else {
-                inputs.push(<SensorPinSelect key="pin" id="pin" value={config.pin} onChange={this.props.onInputChange} />);
+                inputs.push(<SensorPinSelect key={id} param="pin" value={config.pin} onChange={this.props.onInputChange} />);
             };
         }
 
         if (config.ip !== undefined) {
-            inputs.push(<IPInput key="ip" id="ip" value={config.ip} onChange={this.props.onInputChange} />);
+            inputs.push(<IPInput key={id} param="ip" value={config.ip} onChange={this.props.onInputChange} />);
         }
 
         if (config.uri !== undefined) {
-            inputs.push(<URIInput key="uri" id="uri" value={config.uri} onChange={this.props.onInputChange} />);
+            inputs.push(<URIInput key={id} param="uri" value={config.uri} onChange={this.props.onInputChange} />);
         }
 
         if (config.on_path !== undefined && config.off_path !== undefined) {
-            inputs.push(<HttpGetPathInputs key="on_off_path" id="on_off_path" on_path={config.on_path} off_path={config.off_path} onChange={this.props.onInputChange} />);
+            inputs.push(<HttpGetPathInputs key={id} param="on_off_path" on_path={config.on_path} off_path={config.off_path} onChange={this.props.onInputChange} />);
         }
 
         // Add correct default rule input based on metadata rule_prompt
-        inputs.push(this.renderRuleInput(config, category, globalMetadata));
+        inputs.push(this.renderRuleInput(id, config, category, globalMetadata));
 
         // Thermostat mode, units, tolerance inputs
         if (config.mode !== undefined && config.units !== undefined) {
-            inputs.push(<ThermostatParamInputs key="thermostat" id="thermostat" mode={config['mode']} units={config['units']} tolerance={config['tolerance']} onChange={this.props.onInputChange} />);
+            inputs.push(<ThermostatParamInputs key={id} param="thermostat" mode={config['mode']} units={config['units']} tolerance={config['tolerance']} onChange={this.props.onInputChange} />);
         }
 
         return inputs;
     };
 
-    renderRuleInput = (config, category, globalMetadata) => {
+    renderRuleInput = (id, config, category, globalMetadata) => {
         // New card: skip
         if (config._type === undefined) {
             return null
@@ -64,15 +64,15 @@ class InstanceCard extends React.Component {
 
         switch (metadata.rule_prompt) {
             case 'standard':
-                return <DefaultRuleStandard key='default_rule' id='default_rule' value={config.default_rule} onChange={this.props.onInputChange} />;
+                return <DefaultRuleStandard key={id} param='default_rule' value={config.default_rule} onChange={this.props.onInputChange} />;
             case 'on_off':
-                return <DefaultRuleOnOff key='default_rule' id='default_rule' value={config.default_rule} onChange={this.props.onInputChange} />;
+                return <DefaultRuleOnOff key={id} param='default_rule' value={config.default_rule} onChange={this.props.onInputChange} />;
             case 'float_range':
-                return <DefaultRuleFloatRange key='default_rule' id='default_rule' value={config.default_rule} metadata={metadata} onChange={this.props.onInputChange} />;
+                return <DefaultRuleFloatRange key={id} param='default_rule' value={config.default_rule} metadata={metadata} onChange={this.props.onInputChange} />;
             case 'int_or_fade':
-                return <DefaultRuleIntRange key='default_rule' id='default_rule' value={config.default_rule} min={config.min_rule} max={config.max_rule} metadata={metadata} onChange={this.props.onInputChange} />;
+                return <DefaultRuleIntRange key={id} param='default_rule' value={config.default_rule} min={config.min_rule} max={config.max_rule} metadata={metadata} onChange={this.props.onInputChange} />;
             case 'api_target':
-                return <DefaultRuleApiTarget key='default_rule' id='default_rule' value={config.default_rule} onChange={this.props.onInputChange} />;
+                return <DefaultRuleApiTarget key={id} param='default_rule' value={config.default_rule} onChange={this.props.onInputChange} />;
             default:
                 return null;
         }
@@ -96,7 +96,7 @@ class InstanceCard extends React.Component {
                     </div>
                     <label className="w-100">
                         <b>Type:</b>
-                        <select className="form-select mt-2" data-param="_type" required onChange={this.props.onTypeChange}>
+                        <select className="form-select mt-2" value={config._type} required onChange={this.props.onTypeChange}>
                             <option value="clear">Select {category} type</option>
                             {Object.entries(globalMetadata[`${category}s`]).map(([key, type]) => (
                             <option key={key} value={type.config_name}>{type.class_name}</option>
@@ -104,7 +104,7 @@ class InstanceCard extends React.Component {
                         </select>
                     </label>
                     <div id={`${id}-params`} className="card-body">
-                        {this.renderInputs(config, category, globalMetadata)}
+                        {this.renderInputs(id, config, category, globalMetadata)}
                     </div>
                 </div>
                 </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function NicknameInput({ id, value, onChange }) {
+function NicknameInput({ key, param, value, onChange }) {
     return (
         <InputWrapper label="Nickname">
             <input
@@ -9,7 +9,7 @@ function NicknameInput({ id, value, onChange }) {
                 className="form-control nickname"
                 placeholder=""
                 value={value}
-                onChange={(e) => onChange(id, e.target.value)}
+                onChange={(e) => onChange(param, e.target.value)}
                 required
             />
         </InputWrapper>

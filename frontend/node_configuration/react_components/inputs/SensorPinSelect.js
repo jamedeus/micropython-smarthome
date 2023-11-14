@@ -1,10 +1,10 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function SensorPinSelect({ id, value, onChange }) {
+function SensorPinSelect({ key, param, value, onChange }) {
     return (
         <InputWrapper label="Pin">
-            <select className="form-select pin-select" value={value} autoComplete="off" /*onchange="pinSelected(this)"*/ onChange={(e) => onChange(id, e.target.value)} required>
+            <select className="form-select pin-select" value={value} autoComplete="off" /*onchange="pinSelected(this)"*/ onChange={(e) => onChange(param, e.target.value)} required>
                 <option>Select pin</option>
                 <option value="4">4</option>
                 <option value="5">5</option>
