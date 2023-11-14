@@ -63,12 +63,10 @@
         };
     </script>
 
-    <!-- TODO django template inserts config file to dataset attribute here -->
     <div id="root" class="container d-flex flex-column vh-100" data-config="{{config}}"></div>
     {{ metadata|json_script:"instance_metadata" }}
     {{ config|json_script:"config" }}
     <script>
-        // TODO django template inserts metadata context here
         const metadata = JSON.parse(document.getElementById("instance_metadata").textContent);
 
         // Listen for system theme changes, switch to dark/light mode to reflect (responsive)

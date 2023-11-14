@@ -1,5 +1,6 @@
 import React from 'react';
 import InstanceCard from './InstanceCard';
+import MetadataSection from './MetadataSection';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import './Animation.css';
 
@@ -20,8 +21,16 @@ class App extends React.Component {
         super(props);
         // Default state object if not received from context
         this.state = {
-            metadata: {},
-            wifi: {}
+            metadata: {
+                id: '',
+                floor: '',
+                location: '',
+                schedule_keywords: {}
+            },
+            wifi: {
+                ssid: '',
+                password: ''
+            }
         };
     }
 
@@ -128,7 +137,17 @@ class App extends React.Component {
 
         return (
             <>
-                <h1 className="text-center pt-3 pb-4">TEST</h1>
+                <h1 className="text-center pt-3 pb-4">{document.title}</h1>
+
+                <MetadataSection
+                    key="metadata"
+                    id={this.state.metadata.id}
+                    floor={this.state.metadata.floor}
+                    location={this.state.metadata.location}
+                    ssid={this.state.wifi.ssid}
+                    password={this.state.wifi.password}
+                    onChange={this.handleInputChange}
+                />
 
                 <div id="page1" className="d-flex flex-column h-100">
                     <div className="row mt-3">
