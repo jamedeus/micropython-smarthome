@@ -1,5 +1,5 @@
 
-var staticCacheName = "django-pwa-va6d6401";
+var staticCacheName = "django-pwa-vbabd1f9";
 var filesToCache = [
     '/offline/',
     '/static/css/django-pwa-app.css',

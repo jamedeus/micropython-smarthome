@@ -2,15 +2,24 @@ import React from 'react';
 import InstanceCard from './InstanceCard';
 
 
+// Takes object and key prefix, returns all keys that begin with prefix
+function filterObject(obj, prefix) {
+    return Object.entries(obj).reduce((acc, [key, value]) => {
+        if (key.startsWith(prefix)) {
+            acc[key] = value;
+        }
+        return acc;
+    }, {});
+};
+
+
 class App extends React.Component {
     constructor(props) {
         super(props);
         // Default state object if not received from context
         this.state = {
             metadata: {},
-            wifi: {},
-            num_sensors: 0,
-            num_devices: 0
+            wifi: {}
         };
     }
 
@@ -31,12 +40,11 @@ class App extends React.Component {
     addInstance = (category) => {
         this.setState(prevState => {
             // Get index of new instance
-            prevState[`num_${category}s`] += 1;
-            const newIndex = prevState[`num_${category}s`];
+            const index = Object.keys(filterObject(prevState, category)).length + 1;
 
             // Add key to state object with empty config
             // Will be populated with metadata template when user selects type
-            prevState[`${category}${newIndex}`] = {}
+            prevState[`${category}${index}`] = {}
 
             return prevState;
         });
@@ -45,19 +53,10 @@ class App extends React.Component {
     // Handler for delete button on device and sensor cards
     deleteInstance = (id) => {
         this.setState(prevState => {
-            // Delete from state object
-            delete prevState[id];
-
-            // Decrement count in state object
-            if (id.startsWith('sensor')) {
-                prevState.num_sensors -= 1;
-            } else {
-                prevState.num_devices -= 1;
-            };
-
-            // TODO fix gaps in sequential keys
-
-            return prevState;
+            // Remove deleted instance from state object
+            delete prevState[id]
+            // Decrement all subsequent IDs in state object to prevent gaps in index
+            return update_ids(id, prevState);
         });
     };
 
@@ -147,5 +146,48 @@ class App extends React.Component {
         return this.renderLayout();
     }
 }
+
+
+// Called by deleteInstance, decrements IDs of all subsequent instances to prevent gaps
+// Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc
+function update_ids(target, state) {
+    // Get category (device or sensor) and index of removed instance
+    const category = target.replace(/[0-9]/g, '');
+    const index = target.replace(/[a-zA-Z]/g, '');
+
+    // Get list of all instances in same category
+    var instances = filterObject(state, category);
+
+    // If target is device get list of sensors (used to update target IDs)
+    if (category === 'device') {
+        var sensors = filterObject(state, 'sensor');
+        // Remove device from all sensor targets
+        for (const sensor in sensors) {
+            state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== target);
+        };
+    };
+
+    // Iterate all instances in category starting from the removed instance index
+    for (let i=parseInt(index); i<Object.entries(instances).length+1; i++) {
+        // Removed index now available, decrement next index by 1
+        const new_id = `${category}${i}`;
+        const old_id = `${category}${i+1}`;
+        state[new_id] = JSON.parse(JSON.stringify(state[old_id]));
+        delete state[old_id];
+
+        // Decrement device index in sensor targets lists to match above
+        if (category === 'device') {
+            for (const sensor in sensors) {
+                if (state[sensor]['targets'].includes(old_id)) {
+                    state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== old_id);
+                    state[sensor]['targets'].push(new_id);
+                };
+            };
+        };
+    }
+
+    return state;
+};
+
 
 export default App;
