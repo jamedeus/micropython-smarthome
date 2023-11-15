@@ -6,3 +6,4 @@ firmware/*.bin
 *.coverage*
 .env
 *release.log
+frontend/node_configuration/static/node_configuration/edit_config.js

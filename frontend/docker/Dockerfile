@@ -3,8 +3,12 @@
 # Node dependencies build stage
 FROM node:19-buster-slim as node_build
 
-COPY frontend/package.json .
+# Copy directory containing package.json and react components
+COPY frontend/ .
+WORKDIR /frontend
+# Install node modules, compile react components to static file
 RUN npm install
+RUN npm run build
 
 # Python dependencies build stage
 FROM python:3.10-slim-buster as py_build
@@ -46,7 +50,12 @@ COPY --from=node_build node_modules/jquery/dist/jquery.min.js /repo/frontend/nod
 COPY --from=node_build node_modules/spinkit/spinkit.min.css /repo/frontend/node_modules/spinkit/spinkit.min.css
 COPY --from=node_build node_modules/smoothscroll-polyfill/dist/smoothscroll.min.js /repo/frontend/node_modules/smoothscroll-polyfill/dist/smoothscroll.min.js
 COPY --from=node_build node_modules/rangeslider.js/dist/rangeslider.min.js /repo/frontend/node_modules/rangeslider.js/dist/rangeslider.min.js
+COPY --from=node_build node_modules/react/umd/react.production.min.js /repo/frontend/node_modules/react/umd/react.production.min.js
+COPY --from=node_build node_modules/react-dom/umd/react-dom.production.min.js /repo/frontend/node_modules/react-dom/umd/react-dom.production.min.js
+COPY --from=node_build node_modules/react-transition-group/dist/react-transition-group.min.js /repo/frontend/node_modules/react-transition-group/dist/react-transition-group.min.js
 COPY --from=py_build /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
+# Copy compiled react static files to final build stage
+COPY --from=node_build node_configuration/static/node_configuration/edit_config.js /repo/node_configuration/static/node_configuration/edit_config.js
 
 # Create CLI dir (required if CLI_SYNC enabled)
 RUN mkdir /repo/CLI
