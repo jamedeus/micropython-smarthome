@@ -1,6 +1,7 @@
 import React from 'react';
 import InstanceCard from './InstanceCard';
 import MetadataSection from './MetadataSection';
+import IrBlasterSection from './IrBlasterSection';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
 import './Animation.css';
 
@@ -30,6 +31,11 @@ class App extends React.Component {
             wifi: {
                 ssid: '',
                 password: ''
+            },
+            ir_blaster: {
+                configured: false,
+                pin: '',
+                target: []
             }
         };
     }
@@ -39,6 +45,9 @@ class App extends React.Component {
         const config = JSON.parse(document.getElementById("config").textContent);
         console.log(config)
         if (config) {
+            if (config.ir_blaster !== undefined) {
+                config.ir_blaster.configured = true;
+            }
             this.setState({ ...config });
         }
     }
@@ -84,7 +93,6 @@ class App extends React.Component {
 
     // Handler for all inputs inside device and sensor cards
     // Takes device/sensor ID, param, and value; updates state object
-    // TODO this has issues for components with multiple inputs (on/off paths, thermostat)
     handleInputChange = (id, param, value) => {
         console.log(param)
         this.setState(prevState => {
@@ -92,6 +100,24 @@ class App extends React.Component {
             return prevState;
         });
     };
+
+    // Handler for IR target checkboxes
+    handleIrTargetSelect = (target, checked) => {
+        this.setState(prevState => {
+            // Add target if not already present
+            if (checked) {
+                if (prevState.ir_blaster.target.indexOf(target) === -1) {
+                    prevState.ir_blaster.target.push(target);
+                }
+
+            // Remove target
+            } else {
+                console.log(`Remove ${target}`)
+                prevState.ir_blaster.target = prevState.ir_blaster.target.filter(existing => existing !== target);
+            };
+            return prevState;
+        });
+    }
 
     // Render 2 column layout with device and sensor cards
     renderLayout = () => {
@@ -147,6 +173,15 @@ class App extends React.Component {
                     ssid={this.state.wifi.ssid}
                     password={this.state.wifi.password}
                     onChange={this.handleInputChange}
+                />
+
+                <IrBlasterSection
+                    key="ir_blaster"
+                    configured={this.state.ir_blaster.configured}
+                    pin={this.state.ir_blaster.pin}
+                    target={this.state.ir_blaster.target}
+                    onChange={this.handleInputChange}
+                    onTargetSelect={this.handleIrTargetSelect}
                 />
 
                 <div id="page1" className="d-flex flex-column h-100">

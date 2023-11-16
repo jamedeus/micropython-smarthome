@@ -175,6 +175,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'node_modules', 'react', 'umd'),
     os.path.join(BASE_DIR, 'node_modules', 'react-dom', 'umd'),
     os.path.join(BASE_DIR, 'node_modules', 'react-transition-group', 'dist'),
+    os.path.join(BASE_DIR, 'node_modules', 'react-bootstrap', 'dist'),
 ]
 
 # Default primary key field type
