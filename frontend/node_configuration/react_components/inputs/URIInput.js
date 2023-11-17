@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function URIInput({ key, param, value, onChange }) {
+function URIInput({ key, id, param, value, onChange }) {
     return (
         <InputWrapper label="URI">
             <input

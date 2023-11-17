@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function NicknameInput({ key, param, value, onChange }) {
+function NicknameInput({ key, id, param, value, onChange }) {
     return (
         <InputWrapper label="Nickname">
             <input

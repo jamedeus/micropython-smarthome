@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function DefaultRuleFloatRange({ key, param, value, metadata, onChange }) {
+function DefaultRuleFloatRange({ key, id, param, value, metadata, onChange }) {
     return (
         <InputWrapper label="Default Rule">
             <div className="d-flex flex-row align-items-center my-2">

@@ -1,6 +1,6 @@
 import React from 'react';
 
-function DefaultRuleStandard({ key, param, value, onChange }) {
+function DefaultRuleStandard({ key, id, param, value, onChange }) {
     return (
         <div className="mb-2">
             <label className="w-100">

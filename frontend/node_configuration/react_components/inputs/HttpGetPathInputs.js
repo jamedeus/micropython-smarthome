@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function HttpGetPathInputs({ key, param, on_path, off_path, onChange }) {
+function HttpGetPathInputs({ key, id, param, on_path, off_path, onChange }) {
     return (
         <>
             <InputWrapper label="On path">

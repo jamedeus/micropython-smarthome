@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function IPInput({ key, param, value, onChange }) {
+function IPInput({ key, id, param, value, onChange }) {
     return (
         <InputWrapper label="IP">
             <input

@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function ThermostatParamInputs({ key, param, mode, units, tolerance, onChange }) {
+function ThermostatParamInputs({ key, id, param, mode, units, tolerance, onChange }) {
     return (
         <>
             <InputWrapper label="Mode">

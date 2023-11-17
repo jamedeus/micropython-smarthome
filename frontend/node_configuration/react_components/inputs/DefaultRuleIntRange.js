@@ -1,7 +1,7 @@
 import React from 'react';
 import InputWrapper from './InputWrapper';
 
-function DefaultRuleIntRange({ key, param, value, min, max, metadata, onChange }) {
+function DefaultRuleIntRange({ key, id, param, value, min, max, metadata, onChange }) {
     return (
         <>
             <InputWrapper label="Default Rule">
@@ -13,10 +13,10 @@ function DefaultRuleIntRange({ key, param, value, min, max, metadata, onChange }
             </InputWrapper>
 
             <div className="mt-3 text-center">
-                <a className="text-decoration-none text-dim" data-bs-toggle="collapse" href={`#${key}-advanced_settings`} role="button" aria-expanded="false" aria-controls={`${key}-advanced_settings`}>Advanced</a>
+                <a className="text-decoration-none text-dim" data-bs-toggle="collapse" href={`#${id}-advanced_settings`} role="button" aria-expanded="false" aria-controls={`${id}-advanced_settings`}>Advanced</a>
             </div>
 
-            <div id={`${key}-advanced_settings`} className="collapse">
+            <div id={`${id}-advanced_settings`} className="collapse">
                 <InputWrapper label="Min brightness">
                     <input type="text" className="form-control rule-limits" value={min} data-min={metadata.rule_limits[0]} data-max={metadata.rule_limits[1]} onChange={(e) => onChange('min_rule', e.target.value)} required />
                 </InputWrapper>

@@ -3,7 +3,6 @@ import InstanceCard from './InstanceCard';
 import MetadataSection from './MetadataSection';
 import IrBlasterSection from './IrBlasterSection';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
-import './Animation.css';
 
 
 // Takes object and key prefix, returns all keys that begin with prefix
@@ -14,6 +13,11 @@ function filterObject(obj, prefix) {
         }
         return acc;
     }, {});
+};
+
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 };
 
 
@@ -48,6 +52,11 @@ class App extends React.Component {
             if (config.ir_blaster !== undefined) {
                 config.ir_blaster.configured = true;
             }
+            for (const i in config) {
+                if (i.startsWith('device') || i.startsWith('sensor')) {
+                    config[i]['uniqueID'] = Math.random();
+                };
+            }
             this.setState({ ...config });
         }
     }
@@ -71,6 +80,27 @@ class App extends React.Component {
     };
 
     // Handler for delete button on device and sensor cards
+    startDeletingInstance = async (id) => {
+        // Get category (device or sensor) and index of deleted card
+        const category = id.replace(/[0-9]/g, '');
+        const index = id.replace(/[a-zA-z]/g, '');
+
+        // Get reference to deleted card, array of cards in category, and category add button
+        const card = document.getElementById(`${id}-card`);
+        const cards = Array.from(document.getElementById(`${category}s`).children);
+        const button = document.getElementById(`add_${category}`);
+
+        // Get animation height (card height + 1.5rem spacing), set CSS var used in animation
+        const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize)
+        const animation_height = card.clientHeight / remPx + 1.5;
+        document.documentElement.style.setProperty('--animation-height', `${animation_height}rem`);
+
+        // Wait for animation to complete before removing from state object
+        await delete_animation(cards, index, button);
+        this.deleteInstance(id)
+    }
+
+    // Called from delete button handler after animation completes
     deleteInstance = (id) => {
         this.setState(prevState => {
             // Remove deleted instance from state object
@@ -122,43 +152,39 @@ class App extends React.Component {
     // Render 2 column layout with device and sensor cards
     renderLayout = () => {
         const deviceEntries = (
-            <TransitionGroup className="device-container">
+            <>
                 {Object.entries(this.state)
-                .filter(([key, _]) => key.startsWith('device'))
-                .map(([key, config]) => (
-                    <CSSTransition key={key} timeout={500} classNames="fade">
-                        <InstanceCard
-                            key={key}
-                            id={key}
-                            category="device"
-                            config={config}
-                            onDelete={() => this.deleteInstance(key)}
-                            onInputChange={(paramName, value) => this.handleInputChange(key, paramName, value)}
-                            onTypeChange={(event) => this.changeInstanceType(key, "device", event)}
-                        />
-                    </CSSTransition>
+                .filter(([id, _]) => id.startsWith('device'))
+                .map(([id, config]) => (
+                    <InstanceCard
+                        key={config.uniqueID}
+                        id={id}
+                        category="device"
+                        config={config}
+                        onDelete={() => this.startDeletingInstance(id)}
+                        onInputChange={(paramName, value) => this.handleInputChange(id, paramName, value)}
+                        onTypeChange={(event) => this.changeInstanceType(id, "device", event)}
+                    />
                 ))}
-            </TransitionGroup>
+            </>
         );
 
         const sensorEntries = (
-            <TransitionGroup className="sensor-container">
+            <>
                 {Object.entries(this.state)
-                .filter(([key, _]) => key.startsWith('sensor'))
-                .map(([key, config]) => (
-                    <CSSTransition key={key} timeout={500} classNames="fade">
-                        <InstanceCard
-                            key={key}
-                            id={key}
-                            category="sensor"
-                            config={config}
-                            onDelete={() => this.deleteInstance(key)}
-                            onInputChange={(paramName, value) => this.handleInputChange(key, paramName, value)}
-                            onTypeChange={(event) => this.changeInstanceType(key, "sensor", event)}
-                        />
-                    </CSSTransition>
+                .filter(([id, _]) => id.startsWith('sensor'))
+                .map(([id, config]) => (
+                    <InstanceCard
+                        key={config.uniqueID}
+                        id={id}
+                        category="sensor"
+                        config={config}
+                        onDelete={() => this.startDeletingInstance(id)}
+                        onInputChange={(paramName, value) => this.handleInputChange(id, paramName, value)}
+                        onTypeChange={(event) => this.changeInstanceType(id, "sensor", event)}
+                    />
                 ))}
-            </TransitionGroup>
+            </>
         );
 
         return (
@@ -255,6 +281,31 @@ function update_ids(target, state) {
     }
 
     return state;
+};
+
+
+// Delete instance card animation
+// Takes array of card divs, index of card to delete, add instance button
+// Fades out card to delete, slides up all cards below + add button
+async function delete_animation(cards, index, button) {
+    return new Promise(async resolve => {
+        // Fade out card to be deleted
+        cards[index].classList.add('fade-out');
+
+        // Slide up all cards below, wait for animation to complete
+        for (let i=parseInt(index)+1; i<cards.length; i++) {
+            cards[i].children[0].classList.add('slide-up');
+        };
+        button.classList.add('slide-up');
+        await sleep(800);
+
+        // Prevent cards jumping higher when hidden card is actually deleted
+        for (let i=parseInt(index)+1; i<cards.length; i++) {
+            cards[i].children[0].classList.remove('slide-up');
+        };
+        button.classList.remove('slide-up');
+        resolve();
+    });
 };
 
 
