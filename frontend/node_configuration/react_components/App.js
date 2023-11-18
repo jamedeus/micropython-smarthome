@@ -3,6 +3,7 @@ import InstanceCard from './InstanceCard';
 import MetadataSection from './MetadataSection';
 import IrBlasterSection from './IrBlasterSection';
 import { TransitionGroup, CSSTransition } from 'react-transition-group';
+import { add_new_slider } from './rule_sliders';
 
 
 // Takes object and key prefix, returns all keys that begin with prefix
@@ -59,6 +60,11 @@ class App extends React.Component {
             }
             this.setState({ ...config });
         }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        // Initialize all rangesliders after re-render
+        document.querySelectorAll('input[type="range"]').forEach(slider => add_new_slider(slider));
     }
 
     logState = () => {
