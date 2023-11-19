@@ -149,8 +149,19 @@ export const ConfigProvider = ({ children }) => {
 
 
     return (
-        <ConfigContext.Provider value={{ config, updateConfig, logState, addInstance, startDeletingInstance, changeInstanceType, handleInputChange, handleIrTargetSelect }}>
-        {children}
+        <ConfigContext.Provider value=
+            {{
+                config,
+                updateConfig,
+                logState,
+                addInstance,
+                startDeletingInstance,
+                changeInstanceType,
+                handleInputChange,
+                handleIrTargetSelect
+            }}
+        >
+            {children}
         </ConfigContext.Provider>
     );
 };

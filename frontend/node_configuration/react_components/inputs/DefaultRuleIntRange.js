@@ -1,13 +1,24 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 
-function DefaultRuleIntRange({ key, id, param, value, min, max, metadata, onChange }) {
+function DefaultRuleIntRange({ key, id }) {
+    // Get curent state + callback functions from context
+    const { config, handleInputChange } = useContext(ConfigContext);
+
+    // Get instance section in config
+    const instance = config[id];
+
+    // TODO find a better way
+    const category = id.replace(/[0-9]/g, '');
+    const instanceMetadata = metadata[`${category}s`][instance._type];
+
     return (
         <>
             <InputWrapper label="Default Rule">
                 <div className="d-flex flex-row align-items-center my-2">
                     <button className="btn btn-sm me-1" /*onClick="rule_slider_increment(this);"*/ data-direction="down" data-stepsize="1"><i className="bi-dash-lg"></i></button>
-                    <input type="range" className="mx-auto" min={metadata.rule_limits[0]} max={metadata.rule_limits[1]} data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value={value} onChange={(e) => onChange(param, e.target.value)} autoComplete="off" />
+                    <input type="range" className="mx-auto" min={instanceMetadata.rule_limits[0]} max={instanceMetadata.rule_limits[1]} data-displaymin="1" data-displaymax="100" data-displaytype="int" step="1" value={instance.default_rule} onChange={(e) => handleInputChange(id, "default_rule", e.target.value)} autoComplete="off" />
                     <button className="btn btn-sm ms-1" /*onClick="rule_slider_increment(this);"*/ data-direction="up" data-stepsize="1"><i className="bi-plus-lg"></i></button>
                 </div>
             </InputWrapper>
@@ -18,11 +29,27 @@ function DefaultRuleIntRange({ key, id, param, value, min, max, metadata, onChan
 
             <div id={`${id}-advanced_settings`} className="collapse">
                 <InputWrapper label="Min brightness">
-                    <input type="text" className="form-control rule-limits" value={min} data-min={metadata.rule_limits[0]} data-max={metadata.rule_limits[1]} onChange={(e) => onChange('min_rule', e.target.value)} required />
+                    <input
+                        type="text"
+                        className="form-control rule-limits"
+                        value={instance.min_rule}
+                        data-min={instanceMetadata.rule_limits[0]}
+                        data-max={instanceMetadata.rule_limits[1]}
+                        onChange={(e) => handleInputChange(id, "min_rule", e.target.value)}
+                        required
+                    />
                 </InputWrapper>
 
                 <InputWrapper label="Max brightness">
-                    <input type="text" className="form-control rule-limits" value={max} data-min={metadata.rule_limits[0]} data-max={metadata.rule_limits[1]} onChange={(e) => onChange('max_rule', e.target.value)} required />
+                    <input
+                        type="text"
+                        className="form-control rule-limits"
+                        value={instance.max_rule}
+                        data-min={instanceMetadata.rule_limits[0]}
+                        data-max={instanceMetadata.rule_limits[1]}
+                        onChange={(e) => handleInputChange(id, "max_rule", e.target.value)}
+                        required
+                    />
                 </InputWrapper>
             </div>
         </>

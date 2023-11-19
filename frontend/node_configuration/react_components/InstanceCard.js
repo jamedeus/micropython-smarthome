@@ -1,4 +1,4 @@
-import React, { useContext, useMemo } from 'react';
+import React, { useContext } from 'react';
 import { ConfigContext } from './ConfigContext';
 import NicknameInput from './inputs/NicknameInput';
 import IPInput from './inputs/IPInput';
@@ -16,39 +16,58 @@ import DefaultRuleApiTarget from './inputs/DefaultRuleApiTarget';
 
 function InstanceCard({key, id}) {
     // Get curent state + callback functions from context
-    const { config, startDeletingInstance, changeInstanceType, handleInputChange } = useContext(ConfigContext);
+    const {
+        config,
+        startDeletingInstance,
+        changeInstanceType,
+        handleInputChange
+    } = useContext(ConfigContext);
 
     // Get instance section in config + category (device or sensor)
     const instance = config[id];
     const category = id.replace(/[0-9]/g, '');
 
+    console.log(`Rendering ${id})`)
+
     const renderInputs = () => {
         let inputs = [];
 
         if (instance.nickname !== undefined) {
-            inputs.push(<NicknameInput key={key} id={id} param="nickname" value={instance.nickname} onChange={handleInputChange} />);
+            inputs.push(
+                <NicknameInput key={key} id={id} />
+            );
         }
 
         if (instance.pin !== undefined) {
             // Is device if no targets key
             if (instance.targets === undefined) {
-                inputs.push(<DevicePinSelect key={key} id={id} param="pin" value={instance.pin} onChange={handleInputChange} />);
+                inputs.push(
+                    <DevicePinSelect key={key} id={id} />
+                );
             // Otherwise is sensor
             } else {
-                inputs.push(<SensorPinSelect key={key} id={id} param="pin" value={instance.pin} onChange={handleInputChange} />);
+                inputs.push(
+                    <SensorPinSelect key={key} id={id} />
+                );
             };
         }
 
         if (instance.ip !== undefined) {
-            inputs.push(<IPInput key={key} id={id} param="ip" value={instance.ip} onChange={handleInputChange} />);
+            inputs.push(
+                <IPInput key={key} id={id} />
+            );
         }
 
         if (instance.uri !== undefined) {
-            inputs.push(<URIInput key={key} id={id} param="uri" value={instance.uri} onChange={handleInputChange} />);
+            inputs.push(
+                <URIInput key={key} id={id} />
+            );
         }
 
         if (instance.on_path !== undefined && instance.off_path !== undefined) {
-            inputs.push(<HttpGetPathInputs key={key} id={id} param="on_off_path" on_path={instance.on_path} off_path={instance.off_path} onChange={handleInputChange} />);
+            inputs.push(
+                <HttpGetPathInputs key={key} id={id}/>
+            );
         }
 
         // Add correct default rule input based on metadata rule_prompt
@@ -56,7 +75,9 @@ function InstanceCard({key, id}) {
 
         // Thermostat mode, units, tolerance inputs
         if (instance.mode !== undefined && instance.units !== undefined) {
-            inputs.push(<ThermostatParamInputs key={key} id={id} param="thermostat" mode={config['mode']} units={config['units']} tolerance={config['tolerance']} onChange={handleInputChange} />);
+            inputs.push(
+                <ThermostatParamInputs key={key} id={id} />
+            );
         }
 
         return inputs;
@@ -68,29 +89,24 @@ function InstanceCard({key, id}) {
             return null
         }
 
-        // Get metadata for selected instance type from global metadata object (from django template)
+        // Get metadata for selected type from global object (from django template)
         const instanceMetadata = metadata[`${category}s`][instance._type];
 
         switch (instanceMetadata.rule_prompt) {
             case 'standard':
-                return <DefaultRuleStandard key={key} id={id} param='default_rule' value={instance.default_rule} onChange={handleInputChange} />;
+                return <DefaultRuleStandard key={key} id={id} />;
             case 'on_off':
-                return <DefaultRuleOnOff key={key} id={id} param='default_rule' value={instance.default_rule} onChange={handleInputChange} />;
+                return <DefaultRuleOnOff key={key} id={id} />;
             case 'float_range':
-                return <DefaultRuleFloatRange key={key} id={id} param='default_rule' value={instance.default_rule} metadata={instanceMetadata} onChange={handleInputChange} />;
+                return <DefaultRuleFloatRange key={key} id={id} />;
             case 'int_or_fade':
-                console.log('INT RULE')
-                console.log(key)
-                console.log(id)
-                return <DefaultRuleIntRange key={key} id={id} param='default_rule' value={instance.default_rule} min={instance.min_rule} max={instance.max_rule} metadata={instanceMetadata} onChange={handleInputChange} />;
+                return <DefaultRuleIntRange key={key} id={id} />;
             case 'api_target':
-                return <DefaultRuleApiTarget key={key} id={id} param='default_rule' value={instance.default_rule} onChange={handleInputChange} />;
+                return <DefaultRuleApiTarget key={key} id={id} />;
             default:
                 return null;
         }
     }
-
-    console.log(instance)
 
     return (
         <div id={`${id}-card`} className="mb-4 instance-card">

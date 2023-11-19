@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 
-function SensorPinSelect({ key, id, param, value, onChange }) {
+function SensorPinSelect({ key, id }) {
+    // Get curent state + callback functions from context
+    const { config, handleInputChange } = useContext(ConfigContext);
+
+    // Get instance section in config
+    const instance = config[id];
+    if (!instance) {
+        return null
+    }
+
     return (
         <InputWrapper label="Pin">
-            <select className="form-select pin-select" value={value} autoComplete="off" /*onchange="pinSelected(this)"*/ onChange={(e) => onChange(param, e.target.value)} required>
+            <select className="form-select pin-select" value={instance.pin} autoComplete="off" /*onchange="pinSelected(this)"*/ onChange={(e) => handleInputChange(id, "pin", e.target.value)} required>
                 <option>Select pin</option>
                 <option value="4">4</option>
                 <option value="5">5</option>

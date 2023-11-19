@@ -1,7 +1,14 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 
-function HttpGetPathInputs({ key, id, param, on_path, off_path, onChange }) {
+function HttpGetPathInputs({ key, id }) {
+    // Get curent state + callback functions from context
+    const { config, handleInputChange } = useContext(ConfigContext);
+
+    // Get instance section in config
+    const instance = config[id];
+
     return (
         <>
             <InputWrapper label="On path">
@@ -9,8 +16,8 @@ function HttpGetPathInputs({ key, id, param, on_path, off_path, onChange }) {
                     type="text"
                     className="form-control validate"
                     placeholder="Appended to URI for on action"
-                    value={on_path}
-                    onChange={(e) => onChange("on_path", e.target.value)}
+                    value={instance.on_path}
+                    onChange={(e) => handleInputChange(id, "on_path", e.target.value)}
                     required
                 />
             </InputWrapper>
@@ -20,8 +27,8 @@ function HttpGetPathInputs({ key, id, param, on_path, off_path, onChange }) {
                     type="text"
                     className="form-control validate"
                     placeholder="Appended to URI for off action"
-                    value={off_path}
-                    onChange={(e) => onChange("off_path", e.target.value)}
+                    value={instance.off_path}
+                    onChange={(e) => handleInputChange(id, "off_path", e.target.value)}
                     required
                 />
             </InputWrapper>

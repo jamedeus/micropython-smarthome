@@ -1,7 +1,11 @@
-import React from 'react';
+import React, { useContext } from 'react';
+import { ConfigContext } from './ConfigContext';
 import InputWrapper from './inputs/InputWrapper';
 
-function MetadataSection({ key, id, floor, location, ssid, password, onChange }) {
+function MetadataSection() {
+    // Get curent state + callback functions from context
+    const { config, handleInputChange } = useContext(ConfigContext);
+
     return (
         <div id="metadata">
             <div className="mb-4">
@@ -10,10 +14,10 @@ function MetadataSection({ key, id, floor, location, ssid, password, onChange })
                     <input
                         type="text"
                         className="form-control"
-                        defaultValue={id}
+                        defaultValue={config.metadata.id}
                         placeholder=""
                         aria-describedby="friendlyName-feedback"
-                        onChange={(e) => onChange("metadata", "id", e.target.value)}
+                        onChange={(e) => handleInputChange("metadata", "id", e.target.value)}
                         required=""
                     />
                     <div id="friendlyName-feedback" className="invalid-feedback">
@@ -25,8 +29,8 @@ function MetadataSection({ key, id, floor, location, ssid, password, onChange })
                         type="text"
                         className="form-control"
                         placeholder=""
-                        defaultValue={location}
-                        onChange={(e) => onChange("metadata", "location", e.target.value)}
+                        defaultValue={config.metadata.location}
+                        onChange={(e) => handleInputChange("metadata", "location", e.target.value)}
                         required=""
                     />
                 </InputWrapper>
@@ -35,8 +39,8 @@ function MetadataSection({ key, id, floor, location, ssid, password, onChange })
                         type="text"
                         className="form-control"
                         placeholder=""
-                        defaultValue={floor}
-                        onChange={(e) => onChange("metadata", "floor", e.target.value)}
+                        defaultValue={config.metadata.floor}
+                        onChange={(e) => handleInputChange("metadata", "floor", e.target.value)}
                         required=""
                     />
                 </InputWrapper>
@@ -49,8 +53,8 @@ function MetadataSection({ key, id, floor, location, ssid, password, onChange })
                         className="form-control"
                         id="ssid"
                         placeholder=""
-                        defaultValue={ssid}
-                        onChange={(e) => onChange("wifi", "ssid", e.target.value)}
+                        defaultValue={config.wifi.ssid}
+                        onChange={(e) => handleInputChange("wifi", "ssid", e.target.value)}
                         required=""
                     />
                 </InputWrapper>
@@ -60,8 +64,8 @@ function MetadataSection({ key, id, floor, location, ssid, password, onChange })
                         className="form-control"
                         id="password"
                         placeholder=""
-                        defaultValue={password}
-                        onChange={(e) => onChange("wifi", "password", e.target.value)}
+                        defaultValue={config.wifi.password}
+                        onChange={(e) => handleInputChange("wifi", "password", e.target.value)}
                         required=""
                     />
                 </InputWrapper>

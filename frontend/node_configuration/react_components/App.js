@@ -10,7 +10,7 @@ const App = () => {
     // For simplicity, showing PageOne
     return (
         <div>
-        <Page1 />
+            <Page1 />
         </div>
     );
 };

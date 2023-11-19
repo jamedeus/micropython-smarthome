@@ -6,7 +6,14 @@ import IrBlasterSection from './IrBlasterSection';
 
 
 const Page1 = () => {
-    const { config, addInstance, logState, handleInputChange, handleIrTargetSelect } = useContext(ConfigContext);
+    // Get curent state + callback functions from context
+    const {
+        config,
+        addInstance,
+        logState,
+        handleInputChange,
+        handleIrTargetSelect
+    } = useContext(ConfigContext);
 
     // Render list of device cards
     const deviceEntries = (
@@ -41,15 +48,7 @@ const Page1 = () => {
         <>
             <h1 className="text-center pt-3 pb-4">{document.title}</h1>
 
-            <MetadataSection
-                key="metadata"
-                id={config.metadata.id}
-                floor={config.metadata.floor}
-                location={config.metadata.location}
-                ssid={config.wifi.ssid}
-                password={config.wifi.password}
-                onChange={handleInputChange}
-            />
+            <MetadataSection />
 
             <IrBlasterSection
                 key="ir_blaster"
