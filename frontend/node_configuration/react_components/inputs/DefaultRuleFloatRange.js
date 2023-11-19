@@ -4,7 +4,7 @@ import InputWrapper from './InputWrapper';
 
 function DefaultRuleFloatRange({ key, id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, handleSliderButton } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
@@ -16,9 +16,9 @@ function DefaultRuleFloatRange({ key, id }) {
     return (
         <InputWrapper label="Default Rule">
             <div className="d-flex flex-row align-items-center my-2">
-                <button className="btn btn-sm me-1" /*onClick="rule_slider_increment(this);"*/ data-direction="down" data-stepsize="0.5"><i className="bi-dash-lg"></i></button>
+                <button className="btn btn-sm me-1" onClick={(e) => handleSliderButton(id, 0.5, "down")}><i className="bi-dash-lg"></i></button>
                 <input type="range" className="mx-auto" min={instance.min_rule} max={instance.max_rule} data-displaymin={instanceMetadata.rule_limits[0]} data-displaymax={instanceMetadata.rule_limits[1]} data-displaytype="float" step="0.5" value={instance.default_rule} onChange={(e) => handleInputChange(id, "default_rule", e.target.value)} autoComplete="off" />
-                <button className="btn btn-sm ms-1" /*onClick="rule_slider_increment(this);"*/ data-direction="up" data-stepsize="0.5"><i className="bi-plus-lg"></i></button>
+                <button className="btn btn-sm ms-1" onClick={(e) => handleSliderButton(id, 0.5, "up")}><i className="bi-plus-lg"></i></button>
             </div>
         </InputWrapper>
     );

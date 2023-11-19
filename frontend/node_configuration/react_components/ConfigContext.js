@@ -131,6 +131,22 @@ export const ConfigProvider = ({ children }) => {
         setConfig({ ...config, [id]: update});
     };
 
+    const handleSliderButton = (id, step, direction) => {
+        const update = { ...config[id] };
+        if (direction === "up") {
+            update.default_rule = parseFloat(update.default_rule) + parseFloat(step);
+        } else {
+            update.default_rule = parseFloat(update.default_rule) - parseFloat(step);
+        };
+
+        // Enforce rule limits
+        if (parseFloat(update.default_rule) < parseFloat(update.min_rule)) {
+            update.default_rule = parseFloat(update.min_rule);
+        } else if (parseFloat(update.default_rule) > parseFloat(update.max_rule)) {
+            update.default_rule = parseFloat(update.max_rule);
+        };
+        setConfig({ ...config, [id]: update });
+    };
 
     // Handler for IR target checkboxes
     const handleIrTargetSelect = (target, checked) => {
@@ -147,7 +163,6 @@ export const ConfigProvider = ({ children }) => {
         setConfig({ ...config, ['ir_blaster']: ir_blaster });
     };
 
-
     return (
         <ConfigContext.Provider value=
             {{
@@ -158,6 +173,7 @@ export const ConfigProvider = ({ children }) => {
                 startDeletingInstance,
                 changeInstanceType,
                 handleInputChange,
+                handleSliderButton,
                 handleIrTargetSelect
             }}
         >
