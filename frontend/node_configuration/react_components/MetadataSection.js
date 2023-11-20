@@ -2,10 +2,35 @@ import React, { useContext } from 'react';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './ConfigContext';
 import InputWrapper from './inputs/InputWrapper';
+import send_post_request from './django_util';
+
 
 function MetadataSection() {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
+
+    // Add invalid highlight when duplicate name entered
+    async function prevent_duplicate_friendly_name(event) {
+        // Get reference to input, current value
+        const el = event.target;
+        const new_name = event.target.value;
+
+        // Skip API call if editing and new name matches original name
+        if (!edit_existing || new_name.toLowerCase() != orig_name) {
+            // Send new name to backend
+            const response = await send_post_request('/check_duplicate', {'name': new_name})
+
+            // If name is duplicate add invalid highlight, otherwise remove
+            if (!response.ok) {
+                el.classList.add('is-invalid');
+            } else {
+                el.classList.remove('is-invalid');
+            };
+        };
+
+        // Update state + contents of input regardless of validity
+        handleInputChange("metadata", "id", new_name);
+    };
 
     return (
         <div id="metadata">
@@ -15,7 +40,7 @@ function MetadataSection() {
                     <Form.Control
                         type="text"
                         value={config.metadata.id}
-                        onChange={(e) => handleInputChange("metadata", "id", e.target.value)}
+                        onChange={(e) => prevent_duplicate_friendly_name(e)}
                     />
                     <Form.Control.Feedback type="invalid">
                         Name must be unique
