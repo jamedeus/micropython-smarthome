@@ -1,5 +1,7 @@
 import React, { useContext } from 'react';
+import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
+import InputWrapper from './InputWrapper';
 
 function DefaultRuleStandard({ key, id }) {
     // Get curent state + callback functions from context
@@ -9,16 +11,13 @@ function DefaultRuleStandard({ key, id }) {
     const instance = config[id];
 
     return (
-        <div className="mb-2">
-            <label className="w-100">
-                <b>Default Rule:</b>
-                <select className="form-select" value={instance.default_rule} autoComplete="off" onChange={(e) => handleInputChange(id, "default_rule", e.target.value)} required>
-                    <option disabled>Select default rule</option>
-                    <option value="enabled">Enabled</option>
-                    <option value="disabled">Disabled</option>
-                </select>
-            </label>
-        </div>
+        <InputWrapper label="Default Rule">
+            <Form.Select value={instance.default_rule} onChange={(e) => handleInputChange(id, "default_rule", e.target.value)}>
+                <option disabled>Select default rule</option>
+                <option value="enabled">Enabled</option>
+                <option value="disabled">Disabled</option>
+            </Form.Select>
+        </InputWrapper>
     );
 }
 

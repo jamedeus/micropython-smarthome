@@ -1,4 +1,6 @@
 import React, { useContext } from 'react';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './../ConfigContext';
 
 function DefaultRuleApiTarget({ key, id }) {
@@ -10,23 +12,21 @@ function DefaultRuleApiTarget({ key, id }) {
 
     return (
         <>
-            <div className="mb-2 text-center">
-                <button
+            <div className="mb-2 pt-3 text-center">
+                <Button
                     id={`${id}-default_rule-button`}
-                    className="btn btn-secondary mt-3" /*onClick="open_rule_modal(this);"*/
-                    type="button"
+                    variant="secondary"
+                    /*onClick="open_rule_modal(this);"*/
                 >
                     Set rule
-                </button>
+                </Button>
             </div>
 
             <div className="d-none">
-                <input
+                <Form.Control
                     type="text"
-                    id={`${id}-default_rule-button`}
                     value={instance.default_rule}
                     onChange={(e) => handleInputChange(id, "default_rule", e.target.value)}
-                    required
                 />
             </div>
         </>
