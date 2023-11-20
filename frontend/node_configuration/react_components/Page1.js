@@ -1,4 +1,8 @@
 import React, { useContext } from 'react';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './ConfigContext';
 import InstanceCard from './InstanceCard';
 import MetadataSection from './MetadataSection';
@@ -60,26 +64,30 @@ const Page1 = () => {
             />
 
             <div id="page1" className="d-flex flex-column">
-                <div className="row mt-3">
-                    <div id="sensors" className="col-sm">
+                <Row className="mt-3">
+                    <Col sm id="sensors">
                         <h2 className="text-center">Add Sensors</h2>
                         {sensorEntries}
-                        <div id="add_sensor" className="text-center position-relative">
-                            <button className="btn-secondary btn mb-3" onClick={() => addInstance('sensor')}>Add Sensor</button>
+                        <div id="add_sensor" className="text-center position-relative mb-3">
+                            <Button variant="secondary" onClick={() => addInstance('sensor')}>
+                                Add Sensor
+                            </Button>
                         </div>
-                    </div>
-                    <div id="devices" className="col-sm">
+                    </Col>
+                    <Col sm id="devices">
                         <h2 className="text-center">Add Devices</h2>
                         {deviceEntries}
-                        <div id="add_device" className="text-center position-relative">
-                            <button className="btn-secondary btn mb-3" onClick={() => addInstance('device')}>Add Device</button>
+                        <div id="add_device" className="text-center position-relative mb-3">
+                            <Button variant="secondary" onClick={() => addInstance('device')}>
+                                Add Device
+                            </Button>
                         </div>
-                    </div>
-                </div>
+                    </Col>
+                </Row>
             </div>
 
-            <div className="bottom">
-                <button className="log-button" onClick={() => logState()}>Log State</button>
+            <div className="bottom mb-3">
+                <Button variant="info" onClick={() => logState()}>Log State</Button>
             </div>
         </>
     );

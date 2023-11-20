@@ -1,4 +1,7 @@
 import React, { useContext } from 'react';
+import Card from 'react-bootstrap/Card';
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './ConfigContext';
 import NicknameInput from './inputs/NicknameInput';
 import IPInput from './inputs/IPInput';
@@ -110,27 +113,27 @@ function InstanceCard({key, id}) {
 
     return (
         <div id={`${id}-card`} className="mb-4 instance-card">
-            <div className="card">
-            <div className="card-body">
-                <div className="d-flex justify-content-between">
-                    <button className="btn ps-2" style={{ visibility: 'hidden' }}><i className="bi-x-lg"></i></button>
-                    <h4 className="card-title mx-auto my-auto">{`${id}`}</h4>
-                    <button className="btn my-auto pe-2 delete" onClick={() => startDeletingInstance(id)}><i className="bi-x-lg"></i></button>
-                </div>
-                <label className="w-100">
-                    <b>Type:</b>
-                    <select className="form-select mt-2" value={instance._type} required onChange={(event) => changeInstanceType(id, category, event)}>
-                        <option value="clear">Select {category} type</option>
-                        {Object.entries(metadata[`${category}s`]).map(([key, type]) => (
-                        <option key={key} value={type.config_name}>{type.class_name}</option>
-                        ))}
-                    </select>
-                </label>
-                <div id={`${id}-params`} className="card-body">
-                    {renderInputs()}
-                </div>
-            </div>
-            </div>
+            <Card>
+                <Card.Body>
+                    <div className="d-flex justify-content-between">
+                        <button className="btn ps-2" style={{ visibility: 'hidden' }}><i className="bi-x-lg"></i></button>
+                        <h4 className="card-title mx-auto my-auto">{`${id}`}</h4>
+                        <button className="btn my-auto pe-2 delete" onClick={() => startDeletingInstance(id)}><i className="bi-x-lg"></i></button>
+                    </div>
+                    <label className="w-100">
+                        <b>Type:</b>
+                        <Form.Select value={instance._type} onChange={(event) => changeInstanceType(id, category, event)}>
+                            <option value="clear">Select {category} type</option>
+                            {Object.entries(metadata[`${category}s`]).map(([key, type]) => (
+                            <option key={key} value={type.config_name}>{type.class_name}</option>
+                            ))}
+                        </Form.Select>
+                    </label>
+                    <Card.Body id={`${id}-params`}>
+                        {renderInputs()}
+                    </Card.Body>
+                </Card.Body>
+            </Card>
         </div>
     );
 }
