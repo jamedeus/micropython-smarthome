@@ -52,6 +52,16 @@ cd frontend/
 pipenv run python3 manage.py runserver 0:8000
 ```
 
+#### React Development
+
+Some django templates import static files that mount a react app, which rehydrates a context from the django backend. These can be accessed from the django development server described above, there is no separate node backend.
+
+To automatically rebuild JSX when changes are made run this command:
+```
+cd frontend/
+npx webpack --watch --config webpack.config.js
+```
+
 ## Management commands
 
 Custom management commands can be used to export all config files from the SQL database to `CONFIG_DIR`, or to read the contents of `CONFIG_DIR` into the database. This can be useful to create backups, recover from a corrupted database, or to migrate to another host. However, unless the CLI tools are used heavily it is recommended to just backup the database itself.
