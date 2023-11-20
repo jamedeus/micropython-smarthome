@@ -1,37 +1,42 @@
 import React, { useContext } from 'react';
 import { ConfigContext } from './../ConfigContext';
-import InputWrapper from './InputWrapper';
+import PinSelectDropdown from './PinSelectDropdown';
+
 
 function DevicePinSelect({ key, id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
-    // Get instance section in config
-    const instance = config[id];
-    if (!instance) {
-        return null
-    }
+    // Skip if config section is empty
+    if (!config[id]) {
+        return null;
+    };
+
+    const devicePins = [
+        '4',
+        '13',
+        '16',
+        '17',
+        '18',
+        '19',
+        '21',
+        '22',
+        '23',
+        '25',
+        '26',
+        '27',
+        '32',
+        '33'
+    ];
 
     return (
-        <InputWrapper label="Pin">
-            <select className="form-select pin-select" value={instance.pin} autoComplete="off" /*onchange="pinSelected(this)"*/ onChange={(e) => handleInputChange(id, "pin", e.target.value)} required>
-                <option>Select pin</option>
-                <option value="4">4</option>
-                <option value="13">13</option>
-                <option value="16">16</option>
-                <option value="17">17</option>
-                <option value="18">18</option>
-                <option value="19">19</option>
-                <option value="21">21</option>
-                <option value="22">22</option>
-                <option value="23">23</option>
-                <option value="25">25</option>
-                <option value="26">26</option>
-                <option value="27">27</option>
-                <option value="32">32</option>
-                <option value="33">33</option>
-            </select>
-        </InputWrapper>
+        <PinSelectDropdown
+            id={id}
+            config={config}
+            selected={config[id]["pin"]}
+            onChange={(value) => handleInputChange(id, "pin", value)}
+            options={devicePins}
+        />
     );
 }
 
