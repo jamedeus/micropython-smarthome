@@ -1,6 +1,8 @@
 import React, { useContext } from 'react';
+import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
+
 
 function NicknameInput({ key, id }) {
     // Get curent state + callback functions from context
@@ -9,15 +11,24 @@ function NicknameInput({ key, id }) {
     // Get instance section in config
     const instance = config[id];
 
+    // Check for duplicate nickname, set bool that controls invalid highlight
+    let duplicate = false;
+    for (const[key, value] of Object.entries(config) ) {
+        if (key !== id && value.nickname !== undefined) {
+            if (value.nickname.toLowerCase() === instance.nickname.toLowerCase()) {
+                duplicate = true;
+                break;
+            };
+        };
+    };
+
     return (
         <InputWrapper label="Nickname">
-            <input
+            <Form.Control
                 type="text"
-                className="form-control nickname"
-                placeholder=""
                 value={instance.nickname}
                 onChange={(e) => handleInputChange(id, "nickname", e.target.value)}
-                required
+                isInvalid={duplicate}
             />
         </InputWrapper>
     );
