@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
 import { Range, getTrackBackground } from 'react-range';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
@@ -18,6 +19,29 @@ function DefaultRuleIntRange({ key, id }) {
     // Create array containing current rule, required my slider component
     const values = [instance.default_rule]
 
+    // Handler for rule limit inputs
+    const setRuleLimits = (param, value) => {
+        // Remove non-numeric characters
+        value = value.replace(/[^0-9.]/g, '');
+
+        // Enforce rule limits
+        if (parseInt(value) < instanceMetadata.rule_limits[0]) {
+            value = instanceMetadata.rule_limits[0];
+        } else if (parseInt(value) > instanceMetadata.rule_limits[1]) {
+            value = instanceMetadata.rule_limits[1];
+        };
+
+        // Prevent max lower than min, min higher than max
+        if (param === "min_rule" && parseInt(value) > parseInt(instance.max_rule)) {
+            console.log("min can't be higher than max")
+            value = instance.max_rule;
+        } else if (param === "max_rule" && parseInt(value) < parseInt(instance.min_rule)) {
+            console.log("max can't be lower than min")
+            value = instance.min_rule;
+        }
+        handleInputChange(id, param, value);
+    };
+
     return (
         <>
             <InputWrapper label="Default Rule">
@@ -33,8 +57,8 @@ function DefaultRuleIntRange({ key, id }) {
                     <div className="w-100 mx-3">
                         <Range
                             step={1}
-                            min={instanceMetadata.rule_limits[0]}
-                            max={instanceMetadata.rule_limits[1]}
+                            min={instance.min_rule}
+                            max={instance.max_rule}
                             values={values}
                             onChange={(values) => handleInputChange(id, "default_rule", values[0])}
                             renderTrack={({ props, children }) => (
@@ -48,8 +72,8 @@ function DefaultRuleIntRange({ key, id }) {
                                         background: getTrackBackground({
                                             values,
                                             colors: ['#0D6EFD', '#1B1E1F'],
-                                            min: instanceMetadata.rule_limits[0],
-                                            max: instanceMetadata.rule_limits[1]
+                                            min: instance.min_rule,
+                                            max: instance.max_rule
                                         }),
                                     }}
                                 >
@@ -94,26 +118,18 @@ function DefaultRuleIntRange({ key, id }) {
 
             <div id={`${id}-advanced_settings`} className="collapse">
                 <InputWrapper label="Min brightness">
-                    <input
+                    <Form.Control
                         type="text"
-                        className="form-control rule-limits"
                         value={instance.min_rule}
-                        data-min={instanceMetadata.rule_limits[0]}
-                        data-max={instanceMetadata.rule_limits[1]}
-                        onChange={(e) => handleInputChange(id, "min_rule", e.target.value)}
-                        required
+                        onChange={(e) => setRuleLimits("min_rule", e.target.value)}
                     />
                 </InputWrapper>
 
                 <InputWrapper label="Max brightness">
-                    <input
+                    <Form.Control
                         type="text"
-                        className="form-control rule-limits"
                         value={instance.max_rule}
-                        data-min={instanceMetadata.rule_limits[0]}
-                        data-max={instanceMetadata.rule_limits[1]}
-                        onChange={(e) => handleInputChange(id, "max_rule", e.target.value)}
-                        required
+                        onChange={(e) => setRuleLimits("max_rule", e.target.value)}
                     />
                 </InputWrapper>
             </div>
