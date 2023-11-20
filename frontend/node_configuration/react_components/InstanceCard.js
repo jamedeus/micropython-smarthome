@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './ConfigContext';
 import NicknameInput from './inputs/NicknameInput';
 import IPInput from './inputs/IPInput';

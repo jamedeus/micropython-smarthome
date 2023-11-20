@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './ConfigContext';
 import InputWrapper from './inputs/InputWrapper';
 
@@ -11,62 +12,46 @@ function MetadataSection() {
             <div className="mb-4">
                 <h2>Metadata</h2>
                 <InputWrapper label="Name">
-                    <input
+                    <Form.Control
                         type="text"
-                        className="form-control"
-                        defaultValue={config.metadata.id}
-                        placeholder=""
-                        aria-describedby="friendlyName-feedback"
+                        value={config.metadata.id}
                         onChange={(e) => handleInputChange("metadata", "id", e.target.value)}
-                        required=""
                     />
-                    <div id="friendlyName-feedback" className="invalid-feedback">
+                    <Form.Control.Feedback type="invalid">
                         Name must be unique
-                    </div>
+                    </Form.Control.Feedback>
                 </InputWrapper>
                 <InputWrapper label="Location">
-                    <input
+                    <Form.Control
                         type="text"
-                        className="form-control"
-                        placeholder=""
-                        defaultValue={config.metadata.location}
+                        value={config.metadata.location}
                         onChange={(e) => handleInputChange("metadata", "location", e.target.value)}
-                        required=""
                     />
                 </InputWrapper>
                 <InputWrapper label="Floor">
-                    <input
+                    <Form.Control
                         type="text"
-                        className="form-control"
-                        placeholder=""
-                        defaultValue={config.metadata.floor}
+                        value={config.metadata.floor}
                         onChange={(e) => handleInputChange("metadata", "floor", e.target.value)}
-                        required=""
                     />
                 </InputWrapper>
             </div>
             <div className="mb-4">
                 <h2>Wifi</h2>
                 <InputWrapper label="SSID">
-                    <input
+                    <Form.Control
                         type="text"
-                        className="form-control"
                         id="ssid"
-                        placeholder=""
-                        defaultValue={config.wifi.ssid}
+                        value={config.wifi.ssid}
                         onChange={(e) => handleInputChange("wifi", "ssid", e.target.value)}
-                        required=""
                     />
                 </InputWrapper>
                 <InputWrapper label="Password">
-                    <input
+                    <Form.Control
                         type="password"
-                        className="form-control"
                         id="password"
-                        placeholder=""
-                        defaultValue={config.wifi.password}
+                        value={config.wifi.password}
                         onChange={(e) => handleInputChange("wifi", "password", e.target.value)}
-                        required=""
                     />
                 </InputWrapper>
             </div>

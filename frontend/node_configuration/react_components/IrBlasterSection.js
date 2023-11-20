@@ -11,10 +11,8 @@ function IrBlasterSection({ key, configured, pin, target, onChange, onTargetSele
         <div id="ir_blaster_row" className="max-width-md-50 w-100 mx-auto text-center">
             <p className="text-center mt-3">
                 <Button
+                    variant="secondary"
                     onClick={(e) => onChange("ir_blaster", "configured", !configured)}
-                    aria-controls="ir_blaster"
-                    aria-expanded={configured}
-                    className="btn btn-secondary"
                 >
                     Add IR Blaster
                 </Button>

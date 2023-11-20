@@ -1,6 +1,7 @@
-import React, { useContext } from 'react';
-import Button from 'react-bootstrap/Button';
+import React, { useContext, useState } from 'react';
 import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import Collapse from 'react-bootstrap/Collapse';
 import { Range, getTrackBackground } from 'react-range';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
@@ -41,6 +42,9 @@ function DefaultRuleIntRange({ key, id }) {
         }
         handleInputChange(id, param, value);
     };
+
+    // Set default state for advanced settings collapse
+    const [open, setOpen] = useState(false);
 
     return (
         <>
@@ -113,26 +117,30 @@ function DefaultRuleIntRange({ key, id }) {
             </InputWrapper>
 
             <div className="mt-3 text-center">
-                <a className="text-decoration-none text-dim" data-bs-toggle="collapse" href={`#${id}-advanced_settings`} role="button" aria-expanded="false" aria-controls={`${id}-advanced_settings`}>Advanced</a>
+                <a className="text-decoration-none text-dim" role="button" onClick={() => setOpen(!open)}>
+                    Advanced
+                </a>
             </div>
 
-            <div id={`${id}-advanced_settings`} className="collapse">
-                <InputWrapper label="Min brightness">
-                    <Form.Control
-                        type="text"
-                        value={instance.min_rule}
-                        onChange={(e) => setRuleLimits("min_rule", e.target.value)}
-                    />
-                </InputWrapper>
+            <Collapse in={open}>
+                <div>
+                    <InputWrapper label="Min brightness">
+                        <Form.Control
+                            type="text"
+                            value={instance.min_rule}
+                            onChange={(e) => setRuleLimits("min_rule", e.target.value)}
+                        />
+                    </InputWrapper>
 
-                <InputWrapper label="Max brightness">
-                    <Form.Control
-                        type="text"
-                        value={instance.max_rule}
-                        onChange={(e) => setRuleLimits("max_rule", e.target.value)}
-                    />
-                </InputWrapper>
-            </div>
+                    <InputWrapper label="Max brightness">
+                        <Form.Control
+                            type="text"
+                            value={instance.max_rule}
+                            onChange={(e) => setRuleLimits("max_rule", e.target.value)}
+                        />
+                    </InputWrapper>
+                </div>
+            </Collapse>
         </>
     );
 }

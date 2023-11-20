@@ -86,7 +86,7 @@ const Page1 = () => {
                 </Row>
             </div>
 
-            <div className="bottom mb-3">
+            <div className="mb-3">
                 <Button variant="info" onClick={() => logState()}>Log State</Button>
             </div>
         </>
