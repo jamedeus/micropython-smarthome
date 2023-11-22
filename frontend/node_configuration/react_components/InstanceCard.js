@@ -14,6 +14,7 @@ import DefaultRuleFloatRange from './inputs/DefaultRuleFloatRange';
 import DefaultRuleIntRange from './inputs/DefaultRuleIntRange';
 import DefaultRuleOnOff from './inputs/DefaultRuleOnOff';
 import DefaultRuleApiTarget from './inputs/DefaultRuleApiTarget';
+import { get_instance_metadata, get_type_dropdown_options } from './metadata';
 
 
 function InstanceCard({key, id}) {
@@ -91,8 +92,8 @@ function InstanceCard({key, id}) {
             return null
         }
 
-        // Get metadata for selected type from global object (from django template)
-        const instanceMetadata = metadata[`${category}s`][instance._type];
+        // Get metadata object for selected type
+        const instanceMetadata = get_instance_metadata(category, instance._type);
 
         switch (instanceMetadata.rule_prompt) {
             case 'standard':
@@ -123,9 +124,7 @@ function InstanceCard({key, id}) {
                         <b>Type:</b>
                         <Form.Select value={instance._type} onChange={(event) => changeInstanceType(id, category, event)}>
                             <option value="clear">Select {category} type</option>
-                            {Object.entries(metadata[`${category}s`]).map(([key, type]) => (
-                            <option key={key} value={type.config_name}>{type.class_name}</option>
-                            ))}
+                            {get_type_dropdown_options(category)}
                         </Form.Select>
                     </label>
                     <Card.Body id={`${id}-params`}>

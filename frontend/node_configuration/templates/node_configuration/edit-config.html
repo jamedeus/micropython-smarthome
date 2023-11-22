@@ -82,10 +82,6 @@
     {{ edit_existing|json_script:"edit_existing" }}
     {{ config|json_script:"config" }}
     <script>
-        // Get device/sensor metadata object, used to determine input elements for each type
-        // Contains config templates for each device/sensor, added to output object when selected
-        const metadata = JSON.parse(document.getElementById("instance_metadata").textContent);
-
         // Get var passed to submit_form function, controls whether config is re-uploaded
         const edit_existing = JSON.parse(document.getElementById("edit_existing").textContent);
         // If editing get original name (prevents rejecting existing name as duplicate)

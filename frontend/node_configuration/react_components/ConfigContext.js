@@ -1,4 +1,5 @@
 import React, { useState, createContext, useEffect } from 'react';
+import { get_config_template } from './metadata';
 
 
 // Takes object and key prefix, returns all keys that begin with prefix
@@ -120,7 +121,7 @@ export const ConfigProvider = ({ children }) => {
 
     // Handler for type select dropdown in device and sensor cards
     const changeInstanceType = (id, category, event) => {
-        const template = metadata[`${category}s`][event.target.value]['config_template'];
+        const template = get_config_template(category, event.target.value);
         setConfig({ ...config, [id]: template});
     };
 

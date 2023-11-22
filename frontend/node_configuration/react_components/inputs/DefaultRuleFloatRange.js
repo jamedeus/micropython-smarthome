@@ -3,17 +3,18 @@ import Button from 'react-bootstrap/Button';
 import { Range, getTrackBackground } from 'react-range';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
+import { get_instance_metadata } from './../metadata';
 
 function DefaultRuleFloatRange({ key, id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange, handleSliderButton } = useContext(ConfigContext);
 
-    // Get instance section in config
+    // Get instance section from config (state) object
     const instance = config[id];
 
-    // TODO find a better way
+    // Get metadata object for selected type (contains slider min/max)
     const category = id.replace(/[0-9]/g, '');
-    const instanceMetadata = metadata[`${category}s`][instance._type];
+    const instanceMetadata = get_instance_metadata(category, instance._type);
 
     // Create array containing current rule, required my slider component
     const values = [instance.default_rule];
