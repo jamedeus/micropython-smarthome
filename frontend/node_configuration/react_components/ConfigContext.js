@@ -132,6 +132,12 @@ export const ConfigProvider = ({ children }) => {
         setConfig({ ...config, [id]: update});
     };
 
+    // Updates multiple instance params in a single event
+    // Takes device/sensor ID, full dict of params; overwrites state object section
+    const handleInstanceUpdate = (id, params) => {
+        setConfig({ ...config, [id]: params});
+    };
+
     const handleSliderButton = (id, step, direction) => {
         const update = { ...config[id] };
         if (direction === "up") {
@@ -174,6 +180,7 @@ export const ConfigProvider = ({ children }) => {
                 startDeletingInstance,
                 changeInstanceType,
                 handleInputChange,
+                handleInstanceUpdate,
                 handleSliderButton,
                 handleIrTargetSelect
             }}
