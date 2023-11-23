@@ -3,6 +3,27 @@
 var metadata = JSON.parse(document.getElementById("instance_metadata").textContent);
 
 
+// Takes metadata entry, replaces "placeholder" with "" in config template
+// TODO probably not necessary to use placeholder in metadata anyway
+function remove_placeholders(template) {
+    for (let param in template.config_template) {
+        if (template.config_template[param] === "placeholder") {
+            template.config_template[param] = "";
+        }
+    }
+    return template;
+};
+
+
+// Remove "placeholder" string from config templates in metadata object
+for (let device in metadata.devices) {
+    metadata["devices"][device] = remove_placeholders(metadata["devices"][device]);
+}
+for (let sensor in metadata.sensors) {
+    metadata["sensors"][sensor] = remove_placeholders(metadata["sensors"][sensor]);
+}
+
+
 // Takes category ("device" or "sensor") and type, returns full metadata object
 function get_instance_metadata(category, type) {
     return metadata[`${category}s`][type];
