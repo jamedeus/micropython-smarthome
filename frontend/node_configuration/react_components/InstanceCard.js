@@ -11,6 +11,7 @@ import SensorPinSelect from './inputs/SensorPinSelect';
 import DevicePinSelect from './inputs/DevicePinSelect';
 import DefaultRuleStandard from './inputs/DefaultRuleStandard';
 import DefaultRuleFloatRange from './inputs/DefaultRuleFloatRange';
+import DefaultRuleThermostat from './inputs/DefaultRuleThermostat';
 import DefaultRuleIntRange from './inputs/DefaultRuleIntRange';
 import DefaultRuleOnOff from './inputs/DefaultRuleOnOff';
 import DefaultRuleApiTarget from './inputs/DefaultRuleApiTarget';
@@ -90,6 +91,11 @@ function InstanceCard({key, id}) {
         // New card: skip
         if (instance._type === undefined) {
             return null
+        }
+
+        // If instance has units key return thermostat input
+        if (instance.units !== undefined) {
+            return <DefaultRuleThermostat key={key} id={id} />
         }
 
         // Get metadata object for selected type
