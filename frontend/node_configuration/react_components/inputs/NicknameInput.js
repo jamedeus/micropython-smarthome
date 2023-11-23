@@ -14,7 +14,8 @@ function NicknameInput({ key, id }) {
     // Check for duplicate nickname, set bool that controls invalid highlight
     let duplicate = false;
     for (const[key, value] of Object.entries(config) ) {
-        if (key !== id && value.nickname !== undefined) {
+        // If not same instance, has nickname param, and nickname is not blank
+        if (key !== id && value.nickname !== undefined && instance.nickname) {
             if (value.nickname.toLowerCase() === instance.nickname.toLowerCase()) {
                 duplicate = true;
                 break;
