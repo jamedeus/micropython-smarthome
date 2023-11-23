@@ -5,6 +5,7 @@ var metadata = JSON.parse(document.getElementById("instance_metadata").textConte
 
 // Takes metadata entry, replaces "placeholder" with "" in config template
 // TODO probably not necessary to use placeholder in metadata anyway
+// Think only config_generator.py relies on them, can just check for "" instead
 function remove_placeholders(template) {
     for (let param in template.config_template) {
         if (template.config_template[param] === "placeholder") {

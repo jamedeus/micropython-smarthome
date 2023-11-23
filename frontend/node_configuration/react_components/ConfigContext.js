@@ -77,17 +77,12 @@ export const ConfigProvider = ({ children }) => {
 
     // Handler for add device and add sensor buttons
     const addInstance = (category) => {
-        // Copy full config file
-        // TODO could probably build new section first and insert...
-        const newConfig = { ...config };
-
         // Get index of new instance
         const index = Object.keys(filterObject(config, category)).length + 1;
 
         // Add key to state object with empty config
         // Will be populated with metadata template when user selects type
-        newConfig[`${category}${index}`] = {}
-        setConfig(newConfig);
+        setConfig({ ...config, [`${category}${index}`]: {} });
     };
 
 
@@ -138,6 +133,22 @@ export const ConfigProvider = ({ children }) => {
         setConfig({ ...config, [id]: params});
     };
 
+    // Handler for sensor target select checkboxes
+    const handleSensorTargetSelect = (sensor, target, checked) => {
+        // Copy config section
+        const update = { ... config[sensor] };
+        // Add target if not already present
+        if (checked) {
+            if (update["targets"].indexOf(target) === -1) {
+                update["targets"].push(target);
+            };
+        // Remove existing target if present
+        } else {
+            update["targets"] = update["targets"].filter(existing => existing !== target);
+        };
+        setConfig({ ...config, [sensor]: update });
+    };
+
     const handleSliderButton = (id, step, direction) => {
         const update = { ...config[id] };
         if (direction === "up") {
@@ -181,6 +192,7 @@ export const ConfigProvider = ({ children }) => {
                 changeInstanceType,
                 handleInputChange,
                 handleInstanceUpdate,
+                handleSensorTargetSelect,
                 handleSliderButton,
                 handleIrTargetSelect
             }}
@@ -189,8 +201,6 @@ export const ConfigProvider = ({ children }) => {
         </ConfigContext.Provider>
     );
 };
-
-
 
 
 // Called by deleteInstance, decrements IDs of all subsequent instances to prevent gaps
@@ -260,3 +270,5 @@ async function delete_animation(cards, index, button) {
         resolve();
     });
 };
+
+export { filterObject };

@@ -50,8 +50,6 @@ const Page1 = () => {
     // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (
         <>
-            <h1 className="text-center pt-3 pb-4">{document.title}</h1>
-
             <MetadataSection />
 
             <IrBlasterSection

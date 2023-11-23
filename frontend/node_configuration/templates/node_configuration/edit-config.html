@@ -77,7 +77,7 @@
         };
     </script>
 
-    <div id="root" class="container d-flex flex-column vh-100" data-config="{{config}}"></div>
+    <div id="root" class="container" data-config="{{config}}"></div>
     {{ metadata|json_script:"instance_metadata" }}
     {{ edit_existing|json_script:"edit_existing" }}
     {{ config|json_script:"config" }}

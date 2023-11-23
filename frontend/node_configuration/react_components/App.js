@@ -1,6 +1,6 @@
 import React, { useContext, useEffect } from 'react';
 import { ConfigContext } from './ConfigContext';
-import Page1 from './Page1';
+import PageContainer from './PageContainer';
 
 
 const App = () => {
@@ -10,7 +10,7 @@ const App = () => {
     // For simplicity, showing PageOne
     return (
         <div>
-            <Page1 />
+            <PageContainer />
         </div>
     );
 };
