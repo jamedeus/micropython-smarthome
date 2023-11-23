@@ -11,7 +11,7 @@
 
 
 # Skip if not on master branch
-if [[ `git branch --show-current` != "master" ]]; then
+if [ "`git branch --show-current`" != "master" ]; then
     exit
 fi
 
