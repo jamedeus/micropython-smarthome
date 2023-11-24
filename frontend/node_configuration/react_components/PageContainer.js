@@ -3,6 +3,7 @@ import Button from 'react-bootstrap/Button';
 import { submit } from './django_util';
 import Page1 from './Page1';
 import Page2 from './Page2';
+import Page3 from './Page3';
 
 
 const PageContainer = () => {
@@ -43,6 +44,9 @@ const PageContainer = () => {
                         case 2:
                             console.log("rendering page2");
                             return <Page2 />;
+                        case 3:
+                            console.log("rendering page3");
+                            return <Page3 />;
                     };
                 })()}
 
