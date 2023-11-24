@@ -276,6 +276,7 @@ def edit_config(request, name):
         "config": config,
         "metadata": metadata,
         "api_target_options": get_api_target_menu_options(target.friendly_name),
+        "schedule_keywords": get_schedule_keywords_dict()
     }
 
     print(json.dumps(context, indent=4))

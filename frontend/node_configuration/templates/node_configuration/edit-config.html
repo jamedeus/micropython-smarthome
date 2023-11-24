@@ -80,6 +80,7 @@
     <div id="root" class="container" data-config="{{config}}"></div>
     {{ metadata|json_script:"instance_metadata" }}
     {{ edit_existing|json_script:"edit_existing" }}
+    {{ schedule_keywords|json_script:"schedule_keywords" }}
     {{ config|json_script:"config" }}
     <script>
         // Get var passed to submit_form function, controls whether config is re-uploaded

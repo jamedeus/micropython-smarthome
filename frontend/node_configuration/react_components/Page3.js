@@ -39,13 +39,30 @@ const Page3 = () => {
         return (
             <tr>
                 <td>
-                    <span className="form-control" onClick={() => handleShow("")}>{format12h(rule)}</span>
+                    <span
+                        className="form-control"
+                        onClick={() => handleShow(instance, rule)}
+                    >
+                        {format12h(rule)}
+                    </span>
                 </td>
                 <td>
-                    <span className="form-control" onClick={() => handleShow("")}>{config[instance]["schedule"][rule]}</span>
+                    <span
+                        className="form-control"
+                        onClick={() => handleShow(instance, rule)}
+                    >
+                        {config[instance]["schedule"][rule]}
+                    </span>
                 </td>
                 <td className="min">
-                    <Button variant="primary" size="sm" className="mb-1" onClick={() => handleShow("")}><i class="bi-pencil"></i></Button>
+                    <Button
+                        variant="primary"
+                        size="sm"
+                        className="mb-1"
+                        onClick={() => handleShow(instance, rule)}
+                    >
+                        <i class="bi-pencil"></i>
+                    </Button>
                 </td>
             </tr>
         );
