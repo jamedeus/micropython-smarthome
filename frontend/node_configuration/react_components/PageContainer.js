@@ -57,14 +57,14 @@ const PageContainer = () => {
 
                 {/* Change page buttons
                 TODO modify SCSS so disabled changes color to grey */}
-                <div className="d-flex justify-content-between mx-3 mt-auto mb-4">
-                    <Button variant="primary" onClick={prevPage}>Back</Button>
+                <div className="d-flex justify-content-between mx-3 mt-auto">
+                    <Button variant="primary" className="mb-4" onClick={prevPage}>Back</Button>
                     {(() => {
                         if (page === 3) {
-                            return <Button variant="primary" onClick={submitButton}>Submit</Button>
+                            return <Button variant="primary" className="mb-4" onClick={submitButton}>Submit</Button>
                         }
                     })()}
-                    <Button variant="primary" onClick={nextPage} disabled={page === 3}>Next</Button>
+                    <Button variant="primary" className="mb-4" onClick={nextPage} disabled={page === 3}>Next</Button>
                 </div>
             </div>
         </>
