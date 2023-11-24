@@ -2,7 +2,9 @@ import React, { useContext } from 'react';
 import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
+import Modal from 'react-bootstrap/Modal';
 import { ConfigContext } from './ConfigContext';
+import { ModalContext, ScheduleRuleModal } from './ScheduleRuleModal';
 
 // Used to identify HH:MM timestamp
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
@@ -28,19 +30,22 @@ const Page3 = () => {
     // Get curent state + callback functions from context
     const { config } = useContext(ConfigContext);
 
+    // Get context for schedule rule modal
+    const { handleShow } = useContext(ModalContext);
+
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button
     function scheduleRuleRow(instance, rule) {
         return (
             <tr>
                 <td>
-                    <span className="form-control schedule-rule time">{format12h(rule)}</span>
+                    <span className="form-control" onClick={() => handleShow("")}>{format12h(rule)}</span>
                 </td>
                 <td>
-                    <span className="form-control schedule-rule rule">{config[instance]["schedule"][rule]}</span>
+                    <span className="form-control" onClick={() => handleShow("")}>{config[instance]["schedule"][rule]}</span>
                 </td>
                 <td className="min">
-                    <Button variant="primary" size="sm" className="mb-1"><i class="bi-pencil"></i></Button>
+                    <Button variant="primary" size="sm" className="mb-1" onClick={() => handleShow("")}><i class="bi-pencil"></i></Button>
                 </td>
             </tr>
         );
@@ -94,6 +99,7 @@ const Page3 = () => {
                 };
                 return cards;
             })()}
+            <ScheduleRuleModal />
         </>
     );
 }

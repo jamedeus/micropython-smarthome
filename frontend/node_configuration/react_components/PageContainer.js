@@ -4,6 +4,7 @@ import { submit } from './django_util';
 import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
+import { ModalContextProvider } from './ScheduleRuleModal';
 
 
 const PageContainer = () => {
@@ -46,7 +47,11 @@ const PageContainer = () => {
                             return <Page2 />;
                         case 3:
                             console.log("rendering page3");
-                            return <Page3 />;
+                            return (
+                                <ModalContextProvider>
+                                    <Page3 />
+                                </ModalContextProvider>
+                            );
                     };
                 })()}
 
