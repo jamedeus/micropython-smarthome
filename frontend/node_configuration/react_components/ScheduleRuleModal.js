@@ -35,6 +35,7 @@ export const ModalContextProvider = ({ children }) => {
     const [show, setShow] = useState(false);
     const [modalContent, setModalContent] = useState({
         instance: '',
+        original_timestamp: '',
         timestamp: '',
         rule: '',
         fade_rule: false,
@@ -51,6 +52,7 @@ export const ModalContextProvider = ({ children }) => {
         // Replace modalContent with params for selected rule
         let update = {
             instance: instance,
+            original_timestamp: timestamp,
             timestamp: timestamp,
             rule: config[instance]["schedule"][timestamp],
             fade_rule: false,
@@ -249,6 +251,42 @@ export const ScheduleRuleModal = (contents) => {
     // Get context and callbacks
     const { show, handleShow, handleClose, modalContent } = useContext(ModalContext);
 
+    // Get curent state from context
+    const { config, handleInputChange } = useContext(ConfigContext);
+
+    const save_rule = () => {
+        // Get existing rules
+        const rules = config[modalContent.instance]["schedule"];
+
+        // Get new rule from modal contents
+        if (modalContent.fade_rule) {
+            // Fade rule: Combine params into single string
+            var new_rule = `fade/${modalContent.rule}/${modalContent.duration}`;
+        } else {
+            var new_rule = modalContent.rule;
+        };
+
+        // If timestamp was changed, delete original rule before adding
+        if (modalContent.timestamp !== modalContent.original_timestamp) {
+            delete rules[modalContent.original_timestamp];
+        };
+
+        // Add new rule, update state object, close modal
+        rules[modalContent.timestamp] = new_rule;
+        handleInputChange(modalContent.instance, "schedule", rules);
+        handleClose();
+    }
+
+    const delete_rule = () => {
+        // Get existing rules
+        const rules = config[modalContent.instance]["schedule"];
+        // Remove selected rule
+        delete rules[modalContent.original_timestamp];
+        // Update state object, close modal
+        handleInputChange(modalContent.instance, "schedule", rules);
+        handleClose();
+    }
+
     return (
         <ModalContextProvider>
             <Modal show={show} onHide={handleClose} centered>
@@ -264,8 +302,8 @@ export const ScheduleRuleModal = (contents) => {
 
                 <Modal.Footer className="mx-auto">
                     <div id="rule-buttons">
-                        <Button variant="success" className="m-1">Submit</Button>
-                        <Button variant="danger" className="m-1">Delete</Button>
+                        <Button variant="success" className="m-1" onClick={save_rule}>Submit</Button>
+                        <Button variant="danger" className="m-1" onClick={delete_rule}>Delete</Button>
                     </div>
                 </Modal.Footer>
             </Modal>
