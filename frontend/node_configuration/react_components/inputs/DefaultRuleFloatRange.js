@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { ConfigContext } from './../ConfigContext';
 import { get_instance_metadata } from './../metadata';
+import InputWrapper from './InputWrapper';
 import RuleSlider from './RuleSlider';
 
 
@@ -16,7 +17,7 @@ function average(a, b) {
 
 function DefaultRuleFloatRange({ key, id }) {
     // Get curent state + callback functions from context
-    const { config } = useContext(ConfigContext);
+    const { config, handleSliderButton, handleInputChange } = useContext(ConfigContext);
 
     // Get instance section from config (state) object
     const instance = config[id];
@@ -32,17 +33,29 @@ function DefaultRuleFloatRange({ key, id }) {
         instance.default_rule = average(min_rule, max_rule);
     };
 
+    // Handler for slider + and - buttons
+    const onButtonClick = (step, direction, min_rule, max_rule) => {
+        handleSliderButton(id, step, direction, min_rule, max_rule);
+    };
+
+    // Handler for slider move events
+    const onSliderMove = (value) => {
+        handleInputChange(id, "default_rule", value);
+    };
+
     return (
-        <RuleSlider
-            key={key}
-            id={id}
-            rule_value={instance.default_rule}
-            slider_min={min_rule}
-            slider_max={max_rule}
-            slider_step={0.5}
-            button_step={0.5}
-            display_type={"float"}
-        />
+        <InputWrapper label="Default Rule">
+            <RuleSlider
+                rule_value={instance.default_rule}
+                slider_min={min_rule}
+                slider_max={max_rule}
+                slider_step={0.5}
+                button_step={0.5}
+                display_type={"float"}
+                onButtonClick={onButtonClick}
+                onSliderMove={onSliderMove}
+            />
+        </InputWrapper>
     );
 }
 

@@ -19,7 +19,7 @@ function average(a, b) {
 
 function DefaultRuleIntRange({ key, id }) {
     // Get curent state + callback functions from context
-    const { config, handleInstanceUpdate } = useContext(ConfigContext);
+    const { config, handleInstanceUpdate, handleSliderButton, handleInputChange } = useContext(ConfigContext);
 
     // Get instance section from config (state) object
     const instance = config[id];
@@ -37,6 +37,16 @@ function DefaultRuleIntRange({ key, id }) {
     };
     if (!instance.default_rule) {
         instance.default_rule = average(instance.min_rule, instance.max_rule);
+    };
+
+    // Handler for slider + and - buttons
+    const onButtonClick = (step, direction, min_rule, max_rule) => {
+        handleSliderButton(id, step, direction, min_rule, max_rule);
+    };
+
+    // Handler for slider move events
+    const onSliderMove = (value) => {
+        handleInputChange(id, "default_rule", value);
     };
 
     // Handler for rule limit inputs
@@ -74,16 +84,18 @@ function DefaultRuleIntRange({ key, id }) {
 
     return (
         <>
-            <RuleSlider
-                key={key}
-                id={id}
-                rule_value={instance.default_rule}
-                slider_min={parseInt(instance.min_rule)}
-                slider_max={parseInt(instance.max_rule)}
-                slider_step={1}
-                button_step={1}
-                display_type={"int"}
-            />
+            <InputWrapper label="Default Rule">
+                <RuleSlider
+                    rule_value={instance.default_rule}
+                    slider_min={parseInt(instance.min_rule)}
+                    slider_max={parseInt(instance.max_rule)}
+                    slider_step={1}
+                    button_step={1}
+                    display_type={"int"}
+                    onButtonClick={onButtonClick}
+                    onSliderMove={onSliderMove}
+                />
+            </InputWrapper>
 
             <div className="mt-3 text-center">
                 <a className="text-decoration-none text-dim" role="button" onClick={() => setOpen(!open)}>

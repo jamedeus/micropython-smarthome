@@ -149,7 +149,7 @@ export const ConfigProvider = ({ children }) => {
         setConfig({ ...config, [sensor]: update });
     };
 
-    const handleSliderButton = (id, step, direction) => {
+    const handleSliderButton = (id, step, direction, min_rule, max_rule) => {
         const update = { ...config[id] };
         if (direction === "up") {
             update.default_rule = parseFloat(update.default_rule) + parseFloat(step);
@@ -158,10 +158,10 @@ export const ConfigProvider = ({ children }) => {
         };
 
         // Enforce rule limits
-        if (parseFloat(update.default_rule) < parseFloat(update.min_rule)) {
-            update.default_rule = parseFloat(update.min_rule);
-        } else if (parseFloat(update.default_rule) > parseFloat(update.max_rule)) {
-            update.default_rule = parseFloat(update.max_rule);
+        if (parseFloat(update.default_rule) < parseFloat(min_rule)) {
+            update.default_rule = parseFloat(min_rule);
+        } else if (parseFloat(update.default_rule) > parseFloat(max_rule)) {
+            update.default_rule = parseFloat(max_rule);
         };
         setConfig({ ...config, [id]: update });
     };
