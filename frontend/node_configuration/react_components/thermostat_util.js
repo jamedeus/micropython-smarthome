@@ -24,7 +24,7 @@ function convert_temperature(temperature, old_units, new_units) {
         temperature = parseFloat(temperature) + 273.15;
     }
 
-    return parseFloat(temperature);
+    return parseFloat(temperature).toFixed(1);
 }
 
 
