@@ -10,12 +10,12 @@ function filterObject(obj, prefix) {
         }
         return acc;
     }, {});
-};
+}
 
 
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-};
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 
 export const ConfigContext = createContext();
@@ -105,7 +105,7 @@ export const ConfigProvider = ({ children }) => {
         // Wait for animation to complete before removing from state object
         await delete_animation(cards, index, button);
         deleteInstance(id);
-    }
+    };
 
     // Called from delete button handler after animation completes
     const deleteInstance = (id) => {
@@ -141,11 +141,11 @@ export const ConfigProvider = ({ children }) => {
         if (checked) {
             if (update["targets"].indexOf(target) === -1) {
                 update["targets"].push(target);
-            };
+            }
         // Remove existing target if present
         } else {
             update["targets"] = update["targets"].filter(existing => existing !== target);
-        };
+        }
         setConfig({ ...config, [sensor]: update });
     };
 
@@ -155,14 +155,14 @@ export const ConfigProvider = ({ children }) => {
             update.default_rule = parseFloat(update.default_rule) + parseFloat(step);
         } else {
             update.default_rule = parseFloat(update.default_rule) - parseFloat(step);
-        };
+        }
 
         // Enforce rule limits
         if (parseFloat(update.default_rule) < parseFloat(min_rule)) {
             update.default_rule = parseFloat(min_rule);
         } else if (parseFloat(update.default_rule) > parseFloat(max_rule)) {
             update.default_rule = parseFloat(max_rule);
-        };
+        }
         setConfig({ ...config, [id]: update });
     };
 
@@ -173,11 +173,11 @@ export const ConfigProvider = ({ children }) => {
         if (checked) {
             if (ir_blaster.target.indexOf(target) === -1) {
                 ir_blaster.target.push(target);
-            };
+            }
         // Remove existing target if present
         } else {
             ir_blaster.target = ir_blaster.target.filter(existing => existing !== target);
-        };
+        }
         setConfig({ ...config, ['ir_blaster']: ir_blaster });
     };
 
@@ -219,8 +219,8 @@ function update_ids(target, state) {
         // Remove device from all sensor targets
         for (const sensor in sensors) {
             state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== target);
-        };
-    };
+        }
+    }
 
     // Iterate all instances in category starting from the removed instance index
     for (let i=parseInt(index); i<Object.entries(instances).length+1; i++) {
@@ -236,19 +236,19 @@ function update_ids(target, state) {
                 if (state[sensor]['targets'].includes(old_id)) {
                     state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== old_id);
                     state[sensor]['targets'].push(new_id);
-                };
-            };
-        };
+                }
+            }
+        }
     }
 
     return state;
-};
+}
 
 
 // Delete instance card animation
 // Takes array of card divs, index of card to delete, add instance button
 // Fades out card to delete, slides up all cards below + add button
-async function delete_animation(cards, index, button) {
+function delete_animation(cards, index, button) {
     return new Promise(async resolve => {
         // Fade out card to be deleted
         cards[index].classList.add('fade-out');
@@ -256,19 +256,19 @@ async function delete_animation(cards, index, button) {
         // Slide up all cards below, wait for animation to complete
         for (let i=parseInt(index)+1; i<cards.length; i++) {
             cards[i].children[0].classList.add('slide-up');
-        };
+        }
         button.classList.add('slide-up');
         await sleep(800);
 
         // Prevent cards jumping higher when hidden card is actually deleted
         for (let i=parseInt(index)+1; i<cards.length; i++) {
             cards[i].children[0].classList.remove('slide-up');
-        };
+        }
         button.classList.remove('slide-up');
         // Prevent incorrect card being hidden after react re-render
         cards[index].classList.remove('fade-out');
         resolve();
     });
-};
+}
 
 export { filterObject };

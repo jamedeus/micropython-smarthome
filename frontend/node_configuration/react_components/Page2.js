@@ -6,7 +6,7 @@ import { ConfigContext, filterObject } from './ConfigContext';
 
 const Page2 = () => {
     // Get curent state + callback functions from context
-    const { config, handleInputChange, handleSensorTargetSelect } = useContext(ConfigContext);
+    const { config, handleSensorTargetSelect } = useContext(ConfigContext);
 
     // Get objects containing only devices and sensors
     const devices = filterObject(config, 'device');
@@ -30,25 +30,25 @@ const Page2 = () => {
                                     onChange={(e) => handleSensorTargetSelect(sensor, device, e.target.checked)}
                                 />
                             )
-                        };
+                        }
                         return inputs;
                     })()}
                 </Card.Body>
             </Card>
         );
-    };
+    }
 
     return (
         <>
             <h3>Select targets for each sensor</h3>
-                {/* Iterate sensors, add card for each */}
-                {(() => {
-                    let cards = [];
-                    for (let sensor in sensors) {
-                        cards.push(targetSection(sensor, config[sensor]));
-                    };
-                    return cards;
-                })()}
+            {/* Iterate sensors, add card for each */}
+            {(() => {
+                let cards = [];
+                for (let sensor in sensors) {
+                    cards.push(targetSection(sensor, config[sensor]));
+                }
+                return cards;
+            })()}
         </>
     );
 }

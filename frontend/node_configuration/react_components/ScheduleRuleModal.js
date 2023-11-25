@@ -21,8 +21,8 @@ function is_timestamp(timestamp) {
         return true;
     } else {
         return false;
-    };
-};
+    }
+}
 
 
 export const ModalContext = createContext();
@@ -67,13 +67,13 @@ export const ModalContextProvider = ({ children }) => {
             update.fade_rule = true;
             update.duration = duration;
             update.rule = rule;
-        };
+        }
 
         // If adding new rule use default_rule as starting point
         if (update.add_new) {
             update.rule = config[instance]["default_rule"];
             update.show_keyword = false;
-        };
+        }
 
         // Set modal contents, show
         setModalContent(update);
@@ -116,14 +116,14 @@ export const ScheduleRuleModalContents = () => {
             var new_rule = parseFloat(modalContent.rule) + parseFloat(step);
         } else {
             var new_rule = parseFloat(modalContent.rule) - parseFloat(step);
-        };
+        }
 
         // Enforce rule limits
         if (new_rule < parseFloat(min_rule)) {
             new_rule = parseFloat(min_rule);
         } else if (new_rule > parseFloat(max_rule)) {
             new_rule = parseFloat(max_rule);
-        };
+        }
 
         setModalContent({ ...modalContent, ["rule"]: new_rule});
     };
@@ -149,7 +149,7 @@ export const ScheduleRuleModalContents = () => {
                     />
                 </div>
 
-                <div class="d-flex mt-2">
+                <div className="d-flex mt-2">
                     <Form.Check
                         type="switch"
                         label="Keyword"
@@ -176,7 +176,7 @@ export const ScheduleRuleModalContents = () => {
                                 onSliderMove={onSliderMove}
                             />
                         );
-                    };
+                    }
 
                     // All other types: Add correct input for rule_prompt
                     switch(modalContent.metadata.rule_prompt) {
@@ -234,7 +234,7 @@ export const ScheduleRuleModalContents = () => {
                                     </div>
 
                                     {/* Fade mode */}
-                                    <div class="d-flex mt-2">
+                                    <div className="d-flex mt-2">
                                         <Form.Check
                                             type="switch"
                                             label="Fade"
@@ -244,7 +244,7 @@ export const ScheduleRuleModalContents = () => {
                                     </div>
                                 </>
                             )
-                    };
+                    }
                 })()}
             </Col>
         </Row>
@@ -252,9 +252,9 @@ export const ScheduleRuleModalContents = () => {
 };
 
 
-export const ScheduleRuleModal = (contents) => {
+export const ScheduleRuleModal = () => {
     // Get context and callbacks
-    const { show, handleShow, handleClose, modalContent } = useContext(ModalContext);
+    const { show, handleClose, modalContent } = useContext(ModalContext);
 
     // Get curent state from context
     const { config, handleInputChange } = useContext(ConfigContext);
@@ -269,12 +269,12 @@ export const ScheduleRuleModal = (contents) => {
             var new_rule = `fade/${modalContent.rule}/${modalContent.duration}`;
         } else {
             var new_rule = modalContent.rule;
-        };
+        }
 
         // If timestamp was changed, delete original rule before adding
         if (modalContent.timestamp !== modalContent.original_timestamp) {
             delete rules[modalContent.original_timestamp];
-        };
+        }
 
         // Add new rule, update state object, close modal
         rules[modalContent.timestamp] = new_rule;
@@ -296,9 +296,9 @@ export const ScheduleRuleModal = (contents) => {
         <ModalContextProvider>
             <Modal show={show} onHide={handleClose} centered>
                 <Modal.Header className="justify-content-between">
-                    <button type="button" class="btn-close" style={{visibility: "hidden"}}></button>
-                    <h5 class="modal-title">Schedule Rule</h5>
-                    <button type="button" class="btn-close" onClick={() => handleClose()}></button>
+                    <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
+                    <h5 className="modal-title">Schedule Rule</h5>
+                    <button type="button" className="btn-close" onClick={() => handleClose()}></button>
                 </Modal.Header>
 
                 <Modal.Body>

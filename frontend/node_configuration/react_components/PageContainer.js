@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import { submit } from './django_util';
 import Page1 from './Page1';
@@ -19,17 +19,17 @@ const PageContainer = () => {
         // Otherwise go to previous page
         } else {
             setPage(page - 1);
-        };
-    };
+        }
+    }
 
     function nextPage() {
         // TODO don't proceed if blank fields exist on page 1
         setPage(page + 1);
-    };
+    }
 
     function submitButton() {
         submit();
-    };
+    }
 
     return (
         <>
@@ -52,7 +52,7 @@ const PageContainer = () => {
                                     <Page3 />
                                 </ModalContextProvider>
                             );
-                    };
+                    }
                 })()}
 
                 {/* Change page buttons

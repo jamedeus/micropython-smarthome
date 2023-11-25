@@ -21,12 +21,7 @@ import { get_instance_metadata, get_type_dropdown_options } from './metadata';
 
 function InstanceCard({key, id}) {
     // Get curent state + callback functions from context
-    const {
-        config,
-        startDeletingInstance,
-        changeInstanceType,
-        handleInputChange
-    } = useContext(ConfigContext);
+    const { config, startDeletingInstance, changeInstanceType } = useContext(ConfigContext);
 
     // Get instance section in config + category (device or sensor)
     const instance = config[id];
@@ -57,7 +52,7 @@ function InstanceCard({key, id}) {
                 inputs.push(
                     <SensorPinSelect key={key} id={id} />
                 );
-            };
+            }
         }
 
         if (instance.ip !== undefined) {
@@ -69,7 +64,7 @@ function InstanceCard({key, id}) {
                 inputs.push(
                     <TargetNodeDropdown key={key} id={id} />
                 );
-            };
+            }
         }
 
         if (instance.uri !== undefined) {

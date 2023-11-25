@@ -12,7 +12,7 @@ function IrBlasterSection({ key, configured, pin, target, onChange, onTargetSele
             <p className="text-center mt-3">
                 <Button
                     variant="secondary"
-                    onClick={(e) => onChange("ir_blaster", "configured", !configured)}
+                    onClick={() => onChange("ir_blaster", "configured", !configured)}
                 >
                     Add IR Blaster
                 </Button>
@@ -31,7 +31,7 @@ function IrBlasterSection({ key, configured, pin, target, onChange, onTargetSele
                             />
 
                             <div className="mb-2">
-                                <label for="ir-remotes"><b>Virtual remotes:</b></label>
+                                <label htmlFor="ir-remotes"><b>Virtual remotes:</b></label>
                                 <div id="ir-remotes">
                                     <Form.Check
                                         type="checkbox"

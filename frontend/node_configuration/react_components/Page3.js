@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
-import Modal from 'react-bootstrap/Modal';
 import { ConfigContext } from './ConfigContext';
 import { ModalContext, ScheduleRuleModal } from './ScheduleRuleModal';
 
@@ -15,7 +14,7 @@ function format12h(timestamp) {
     // Return keywords unchanged
     if ( ! timestamp_regex.test(timestamp)) {
         return timestamp;
-    };
+    }
 
     let [hour, minute] = timestamp.split(':');
     const suffix = parseInt(hour) >= 12 ? 'pm' : 'am';
@@ -23,7 +22,7 @@ function format12h(timestamp) {
     hour = parseInt(hour) % 12;
     hour = hour === 0 ? 12 : hour;
     return `${hour}:${minute} ${suffix}`;
-};
+}
 
 
 const Page3 = () => {
@@ -61,12 +60,12 @@ const Page3 = () => {
                         className="mb-1"
                         onClick={() => handleShow(instance, rule)}
                     >
-                        <i class="bi-pencil"></i>
+                        <i className="bi-pencil"></i>
                     </Button>
                 </td>
             </tr>
         );
-    };
+    }
 
     // Takes instance ID (device1, sensor3, etc), returns schedule rule card
     function scheduleRuleSection(instance) {
@@ -89,13 +88,13 @@ const Page3 = () => {
                                             let rows = [];
                                             for (let rule in config[instance]["schedule"]) {
                                                 rows.push(scheduleRuleRow(instance, rule));
-                                            };
+                                            }
                                             return rows;
                                         })()}
                                     </thead>
                                 </Table>
                             );
-                        };
+                        }
                     })()}
                     <Button variant="secondary" onClick={() => handleShow(instance, "")}>
                         Add Rule
@@ -103,7 +102,7 @@ const Page3 = () => {
                 </Card.Body>
             </Card>
         );
-    };
+    }
 
     return (
         <>
@@ -114,8 +113,8 @@ const Page3 = () => {
                 for (let instance in config) {
                     if (instance.startsWith("device") || instance.startsWith("sensor")) {
                         cards.push(scheduleRuleSection(instance));
-                    };
-                };
+                    }
+                }
                 return cards;
             })()}
             <ScheduleRuleModal />

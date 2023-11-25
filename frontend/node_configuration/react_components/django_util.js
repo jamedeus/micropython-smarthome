@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import { useContext } from 'react';
 import { ConfigContext } from './ConfigContext';
 
 
@@ -16,7 +16,7 @@ function getCookie(name) {
         }
     }
     return cookieValue;
-};
+}
 
 
 // Takes endpoint and POST body, makes backend request, returns response
@@ -34,7 +34,7 @@ async function send_post_request(url, body) {
     });
 
     return response;
-};
+}
 
 
 // TODO completely untested
@@ -49,7 +49,7 @@ async function submit(submit_button) {
         var response = await send_post_request("generate_config_file/True", config);
     } else {
         var response = await send_post_request("generate_config_file", config);
-    };
+    }
 
     // If successfully created new config, redirect to overview
     if (!edit_existing && response.ok) {
@@ -70,8 +70,8 @@ async function submit(submit_button) {
     } else {
         alert(await response.text());
         return false;
-    };
-};
+    }
+}
 
 
 export { send_post_request, submit };

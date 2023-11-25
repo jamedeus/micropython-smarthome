@@ -25,12 +25,12 @@ function MetadataSection() {
                 el.classList.add('is-invalid');
             } else {
                 el.classList.remove('is-invalid');
-            };
-        };
+            }
+        }
 
         // Update state + contents of input regardless of validity
         handleInputChange("metadata", "id", new_name);
-    };
+    }
 
     return (
         <div id="metadata">
