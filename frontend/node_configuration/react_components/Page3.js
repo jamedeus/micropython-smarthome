@@ -97,7 +97,9 @@ const Page3 = () => {
                             );
                         };
                     })()}
-                    <Button variant="secondary">Add Rule</Button>
+                    <Button variant="secondary" onClick={() => handleShow(instance, "")}>
+                        Add Rule
+                    </Button>
                 </Card.Body>
             </Card>
         );

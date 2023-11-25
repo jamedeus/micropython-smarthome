@@ -57,7 +57,8 @@ export const ModalContextProvider = ({ children }) => {
             rule: config[instance]["schedule"][timestamp],
             fade_rule: false,
             show_keyword: !is_timestamp(timestamp),
-            metadata: metadata
+            metadata: metadata,
+            add_new: (timestamp.length === 0)
         };
 
         // If editing fade rule split into params, set fade_rule flag
@@ -66,7 +67,13 @@ export const ModalContextProvider = ({ children }) => {
             update.fade_rule = true;
             update.duration = duration;
             update.rule = rule;
-        }
+        };
+
+        // If adding new rule use default_rule as starting point
+        if (update.add_new) {
+            update.rule = config[instance]["default_rule"];
+            update.show_keyword = false;
+        };
 
         // Set modal contents, show
         setModalContent(update);
@@ -145,7 +152,6 @@ export const ScheduleRuleModalContents = () => {
                 <div class="d-flex mt-2">
                     <Form.Check
                         type="switch"
-                        id="toggle-time-mode"
                         label="Keyword"
                         checked={modalContent.show_keyword}
                         onChange={(e) => set_modal_param("show_keyword", e.target.checked)}
@@ -218,7 +224,7 @@ export const ScheduleRuleModalContents = () => {
                                     />
 
                                     {/* Fade duration input */}
-                                    <div id="duration-input" className={modalContent.fade_rule ? "text-center" : "d-none"}>
+                                    <div className={modalContent.fade_rule ? "text-center" : "d-none"}>
                                         <Form.Label className="mt-2">Duration (seconds)</Form.Label>
                                         <Form.Control
                                             type="text"
@@ -231,7 +237,6 @@ export const ScheduleRuleModalContents = () => {
                                     <div class="d-flex mt-2">
                                         <Form.Check
                                             type="switch"
-                                            id="toggle-rule-mode"
                                             label="Fade"
                                             checked={modalContent.fade_rule}
                                             onChange={(e) => set_modal_param("fade_rule", e.target.checked)}
@@ -302,8 +307,20 @@ export const ScheduleRuleModal = (contents) => {
 
                 <Modal.Footer className="mx-auto">
                     <div id="rule-buttons">
-                        <Button variant="success" className="m-1" onClick={save_rule}>Submit</Button>
-                        <Button variant="danger" className="m-1" onClick={delete_rule}>Delete</Button>
+                        <Button
+                            variant="success"
+                            className="m-1"
+                            onClick={save_rule}
+                        >
+                            Submit
+                        </Button>
+                        <Button
+                            variant="danger"
+                            className={modalContent.add_new ? "d-none" : "m-1"}
+                            onClick={delete_rule}
+                        >
+                            Delete
+                        </Button>
                     </div>
                 </Modal.Footer>
             </Modal>
