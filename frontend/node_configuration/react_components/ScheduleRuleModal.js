@@ -8,6 +8,9 @@ import { ConfigContext } from './ConfigContext';
 import { get_instance_metadata } from './metadata';
 import { schedule_keywords } from './schedule_keywords';
 import Dropdown from './inputs/Dropdown';
+import RuleSlider from './inputs/RuleSlider';
+import { convert_temperature } from './thermostat_util';
+
 
 // Used to identify HH:MM timestamp
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
@@ -34,8 +37,10 @@ export const ModalContextProvider = ({ children }) => {
         instance: '',
         timestamp: '',
         rule: '',
+        fade_rule: false,
+        duration: '',
         show_keyword: false,
-        prompt: ''
+        metadata: ''
     });
 
     const handleShow = (instance, timestamp) => {
@@ -48,9 +53,18 @@ export const ModalContextProvider = ({ children }) => {
             instance: instance,
             timestamp: timestamp,
             rule: config[instance]["schedule"][timestamp],
+            fade_rule: false,
             show_keyword: !is_timestamp(timestamp),
-            prompt: metadata.rule_prompt
+            metadata: metadata
         };
+
+        // If editing fade rule split into params, set fade_rule flag
+        if (String(update.rule).startsWith("fade")) {
+            const [_, rule, duration] = String(update.rule).split("/");
+            update.fade_rule = true;
+            update.duration = duration;
+            update.rule = rule;
+        }
 
         // Set modal contents, show
         setModalContent(update);
@@ -70,18 +84,39 @@ export const ModalContextProvider = ({ children }) => {
 
 
 export const ScheduleRuleModalContents = () => {
+    // Get state object that determines modal contents
     const { modalContent, setModalContent } = useContext(ModalContext);
 
-    const toggle_timestamp_field = (value) => {
-        setModalContent({ ...modalContent, ["show_keyword"]: value});
+    // Get curent state for target instance
+    const { config } = useContext(ConfigContext);
+    const instance = config[modalContent.instance];
+
+    // Takes modalContent param name and value, updates and re-renders
+    const set_modal_param = (param, value) => {
+        setModalContent({ ...modalContent, [param]: value});
     };
 
-    const set_timestamp = (value) => {
-        setModalContent({ ...modalContent, ["timestamp"]: value});
-    }
-
-    const set_rule = (value) => {
+    // Handler for slider move events
+    const onSliderMove = (value) => {
         setModalContent({ ...modalContent, ["rule"]: value});
+    };
+
+    // Handler for slider + and - buttons
+    const onButtonClick = (step, direction, min_rule, max_rule) => {
+        if (direction === "up") {
+            var new_rule = parseFloat(modalContent.rule) + parseFloat(step);
+        } else {
+            var new_rule = parseFloat(modalContent.rule) - parseFloat(step);
+        };
+
+        // Enforce rule limits
+        if (new_rule < parseFloat(min_rule)) {
+            new_rule = parseFloat(min_rule);
+        } else if (new_rule > parseFloat(max_rule)) {
+            new_rule = parseFloat(max_rule);
+        };
+
+        setModalContent({ ...modalContent, ["rule"]: new_rule});
     };
 
     return (
@@ -93,7 +128,7 @@ export const ScheduleRuleModalContents = () => {
                         className="text-center"
                         type="time"
                         value={modalContent.timestamp}
-                        onChange={(e) => set_timestamp(e.target.value)}
+                        onChange={(e) => set_modal_param("timestamp", e.target.value)}
                     />
                 </div>
                 <div id="keyword-input" className={modalContent.show_keyword === false ? "d-none" : ""}>
@@ -101,7 +136,7 @@ export const ScheduleRuleModalContents = () => {
                     <Dropdown
                         value={modalContent.timestamp}
                         options={Object.keys(schedule_keywords)}
-                        onChange={set_timestamp}
+                        onChange={(value) => set_modal_param("timestamp", value)}
                     />
                 </div>
 
@@ -111,20 +146,38 @@ export const ScheduleRuleModalContents = () => {
                         id="toggle-time-mode"
                         label="Keyword"
                         checked={modalContent.show_keyword}
-                        onChange={(e) => toggle_timestamp_field(e.target.checked)}
+                        onChange={(e) => set_modal_param("show_keyword", e.target.checked)}
                     />
                 </div>
             </Col>
             <Col md={6} className="text-center">
                 <Form.Label>Rule</Form.Label>
                 {(() => {
-                    switch(modalContent.prompt) {
+                    // Thermostat: Skip switch and return Float slider with temperatures converted
+                    if (modalContent.metadata && modalContent.metadata.config_template.units !== undefined) {
+                        const rule_limits = modalContent.metadata.rule_limits;
+                        return (
+                            <RuleSlider
+                                rule_value={modalContent.rule}
+                                slider_min={convert_temperature(rule_limits[0], "celsius", instance.units)}
+                                slider_max={convert_temperature(rule_limits[1], "celsius", instance.units)}
+                                slider_step={0.1}
+                                button_step={0.5}
+                                display_type={"float"}
+                                onButtonClick={onButtonClick}
+                                onSliderMove={onSliderMove}
+                            />
+                        );
+                    };
+
+                    // All other types: Add correct input for rule_prompt
+                    switch(modalContent.metadata.rule_prompt) {
                         case "standard":
                             return (
                                 <Dropdown
                                     value={modalContent.rule}
                                     options={["Enabled", "Disabled"]}
-                                    onChange={set_rule}
+                                    onChange={(value) => set_modal_param("rule", value)}
                                 />
                             )
                         case "on_off":
@@ -132,8 +185,57 @@ export const ScheduleRuleModalContents = () => {
                                 <Dropdown
                                     value={modalContent.rule}
                                     options={["Enabled", "Disabled", "On", "Off"]}
-                                    onChange={set_rule}
+                                    onChange={(value) => set_modal_param("rule", value)}
                                 />
+                            )
+                        case "float_range":
+                            return (
+                                <RuleSlider
+                                    rule_value={modalContent.rule}
+                                    slider_min={modalContent.metadata.rule_limits[0]}
+                                    slider_max={modalContent.metadata.rule_limits[1]}
+                                    slider_step={0.5}
+                                    button_step={0.5}
+                                    display_type={"float"}
+                                    onButtonClick={onButtonClick}
+                                    onSliderMove={onSliderMove}
+                                />
+                            )
+                        case "int_or_fade":
+                            return (
+                                <>
+                                    <RuleSlider
+                                        rule_value={parseInt(modalContent.rule)}
+                                        slider_min={parseInt(config[modalContent.instance]["min_rule"])}
+                                        slider_max={parseInt(config[modalContent.instance]["max_rule"])}
+                                        slider_step={1}
+                                        button_step={1}
+                                        display_type={"int"}
+                                        onButtonClick={onButtonClick}
+                                        onSliderMove={onSliderMove}
+                                    />
+
+                                    {/* Fade duration input */}
+                                    <div id="duration-input" className={modalContent.fade_rule ? "text-center" : "d-none"}>
+                                        <Form.Label className="mt-2">Duration (seconds)</Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            value={modalContent.duration}
+                                            onChange={(e) => set_modal_param("duration", e.target.value)}
+                                        />
+                                    </div>
+
+                                    {/* Fade mode */}
+                                    <div class="d-flex mt-2">
+                                        <Form.Check
+                                            type="switch"
+                                            id="toggle-rule-mode"
+                                            label="Fade"
+                                            checked={modalContent.fade_rule}
+                                            onChange={(e) => set_modal_param("fade_rule", e.target.checked)}
+                                        />
+                                    </div>
+                                </>
                             )
                     };
                 })()}
