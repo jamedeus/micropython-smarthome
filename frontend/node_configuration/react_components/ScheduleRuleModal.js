@@ -6,7 +6,8 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { ConfigContext } from './ConfigContext';
 import { get_instance_metadata } from './metadata';
-import {get_schedule_keywords_options} from './schedule_keywords';
+import { schedule_keywords } from './schedule_keywords';
+import Dropdown from './inputs/Dropdown';
 
 // Used to identify HH:MM timestamp
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
@@ -97,10 +98,11 @@ export const ScheduleRuleModalContents = () => {
                 </div>
                 <div id="keyword-input" className={modalContent.show_keyword === false ? "d-none" : ""}>
                     <Form.Label>Keyword</Form.Label>
-                    <Form.Select value={modalContent.timestamp} onChange={(e) => set_timestamp(e.target.value)}>
-                        <option>Select a keyword</option>
-                        {get_schedule_keywords_options()}
-                    </Form.Select>
+                    <Dropdown
+                        value={modalContent.timestamp}
+                        options={Object.keys(schedule_keywords)}
+                        onChange={set_timestamp}
+                    />
                 </div>
 
                 <div class="d-flex mt-2">
@@ -119,21 +121,19 @@ export const ScheduleRuleModalContents = () => {
                     switch(modalContent.prompt) {
                         case "standard":
                             return (
-                                <Form.Select value={modalContent.rule} onChange={(e) => set_rule(e.target.value)}>
-                                    <option disabled>Select default rule</option>
-                                    <option value="enabled">Enabled</option>
-                                    <option value="disabled">Disabled</option>
-                                </Form.Select>
+                                <Dropdown
+                                    value={modalContent.rule}
+                                    options={["Enabled", "Disabled"]}
+                                    onChange={set_rule}
+                                />
                             )
                         case "on_off":
                             return (
-                                <Form.Select value={modalContent.rule} onChange={(e) => set_rule(e.target.value)}>
-                                    <option disabled>Select default rule</option>
-                                    <option value="enabled">Enabled</option>
-                                    <option value="disabled">Disabled</option>
-                                    <option value="on">On</option>
-                                    <option value="off">Off</option>
-                                </Form.Select>
+                                <Dropdown
+                                    value={modalContent.rule}
+                                    options={["Enabled", "Disabled", "On", "Off"]}
+                                    onChange={set_rule}
+                                />
                             )
                     };
                 })()}

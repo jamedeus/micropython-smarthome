@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
-import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
-import InputWrapper from './InputWrapper';
+import Dropdown from './Dropdown';
+
 
 function DefaultRuleOnOff({ key, id }) {
     // Get curent state + callback functions from context
@@ -10,15 +10,19 @@ function DefaultRuleOnOff({ key, id }) {
     // Get instance section in config
     const instance = config[id];
 
+    const onChange = (value) => {
+        handleInputChange(id, "default_rule", value);
+    };
+
     return (
-        <InputWrapper label="Default Rule">
-            <Form.Select value={instance.default_rule} onChange={(e) => handleInputChange(id, "default_rule", e.target.value)}>
-                <option disabled>Select default rule</option>
-                <option value="on">On</option>
-                <option value="off">Off</option>
-            </Form.Select>
-        </InputWrapper>
+        <Dropdown
+            value={instance.default_rule}
+            options={["On", "Off"]}
+            onChange={onChange}
+            label="Default Rule"
+        />
     );
 }
+
 
 export default DefaultRuleOnOff;
