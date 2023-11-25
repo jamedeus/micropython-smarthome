@@ -7,6 +7,7 @@ import IPInput from './inputs/IPInput';
 import URIInput from './inputs/URIInput';
 import HttpGetPathInputs from './inputs/HttpGetPathInputs';
 import ThermostatParamInputs from './inputs/ThermostatParamInputs';
+import TargetNodeDropdown from './inputs/TargetNodeDropdown';
 import SensorPinSelect from './inputs/SensorPinSelect';
 import DevicePinSelect from './inputs/DevicePinSelect';
 import DefaultRuleStandard from './inputs/DefaultRuleStandard';
@@ -31,7 +32,10 @@ function InstanceCard({key, id}) {
     const instance = config[id];
     const category = id.replace(/[0-9]/g, '');
 
-    console.log(`Rendering ${id})`)
+    // Get metadata object for selected type
+    const instanceMetadata = get_instance_metadata(category, instance._type);
+
+    console.log(`Rendering ${id}`)
 
     const renderInputs = () => {
         let inputs = [];
@@ -57,9 +61,15 @@ function InstanceCard({key, id}) {
         }
 
         if (instance.ip !== undefined) {
-            inputs.push(
-                <IPInput key={key} id={id} />
-            );
+            if (instanceMetadata.rule_prompt !== "api_target") {
+                inputs.push(
+                    <IPInput key={key} id={id} />
+                );
+            } else {
+                inputs.push(
+                    <TargetNodeDropdown key={key} id={id} />
+                );
+            };
         }
 
         if (instance.uri !== undefined) {
@@ -97,9 +107,6 @@ function InstanceCard({key, id}) {
         if (instance.units !== undefined) {
             return <DefaultRuleThermostat key={key} id={id} />
         }
-
-        // Get metadata object for selected type
-        const instanceMetadata = get_instance_metadata(category, instance._type);
 
         switch (instanceMetadata.rule_prompt) {
             case 'standard':
