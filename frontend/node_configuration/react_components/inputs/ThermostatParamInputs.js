@@ -3,6 +3,7 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 import { convert_temperature } from './../thermostat_util';
+import Dropdown from './Dropdown';
 
 
 function ThermostatParamInputs({ key, id }) {
@@ -16,7 +17,6 @@ function ThermostatParamInputs({ key, id }) {
         if (value.endsWith('.')) {
             handleInputChange(id, "tolerance", value);
         } else {
-
             // Remove everything except digits and period, 4 digit max
             let input = parseFloat(value.replace(/[^\d.]/g, '').substring(0,4));
             // Constrain to 0.1 - 10.0 degrees
@@ -28,7 +28,6 @@ function ThermostatParamInputs({ key, id }) {
         };
     }
 
-    // Get "temperture.toFixed(1) is not a function", prob gets NaN or something?
     const changeUnits = (newUnits) => {
         // Convert default_rule to new units
         const newRule = convert_temperature(instance.default_rule, instance.units, newUnits);
@@ -39,22 +38,25 @@ function ThermostatParamInputs({ key, id }) {
         handleInstanceUpdate(id, update);
     }
 
+    const changeMode = (newMode) => {
+        handleInputChange(id, "mode", newMode);
+    }
+
     return (
         <>
-            <InputWrapper label="Mode">
-                <Form.Select value={instance.mode} onChange={(e) => handleInputChange(id, "mode", e.target.value)}>
-                    <option value="cool">Cool</option>
-                    <option value="heat">Heat</option>
-                </Form.Select>
-            </InputWrapper>
+            <Dropdown
+                value={instance.mode}
+                options={["Cool", "Heat"]}
+                onChange={changeMode}
+                label="Mode"
+            />
 
-            <InputWrapper label="Units">
-                <Form.Select value={instance.units} onChange={(e) => changeUnits(e.target.value)}>
-                    <option value="celsius">Celsius</option>
-                    <option value="fahrenheit">Fahrenheit</option>
-                    <option value="kelvin">Kelvin</option>
-                </Form.Select>
-            </InputWrapper>
+            <Dropdown
+                value={instance.units}
+                options={["Celsius", "Fahrenheit", "Kelvin"]}
+                onChange={changeUnits}
+                label="Units"
+            />
 
             <InputWrapper label="Tolerance">
                 <Form.Control
