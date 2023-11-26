@@ -10,8 +10,8 @@ function PinSelectDropdown({id, config, selected, onChange, options}) {
     for (const section in config) {
         if (section !== id && config[section]["pin"] !== undefined) {
             usedPins.push(config[section]["pin"]);
-        };
-    };
+        }
+    }
 
     // Return dropdown with correct pin selected, used pins disabled
     return (
@@ -20,7 +20,7 @@ function PinSelectDropdown({id, config, selected, onChange, options}) {
                 <option>Select pin</option>
                 {options.map(option => (
                     <option value={option} disabled={usedPins.includes(option)}>
-                    {option}
+                        {option}
                     </option>
                 ))}
             </Form.Select>

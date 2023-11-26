@@ -6,7 +6,7 @@ import { convert_temperature } from './../thermostat_util';
 import Dropdown from './Dropdown';
 
 
-function ThermostatParamInputs({ key, id }) {
+function ThermostatParamInputs({ id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange, handleInstanceUpdate } = useContext(ConfigContext);
 
@@ -23,9 +23,9 @@ function ThermostatParamInputs({ key, id }) {
             input = Math.max(0.1, Math.min(input, 10));
             if (isNaN(input)) {
                 input = "";
-            };
+            }
             handleInputChange(id, "tolerance", input);
-        };
+        }
     }
 
     const changeUnits = (newUnits) => {

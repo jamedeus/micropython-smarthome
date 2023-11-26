@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 
-function HttpGetPathInputs({ key, id }) {
+function HttpGetPathInputs({ id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
 

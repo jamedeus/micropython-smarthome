@@ -9,7 +9,7 @@ const context = JSON.parse(document.getElementById("api_target_options").textCon
 const addresses = context.addresses;
 
 
-function TargetNodeDropdown({ key, id }) {
+function TargetNodeDropdown({ id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
@@ -31,7 +31,7 @@ function TargetNodeDropdown({ key, id }) {
             </Form.Select>
         </InputWrapper>
     );
-};
+}
 
 
 export default TargetNodeDropdown;

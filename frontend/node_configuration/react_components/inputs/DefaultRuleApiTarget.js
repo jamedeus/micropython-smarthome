@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './../ConfigContext';
 
-function DefaultRuleApiTarget({ key, id }) {
+function DefaultRuleApiTarget({ id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
 

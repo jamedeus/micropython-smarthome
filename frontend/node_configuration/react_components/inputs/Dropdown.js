@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Form from 'react-bootstrap/Form';
 import InputWrapper from './InputWrapper';
 
@@ -34,7 +34,7 @@ function Dropdown({ value, options, onChange, label="" }) {
                     ))}
                 </Form.Select>
             );
-    };
+    }
 }
 
 export default Dropdown;

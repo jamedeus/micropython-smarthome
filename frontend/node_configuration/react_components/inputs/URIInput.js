@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 
-function URIInput({ key, id }) {
+function URIInput({ id }) {
     const input = useRef(null);
 
     // Get curent state + callback functions from context
@@ -17,7 +17,7 @@ function URIInput({ key, id }) {
         input.current.addEventListener("blur", () => {
             if (!input.current.validity.valid) {
                 input.current.classList.add('is-invalid');
-            };
+            }
         });
     }, []);
 

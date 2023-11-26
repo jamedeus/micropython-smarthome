@@ -1,7 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Button from 'react-bootstrap/Button';
 import { Range, getTrackBackground } from 'react-range';
-import InputWrapper from './InputWrapper';
 
 
 function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_step, display_type, onButtonClick, onSliderMove }) {
@@ -14,7 +13,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             <Button
                 variant="none"
                 size="sm"
-                onClick={(e) => onButtonClick(button_step, "down", slider_min, slider_max)}
+                onClick={() => onButtonClick(button_step, "down", slider_min, slider_max)}
             >
                 <i className="bi-dash-lg"></i>
             </Button>
@@ -68,7 +67,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
                                     return parseFloat(values[0]).toFixed(1);
                                 } else {
                                     return values[0];
-                                };
+                                }
                             })()}
                         </div>
                     )}
@@ -78,7 +77,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             <Button
                 variant="none"
                 size="sm"
-                onClick={(e) => onButtonClick(button_step, "up", slider_min, slider_max)}
+                onClick={() => onButtonClick(button_step, "up", slider_min, slider_max)}
             >
                 <i className="bi-plus-lg"></i>
             </Button>

@@ -3,7 +3,7 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 
-function IPInput({ key, id }) {
+function IPInput({ id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
@@ -16,7 +16,7 @@ function IPInput({ key, id }) {
         if (value.length < instance.ip.length) {
             handleInputChange(id, "ip", value);
             return;
-        };
+        }
 
         // Remove everything except digits and period, 15 char max
         const input = value.replace(/[^\d.]/g, '').substring(0, 15);

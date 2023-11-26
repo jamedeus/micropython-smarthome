@@ -3,14 +3,14 @@ import { ConfigContext } from './../ConfigContext';
 import PinSelectDropdown from './PinSelectDropdown';
 
 
-function SensorPinSelect({ key, id }) {
+function SensorPinSelect({ id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
     // Skip if config section is empty
     if (!config[id]) {
         return null;
-    };
+    }
 
     const sensorPins = [
         '4',

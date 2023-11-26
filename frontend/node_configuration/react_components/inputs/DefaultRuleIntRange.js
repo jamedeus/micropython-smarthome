@@ -13,11 +13,11 @@ function average(a, b) {
         return parseInt((parseFloat(a) + parseFloat(b)) / 2);
     } catch(err) {
         console.log(err);
-    };
-};
+    }
+}
 
 
-function DefaultRuleIntRange({ key, id }) {
+function DefaultRuleIntRange({ id }) {
     // Get curent state + callback functions from context
     const { config, handleInstanceUpdate, handleSliderButton, handleInputChange } = useContext(ConfigContext);
 
@@ -31,13 +31,13 @@ function DefaultRuleIntRange({ key, id }) {
     // Replace empty params with defaults (slider component requires all)
     if (!instance.min_rule) {
         instance.min_rule = instanceMetadata.rule_limits[0];
-    };
+    }
     if (!instance.max_rule) {
         instance.max_rule = instanceMetadata.rule_limits[1];
-    };
+    }
     if (!instance.default_rule) {
         instance.default_rule = average(instance.min_rule, instance.max_rule);
-    };
+    }
 
     // Handler for slider + and - buttons
     const onButtonClick = (step, direction, min_rule, max_rule) => {

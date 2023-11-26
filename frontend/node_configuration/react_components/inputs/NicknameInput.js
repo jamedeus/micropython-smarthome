@@ -4,7 +4,7 @@ import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 
 
-function NicknameInput({ key, id }) {
+function NicknameInput({ id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
@@ -19,9 +19,9 @@ function NicknameInput({ key, id }) {
             if (value.nickname.toLowerCase() === instance.nickname.toLowerCase()) {
                 duplicate = true;
                 break;
-            };
-        };
-    };
+            }
+        }
+    }
 
     return (
         <InputWrapper label="Nickname">

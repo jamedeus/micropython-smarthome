@@ -11,11 +11,11 @@ function average(a, b) {
         return parseInt((parseFloat(a) + parseFloat(b)) / 2);
     } catch(err) {
         console.log(err);
-    };
-};
+    }
+}
 
 
-function DefaultRuleFloatRange({ key, id }) {
+function DefaultRuleFloatRange({ id }) {
     // Get curent state + callback functions from context
     const { config, handleSliderButton, handleInputChange } = useContext(ConfigContext);
 
@@ -31,7 +31,7 @@ function DefaultRuleFloatRange({ key, id }) {
     // Replace empty default_rule when new card added (causes NaN on slider)
     if (!instance.default_rule) {
         instance.default_rule = average(min_rule, max_rule);
-    };
+    }
 
     // Handler for slider + and - buttons
     const onButtonClick = (step, direction, min_rule, max_rule) => {

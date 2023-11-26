@@ -3,7 +3,7 @@ import { ConfigContext } from './../ConfigContext';
 import Dropdown from './Dropdown';
 
 
-function DefaultRuleOnOff({ key, id }) {
+function DefaultRuleOnOff({ id }) {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
 

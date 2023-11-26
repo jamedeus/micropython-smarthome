@@ -1,6 +1,4 @@
 import React, { useContext } from 'react';
-import Button from 'react-bootstrap/Button';
-import { Range, getTrackBackground } from 'react-range';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 import { get_instance_metadata } from './../metadata';
@@ -8,7 +6,7 @@ import RuleSlider from './RuleSlider';
 import { average, convert_temperature } from './../thermostat_util';
 
 
-function DefaultRuleThermostat({ key, id }) {
+function DefaultRuleThermostat({ id }) {
     // Get instance section from config (state) object
     const { config, handleSliderButton, handleInputChange } = useContext(ConfigContext);
     const instance = config[id];
@@ -22,7 +20,7 @@ function DefaultRuleThermostat({ key, id }) {
     // Replace empty default_rule when new card added (causes NaN on slider)
     if (!instance.default_rule) {
         instance.default_rule = average(min_rule, max_rule);
-    };
+    }
 
     // Handler for slider + and - buttons
     const onButtonClick = (step, direction, min_rule, max_rule) => {
