@@ -11,14 +11,14 @@ const addresses = context.addresses;
 
 function TargetNodeDropdown({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInstanceUpdate } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
 
     // Handler for target select dropdown
     const change_target_node = (target) => {
-        handleInputChange(id, "ip", target);
+        handleInstanceUpdate(id, { ...instance, ["ip"]: target, ["default_rule"]: ""})
     }
 
     return (
