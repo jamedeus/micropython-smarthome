@@ -1204,114 +1204,150 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             },
             "self-target": {},
             "Test1": {
-                "device1-Cabinet Lights (pwm)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device2-Overhead Lights (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Motion Sensor (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "ignore": {}
-            },
-            "Test2": {
-                "device1-Air Conditioner (api-target)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Thermostat (si7021)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule"
-                ],
-                "ir_blaster-Ir Blaster": {
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
+                "device1": {
+                    "display": "Cabinet Lights (pwm)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device2": {
+                    "display": "Overhead Lights (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Motion Sensor (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
                     ]
                 },
                 "ignore": {}
             },
+            "Test2": {
+                "device1": {
+                    "display": "Air Conditioner (api-target)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Thermostat (si7021)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule"
+                    ]
+                },
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "ac"
+                    ],
+                    "keys": {
+                        "ac": [
+                            "start",
+                            "stop",
+                            "off"
+                        ]
+                    }
+                },
+                "ignore": {}
+            },
             "Test3": {
-                "device1-Bathroom LEDs (pwm)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device2-Bathroom Lights (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device3-Entry Light (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Motion Sensor (Bath) (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "sensor2-Motion Sensor (Entry) (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
+                "device1": {
+                    "display": "Bathroom LEDs (pwm)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device2": {
+                    "display": "Bathroom Lights (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device3": {
+                    "display": "Entry Light (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Motion Sensor (Bath) (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
+                "sensor2": {
+                    "display": "Motion Sensor (Entry) (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
                 "ignore": {}
             }
         }
@@ -1337,114 +1373,150 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                 "Test3": "192.168.1.125"
             },
             "self-target": {
-                "device1-Cabinet Lights (pwm)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device2-Overhead Lights (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Motion Sensor (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "ignore": {}
-            },
-            "Test2": {
-                "device1-Air Conditioner (api-target)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Thermostat (si7021)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule"
-                ],
-                "ir_blaster-Ir Blaster": {
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
+                "device1": {
+                    "display": "Cabinet Lights (pwm)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device2": {
+                    "display": "Overhead Lights (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Motion Sensor (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
                     ]
                 },
                 "ignore": {}
             },
+            "Test2": {
+                "device1": {
+                    "display": "Air Conditioner (api-target)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Thermostat (si7021)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule"
+                    ]
+                },
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "ac"
+                    ],
+                    "keys": {
+                        "ac": [
+                            "start",
+                            "stop",
+                            "off"
+                        ]
+                    }
+                },
+                "ignore": {}
+            },
             "Test3": {
-                "device1-Bathroom LEDs (pwm)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device2-Bathroom Lights (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device3-Entry Light (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Motion Sensor (Bath) (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "sensor2-Motion Sensor (Entry) (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
+                "device1": {
+                    "display": "Bathroom LEDs (pwm)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device2": {
+                    "display": "Bathroom Lights (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device3": {
+                    "display": "Entry Light (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Motion Sensor (Bath) (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
+                "sensor2": {
+                    "display": "Motion Sensor (Entry) (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
                 "ignore": {}
             }
         }
@@ -1512,14 +1584,20 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             },
             "self-target": {},
             "ir_test": {
-                "ignore": {},
-                "ir_blaster-Ir Blaster": {
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
-                    ]
-                }
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "ac"
+                    ],
+                    "keys": {
+                        "ac": [
+                            "start",
+                            "stop",
+                            "off"
+                        ]
+                    }
+                },
+                "ignore": {}
             }
         }
 
@@ -1538,23 +1616,29 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             },
             "self-target": {},
             "ir_test": {
-                "ignore": {},
-                "ir_blaster-Ir Blaster": {
-                    "tv": [
-                        "power",
-                        "vol_up",
-                        "vol_down",
-                        "mute",
-                        "up",
-                        "down",
-                        "left",
-                        "right",
-                        "enter",
-                        "settings",
-                        "exit",
-                        "source"
-                    ]
-                }
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "tv"
+                    ],
+                    "keys": {
+                        "tv": [
+                            "power",
+                            "vol_up",
+                            "vol_down",
+                            "mute",
+                            "up",
+                            "down",
+                            "left",
+                            "right",
+                            "enter",
+                            "settings",
+                            "exit",
+                            "source"
+                        ]
+                    }
+                },
+                "ignore": {}
             }
         }
 
@@ -1573,28 +1657,35 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             },
             "self-target": {},
             "ir_test": {
-                "ignore": {},
-                "ir_blaster-Ir Blaster": {
-                    "tv": [
-                        "power",
-                        "vol_up",
-                        "vol_down",
-                        "mute",
-                        "up",
-                        "down",
-                        "left",
-                        "right",
-                        "enter",
-                        "settings",
-                        "exit",
-                        "source"
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "tv",
+                        "ac"
                     ],
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
-                    ]
-                }
+                    "keys": {
+                        "tv": [
+                            "power",
+                            "vol_up",
+                            "vol_down",
+                            "mute",
+                            "up",
+                            "down",
+                            "left",
+                            "right",
+                            "enter",
+                            "settings",
+                            "exit",
+                            "source"
+                        ],
+                        "ac": [
+                            "start",
+                            "stop",
+                            "off"
+                        ]
+                    }
+                },
+                "ignore": {}
             }
         }
 
@@ -1613,28 +1704,40 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
 
         # ApiTarget options do not include turn_on or turn_off in self-target section (infinite loop)
         expected_options = {
-            "device1-Air Conditioner (api-target)": [
-                "enable",
-                "disable",
-                "enable_in",
-                "disable_in",
-                "set_rule",
-                "reset_rule"
-            ],
-            "sensor1-Thermostat (si7021)": [
-                "enable",
-                "disable",
-                "enable_in",
-                "disable_in",
-                "set_rule",
-                "reset_rule"
-            ],
-            "ir_blaster-Ir Blaster": {
-                "ac": [
-                    "start",
-                    "stop",
-                    "off"
+            "device1": {
+                "display": "Air Conditioner (api-target)",
+                "options": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule"
                 ]
+            },
+            "sensor1": {
+                "display": "Thermostat (si7021)",
+                "options": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule"
+                ]
+            },
+            "ir_key": {
+                "display": "Ir Blaster",
+                "options": [
+                    "ac"
+                ],
+                "keys": {
+                    "ac": [
+                        "start",
+                        "stop",
+                        "off"
+                    ]
+                }
             },
             "ignore": {}
         }
@@ -1655,9 +1758,12 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
 
         # Request options for node with ApiTarget, confirm options exist for all instances
         options = get_api_target_menu_options('Test2')
-        self.assertIn('device1-Air Conditioner (api-target)', options['self-target'].keys())
-        self.assertIn('sensor1-Thermostat (si7021)', options['self-target'].keys())
-        self.assertIn('ir_blaster-Ir Blaster', options['self-target'].keys())
+        self.assertIn('device1', options['self-target'].keys())
+        self.assertEqual('Air Conditioner (api-target)', options['self-target']['device1']['display'])
+        self.assertIn('sensor1', options['self-target'].keys())
+        self.assertEqual('Thermostat (si7021)', options['self-target']['sensor1']['display'])
+        self.assertIn('ir_key', options['self-target'].keys())
+        self.assertEqual('Ir Blaster', options['self-target']['ir_key']['display'])
         self.assertIn('ignore', options['self-target'].keys())
 
         # Remove test configs from disk
