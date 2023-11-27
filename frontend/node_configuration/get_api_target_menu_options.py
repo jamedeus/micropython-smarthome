@@ -41,7 +41,7 @@ def convert_config_to_api_target_options(config):
                 result["ir_key"] = {
                     "display": "Ir Blaster",
                     "options": [target for target in ir_blaster_options.keys() if target in config[i]['target']],
-                    "keys": ir_blaster_options
+                    "keys": {target: value for target, value in entry.items() if target in config[i]['target']}
                 }
 
     return result
@@ -70,7 +70,9 @@ def get_api_target_menu_options(editing_node=False):
 
             # Remove 'turn_on' and 'turn_off' from any api-target instances (prevent self-targeting in infinite loop)
             new_options = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
-            entries = {key: (new_options if key.endswith('api-target)') else value) for key, value in entries.items()}
+            for key, value in entries.items():
+                if entries[key]['display'].endswith('api-target)'):
+                    entries[key]['options'] = new_options
 
             dropdownObject["self-target"] = entries
 
