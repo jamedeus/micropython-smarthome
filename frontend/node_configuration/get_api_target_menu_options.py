@@ -12,28 +12,37 @@ def convert_config_to_api_target_options(config):
     result = {}
     for i in config:
         if i != "ir_blaster":
-            # Instance string format: id-nickname (type)
-            # Frontend splits, uses "nickname (type)" for dropdown option innerHTML, uses "id" for value
-            # Backend only receives values (id) for config generation
-            instance_string = f'{i}-{config[i]["nickname"]} ({config[i]["_type"]})'
-
             # All devices have same options
             if i.startswith("device"):
-                result[instance_string] = device_endpoints
+                result[i] = {
+                    "display": f'{config[i]["nickname"]} ({config[i]["_type"]})',
+                    "options": device_endpoints
+                }
 
             # All sensors have same options except thermostat and switch (trigger unsupported)
+            # TODO should use metadata triggerable param, remove hardcoded types
             elif i.startswith("sensor") and config[i]["_type"] not in ["si7021", "switch"]:
-                result[instance_string] = sensor_endpoints
+                result[i] = {
+                    "display": f'{config[i]["nickname"]} ({config[i]["_type"]})',
+                    "options": sensor_endpoints
+                }
 
             else:
-                result[instance_string] = sensor_endpoints.copy()
-                result[instance_string].remove('trigger_sensor')
+                result[i] = {
+                    "display": f'{config[i]["nickname"]} ({config[i]["_type"]})',
+                    "options": sensor_endpoints.copy()
+                }
+                result[i]["options"].remove('trigger_sensor')
 
         else:
             # Add options for all configured IR Blaster targets
             entry = {target: options for target, options in ir_blaster_options.items() if target in config[i]['target']}
             if entry:
-                result["ir_blaster-Ir Blaster"] = entry
+                result["ir_key"] = {
+                    "display": "Ir Blaster",
+                    "options": [target for target in ir_blaster_options.keys() if target in config[i]['target']],
+                    "keys": ir_blaster_options
+                }
 
     return result
 

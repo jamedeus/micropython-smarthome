@@ -6,6 +6,7 @@ import { ConfigContext } from './ConfigContext';
 import InstanceCard from './InstanceCard';
 import MetadataSection from './MetadataSection';
 import IrBlasterSection from './IrBlasterSection';
+import { ApiTargetRuleModal } from './ApiTargetRuleModal';
 
 
 const Page1 = () => {
@@ -86,6 +87,7 @@ const Page1 = () => {
             <div className="mb-3">
                 <Button variant="info" onClick={() => logState()}>Log State</Button>
             </div>
+            <ApiTargetRuleModal />
         </>
     );
 };

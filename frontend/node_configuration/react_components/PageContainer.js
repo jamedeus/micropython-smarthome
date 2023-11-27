@@ -4,7 +4,8 @@ import { submit } from './django_util';
 import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
-import { ModalContextProvider } from './ScheduleRuleModal';
+import { ScheduleRuleModalContextProvider } from './ScheduleRuleModal';
+import { ApiTargetModalContextProvider } from './ApiTargetRuleModal';
 
 
 const PageContainer = () => {
@@ -32,7 +33,7 @@ const PageContainer = () => {
     }
 
     return (
-        <>
+        <ApiTargetModalContextProvider>
             <div className="d-flex flex-column vh-100">
                 <h1 className="text-center pt-3 pb-4">{document.title}</h1>
 
@@ -48,9 +49,11 @@ const PageContainer = () => {
                         case 3:
                             console.log("rendering page3");
                             return (
-                                <ModalContextProvider>
-                                    <Page3 />
-                                </ModalContextProvider>
+                                <ApiTargetModalContextProvider>
+                                    <ScheduleRuleModalContextProvider>
+                                        <Page3 />
+                                    </ScheduleRuleModalContextProvider>
+                                </ApiTargetModalContextProvider>
                             );
                     }
                 })()}
@@ -67,7 +70,7 @@ const PageContainer = () => {
                     <Button variant="primary" className="mb-4" onClick={nextPage} disabled={page === 3}>Next</Button>
                 </div>
             </div>
-        </>
+        </ApiTargetModalContextProvider>
     );
 };
 

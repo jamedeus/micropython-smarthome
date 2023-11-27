@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './../ConfigContext';
+import { ApiTargetModalContext } from './../ApiTargetRuleModal';
 
 function DefaultRuleApiTarget({ id }) {
     // Get curent state + callback functions from context
@@ -10,13 +11,16 @@ function DefaultRuleApiTarget({ id }) {
     // Get instance section in config
     const instance = config[id];
 
+    // Get callback to open rule modal
+    const { handleShow } = useContext(ApiTargetModalContext);
+
     return (
         <>
             <div className="mb-2 pt-3 text-center">
                 <Button
                     id={`${id}-default_rule-button`}
                     variant="secondary"
-                    /*onClick="open_rule_modal(this);"*/
+                    onClick={() => handleShow(id, "default_rule")}
                 >
                     Set rule
                 </Button>

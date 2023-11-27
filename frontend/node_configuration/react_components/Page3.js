@@ -3,7 +3,7 @@ import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './ConfigContext';
-import { ModalContext, ScheduleRuleModal } from './ScheduleRuleModal';
+import { ScheduleRuleModalContext, ScheduleRuleModal } from './ScheduleRuleModal';
 
 // Used to identify HH:MM timestamp
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
@@ -29,8 +29,8 @@ const Page3 = () => {
     // Get curent state + callback functions from context
     const { config } = useContext(ConfigContext);
 
-    // Get context for schedule rule modal
-    const { handleShow } = useContext(ModalContext);
+    // Get callback to open schedule rule modal
+    const { handleShow } = useContext(ScheduleRuleModalContext);
 
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button

@@ -25,9 +25,9 @@ function is_timestamp(timestamp) {
 }
 
 
-export const ModalContext = createContext();
+export const ScheduleRuleModalContext = createContext();
 
-export const ModalContextProvider = ({ children }) => {
+export const ScheduleRuleModalContextProvider = ({ children }) => {
     // Get curent state from context
     const { config } = useContext(ConfigContext);
 
@@ -85,16 +85,16 @@ export const ModalContextProvider = ({ children }) => {
     };
 
     return (
-        <ModalContext.Provider value={{ show, modalContent, setModalContent, handleShow, handleClose }}>
+        <ScheduleRuleModalContext.Provider value={{ show, modalContent, setModalContent, handleShow, handleClose }}>
             {children}
-        </ModalContext.Provider>
+        </ScheduleRuleModalContext.Provider>
     );
 };
 
 
 export const ScheduleRuleModalContents = () => {
     // Get state object that determines modal contents
-    const { modalContent, setModalContent } = useContext(ModalContext);
+    const { modalContent, setModalContent } = useContext(ScheduleRuleModalContext);
 
     // Get curent state for target instance
     const { config } = useContext(ConfigContext);
@@ -254,7 +254,7 @@ export const ScheduleRuleModalContents = () => {
 
 export const ScheduleRuleModal = () => {
     // Get context and callbacks
-    const { show, handleClose, modalContent } = useContext(ModalContext);
+    const { show, handleClose, modalContent } = useContext(ScheduleRuleModalContext);
 
     // Get curent state from context
     const { config, handleInputChange } = useContext(ConfigContext);
@@ -293,7 +293,7 @@ export const ScheduleRuleModal = () => {
     }
 
     return (
-        <ModalContextProvider>
+        <ScheduleRuleModalContextProvider>
             <Modal show={show} onHide={handleClose} centered>
                 <Modal.Header className="justify-content-between">
                     <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
@@ -324,6 +324,6 @@ export const ScheduleRuleModal = () => {
                     </div>
                 </Modal.Footer>
             </Modal>
-        </ModalContextProvider>
+        </ScheduleRuleModalContextProvider>
     );
 };
