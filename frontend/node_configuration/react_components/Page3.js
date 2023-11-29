@@ -4,25 +4,8 @@ import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './ConfigContext';
 import { ScheduleRuleModalContext, ScheduleRuleModal } from './ScheduleRuleModal';
-
-// Used to identify HH:MM timestamp
-const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
-
-
-// Takes 24h timestamp, returns 12h with am/pm suffix
-function format12h(timestamp) {
-    // Return keywords unchanged
-    if ( ! timestamp_regex.test(timestamp)) {
-        return timestamp;
-    }
-
-    let [hour, minute] = timestamp.split(':');
-    const suffix = parseInt(hour) >= 12 ? 'pm' : 'am';
-    // Convert to 12h format, if midnight replace 0 with 12
-    hour = parseInt(hour) % 12;
-    hour = hour === 0 ? 12 : hour;
-    return `${hour}:${minute} ${suffix}`;
-}
+import { TimeField } from './TimeField';
+import { RuleField } from './RuleField';
 
 
 const Page3 = () => {
@@ -38,30 +21,10 @@ const Page3 = () => {
         return (
             <tr>
                 <td>
-                    <span
-                        className="form-control"
-                        onClick={() => handleShow(instance, rule)}
-                    >
-                        {format12h(rule)}
-                    </span>
+                    <TimeField instance={instance} timestamp={rule} />
                 </td>
                 <td>
-                    <span
-                        className="form-control"
-                        onClick={() => handleShow(instance, rule)}
-                    >
-                        {config[instance]["schedule"][rule]}
-                    </span>
-                </td>
-                <td className="min">
-                    <Button
-                        variant="primary"
-                        size="sm"
-                        className="mb-1"
-                        onClick={() => handleShow(instance, rule)}
-                    >
-                        <i className="bi-pencil"></i>
-                    </Button>
+                    <RuleField instance={instance} timestamp={rule} />
                 </td>
             </tr>
         );
