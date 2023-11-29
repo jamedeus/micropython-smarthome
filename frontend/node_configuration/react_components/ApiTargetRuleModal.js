@@ -26,7 +26,6 @@ export const ApiTargetModalContextProvider = ({ children }) => {
     const [show, setShow] = useState(false);
     const [modalContent, setModalContent] = useState({
         instance: '',
-        current_rule: '',
         target_node_options: '',
         show_help: false,
         show_examples: false,
@@ -43,15 +42,14 @@ export const ApiTargetModalContextProvider = ({ children }) => {
 
     const handleShow = (instance, rule_key) => {
         // Replace modalContent with params for selected rule
-        let update = {
-            instance: instance,
-            rule_key: rule_key,
-            schedule_rule: !(rule_key === "default_rule"),
-            target_node_options: getTargetNodeOptions(config[instance]['ip']),
-            show_help: false,
-            show_examples: false,
-            view_on_rule: true,
-        };
+        let update = { ...modalContent }
+        update.instance = instance;
+        update.rule_key = rule_key;
+        update.schedule_rule = !(rule_key === "default_rule");
+        update.target_node_options = getTargetNodeOptions(config[instance]['ip']);
+        update.show_help = false;
+        update.show_examples = false;
+        update.view_on_rule = true;
 
         // Parse existing rule from state object if it exists
         let rule = "";
