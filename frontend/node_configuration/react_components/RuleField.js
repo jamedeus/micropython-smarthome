@@ -56,11 +56,12 @@ export const RuleField = ({ instance, timestamp }) => {
         const rules = config[popupContent.instance]["schedule"];
 
         // Get new rule from modal contents
+        let new_rule;
         if (popupContent.fade_rule) {
             // Fade rule: Combine params into single string
-            var new_rule = `fade/${popupContent.rule}/${popupContent.duration}`;
+            new_rule = `fade/${popupContent.rule}/${popupContent.duration}`;
         } else {
-            var new_rule = popupContent.rule;
+            new_rule = popupContent.rule;
         }
 
         // Add new rule, update state object, close modal
@@ -81,10 +82,11 @@ export const RuleField = ({ instance, timestamp }) => {
 
     // Handler for slider + and - buttons
     const onButtonClick = (step, direction, min_rule, max_rule) => {
+        let new_rule;
         if (direction === "up") {
-            var new_rule = parseFloat(popupContent.rule) + parseFloat(step);
+            new_rule = parseFloat(popupContent.rule) + parseFloat(step);
         } else {
-            var new_rule = parseFloat(popupContent.rule) - parseFloat(step);
+            new_rule = parseFloat(popupContent.rule) - parseFloat(step);
         }
 
         // Enforce rule limits

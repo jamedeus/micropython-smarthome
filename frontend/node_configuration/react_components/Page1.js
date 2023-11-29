@@ -21,7 +21,7 @@ const Page1 = () => {
     const deviceEntries = (
         <>
             {Object.entries(config)
-                .filter(([id, _]) => id.startsWith('device'))
+                .filter(([id]) => id.startsWith('device'))
                 .map(([id, config]) => (
                     <InstanceCard
                         key={config.uniqueID}
@@ -36,7 +36,7 @@ const Page1 = () => {
     const sensorEntries = (
         <>
             {Object.entries(config)
-                .filter(([id, _]) => id.startsWith('sensor'))
+                .filter(([id]) => id.startsWith('sensor'))
                 .map(([id, config]) => (
                     <InstanceCard
                         key={config.uniqueID}

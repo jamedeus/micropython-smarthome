@@ -247,27 +247,24 @@ function update_ids(target, state) {
 // Delete instance card animation
 // Takes array of card divs, index of card to delete, add instance button
 // Fades out card to delete, slides up all cards below + add button
-function delete_animation(cards, index, button) {
-    return new Promise(async resolve => {
-        // Fade out card to be deleted
-        cards[index].classList.add('fade-out');
+async function delete_animation(cards, index, button) {
+    // Fade out card to be deleted
+    cards[index].classList.add('fade-out');
 
-        // Slide up all cards below, wait for animation to complete
-        for (let i=parseInt(index)+1; i<cards.length; i++) {
-            cards[i].children[0].classList.add('slide-up');
-        }
-        button.classList.add('slide-up');
-        await sleep(800);
+    // Slide up all cards below, wait for animation to complete
+    for (let i=parseInt(index)+1; i<cards.length; i++) {
+        cards[i].children[0].classList.add('slide-up');
+    }
+    button.classList.add('slide-up');
+    await sleep(800);
 
-        // Prevent cards jumping higher when hidden card is actually deleted
-        for (let i=parseInt(index)+1; i<cards.length; i++) {
-            cards[i].children[0].classList.remove('slide-up');
-        }
-        button.classList.remove('slide-up');
-        // Prevent incorrect card being hidden after react re-render
-        cards[index].classList.remove('fade-out');
-        resolve();
-    });
+    // Prevent cards jumping higher when hidden card is actually deleted
+    for (let i=parseInt(index)+1; i<cards.length; i++) {
+        cards[i].children[0].classList.remove('slide-up');
+    }
+    button.classList.remove('slide-up');
+    // Prevent incorrect card being hidden after react re-render
+    cards[index].classList.remove('fade-out');
 }
 
 export { filterObject };

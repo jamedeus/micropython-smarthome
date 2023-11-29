@@ -45,10 +45,11 @@ async function submit(submit_button) {
     console.log(config)
 
     // Edit and reupload if editing existing config, otherwise create config
+    let response;
     if (edit_existing) {
-        var response = await send_post_request("generate_config_file/True", config);
+        response = await send_post_request("generate_config_file/True", config);
     } else {
-        var response = await send_post_request("generate_config_file", config);
+        response = await send_post_request("generate_config_file", config);
     }
 
     // If successfully created new config, redirect to overview
