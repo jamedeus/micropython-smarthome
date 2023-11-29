@@ -115,11 +115,12 @@ export const RuleField = ({ instance, timestamp }) => {
                         // Thermostat: Skip switch and return Float slider with temperatures converted
                         if (popupContent.metadata && popupContent.metadata.config_template.units !== undefined) {
                             const rule_limits = popupContent.metadata.rule_limits;
+                            const units = config[instance]["units"];
                             return (
                                 <RuleSlider
                                     rule_value={popupContent.rule}
-                                    slider_min={convert_temperature(rule_limits[0], "celsius", instance.units)}
-                                    slider_max={convert_temperature(rule_limits[1], "celsius", instance.units)}
+                                    slider_min={convert_temperature(rule_limits[0], "celsius", units)}
+                                    slider_max={convert_temperature(rule_limits[1], "celsius", units)}
                                     slider_step={0.1}
                                     button_step={0.5}
                                     display_type={"float"}
