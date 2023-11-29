@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import { ConfigContext } from './../ConfigContext';
 import Dropdown from './Dropdown';
-
 
 function DefaultRuleStandard({ id }) {
     // Get curent state + callback functions from context
@@ -24,5 +24,8 @@ function DefaultRuleStandard({ id }) {
     );
 }
 
+DefaultRuleStandard.propTypes = {
+    id: PropTypes.string,
+}
 
 export default DefaultRuleStandard;

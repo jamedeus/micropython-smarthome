@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 function InputWrapper({ children, label }) {
     return (
@@ -9,6 +10,11 @@ function InputWrapper({ children, label }) {
             </label>
         </div>
     );
+}
+
+InputWrapper.propTypes = {
+    children: PropTypes.node,
+    label: PropTypes.string
 }
 
 export default InputWrapper;

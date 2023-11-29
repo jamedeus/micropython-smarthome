@@ -1,12 +1,12 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import DevicePinSelect from './inputs/DevicePinSelect';
 
-
-function IrBlasterSection({ key, configured, pin, target, onChange, onTargetSelect }) {
+function IrBlasterSection({ configured, pin, target, onChange, onTargetSelect }) {
     return (
         <div id="ir_blaster_row" className="max-width-md-50 w-100 mx-auto text-center">
             <p className="text-center mt-3">
@@ -55,6 +55,15 @@ function IrBlasterSection({ key, configured, pin, target, onChange, onTargetSele
             </Collapse>
         </div>
     )
+}
+
+IrBlasterSection.propTypes = {
+    key: PropTypes.string,
+    configured: PropTypes.bool,
+    pin: PropTypes.string,
+    target: PropTypes.array,
+    onChange: PropTypes.func,
+    onTargetSelect: PropTypes.func
 }
 
 export default IrBlasterSection;

@@ -1,6 +1,6 @@
 import React, { useState, createContext, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { get_config_template } from './metadata';
-
 
 // Takes object and key prefix, returns all keys that begin with prefix
 function filterObject(obj, prefix) {
@@ -12,14 +12,11 @@ function filterObject(obj, prefix) {
     }, {});
 }
 
-
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-
 export const ConfigContext = createContext();
-
 
 export const ConfigProvider = ({ children }) => {
     // Default state object if not received from context
@@ -202,6 +199,9 @@ export const ConfigProvider = ({ children }) => {
     );
 };
 
+ConfigProvider.propTypes = {
+    children: PropTypes.node,
+}
 
 // Called by deleteInstance, decrements IDs of all subsequent instances to prevent gaps
 // Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc
@@ -243,7 +243,6 @@ function update_ids(target, state) {
 
     return state;
 }
-
 
 // Delete instance card animation
 // Takes array of card divs, index of card to delete, add instance button

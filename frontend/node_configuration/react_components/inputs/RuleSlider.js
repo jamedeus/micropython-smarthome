@@ -1,7 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import { Range, getTrackBackground } from 'react-range';
-
 
 function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_step, display_type, onButtonClick, onSliderMove }) {
     // Create array containing current rule, required my slider component
@@ -83,6 +83,18 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             </Button>
         </div>
     );
+}
+
+RuleSlider.propTypes = {
+    rule_value: PropTypes.string,
+    slider_min: PropTypes.number,
+    slider_max: PropTypes.number,
+    slider_step: PropTypes.number,
+    button_step: PropTypes.number,
+    display_type: PropTypes.string,
+    onButtonClick: PropTypes.func,
+    onSliderMove: PropTypes.func,
+    style: PropTypes.object
 }
 
 export default RuleSlider;

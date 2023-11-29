@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 import { convert_temperature } from './../thermostat_util';
 import Dropdown from './Dropdown';
-
 
 function ThermostatParamInputs({ id }) {
     // Get curent state + callback functions from context
@@ -79,6 +79,10 @@ function ThermostatParamInputs({ id }) {
             </InputWrapper>
         </>
     );
+}
+
+ThermostatParamInputs.propTypes = {
+    id: PropTypes.string
 }
 
 export default ThermostatParamInputs;

@@ -1,7 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import InputWrapper from './InputWrapper';
-
 
 // Used by SensorPinSelect and DevicePinSelect components
 function PinSelectDropdown({id, config, selected, onChange, options}) {
@@ -19,13 +19,21 @@ function PinSelectDropdown({id, config, selected, onChange, options}) {
             <Form.Select value={selected} onChange={(e) => onChange(e.target.value)}>
                 <option>Select pin</option>
                 {options.map(option => (
-                    <option value={option} disabled={usedPins.includes(option)}>
+                    <option key={option} value={option} disabled={usedPins.includes(option)}>
                         {option}
                     </option>
                 ))}
             </Form.Select>
         </InputWrapper>
     );
+}
+
+PinSelectDropdown.propTypes = {
+    id: PropTypes.string,
+    config: PropTypes.object,
+    selected: PropTypes.string,
+    onChange: PropTypes.func,
+    options: PropTypes.array
 }
 
 export default PinSelectDropdown;

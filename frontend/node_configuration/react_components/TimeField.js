@@ -1,4 +1,5 @@
 import React, { useState, useRef, useContext } from 'react';
+import PropTypes from 'prop-types';
 import { ConfigContext } from './ConfigContext';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
@@ -7,7 +8,6 @@ import { schedule_keywords } from './schedule_keywords';
 
 // Used to identify HH:MM timestamp
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
-
 
 // Takes 24h timestamp, returns 12h with am/pm suffix
 function format12h(timestamp) {
@@ -24,12 +24,10 @@ function format12h(timestamp) {
     return `${hour}:${minute} ${suffix}`;
 }
 
-
 // Takes timestamp, returns true if matches existing keyword, otherwise False
 function isKeyword(timestamp) {
     return Object.keys(schedule_keywords).includes(timestamp);
 }
-
 
 export const TimeField = ({ instance, timestamp }) => {
     // Get curent state from context
@@ -127,3 +125,8 @@ export const TimeField = ({ instance, timestamp }) => {
         </div>
     );
 };
+
+TimeField.propTypes = {
+    instance: PropTypes.string,
+    timestamp: PropTypes.string
+}

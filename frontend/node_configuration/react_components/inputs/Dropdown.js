@@ -1,7 +1,7 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import InputWrapper from './InputWrapper';
-
 
 // Takes string, returns with first character of each word capitalized
 function toTitle(str) {
@@ -9,7 +9,6 @@ function toTitle(str) {
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
 }
-
 
 function Dropdown({ value, options, onChange, label="" }) {
     switch(true) {
@@ -35,6 +34,13 @@ function Dropdown({ value, options, onChange, label="" }) {
                 </Form.Select>
             );
     }
+}
+
+Dropdown.propTypes = {
+    value: PropTypes.string,
+    options: PropTypes.array,
+    onChange: PropTypes.func,
+    label: PropTypes.string
 }
 
 export default Dropdown;

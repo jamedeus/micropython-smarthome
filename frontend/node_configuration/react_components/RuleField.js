@@ -1,4 +1,5 @@
 import React, { useState, useRef, useContext } from 'react';
+import PropTypes from 'prop-types';
 import { ConfigContext } from './ConfigContext';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
@@ -7,7 +8,6 @@ import Dropdown from './inputs/Dropdown.js'
 import RuleSlider from './inputs/RuleSlider';
 import { convert_temperature } from './thermostat_util';
 import { get_instance_metadata } from './metadata';
-
 
 export const RuleField = ({ instance, timestamp }) => {
     // Get curent state from context
@@ -215,3 +215,8 @@ export const RuleField = ({ instance, timestamp }) => {
         </div>
     );
 };
+
+RuleField.propTypes = {
+    instance: PropTypes.string,
+    timestamp: PropTypes.string
+}

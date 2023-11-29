@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './ConfigContext';
@@ -19,7 +20,7 @@ import DefaultRuleApiTarget from './inputs/DefaultRuleApiTarget';
 import { get_instance_metadata, get_type_dropdown_options } from './metadata';
 
 
-function InstanceCard({key, id}) {
+function InstanceCard({ id }) {
     // Get curent state + callback functions from context
     const { config, startDeletingInstance, changeInstanceType } = useContext(ConfigContext);
 
@@ -37,7 +38,7 @@ function InstanceCard({key, id}) {
 
         if (instance.nickname !== undefined) {
             inputs.push(
-                <NicknameInput key={key} id={id} />
+                <NicknameInput id={id} />
             );
         }
 
@@ -45,12 +46,12 @@ function InstanceCard({key, id}) {
             // Is device if no targets key
             if (instance.targets === undefined) {
                 inputs.push(
-                    <DevicePinSelect key={key} id={id} />
+                    <DevicePinSelect id={id} />
                 );
             // Otherwise is sensor
             } else {
                 inputs.push(
-                    <SensorPinSelect key={key} id={id} />
+                    <SensorPinSelect id={id} />
                 );
             }
         }
@@ -58,24 +59,24 @@ function InstanceCard({key, id}) {
         if (instance.ip !== undefined) {
             if (instanceMetadata.rule_prompt !== "api_target") {
                 inputs.push(
-                    <IPInput key={key} id={id} />
+                    <IPInput id={id} />
                 );
             } else {
                 inputs.push(
-                    <TargetNodeDropdown key={key} id={id} />
+                    <TargetNodeDropdown id={id} />
                 );
             }
         }
 
         if (instance.uri !== undefined) {
             inputs.push(
-                <URIInput key={key} id={id} />
+                <URIInput id={id} />
             );
         }
 
         if (instance.on_path !== undefined && instance.off_path !== undefined) {
             inputs.push(
-                <HttpGetPathInputs key={key} id={id}/>
+                <HttpGetPathInputs id={id}/>
             );
         }
 
@@ -85,7 +86,7 @@ function InstanceCard({key, id}) {
         // Thermostat mode, units, tolerance inputs
         if (instance.mode !== undefined && instance.units !== undefined) {
             inputs.push(
-                <ThermostatParamInputs key={key} id={id} />
+                <ThermostatParamInputs id={id} />
             );
         }
 
@@ -100,20 +101,20 @@ function InstanceCard({key, id}) {
 
         // If instance has units key return thermostat input
         if (instance.units !== undefined) {
-            return <DefaultRuleThermostat key={key} id={id} />
+            return <DefaultRuleThermostat id={id} />
         }
 
         switch (instanceMetadata.rule_prompt) {
             case 'standard':
-                return <DefaultRuleStandard key={key} id={id} />;
+                return <DefaultRuleStandard id={id} />;
             case 'on_off':
-                return <DefaultRuleOnOff key={key} id={id} />;
+                return <DefaultRuleOnOff id={id} />;
             case 'float_range':
-                return <DefaultRuleFloatRange key={key} id={id} />;
+                return <DefaultRuleFloatRange id={id} />;
             case 'int_or_fade':
-                return <DefaultRuleIntRange key={key} id={id} />;
+                return <DefaultRuleIntRange id={id} />;
             case 'api_target':
-                return <DefaultRuleApiTarget key={key} id={id} />;
+                return <DefaultRuleApiTarget id={id} />;
             default:
                 return null;
         }
@@ -142,6 +143,10 @@ function InstanceCard({key, id}) {
             </Card>
         </div>
     );
+}
+
+InstanceCard.propTypes = {
+    id: PropTypes.string,
 }
 
 export default InstanceCard;

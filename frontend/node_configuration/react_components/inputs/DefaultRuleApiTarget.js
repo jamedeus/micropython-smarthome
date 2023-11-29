@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './../ConfigContext';
@@ -35,6 +36,10 @@ function DefaultRuleApiTarget({ id }) {
             </div>
         </>
     );
+}
+
+DefaultRuleApiTarget.propTypes = {
+    id: PropTypes.string,
 }
 
 export default DefaultRuleApiTarget;

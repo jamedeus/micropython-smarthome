@@ -1,14 +1,13 @@
 import React, { createContext, useContext, useState } from 'react';
+import PropTypes from 'prop-types';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './ConfigContext';
 
-
 // Get object containing valid API commands for each instance of all existing nodes
 const context = JSON.parse(document.getElementById("api_target_options").textContent);
-
 
 // Takes IP, returns object from context
 function getTargetNodeOptions(ip) {
@@ -101,6 +100,9 @@ export const ApiTargetModalContextProvider = ({ children }) => {
     );
 };
 
+ApiTargetModalContextProvider.propTypes = {
+    children: PropTypes.node,
+}
 
 export const ApiTargetRuleModalContents = () => {
     // Get state object that determines modal contents
@@ -248,7 +250,6 @@ export const ApiTargetRuleModalContents = () => {
         </>
     );
 };
-
 
 export const ApiTargetRuleModal = () => {
     // Get context and callbacks

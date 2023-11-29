@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-
+import PropTypes from 'prop-types';
 
 const PopupDiv = ({ children, show, anchorRef, onClose }) => {
     const popupRef = useRef(null);
@@ -44,5 +44,11 @@ const PopupDiv = ({ children, show, anchorRef, onClose }) => {
     );
 };
 
+PopupDiv.propTypes = {
+    children: PropTypes.node,
+    show: PropTypes.bool,
+    anchorRef: PropTypes.object,
+    onClose: PropTypes.func
+}
 
 export default PopupDiv;

@@ -1,11 +1,11 @@
 import React, { useContext, useState } from 'react';
+import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
 import { get_instance_metadata } from './../metadata';
 import RuleSlider from './RuleSlider';
-
 
 // Takes 2 numbers (int, float, or string) and returns average
 function average(a, b) {
@@ -15,7 +15,6 @@ function average(a, b) {
         console.log(err);
     }
 }
-
 
 function DefaultRuleIntRange({ id }) {
     // Get curent state + callback functions from context
@@ -125,6 +124,10 @@ function DefaultRuleIntRange({ id }) {
             </Collapse>
         </>
     );
+}
+
+DefaultRuleIntRange.propTypes = {
+    id: PropTypes.string,
 }
 
 export default DefaultRuleIntRange;

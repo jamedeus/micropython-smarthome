@@ -1,8 +1,8 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
-
 
 function NicknameInput({ id }) {
     // Get curent state + callback functions from context
@@ -33,6 +33,10 @@ function NicknameInput({ id }) {
             />
         </InputWrapper>
     );
+}
+
+NicknameInput.propTypes = {
+    id: PropTypes.string,
 }
 
 export default NicknameInput;

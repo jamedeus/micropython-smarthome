@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import { ConfigContext } from './../ConfigContext';
 import { get_instance_metadata } from './../metadata';
 import RuleSlider from './RuleSlider';
@@ -44,7 +45,7 @@ function DefaultRuleFloatRange({ id }) {
 
     return (
         <div className="mb-2">
-        <label className="w-100"><b>Default Rule</b></label>
+            <label className="w-100"><b>Default Rule</b></label>
             <RuleSlider
                 rule_value={instance.default_rule}
                 slider_min={min_rule}
@@ -57,6 +58,10 @@ function DefaultRuleFloatRange({ id }) {
             />
         </div>
     );
+}
+
+DefaultRuleFloatRange.propTypes = {
+    id: PropTypes.string,
 }
 
 export default DefaultRuleFloatRange;

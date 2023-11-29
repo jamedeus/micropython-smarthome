@@ -7,7 +7,6 @@ import InstanceCard from './InstanceCard';
 import MetadataSection from './MetadataSection';
 import IrBlasterSection from './IrBlasterSection';
 
-
 const Page1 = () => {
     // Get curent state + callback functions from context
     const {
@@ -22,13 +21,14 @@ const Page1 = () => {
     const deviceEntries = (
         <>
             {Object.entries(config)
-            .filter(([id, _]) => id.startsWith('device'))
-            .map(([id, config]) => (
-                <InstanceCard
-                    key={config.uniqueID}
-                    id={id}
-                />
-            ))}
+                .filter(([id, _]) => id.startsWith('device'))
+                .map(([id, config]) => (
+                    <InstanceCard
+                        key={config.uniqueID}
+                        id={id}
+                    />
+                ))
+            }
         </>
     );
 
@@ -36,13 +36,14 @@ const Page1 = () => {
     const sensorEntries = (
         <>
             {Object.entries(config)
-            .filter(([id, _]) => id.startsWith('sensor'))
-            .map(([id, config]) => (
-                <InstanceCard
-                    key={config.uniqueID}
-                    id={id}
-                />
-            ))}
+                .filter(([id, _]) => id.startsWith('sensor'))
+                .map(([id, config]) => (
+                    <InstanceCard
+                        key={config.uniqueID}
+                        id={id}
+                    />
+                ))
+            }
         </>
     );
 
@@ -52,7 +53,6 @@ const Page1 = () => {
             <MetadataSection />
 
             <IrBlasterSection
-                key="ir_blaster"
                 configured={config.ir_blaster.configured}
                 pin={config.ir_blaster.pin}
                 target={config.ir_blaster.target}
@@ -89,6 +89,5 @@ const Page1 = () => {
         </>
     );
 };
-
 
 export default Page1;

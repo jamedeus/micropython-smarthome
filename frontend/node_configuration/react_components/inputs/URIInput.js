@@ -1,4 +1,5 @@
 import React, { useContext, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
@@ -41,6 +42,10 @@ function URIInput({ id }) {
             />
         </InputWrapper>
     );
+}
+
+URIInput.propTypes = {
+    id: PropTypes.string
 }
 
 export default URIInput;

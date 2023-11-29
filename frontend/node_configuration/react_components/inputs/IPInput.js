@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
@@ -67,6 +68,10 @@ function IPInput({ id }) {
             />
         </InputWrapper>
     );
+}
+
+IPInput.propTypes = {
+    id: PropTypes.string,
 }
 
 export default IPInput;

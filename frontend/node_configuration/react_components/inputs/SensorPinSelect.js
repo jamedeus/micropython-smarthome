@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import { ConfigContext } from './../ConfigContext';
 import PinSelectDropdown from './PinSelectDropdown';
-
 
 function SensorPinSelect({ id }) {
     // Get curent state + callback functions from context
@@ -45,6 +45,10 @@ function SensorPinSelect({ id }) {
             options={sensorPins}
         />
     );
+}
+
+SensorPinSelect.propTypes = {
+    id: PropTypes.string,
 }
 
 export default SensorPinSelect;

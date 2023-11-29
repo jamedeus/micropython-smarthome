@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import { ConfigContext } from './../ConfigContext';
 import { get_instance_metadata } from './../metadata';
 import RuleSlider from './RuleSlider';
 import { average, convert_temperature } from './../thermostat_util';
-
 
 function DefaultRuleThermostat({ id }) {
     // Get instance section from config (state) object
@@ -36,7 +36,7 @@ function DefaultRuleThermostat({ id }) {
     // Instantiate slider, convert metadata min/max (celsius) to configured units
     return (
         <div className="mb-2">
-        <label className="w-100"><b>Default Rule</b></label>
+            <label className="w-100"><b>Default Rule</b></label>
             <RuleSlider
                 rule_value={instance.default_rule}
                 slider_min={convert_temperature(min_rule, "celsius", instance.units)}
@@ -49,6 +49,10 @@ function DefaultRuleThermostat({ id }) {
             />
         </div>
     );
+}
+
+DefaultRuleThermostat.propTypes = {
+    id: PropTypes.string,
 }
 
 export default DefaultRuleThermostat;
