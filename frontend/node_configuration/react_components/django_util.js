@@ -1,6 +1,17 @@
 import { useContext } from 'react';
 import { ConfigContext } from './ConfigContext';
 
+// Parse bool set by django template, determines whether config is re-uploaded on submit
+const edit_existing = JSON.parse(document.getElementById("edit_existing").textContent);
+
+// Get original friendly name if editing (prevents rejecting existing name as duplicate)
+if (edit_existing) {
+    var orig_name = JSON.parse(document.getElementById("config").textContent).metadata.id.toLowerCase();
+}
+
+// Parse ApiTarget options object set by django template
+// Contains valid API commands for each instance (device/sensor) of all existing nodes
+const api_target_options = JSON.parse(document.getElementById("api_target_options").textContent);
 
 // Takes name of cookie, returns cookie
 function getCookie(name) {
@@ -75,4 +86,4 @@ async function submit(submit_button) {
 }
 
 
-export { send_post_request, submit };
+export { send_post_request, submit, edit_existing, orig_name, api_target_options };

@@ -5,14 +5,14 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './ConfigContext';
+import { api_target_options } from './django_util';
 
-// Get object containing valid API commands for each instance of all existing nodes
-const context = JSON.parse(document.getElementById("api_target_options").textContent);
-
-// Takes IP, returns object from context
+// Takes IP, returns object from api_target_options context
 function getTargetNodeOptions(ip) {
-    const friendly_name = Object.keys(context.addresses).find(key => context.addresses[key] === ip);
-    return context[friendly_name];
+    const friendly_name = Object.keys(api_target_options.addresses).find(key =>
+        api_target_options.addresses[key] === ip
+    );
+    return api_target_options[friendly_name];
 }
 
 export const ApiTargetModalContext = createContext();

@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './../ConfigContext';
 import InputWrapper from './InputWrapper';
+import { api_target_options } from './../django_util';
 
 // Get object containing friendly_name: IP pairs for all existing nodes
-const context = JSON.parse(document.getElementById("api_target_options").textContent);
-const addresses = context.addresses;
+const addresses = api_target_options.addresses;
 
 function TargetNodeDropdown({ id }) {
     // Get curent state + callback functions from context
