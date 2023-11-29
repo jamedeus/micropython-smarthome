@@ -89,45 +89,12 @@
 </head>
 
 <body>
-    <script>
-        // Check if user is in dark mode, change theme (runs once on page load)
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.body.classList.add("dark");
-            console.log("Dark mode");
-        } else {
-            document.body.classList.add("light");
-        };
-    </script>
-
     <div id="root" class="container" data-config="{{config}}"></div>
     {{ metadata|json_script:"instance_metadata" }}
     {{ edit_existing|json_script:"edit_existing" }}
     {{ schedule_keywords|json_script:"schedule_keywords" }}
     {{ api_target_options|json_script:"api_target_options" }}
     {{ config|json_script:"config" }}
-    <script>
-        // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
-        window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
-            if (e.matches) { // Returns True for dark mode, False otherwise
-                document.body.classList.add("dark");
-                document.body.classList.remove("light");
-
-                // Modal close buttons
-                document.querySelectorAll('.btn-close').forEach(button => button.classList.add("btn-close-white"));
-            } else {
-                document.body.classList.remove("dark");
-                document.body.classList.add("light");
-
-                // Modal close buttons
-                document.querySelectorAll('.btn-close').forEach(button => button.classList.remove("btn-close-white"));
-            };
-        });
-
-        // Set modal close button color (runs once on load)
-        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-            document.querySelectorAll('.btn-close').forEach(button => button.classList.add("btn-close-white"));
-        };
-    </script>
     <script src="{% static 'node_configuration/edit_config.js' %}"></script>
 </body>
 </html>

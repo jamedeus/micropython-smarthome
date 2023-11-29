@@ -1,7 +1,7 @@
 @import "../node_modules/bootstrap/scss/_functions";
 @import "../node_modules/bootstrap/scss/_variables";
+@import "../node_modules/bootstrap/scss/_variables-dark";
 @import "../node_modules/bootstrap/scss/_mixins";
-
 
 
 /* Limit width for readability on large screen sizes */
@@ -72,12 +72,16 @@ td:last-child{
 /* --- */
 
 /* Upload complete checkmark animation */
-.light {
-    --success: #198754;
+@media (prefers-color-scheme: light) {
+    :root {
+        --success: #198754;
+    }
 }
 
-.dark {
-    --success: #177a4c;
+@media (prefers-color-scheme: dark) {
+    :root {
+        --success: #177a4c;
+    }
 }
 
 .checkmark__circle {
@@ -136,164 +140,166 @@ td:last-child{
 }
 
 
-.dark {
-    /* redefine theme colors for dark theme */
-    $primary: #0550b8; /*button color*/
-    $secondary: #4b5157;
-    $success: #177a4c;
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* redefine theme colors for dark theme */
+        $primary: #0550b8; /*button color*/
+        $secondary: #4b5157;
+        $success: #177a4c;
 
-    $theme-colors: (
-        "primary": $primary,
-        "secondary": $secondary,
-        "success": $success,
-        "danger": $danger,
-        "info": $indigo,
-        "dark": $dark,
-        "light": $light,
-    );
+        $theme-colors: (
+            "primary": $primary,
+            "secondary": $secondary,
+            "success": $success,
+            "danger": $danger,
+            "info": $indigo,
+            "dark": $dark,
+            "light": $light,
+        );
 
-    /* redefine theme color variables */
-    @each $color, $value in $theme-colors {
-        --#{$variable-prefix}#{$color}: #{$value};
+        /* redefine theme color variables */
+        @each $color, $value in $theme-colors {
+            --#{$variable-prefix}#{$color}: #{$value};
+        }
+
+        /* redefine theme color rgb vars (used for bg- colors) */
+        $theme-colors-rgb: map-loop($theme-colors, to-rgb, "$value");
+        @each $color, $value in $theme-colors-rgb {
+            --#{$variable-prefix}#{$color}-rgb: #{$value};
+        }
+
+        $body-color: #eee;
+        $body-bg: #1b1e1f;
+        $card-bg: #212529;
+        $table-color: #eee;
+
+        /* Tables */
+        $table-bg: #212529 !important;
+        $table-hover-bg: #35393f !important;
+
+        /* Modals */
+        $modal-content-bg: #31363b;
+        $modal-header-border-color: #31363b;
+        $modal-footer-border-color: #31363b;
+
+        /* Input fields */
+        $input-bg: #1B1E1F;
+        $input-color: #ffffff;
+        $input-placeholder-color: #696b6e;
+        $input-border-color: #232627;
+
+        $input-focus-bg: #1B1E1F;
+        $input-focus-border-color: #232627;
+        $input-focus-color: #ffffff;
+
+        $input-disabled-bg: #272c31;
+
+        $form-check-input-bg: #1B1E1F;
+        $form-check-input-focus-border: 1px solid #232627;
+        $form-check-input-checked-bg-color: #1B1E1F;
+
+        /* Override inputs outside of cards */
+        #metadata input {
+            background-color: #31363b;
+        }
+
+        /* Fix form validation messages in dark mode */
+        .is-invalid~.invalid-feedback, .is-invalid~.invalid-tooltip, .was-validated :invalid~.invalid-feedback, .was-validated :invalid~.invalid-tooltip {
+            display:block
+        };
+
+        /* Dropdowns */
+        $form-select-bg: #1B1E1F;
+        $form-select-color: #ffffff;
+        $form-select-border-color: #232627;
+        $form-select-focus-border-color: #232627;
+        $form-select-disabled-bg: #272c31;
+        $form-select-disabled-color: #ffffff;
+        $form-select-disabled-border-color: #232627;
+
+        /* Dropdown down arrow icon */
+        $form-select-indicator-color: #ffffff;
+        $form-select-indicator: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='#{$form-select-indicator-color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/></svg>");
+
+        /* Contrasting background for dropdowns inside modal */
+        .modal-dropdown {
+            background-color: #1b1e1f !important;
+        }
+
+        /* Contrasting background for inputs inside modal */
+        .modal-input, .modal-input:focus {
+            background-color: #1b1e1f !important;
+        }
+
+        /* Different color for dropdown placeholder text (selected text set to fff above) */
+        select:invalid {
+            color: #696b6e;
+        }
+
+        /* Increase contrast for disabled items */
+        $dropdown-link-disabled-color: #737578 !important;
+
+        /* Force bold white text on buttons (readability) */
+        .btn {
+            color: #fff !important;
+            font-weight: bold !important;
+        }
+
+        /* Fix slight annoying color difference between radio button and submit button */
+        .btn-check:active + .btn-outline-primary, .btn-check:checked + .btn-outline-primary, .btn-outline-primary.active, .btn-outline-primary.dropdown-toggle.show, .btn-outline-primary:active {
+            background-color: $primary;
+            border-color: $primary;
+        }
+
+        /* ApiTarget rule modal On/Off toggle */
+        .btn-check + .btn-dark {
+            background-color: #282d32;
+            border-color: #282d32;
+        }
+        .btn-check:active + .btn-dark, .btn-check:checked + .btn-dark {
+            background-color: #1B1E1F;
+            border-color: #1B1E1F;
+        }
+
+        --#{$variable-prefix}body-color: #{$body-color};
+        --#{$variable-prefix}body-bg: #{$body-bg};
+
+        /* Prevent color change on focus (not enough contrast with body bg) */
+        .btn-dark:hover, .btn-dark:focus, .btn-dark:active {
+            background-color: #212529 !important;
+            border-color: #212529 !important;
+        }
+
+        /* Toasts */
+        $toast-background-color: #394047cc;
+
+        /* Section background color override */
+        .section {
+            border: 0px;
+            background-color: #212529;
+        }
+
+        .text-dim {
+            color: #FFFFFF;
+        }
+
+        /* List group (location suggestions) */
+        $list-group-bg: #212529;
+        $list-group-hover-bg: #1B1E1F;
+        $list-group-active-bg: #1B1E1F;
+        $list-group-action-active-bg: #1B1E1F;
+        $list-group-color: #dddddd;
+        $list-group-hover-color: #ffffff;
+        $list-group-action-hover-color: #ffffff;
+        $list-group-action-active-color: #ffffff;
+
+        @import "../node_modules/bootstrap/scss/_card";
+        @import "../node_modules/bootstrap/scss/_modal";
+        @import "../node_modules/bootstrap/scss/_forms";
+        @import "../node_modules/bootstrap/scss/_buttons";
+        @import "../node_modules/bootstrap/scss/_tables";
+        @import "../node_modules/bootstrap/scss/_dropdown";
+        @import "../node_modules/bootstrap/scss/_toasts";
+        @import "../node_modules/bootstrap/scss/_list-group";
     }
-
-    /* redefine theme color rgb vars (used for bg- colors) */
-    $theme-colors-rgb: map-loop($theme-colors, to-rgb, "$value");
-    @each $color, $value in $theme-colors-rgb {
-        --#{$variable-prefix}#{$color}-rgb: #{$value};
-    }
-
-    $body-color: #eee;
-    $body-bg: #1b1e1f;
-    $card-bg: #212529;
-    $table-color: #eee;
-
-    /* Tables */
-    $table-bg: #212529 !important;
-    $table-hover-bg: #35393f !important;
-
-    /* Modals */
-    $modal-content-bg: #31363b;
-    $modal-header-border-color: #31363b;
-    $modal-footer-border-color: #31363b;
-
-    /* Input fields */
-    $input-bg: #1B1E1F;
-    $input-color: #ffffff;
-    $input-placeholder-color: #696b6e;
-    $input-border-color: #232627;
-
-    $input-focus-bg: #1B1E1F;
-    $input-focus-border-color: #232627;
-    $input-focus-color: #ffffff;
-
-    $input-disabled-bg: #272c31;
-
-    $form-check-input-bg: #1B1E1F;
-    $form-check-input-focus-border: 1px solid #232627;
-    $form-check-input-checked-bg-color: #1B1E1F;
-
-    /* Override inputs outside of cards */
-    #metadata input {
-        background-color: #31363b;
-    }
-
-    /* Fix form validation messages in dark mode */
-    .is-invalid~.invalid-feedback, .is-invalid~.invalid-tooltip, .was-validated :invalid~.invalid-feedback, .was-validated :invalid~.invalid-tooltip {
-        display:block
-    };
-
-    /* Dropdowns */
-    $form-select-bg: #1B1E1F;
-    $form-select-color: #ffffff;
-    $form-select-border-color: #232627;
-    $form-select-focus-border-color: #232627;
-    $form-select-disabled-bg: #272c31;
-    $form-select-disabled-color: #ffffff;
-    $form-select-disabled-border-color: #232627;
-
-    /* Dropdown down arrow icon */
-    $form-select-indicator-color: #ffffff;
-    $form-select-indicator: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='#{$form-select-indicator-color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/></svg>");
-
-    /* Contrasting background for dropdowns inside modal */
-    .modal-dropdown {
-        background-color: #1b1e1f !important;
-    }
-
-    /* Contrasting background for inputs inside modal */
-    .modal-input, .modal-input:focus {
-        background-color: #1b1e1f !important;
-    }
-
-    /* Different color for dropdown placeholder text (selected text set to fff above) */
-    select:invalid {
-        color: #696b6e;
-    }
-
-    /* Increase contrast for disabled items */
-    $dropdown-link-disabled-color: #737578 !important;
-
-    /* Force bold white text on buttons (readability) */
-    .btn {
-        color: #fff !important;
-        font-weight: bold !important;
-    }
-
-    /* Fix slight annoying color difference between radio button and submit button */
-    .btn-check:active + .btn-outline-primary, .btn-check:checked + .btn-outline-primary, .btn-outline-primary.active, .btn-outline-primary.dropdown-toggle.show, .btn-outline-primary:active {
-        background-color: $primary;
-        border-color: $primary;
-    }
-
-    /* ApiTarget rule modal On/Off toggle */
-    .btn-check + .btn-dark {
-        background-color: #282d32;
-        border-color: #282d32;
-    }
-    .btn-check:active + .btn-dark, .btn-check:checked + .btn-dark {
-        background-color: #1B1E1F;
-        border-color: #1B1E1F;
-    }
-
-    --#{$variable-prefix}body-color: #{$body-color};
-    --#{$variable-prefix}body-bg: #{$body-bg};
-
-    /* Prevent color change on focus (not enough contrast with body bg) */
-    .btn-dark:hover, .btn-dark:focus, .btn-dark:active {
-        background-color: #212529 !important;
-        border-color: #212529 !important;
-    }
-
-    /* Toasts */
-    $toast-background-color: #394047cc;
-
-    /* Section background color override */
-    .section {
-        border: 0px;
-        background-color: #212529;
-    }
-
-    .text-dim {
-        color: #FFFFFF;
-    }
-
-    /* List group (location suggestions) */
-    $list-group-bg: #212529;
-    $list-group-hover-bg: #1B1E1F;
-    $list-group-active-bg: #1B1E1F;
-    $list-group-action-active-bg: #1B1E1F;
-    $list-group-color: #dddddd;
-    $list-group-hover-color: #ffffff;
-    $list-group-action-hover-color: #ffffff;
-    $list-group-action-active-color: #ffffff;
-
-    @import "../node_modules/bootstrap/scss/_card";
-    @import "../node_modules/bootstrap/scss/_modal";
-    @import "../node_modules/bootstrap/scss/_forms";
-    @import "../node_modules/bootstrap/scss/_buttons";
-    @import "../node_modules/bootstrap/scss/_tables";
-    @import "../node_modules/bootstrap/scss/_dropdown";
-    @import "../node_modules/bootstrap/scss/_toasts";
-    @import "../node_modules/bootstrap/scss/_list-group";
 }
