@@ -36,8 +36,7 @@ export const RuleField = ({ instance, timestamp }) => {
             timestamp: timestamp,
             rule: config[instance]["schedule"][timestamp],
             fade_rule: false,
-            metadata: metadata,
-            add_new: (timestamp.length === 0)
+            metadata: metadata
         };
 
         // If editing fade rule split into params, set fade_rule flag
@@ -46,12 +45,6 @@ export const RuleField = ({ instance, timestamp }) => {
             update.fade_rule = true;
             update.duration = duration;
             update.rule = rule;
-        }
-
-        // If adding new rule use default_rule as starting point
-        if (update.add_new) {
-            update.rule = config[instance]["default_rule"];
-            update.show_keyword = false;
         }
 
         // Set modal contents, show

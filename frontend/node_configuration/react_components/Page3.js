@@ -3,17 +3,13 @@ import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './ConfigContext';
-import { ScheduleRuleModalContext, ScheduleRuleModal } from './ScheduleRuleModal';
 import { TimeField } from './TimeField';
 import { RuleField } from './RuleField';
 
 
 const Page3 = () => {
     // Get curent state + callback functions from context
-    const { config } = useContext(ConfigContext);
-
-    // Get callback to open schedule rule modal
-    const { handleShow } = useContext(ScheduleRuleModalContext);
+    const { config, handleInputChange } = useContext(ConfigContext);
 
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button
@@ -59,12 +55,22 @@ const Page3 = () => {
                             );
                         }
                     })()}
-                    <Button variant="secondary" onClick={() => handleShow(instance, "")}>
+                    <Button variant="secondary" onClick={() => addNewRuleRow(instance)}>
                         Add Rule
                     </Button>
                 </Card.Body>
             </Card>
         );
+    }
+
+    // Handler for add rule button, creates new row
+    function addNewRuleRow(instance) {
+        // Get existing rules
+        const rules = { ...config[instance]["schedule"] };
+
+        // Add rule with placeholder timestamp, default_rule value
+        rules["Set time"] = config[instance]["default_rule"];
+        handleInputChange(instance, "schedule", rules);
     }
 
     return (
@@ -80,7 +86,6 @@ const Page3 = () => {
                 }
                 return cards;
             })()}
-            <ScheduleRuleModal />
         </>
     );
 }

@@ -25,13 +25,9 @@ function format12h(timestamp) {
 }
 
 
-// Takes timestamp, returns true for HH:MM format, otherwise false
-function is_timestamp(timestamp) {
-    if (timestamp_regex.test(timestamp)) {
-        return true;
-    } else {
-        return false;
-    }
+// Takes timestamp, returns true if matches existing keyword, otherwise False
+function isKeyword(timestamp) {
+    return Object.keys(schedule_keywords).includes(timestamp);
 }
 
 
@@ -55,14 +51,8 @@ export const TimeField = ({ instance, timestamp }) => {
             instance: instance,
             original_timestamp: timestamp,
             timestamp: timestamp,
-            show_keyword: !is_timestamp(timestamp),
-            add_new: (timestamp.length === 0)
+            show_keyword: isKeyword(timestamp)
         };
-
-        // Show time input if adding new rule
-        if (update.add_new) {
-            update.show_keyword = false;
-        }
 
         // Set modal contents, show
         setPopupContent(update);
@@ -70,7 +60,7 @@ export const TimeField = ({ instance, timestamp }) => {
 
     const handleClose = () => {
         // Get existing rules
-        const rules = config[popupContent.instance]["schedule"];
+        const rules = { ...config[popupContent.instance]["schedule"] };
 
         // Get value of rule being edited
         const rule_value = rules[popupContent.original_timestamp];
