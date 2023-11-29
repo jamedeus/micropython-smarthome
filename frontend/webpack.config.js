@@ -35,9 +35,9 @@ const config = {
 
             },
             {
-                test: /\.css$/i,
-                use: ['style-loader', 'css-loader'],
-            },
+                test: /\.(s(a|c)ss)$/,
+                use: ['style-loader', 'css-loader', 'sass-loader']
+            }
 
             // Add your rules for custom modules here
             // Learn more about loaders from https://webpack.js.org/loaders/
@@ -48,8 +48,6 @@ const config = {
 module.exports = () => {
     if (isProduction) {
         config.mode = 'production';
-        
-        
     } else {
         config.mode = 'development';
     }

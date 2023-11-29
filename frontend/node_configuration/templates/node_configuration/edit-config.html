@@ -14,7 +14,6 @@
     {% progressive_web_app_meta %}
     <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
-    <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
     <script src="{% static 'bootstrap.min.js' %}"></script>
     <script src="{% static 'smoothscroll.min.js' %}"></script>
     <script src="{% static 'react.development.js' %}"></script>
@@ -89,7 +88,7 @@
 </head>
 
 <body>
-    <div id="root" class="container" data-config="{{config}}"></div>
+    <div id="root" class="container"></div>
     {{ metadata|json_script:"instance_metadata" }}
     {{ edit_existing|json_script:"edit_existing" }}
     {{ schedule_keywords|json_script:"schedule_keywords" }}
