@@ -311,7 +311,7 @@ export const ApiTargetRuleModal = () => {
                 <div className="collapse" id="api-rule-modal-help">
                     <p className="text-center">Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.</p>
 
-                    <p className="text-center">Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the "Target Node" dropdown.</p>
+                    <p className="text-center">Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the &quot;Target Node&quot; dropdown.</p>
 
                     <p className="text-center">The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.</p>
 
