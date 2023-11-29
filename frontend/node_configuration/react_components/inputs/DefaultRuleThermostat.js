@@ -8,6 +8,8 @@ import { average, convert_temperature } from './../thermostat_util';
 function DefaultRuleThermostat({ id }) {
     // Get instance section from config (state) object
     const { config, handleSliderButton, handleInputChange } = useContext(ConfigContext);
+
+    // Get instance section from config (state) object
     const instance = config[id];
 
     // Get metadata object for selected type (contains slider min/max)
