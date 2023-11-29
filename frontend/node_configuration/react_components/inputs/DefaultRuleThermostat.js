@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import { ConfigContext } from './../ConfigContext';
-import InputWrapper from './InputWrapper';
 import { get_instance_metadata } from './../metadata';
 import RuleSlider from './RuleSlider';
 import { average, convert_temperature } from './../thermostat_util';
@@ -34,7 +33,8 @@ function DefaultRuleThermostat({ id }) {
 
     // Instantiate slider, convert metadata min/max (celsius) to configured units
     return (
-        <InputWrapper label="Default Rule">
+        <div className="mb-2">
+        <label className="w-100"><b>Default Rule</b></label>
             <RuleSlider
                 rule_value={instance.default_rule}
                 slider_min={convert_temperature(min_rule, "celsius", instance.units)}
@@ -45,7 +45,7 @@ function DefaultRuleThermostat({ id }) {
                 onButtonClick={onButtonClick}
                 onSliderMove={onSliderMove}
             />
-        </InputWrapper>
+        </div>
     );
 }
 

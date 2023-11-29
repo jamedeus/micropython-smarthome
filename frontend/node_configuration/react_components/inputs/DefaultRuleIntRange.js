@@ -84,7 +84,8 @@ function DefaultRuleIntRange({ id }) {
 
     return (
         <>
-            <InputWrapper label="Default Rule">
+            <div className="mb-2">
+                <label className="w-100"><b>Default Rule</b></label>
                 <RuleSlider
                     rule_value={instance.default_rule}
                     slider_min={parseInt(instance.min_rule)}
@@ -95,7 +96,7 @@ function DefaultRuleIntRange({ id }) {
                     onButtonClick={onButtonClick}
                     onSliderMove={onSliderMove}
                 />
-            </InputWrapper>
+            </div>
 
             <div className="mt-3 text-center">
                 <a className="text-decoration-none text-dim" role="button" onClick={() => setOpen(!open)}>

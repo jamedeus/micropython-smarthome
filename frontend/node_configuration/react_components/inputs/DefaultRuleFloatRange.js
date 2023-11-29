@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { ConfigContext } from './../ConfigContext';
 import { get_instance_metadata } from './../metadata';
-import InputWrapper from './InputWrapper';
 import RuleSlider from './RuleSlider';
 
 
@@ -44,7 +43,8 @@ function DefaultRuleFloatRange({ id }) {
     };
 
     return (
-        <InputWrapper label="Default Rule">
+        <div className="mb-2">
+        <label className="w-100"><b>Default Rule</b></label>
             <RuleSlider
                 rule_value={instance.default_rule}
                 slider_min={min_rule}
@@ -55,7 +55,7 @@ function DefaultRuleFloatRange({ id }) {
                 onButtonClick={onButtonClick}
                 onSliderMove={onSliderMove}
             />
-        </InputWrapper>
+        </div>
     );
 }
 
