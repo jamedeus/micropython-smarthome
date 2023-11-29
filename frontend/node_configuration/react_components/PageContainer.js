@@ -4,7 +4,7 @@ import { submit } from './django_util';
 import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
-import { ApiTargetModalContextProvider } from './ApiTargetRuleModal';
+import { ApiTargetModalContextProvider, ApiTargetRuleModal } from './ApiTargetRuleModal';
 
 
 const PageContainer = () => {
@@ -63,6 +63,7 @@ const PageContainer = () => {
                     <Button variant="primary" className="mb-4" onClick={nextPage} disabled={page === 3}>Next</Button>
                 </div>
             </div>
+            <ApiTargetRuleModal />
         </ApiTargetModalContextProvider>
     );
 };

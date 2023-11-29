@@ -46,16 +46,23 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         let update = {
             instance: instance,
             rule_key: rule_key,
+            schedule_rule: !(rule_key === "default_rule"),
             target_node_options: getTargetNodeOptions(config[instance]['ip']),
             show_help: false,
             show_examples: false,
             view_on_rule: true,
         };
 
-        // If editing existing rule pre-populate dropdowns
-        if (config[instance][rule_key] !== "") {
-            const rule = JSON.parse(config[instance][rule_key]);
+        // Parse existing rule from state object if it exists
+        let rule = "";
+        if (update.schedule_rule) {
+            rule = JSON.parse(config[instance]["schedule"][rule_key]);
+        } else {
+            rule = JSON.parse(config[instance][rule_key]);
+        }
 
+        // If editing existing rule pre-populate dropdowns
+        if (rule) {
             // IR command uses different order
             if (rule.on[0] === "ir_key") {
                 [update.instance_on, update.command_on, update.sub_command_on] = rule.on;
@@ -277,7 +284,11 @@ export const ApiTargetRuleModal = () => {
         }
 
         // Add rule to correct state key, close modal
-        config[modalContent.instance][modalContent.rule_key] = JSON.stringify(output);
+        if (modalContent.schedule_rule) {
+            config[modalContent.instance]["schedule"][modalContent.rule_key] = JSON.stringify(output);
+        } else {
+            config[modalContent.instance][modalContent.rule_key] = JSON.stringify(output);
+        }
         handleClose();
     };
 

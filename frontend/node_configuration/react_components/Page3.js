@@ -5,11 +5,15 @@ import Button from 'react-bootstrap/Button';
 import { ConfigContext } from './ConfigContext';
 import { TimeField } from './TimeField';
 import { RuleField } from './RuleField';
+import { ApiTargetModalContext } from './ApiTargetRuleModal';
 
 
 const Page3 = () => {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
+
+    // Get callback to open ApiTarget rule modal
+    const { handleShow } = useContext(ApiTargetModalContext);
 
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button
@@ -20,7 +24,19 @@ const Page3 = () => {
                     <TimeField instance={instance} timestamp={rule} />
                 </td>
                 <td>
-                    <RuleField instance={instance} timestamp={rule} />
+                    {(() => {
+                        // ApiTarget: Add button to open rule modal
+                        if (config[instance]['_type'] === "api-target") {
+                            return (
+                                <span className="form-control" onClick={() => handleShow(instance, rule)}>
+                                    Click to edit
+                                </span>
+                            );
+                        // All other instances: Add RuleField, set rule in PopupDiv
+                        } else {
+                            return <RuleField instance={instance} timestamp={rule} />
+                        }
+                    })()}
                 </td>
             </tr>
         );
