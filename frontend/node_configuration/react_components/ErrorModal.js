@@ -10,7 +10,7 @@ export const ErrorModalContextProvider = ({ children }) => {
         visible: false,
         title: '',
         error: false,
-        ip: '',
+        body: ''
     });
 
     const handleClose = () => {
@@ -40,7 +40,7 @@ export const ErrorModal = () => {
                         case "unreachable":
                             return (
                                 <>
-                                    <p className="text-center">Unable to connect to {errorModalContent.ip}<br/>Possible causes:</p>
+                                    <p className="text-center">Unable to connect to {errorModalContent.body}<br/>Possible causes:</p>
                                     <ul>
                                         <li>Node is not connected to wifi</li>
                                         <li>Node IP has changed</li>
@@ -48,6 +48,8 @@ export const ErrorModal = () => {
                                     </ul>
                                 </>
                             );
+                        case "failed":
+                            return <div className="text-center">{errorModalContent.body}</div>;
                     }
                 })()}
             </Modal.Body>

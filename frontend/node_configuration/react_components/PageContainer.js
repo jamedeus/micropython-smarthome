@@ -96,7 +96,16 @@ const PageContainer = () => {
 
         // Unable to upload because of filesystem error on node
         } else if (response.status == 409) {
-            alert("Fail")
+            const error = await response.text();
+            // Hide upload modal, show response in error modal
+            setShowUpload(false);
+            setErrorModalContent({
+                ...errorModalContent,
+                ["visible"]: true,
+                ["title"]: "Upload Failed",
+                ["error"]: "failed",
+                ["body"]: error
+            })
 
         // Unable to upload because node is unreachable
         } else if (response.status == 404) {
@@ -107,7 +116,7 @@ const PageContainer = () => {
                 ["visible"]: true,
                 ["title"]: "Connection Error",
                 ["error"]: "unreachable",
-                ["ip"]: target_node_ip
+                ["body"]: target_node_ip
             })
 
         // Other error, show in alert
