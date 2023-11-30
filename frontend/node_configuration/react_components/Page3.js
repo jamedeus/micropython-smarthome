@@ -73,6 +73,7 @@ const Page3 = () => {
                                         <tr>
                                             <th>Time</th>
                                             <th>Rule</th>
+                                            <th></th>
                                         </tr>
                                         {/* Iterate existing rules, add row for each */}
                                         {(() => {
