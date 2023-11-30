@@ -63,11 +63,11 @@ def get_api_target_menu_options(editing_node=False):
         entries = convert_config_to_api_target_options(node.config.config)
 
         # Skip if blank
-        if entries == {}: continue
+        if entries == {}:
+            continue
 
         # If config is currently being edited, add to self-target section
         if editing_node and node.friendly_name == editing_node:
-
             # Remove 'turn_on' and 'turn_off' from any api-target instances (prevent self-targeting in infinite loop)
             new_options = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
             for key, value in entries.items():
@@ -80,7 +80,9 @@ def get_api_target_menu_options(editing_node=False):
             dropdownObject["addresses"]['self-target'] = node.ip
 
             # Add ignore option
-            dropdownObject["self-target"]['ignore'] = {}
+            dropdownObject["self-target"]['ignore'] = {
+                'display': 'Ignore action'
+            }
 
         # Otherwise add to main section, add IP to addresses
         else:
@@ -88,6 +90,8 @@ def get_api_target_menu_options(editing_node=False):
             dropdownObject['addresses'][node.friendly_name] = node.ip
 
             # Add ignore option
-            dropdownObject[node.friendly_name]['ignore'] = {}
+            dropdownObject[node.friendly_name]['ignore'] = {
+                'display': 'Ignore action'
+            }
 
     return dropdownObject

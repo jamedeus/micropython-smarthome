@@ -291,9 +291,12 @@ export const ApiTargetRuleModal = () => {
 
         // Add params in correct order
         // IR Blaster: ir_key followed by target and key
+        // Ignore: Add ignore keyword, skip all other params
         // Other endpoints: Command followed by target instance (optional arg for some endpoints)
         if (modalContent.instance_on === 'ir_key') {
             output.on.push(modalContent.instance_on, modalContent.command_on, modalContent.sub_command_on);
+        } else if (modalContent.instance_on === 'ignore') {
+            output.on.push('ignore');
         } else {
             output.on.push(modalContent.command_on, modalContent.instance_on);
             if (modalContent.command_arg_on !== "") {
@@ -303,6 +306,8 @@ export const ApiTargetRuleModal = () => {
         // Repeat for off command
         if (modalContent.instance_off === 'ir_key') {
             output.off.push(modalContent.instance_off, modalContent.command_off, modalContent.sub_command_off);
+        } else if (modalContent.instance_off === 'ignore') {
+            output.on.push('ignore');
         } else {
             output.off.push(modalContent.command_off, modalContent.instance_off);
             if (modalContent.command_arg_off !== "") {

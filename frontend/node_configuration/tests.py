@@ -1242,7 +1242,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         "trigger_sensor"
                     ]
                 },
-                "ignore": {}
+                "ignore": {
+                    "display": "Ignore action"
+                }
             },
             "Test2": {
                 "device1": {
@@ -1282,7 +1284,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         ]
                     }
                 },
-                "ignore": {}
+                "ignore": {
+                    "display": "Ignore action"
+                }
             },
             "Test3": {
                 "device1": {
@@ -1348,7 +1352,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         "trigger_sensor"
                     ]
                 },
-                "ignore": {}
+                "ignore": {
+                    "display": "Ignore action"
+                }
             }
         }
 
@@ -1411,7 +1417,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         "trigger_sensor"
                     ]
                 },
-                "ignore": {}
+                "ignore": {
+                    "display": "Ignore action"
+                }
             },
             "Test2": {
                 "device1": {
@@ -1451,7 +1459,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         ]
                     }
                 },
-                "ignore": {}
+                "ignore": {
+                    "display": "Ignore action"
+                }
             },
             "Test3": {
                 "device1": {
@@ -1517,7 +1527,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         "trigger_sensor"
                     ]
                 },
-                "ignore": {}
+                "ignore": {
+                    "display": "Ignore action"
+                }
             }
         }
 
@@ -1597,7 +1609,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         ]
                     }
                 },
-                "ignore": {}
+                "ignore": {
+                    "display": "Ignore action"
+                }
             }
         }
 
@@ -1638,7 +1652,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         ]
                     }
                 },
-                "ignore": {}
+                "ignore": {
+                    "display": "Ignore action"
+                }
             }
         }
 
@@ -1685,7 +1701,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         ]
                     }
                 },
-                "ignore": {}
+                "ignore": {
+                    "display": "Ignore action"
+                }
             }
         }
 
@@ -1739,7 +1757,9 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                     ]
                 }
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         }
 
         # Request options for node with ApiTarget, confirm no turn_on/turn_off

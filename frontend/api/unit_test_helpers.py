@@ -338,7 +338,9 @@ config2_api_context = {
                     ]
                 }
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         }
     }
 }

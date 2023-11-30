@@ -663,7 +663,9 @@ test_config_1_edit_context = {
                     "trigger_sensor"
                 ]
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         },
         "Test2": {
             "device1": {
@@ -703,7 +705,9 @@ test_config_1_edit_context = {
                     ]
                 }
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         },
         "Test3": {
             "device1": {
@@ -769,7 +773,9 @@ test_config_1_edit_context = {
                     "trigger_sensor"
                 ]
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         }
     }
 }
@@ -866,7 +872,9 @@ test_config_2_edit_context = {
                     ]
                 }
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         },
         "Test1": {
             "device1": {
@@ -907,7 +915,9 @@ test_config_2_edit_context = {
                     "trigger_sensor"
                 ]
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         },
         "Test3": {
             "device1": {
@@ -973,7 +983,9 @@ test_config_2_edit_context = {
                     "trigger_sensor"
                 ]
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         }
     }
 }
@@ -1129,7 +1141,9 @@ test_config_3_edit_context = {
                     "trigger_sensor"
                 ]
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         },
         "Test1": {
             "device1": {
@@ -1170,7 +1184,9 @@ test_config_3_edit_context = {
                     "trigger_sensor"
                 ]
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         },
         "Test2": {
             "device1": {
@@ -1210,7 +1226,9 @@ test_config_3_edit_context = {
                     ]
                 }
             },
-            "ignore": {}
+            "ignore": {
+                "display": "Ignore action"
+            }
         }
     }
 }
