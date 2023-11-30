@@ -140,7 +140,7 @@ const PageContainer = () => {
 
             // Hide modal allowing user to access page again
             setShowUpload(false);
-        };
+        }
     }
 
     return (

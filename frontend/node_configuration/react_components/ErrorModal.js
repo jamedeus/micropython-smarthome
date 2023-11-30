@@ -25,6 +25,10 @@ export const ErrorModalContextProvider = ({ children }) => {
     );
 };
 
+ErrorModalContextProvider.propTypes = {
+    children: PropTypes.node,
+}
+
 export const ErrorModal = () => {
     // Get state object that determines modal contents
     const { errorModalContent, handleClose } = useContext(ErrorModalContext);

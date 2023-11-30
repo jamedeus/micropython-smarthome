@@ -9,13 +9,7 @@ import IrBlasterSection from './IrBlasterSection';
 
 const Page1 = () => {
     // Get curent state + callback functions from context
-    const {
-        config,
-        addInstance,
-        logState,
-        handleInputChange,
-        handleIrTargetSelect
-    } = useContext(ConfigContext);
+    const { config, addInstance, logState } = useContext(ConfigContext);
 
     // Render list of device cards
     const deviceEntries = (

@@ -1,4 +1,4 @@
-import React, { useState, createContext, useEffect } from 'react';
+import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { get_config_template } from './metadata';
 
