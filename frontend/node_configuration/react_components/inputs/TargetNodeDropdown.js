@@ -23,7 +23,7 @@ function TargetNodeDropdown({ id }) {
     return (
         <InputWrapper label="Target Node">
             <Form.Select value={instance.ip} onChange={(e) => change_target_node(e.target.value)}>
-                <option disabled>Select target node</option>
+                <option>Select target node</option>
                 {Object.entries(addresses).map(option => (
                     <option key={option[1]} value={option[1]}>{option[0]}</option>
                 ))}

@@ -7,6 +7,8 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from './ConfigContext';
 import { api_target_options } from './django_util';
 
+const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
 // Takes IP, returns object from api_target_options context
 function getTargetNodeOptions(ip) {
     const friendly_name = Object.keys(api_target_options.addresses).find(key =>
@@ -40,6 +42,15 @@ export const ApiTargetModalContextProvider = ({ children }) => {
     });
 
     const handleShow = (instance, rule_key) => {
+        // Prevent crash if set rule clicked before selecting target
+        if (config[instance]["ip"] !== undefined) {
+            if ( ! ipRegex.test(config[instance]["ip"])) {
+                // TODO highlight field red instead
+                alert("Select target node first");
+                return false;
+            }
+        }
+
         // Replace modalContent with params for selected rule
         let update = { ...modalContent }
         update.instance = instance;
@@ -52,11 +63,13 @@ export const ApiTargetModalContextProvider = ({ children }) => {
 
         // Parse existing rule from state object if it exists
         let rule = "";
-        if (update.schedule_rule) {
-            rule = JSON.parse(config[instance]["schedule"][rule_key]);
-        } else {
-            rule = JSON.parse(config[instance][rule_key]);
-        }
+        try {
+            if (update.schedule_rule) {
+                rule = JSON.parse(config[instance]["schedule"][rule_key]);
+            } else {
+                rule = JSON.parse(config[instance][rule_key]);
+            }
+        } catch(e) {}
 
         // If editing existing rule pre-populate dropdowns
         if (rule) {
