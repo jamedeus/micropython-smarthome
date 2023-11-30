@@ -47,25 +47,6 @@ export const ConfigProvider = ({ children }) => {
         setConfig(newConfig);
     };
 
-    // Overwrite state with config received from context (if present)
-    useEffect(() => {
-        // Load config context set by django template
-        const element = document.getElementById("config");
-        if (element) {
-            const newConfig = JSON.parse(element.textContent);
-
-            // Add unique IDs to all instances to track DOM components
-            Object.keys(newConfig).forEach(key => {
-                if (key.startsWith('device') || key.startsWith('sensor')) {
-                    newConfig[key]['uniqueID'] = Math.random();
-                }
-            });
-
-            // Merge loaded config with default
-            updateConfig({ ...config, ...newConfig });
-        }
-    }, []);
-
     const logState = () => {
         console.log(config);
     };

@@ -351,11 +351,6 @@ def generate_config_file(data, edit_existing=False):
             for rule in data[i]['schedule']:
                 data[i]['schedule'][rule] = json.loads(data[i]['schedule'][rule])
 
-    # Remove UniqueID params added by react
-    for i in data:
-        if is_device_or_sensor(i):
-            del data[i]['uniqueID']
-
     print("Output:")
     print(json.dumps(data, indent=4))
 
