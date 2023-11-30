@@ -19,24 +19,27 @@ function sleep(ms) {
 export const ConfigContext = createContext();
 
 export const ConfigProvider = ({ children }) => {
-    // Default state object if not received from context
-    const defaultConfig = {
-        metadata: {
-            id: '',
-            floor: '',
-            location: '',
-            schedule_keywords: {}
-        },
-        wifi: {
-            ssid: '',
-            password: ''
-        },
-        ir_blaster: {
-            configured: false,
-            pin: '',
-            target: []
-        }
-    };
+    // Load config context set by django template
+    const element = document.getElementById("config");
+
+    // Use django context as default config if present, otherwise use template
+    let defaultConfig;
+    if (element) {
+        defaultConfig = JSON.parse(element.textContent);
+    } else {
+        defaultConfig = {
+            metadata: {
+                id: '',
+                floor: '',
+                location: '',
+                schedule_keywords: {}
+            },
+            wifi: {
+                ssid: '',
+                password: ''
+            }
+        };
+    }
 
     const [config, setConfig] = useState(defaultConfig);
 
@@ -50,11 +53,6 @@ export const ConfigProvider = ({ children }) => {
         const element = document.getElementById("config");
         if (element) {
             const newConfig = JSON.parse(element.textContent);
-
-            // Add IR Blaster bool that sets default card visibility
-            if (newConfig.ir_blaster !== undefined) {
-                newConfig.ir_blaster.configured = true;
-            }
 
             // Add unique IDs to all instances to track DOM components
             Object.keys(newConfig).forEach(key => {

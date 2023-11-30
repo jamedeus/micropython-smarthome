@@ -52,13 +52,7 @@ const Page1 = () => {
         <>
             <MetadataSection />
 
-            <IrBlasterSection
-                configured={config.ir_blaster.configured}
-                pin={config.ir_blaster.pin}
-                target={config.ir_blaster.target}
-                onChange={handleInputChange}
-                onTargetSelect={handleIrTargetSelect}
-            />
+            <IrBlasterSection />
 
             <div id="page1" className="d-flex flex-column">
                 <Row className="mt-3">

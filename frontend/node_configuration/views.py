@@ -356,9 +356,6 @@ def generate_config_file(data, edit_existing=False):
         if is_device_or_sensor(i):
             del data[i]['uniqueID']
 
-    # Remove IR Blaster configured param added by react
-    del data['ir_blaster']['configured']
-
     print("Output:")
     print(json.dumps(data, indent=4))
 

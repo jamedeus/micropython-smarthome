@@ -180,7 +180,6 @@ request_payload = {
         "password": "hunter2"
     },
     "ir_blaster": {
-        "configured": True,
         "pin": "23",
         "target": [
             "tv"
