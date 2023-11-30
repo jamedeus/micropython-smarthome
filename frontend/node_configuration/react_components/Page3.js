@@ -15,6 +15,12 @@ const Page3 = () => {
     // Get callback to open ApiTarget rule modal
     const { handleShow } = useContext(ApiTargetModalContext);
 
+    const deleteRule = (instance, timestamp) => {
+        let rules = { ...config[instance]["schedule"] };
+        delete rules[timestamp];
+        handleInputChange(instance, "schedule", rules)
+    }
+
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button
     function scheduleRuleRow(instance, rule) {
@@ -37,6 +43,16 @@ const Page3 = () => {
                             return <RuleField instance={instance} timestamp={rule} />
                         }
                     })()}
+                </td>
+                <td className="min">
+                    <Button
+                        variant="danger"
+                        size="sm"
+                        className="mb-1"
+                        onClick={() => deleteRule(instance, rule)}
+                    >
+                        <i className="bi bi-trash-fill"></i>
+                    </Button>
                 </td>
             </tr>
         );
