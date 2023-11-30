@@ -10,7 +10,8 @@ export const ErrorModalContextProvider = ({ children }) => {
         visible: false,
         title: '',
         error: false,
-        body: ''
+        body: '',
+        handleConfirm: ''
     });
 
     const handleClose = () => {
@@ -34,9 +35,11 @@ export const ErrorModal = () => {
                 <h3 className="modal-title mx-auto">{errorModalContent.title}</h3>
             </Modal.Header>
 
-            <Modal.Body className="d-flex flex-column mx-auto">
+            <Modal.Body className="d-flex flex-column text-center mx-auto">
                 {(() => {
                     switch (errorModalContent.error) {
+                        case "failed":
+                            return <div className="text-center">{errorModalContent.body}</div>;
                         case "unreachable":
                             return (
                                 <>
@@ -48,13 +51,30 @@ export const ErrorModal = () => {
                                     </ul>
                                 </>
                             );
-                        case "failed":
-                            return <div className="text-center">{errorModalContent.body}</div>;
+                        case "duplicate":
+                            return (
+                                <>
+                                    <p>You are about to overwrite <b>{errorModalContent.body}</b>, an existing config.</p>
+                                    <p>This cannot be undone - are you sure?</p>
+                                </>
+                            );
                     }
                 })()}
             </Modal.Body>
             <Modal.Footer className="mx-auto">
-                <Button variant="success" className="m-1" onClick={handleClose}>OK</Button>
+                {(() => {
+                    switch (errorModalContent.error) {
+                        case "duplicate":
+                            return (
+                                <>
+                                    <Button variant="secondary" className="m-1" onClick={handleClose}>Cancel</Button>
+                                    <Button variant="danger" className="m-1" onClick={errorModalContent.handleConfirm}>Overwrite</Button>
+                                </>
+                            );
+                        default:
+                            return <Button variant="success" className="m-1" onClick={handleClose}>OK</Button>;
+                    }
+                })()}
             </Modal.Footer>
         </Modal>
     );

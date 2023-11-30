@@ -65,14 +65,29 @@ const PageContainer = () => {
 
         // If config with same name already exists, show modal allowing user to overwrite
         } else if (!edit_existing && response.status == 409) {
-            // TODO implement modal, remove submit button arg (handle in react)
-            alert("Duplicate config name");
-//             handle_duplicate_prompt(config.metadata.id, submit_button);
+            setErrorModalContent({
+                ...errorModalContent,
+                ["visible"]: true,
+                ["title"]: "Duplicate Warning",
+                ["error"]: "duplicate",
+                ["body"]: config.metadata.id,
+                ["handleConfirm"]: confirmOverwriteDuplicate
+            })
 
         // If other error, display in alert
         } else {
             alert(await response.text());
         }
+    }
+
+    // Handler for error modal overwrite button when showing duplicate error
+    async function confirmOverwriteDuplicate() {
+        // Convert friendly name into config filename
+        const target_filename = `${config.metadata.id.toLowerCase().replace(' ', '-')}.json`;
+        // Close error modal, delete existing file, resubmit
+        setErrorModalContent({ ...errorModalContent, ["visible"]: false });
+        await send_post_request("delete_config", `${target_filename}.json`);
+        await submitButton();
     }
 
     async function upload() {
