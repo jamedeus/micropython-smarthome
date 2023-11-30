@@ -1,9 +1,11 @@
 // Parse bool set by django template, determines whether config is re-uploaded on submit
 const edit_existing = JSON.parse(document.getElementById("edit_existing").textContent);
+let target_node_ip;
 
 // Get original friendly name if editing (prevents rejecting existing name as duplicate)
 if (edit_existing) {
     var orig_name = JSON.parse(document.getElementById("config").textContent).metadata.id.toLowerCase();
+    target_node_ip = JSON.parse(document.getElementById("target_node_ip").textContent);
 }
 
 // Parse ApiTarget options object set by django template
@@ -43,4 +45,4 @@ async function send_post_request(url, body) {
     return response;
 }
 
-export { send_post_request, edit_existing, orig_name, api_target_options };
+export { send_post_request, edit_existing, orig_name, target_node_ip, api_target_options };

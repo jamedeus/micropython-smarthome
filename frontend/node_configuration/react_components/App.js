@@ -1,11 +1,14 @@
 import React from 'react';
 import PageContainer from './PageContainer';
+import { UploadModalContextProvider } from './UploadModal';
 
 
 const App = () => {
     return (
         <div>
-            <PageContainer />
+            <UploadModalContextProvider>
+                <PageContainer />
+            </UploadModalContextProvider>
         </div>
     );
 };

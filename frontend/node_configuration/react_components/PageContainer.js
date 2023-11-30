@@ -1,12 +1,16 @@
 import React, { useState, useContext } from 'react';
 import { ConfigContext } from './ConfigContext';
 import Button from 'react-bootstrap/Button';
-import { send_post_request, edit_existing } from './django_util';
+import { send_post_request, edit_existing, target_node_ip } from './django_util';
 import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
 import { ApiTargetModalContextProvider, ApiTargetRuleModal } from './ApiTargetRuleModal';
+import { UploadModalContext, UploadModal } from './UploadModal';
 
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 const PageContainer = () => {
     // Set default page, get callback to change visible page
@@ -14,6 +18,9 @@ const PageContainer = () => {
 
     // Get full config (state object)
     const { config } = useContext(ConfigContext);
+
+    // Get callbacks for upload modal
+    const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
 
     function prevPage() {
         // Go back to overview if current page is page 1
@@ -50,9 +57,7 @@ const PageContainer = () => {
 
         // If successfully edited existing config, re-upload to target node
         } else if (edit_existing && response.ok) {
-            // TODO implement
-            alert("Uploading")
-//             upload();
+            upload();
 
         // If config with same name already exists, show modal allowing user to overwrite
         } else if (!edit_existing && response.status == 409) {
@@ -64,6 +69,38 @@ const PageContainer = () => {
         } else {
             alert(await response.text());
         }
+    }
+
+    async function upload() {
+        // Show loading screen
+        setShowUpload(true);
+
+        // Convert friendly name into config filename
+        const target_filename = `${config.metadata.id.toLowerCase().replace(' ', '-')}.json`;
+
+        // Re-upload existing config
+        var response = await send_post_request("upload/True", {config: target_filename, ip: target_node_ip});
+
+        // If upload successful, show success animation and reload page
+        if (response.ok) {
+            // Change title, show success animation
+            setUploadComplete(true);
+
+            // Wait for animation to complete before reloading
+            await sleep(1200);
+            window.location.replace("/config_overview");
+
+        // Unable to upload because of filesystem error on node
+        } else if (response.status == 409) {
+            alert("Fail")
+
+        // Other error, show in alert
+        } else {
+            alert(await response.text());
+
+            // Hide modal allowing user to access page again
+            setShowUpload(false);
+        };
     }
 
     return (
@@ -99,6 +136,7 @@ const PageContainer = () => {
                 </div>
             </div>
             <ApiTargetRuleModal />
+            <UploadModal />
         </ApiTargetModalContextProvider>
     );
 };
