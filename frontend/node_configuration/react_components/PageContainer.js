@@ -6,6 +6,7 @@ import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
 import { ApiTargetModalContextProvider, ApiTargetRuleModal } from './ApiTargetRuleModal';
+import { ErrorModalContext, ErrorModal } from './ErrorModal';
 import { UploadModalContext, UploadModal } from './UploadModal';
 
 function sleep(ms) {
@@ -21,6 +22,9 @@ const PageContainer = () => {
 
     // Get callbacks for upload modal
     const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
+
+    // Get state and callback for error modal
+    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
     function prevPage() {
         // Go back to overview if current page is page 1
@@ -94,6 +98,18 @@ const PageContainer = () => {
         } else if (response.status == 409) {
             alert("Fail")
 
+        // Unable to upload because node is unreachable
+        } else if (response.status == 404) {
+            // Hide upload modal, show error modal
+            setShowUpload(false);
+            setErrorModalContent({
+                ...errorModalContent,
+                ["visible"]: true,
+                ["title"]: "Connection Error",
+                ["error"]: "unreachable",
+                ["ip"]: target_node_ip
+            })
+
         // Other error, show in alert
         } else {
             alert(await response.text());
@@ -137,6 +153,7 @@ const PageContainer = () => {
             </div>
             <ApiTargetRuleModal />
             <UploadModal />
+            <ErrorModal />
         </ApiTargetModalContextProvider>
     );
 };
