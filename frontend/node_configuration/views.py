@@ -14,6 +14,7 @@ from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_sc
 from validate_config import validate_full_config
 from helper_functions import (
     is_device,
+    is_device_or_sensor,
     valid_ip,
     get_schedule_keywords_dict,
     get_config_filename,
@@ -349,6 +350,14 @@ def generate_config_file(data, edit_existing=False):
             data[i]['default_rule'] = json.loads(data[i]['default_rule'])
             for rule in data[i]['schedule']:
                 data[i]['schedule'][rule] = json.loads(data[i]['schedule'][rule])
+
+    # Remove UniqueID params added by react
+    for i in data:
+        if is_device_or_sensor(i):
+            del data[i]['uniqueID']
+
+    # Remove IR Blaster configured param added by react
+    del data['ir_blaster']['configured']
 
     print("Output:")
     print(json.dumps(data, indent=4))

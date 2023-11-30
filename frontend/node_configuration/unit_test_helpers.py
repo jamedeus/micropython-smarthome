@@ -180,6 +180,7 @@ request_payload = {
         "password": "hunter2"
     },
     "ir_blaster": {
+        "configured": True,
         "pin": "23",
         "target": [
             "tv"
@@ -195,7 +196,8 @@ request_payload = {
         "schedule": {
             "08:00": "100",
             "22:00": "35"
-        }
+        },
+        "uniqueID": 0.49097146458927754
     },
     "device2": {
         "_type": "bulb",
@@ -207,7 +209,8 @@ request_payload = {
         "schedule": {
             "08:00": "100",
             "22:00": "35"
-        }
+        },
+        "uniqueID": 0.6681332026063711
     },
     "device3": {
         "_type": "tasmota-relay",
@@ -217,14 +220,16 @@ request_payload = {
         "schedule": {
             "06:00": "disabled",
             "18:00": "enabled"
-        }
+        },
+        "uniqueID": 0.6601407605021743
     },
     "device4": {
         "_type": "dumb-relay",
         "nickname": "Fan",
         "default_rule": "disabled",
         "pin": "18",
-        "schedule": {}
+        "schedule": {},
+        "uniqueID": 0.6246457749918375
     },
     "device5": {
         "_type": "desktop",
@@ -234,7 +239,8 @@ request_payload = {
         "schedule": {
             "08:00": "enabled",
             "22:00": "disabled"
-        }
+        },
+        "uniqueID": 0.9106812068727089
     },
     "device6": {
         "_type": "pwm",
@@ -243,14 +249,16 @@ request_payload = {
         "max_rule": "1023",
         "default_rule": "721",
         "pin": "26",
-        "schedule": {}
+        "schedule": {},
+        "uniqueID": 0.872812961822874
     },
     "device7": {
         "_type": "mosfet",
         "nickname": "Humidifier",
         "default_rule": "disabled",
         "pin": "19",
-        "schedule": {}
+        "schedule": {},
+        "uniqueID": 0.48916876010762744
     },
     "device8": {
         "_type": "wled",
@@ -261,7 +269,8 @@ request_payload = {
         "default_rule": "128",
         "schedule": {
             "08:00": "100"
-        }
+        },
+        "uniqueID": 0.7993826750706149
     },
     "device9": {
         "_type": "api-target",
@@ -270,7 +279,8 @@ request_payload = {
         "default_rule": "{\"on\":[\"ir_key\",\"tv\",\"power\"],\"off\":[\"ir_key\",\"tv\",\"power\"]}",
         "schedule": {
             "22:00": "{\"on\":[\"ir_key\",\"tv\",\"power\"],\"off\":[\"ir_key\",\"tv\",\"power\"]}"
-        }
+        },
+        "uniqueID": 0.3107582568077578
     },
     "sensor1": {
         "_type": "pir",
@@ -286,7 +296,8 @@ request_payload = {
             "device2",
             "device5",
             "device6"
-        ]
+        ],
+        "uniqueID": 0.28970982607168616
     },
     "sensor2": {
         "_type": "switch",
@@ -297,7 +308,8 @@ request_payload = {
         "targets": [
             "device4",
             "device7"
-        ]
+        ],
+        "uniqueID": 0.26838390078305563
     },
     "sensor3": {
         "_type": "dummy",
@@ -309,7 +321,8 @@ request_payload = {
         },
         "targets": [
             "device3"
-        ]
+        ],
+        "uniqueID": 0.4020821108595708
     },
     "sensor4": {
         "_type": "desktop",
@@ -325,7 +338,8 @@ request_payload = {
             "device2",
             "device5",
             "device6"
-        ]
+        ],
+        "uniqueID": 0.35919888037325065
     },
     "sensor5": {
         "_type": "si7021",
@@ -341,7 +355,8 @@ request_payload = {
         "targets": [
             "device4",
             "device7"
-        ]
+        ],
+        "uniqueID": 0.17060247066707346
     }
 }
 
