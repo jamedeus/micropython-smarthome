@@ -40,16 +40,8 @@ var filesToCache = [
     '/static/api/rule_sliders.js',
     '/static/api/schedule_rules.js',
     '/static/api/update_status.js',
-    '/static/node_configuration/style.css',
-    '/static/node_configuration/add-instance.js',
-    '/static/node_configuration/apiTargetOptions.js',
-    '/static/node_configuration/classes.js',
-    '/static/node_configuration/page-buttons.js',
     '/static/node_configuration/rule_sliders.js',
-    '/static/node_configuration/schedule-rules.js',
-    '/static/node_configuration/submit.js',
-    '/static/node_configuration/upload.js',
-    '/static/node_configuration/validate.js',
+    '/static/node_configuration/edit_config.js',
 ];
 
 // Cache on install
