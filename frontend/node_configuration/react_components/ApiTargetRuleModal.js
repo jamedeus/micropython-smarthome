@@ -95,6 +95,16 @@ export const ApiTargetModalContextProvider = ({ children }) => {
                     update.command_arg_off = rule.off.shift();
                 }
             }
+        // Otherwise ensure all inputs are empty
+        } else {
+            update.instance_on = '';
+            update.instance_off = '';
+            update.command_on = '';
+            update.command_off = '';
+            update.command_arg_on = '';
+            update.command_arg_off = '';
+            update.sub_command_on = '';
+            update.sub_command_off = '';
         }
 
         // Set modal contents, show
@@ -121,6 +131,7 @@ export const ApiTargetRuleModalContents = () => {
     // Get state object that determines modal contents
     const { modalContent, setModalContent } = useContext(ApiTargetModalContext);
 
+    // Listener for all dropdown inputs
     // Takes modalContent param name and value, updates and re-renders
     const set_modal_param = (param, value) => {
         const update = { ...modalContent, [param]: value};
@@ -143,125 +154,129 @@ export const ApiTargetRuleModalContents = () => {
         setModalContent(update);
     };
 
-    // Copy options for shorter strings
-    const options = modalContent.target_node_options;
+    // Takes "instance_on" or "instance_off"
+    // Returns instance select dropdown with current instance pre-selected
+    const get_instance_dropdown = (param) => {
+        return (
+            <Form.Select
+                value={modalContent[param]}
+                className="mb-3 modal-dropdown api-command"
+                onChange={(e) => set_modal_param(param, e.target.value)}
+            >
+                <option value="">Select target instance</option>
+                {Object.keys(modalContent.target_node_options).map(option => (
+                    <option value={option}>{modalContent.target_node_options[option]["display"]}</option>
+                ))}
+            </Form.Select>
+        )
+    };
 
-    // return cascading dropdown, each has ternary expression to hide if previous not populated
-    return (
-        <>
-            <div id="on-action" className={modalContent.view_on_rule ? "" : "d-none"}>
-                <Form.Select
-                    value={modalContent.instance_on}
-                    className="mb-3 modal-dropdown api-command"
-                    onChange={(e) => set_modal_param("instance_on", e.target.value)}
-                >
-                    <option value="">Select target instance</option>
-                    {Object.keys(options).map(option => (
-                        <option value={option}>{options[option]["display"]}</option>
-                    ))}
-                </Form.Select>
+    // Takes currently-selected instance and either "command_on" or "command_off"
+    // Returns dropdown with all valid commands for target instance, current command pre-selected
+    const get_command_dropdown = (instance, param) => {
+        return (
+            <Form.Select
+                value={modalContent[param]}
+                className="mb-3 modal-dropdown api-command"
+                onChange={(e) => set_modal_param(param, e.target.value)}
+            >
+                <option value="">Select command</option>
+                {modalContent.target_node_options[instance]["options"].map(option => (
+                    <option value={option}>{option}</option>
+                ))}
+            </Form.Select>
+        )
+    };
 
-                <Form.Select
-                    value={modalContent.command_on}
-                    className={modalContent.instance_on ? "mb-3 modal-dropdown api-command" : "d-none"}
-                    onChange={(e) => set_modal_param("command_on", e.target.value)}
-                >
-                    <option value="">Select command</option>
+    // Takes selected IR target and either "sub_command_on" or "sub_command_off"
+    // Returns dropdown with all keys for selected target, current key pre-selected
+    const get_ir_key_dropdown = (target, param) => {
+        return (
+            <Form.Select
+                value={modalContent[param]}
+                className="mb-3 modal-input api-command"
+                onChange={(e) => set_modal_param(param, e.target.value)}
+            >
+                <option value="">Select key</option>
+                {modalContent.target_node_options.ir_key.keys[target].map(option => (
+                    <option value={option}>{option}</option>
+                ))}
+            </Form.Select>
+        )
+    };
+
+    // Takes "command_arg_on" or "command_arg_off"
+    // Returns input with current command arg pre-filled
+    const get_command_arg_input = (param) => {
+        return (
+            <Form.Control
+                type="text"
+                value={modalContent[param]}
+                className="mb-3 modal-input api-command"
+                onChange={(e) => set_modal_param(param, e.target.value)}
+            />
+        )
+    };
+
+    // Return cascading dropdown for currently-viewed action (on or off)
+    switch(modalContent.view_on_rule) {
+        case true:
+            return (
+                <>
+                    {/* Always show instance select dropdown */}
+                    {get_instance_dropdown("instance_on")}
+
+                    {/* Show command dropdown once instance selected */}
                     {(() => {
-                        if (options[modalContent.instance_on]) {
-                            let dropdown_options = [];
-                            options[modalContent.instance_on]["options"].map(option => (
-                                dropdown_options.push(<option value={option}>{option}</option>)
-                            ))
-                            return dropdown_options;
+                        if (modalContent.instance_on && modalContent.instance_on !== "ignore") {
+                            return get_command_dropdown(modalContent.instance_on, "command_on");
                         }
                     })()}
-                </Form.Select>
 
-                {/* Only used by IR Blaster */}
-                <Form.Select
-                    value={modalContent.sub_command_on}
-                    className={modalContent.instance_on === "ir_key" ? "mb-3 modal-input api-command" : "d-none"}
-                    onChange={(e) => set_modal_param("sub_command_on", e.target.value)}
-                >
-                    <option value="">Select key</option>
+                    {/* Show IR target dropdown if instance is IR Blaster and target is selected */}
                     {(() => {
-                        if (modalContent.instance_on === "ir_key" && Object.keys(options.ir_key.keys).includes(modalContent.command_on)) {
-                            let dropdown_options = [];
-                            options.ir_key.keys[modalContent.command_on].map(option => (
-                                dropdown_options.push(<option value={option}>{option}</option>)
-                            ))
-                            return dropdown_options;
+                        if (modalContent.instance_on === "ir_key" && modalContent.command_on) {
+                            return get_ir_key_dropdown(modalContent.command_on, "sub_command_on");
                         }
                     })()}
-                </Form.Select>
 
-                {/* Only used for commands which require argument (set rule, enable_in, disable_in) */}
-                <Form.Control
-                    type="text"
-                    value={modalContent.command_arg_on}
-                    className={["enable_in", "disable_in", "set_rule"].includes(modalContent.command_on) ? "mb-3 modal-input api-command" : "d-none"}
-                    onChange={(e) => set_modal_param("command_arg_on", e.target.value)}
-                />
-            </div>
-
-            <div id="off-action" className={modalContent.view_on_rule ? "d-none" : ""}>
-                <Form.Select
-                    value={modalContent.instance_off}
-                    className="mb-3 modal-dropdown api-command"
-                    onChange={(e) => set_modal_param("instance_off", e.target.value)}
-                >
-                    <option value="">Select target instance</option>
-                    {Object.keys(options).map(option => (
-                        <option value={option}>{options[option]["display"]}</option>
-                    ))}
-                </Form.Select>
-
-                <Form.Select
-                    value={modalContent.command_off}
-                    className={modalContent.instance_off ? "mb-3 modal-dropdown api-command" : "d-none"}
-                    onChange={(e) => set_modal_param("command_off", e.target.value)}
-                >
-                    <option value="">Select command</option>
+                    {/* Show arg field if command is set_rule, enable_in, or disable_in */}
                     {(() => {
-                        if (options[modalContent.instance_off]) {
-                            let dropdown_options = [];
-                            options[modalContent.instance_off]["options"].map(option => (
-                                dropdown_options.push(<option value={option}>{option}</option>)
-                            ))
-                            return dropdown_options;
+                        if (["enable_in", "disable_in", "set_rule"].includes(modalContent.command_on)) {
+                            return get_command_arg_input("command_arg_on");
                         }
                     })()}
-                </Form.Select>
+                </>
+            );
+        case false:
+            return (
+                <>
+                    {/* Always show instance select dropdown */}
+                    {get_instance_dropdown("instance_off")}
 
-                {/* Only used by IR Blaster */}
-                <Form.Select
-                    value={modalContent.sub_command_off}
-                    className={modalContent.instance_off === "ir_key" ? "mb-3 modal-input api-command" : "d-none"}
-                    onChange={(e) => set_modal_param("sub_command_off", e.target.value)}
-                >
-                    <option value="">Select key</option>
+                    {/* Show command dropdown once instance selected */}
                     {(() => {
-                        if (modalContent.instance_off === "ir_key" && Object.keys(options.ir_key.keys).includes(modalContent.command_off)) {
-                            let dropdown_options = [];
-                            options.ir_key.keys[modalContent.command_off].map(option => (
-                                dropdown_options.push(<option value={option}>{option}</option>)
-                            ))
-                            return dropdown_options;
+                        if (modalContent.instance_off && modalContent.instance_off !== "ignore") {
+                            return get_command_dropdown(modalContent.instance_off, "command_off");
                         }
                     })()}
-                </Form.Select>
 
-                {/* Only used for commands which require argument (set rule, enable_in, disable_in) */}
-                <Form.Control
-                    type="text"
-                    value={modalContent.command_arg_off}
-                    className={["enable_in", "disable_in", "set_rule"].includes(modalContent.command_off) ? "mb-3 modal-input api-command" : "d-none"}
-                    onChange={(e) => set_modal_param("command_arg_off", e.target.value)}
-                />
-            </div>
-        </>
-    );
+                    {/* Show IR target dropdown if instance is IR Blaster and target is selected */}
+                    {(() => {
+                        if (modalContent.instance_off === "ir_key" && modalContent.command_off) {
+                            return get_ir_key_dropdown(modalContent.command_off, "sub_command_off");
+                        }
+                    })()}
+
+                    {/* Show arg field if command is set_rule, enable_in, or disable_in */}
+                    {(() => {
+                        if (["enable_in", "disable_in", "set_rule"].includes(modalContent.command_off)) {
+                            return get_command_arg_input("command_arg_off");
+                        }
+                    })()}
+                </>
+            );
+    }
 };
 
 export const ApiTargetRuleModal = () => {
