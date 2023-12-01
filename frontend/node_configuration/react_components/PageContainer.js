@@ -13,6 +13,51 @@ function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Redirect back to overview page
+function returnToOverview() {
+    window.location.replace("/config_overview");
+}
+
+// Takes current config (state) object, compares with original from django
+// context, returns True if changes have been made, false if no changes
+function configModified(config) {
+    // Get original config, compare with
+    const original_config = JSON.parse(document.getElementById("config").textContent);
+    return !areObjectsEqual(config, original_config);
+}
+
+// Takes 2 objects, recursively compares every sub-key, returns True if all identical
+// Used to detect unsaved changes, show warning before returning to overview
+function areObjectsEqual(obj1, obj2) {
+    // Direct comparison for sub-keys on recursive calls
+    if (obj1 === obj2) {
+        return true;
+    }
+
+    // Not equal if failed comparison above and either is not object
+    if (typeof(obj1) !== 'object' || typeof(obj2) !== 'object') {
+        return false;
+    }
+
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+
+    // Not equal if different number of keys
+    if (keys1.length !== keys2.length) {
+        return false;
+    }
+
+    // Confirm contain same keys
+    // Call recursively with values of each key in both objects
+    for (let key of keys1) {
+        if (!keys2.includes(key) || !areObjectsEqual(obj1[key], obj2[key])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 const PageContainer = () => {
     // Set default page, get callback to change visible page
     const [page, setPage] = useState(1);
@@ -28,9 +73,20 @@ const PageContainer = () => {
 
     function prevPage() {
         // Go back to overview if current page is page 1
-        // TODO add warning if editing and config modified
         if (page === 1) {
-            window.location.replace("/config_overview");
+            // Show unsaved changes warning if user modified any inputs
+            if (configModified(config)) {
+                setErrorModalContent({
+                    ...errorModalContent,
+                    ["visible"]: true,
+                    ["title"]: "Warning",
+                    ["error"]: "unsaved_changes",
+                    ["handleConfirm"]: returnToOverview
+                })
+            // Go directly to overview if no unsaved changes
+            } else {
+                returnToOverview();
+            }
         // Otherwise go to previous page
         } else {
             setPage(page - 1);

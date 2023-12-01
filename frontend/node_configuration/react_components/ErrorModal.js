@@ -62,6 +62,9 @@ export const ErrorModal = () => {
                                     <p>This cannot be undone - are you sure?</p>
                                 </>
                             );
+                        case "unsaved_changes":
+                            return <p>Your changes will be lost if you go back - are you sure?</p>;
+
                     }
                 })()}
             </Modal.Body>
@@ -73,6 +76,13 @@ export const ErrorModal = () => {
                                 <>
                                     <Button variant="secondary" className="m-1" onClick={handleClose}>Cancel</Button>
                                     <Button variant="danger" className="m-1" onClick={errorModalContent.handleConfirm}>Overwrite</Button>
+                                </>
+                            );
+                        case "unsaved_changes":
+                            return (
+                                <>
+                                    <Button variant="danger" className="m-1" onClick={errorModalContent.handleConfirm}>Go Back</Button>
+                                    <Button variant="secondary" className="m-1" onClick={handleClose}>Keep Editing</Button>
                                 </>
                             );
                         default:
