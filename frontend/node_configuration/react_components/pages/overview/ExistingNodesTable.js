@@ -1,10 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { OverviewContext } from 'root/OverviewContext';
 import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
-import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
-import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import Dropdown from 'react-bootstrap/Dropdown';
 
@@ -43,7 +40,7 @@ const ExistingNodesTable = () => {
                     </Dropdown>
                 </td>
             </tr>
-        )
+        );
     }
 
     // Render full layout with metadata, wifi, IR Blaster, and instance cards

@@ -1,12 +1,10 @@
 import React, { useContext, useState } from 'react';
 import { OverviewContext } from 'root/OverviewContext';
 import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
-import Dropdown from 'react-bootstrap/Dropdown';
 
 
 const KeywordsTable = () => {
@@ -15,10 +13,6 @@ const KeywordsTable = () => {
 
     // Set default collapse state
     const [open, setOpen] = useState(true);
-
-    function edit_config(friendly_name) {
-        window.location.href = `/edit_config/${friendly_name}`;
-    }
 
     function get_table_row(keyword) {
         return (
@@ -43,7 +37,7 @@ const KeywordsTable = () => {
                     </Button>
                 </td>
             </tr>
-        )
+        );
     }
 
     // Render full layout with metadata, wifi, IR Blaster, and instance cards

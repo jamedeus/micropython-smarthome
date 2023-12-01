@@ -1,12 +1,10 @@
 import React, { useContext, useState } from 'react';
 import { OverviewContext } from 'root/OverviewContext';
 import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
-import Dropdown from 'react-bootstrap/Dropdown';
 
 
 const NewConfigTable = () => {
@@ -38,31 +36,31 @@ const NewConfigTable = () => {
                     <Button variant="danger" size="sm"><i className="bi-trash"></i></Button>
                 </td>
             </tr>
-        )
+        );
     }
 
     // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (
-            <Row id="not_uploaded" className="section pt-2 px-0 mb-5">
-                <h3 className="text-center my-1" onClick={() => setOpen(!open)}>Configs Ready to Upload</h3>
-                <Collapse in={open}>
-                    <div>
-                        <Table borderless hover size="sm" className="mt-3 mx-auto">
-                            <thead>
-                                <tr>
-                                    <th className="w-50"><span>Name</span></th>
-                                    <th className="w-50"><span>IP</span></th>
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {context.not_uploaded.map(config => get_table_row(config))}
-                            </tbody>
-                        </Table>
-                    </div>
-                </Collapse>
-            </Row>
+        <Row id="not_uploaded" className="section pt-2 px-0 mb-5">
+            <h3 className="text-center my-1" onClick={() => setOpen(!open)}>Configs Ready to Upload</h3>
+            <Collapse in={open}>
+                <div>
+                    <Table borderless hover size="sm" className="mt-3 mx-auto">
+                        <thead>
+                            <tr>
+                                <th className="w-50"><span>Name</span></th>
+                                <th className="w-50"><span>IP</span></th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {context.not_uploaded.map(config => get_table_row(config))}
+                        </tbody>
+                    </Table>
+                </div>
+            </Collapse>
+        </Row>
     );
 };
 
