@@ -782,19 +782,6 @@ class OverviewPageTests(TestCaseBackupRestore):
         self.assertEqual(response.context['not_uploaded'], [])
         self.assertEqual(len(response.context['uploaded']), 3)
 
-        # Confirm existing node section present, new config section not present
-        self.assertNotContains(response, '<div id="not_uploaded" class="row section px-0 pt-2 mb-5">')
-        self.assertContains(response, '<div id="existing" class="row section px-0 pt-2">')
-
-        # Confirm table with all 3 nodes present
-        self.assertContains(response, '<tr id="Test1">')
-        self.assertContains(
-            response,
-            '<td class="align-middle"><span class="form-control keyword text-center">Test2</span></td>'
-        )
-        self.assertContains(response, 'onclick="window.location.href = \'/edit_config/Test3\'"')
-        self.assertContains(response, 'onclick="del_node(\'Test1\')"')
-
         # Remove test configs from disk
         clean_up_test_nodes()
 
@@ -809,15 +796,6 @@ class OverviewPageTests(TestCaseBackupRestore):
         # Confirm correct context (1 config, empty nodes)
         self.assertEqual(len(response.context['not_uploaded']), 1)
         self.assertEqual(response.context['uploaded'], [])
-
-        # Confirm new config section present, existing node section section not present
-        self.assertContains(response, '<div id="not_uploaded" class="row section px-0 pt-2 mb-5">')
-        self.assertNotContains(response, '<div id="existing" class="row section px-0 pt-2">')
-
-        # Confirm IP field, upload button, delete button all present
-        self.assertContains(response, '<td><input type="text" id="test1.json-ip"')
-        self.assertContains(response, 'id="upload-test1.json"')
-        self.assertContains(response, 'onclick="del_config(\'test1.json\');"')
 
 
 # Test endpoint called by reupload all option in config overview

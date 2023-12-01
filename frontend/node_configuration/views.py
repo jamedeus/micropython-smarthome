@@ -188,7 +188,13 @@ def config_overview(request):
 
     uploaded = Node.objects.all()
     for i in uploaded:
-        context["uploaded"].append(i)
+        context["uploaded"].append({
+            'friendly_name': i.friendly_name,
+            'ip': i.ip,
+            'filename': i.config.filename
+        })
+
+    print(json.dumps(context, indent=4))
 
     return render(request, 'node_configuration/overview.html', context)
 

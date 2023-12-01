@@ -6,7 +6,8 @@ const isProduction = process.env.NODE_ENV == 'development';
 
 const config = {
     entry: {
-        edit_config: './node_configuration/react_components/pages/edit_config/index.js'
+        edit_config: './node_configuration/react_components/pages/edit_config/index.js',
+        overview: './node_configuration/react_components/pages/overview/index.js',
     },
     output: {
         path: path.resolve(__dirname, 'node_configuration/static/node_configuration/'),
