@@ -34,7 +34,7 @@ function DefaultRuleIntRange({ id }) {
     if (!instance.max_rule) {
         instance.max_rule = instanceMetadata.rule_limits[1];
     }
-    if (!instance.default_rule) {
+    if (instance.default_rule === '') {
         instance.default_rule = average(instance.min_rule, instance.max_rule);
     }
 

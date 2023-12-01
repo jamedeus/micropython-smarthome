@@ -29,7 +29,7 @@ function DefaultRuleFloatRange({ id }) {
     const max_rule = parseInt(instanceMetadata.rule_limits[1], 10);
 
     // Replace empty default_rule when new card added (causes NaN on slider)
-    if (!instance.default_rule) {
+    if (instance.default_rule === '') {
         instance.default_rule = average(min_rule, max_rule);
     }
 
