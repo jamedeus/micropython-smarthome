@@ -64,7 +64,14 @@ export const ErrorModal = () => {
                             );
                         case "unsaved_changes":
                             return <p>Your changes will be lost if you go back - are you sure?</p>;
-
+                        case "failed_upload_all":
+                            return (
+                                <ul>
+                                    {Object.keys(errorModalContent.body).map(node =>
+                                        <li>{node}: {errorModalContent.body[node]}</li>
+                                    )}
+                                </ul>
+                            );
                     }
                 })()}
             </Modal.Body>
