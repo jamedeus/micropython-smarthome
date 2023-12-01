@@ -1,7 +1,7 @@
-@import "../node_modules/bootstrap/scss/_functions";
-@import "../node_modules/bootstrap/scss/_variables";
-@import "../node_modules/bootstrap/scss/_variables-dark";
-@import "../node_modules/bootstrap/scss/_mixins";
+@import "../../node_modules/bootstrap/scss/_functions";
+@import "../../node_modules/bootstrap/scss/_variables";
+@import "../../node_modules/bootstrap/scss/_variables-dark";
+@import "../../node_modules/bootstrap/scss/_mixins";
 
 
 /* Limit width for readability on large screen sizes */
@@ -351,13 +351,13 @@ td:last-child{
         $list-group-action-hover-color: #ffffff;
         $list-group-action-active-color: #ffffff;
 
-        @import "../node_modules/bootstrap/scss/_card";
-        @import "../node_modules/bootstrap/scss/_modal";
-        @import "../node_modules/bootstrap/scss/_forms";
-        @import "../node_modules/bootstrap/scss/_buttons";
-        @import "../node_modules/bootstrap/scss/_tables";
-        @import "../node_modules/bootstrap/scss/_dropdown";
-        @import "../node_modules/bootstrap/scss/_toasts";
-        @import "../node_modules/bootstrap/scss/_list-group";
+        @import "../../node_modules/bootstrap/scss/_card";
+        @import "../../node_modules/bootstrap/scss/_modal";
+        @import "../../node_modules/bootstrap/scss/_forms";
+        @import "../../node_modules/bootstrap/scss/_buttons";
+        @import "../../node_modules/bootstrap/scss/_tables";
+        @import "../../node_modules/bootstrap/scss/_dropdown";
+        @import "../../node_modules/bootstrap/scss/_toasts";
+        @import "../../node_modules/bootstrap/scss/_list-group";
     }
 }

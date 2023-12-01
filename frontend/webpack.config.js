@@ -4,12 +4,13 @@ const path = require('path');
 
 const isProduction = process.env.NODE_ENV == 'development';
 
-
 const config = {
-    entry: './node_configuration/react_components/index.js',
+    entry: {
+        edit_config: './node_configuration/react_components/pages/edit_config/index.js'
+    },
     output: {
         path: path.resolve(__dirname, 'node_configuration/static/node_configuration/'),
-        filename: 'edit_config.js'
+        filename: '[name].js'
     },
     externals: {
         'react': 'React',
