@@ -34,7 +34,7 @@ export const ErrorModal = () => {
     const { errorModalContent, handleClose } = useContext(ErrorModalContext);
 
     return (
-        <Modal show={errorModalContent.visible} onHide={handleClose} centered>
+        <Modal show={errorModalContent.visible} onHide={handleClose} backdrop="static" keyboard={false} centered>
             <Modal.Header className="justify-content-between">
                 <h3 className="modal-title mx-auto">{errorModalContent.title}</h3>
             </Modal.Header>

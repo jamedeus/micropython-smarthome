@@ -29,13 +29,17 @@ export const UploadModal = () => {
     const { showUpload, uploadComplete, handleClose } = useContext(UploadModalContext);
 
     return (
-        <Modal show={showUpload} onHide={handleClose} centered>
+        <Modal show={showUpload} onHide={handleClose} backdrop="static" keyboard={false} centered>
             <Modal.Header className="justify-content-between">
-                <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
-                <h5 className="modal-title">Uploading...</h5>
-                <button type="button" className="btn-close" onClick={handleClose}></button>
+                {(() => {
+                    switch (uploadComplete) {
+                        case false:
+                            return <h3 className="modal-title mx-auto">Uploading...</h3>;
+                        case true:
+                            return <h3 className="modal-title mx-auto">Upload Complete</h3>;
+                    }
+                })()}
             </Modal.Header>
-
             <Modal.Body className="d-flex justify-content-center mb-4">
                 {(() => {
                     switch (uploadComplete) {
