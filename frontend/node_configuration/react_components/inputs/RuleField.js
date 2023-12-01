@@ -6,8 +6,8 @@ import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
 import Dropdown from 'inputs/Dropdown.js';
 import RuleSlider from 'inputs/RuleSlider';
-import { convert_temperature } from 'root/thermostat_util';
-import { get_instance_metadata } from 'root/metadata';
+import { convert_temperature } from 'util/thermostat_util';
+import { get_instance_metadata } from 'util/metadata';
 
 export const RuleField = ({ instance, timestamp }) => {
     // Get curent state from context

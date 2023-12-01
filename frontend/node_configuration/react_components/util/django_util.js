@@ -12,6 +12,10 @@ if (edit_existing) {
 // Contains valid API commands for each instance (device/sensor) of all existing nodes
 const api_target_options = JSON.parse(document.getElementById("api_target_options").textContent);
 
+// Parse schedule keywords object from element created by django template
+// Contains object with keywords as key, timestamps as value (HH:MM)
+const schedule_keywords = JSON.parse(document.getElementById("schedule_keywords").textContent);
+
 // Takes name of cookie, returns cookie
 function getCookie(name) {
     var cookieValue = null;
@@ -45,4 +49,11 @@ async function send_post_request(url, body) {
     return response;
 }
 
-export { send_post_request, edit_existing, orig_name, target_node_ip, api_target_options };
+export {
+    send_post_request,
+    edit_existing,
+    orig_name,
+    target_node_ip,
+    api_target_options,
+    schedule_keywords
+};

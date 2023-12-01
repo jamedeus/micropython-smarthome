@@ -46,6 +46,7 @@ const config = {
     resolve: {
         alias: {
             root: path.resolve(__dirname, 'node_configuration/react_components/'),
+            util: path.resolve(__dirname, 'node_configuration/react_components/util/'),
             inputs: path.resolve(__dirname, 'node_configuration/react_components/inputs/'),
             layout: path.resolve(__dirname, 'node_configuration/react_components/layout/'),
             modals: path.resolve(__dirname, 'node_configuration/react_components/modals/')

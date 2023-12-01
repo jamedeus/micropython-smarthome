@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
-import { get_instance_metadata } from 'root/metadata';
+import { get_instance_metadata } from 'util/metadata';
 import RuleSlider from './RuleSlider';
-import { average, convert_temperature } from 'root/thermostat_util';
+import { average, convert_temperature } from 'util/thermostat_util';
 
 function DefaultRuleThermostat({ id }) {
     // Get instance section from config (state) object

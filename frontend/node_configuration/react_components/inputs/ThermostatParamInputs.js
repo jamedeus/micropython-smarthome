@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
-import { convert_temperature } from 'root/thermostat_util';
+import { convert_temperature } from 'util/thermostat_util';
 import Dropdown from './Dropdown';
 
 function ThermostatParamInputs({ id }) {

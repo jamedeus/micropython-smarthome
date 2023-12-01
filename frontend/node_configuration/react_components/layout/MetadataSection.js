@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from 'inputs/InputWrapper';
-import { send_post_request, edit_existing, orig_name } from 'root/django_util';
+import { send_post_request, edit_existing, orig_name } from 'util/django_util';
 
 
 function MetadataSection() {

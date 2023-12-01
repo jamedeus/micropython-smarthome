@@ -17,7 +17,7 @@ import DefaultRuleThermostat from 'inputs/DefaultRuleThermostat';
 import DefaultRuleIntRange from 'inputs/DefaultRuleIntRange';
 import DefaultRuleOnOff from 'inputs/DefaultRuleOnOff';
 import DefaultRuleApiTarget from 'inputs/DefaultRuleApiTarget';
-import { get_instance_metadata, get_type_dropdown_options } from 'root/metadata';
+import { get_instance_metadata, get_type_dropdown_options } from 'util/metadata';
 
 
 function InstanceCard({ id }) {

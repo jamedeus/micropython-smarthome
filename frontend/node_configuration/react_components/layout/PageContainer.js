@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { ConfigContext } from 'root/ConfigContext';
 import Button from 'react-bootstrap/Button';
-import { send_post_request, edit_existing, target_node_ip } from 'root/django_util';
+import { send_post_request, edit_existing, target_node_ip } from 'util/django_util';
 import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
