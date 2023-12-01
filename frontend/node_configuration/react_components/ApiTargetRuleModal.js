@@ -52,7 +52,7 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         }
 
         // Replace modalContent with params for selected rule
-        let update = { ...modalContent }
+        let update = { ...modalContent };
         update.instance = instance;
         update.rule_key = rule_key;
         update.schedule_rule = !(rule_key === "default_rule");
@@ -125,7 +125,7 @@ export const ApiTargetModalContextProvider = ({ children }) => {
 
 ApiTargetModalContextProvider.propTypes = {
     children: PropTypes.node,
-}
+};
 
 export const ApiTargetRuleModalContents = () => {
     // Get state object that determines modal contents
@@ -168,7 +168,7 @@ export const ApiTargetRuleModalContents = () => {
                     <option value={option}>{modalContent.target_node_options[option]["display"]}</option>
                 ))}
             </Form.Select>
-        )
+        );
     };
 
     // Takes currently-selected instance and either "command_on" or "command_off"
@@ -185,7 +185,7 @@ export const ApiTargetRuleModalContents = () => {
                     <option value={option}>{option}</option>
                 ))}
             </Form.Select>
-        )
+        );
     };
 
     // Takes selected IR target and either "sub_command_on" or "sub_command_off"
@@ -202,7 +202,7 @@ export const ApiTargetRuleModalContents = () => {
                     <option value={option}>{option}</option>
                 ))}
             </Form.Select>
-        )
+        );
     };
 
     // Takes "command_arg_on" or "command_arg_off"
@@ -215,7 +215,7 @@ export const ApiTargetRuleModalContents = () => {
                 className="mb-3 modal-input api-command"
                 onChange={(e) => set_modal_param(param, e.target.value)}
             />
-        )
+        );
     };
 
     // Return cascading dropdown for currently-viewed action (on or off)

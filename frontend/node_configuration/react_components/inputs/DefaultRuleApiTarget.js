@@ -40,6 +40,6 @@ function DefaultRuleApiTarget({ id }) {
 
 DefaultRuleApiTarget.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default DefaultRuleApiTarget;

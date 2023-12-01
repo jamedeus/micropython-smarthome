@@ -4,7 +4,7 @@ import { ConfigContext } from './ConfigContext';
 import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
-import Dropdown from './inputs/Dropdown.js'
+import Dropdown from './inputs/Dropdown.js';
 import RuleSlider from './inputs/RuleSlider';
 import { convert_temperature } from './thermostat_util';
 import { get_instance_metadata } from './metadata';
@@ -67,7 +67,7 @@ export const RuleField = ({ instance, timestamp }) => {
         // Add new rule, update state object, close modal
         rules[popupContent.timestamp] = new_rule;
         handleInputChange(popupContent.instance, "schedule", rules);
-        setPopupContent({ ...popupContent, ["visible"]: false})
+        setPopupContent({ ...popupContent, ["visible"]: false});
     };
 
     // Takes popupContent param name and value, updates and re-renders
@@ -141,7 +141,7 @@ export const RuleField = ({ instance, timestamp }) => {
                                         options={["Enabled", "Disabled"]}
                                         onChange={(value) => set_popup_param("rule", value)}
                                     />
-                                )
+                                );
                             case "on_off":
                                 return (
                                     <Dropdown
@@ -149,7 +149,7 @@ export const RuleField = ({ instance, timestamp }) => {
                                         options={["Enabled", "Disabled", "On", "Off"]}
                                         onChange={(value) => set_popup_param("rule", value)}
                                     />
-                                )
+                                );
                             case "float_range":
                                 return (
                                     <RuleSlider
@@ -162,7 +162,7 @@ export const RuleField = ({ instance, timestamp }) => {
                                         onButtonClick={onButtonClick}
                                         onSliderMove={onSliderMove}
                                     />
-                                )
+                                );
                             case "int_or_fade":
                                 return (
                                     <>
@@ -198,7 +198,7 @@ export const RuleField = ({ instance, timestamp }) => {
                                             />
                                         </div>
                                     </>
-                                )
+                                );
                             case "api_target":
                                 return (
                                     <>
@@ -209,7 +209,7 @@ export const RuleField = ({ instance, timestamp }) => {
                                             Set Rule
                                         </Button>
                                     </>
-                                )
+                                );
                         }
                     })()}
                 </>
@@ -221,4 +221,4 @@ export const RuleField = ({ instance, timestamp }) => {
 RuleField.propTypes = {
     instance: PropTypes.string,
     timestamp: PropTypes.string
-}
+};

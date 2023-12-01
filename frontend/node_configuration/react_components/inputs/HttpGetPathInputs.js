@@ -38,6 +38,6 @@ function HttpGetPathInputs({ id }) {
 
 HttpGetPathInputs.propTypes = {
     id: PropTypes.string
-}
+};
 
 export default HttpGetPathInputs;

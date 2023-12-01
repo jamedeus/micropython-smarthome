@@ -6,7 +6,7 @@ import InputWrapper from './InputWrapper';
 // Used by SensorPinSelect and DevicePinSelect components
 function PinSelectDropdown({id, config, selected, onChange, options, isInvalid}) {
     // Get array of all pins used by other instances
-    let usedPins = []
+    let usedPins = [];
     for (const section in config) {
         if (section !== id && config[section]["pin"] !== undefined) {
             usedPins.push(config[section]["pin"]);
@@ -39,6 +39,6 @@ PinSelectDropdown.propTypes = {
     onChange: PropTypes.func,
     options: PropTypes.array,
     isInvalid: PropTypes.bool
-}
+};
 
 export default PinSelectDropdown;

@@ -28,7 +28,7 @@ function URIInput({ id }) {
             event.target.classList.remove('is-invalid');
         }
         handleInputChange(id, "uri", event.target.value);
-    }
+    };
 
     return (
         <InputWrapper label="URI">
@@ -47,6 +47,6 @@ function URIInput({ id }) {
 
 URIInput.propTypes = {
     id: PropTypes.string
-}
+};
 
 export default URIInput;

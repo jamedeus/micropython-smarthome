@@ -73,6 +73,6 @@ function IPInput({ id }) {
 
 IPInput.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default IPInput;

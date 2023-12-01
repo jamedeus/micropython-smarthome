@@ -62,6 +62,6 @@ function DefaultRuleFloatRange({ id }) {
 
 DefaultRuleFloatRange.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default DefaultRuleFloatRange;

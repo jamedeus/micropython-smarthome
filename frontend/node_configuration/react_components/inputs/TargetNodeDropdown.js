@@ -17,8 +17,8 @@ function TargetNodeDropdown({ id }) {
 
     // Handler for target select dropdown
     const change_target_node = (target) => {
-        handleInstanceUpdate(id, { ...instance, ["ip"]: target, ["default_rule"]: ""})
-    }
+        handleInstanceUpdate(id, { ...instance, ["ip"]: target, ["default_rule"]: ""});
+    };
 
     return (
         <InputWrapper label="Target Node">
@@ -38,6 +38,6 @@ function TargetNodeDropdown({ id }) {
 
 TargetNodeDropdown.propTypes = {
     id: PropTypes.string
-}
+};
 
 export default TargetNodeDropdown;

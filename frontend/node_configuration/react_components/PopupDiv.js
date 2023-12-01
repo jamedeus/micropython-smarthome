@@ -8,14 +8,14 @@ const PopupDiv = ({ children, show, anchorRef, onClose }) => {
         // Closes popup if user clicks outside popup div
         const handleClickOutside = (event) => {
             if (popupRef.current && !popupRef.current.contains(event.target)) {
-                console.log("Clicked outside, closing")
+                console.log("Clicked outside, closing");
                 onClose();
             }
         };
 
         // Runs when popup shown
         if (show) {
-            console.log("Adding listener")
+            console.log("Adding listener");
             // Add listener to close popup if user clicks outside div
             document.addEventListener("mousedown", handleClickOutside);
 
@@ -28,7 +28,7 @@ const PopupDiv = ({ children, show, anchorRef, onClose }) => {
 
         // Remove listener when closed
         return () => {
-            console.log("Removing listener")
+            console.log("Removing listener");
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [show, onClose]);
@@ -49,6 +49,6 @@ PopupDiv.propTypes = {
     show: PropTypes.bool,
     anchorRef: PropTypes.object,
     onClose: PropTypes.func
-}
+};
 
 export default PopupDiv;

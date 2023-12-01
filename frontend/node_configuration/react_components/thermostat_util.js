@@ -14,7 +14,7 @@ function convert_temperature(temperature, old_units, new_units) {
     if (old_units.toLowerCase() == 'fahrenheit') {
         temperature = (parseFloat(temperature) - 32) * 5 / 9;
     } else if (old_units.toLowerCase() == 'kelvin') {
-        temperature = parseFloat(temperature) - 273.15
+        temperature = parseFloat(temperature) - 273.15;
     }
 
     // Convert Celsius to requested units

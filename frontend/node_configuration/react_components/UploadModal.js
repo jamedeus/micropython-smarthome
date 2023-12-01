@@ -22,7 +22,7 @@ export const UploadModalContextProvider = ({ children }) => {
 
 UploadModalContextProvider.propTypes = {
     children: PropTypes.node,
-}
+};
 
 export const UploadModal = () => {
     // Get state object that determines modal contents

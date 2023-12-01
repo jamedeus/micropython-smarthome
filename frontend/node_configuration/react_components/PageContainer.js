@@ -65,7 +65,7 @@ function hasEmptyFields(config) {
         if (typeof(config[key]) === 'object') {
             if (hasEmptyFields(config[key])) {
                 console.log(`Empty field in ${key}`);
-                return true
+                return true;
             }
         } else if (config[key] === '') {
             console.log(`Empty field: ${key}`);
@@ -80,7 +80,7 @@ const PageContainer = () => {
     const [page, setPage] = useState(1);
 
     // Get full config (state object)
-    const { config, highlightInvalid, setHighlightInvalid } = useContext(ConfigContext);
+    const { config, setHighlightInvalid } = useContext(ConfigContext);
 
     // Get callbacks for upload modal
     const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
@@ -99,7 +99,7 @@ const PageContainer = () => {
                     ["title"]: "Warning",
                     ["error"]: "unsaved_changes",
                     ["handleConfirm"]: returnToOverview
-                })
+                });
             // Go directly to overview if no unsaved changes
             } else {
                 returnToOverview();
@@ -123,7 +123,7 @@ const PageContainer = () => {
 
     // Post full config (state object) to backend when submit clicked
     async function submitButton() {
-        console.log(config)
+        console.log(config);
 
         // Overwrites if editing existing config, otherwise create config
         let response;
@@ -151,7 +151,7 @@ const PageContainer = () => {
                 ["error"]: "duplicate",
                 ["body"]: config.metadata.id,
                 ["handleConfirm"]: confirmOverwriteDuplicate
-            })
+            });
 
         // If other error, display in alert
         } else {
@@ -199,7 +199,7 @@ const PageContainer = () => {
                 ["title"]: "Upload Failed",
                 ["error"]: "failed",
                 ["body"]: error
-            })
+            });
 
         // Unable to upload because node is unreachable
         } else if (response.status == 404) {
@@ -211,7 +211,7 @@ const PageContainer = () => {
                 ["title"]: "Connection Error",
                 ["error"]: "unreachable",
                 ["body"]: target_node_ip
-            })
+            });
 
         // Other error, show in alert
         } else {
@@ -248,7 +248,7 @@ const PageContainer = () => {
                     <Button variant="primary" className="mb-4" onClick={prevPage}>Back</Button>
                     {(() => {
                         if (page === 3) {
-                            return <Button variant="primary" className="mb-4" onClick={submitButton}>Submit</Button>
+                            return <Button variant="primary" className="mb-4" onClick={submitButton}>Submit</Button>;
                         }
                     })()}
                     <Button variant="primary" className="mb-4" onClick={nextPage} disabled={page === 3}>Next</Button>
@@ -260,6 +260,5 @@ const PageContainer = () => {
         </ApiTargetModalContextProvider>
     );
 };
-
 
 export default PageContainer;

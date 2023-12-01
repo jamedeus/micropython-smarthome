@@ -18,7 +18,7 @@ function MetadataSection() {
         // Skip API call if editing and new name matches original name
         if (!edit_existing || new_name.toLowerCase() != orig_name) {
             // Send new name to backend
-            const response = await send_post_request('/check_duplicate', {'name': new_name})
+            const response = await send_post_request('/check_duplicate', {'name': new_name});
 
             // If name is duplicate add invalid highlight, otherwise remove
             if (!response.ok) {
@@ -86,7 +86,7 @@ function MetadataSection() {
                 </InputWrapper>
             </div>
         </div>
-    )
+    );
 }
 
 export default MetadataSection;

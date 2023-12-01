@@ -53,6 +53,6 @@ function DefaultRuleThermostat({ id }) {
 
 DefaultRuleThermostat.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default DefaultRuleThermostat;

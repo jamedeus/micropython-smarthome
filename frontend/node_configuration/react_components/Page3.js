@@ -18,8 +18,8 @@ const Page3 = () => {
     const deleteRule = (instance, timestamp) => {
         let rules = { ...config[instance]["schedule"] };
         delete rules[timestamp];
-        handleInputChange(instance, "schedule", rules)
-    }
+        handleInputChange(instance, "schedule", rules);
+    };
 
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button
@@ -40,7 +40,7 @@ const Page3 = () => {
                             );
                         // All other instances: Add RuleField, set rule in PopupDiv
                         } else {
-                            return <RuleField instance={instance} timestamp={rule} />
+                            return <RuleField instance={instance} timestamp={rule} />;
                         }
                     })()}
                 </td>
@@ -121,7 +121,7 @@ const Page3 = () => {
             })()}
         </>
     );
-}
+};
 
 
 export default Page3;

@@ -95,6 +95,6 @@ RuleSlider.propTypes = {
     onButtonClick: PropTypes.func,
     onSliderMove: PropTypes.func,
     style: PropTypes.object
-}
+};
 
 export default RuleSlider;

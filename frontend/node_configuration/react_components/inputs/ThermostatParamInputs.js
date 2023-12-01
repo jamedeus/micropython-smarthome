@@ -26,7 +26,7 @@ function ThermostatParamInputs({ id }) {
             }
             handleInputChange(id, "tolerance", input);
         }
-    }
+    };
 
     const changeUnits = (newUnits) => {
         // Save old units for conversions
@@ -48,11 +48,11 @@ function ThermostatParamInputs({ id }) {
 
         // Update units and rules in state object
         handleInstanceUpdate(id, update);
-    }
+    };
 
     const changeMode = (newMode) => {
         handleInputChange(id, "mode", newMode);
-    }
+    };
 
     return (
         <>
@@ -86,6 +86,6 @@ function ThermostatParamInputs({ id }) {
 
 ThermostatParamInputs.propTypes = {
     id: PropTypes.string
-}
+};
 
 export default ThermostatParamInputs;

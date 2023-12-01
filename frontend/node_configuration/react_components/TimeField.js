@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { ConfigContext } from './ConfigContext';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
-import Dropdown from './inputs/Dropdown.js'
+import Dropdown from './inputs/Dropdown.js';
 import { schedule_keywords } from './schedule_keywords';
 
 // Used to identify HH:MM timestamp
@@ -71,7 +71,7 @@ export const TimeField = ({ instance, timestamp }) => {
         // Add new rule, update state object, close modal
         rules[popupContent.timestamp] = rule_value;
         handleInputChange(popupContent.instance, "schedule", rules);
-        setPopupContent({ ...popupContent, ["visible"]: false})
+        setPopupContent({ ...popupContent, ["visible"]: false});
     };
 
     // Takes popupContent param name and value, updates and re-renders
@@ -129,4 +129,4 @@ export const TimeField = ({ instance, timestamp }) => {
 TimeField.propTypes = {
     instance: PropTypes.string,
     timestamp: PropTypes.string
-}
+};

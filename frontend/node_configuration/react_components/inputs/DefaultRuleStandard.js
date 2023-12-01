@@ -27,6 +27,6 @@ function DefaultRuleStandard({ id }) {
 
 DefaultRuleStandard.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default DefaultRuleStandard;

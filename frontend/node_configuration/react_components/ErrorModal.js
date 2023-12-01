@@ -16,7 +16,7 @@ export const ErrorModalContextProvider = ({ children }) => {
 
     const handleClose = () => {
         setErrorModalContent({ ...errorModalContent, ["visible"]: false });
-    }
+    };
 
     return (
         <ErrorModalContext.Provider value={{ errorModalContent, setErrorModalContent, handleClose }}>
@@ -27,7 +27,7 @@ export const ErrorModalContextProvider = ({ children }) => {
 
 ErrorModalContextProvider.propTypes = {
     children: PropTypes.node,
-}
+};
 
 export const ErrorModal = () => {
     // Get state object that determines modal contents

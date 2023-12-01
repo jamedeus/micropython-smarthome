@@ -27,6 +27,6 @@ function DefaultRuleOnOff({ id }) {
 
 DefaultRuleOnOff.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default DefaultRuleOnOff;

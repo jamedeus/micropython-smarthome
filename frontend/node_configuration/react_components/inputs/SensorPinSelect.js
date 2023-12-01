@@ -50,6 +50,6 @@ function SensorPinSelect({ id }) {
 
 SensorPinSelect.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default SensorPinSelect;

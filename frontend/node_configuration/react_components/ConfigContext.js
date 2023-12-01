@@ -64,7 +64,6 @@ export const ConfigProvider = ({ children }) => {
         setConfig({ ...config, [`${category}${index}`]: {} });
     };
 
-
     // Handler for delete button on device and sensor cards
     const startDeletingInstance = async (id) => {
         // Get category (device or sensor) and index of deleted card
@@ -77,7 +76,7 @@ export const ConfigProvider = ({ children }) => {
         const button = document.getElementById(`add_${category}`);
 
         // Get animation height (card height + 1.5rem spacing), set CSS var used in animation
-        const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize)
+        const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
         const animation_height = card.clientHeight / remPx + 1.5;
         document.documentElement.style.setProperty('--animation-height', `${animation_height}rem`);
 
@@ -102,7 +101,7 @@ export const ConfigProvider = ({ children }) => {
     // Handler for all inputs inside device and sensor cards
     // Takes device/sensor ID, param, and value; updates state object
     const handleInputChange = (id, param, value) => {
-        const update = { ...config[id], [param]: value }
+        const update = { ...config[id], [param]: value };
         setConfig({ ...config, [id]: update});
     };
 
@@ -185,7 +184,7 @@ export const ConfigProvider = ({ children }) => {
 
 ConfigProvider.propTypes = {
     children: PropTypes.node,
-}
+};
 
 // Called by deleteInstance, decrements IDs of all subsequent instances to prevent gaps
 // Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc

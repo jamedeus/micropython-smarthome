@@ -31,7 +31,7 @@ function InstanceCard({ id }) {
     // Get metadata object for selected type
     const instanceMetadata = get_instance_metadata(category, instance._type);
 
-    console.log(`Rendering ${id}`)
+    console.log(`Rendering ${id}`);
 
     const renderInputs = () => {
         let inputs = [];
@@ -96,12 +96,12 @@ function InstanceCard({ id }) {
     const renderRuleInput = () => {
         // New card: skip
         if (instance._type === undefined) {
-            return null
+            return null;
         }
 
         // If instance has units key return thermostat input
         if (instance.units !== undefined) {
-            return <DefaultRuleThermostat id={id} />
+            return <DefaultRuleThermostat id={id} />;
         }
 
         switch (instanceMetadata.rule_prompt) {
@@ -118,7 +118,7 @@ function InstanceCard({ id }) {
             default:
                 return null;
         }
-    }
+    };
 
     return (
         <div id={`${id}-card`} className="mb-4 instance-card">
@@ -147,6 +147,6 @@ function InstanceCard({ id }) {
 
 InstanceCard.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default InstanceCard;

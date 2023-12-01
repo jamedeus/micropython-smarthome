@@ -18,6 +18,15 @@
     ],
     "rules": {
         "indent": ["warn", 4, { "SwitchCase": 1 }],
-        "no-unused-vars": ["error", { "varsIgnorePattern": "^_" }]
+        "no-unused-vars": ["error", { "varsIgnorePattern": "^_" }],
+        "padding-line-between-statements": [
+            "warn",
+            { "blankLine": "always", "prev": "import", "next": "*" },
+            { "blankLine": "never", "prev": "import", "next": "import" },
+            { "blankLine": "always", "prev": "*", "next": "function" },
+            { "blankLine": "always", "prev": "*", "next": "export" }
+        ],
+        "no-multiple-empty-lines": ["warn", { "max": 2 }],
+        "semi": ["warn", "always"]
     }
 }

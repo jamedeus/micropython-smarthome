@@ -77,7 +77,6 @@ function DefaultRuleIntRange({ id }) {
         handleInstanceUpdate(id, update);
     };
 
-
     // Set default state for advanced settings collapse
     const [open, setOpen] = useState(false);
 
@@ -128,6 +127,6 @@ function DefaultRuleIntRange({ id }) {
 
 DefaultRuleIntRange.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default DefaultRuleIntRange;

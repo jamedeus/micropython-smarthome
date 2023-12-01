@@ -32,7 +32,7 @@ function IrBlasterSection() {
             delete update.ir_blaster;
             updateConfig(update);
         }
-    }
+    };
 
     // Set target array for template below
     let target = [];
@@ -84,7 +84,7 @@ function IrBlasterSection() {
                 </div>
             </Collapse>
         </div>
-    )
+    );
 }
 
 export default IrBlasterSection;

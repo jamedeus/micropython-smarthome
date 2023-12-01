@@ -15,6 +15,6 @@ function InputWrapper({ children, label }) {
 InputWrapper.propTypes = {
     children: PropTypes.node,
     label: PropTypes.string
-}
+};
 
 export default InputWrapper;

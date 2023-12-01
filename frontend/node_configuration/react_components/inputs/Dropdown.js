@@ -50,6 +50,6 @@ Dropdown.propTypes = {
     onChange: PropTypes.func,
     label: PropTypes.string,
     isInvalid: PropTypes.bool
-}
+};
 
 export default Dropdown;

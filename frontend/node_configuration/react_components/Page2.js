@@ -29,7 +29,7 @@ const Page2 = () => {
                                     checked={config[sensor]["targets"].includes(device)}
                                     onChange={(e) => handleSensorTargetSelect(sensor, device, e.target.checked)}
                                 />
-                            )
+                            );
                         }
                         return inputs;
                     })()}
@@ -51,7 +51,7 @@ const Page2 = () => {
             })()}
         </>
     );
-}
+};
 
 
 export default Page2;
