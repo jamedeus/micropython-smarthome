@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import { ConfigContext, filterObject } from './ConfigContext';
+import { ConfigContext, filterObject } from 'root/ConfigContext';
 
 
 const Page2 = () => {

@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
-import { ConfigContext } from './ConfigContext';
+import { ConfigContext } from 'root/ConfigContext';
 import InstanceCard from './InstanceCard';
 import MetadataSection from './MetadataSection';
 import IrBlasterSection from './IrBlasterSection';

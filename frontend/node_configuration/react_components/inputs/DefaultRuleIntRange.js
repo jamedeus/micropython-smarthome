@@ -2,9 +2,9 @@ import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
-import { ConfigContext } from './../ConfigContext';
+import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
-import { get_instance_metadata } from './../metadata';
+import { get_instance_metadata } from 'root/metadata';
 import RuleSlider from './RuleSlider';
 
 // Takes 2 numbers (int, float, or string) and returns average

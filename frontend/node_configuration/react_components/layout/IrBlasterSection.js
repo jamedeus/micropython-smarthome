@@ -1,10 +1,10 @@
 import React, { useState, useContext } from 'react';
-import { ConfigContext } from './ConfigContext';
+import { ConfigContext } from 'root/ConfigContext';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
-import DevicePinSelect from './inputs/DevicePinSelect';
+import DevicePinSelect from 'inputs/DevicePinSelect';
 
 function IrBlasterSection() {
     // Get curent state + callbacks from context

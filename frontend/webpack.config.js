@@ -43,6 +43,14 @@ const config = {
             // Learn more about loaders from https://webpack.js.org/loaders/
         ],
     },
+    resolve: {
+        alias: {
+            root: path.resolve(__dirname, 'node_configuration/react_components/'),
+            inputs: path.resolve(__dirname, 'node_configuration/react_components/inputs/'),
+            layout: path.resolve(__dirname, 'node_configuration/react_components/layout/'),
+            modals: path.resolve(__dirname, 'node_configuration/react_components/modals/')
+        }
+    }
 };
 
 module.exports = () => {

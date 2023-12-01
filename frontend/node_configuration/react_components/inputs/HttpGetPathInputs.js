@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
-import { ConfigContext } from './../ConfigContext';
+import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
 
 function HttpGetPathInputs({ id }) {

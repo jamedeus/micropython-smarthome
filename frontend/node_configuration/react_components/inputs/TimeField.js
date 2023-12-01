@@ -1,10 +1,10 @@
 import React, { useState, useRef, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { ConfigContext } from './ConfigContext';
+import { ConfigContext } from 'root/ConfigContext';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
-import Dropdown from './inputs/Dropdown.js';
-import { schedule_keywords } from './schedule_keywords';
+import Dropdown from 'inputs/Dropdown.js';
+import { schedule_keywords } from 'root/schedule_keywords';
 
 // Used to identify HH:MM timestamp
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;

@@ -2,10 +2,10 @@ import React, { useContext } from 'react';
 import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
-import { ConfigContext } from './ConfigContext';
-import { TimeField } from './TimeField';
-import { RuleField } from './RuleField';
-import { ApiTargetModalContext } from './ApiTargetRuleModal';
+import { ConfigContext } from 'root/ConfigContext';
+import { TimeField } from 'inputs/TimeField';
+import { RuleField } from 'inputs/RuleField';
+import { ApiTargetModalContext } from 'modals/ApiTargetRuleModal';
 
 
 const Page3 = () => {

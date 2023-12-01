@@ -2,22 +2,22 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import { ConfigContext } from './ConfigContext';
-import NicknameInput from './inputs/NicknameInput';
-import IPInput from './inputs/IPInput';
-import URIInput from './inputs/URIInput';
-import HttpGetPathInputs from './inputs/HttpGetPathInputs';
-import ThermostatParamInputs from './inputs/ThermostatParamInputs';
-import TargetNodeDropdown from './inputs/TargetNodeDropdown';
-import SensorPinSelect from './inputs/SensorPinSelect';
-import DevicePinSelect from './inputs/DevicePinSelect';
-import DefaultRuleStandard from './inputs/DefaultRuleStandard';
-import DefaultRuleFloatRange from './inputs/DefaultRuleFloatRange';
-import DefaultRuleThermostat from './inputs/DefaultRuleThermostat';
-import DefaultRuleIntRange from './inputs/DefaultRuleIntRange';
-import DefaultRuleOnOff from './inputs/DefaultRuleOnOff';
-import DefaultRuleApiTarget from './inputs/DefaultRuleApiTarget';
-import { get_instance_metadata, get_type_dropdown_options } from './metadata';
+import { ConfigContext } from 'root/ConfigContext';
+import NicknameInput from 'inputs/NicknameInput';
+import IPInput from 'inputs/IPInput';
+import URIInput from 'inputs/URIInput';
+import HttpGetPathInputs from 'inputs/HttpGetPathInputs';
+import ThermostatParamInputs from 'inputs/ThermostatParamInputs';
+import TargetNodeDropdown from 'inputs/TargetNodeDropdown';
+import SensorPinSelect from 'inputs/SensorPinSelect';
+import DevicePinSelect from 'inputs/DevicePinSelect';
+import DefaultRuleStandard from 'inputs/DefaultRuleStandard';
+import DefaultRuleFloatRange from 'inputs/DefaultRuleFloatRange';
+import DefaultRuleThermostat from 'inputs/DefaultRuleThermostat';
+import DefaultRuleIntRange from 'inputs/DefaultRuleIntRange';
+import DefaultRuleOnOff from 'inputs/DefaultRuleOnOff';
+import DefaultRuleApiTarget from 'inputs/DefaultRuleApiTarget';
+import { get_instance_metadata, get_type_dropdown_options } from 'root/metadata';
 
 
 function InstanceCard({ id }) {

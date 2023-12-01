@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import { ConfigContext } from './../ConfigContext';
-import { get_instance_metadata } from './../metadata';
+import { ConfigContext } from 'root/ConfigContext';
+import { get_instance_metadata } from 'root/metadata';
 import RuleSlider from './RuleSlider';
 
 

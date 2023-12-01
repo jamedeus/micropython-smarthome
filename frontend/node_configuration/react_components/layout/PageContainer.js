@@ -1,13 +1,13 @@
 import React, { useState, useContext } from 'react';
-import { ConfigContext } from './ConfigContext';
+import { ConfigContext } from 'root/ConfigContext';
 import Button from 'react-bootstrap/Button';
-import { send_post_request, edit_existing, target_node_ip } from './django_util';
+import { send_post_request, edit_existing, target_node_ip } from 'root/django_util';
 import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
-import { ApiTargetModalContextProvider, ApiTargetRuleModal } from './ApiTargetRuleModal';
-import { ErrorModalContext, ErrorModal } from './ErrorModal';
-import { UploadModalContext, UploadModal } from './UploadModal';
+import { ApiTargetModalContextProvider, ApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
+import { ErrorModalContext, ErrorModal } from 'modals/ErrorModal';
+import { UploadModalContext, UploadModal } from 'modals/UploadModal';
 
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));

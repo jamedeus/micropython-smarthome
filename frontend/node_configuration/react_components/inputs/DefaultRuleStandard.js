@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import { ConfigContext } from './../ConfigContext';
+import { ConfigContext } from 'root/ConfigContext';
 import Dropdown from './Dropdown';
 
 function DefaultRuleStandard({ id }) {

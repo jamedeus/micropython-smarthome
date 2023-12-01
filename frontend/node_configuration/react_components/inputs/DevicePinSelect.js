@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import { ConfigContext } from './../ConfigContext';
+import { ConfigContext } from 'root/ConfigContext';
 import PinSelectDropdown from './PinSelectDropdown';
 
 function DevicePinSelect({ id }) {
@@ -43,6 +43,6 @@ function DevicePinSelect({ id }) {
 
 DevicePinSelect.propTypes = {
     id: PropTypes.string,
-}
+};
 
 export default DevicePinSelect;

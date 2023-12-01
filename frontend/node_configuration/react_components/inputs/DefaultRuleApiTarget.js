@@ -2,8 +2,8 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { ConfigContext } from './../ConfigContext';
-import { ApiTargetModalContext } from './../ApiTargetRuleModal';
+import { ConfigContext } from 'root/ConfigContext';
+import { ApiTargetModalContext } from 'modals/ApiTargetRuleModal';
 
 function DefaultRuleApiTarget({ id }) {
     // Get curent state + callback functions from context

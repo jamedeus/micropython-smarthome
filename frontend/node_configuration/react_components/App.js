@@ -1,7 +1,7 @@
 import React from 'react';
-import PageContainer from './PageContainer';
-import { ErrorModalContextProvider } from './ErrorModal';
-import { UploadModalContextProvider } from './UploadModal';
+import PageContainer from 'layout/PageContainer';
+import { ErrorModalContextProvider } from 'modals/ErrorModal';
+import { UploadModalContextProvider } from 'modals/UploadModal';
 
 
 const App = () => {
