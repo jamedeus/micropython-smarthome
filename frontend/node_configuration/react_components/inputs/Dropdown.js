@@ -10,13 +10,17 @@ function toTitle(str) {
     });
 }
 
-function Dropdown({ value, options, onChange, label="" }) {
+function Dropdown({ value, options, onChange, label="", isInvalid=false }) {
     switch(true) {
         // Add InputWrapper if label given
         case label.length > 0:
             return (
                 <InputWrapper label={toTitle(label)}>
-                    <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
+                    <Form.Select
+                        value={value}
+                        onChange={(e) => onChange(e.target.value)}
+                        isInvalid={isInvalid}
+                    >
                         <option value="">Select {label.toLowerCase()}</option>
                         {options.map(option => (
                             <option value={option.toLowerCase()}>{toTitle(option)}</option>
@@ -27,7 +31,11 @@ function Dropdown({ value, options, onChange, label="" }) {
         // No wrapper if label blank
         case label.length === 0:
             return (
-                <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
+                <Form.Select
+                    value={value}
+                    onChange={(e) => onChange(e.target.value)}
+                    isInvalid={isInvalid}
+                >
                     {options.map(option => (
                         <option value={option.toLowerCase()}>{toTitle(option)}</option>
                     ))}
@@ -40,7 +48,8 @@ Dropdown.propTypes = {
     value: PropTypes.string,
     options: PropTypes.array,
     onChange: PropTypes.func,
-    label: PropTypes.string
+    label: PropTypes.string,
+    isInvalid: PropTypes.bool
 }
 
 export default Dropdown;

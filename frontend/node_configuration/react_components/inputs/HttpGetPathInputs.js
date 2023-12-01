@@ -6,7 +6,7 @@ import InputWrapper from './InputWrapper';
 
 function HttpGetPathInputs({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
@@ -19,6 +19,7 @@ function HttpGetPathInputs({ id }) {
                     placeholder="Appended to URI for on action"
                     value={instance.on_path}
                     onChange={(e) => handleInputChange(id, "on_path", e.target.value)}
+                    isInvalid={(highlightInvalid && !instance.on_path)}
                 />
             </InputWrapper>
 
@@ -28,6 +29,7 @@ function HttpGetPathInputs({ id }) {
                     placeholder="Appended to URI for off action"
                     value={instance.off_path}
                     onChange={(e) => handleInputChange(id, "off_path", e.target.value)}
+                    isInvalid={(highlightInvalid && !instance.off_path)}
                 />
             </InputWrapper>
         </>

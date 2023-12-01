@@ -6,7 +6,7 @@ import InputWrapper from './InputWrapper';
 
 function NicknameInput({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
@@ -23,13 +23,20 @@ function NicknameInput({ id }) {
         }
     }
 
+    // Add invalid highlight if nickname is duplicate OR nickname is still
+    // blank after page validation runs
+    let invalid = false;
+    if (duplicate || highlightInvalid && !instance.nickname) {
+        invalid = true;
+    }
+
     return (
         <InputWrapper label="Nickname">
             <Form.Control
                 type="text"
                 value={instance.nickname}
                 onChange={(e) => handleInputChange(id, "nickname", e.target.value)}
-                isInvalid={duplicate}
+                isInvalid={invalid}
             />
         </InputWrapper>
     );

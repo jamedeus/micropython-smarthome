@@ -7,7 +7,7 @@ import { send_post_request, edit_existing, orig_name } from './django_util';
 
 function MetadataSection() {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Add invalid highlight when duplicate name entered
     async function prevent_duplicate_friendly_name(event) {
@@ -41,6 +41,7 @@ function MetadataSection() {
                         type="text"
                         value={config.metadata.id}
                         onChange={(e) => prevent_duplicate_friendly_name(e)}
+                        isInvalid={(highlightInvalid && !config.metadata.id)}
                     />
                     <Form.Control.Feedback type="invalid">
                         Name must be unique
@@ -51,6 +52,7 @@ function MetadataSection() {
                         type="text"
                         value={config.metadata.location}
                         onChange={(e) => handleInputChange("metadata", "location", e.target.value)}
+                        isInvalid={(highlightInvalid && !config.metadata.location)}
                     />
                 </InputWrapper>
                 <InputWrapper label="Floor">
@@ -58,6 +60,7 @@ function MetadataSection() {
                         type="text"
                         value={config.metadata.floor}
                         onChange={(e) => handleInputChange("metadata", "floor", e.target.value)}
+                        isInvalid={(highlightInvalid && !config.metadata.floor)}
                     />
                 </InputWrapper>
             </div>
@@ -69,6 +72,7 @@ function MetadataSection() {
                         id="ssid"
                         value={config.wifi.ssid}
                         onChange={(e) => handleInputChange("wifi", "ssid", e.target.value)}
+                        isInvalid={(highlightInvalid && !config.wifi.ssid)}
                     />
                 </InputWrapper>
                 <InputWrapper label="Password">
@@ -77,6 +81,7 @@ function MetadataSection() {
                         id="password"
                         value={config.wifi.password}
                         onChange={(e) => handleInputChange("wifi", "password", e.target.value)}
+                        isInvalid={(highlightInvalid && !config.wifi.password)}
                     />
                 </InputWrapper>
             </div>

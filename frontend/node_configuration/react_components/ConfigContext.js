@@ -47,6 +47,9 @@ export const ConfigProvider = ({ children }) => {
         setConfig(newConfig);
     };
 
+    // Create state object to control invalid field highlight
+    const [highlightInvalid, setHighlightInvalid] = useState(false);
+
     const logState = () => {
         console.log(config);
     };
@@ -162,6 +165,8 @@ export const ConfigProvider = ({ children }) => {
             {{
                 config,
                 updateConfig,
+                highlightInvalid,
+                setHighlightInvalid,
                 logState,
                 addInstance,
                 startDeletingInstance,

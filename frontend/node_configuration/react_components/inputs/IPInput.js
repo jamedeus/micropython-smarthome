@@ -6,7 +6,7 @@ import InputWrapper from './InputWrapper';
 
 function IPInput({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
@@ -65,6 +65,7 @@ function IPInput({ id }) {
                 value={instance.ip}
                 pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
                 onChange={(e) => formatIp(e.target.value)}
+                isInvalid={(highlightInvalid && !instance.ip)}
             />
         </InputWrapper>
     );

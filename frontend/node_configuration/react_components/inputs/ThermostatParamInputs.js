@@ -8,7 +8,7 @@ import Dropdown from './Dropdown';
 
 function ThermostatParamInputs({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange, handleInstanceUpdate } = useContext(ConfigContext);
+    const { config, highlightInvalid, handleInputChange, handleInstanceUpdate } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
@@ -61,6 +61,7 @@ function ThermostatParamInputs({ id }) {
                 options={["Cool", "Heat"]}
                 onChange={changeMode}
                 label="Mode"
+                isInvalid={highlightInvalid && !instance.mode}
             />
 
             <Dropdown
@@ -68,6 +69,7 @@ function ThermostatParamInputs({ id }) {
                 options={["Celsius", "Fahrenheit", "Kelvin"]}
                 onChange={changeUnits}
                 label="Units"
+                isInvalid={highlightInvalid && !instance.units}
             />
 
             <InputWrapper label="Tolerance">
@@ -75,6 +77,7 @@ function ThermostatParamInputs({ id }) {
                     type="text"
                     value={instance.tolerance}
                     onChange={(e) => setTolerance(e.target.value)}
+                    isInvalid={highlightInvalid && !instance.tolerance}
                 />
             </InputWrapper>
         </>

@@ -5,7 +5,7 @@ import PinSelectDropdown from './PinSelectDropdown';
 
 function DevicePinSelect({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Skip if config section is empty
     if (!config[id]) {
@@ -36,6 +36,7 @@ function DevicePinSelect({ id }) {
             selected={config[id]["pin"]}
             onChange={(value) => handleInputChange(id, "pin", value)}
             options={devicePins}
+            isInvalid={(highlightInvalid && !config[id]["pin"])}
         />
     );
 }

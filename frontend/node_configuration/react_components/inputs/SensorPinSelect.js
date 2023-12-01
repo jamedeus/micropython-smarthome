@@ -5,7 +5,7 @@ import PinSelectDropdown from './PinSelectDropdown';
 
 function SensorPinSelect({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Skip if config section is empty
     if (!config[id]) {
@@ -43,6 +43,7 @@ function SensorPinSelect({ id }) {
             selected={config[id]["pin"]}
             onChange={(value) => handleInputChange(id, "pin", value)}
             options={sensorPins}
+            isInvalid={(highlightInvalid && !config[id]["pin"])}
         />
     );
 }

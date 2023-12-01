@@ -8,7 +8,7 @@ function URIInput({ id }) {
     const input = useRef(null);
 
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
@@ -39,6 +39,7 @@ function URIInput({ id }) {
                 value={instance.uri}
                 pattern="(?:(?:http|https):\/\/)?(?:\S+(?::\S*)?@)?(?:(?:[0-9]{1,3}\.){3}[0-9]{1,3})(?::\d{1,5})?|(?:(?:http|https):\/\/)?[a-zA-Z0-9.]+(?:-[a-zA-Z0-9]+)*(?:\.[a-zA-Z]{2,6})+(?:\/\S*)?"
                 onChange={(e) => validate(e)}
+                isInvalid={(highlightInvalid && !instance.uri)}
             />
         </InputWrapper>
     );

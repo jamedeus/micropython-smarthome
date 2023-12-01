@@ -58,12 +58,29 @@ function areObjectsEqual(obj1, obj2) {
     return true;
 }
 
+// Takes config (state) object, returns true if any keys are empty strings
+// Used to detect empty fields before changing page
+function hasEmptyFields(config) {
+    for (let key in config) {
+        if (typeof(config[key]) === 'object') {
+            if (hasEmptyFields(config[key])) {
+                console.log(`Empty field in ${key}`);
+                return true
+            }
+        } else if (config[key] === '') {
+            console.log(`Empty field: ${key}`);
+            return true;
+        }
+    }
+    return false;
+}
+
 const PageContainer = () => {
     // Set default page, get callback to change visible page
     const [page, setPage] = useState(1);
 
     // Get full config (state object)
-    const { config } = useContext(ConfigContext);
+    const { config, highlightInvalid, setHighlightInvalid } = useContext(ConfigContext);
 
     // Get callbacks for upload modal
     const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
@@ -94,7 +111,13 @@ const PageContainer = () => {
     }
 
     function nextPage() {
-        // TODO don't proceed if blank fields exist on page 1
+        // Don't go to page2 if empty inputs exist on page1
+        if (page === 1 && hasEmptyFields(config)) {
+            setHighlightInvalid(true);
+            return;
+        }
+        // Clear highlight, go to next page
+        setHighlightInvalid(false);
         setPage(page + 1);
     }
 

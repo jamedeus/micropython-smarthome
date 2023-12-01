@@ -5,7 +5,7 @@ import Dropdown from './Dropdown';
 
 function DefaultRuleStandard({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
@@ -20,6 +20,7 @@ function DefaultRuleStandard({ id }) {
             options={["Enabled", "Disabled"]}
             onChange={onChange}
             label="Default Rule"
+            isInvalid={(highlightInvalid && !instance.default_rule)}
         />
     );
 }
