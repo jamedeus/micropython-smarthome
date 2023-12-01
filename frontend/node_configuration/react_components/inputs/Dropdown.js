@@ -17,7 +17,7 @@ function Dropdown({ value, options, onChange, label="" }) {
             return (
                 <InputWrapper label={toTitle(label)}>
                     <Form.Select value={value} onChange={(e) => onChange(e.target.value)}>
-                        <option disabled>Select {label.toLowerCase()}</option>
+                        <option value="">Select {label.toLowerCase()}</option>
                         {options.map(option => (
                             <option value={option.toLowerCase()}>{toTitle(option)}</option>
                         ))}

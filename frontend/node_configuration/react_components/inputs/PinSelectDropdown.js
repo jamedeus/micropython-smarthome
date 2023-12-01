@@ -17,7 +17,7 @@ function PinSelectDropdown({id, config, selected, onChange, options}) {
     return (
         <InputWrapper label="Pin">
             <Form.Select value={selected} onChange={(e) => onChange(e.target.value)}>
-                <option>Select pin</option>
+                <option value="">Select pin</option>
                 {options.map(option => (
                     <option key={option} value={option} disabled={usedPins.includes(option)}>
                         {option}
