@@ -7,17 +7,25 @@ import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
+import { UploadModalContext } from 'modals/UploadModal';
+
+const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 
-const NewConfigTable = () => {
-    // Get django context
-    const { context } = useContext(OverviewContext);
-
+const NewConfigRow = ({ config }) => {
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
-    // Set default collapse state
-    const [open, setOpen] = useState(true);
+    // Get callbacks for upload modal
+    const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
+
+    // Create state objects for IP field, submit button
+    const [ipAddress, setIpAddress] = useState('');
+    const [uploadEnabled, setUploadEnabled] = useState(false);
 
     // Takes config filename, opens modal to confirm deletion
     function show_delete_modal(filename) {
@@ -52,32 +60,160 @@ const NewConfigTable = () => {
         }
     }
 
-    function get_table_row(config) {
-        return (
-            <tr id={config}>
-                <td className="align-middle">
-                    <span className="form-control text-center">{config}</span>
-                </td>
-                <td className="align-middle">
-                    <Form.Control
-                        type="text"
-                        id={`${config}-ip`}
-                        className="text-center ip-input"
-                        placeholder="xxx.xxx.x.xxx"
-                        pattern="^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
-                    />
-                </td>
-                <td className="min align-middle">
-                    <Button variant="primary" size="sm">Upload</Button>
-                </td>
-                <td className="min align-middle">
-                    <Button variant="danger" size="sm" onClick={() => show_delete_modal(config)}>
-                        <i className="bi-trash"></i>
-                    </Button>
-                </td>
-            </tr>
-        );
+    // Takes current value of IP field, enables upload button
+    // if passes regex, otherwise disables upload button
+    const isIpValid = (ip) => {
+        if (ipRegex.test(ip)) {
+            setUploadEnabled(true);
+        } else {
+            setUploadEnabled(false);
+        }
+    };
+
+    // Format IP address as user types in field
+    const formatIp = (value) => {
+        // Backspace and delete bypass formatting
+        if (value.length < ipAddress.length) {
+            isIpValid(value);
+            setIpAddress(value);
+            return;
+        }
+
+        // Remove everything except digits and period, 15 char max
+        const input = value.replace(/[^\d.]/g, '').substring(0, 15);
+        let output = '';
+        let block = '';
+
+        // Iterate input and format character by character
+        for (let i = 0; i < input.length; i++) {
+            const char = input[i];
+
+            // Delimiter character handling
+            if (char === '.') {
+                // Drop if first char is delim, otherwise add to end of current block + start new block
+                if (block.length > 0) {
+                    output += block + '.';
+                    block = '';
+                }
+
+                // Numeric character handling
+            } else {
+                // Add to current block
+                block += char;
+                // If current block reached limit, add to output + start new block
+                if (block.length === 3) {
+                    output += block + '.';
+                    block = '';
+                }
+            }
+        }
+
+        // Add final block
+        output += block;
+
+        // Prevent >4 blocks (char limit may not be reached if single-digit blocks present)
+        output = output.split('.').slice(0, 4).join('.');
+
+        // Enable upload button if IP is valid
+        isIpValid(output);
+
+        // Update state object
+        setIpAddress(output);
+    };
+
+    // Handler for upload button
+    async function upload() {
+        // Show loading screen
+        setShowUpload(true);
+
+        // Upload new config to IP in IP address field
+        var response = await send_post_request("upload/True", {config: config, ip: ipAddress});
+
+        // If upload successful, show success animation and reload page
+        if (response.ok) {
+            // Change title, show success animation
+            setUploadComplete(true);
+
+            // Wait for animation to complete before reloading
+            await sleep(1200);
+            window.location.replace("/config_overview");
+
+        // Unable to upload because of filesystem error on node
+        } else if (response.status == 409) {
+            const error = await response.text();
+            // Hide upload modal, show response in error modal
+            setShowUpload(false);
+            setErrorModalContent({
+                ...errorModalContent,
+                ["visible"]: true,
+                ["title"]: "Upload Failed",
+                ["error"]: "failed",
+                ["body"]: error
+            });
+
+        // Unable to upload because node is unreachable
+        } else if (response.status == 404) {
+            // Hide upload modal, show error modal
+            setShowUpload(false);
+            setErrorModalContent({
+                ...errorModalContent,
+                ["visible"]: true,
+                ["title"]: "Connection Error",
+                ["error"]: "unreachable",
+                ["body"]: ipAddress
+            });
+
+        // Other error, show in alert
+        } else {
+            alert(await response.text());
+
+            // Hide modal allowing user to access page again
+            setShowUpload(false);
+        }
     }
+
+    // Return single table row with listeners to upload, delete config
+    return (
+        <tr id={config}>
+            <td className="align-middle">
+                <span className="form-control text-center">{config}</span>
+            </td>
+            <td className="align-middle">
+                <Form.Control
+                    type="text"
+                    id={`${config}-ip`}
+                    value={ipAddress}
+                    onChange={(e) => formatIp(e.target.value)}
+                    className="text-center ip-input"
+                    placeholder="xxx.xxx.x.xxx"
+                />
+            </td>
+            <td className="min align-middle">
+                <Button
+                    variant="primary"
+                    size="sm"
+                    disabled={!uploadEnabled}
+                    onClick={upload}
+                >
+                    Upload
+                </Button>
+            </td>
+            <td className="min align-middle">
+                <Button variant="danger" size="sm" onClick={() => show_delete_modal(config)}>
+                    <i className="bi-trash"></i>
+                </Button>
+            </td>
+        </tr>
+    );
+};
+
+
+const NewConfigTable = () => {
+    // Get django context
+    const { context } = useContext(OverviewContext);
+
+    // Set default collapse state
+    const [open, setOpen] = useState(true);
 
     // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (
@@ -95,7 +231,9 @@ const NewConfigTable = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {context.not_uploaded.map(config => get_table_row(config))}
+                            {context.not_uploaded.map((config) => {
+                                return <NewConfigRow config={config} />;
+                            })}
                         </tbody>
                     </Table>
                 </div>
