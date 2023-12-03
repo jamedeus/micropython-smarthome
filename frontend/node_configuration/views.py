@@ -6,6 +6,7 @@ from django.http import JsonResponse
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.templatetags.static import static
 from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates
 from Webrepl import Webrepl
 from provision_tools import get_modules, provision
@@ -167,7 +168,8 @@ def config_overview(request):
     context = {
         "not_uploaded": [],
         "uploaded": [],
-        "schedule_keywords": get_schedule_keywords_dict()
+        "schedule_keywords": get_schedule_keywords_dict(),
+        "desktop_integration_link": static("node_configuration/micropython-smarthome-integration.zip")
     }
 
     # Reverse proxy connection: Add forwarded_for IP to context

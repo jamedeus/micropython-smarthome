@@ -24,6 +24,7 @@
     {{ uploaded|json_script:"uploaded" }}
     {{ schedule_keywords|json_script:"schedule_keywords" }}
     {{ client_ip|json_script:"client_ip" }}
+    {{ desktop_integration_link|json_script:"desktop_integration_link"}}
     <script src="{% static 'node_configuration/overview.js' %}"></script>
 </body>
 </html>

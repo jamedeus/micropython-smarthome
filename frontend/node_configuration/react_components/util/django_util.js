@@ -30,6 +30,13 @@ const api_target_options = load_django_context("api_target_options");
 // Contains object with keywords as key, timestamps as value (HH:MM)
 const schedule_keywords = load_django_context("schedule_keywords");
 
+// Parse client_ip string from element created by django template
+// Displayed in desktop integration instructions
+const client_ip = load_django_context("client_ip");
+
+// Parse link to desktop_integration_modal installer zip
+const desktop_integration_link = load_django_context("desktop_integration_link");
+
 // Takes name of cookie, returns cookie
 function getCookie(name) {
     var cookieValue = null;
@@ -69,5 +76,7 @@ export {
     orig_name,
     target_node_ip,
     api_target_options,
-    schedule_keywords
+    schedule_keywords,
+    client_ip,
+    desktop_integration_link
 };
