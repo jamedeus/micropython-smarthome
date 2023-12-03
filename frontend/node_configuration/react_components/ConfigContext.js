@@ -1,6 +1,7 @@
 import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { get_config_template } from 'util/metadata';
+import { sleep } from 'util/helper_functions';
 
 // Takes object and key prefix, returns all keys that begin with prefix
 function filterObject(obj, prefix) {
@@ -10,10 +11,6 @@ function filterObject(obj, prefix) {
         }
         return acc;
     }, {});
-}
-
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export const ConfigContext = createContext();

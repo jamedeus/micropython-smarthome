@@ -8,10 +8,7 @@ import Page3 from './Page3';
 import { ApiTargetModalContextProvider, ApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
 import { ErrorModalContext, ErrorModal } from 'modals/ErrorModal';
 import { UploadModalContext, UploadModal } from 'modals/UploadModal';
-
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { sleep } from 'util/helper_functions';
 
 // Redirect back to overview page
 function returnToOverview() {

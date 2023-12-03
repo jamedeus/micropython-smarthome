@@ -2,10 +2,7 @@ import React, { useContext } from 'react';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { UploadModalContext } from 'modals/UploadModal';
 import { ErrorModalContext } from 'modals/ErrorModal';
-
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-}
+import { sleep } from 'util/helper_functions';
 
 const Header = () => {
     // Get callbacks for upload modal and error modal
