@@ -1,20 +1,34 @@
-// Parse bool set by django template, determines whether config is re-uploaded on submit
-const edit_existing = JSON.parse(document.getElementById("edit_existing").textContent);
-let target_node_ip;
+// Takes name of context element created with json_script django tag
+// Parses JSON contents if it exists and returns, otherwise returns null
+function load_django_context(name) {
+    const element = document.getElementById(name);
+    if (element) {
+        return JSON.parse(element.textContent);
+    } else {
+        return null;
+    }
+}
 
-// Get original friendly name if editing (prevents rejecting existing name as duplicate)
-if (edit_existing) {
-    var orig_name = JSON.parse(document.getElementById("config").textContent).metadata.id.toLowerCase();
-    target_node_ip = JSON.parse(document.getElementById("target_node_ip").textContent);
+// Parse bool that determines whether editing config (re-upload on submit) or creating new
+const edit_existing = load_django_context("edit_existing");
+
+// Parse IP of target node if editing existing config
+const target_node_ip = load_django_context("target_node_ip");
+
+// Parse original friendly name of config being edited (prevent duplicate detection from rejecting)
+const config = load_django_context("config");
+let orig_name;
+if (orig_name) {
+    orig_name = config.metadata.id.toLowerCase();
 }
 
 // Parse ApiTarget options object set by django template
 // Contains valid API commands for each instance (device/sensor) of all existing nodes
-const api_target_options = JSON.parse(document.getElementById("api_target_options").textContent);
+const api_target_options = load_django_context("api_target_options");
 
 // Parse schedule keywords object from element created by django template
 // Contains object with keywords as key, timestamps as value (HH:MM)
-const schedule_keywords = JSON.parse(document.getElementById("schedule_keywords").textContent);
+const schedule_keywords = load_django_context("schedule_keywords");
 
 // Takes name of cookie, returns cookie
 function getCookie(name) {
