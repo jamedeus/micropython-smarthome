@@ -5,14 +5,52 @@ import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
+import { send_post_request } from 'util/django_util';
+import { ErrorModalContext } from 'modals/ErrorModal';
 
 
 const NewConfigTable = () => {
     // Get django context
     const { context } = useContext(OverviewContext);
 
+    // Get callbacks for error modal
+    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
+
     // Set default collapse state
     const [open, setOpen] = useState(true);
+
+    // Takes config filename, opens modal to confirm deletion
+    function show_delete_modal(filename) {
+        setErrorModalContent({
+            ...errorModalContent,
+            ["visible"]: true,
+            ["title"]: "Confirm Delete",
+            ["error"]: "confirm_delete",
+            ["handleConfirm"]: () => delete_config(filename)
+        });
+    }
+
+    // Handler for confirm delete button in modal
+    async function delete_config(filename) {
+        let result = await send_post_request("delete_config", filename);
+
+        // Refresh page if successfully deleted
+        if (result.ok) {
+            location.reload();
+
+            // Show error if failed
+        } else {
+            const error = await result.text();
+
+            setErrorModalContent({
+                ...errorModalContent,
+                ["visible"]: true,
+                ["title"]: "Error",
+                ["error"]: "failed",
+                ["body"]: error
+            });
+        }
+    }
 
     function get_table_row(config) {
         return (
@@ -33,7 +71,9 @@ const NewConfigTable = () => {
                     <Button variant="primary" size="sm">Upload</Button>
                 </td>
                 <td className="min align-middle">
-                    <Button variant="danger" size="sm"><i className="bi-trash"></i></Button>
+                    <Button variant="danger" size="sm" onClick={() => show_delete_modal(config)}>
+                        <i className="bi-trash"></i>
+                    </Button>
                 </td>
             </tr>
         );
