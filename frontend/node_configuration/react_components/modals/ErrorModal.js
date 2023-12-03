@@ -64,6 +64,8 @@ export const ErrorModal = () => {
                             );
                         case "unsaved_changes":
                             return <p>Your changes will be lost if you go back - are you sure?</p>;
+                        case "confirm_delete":
+                            return <p>This cannot be undone - are you sure?</p>;
                         case "failed_upload_all":
                             return (
                                 <ul>
@@ -90,6 +92,13 @@ export const ErrorModal = () => {
                                 <>
                                     <Button variant="danger" className="m-1" onClick={errorModalContent.handleConfirm}>Go Back</Button>
                                     <Button variant="secondary" className="m-1" onClick={handleClose}>Keep Editing</Button>
+                                </>
+                            );
+                        case "confirm_delete":
+                            return (
+                                <>
+                                    <Button variant="secondary" className="m-1" onClick={handleClose}>Cancel</Button>
+                                    <Button variant="danger" className="m-1" onClick={errorModalContent.handleConfirm}>Delete</Button>
                                 </>
                             );
                         default:

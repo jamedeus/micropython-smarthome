@@ -4,17 +4,55 @@ import Row from 'react-bootstrap/Row';
 import Table from 'react-bootstrap/Table';
 import Collapse from 'react-bootstrap/Collapse';
 import Dropdown from 'react-bootstrap/Dropdown';
+import { send_post_request } from 'util/django_util';
+import { ErrorModalContext } from 'modals/ErrorModal';
 
 
 const ExistingNodesTable = () => {
     // Get django context
     const { context } = useContext(OverviewContext);
 
+    // Get callbacks for error modal
+    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
+
     // Set default collapse state
     const [open, setOpen] = useState(true);
 
     function edit_config(friendly_name) {
         window.location.href = `/edit_config/${friendly_name}`;
+    }
+
+    // Takes node friendly name, opens modal to confirm deletion
+    function show_delete_modal(friendly_name) {
+        setErrorModalContent({
+            ...errorModalContent,
+            ["visible"]: true,
+            ["title"]: "Confirm Delete",
+            ["error"]: "confirm_delete",
+            ["handleConfirm"]: () => delete_node(friendly_name)
+        });
+    }
+
+    // Handler for confirm delete button in modal
+    async function delete_node(friendly_name) {
+        let result = await send_post_request("delete_node", friendly_name);
+
+        // Refresh page if successfully deleted
+        if (result.ok) {
+            location.reload();
+
+        // Show error if failed
+        } else {
+            const error = await result.text();
+
+            setErrorModalContent({
+                ...errorModalContent,
+                ["visible"]: true,
+                ["title"]: "Error",
+                ["error"]: "failed",
+                ["body"]: error
+            });
+        }
     }
 
     function get_table_row(node) {
@@ -34,8 +72,8 @@ const ExistingNodesTable = () => {
                         <Dropdown.Menu>
                             <Dropdown.Item onClick={() => edit_config(node.friendly_name)}>Edit</Dropdown.Item>
                             <Dropdown.Item>Re-upload</Dropdown.Item>
-                            <Dropdown.Item>Chnge IP</Dropdown.Item>
-                            <Dropdown.Item>Delete</Dropdown.Item>
+                            <Dropdown.Item>Change IP</Dropdown.Item>
+                            <Dropdown.Item onClick={() => show_delete_modal(node.friendly_name)}>Delete</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                 </td>
