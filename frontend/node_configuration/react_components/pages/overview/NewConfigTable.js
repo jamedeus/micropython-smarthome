@@ -7,9 +7,8 @@ import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
-import { UploadModalContext } from 'modals/UploadModal';
-import { sleep } from 'util/helper_functions';
 import { formatIp } from 'util/validation';
+import { useUploader } from 'modals/UploadModal';
 
 const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
@@ -18,12 +17,15 @@ const NewConfigRow = ({ config }) => {
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
-    // Get callbacks for upload modal
-    const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
-
     // Create state objects for IP field, submit button
     const [ipAddress, setIpAddress] = useState('');
     const [uploadEnabled, setUploadEnabled] = useState(false);
+
+    // Create handler for upload button
+    const { upload } = useUploader();
+    const uploadNewConfig = () => {
+        upload(config, ipAddress, false);
+    };
 
     // Takes config filename, opens modal to confirm deletion
     function show_delete_modal(filename) {
@@ -78,57 +80,6 @@ const NewConfigRow = ({ config }) => {
         setIpAddress(newIP);
     };
 
-    // Handler for upload button
-    async function upload() {
-        // Show loading screen
-        setShowUpload(true);
-
-        // Upload new config to IP in IP address field
-        var response = await send_post_request("upload/True", {config: config, ip: ipAddress});
-
-        // If upload successful, show success animation and reload page
-        if (response.ok) {
-            // Change title, show success animation
-            setUploadComplete(true);
-
-            // Wait for animation to complete before reloading
-            await sleep(1200);
-            window.location.replace("/config_overview");
-
-        // Unable to upload because of filesystem error on node
-        } else if (response.status == 409) {
-            const error = await response.text();
-            // Hide upload modal, show response in error modal
-            setShowUpload(false);
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Upload Failed",
-                ["error"]: "failed",
-                ["body"]: error
-            });
-
-        // Unable to upload because node is unreachable
-        } else if (response.status == 404) {
-            // Hide upload modal, show error modal
-            setShowUpload(false);
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Connection Error",
-                ["error"]: "unreachable",
-                ["body"]: ipAddress
-            });
-
-        // Other error, show in alert
-        } else {
-            alert(await response.text());
-
-            // Hide modal allowing user to access page again
-            setShowUpload(false);
-        }
-    }
-
     // Return single table row with listeners to upload, delete config
     return (
         <tr id={config}>
@@ -150,7 +101,7 @@ const NewConfigRow = ({ config }) => {
                     variant="primary"
                     size="sm"
                     disabled={!uploadEnabled}
-                    onClick={upload}
+                    onClick={uploadNewConfig}
                 >
                     Upload
                 </Button>

@@ -7,8 +7,7 @@ import Page2 from './Page2';
 import Page3 from './Page3';
 import { ApiTargetModalContextProvider, ApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
 import { ErrorModalContext, ErrorModal } from 'modals/ErrorModal';
-import { UploadModalContext, UploadModal } from 'modals/UploadModal';
-import { sleep } from 'util/helper_functions';
+import { UploadModal, useUploader } from 'modals/UploadModal';
 
 // Redirect back to overview page
 function returnToOverview() {
@@ -79,11 +78,11 @@ const PageContainer = () => {
     // Get full config (state object)
     const { config, setHighlightInvalid } = useContext(ConfigContext);
 
-    // Get callbacks for upload modal
-    const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
-
     // Get state and callback for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
+
+    // Get upload function
+    const { upload } = useUploader();
 
     function prevPage() {
         // Go back to overview if current page is page 1
@@ -137,7 +136,10 @@ const PageContainer = () => {
 
         // If successfully edited existing config, re-upload to target node
         } else if (edit_existing && response.ok) {
-            upload();
+            // Convert friendly name into config filename
+            const target_filename = `${config.metadata.id.toLowerCase().replace(' ', '-')}.json`;
+            // Show upload modal, upload
+            upload(target_filename, target_node_ip, true);
 
         // If config with same name already exists, show modal allowing user to overwrite
         } else if (!edit_existing && response.status == 409) {
@@ -164,59 +166,6 @@ const PageContainer = () => {
         setErrorModalContent({ ...errorModalContent, ["visible"]: false });
         await send_post_request("delete_config", `${target_filename}.json`);
         await submitButton();
-    }
-
-    async function upload() {
-        // Show loading screen
-        setShowUpload(true);
-
-        // Convert friendly name into config filename
-        const target_filename = `${config.metadata.id.toLowerCase().replace(' ', '-')}.json`;
-
-        // Re-upload existing config
-        var response = await send_post_request("upload/True", {config: target_filename, ip: target_node_ip});
-
-        // If upload successful, show success animation and reload page
-        if (response.ok) {
-            // Change title, show success animation
-            setUploadComplete(true);
-
-            // Wait for animation to complete before reloading
-            await sleep(1200);
-            window.location.replace("/config_overview");
-
-        // Unable to upload because of filesystem error on node
-        } else if (response.status == 409) {
-            const error = await response.text();
-            // Hide upload modal, show response in error modal
-            setShowUpload(false);
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Upload Failed",
-                ["error"]: "failed",
-                ["body"]: error
-            });
-
-        // Unable to upload because node is unreachable
-        } else if (response.status == 404) {
-            // Hide upload modal, show error modal
-            setShowUpload(false);
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Connection Error",
-                ["error"]: "unreachable",
-                ["body"]: target_node_ip
-            });
-
-        // Other error, show in alert
-        } else {
-            alert(await response.text());
-
-            // Hide modal allowing user to access page again
-            setShowUpload(false);
-        }
     }
 
     return (
