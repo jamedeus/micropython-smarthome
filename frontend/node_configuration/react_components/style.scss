@@ -2,6 +2,7 @@
 @import "../../node_modules/bootstrap/scss/_variables";
 @import "../../node_modules/bootstrap/scss/_variables-dark";
 @import "../../node_modules/bootstrap/scss/_mixins";
+@import "../../node_modules/bootstrap/scss/_close";
 
 
 /* Limit width for readability on large screen sizes */
@@ -287,6 +288,11 @@ td:last-child{
         /* Contrasting background for inputs inside modal */
         .modal-input, .modal-input:focus {
             background-color: #1b1e1f !important;
+        }
+
+        /* Use light modal close button in dark mode */
+        .btn-close {
+            @include btn-close-white();
         }
 
         /* Different color for dropdown placeholder text (selected text set to fff above) */
