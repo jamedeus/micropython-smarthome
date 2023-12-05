@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react';
+import PropTypes from 'prop-types';
 import { OverviewContext } from 'root/OverviewContext';
 import Row from 'react-bootstrap/Row';
 import Table from 'react-bootstrap/Table';
@@ -6,21 +7,62 @@ import Collapse from 'react-bootstrap/Collapse';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
+import { useUploader } from 'modals/UploadModal';
+
+
+const ExistingNodeRow = ({ friendly_name, ip, onDelete }) => {
+    // Create handler for re-upload menu option
+    const { upload } = useUploader();
+    const reupload = () => {
+        upload(friendly_name, ip, true);
+    };
+
+    // Create handler for edit menu option
+    const edit = () => {
+        window.location.href = `/edit_config/${friendly_name}`;
+    }
+
+    return (
+        <tr id={friendly_name}>
+            <td className="align-middle">
+                <span className="form-control keyword text-center">{friendly_name}</span>
+            </td>
+            <td className="align-middle">
+                <span className="form-control keyword text-center">{ip}</span>
+            </td>
+            <td className="min align-middle">
+                <Dropdown className="my-auto">
+                    <Dropdown.Toggle variant="primary" size="sm">
+                        <i className="bi-list"></i>
+                    </Dropdown.Toggle>
+                    <Dropdown.Menu>
+                        <Dropdown.Item onClick={edit}>Edit</Dropdown.Item>
+                        <Dropdown.Item onClick={reupload}>Re-upload</Dropdown.Item>
+                        <Dropdown.Item>Change IP</Dropdown.Item>
+                        <Dropdown.Item onClick={() => onDelete(friendly_name)}>Delete</Dropdown.Item>
+                    </Dropdown.Menu>
+                </Dropdown>
+            </td>
+        </tr>
+    );
+}
+
+ExistingNodeRow.propTypes = {
+    friendly_name: PropTypes.string,
+    ip: PropTypes.string,
+    onDelete: PropTypes.func
+};
 
 
 const ExistingNodesTable = () => {
-    // Get django context
+    // Set default collapse state
+    const [open, setOpen] = useState(true);
+
+    // Get django context (contains existing nodes)
     const { context } = useContext(OverviewContext);
 
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
-
-    // Set default collapse state
-    const [open, setOpen] = useState(true);
-
-    function edit_config(friendly_name) {
-        window.location.href = `/edit_config/${friendly_name}`;
-    }
 
     // Takes node friendly name, opens modal to confirm deletion
     function show_delete_modal(friendly_name) {
@@ -55,33 +97,7 @@ const ExistingNodesTable = () => {
         }
     }
 
-    function get_table_row(node) {
-        return (
-            <tr id={node.friendly_name}>
-                <td className="align-middle">
-                    <span className="form-control keyword text-center">{node.friendly_name}</span>
-                </td>
-                <td className="align-middle">
-                    <span className="form-control keyword text-center">{node.ip}</span>
-                </td>
-                <td className="min align-middle">
-                    <Dropdown className="my-auto">
-                        <Dropdown.Toggle variant="primary" size="sm">
-                            <i className="bi-list"></i>
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            <Dropdown.Item onClick={() => edit_config(node.friendly_name)}>Edit</Dropdown.Item>
-                            <Dropdown.Item>Re-upload</Dropdown.Item>
-                            <Dropdown.Item>Change IP</Dropdown.Item>
-                            <Dropdown.Item onClick={() => show_delete_modal(node.friendly_name)}>Delete</Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </td>
-            </tr>
-        );
-    }
-
-    // Render full layout with metadata, wifi, IR Blaster, and instance cards
+    // Render table with row for each existing node
     return (
         <Row id="existing" className="section px-0 pt-2">
             <h3 className="text-center my-1" onClick={() => setOpen(!open)}>Existing Nodes</h3>
@@ -96,7 +112,9 @@ const ExistingNodesTable = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {context.uploaded.map(node => get_table_row(node))}
+                            {context.uploaded.map(node =>
+                                <ExistingNodeRow friendly_name={node.friendly_name} ip={node.ip} onDelete={show_delete_modal} />
+                            )}
                         </tbody>
                     </Table>
                 </div>
