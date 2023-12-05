@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react';
+import PropTypes from 'prop-types';
 import { OverviewContext } from 'root/OverviewContext';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
@@ -111,6 +112,10 @@ const NewConfigRow = ({ config }) => {
             </td>
         </tr>
     );
+};
+
+NewConfigRow.propTypes = {
+    children: PropTypes.object,
 };
 
 
