@@ -5,6 +5,7 @@ import { WifiModalContextProvider } from 'modals/WifiModal';
 import { ErrorModalContextProvider } from 'modals/ErrorModal';
 import { UploadModalContextProvider } from 'modals/UploadModal';
 import { RestoreModalContextProvider } from 'modals/RestoreModal';
+import { ChangeIpModalContextProvider } from 'modals/ChangeIpModal';
 import { DesktopModalContextProvider } from 'modals/DesktopIntegrationModal';
 
 
@@ -16,7 +17,9 @@ export const ModalContextProvider = ({ children }) => {
                     <RestoreModalContextProvider>
                         <GpsModalContextProvider>
                             <WifiModalContextProvider>
-                                {children}
+                                <ChangeIpModalContextProvider>
+                                    {children}
+                                </ChangeIpModalContextProvider>
                             </WifiModalContextProvider>
                         </GpsModalContextProvider>
                     </RestoreModalContextProvider>

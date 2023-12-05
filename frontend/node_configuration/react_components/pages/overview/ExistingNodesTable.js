@@ -7,6 +7,7 @@ import Collapse from 'react-bootstrap/Collapse';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
+import { ChangeIpModalContext } from 'modals/ChangeIpModal';
 import { useUploader } from 'modals/UploadModal';
 
 
@@ -21,6 +22,9 @@ const ExistingNodeRow = ({ friendly_name, ip, onDelete }) => {
     const edit = () => {
         window.location.href = `/edit_config/${friendly_name}`;
     }
+
+    // Get callback for change IP modal
+    const { showChangeIpModal } = useContext(ChangeIpModalContext);
 
     return (
         <tr id={friendly_name}>
@@ -38,7 +42,7 @@ const ExistingNodeRow = ({ friendly_name, ip, onDelete }) => {
                     <Dropdown.Menu>
                         <Dropdown.Item onClick={edit}>Edit</Dropdown.Item>
                         <Dropdown.Item onClick={reupload}>Re-upload</Dropdown.Item>
-                        <Dropdown.Item>Change IP</Dropdown.Item>
+                        <Dropdown.Item onClick={() => showChangeIpModal(friendly_name)}>Change IP</Dropdown.Item>
                         <Dropdown.Item onClick={() => onDelete(friendly_name)}>Delete</Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
