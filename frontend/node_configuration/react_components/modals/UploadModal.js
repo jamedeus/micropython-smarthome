@@ -38,9 +38,9 @@ export const UploadModal = () => {
             {(() => {
                 switch (uploadComplete) {
                     case false:
-                        return <HeaderStaticBackdrop title="Uploading..." />
+                        return <HeaderStaticBackdrop title="Uploading..." />;
                     case true:
-                        return <HeaderStaticBackdrop title="Upload Complete" />
+                        return <HeaderStaticBackdrop title="Upload Complete" />;
                 }
             })()}
             <Modal.Body className="d-flex justify-content-center mb-4">

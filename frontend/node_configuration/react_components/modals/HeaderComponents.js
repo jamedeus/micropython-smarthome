@@ -11,7 +11,7 @@ export const HeaderWithCloseButton = ({ title, onClose }) => {
             <button type="button" className="btn-close" onClick={onClose}></button>
         </Modal.Header>
     );
-}
+};
 
 HeaderWithCloseButton.propTypes = {
     title: PropTypes.string,
@@ -25,7 +25,7 @@ export const HeaderStaticBackdrop = ({ title }) => {
             <h3 className="modal-title mx-auto">{title}</h3>
         </Modal.Header>
     );
-}
+};
 
 HeaderStaticBackdrop.propTypes = {
     title: PropTypes.string

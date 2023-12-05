@@ -115,7 +115,7 @@ const NewConfigRow = ({ config }) => {
 };
 
 NewConfigRow.propTypes = {
-    children: PropTypes.object,
+    config: PropTypes.object,
 };
 
 

@@ -21,7 +21,7 @@ const ExistingNodeRow = ({ friendly_name, ip, onDelete }) => {
     // Create handler for edit menu option
     const edit = () => {
         window.location.href = `/edit_config/${friendly_name}`;
-    }
+    };
 
     // Get callback for change IP modal
     const { showChangeIpModal } = useContext(ChangeIpModalContext);
@@ -49,7 +49,7 @@ const ExistingNodeRow = ({ friendly_name, ip, onDelete }) => {
             </td>
         </tr>
     );
-}
+};
 
 ExistingNodeRow.propTypes = {
     friendly_name: PropTypes.string,
