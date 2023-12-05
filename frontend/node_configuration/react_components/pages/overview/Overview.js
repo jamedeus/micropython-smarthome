@@ -5,6 +5,7 @@ import Header from './Header';
 import KeywordsTable from './KeywordsTable';
 import NewConfigTable from './NewConfigTable';
 import ExistingNodesTable from './ExistingNodesTable';
+import { GpsModal } from 'modals/GpsModal';
 import { WifiModal } from 'modals/WifiModal';
 import { ErrorModal } from 'modals/ErrorModal';
 import { UploadModal } from 'modals/UploadModal';
@@ -62,6 +63,7 @@ const App = () => {
                 </div>
 
                 {/* Modals (hidden) */}
+                <GpsModal />
                 <WifiModal />
                 <UploadModal />
                 <ErrorModal />

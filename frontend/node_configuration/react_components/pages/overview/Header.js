@@ -6,6 +6,7 @@ import { sleep } from 'util/helper_functions';
 import { DesktopModalContext } from 'modals/DesktopIntegrationModal';
 import { RestoreModalContext } from 'modals/RestoreModal';
 import { WifiModalContext } from 'modals/WifiModal';
+import { GpsModalContext } from 'modals/GpsModal';
 
 const Header = () => {
     // Get callbacks for upload, error, and desktop integration modals
@@ -14,6 +15,7 @@ const Header = () => {
     const { showDesktopModal } = useContext(DesktopModalContext);
     const { showRestoreModal } = useContext(RestoreModalContext);
     const { showWifiModal } = useContext(WifiModalContext);
+    const { showGpsModal } = useContext(GpsModalContext);
 
     async function reuploadAll() {
         // Show upload modal with loading spinner
@@ -53,7 +55,7 @@ const Header = () => {
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
                     <Dropdown.Item onClick={showWifiModal}>Set WIFI credentials</Dropdown.Item>
-                    <Dropdown.Item>Set GPS coordinates</Dropdown.Item>
+                    <Dropdown.Item onClick={showGpsModal}>Set GPS coordinates</Dropdown.Item>
                     <Dropdown.Item onClick={reuploadAll}>Re-upload all</Dropdown.Item>
                     <Dropdown.Item onClick={showRestoreModal}>Restore config</Dropdown.Item>
                     <Dropdown.Item onClick={showDesktopModal}>Desktop integration</Dropdown.Item>
