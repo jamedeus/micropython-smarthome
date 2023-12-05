@@ -4,6 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { send_post_request } from 'util/django_util';
+import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 export const WifiModalContext = createContext();
 
@@ -41,16 +42,12 @@ export const WifiModal = () => {
     // Submit handler, post credentials to backend and close modal
     const setWifiCredentials = () => {
         send_post_request("set_default_credentials", {"ssid": ssid, "password": password});
-        handleClose()
+        handleClose();
     };
 
     return (
         <Modal show={show} onHide={handleClose} centered>
-            <Modal.Header className="justify-content-between pb-0">
-                <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
-                <h5 className="modal-title">Default Wifi</h5>
-                <button type="button" className="btn-close" onClick={() => handleClose()}></button>
-            </Modal.Header>
+            <HeaderWithCloseButton title="Set Default Wifi" onClose={handleClose} />
 
             <Modal.Body className="d-flex flex-column mx-auto">
                 <p className="text-center">These credentials will be pre-filled every time a new config is created</p>

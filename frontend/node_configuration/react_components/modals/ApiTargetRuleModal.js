@@ -6,6 +6,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
 import { api_target_options } from 'util/django_util';
+import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
@@ -331,11 +332,7 @@ export const ApiTargetRuleModal = () => {
 
     return (
         <Modal show={show} onHide={handleClose} centered>
-            <Modal.Header className="justify-content-between">
-                <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
-                <h5 className="modal-title">Api Target Rule</h5>
-                <button type="button" className="btn-close" onClick={() => handleClose()}></button>
-            </Modal.Header>
+            <HeaderWithCloseButton title="API Target Rule" onClose={handleClose} />
 
             <Modal.Body className="d-flex flex-column mx-auto">
                 <button className="btn btn-sm btn-secondary mx-auto mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">

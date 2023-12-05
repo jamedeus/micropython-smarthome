@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
+import { HeaderStaticBackdrop } from 'modals/HeaderComponents';
 
 export const ErrorModalContext = createContext();
 
@@ -35,9 +36,7 @@ export const ErrorModal = () => {
 
     return (
         <Modal show={errorModalContent.visible} onHide={handleClose} backdrop="static" keyboard={false} centered>
-            <Modal.Header className="justify-content-between">
-                <h3 className="modal-title mx-auto">{errorModalContent.title}</h3>
-            </Modal.Header>
+            <HeaderStaticBackdrop title={errorModalContent.title} />
 
             <Modal.Body className="d-flex flex-column text-center mx-auto">
                 {(() => {

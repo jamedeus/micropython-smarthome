@@ -5,6 +5,7 @@ import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { send_post_request } from 'util/django_util';
+import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 export const GpsModalContext = createContext();
 
@@ -83,11 +84,7 @@ export const GpsModal = () => {
 
     return (
         <Modal show={show} onHide={handleClose} centered>
-            <Modal.Header className="justify-content-between pb-0">
-                <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
-                <h5 className="modal-title">Set Default Location</h5>
-                <button type="button" className="btn-close" onClick={() => handleClose()}></button>
-            </Modal.Header>
+            <HeaderWithCloseButton title="Set Default Location" onClose={handleClose} />
 
             <Modal.Body className="d-flex flex-column mx-auto text-center">
                 <p>Approximate GPS coordinates are used to determine sunrise and sunset times. This is looked up from your IP by default.</p>

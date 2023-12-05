@@ -7,6 +7,8 @@ import { sleep } from 'util/helper_functions';
 import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
+import { HeaderWithCloseButton } from 'modals/HeaderComponents';
+import { LoadingSpinner, CheckmarkAnimation } from 'modals/animations';
 
 export const ChangeIpModalContext = createContext();
 
@@ -136,11 +138,7 @@ export const ChangeIpModal = () => {
 
     return (
         <Modal show={changeIpModalContent.visible} onHide={handleClose} centered>
-            <Modal.Header className="justify-content-between pb-0">
-                <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
-                <h5 className="modal-title">Change IP</h5>
-                <button type="button" className="btn-close" onClick={() => handleClose()}></button>
-            </Modal.Header>
+            <HeaderWithCloseButton title="Change IP" onClose={handleClose} />
 
             <Modal.Body className="d-flex flex-column mx-auto text-center">
                 <p>Upload an existing config file to a new IP</p>
@@ -159,18 +157,9 @@ export const ChangeIpModal = () => {
                                 </>
                             );
                         case "loading":
-                            return (
-                                <div className="spinner-border mx-auto" style={{width: "3rem", height: "3rem"}} role="status">
-                                    <span className="visually-hidden">Loading...</span>
-                                </div>
-                            );
+                            return <LoadingSpinner />;
                         case "complete":
-                            return (
-                                <svg className="checkmark mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                                    <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                                    <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                                </svg>
-                            );
+                            return <CheckmarkAnimation />;
                     }
                 })()}
             </Modal.Body>

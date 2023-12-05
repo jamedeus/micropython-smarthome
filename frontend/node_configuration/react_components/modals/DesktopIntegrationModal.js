@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { client_ip, desktop_integration_link } from 'util/django_util';
+import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 export const DesktopModalContext = createContext();
 
@@ -35,11 +36,7 @@ export const DesktopModal = () => {
 
     return (
         <Modal show={visible} onHide={handleClose} centered>
-            <Modal.Header className="justify-content-between pb-0">
-                <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
-                <h5 className="modal-title">Install Desktop Integration</h5>
-                <button type="button" className="btn-close" onClick={() => handleClose()}></button>
-            </Modal.Header>
+            <HeaderWithCloseButton title="Install Desktop Integration" onClose={handleClose} />
 
             <Modal.Body>
                 <p className="text-center mt-3">This software integrates your computer into your smarthome:</p>

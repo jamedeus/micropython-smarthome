@@ -7,6 +7,8 @@ import { sleep } from 'util/helper_functions';
 import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
+import { LoadingSpinner, CheckmarkAnimation } from 'modals/animations';
+import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 export const RestoreModalContext = createContext();
 
@@ -136,11 +138,7 @@ export const RestoreModal = () => {
 
     return (
         <Modal show={restoreModalContent.visible} onHide={handleClose} centered>
-            <Modal.Header className="justify-content-between pb-0">
-                <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
-                <h5 className="modal-title">Restore Config</h5>;
-                <button type="button" className="btn-close" onClick={() => handleClose()}></button>
-            </Modal.Header>
+            <HeaderWithCloseButton title="Restore Config" onClose={handleClose} />
 
             <Modal.Body className="d-flex flex-column mx-auto text-center">
                 <p>This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
@@ -158,18 +156,9 @@ export const RestoreModal = () => {
                                 </>
                             );
                         case "loading":
-                            return (
-                                <div className="spinner-border mx-auto" style={{width: "3rem", height: "3rem"}} role="status">
-                                    <span className="visually-hidden">Loading...</span>
-                                </div>
-                            );
+                            return <LoadingSpinner />;
                         case "complete":
-                            return (
-                                <svg className="checkmark mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                                    <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                                    <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                                </svg>
-                            );
+                            return <CheckmarkAnimation />;
                     }
                 })()}
             </Modal.Body>

@@ -4,6 +4,8 @@ import Modal from 'react-bootstrap/Modal';
 import { sleep } from 'util/helper_functions';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
+import { HeaderStaticBackdrop } from 'modals/HeaderComponents';
+import { LoadingSpinner, CheckmarkAnimation } from 'modals/animations';
 
 export const UploadModalContext = createContext();
 
@@ -33,32 +35,21 @@ export const UploadModal = () => {
 
     return (
         <Modal show={showUpload} onHide={handleClose} backdrop="static" keyboard={false} centered>
-            <Modal.Header className="justify-content-between">
-                {(() => {
-                    switch (uploadComplete) {
-                        case false:
-                            return <h3 className="modal-title mx-auto">Uploading...</h3>;
-                        case true:
-                            return <h3 className="modal-title mx-auto">Upload Complete</h3>;
-                    }
-                })()}
-            </Modal.Header>
+            {(() => {
+                switch (uploadComplete) {
+                    case false:
+                        return <HeaderStaticBackdrop title="Uploading..." />
+                    case true:
+                        return <HeaderStaticBackdrop title="Upload Complete" />
+                }
+            })()}
             <Modal.Body className="d-flex justify-content-center mb-4">
                 {(() => {
                     switch (uploadComplete) {
                         case false:
-                            return (
-                                <div className="spinner-border" style={{width: "3rem", height: "3rem"}} role="status">
-                                    <span className="visually-hidden">Loading...</span>
-                                </div>
-                            );
+                            return <LoadingSpinner />;
                         case true:
-                            return (
-                                <svg className="checkmark mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                                    <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                                    <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                                </svg>
-                            );
+                            return <CheckmarkAnimation />;
                     }
                 })()}
             </Modal.Body>
