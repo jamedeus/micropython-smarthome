@@ -4,12 +4,14 @@ import { UploadModalContext } from 'modals/UploadModal';
 import { ErrorModalContext } from 'modals/ErrorModal';
 import { sleep } from 'util/helper_functions';
 import { DesktopModalContext } from 'modals/DesktopIntegrationModal';
+import { RestoreModalContext } from 'modals/RestoreModal';
 
 const Header = () => {
     // Get callbacks for upload, error, and desktop integration modals
     const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
     const { showDesktopModal } = useContext(DesktopModalContext);
+    const { showRestoreModal } = useContext(RestoreModalContext);
 
     async function reuploadAll() {
         // Show upload modal with loading spinner
@@ -51,7 +53,7 @@ const Header = () => {
                     <Dropdown.Item>Set WIFI credentials</Dropdown.Item>
                     <Dropdown.Item>Set GPS coordinates</Dropdown.Item>
                     <Dropdown.Item onClick={reuploadAll}>Re-upload all</Dropdown.Item>
-                    <Dropdown.Item>Restore config</Dropdown.Item>
+                    <Dropdown.Item onClick={showRestoreModal}>Restore config</Dropdown.Item>
                     <Dropdown.Item onClick={showDesktopModal}>Desktop integration</Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>

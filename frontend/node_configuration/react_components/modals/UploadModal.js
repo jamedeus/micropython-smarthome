@@ -101,7 +101,7 @@ export const useUploader = () => {
             await sleep(1200);
             window.location.replace("/config_overview");
 
-            // Unable to upload because of filesystem error on node
+        // Unable to upload because of filesystem error on node
         } else if (response.status == 409) {
             const error = await response.text();
             // Hide upload modal, show response in error modal
@@ -114,7 +114,7 @@ export const useUploader = () => {
                 ["body"]: error
             });
 
-            // Unable to upload because node is unreachable
+        // Unable to upload because node is unreachable
         } else if (response.status == 404) {
             // Hide upload modal, show error modal
             setShowUpload(false);
@@ -126,7 +126,7 @@ export const useUploader = () => {
                 ["body"]: targetIP
             });
 
-            // Other error, show in alert
+        // Other error, show in alert
         } else {
             alert(await response.text());
 

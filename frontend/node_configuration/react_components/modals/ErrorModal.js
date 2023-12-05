@@ -74,6 +74,8 @@ export const ErrorModal = () => {
                                     )}
                                 </ul>
                             );
+                        default:
+                            return <p>{errorModalContent.body}</p>;
                     }
                 })()}
             </Modal.Body>

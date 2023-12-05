@@ -7,10 +7,8 @@ import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
-import { formatIp } from 'util/validation';
+import { formatIp, ipRegex } from 'util/validation';
 import { useUploader } from 'modals/UploadModal';
-
-const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 
 
 const NewConfigRow = ({ config }) => {

@@ -1,3 +1,6 @@
+const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+
 // Format IP address as user types in field
 const formatIp = (oldIP, newIP) => {
     // Backspace and delete bypass formatting
@@ -44,4 +47,4 @@ const formatIp = (oldIP, newIP) => {
     return output;
 };
 
-export { formatIp };
+export { ipRegex, formatIp };
