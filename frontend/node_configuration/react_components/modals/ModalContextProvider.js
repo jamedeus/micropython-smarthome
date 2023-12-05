@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { WifiModalContextProvider } from 'modals/WifiModal';
 import { ErrorModalContextProvider } from 'modals/ErrorModal';
 import { UploadModalContextProvider } from 'modals/UploadModal';
 import { RestoreModalContextProvider } from 'modals/RestoreModal';
@@ -12,7 +13,9 @@ export const ModalContextProvider = ({ children }) => {
             <ErrorModalContextProvider>
                 <DesktopModalContextProvider>
                     <RestoreModalContextProvider>
-                        {children}
+                        <WifiModalContextProvider>
+                            {children}
+                        </WifiModalContextProvider>
                     </RestoreModalContextProvider>
                 </DesktopModalContextProvider>
             </ErrorModalContextProvider>
