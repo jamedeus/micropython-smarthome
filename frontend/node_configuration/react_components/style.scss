@@ -1,8 +1,8 @@
-@import "../../node_modules/bootstrap/scss/_functions";
-@import "../../node_modules/bootstrap/scss/_variables";
-@import "../../node_modules/bootstrap/scss/_variables-dark";
-@import "../../node_modules/bootstrap/scss/_mixins";
-@import "../../node_modules/bootstrap/scss/_close";
+@import "node_modules/bootstrap/scss/_functions";
+@import "node_modules/bootstrap/scss/_variables";
+@import "node_modules/bootstrap/scss/_variables-dark";
+@import "node_modules/bootstrap/scss/_mixins";
+@import "node_modules/bootstrap/scss/_close";
 
 
 /* Limit width for readability on large screen sizes */
@@ -190,6 +190,11 @@ td:last-child{
     min-width: fit-content;
 }
 
+/* Remove dropdown down arrow */
+.dropdown-toggle::after {
+    display: none !important;
+}
+
 /* Mobile: Full width popup div instead of aligning to parent element */
 @media screen and (max-width: 768px) {
     .schedule-rule-param-popup {
@@ -241,6 +246,11 @@ td:last-child{
         $modal-header-border-color: #31363b;
         $modal-footer-border-color: #31363b;
 
+        /* Use light modal close button in dark mode */
+        .btn-close {
+            @include btn-close-white();
+        }
+
         /* Input fields */
         $input-bg: #1B1E1F;
         $input-color: #ffffff;
@@ -250,39 +260,31 @@ td:last-child{
         $input-focus-bg: #1B1E1F;
         $input-focus-border-color: #232627;
         $input-focus-color: #ffffff;
-
         $input-disabled-bg: #272c31;
 
+        /* Checkboxes */
         $form-check-input-bg: #1B1E1F;
-        $form-check-input-focus-border: 1px solid #232627;
-        $form-check-input-checked-bg-color: #1B1E1F;
+        $form-check-input-border: #1B1E1F;
+        $form-check-input-checked-bg-color: $primary;
 
-        /* Override inputs outside of cards */
-        #metadata input {
-            background-color: #31363b;
+        /* Select inputs */
+        $form-select-bg: #1B1E1F !important;
+        $form-select-color: #ffffff !important;
+        $form-select-border-color: #232627 !important;
+        $form-select-focus-border-color: #232627 !important;
+        $form-select-disabled-bg: #272c31 !important;
+        $form-select-disabled-color: #ffffff !important;
+        $form-select-disabled-border-color: #232627 !important;
+
+        /* Different color for select placeholder text (selected text set to fff above) */
+        select:invalid {
+            color: #696b6e;
         }
 
-        /* Fix form validation messages in dark mode */
-        .is-invalid~.invalid-feedback, .is-invalid~.invalid-tooltip, .was-validated :invalid~.invalid-feedback, .was-validated :invalid~.invalid-tooltip {
-            display:block
-        };
-
-        /* Dropdowns */
-        $form-select-bg: #1B1E1F;
-        $form-select-color: #ffffff;
-        $form-select-border-color: #232627;
-        $form-select-focus-border-color: #232627;
-        $form-select-disabled-bg: #272c31;
-        $form-select-disabled-color: #ffffff;
-        $form-select-disabled-border-color: #232627;
-
-        /* Dropdown down arrow icon */
-        $form-select-indicator-color: #ffffff;
-        $form-select-indicator: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path fill='none' stroke='#{$form-select-indicator-color}' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/></svg>");
-
-        /* Contrasting background for dropdowns inside modal */
-        .modal-dropdown {
-            background-color: #1b1e1f !important;
+        /* Use lighter color for inputs outside cards (background contrast) */
+        /* Overrides styles above with more-specific selector */
+        #metadata input {
+            background-color: #31363b;
         }
 
         /* Contrasting background for inputs inside modal */
@@ -290,18 +292,37 @@ td:last-child{
             background-color: #1b1e1f !important;
         }
 
-        /* Use light modal close button in dark mode */
-        .btn-close {
-            @include btn-close-white();
+        /* Contrasting background for dropdowns inside modal */
+        .modal-dropdown {
+            background-color: #1b1e1f !important;
         }
 
-        /* Different color for dropdown placeholder text (selected text set to fff above) */
-        select:invalid {
-            color: #696b6e;
+        /* Fix form validation messages in dark mode */
+        .is-invalid~.invalid-feedback, .is-invalid~.invalid-tooltip, .was-validated :invalid~.invalid-feedback, .was-validated :invalid~.invalid-tooltip {
+            display: block;
+        }
+
+        /* Top-right dropdown menu button color */
+        #settings-button {
+            color: $light;
+            border-color: $dark;
+            background-color: $dark;
+
+            &:hover {
+                border-color: darken($dark, 5%);
+                background-color: darken($dark, 5%);
+            }
+            &.show, &:active {
+                border-color: darken($dark, 10%);
+                background-color: darken($dark, 10%);
+            }
         }
 
         /* Increase contrast for disabled items */
         $dropdown-link-disabled-color: #737578 !important;
+
+        $dropdown-bg: #343A40;
+        $dropdown-link-hover-bg: #52575C;
 
         /* Force bold white text on buttons (readability) */
         .btn {
@@ -357,13 +378,13 @@ td:last-child{
         $list-group-action-hover-color: #ffffff;
         $list-group-action-active-color: #ffffff;
 
-        @import "../../node_modules/bootstrap/scss/_card";
-        @import "../../node_modules/bootstrap/scss/_modal";
-        @import "../../node_modules/bootstrap/scss/_forms";
-        @import "../../node_modules/bootstrap/scss/_buttons";
-        @import "../../node_modules/bootstrap/scss/_tables";
-        @import "../../node_modules/bootstrap/scss/_dropdown";
-        @import "../../node_modules/bootstrap/scss/_toasts";
-        @import "../../node_modules/bootstrap/scss/_list-group";
+        @import "node_modules/bootstrap/scss/_card";
+        @import "node_modules/bootstrap/scss/_modal";
+        @import "node_modules/bootstrap/scss/_forms";
+        @import "node_modules/bootstrap/scss/_buttons";
+        @import "node_modules/bootstrap/scss/_tables";
+        @import "node_modules/bootstrap/scss/_dropdown";
+        @import "node_modules/bootstrap/scss/_toasts";
+        @import "node_modules/bootstrap/scss/_list-group";
     }
 }

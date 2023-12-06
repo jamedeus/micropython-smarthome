@@ -50,7 +50,7 @@ const Header = () => {
             <button type="button" className="btn my-auto" id="back_button" style={{visibility: "hidden"}}><i className="bi-chevron-left"></i></button>
             <h1 className="my-3">Configure Nodes</h1>
             <Dropdown className="my-auto">
-                <Dropdown.Toggle variant="dark" id="settings-button">
+                <Dropdown.Toggle variant="light" id="settings-button">
                     <i className="bi-gear-fill"></i>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
