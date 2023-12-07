@@ -82,6 +82,14 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
         }
     };
 
+    // Edit keyword if enter key pressed in either input
+    // Ignored if fields not modified or currently loading
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter" && button === "edit") {
+            editKeyword();
+        }
+    };
+
     return (
         <tr id={`${keyword}_row`}>
             <td className="align-middle">
@@ -91,6 +99,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
                     placeholder="Keyword"
                     value={keyword}
                     onChange={(e) => updateKeyword(e.target.value)}
+                    onKeyDown={handleEnterKey}
                 />
             </td>
             <td className="align-middle">
@@ -99,6 +108,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
                     className="keyword text-center"
                     value={timestamp}
                     onChange={(e) => updateTimestamp(e.target.value)}
+                    onKeyDown={handleEnterKey}
                 />
             </td>
             <td className="min align-middle">
@@ -193,6 +203,14 @@ const NewKeywordRow = () => {
         }
     };
 
+    // Add keyword if enter key pressed in either input
+    // Ignored if fields not complete or currently loading
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter" && !buttonLoading && !buttonDisabled) {
+            addKeyword();
+        }
+    };
+
     return (
         <tr id={`${keyword}_row`}>
             <td className="align-middle">
@@ -202,6 +220,7 @@ const NewKeywordRow = () => {
                     placeholder="Keyword"
                     value={keyword}
                     onChange={(e) => updateKeyword(e.target.value)}
+                    onKeyDown={handleEnterKey}
                 />
             </td>
             <td className="align-middle">
@@ -210,6 +229,7 @@ const NewKeywordRow = () => {
                     className="keyword text-center"
                     value={timestamp}
                     onChange={(e) => updateTimestamp(e.target.value)}
+                    onKeyDown={handleEnterKey}
                 />
             </td>
             <td className="min align-middle">

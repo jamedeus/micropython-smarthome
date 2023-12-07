@@ -79,6 +79,13 @@ const NewConfigRow = ({ config }) => {
         setIpAddress(newIP);
     };
 
+    // Upload config if enter key pressed in IP input (ignore if IP invalid)
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter" && uploadEnabled) {
+            uploadNewConfig();
+        }
+    };
+
     // Return single table row with listeners to upload, delete config
     return (
         <tr id={config}>
@@ -93,6 +100,7 @@ const NewConfigRow = ({ config }) => {
                     onChange={(e) => setIp(e.target.value)}
                     className="text-center ip-input"
                     placeholder="xxx.xxx.x.xxx"
+                    onKeyDown={handleEnterKey}
                 />
             </td>
             <td className="min align-middle">
