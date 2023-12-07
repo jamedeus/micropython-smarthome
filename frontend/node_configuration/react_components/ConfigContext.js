@@ -17,28 +17,28 @@ export const ConfigContext = createContext();
 
 export const ConfigProvider = ({ children }) => {
     // Load config context set by django template
-    const element = document.getElementById("config");
+    const [config, setConfig] = useState(() => {
+        // Context element created with json_script django filter
+        const element = document.getElementById("config");
 
-    // Use django context as default config if present, otherwise use template
-    let defaultConfig;
-    if (element) {
-        defaultConfig = JSON.parse(element.textContent);
-    } else {
-        defaultConfig = {
-            metadata: {
-                id: '',
-                floor: '',
-                location: '',
-                schedule_keywords: {}
-            },
-            wifi: {
-                ssid: '',
-                password: ''
-            }
-        };
-    }
-
-    const [config, setConfig] = useState(defaultConfig);
+        // Use context if present, otherwise use blank template
+        if (element) {
+            return JSON.parse(element.textContent);
+        } else {
+            return {
+                metadata: {
+                    id: '',
+                    floor: '',
+                    location: '',
+                    schedule_keywords: {}
+                },
+                wifi: {
+                    ssid: '',
+                    password: ''
+                }
+            };
+        }
+    });
 
     const updateConfig = newConfig => {
         setConfig(newConfig);
