@@ -23,6 +23,7 @@ export const ChangeIpModalContextProvider = ({ children }) => {
         setChangeIpModalContent({ ...changeIpModalContent, ["visible"]: false });
     };
 
+    // Takes node name, shows modal with IP input
     const showChangeIpModal = (friendly_name) => {
         setChangeIpModalContent({
             ...changeIpModalContent,
@@ -32,12 +33,38 @@ export const ChangeIpModalContextProvider = ({ children }) => {
         });
     };
 
+    // Closes modal after upload fails (sets stage to avoid visual flash)
+    const handleFailed = () => {
+        setChangeIpModalContent({
+            ...changeIpModalContent,
+            ["visible"]: false,
+            ["stage"]: "loading"
+        });
+    };
+
+    // Closes modal after upload complete (sets stage to avoid visual flash)
+    const handleComplete = () => {
+        setChangeIpModalContent({
+            ...changeIpModalContent,
+            ["visible"]: false,
+            ["stage"]: "complete"
+        });
+    };
+
+    // Takes stage (prompt, loading, or complete), triggers re-render
+    const setStage = (stage) => {
+        setChangeIpModalContent({ ...changeIpModalContent, ["stage"]: stage });
+    };
+
     return (
         <ChangeIpModalContext.Provider value={{
             changeIpModalContent,
             setChangeIpModalContent,
             handleClose,
-            showChangeIpModal
+            showChangeIpModal,
+            handleFailed,
+            handleComplete,
+            setStage
         }}>
             {children}
         </ChangeIpModalContext.Provider>
@@ -54,7 +81,14 @@ export const ChangeIpModal = () => {
     const { changeExistingNodeIp } = useContext(OverviewContext);
 
     // Get state object that determines modal contents
-    const { changeIpModalContent, setChangeIpModalContent, handleClose } = useContext(ChangeIpModalContext);
+    const {
+        changeIpModalContent,
+        setChangeIpModalContent,
+        handleClose,
+        handleFailed,
+        handleComplete,
+        setStage
+    } = useContext(ChangeIpModalContext);
 
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
@@ -67,7 +101,7 @@ export const ChangeIpModal = () => {
 
     async function changeIP() {
         // Start animation, disable submit button
-        setChangeIpModalContent({ ...changeIpModalContent, ["stage"]: "loading" });
+        setStage("loading");
         setSubmitDisabled(true);
 
         // Send API call, wait for backend to download config file from target node
@@ -80,22 +114,17 @@ export const ChangeIpModal = () => {
         // Restored successfully
         if (response.ok) {
             // Show success checkmark animation, update IP in context
-            setChangeIpModalContent({ ...changeIpModalContent, ["stage"]: "complete" });
+            setStage("complete");
             changeExistingNodeIp(changeIpModalContent.friendly_name, ipAddress);
 
             // Wait for animation to complete before hiding modal
             await sleep(1200);
-            setChangeIpModalContent({ ...changeIpModalContent, ["visible"]: false });
+            handleComplete();
 
         // Unreachable
         } else if (response.status == 404) {
-            // Hide modal (set same stage to prevent visual flash)
-            setChangeIpModalContent({
-                ...changeIpModalContent,
-                ["visible"]: false,
-                ["stage"]: "loading"
-            });
-            // Show error modal with possible connection failure reasons
+            // Hide modal, show error modal with possible connection failure reasons
+            handleFailed();
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
@@ -106,13 +135,8 @@ export const ChangeIpModal = () => {
 
         // Other error, show in modal
         } else {
-            // Hide modal (set same stage to prevent visual flash)
-            setChangeIpModalContent({
-                ...changeIpModalContent,
-                ["visible"]: false,
-                ["stage"]: "loading"
-            });
-            // Show error modal with response from backend
+            // Hide modal, show error modal with response from backend
+            handleFailed();
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
