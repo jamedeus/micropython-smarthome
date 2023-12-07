@@ -44,6 +44,12 @@ export const OverviewContextProvider = ({ children }) => {
         setContext({ ...context, ["schedule_keywords"]: update});
     };
 
+    const addNewNode = (friendly_name, ip) => {
+        let update = [ ...context.uploaded ];
+        update.push({friendly_name: friendly_name, ip: ip})
+        setContext({ ...context, ["uploaded"]: update});
+    };
+
     const deleteExistingNode = (friendly_name) => {
         let update = [ ...context.uploaded ];
         update = update.filter(node => node.friendly_name !== friendly_name);
@@ -68,6 +74,7 @@ export const OverviewContextProvider = ({ children }) => {
             addScheduleKeyword,
             editScheduleKeyword,
             deleteScheduleKeyword,
+            addNewNode,
             deleteExistingNode,
             changeExistingNodeIp
         }}>

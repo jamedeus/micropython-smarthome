@@ -1075,7 +1075,7 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
             # Post fake IP to endpoint, confirm output
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Config restored')
+            self.assertEqual(response.json(), {'friendly_name': 'Test1', 'ip': '123.45.67.89'})
 
         # Config and Node should now exist, config file should exist on disk
         self.assertEqual(len(Config.objects.all()), 1)

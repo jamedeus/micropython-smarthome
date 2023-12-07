@@ -465,7 +465,8 @@ def restore_config(data):
     config.node = node
     config.save()
 
-    return JsonResponse("Config restored", safe=False, status=200)
+    response = {"friendly_name": node.friendly_name, "ip": node.ip}
+    return JsonResponse(response, safe=False, status=200)
 
 
 @requires_post

@@ -7,11 +7,15 @@ import { sleep } from 'util/helper_functions';
 import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
+import { OverviewContext } from 'root/OverviewContext';
 import { LoadingSpinner, CheckmarkAnimation } from 'modals/animations';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 
 export const RestoreModal = () => {
+    // Get callback used to render new row after restoring node
+    const { addNewNode } = useContext(OverviewContext);
+
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
@@ -44,12 +48,14 @@ export const RestoreModal = () => {
 
         // Restored successfully
         if (response.ok) {
-            // Show success checkmark animation
+            // Show success checkmark animation, wait for animation to complete
             setStage("complete");
-
-            // Wait for animation to complete before reloading
             await sleep(1200);
-            location.reload();
+
+            // Render new row, close modal
+            const data = await response.json();
+            addNewNode(data.friendly_name, data.ip);
+            setShow(false);
 
         // Unreachable
         } else if (response.status == 404) {
