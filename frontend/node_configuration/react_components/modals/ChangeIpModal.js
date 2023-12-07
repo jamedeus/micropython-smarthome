@@ -136,6 +136,13 @@ export const ChangeIpModal = () => {
         isIpValid(newIP);
     };
 
+    // Change IP if enter key pressed in field with valid IP
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter" && !changeIpModalContent.buttonDisabled) {
+            changeIP();
+        }
+    };
+
     return (
         <Modal show={changeIpModalContent.visible} onHide={handleClose} centered>
             <HeaderWithCloseButton title="Change IP" onClose={handleClose} />
@@ -153,6 +160,7 @@ export const ChangeIpModal = () => {
                                         type="text"
                                         value={changeIpModalContent.ipAddress}
                                         onChange={(e) => setIp(e.target.value)}
+                                        onKeyDown={handleEnterKey}
                                     />
                                 </>
                             );

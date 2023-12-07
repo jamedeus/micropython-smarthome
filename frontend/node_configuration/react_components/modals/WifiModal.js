@@ -45,6 +45,13 @@ export const WifiModal = () => {
         handleClose();
     };
 
+    // Submit if enter key pressed in either field (ignore if either field empty)
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter" && ssid !== "" && password !== "") {
+            setWifiCredentials();
+        }
+    };
+
     return (
         <Modal show={show} onHide={handleClose} centered>
             <HeaderWithCloseButton title="Set Default Wifi" onClose={handleClose} />
@@ -53,10 +60,21 @@ export const WifiModal = () => {
                 <p className="text-center">These credentials will be pre-filled every time a new config is created</p>
 
                 <Form.Label><b>Network:</b></Form.Label>
-                <Form.Control type="text" value={ssid} onChange={(e) => setSsid(e.target.value)} className="mb-2"/>
+                <Form.Control
+                    type="text"
+                    className="mb-2"
+                    value={ssid}
+                    onChange={(e) => setSsid(e.target.value)}
+                    onKeyDown={handleEnterKey}
+                />
 
                 <Form.Label><b>Password:</b></Form.Label>
-                <Form.Control type="password" value={password} onChange={(e) => setPassword(e.target.value)}/>
+                <Form.Control
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={handleEnterKey}
+                />
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-0">
                 <Button variant="secondary" onClick={handleClose}>Cancel</Button>

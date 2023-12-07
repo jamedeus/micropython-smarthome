@@ -136,6 +136,13 @@ export const RestoreModal = () => {
         isIpValid(newIP);
     };
 
+    // Restore config if enter key pressed in field with valid IP
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter" && !restoreModalContent.buttonDisabled) {
+            restoreConfig();
+        }
+    };
+
     return (
         <Modal show={restoreModalContent.visible} onHide={handleClose} centered>
             <HeaderWithCloseButton title="Restore Config" onClose={handleClose} />
@@ -152,6 +159,7 @@ export const RestoreModal = () => {
                                         type="text"
                                         value={restoreModalContent.ipAddress}
                                         onChange={(e) => setIp(e.target.value)}
+                                        onKeyDown={handleEnterKey}
                                     />
                                 </>
                             );
