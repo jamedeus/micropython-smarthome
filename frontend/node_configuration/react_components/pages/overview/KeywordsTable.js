@@ -6,24 +6,26 @@ import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
+import { send_post_request } from 'util/django_util';
 
 
 const KeywordRow = ({initKeyword, initTimestamp}) => {
     // Create state objects for both inputs
     const [keyword, setKeyword] = useState(initKeyword);
     const [timestamp, setTimestamp] = useState(initTimestamp);
+
     // Create state to track if either input was modified
-    const [modified, setModified] = useState(false);
+    const [button, setButton] = useState("delete");
 
     const updateKeyword = (newKeyword) => {
         setKeyword(newKeyword);
 
         // Change delete button to edit if either input modified
         if (newKeyword !== initKeyword) {
-            setModified(true);
+            setButton("edit");
         // Change edit back to delete if returned to original value
         } else if (timestamp === initTimestamp) {
-            setModified(false);
+            setButton("delete");
         }
     };
 
@@ -32,10 +34,25 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
 
         // Change delete button to edit if either input modified
         if (newTimestamp !== initTimestamp) {
-            setModified(true);
+            setButton("edit");
         // Change edit back to delete if returned to original value
         } else if (keyword === initKeyword) {
-            setModified(false);
+            setButton("delete");
+        }
+    };
+
+    const deleteKeyword = async () => {
+        // Change delete button to loading animation, make API call
+        setButton("loading");
+        const result = await send_post_request("delete_schedule_keyword", {"keyword": keyword});
+
+        // Reload if successfully deleted
+        if (result.ok) {
+            location.reload();
+        // Show error in alert, stop loading animation
+        } else {
+            alert(await result.text());
+            setButton("delete");
         }
     };
 
@@ -59,17 +76,23 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
             </td>
             <td className="min align-middle">
                 {(() => {
-                    switch(modified) {
-                        case true:
+                    switch(button) {
+                        case "delete":
+                            return (
+                                <Button variant="danger" size="sm" onClick={deleteKeyword}>
+                                    <i className="bi-trash"></i>
+                                </Button>
+                            );
+                        case "edit":
                             return (
                                 <Button variant="primary" size="sm">
                                     <i className="bi-arrow-clockwise"></i>
                                 </Button>
                             );
-                        case false:
+                        case "loading":
                             return (
-                                <Button variant="danger" size="sm">
-                                    <i className="bi-trash"></i>
+                                <Button variant="primary" size="sm" onClick={deleteKeyword}>
+                                    <div className="spinner-border spinner-border-sm" role="status"></div>
                                 </Button>
                             );
                     }
