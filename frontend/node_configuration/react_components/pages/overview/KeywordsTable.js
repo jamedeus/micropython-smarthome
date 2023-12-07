@@ -14,7 +14,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
     const [keyword, setKeyword] = useState(initKeyword);
     const [timestamp, setTimestamp] = useState(initTimestamp);
 
-    // Create state to track if either input was modified
+    // Create state to track button icon
     const [button, setButton] = useState("delete");
 
     const updateKeyword = (newKeyword) => {
@@ -55,7 +55,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
         // Reload if successfully deleted
         if (result.ok) {
             location.reload();
-            // Show error in alert, stop loading animation
+        // Show error in alert, stop loading animation
         } else {
             alert(await result.text());
             setButton("edit");
@@ -70,7 +70,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
         // Reload if successfully deleted
         if (result.ok) {
             location.reload();
-        // Show error in alert, stop loading animation
+            // Show error in alert, stop loading animation
         } else {
             alert(await result.text());
             setButton("delete");
@@ -83,6 +83,111 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
                 <Form.Control
                     type="text"
                     className="keyword text-center"
+                    placeholder="Keyword"
+                    value={keyword}
+                    onChange={(e) => updateKeyword(e.target.value)}
+                />
+            </td>
+            <td className="align-middle">
+                <Form.Control
+                    type="time"
+                    className="keyword text-center"
+                    value={timestamp}
+                    onChange={(e) => updateTimestamp(e.target.value)}
+                />
+            </td>
+            <td className="min align-middle">
+            {(() => {
+                switch(button) {
+                    case "delete":
+                        return (
+                            <Button variant="danger" size="sm" onClick={deleteKeyword}>
+                                <i className="bi-trash"></i>
+                            </Button>
+                        );
+                    case "edit":
+                        return (
+                            <Button variant="primary" size="sm" onClick={editKeyword}>
+                                <i className="bi-arrow-clockwise"></i>
+                            </Button>
+                        );
+                    case "loading":
+                        return (
+                            <Button variant="primary" size="sm" onClick={deleteKeyword}>
+                                <div className="spinner-border spinner-border-sm" role="status"></div>
+                            </Button>
+                        );
+                }
+            })()}
+            </td>
+        </tr>
+    );
+};
+
+KeywordRow.propTypes = {
+    initKeyword: PropTypes.string,
+    initTimestamp: PropTypes.string
+};
+
+
+const NewKeywordRow = () => {
+    // Create state objects for both inputs
+    const [keyword, setKeyword] = useState("");
+    const [timestamp, setTimestamp] = useState("");
+
+    // Create state to track button icon, enable state
+    const [buttonLoading, setButtonLoading] = useState(false);
+    const [buttonDisabled, setButtonDisabled] = useState(true);
+
+    const updateKeyword = (newKeyword) => {
+        setKeyword(newKeyword);
+
+        // Change delete button to edit if either input modified
+        if (newKeyword !== "" && timestamp !== "") {
+            setButtonDisabled(false);
+        // Change edit back to delete if returned to original value
+        } else {
+            setButtonDisabled(true);
+        }
+    };
+
+    const updateTimestamp = (newTimestamp) => {
+        setTimestamp(newTimestamp);
+
+        // Change delete button to edit if either input modified
+        if (newTimestamp !== "" && keyword !== "") {
+            setButtonDisabled(false);
+            // Change edit back to delete if returned to original value
+        } else {
+            setButtonDisabled(true);
+        }
+    };
+
+    const addKeyword = async () => {
+        setButtonLoading(true);
+        const payload = {
+            "keyword": keyword,
+            "timestamp": timestamp
+        }
+        const result = await send_post_request("add_schedule_keyword", payload);
+
+        // Reload if successfully added
+        if (result.ok) {
+            location.reload();
+        // Show error in alert, stop loading animation
+        } else {
+            alert(await result.text());
+            setButtonLoading(false);
+        }
+    };
+
+    return (
+        <tr id={`${keyword}_row`}>
+            <td className="align-middle">
+                <Form.Control
+                    type="text"
+                    className="keyword text-center"
+                    placeholder="Keyword"
                     value={keyword}
                     onChange={(e) => updateKeyword(e.target.value)}
                 />
@@ -97,22 +202,16 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
             </td>
             <td className="min align-middle">
                 {(() => {
-                    switch(button) {
-                        case "delete":
+                    switch(buttonLoading) {
+                        case false:
                             return (
-                                <Button variant="danger" size="sm" onClick={deleteKeyword}>
-                                    <i className="bi-trash"></i>
+                                <Button variant="primary" size="sm" disabled={buttonDisabled} onClick={addKeyword}>
+                                    <i className="bi-plus"></i>
                                 </Button>
                             );
-                        case "edit":
+                        case true:
                             return (
-                                <Button variant="primary" size="sm" onClick={editKeyword}>
-                                    <i className="bi-arrow-clockwise"></i>
-                                </Button>
-                            );
-                        case "loading":
-                            return (
-                                <Button variant="primary" size="sm" onClick={deleteKeyword}>
+                                <Button variant="primary" size="sm">
                                     <div className="spinner-border spinner-border-sm" role="status"></div>
                                 </Button>
                             );
@@ -121,11 +220,6 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
             </td>
         </tr>
     );
-};
-
-KeywordRow.propTypes = {
-    initKeyword: PropTypes.string,
-    initTimestamp: PropTypes.string
 };
 
 
@@ -157,6 +251,7 @@ const KeywordsTable = () => {
                                     initTimestamp={context.schedule_keywords[keyword]}
                                 />
                             )}
+                            <NewKeywordRow />
                         </tbody>
                     </Table>
                 </div>
