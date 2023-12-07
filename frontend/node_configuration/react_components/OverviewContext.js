@@ -21,8 +21,37 @@ export const OverviewContextProvider = ({ children }) => {
         };
     });
 
+    const addScheduleKeyword = (keyword, timestamp) => {
+        let update = { ...context.schedule_keywords };
+        update[keyword] = timestamp;
+        setContext({ ...context, ["schedule_keywords"]: update})
+    };
+
+    const editScheduleKeyword = (keyword_old, keyword_new, timestamp_new) => {
+        let update = { ...context.schedule_keywords };
+        if (keyword_old === keyword_new) {
+            update[keyword_old] = timestamp_new;
+        } else {
+            delete update[keyword_old];
+            update[keyword_new] = timestamp_new;
+        }
+        setContext({ ...context, ["schedule_keywords"]: update})
+    };
+
+    const deleteScheduleKeyword = (keyword) => {
+        let update = { ...context.schedule_keywords };
+        delete update[keyword];
+        setContext({ ...context, ["schedule_keywords"]: update})
+    };
+
     return (
-        <OverviewContext.Provider value={{ context, setContext }}>
+        <OverviewContext.Provider value={{
+            context,
+            setContext,
+            addScheduleKeyword,
+            editScheduleKeyword,
+            deleteScheduleKeyword
+        }}>
             {children}
         </OverviewContext.Provider>
     );

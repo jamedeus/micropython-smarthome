@@ -10,6 +10,9 @@ import { send_post_request } from 'util/django_util';
 
 
 const KeywordRow = ({initKeyword, initTimestamp}) => {
+    // Get callbacks used to modify keywords
+    const { editScheduleKeyword, deleteScheduleKeyword } = useContext(OverviewContext);
+
     // Create state objects for both inputs
     const [keyword, setKeyword] = useState(initKeyword);
     const [timestamp, setTimestamp] = useState(initTimestamp);
@@ -53,9 +56,11 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
         const result = await send_post_request("edit_schedule_keyword", payload);
 
         // Reload if successfully deleted
+        // If successful update context (re-renders this row) and change button back
         if (result.ok) {
-            location.reload();
-        // Show error in alert, stop loading animation
+            editScheduleKeyword(initKeyword, keyword, timestamp);
+            setButton("delete");
+        // Show error in alert if failed, stop loading animation
         } else {
             alert(await result.text());
             setButton("edit");
@@ -67,10 +72,10 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
         setButton("loading");
         const result = await send_post_request("delete_schedule_keyword", {"keyword": keyword});
 
-        // Reload if successfully deleted
+        // If successful delete from context and re-render (removes this row)
         if (result.ok) {
-            location.reload();
-            // Show error in alert, stop loading animation
+            deleteScheduleKeyword(keyword);
+        // Show error in alert if failed, stop loading animation
         } else {
             alert(await result.text());
             setButton("delete");
@@ -131,6 +136,9 @@ KeywordRow.propTypes = {
 
 
 const NewKeywordRow = () => {
+    // Get context and callback (used to add new row)
+    const { addScheduleKeyword } = useContext(OverviewContext);
+
     // Create state objects for both inputs
     const [keyword, setKeyword] = useState("");
     const [timestamp, setTimestamp] = useState("");
@@ -171,10 +179,14 @@ const NewKeywordRow = () => {
         }
         const result = await send_post_request("add_schedule_keyword", payload);
 
-        // Reload if successfully added
+        // If successful add to context (renders new row) + reset new keyword row
         if (result.ok) {
-            location.reload();
-        // Show error in alert, stop loading animation
+            addScheduleKeyword(keyword, timestamp);
+            setKeyword("");
+            setTimestamp("");
+            setButtonDisabled(true);
+            setButtonLoading(false);
+        // Show error in alert if failed, stop loading animation
         } else {
             alert(await result.text());
             setButtonLoading(false);
@@ -230,7 +242,7 @@ const KeywordsTable = () => {
     // Set default collapse state
     const [open, setOpen] = useState(true);
 
-    // Render full layout with metadata, wifi, IR Blaster, and instance cards
+    // Render table with row for each existing keyword + empty row to add new keywords
     return (
         <Row id="keywords" className="section px-0 pt-2">
             <h3 className="text-center my-1" onClick={() => setOpen(!open)}>Schedule Keywords</h3>
