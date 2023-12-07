@@ -41,6 +41,27 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
         }
     };
 
+    const editKeyword = async () => {
+        const payload = {
+            "keyword_old": initKeyword,
+            "keyword_new": keyword,
+            "timestamp_new": timestamp
+        };
+
+        // Change delete button to loading animation, make API call
+        setButton("loading");
+        const result = await send_post_request("edit_schedule_keyword", payload);
+
+        // Reload if successfully deleted
+        if (result.ok) {
+            location.reload();
+            // Show error in alert, stop loading animation
+        } else {
+            alert(await result.text());
+            setButton("edit");
+        }
+    };
+
     const deleteKeyword = async () => {
         // Change delete button to loading animation, make API call
         setButton("loading");
@@ -85,7 +106,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
                             );
                         case "edit":
                             return (
-                                <Button variant="primary" size="sm">
+                                <Button variant="primary" size="sm" onClick={editKeyword}>
                                     <i className="bi-arrow-clockwise"></i>
                                 </Button>
                             );
