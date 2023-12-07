@@ -1,4 +1,5 @@
 import React, { useContext, useState } from 'react';
+import PropTypes from 'prop-types';
 import { OverviewContext } from 'root/OverviewContext';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
@@ -7,38 +8,89 @@ import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 
 
+const KeywordRow = ({initKeyword, initTimestamp}) => {
+    // Create state objects for both inputs
+    const [keyword, setKeyword] = useState(initKeyword);
+    const [timestamp, setTimestamp] = useState(initTimestamp);
+    // Create state to track if either input was modified
+    const [modified, setModified] = useState(false);
+
+    const updateKeyword = (newKeyword) => {
+        setKeyword(newKeyword);
+
+        // Change delete button to edit if either input modified
+        if (newKeyword !== initKeyword) {
+            setModified(true);
+        // Change edit back to delete if returned to original value
+        } else if (timestamp === initTimestamp) {
+            setModified(false);
+        }
+    };
+
+    const updateTimestamp = (newTimestamp) => {
+        setTimestamp(newTimestamp);
+
+        // Change delete button to edit if either input modified
+        if (newTimestamp !== initTimestamp) {
+            setModified(true);
+        // Change edit back to delete if returned to original value
+        } else if (keyword === initKeyword) {
+            setModified(false);
+        }
+    };
+
+    return (
+        <tr id={`${keyword}_row`}>
+            <td className="align-middle">
+                <Form.Control
+                    type="text"
+                    className="keyword text-center"
+                    value={keyword}
+                    onChange={(e) => updateKeyword(e.target.value)}
+                />
+            </td>
+            <td className="align-middle">
+                <Form.Control
+                    type="time"
+                    className="keyword text-center"
+                    value={timestamp}
+                    onChange={(e) => updateTimestamp(e.target.value)}
+                />
+            </td>
+            <td className="min align-middle">
+                {(() => {
+                    switch(modified) {
+                        case true:
+                            return (
+                                <Button variant="primary" size="sm">
+                                    <i className="bi-arrow-clockwise"></i>
+                                </Button>
+                            );
+                        case false:
+                            return (
+                                <Button variant="danger" size="sm">
+                                    <i className="bi-trash"></i>
+                                </Button>
+                            );
+                    }
+                })()}
+            </td>
+        </tr>
+    );
+};
+
+KeywordRow.propTypes = {
+    initKeyword: PropTypes.string,
+    initTimestamp: PropTypes.string
+};
+
+
 const KeywordsTable = () => {
     // Get django context
     const { context } = useContext(OverviewContext);
 
     // Set default collapse state
     const [open, setOpen] = useState(true);
-
-    function get_table_row(keyword) {
-        return (
-            <tr id={`${keyword}_row`}>
-                <td className="align-middle">
-                    <Form.Control
-                        type="text"
-                        className="keyword text-center"
-                        value={keyword}
-                    />
-                </td>
-                <td className="align-middle">
-                    <Form.Control
-                        type="time"
-                        className="keyword text-center"
-                        value={context.schedule_keywords[keyword]}
-                    />
-                </td>
-                <td className="min align-middle">
-                    <Button variant="danger" size="sm">
-                        <i className="bi-trash"></i>
-                    </Button>
-                </td>
-            </tr>
-        );
-    }
 
     // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (
@@ -55,7 +107,12 @@ const KeywordsTable = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {Object.keys(context.schedule_keywords).map(keyword => get_table_row(keyword))}
+                            {Object.keys(context.schedule_keywords).map(keyword =>
+                                <KeywordRow
+                                    initKeyword={keyword}
+                                    initTimestamp={context.schedule_keywords[keyword]}
+                                />
+                            )}
                         </tbody>
                     </Table>
                 </div>
