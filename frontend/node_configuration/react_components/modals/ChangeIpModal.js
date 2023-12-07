@@ -15,9 +15,7 @@ export const ChangeIpModalContext = createContext();
 export const ChangeIpModalContextProvider = ({ children }) => {
     const [changeIpModalContent, setChangeIpModalContent] = useState({
         visible: false,
-        stage: 'prompt',
-        ipAddress: '',
-        buttonDisabled: true
+        stage: 'prompt'
     });
 
     const handleClose = () => {
@@ -49,6 +47,7 @@ ChangeIpModalContextProvider.propTypes = {
     children: PropTypes.node,
 };
 
+
 export const ChangeIpModal = () => {
     // Get state object that determines modal contents
     const { changeIpModalContent, setChangeIpModalContent, handleClose } = useContext(ChangeIpModalContext);
@@ -56,13 +55,20 @@ export const ChangeIpModal = () => {
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
+    // Create state object for IP field
+    const [ ipAddress, setipAddress ] = useState("");
+
+    // Create state object for submit button enable state
+    const [ submitDisabled, setSubmitDisabled ] = useState(true);
+
     async function changeIP() {
-        // Start animation
+        // Start animation, disable submit button
         setChangeIpModalContent({ ...changeIpModalContent, ["stage"]: "loading" });
+        setSubmitDisabled(true);
 
         // Send API call, wait for backend to download config file from target node
         const body = {
-            'new_ip': changeIpModalContent.ipAddress ,
+            'new_ip': ipAddress,
             'friendly_name': changeIpModalContent.friendly_name
         };
         const response = await send_post_request("change_node_ip", body);
@@ -90,7 +96,7 @@ export const ChangeIpModal = () => {
                 ["visible"]: true,
                 ["title"]: "Connection Error",
                 ["error"]: "unreachable",
-                ["body"]: changeIpModalContent.ipAddress
+                ["body"]: ipAddress
             });
 
         // Other error, show in modal
@@ -110,35 +116,33 @@ export const ChangeIpModal = () => {
                 ["body"]: await response.text()
             });
         }
+
+        // Re-enable submit button
+        setSubmitDisabled(false);
     }
 
     // Takes current value of IP field, enables upload button
     // if passes regex, otherwise disables upload button
     const isIpValid = (ip) => {
+        setipAddress(ip);
         if (ipRegex.test(ip)) {
-            setChangeIpModalContent({ ...changeIpModalContent,
-                ["buttonDisabled"]: false,
-                ["ipAddress"]: ip
-            });
+            setSubmitDisabled(false);
         } else {
-            setChangeIpModalContent({ ...changeIpModalContent,
-                ["buttonDisabled"]: true,
-                ["ipAddress"]: ip
-            });
+            setSubmitDisabled(true);
         }
     };
 
     // Handler for IP address field, formats IP as user types
     const setIp = (value) => {
         // Format value entered by user
-        const newIP = formatIp(changeIpModalContent.ipAddress, value);
+        const newIP = formatIp(ipAddress, value);
         // Enable upload button if IP is valid, set IP either way
         isIpValid(newIP);
     };
 
     // Change IP if enter key pressed in field with valid IP
     const handleEnterKey = (e) => {
-        if (e.key === "Enter" && !changeIpModalContent.buttonDisabled) {
+        if (e.key === "Enter" && !submitDisabled) {
             changeIP();
         }
     };
@@ -158,7 +162,7 @@ export const ChangeIpModal = () => {
                                     <Form.Label><b>New IP:</b></Form.Label>
                                     <Form.Control
                                         type="text"
-                                        value={changeIpModalContent.ipAddress}
+                                        value={ipAddress}
                                         onChange={(e) => setIp(e.target.value)}
                                         onKeyDown={handleEnterKey}
                                     />
@@ -172,11 +176,7 @@ export const ChangeIpModal = () => {
                 })()}
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-0">
-                <Button
-                    variant="success"
-                    disabled={changeIpModalContent.buttonDisabled}
-                    onClick={changeIP}
-                >
+                <Button variant="success" disabled={submitDisabled} onClick={changeIP} >
                     Change
                 </Button>
             </Modal.Footer>
