@@ -39,11 +39,32 @@ export const WifiModal = () => {
     const [ ssid, setSsid ] = useState("");
     const [ password, setPassword ] = useState("");
 
+    // Create state object for submit button enable state
+    const [ submitDisabled, setSubmitDisabled ] = useState(true);
+
     // Submit handler, post credentials to backend and close modal
     const setWifiCredentials = () => {
         send_post_request("set_default_credentials", {"ssid": ssid, "password": password});
         handleClose();
     };
+
+    const updateSsid = (newSsid) => {
+        setSsid(newSsid);
+        if (newSsid !== "" && password !== "") {
+            setSubmitDisabled(false);
+        } else {
+            setSubmitDisabled(true);
+        }
+    }
+
+    const updatePassword = (newPassword) => {
+        setPassword(newPassword);
+        if (newPassword !== "" && ssid !== "") {
+            setSubmitDisabled(false);
+        } else {
+            setSubmitDisabled(true);
+        }
+    }
 
     // Submit if enter key pressed in either field (ignore if either field empty)
     const handleEnterKey = (e) => {
@@ -64,7 +85,7 @@ export const WifiModal = () => {
                     type="text"
                     className="mb-2"
                     value={ssid}
-                    onChange={(e) => setSsid(e.target.value)}
+                    onChange={(e) => updateSsid(e.target.value)}
                     onKeyDown={handleEnterKey}
                 />
 
@@ -72,13 +93,13 @@ export const WifiModal = () => {
                 <Form.Control
                     type="password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => updatePassword(e.target.value)}
                     onKeyDown={handleEnterKey}
                 />
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-0">
                 <Button variant="secondary" onClick={handleClose}>Cancel</Button>
-                <Button variant="success" onClick={setWifiCredentials}>OK</Button>
+                <Button variant="success" onClick={setWifiCredentials} disabled={submitDisabled}>OK</Button>
             </Modal.Footer>
         </Modal>
     );

@@ -16,8 +16,7 @@ export const RestoreModalContextProvider = ({ children }) => {
     const [restoreModalContent, setRestoreModalContent] = useState({
         visible: false,
         stage: 'prompt',
-        ipAddress: '',
-        buttonDisabled: true
+        ipAddress: ''
     });
 
     const handleClose = () => {
@@ -55,9 +54,13 @@ export const RestoreModal = () => {
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
+    // Create state object for submit button enable state
+    const [ submitDisabled, setSubmitDisabled ] = useState(true);
+
     async function restoreConfig() {
-        // Start animation
+        // Start animation, disable submit button
         setRestoreModalContent({ ...restoreModalContent, ["stage"]: "loading" });
+        setSubmitDisabled(true);
 
         // Send API call, wait for backend to download config file from target node
         const body = {'ip' : restoreModalContent.ipAddress };
@@ -110,21 +113,20 @@ export const RestoreModal = () => {
         } else {
             alert(await response.text());
         }
+
+        // Re-enable submit button
+        setSubmitDisabled(false);
     }
 
     // Takes current value of IP field, enables upload button
     // if passes regex, otherwise disables upload button
     const isIpValid = (ip) => {
         if (ipRegex.test(ip)) {
-            setRestoreModalContent({ ...restoreModalContent,
-                ["buttonDisabled"]: false,
-                ["ipAddress"]: ip
-            });
+            setSubmitDisabled(false);
+            setRestoreModalContent({ ...restoreModalContent, ["ipAddress"]: ip });
         } else {
-            setRestoreModalContent({ ...restoreModalContent,
-                ["buttonDisabled"]: true,
-                ["ipAddress"]: ip
-            });
+            setSubmitDisabled(true);
+            setRestoreModalContent({ ...restoreModalContent, ["ipAddress"]: ip });
         }
     };
 
@@ -138,7 +140,7 @@ export const RestoreModal = () => {
 
     // Restore config if enter key pressed in field with valid IP
     const handleEnterKey = (e) => {
-        if (e.key === "Enter" && !restoreModalContent.buttonDisabled) {
+        if (e.key === "Enter" && !submitDisabled) {
             restoreConfig();
         }
     };
@@ -173,7 +175,7 @@ export const RestoreModal = () => {
             <Modal.Footer className="mx-auto pt-0">
                 <Button
                     variant="success"
-                    disabled={restoreModalContent.buttonDisabled}
+                    disabled={submitDisabled}
                     onClick={restoreConfig}
                 >
                     Restore
