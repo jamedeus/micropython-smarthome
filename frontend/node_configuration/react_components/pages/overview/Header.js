@@ -49,7 +49,7 @@ const Header = () => {
         <div className="d-flex justify-content-between">
             <button type="button" className="btn my-auto" id="back_button" style={{visibility: "hidden"}}><i className="bi-chevron-left"></i></button>
             <h1 className="my-3">Configure Nodes</h1>
-            <Dropdown className="my-auto">
+            <Dropdown align="end" className="my-auto">
                 <Dropdown.Toggle variant="light" id="settings-button">
                     <i className="bi-gear-fill"></i>
                 </Dropdown.Toggle>

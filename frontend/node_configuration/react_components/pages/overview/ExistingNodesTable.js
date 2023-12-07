@@ -35,7 +35,7 @@ const ExistingNodeRow = ({ friendly_name, ip, onDelete }) => {
                 <span className="form-control keyword text-center">{ip}</span>
             </td>
             <td className="min align-middle">
-                <Dropdown className="my-auto">
+                <Dropdown align="end" className="my-auto">
                     <Dropdown.Toggle variant="primary" size="sm">
                         <i className="bi-list"></i>
                     </Dropdown.Toggle>
