@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, useCallback } from 'react';
+import Dropdown from 'react-bootstrap/Dropdown';
 import ListGroup from 'react-bootstrap/ListGroup';
 import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Modal from 'react-bootstrap/Modal';
@@ -7,34 +7,10 @@ import Form from 'react-bootstrap/Form';
 import { send_post_request } from 'util/django_util';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
-export const GpsModalContext = createContext();
-
-export const GpsModalContextProvider = ({ children }) => {
-    // Create state object to control visibility
-    const [ show, setShow ] = useState(false);
-
-    const handleClose = () => {
-        setShow(false);
-    };
-
-    const showGpsModal = () => {
-        setShow(true);
-    };
-
-    return (
-        <GpsModalContext.Provider value={{ show, handleClose, showGpsModal }}>
-            {children}
-        </GpsModalContext.Provider>
-    );
-};
-
-GpsModalContextProvider.propTypes = {
-    children: PropTypes.node,
-};
 
 export const GpsModal = () => {
-    // Get state object that controls visibility
-    const { show, handleClose } = useContext(GpsModalContext);
+    // Create state object to control visibility
+    const [ show, setShow ] = useState(false);
 
     // Create state object for location search results
     const [ locationResults, setLocationResults ] = useState([]);
@@ -79,38 +55,42 @@ export const GpsModal = () => {
     async function select_location(name, lat, lon) {
         let data = {name, lat, lon};
         send_post_request('set_default_location', data);
-        handleClose();
+        setShow(false);
     }
 
     return (
-        <Modal show={show} onHide={handleClose} centered>
-            <HeaderWithCloseButton title="Set Default Location" onClose={handleClose} />
+        <>
+            <Dropdown.Item onClick={() => setShow(true)}>Set GPS coordinates</Dropdown.Item>
 
-            <Modal.Body className="d-flex flex-column mx-auto text-center">
-                <p>Approximate GPS coordinates are used to determine sunrise and sunset times. This is looked up from your IP by default.</p>
+            <Modal show={show} onHide={() => setShow(false)} centered>
+                <HeaderWithCloseButton title="Set Default Location" onClose={() => setShow(false)} />
 
-                <p>If your sunrise and sunset times are incorrect, type a city/state below and click the closest suggestion.</p>
+                <Modal.Body className="d-flex flex-column mx-auto text-center">
+                    <p>Approximate GPS coordinates are used to determine sunrise and sunset times. This is looked up from your IP by default.</p>
 
-                <Form.Control
-                    type="text"
-                    placeholder="Location Search"
-                    className="text-center"
-                    onChange={(e) => get_suggestions(e.target.value)}
-                />
-                <ListGroup className="mt-2">
-                    {locationResults.map((suggestion) => {
-                        return (
-                            <ListGroupItem onClick={() => select_location(
-                                suggestion.display_name,
-                                suggestion.lat,
-                                suggestion.lon
-                            )}>
-                                {suggestion.display_name}
-                            </ListGroupItem>
-                        );
-                    })}
-                </ListGroup>
-            </Modal.Body>
-        </Modal>
+                    <p>If your sunrise and sunset times are incorrect, type a city/state below and click the closest suggestion.</p>
+
+                    <Form.Control
+                        type="text"
+                        placeholder="Location Search"
+                        className="text-center"
+                        onChange={(e) => get_suggestions(e.target.value)}
+                    />
+                    <ListGroup className="mt-2">
+                        {locationResults.map((suggestion) => {
+                            return (
+                                <ListGroupItem onClick={() => select_location(
+                                    suggestion.display_name,
+                                    suggestion.lat,
+                                    suggestion.lon
+                                )}>
+                                    {suggestion.display_name}
+                                </ListGroupItem>
+                            );
+                        })}
+                    </ListGroup>
+                </Modal.Body>
+            </Modal>
+        </>
     );
 };

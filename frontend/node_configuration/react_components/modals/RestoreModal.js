@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
+import Dropdown from 'react-bootstrap/Dropdown';
 import { sleep } from 'util/helper_functions';
 import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
@@ -10,66 +10,42 @@ import { ErrorModalContext } from 'modals/ErrorModal';
 import { LoadingSpinner, CheckmarkAnimation } from 'modals/animations';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
-export const RestoreModalContext = createContext();
-
-export const RestoreModalContextProvider = ({ children }) => {
-    const [restoreModalContent, setRestoreModalContent] = useState({
-        visible: false,
-        stage: 'prompt',
-        ipAddress: ''
-    });
-
-    const handleClose = () => {
-        setRestoreModalContent({ ...restoreModalContent, ["visible"]: false });
-    };
-
-    const showRestoreModal = () => {
-        setRestoreModalContent({
-            ...restoreModalContent,
-            ["visible"]: true,
-            ["stage"]: "prompt"
-        });
-    };
-
-    return (
-        <RestoreModalContext.Provider value={{
-            restoreModalContent,
-            setRestoreModalContent,
-            handleClose,
-            showRestoreModal
-        }}>
-            {children}
-        </RestoreModalContext.Provider>
-    );
-};
-
-RestoreModalContextProvider.propTypes = {
-    children: PropTypes.node,
-};
 
 export const RestoreModal = () => {
-    // Get state object that determines modal contents
-    const { restoreModalContent, setRestoreModalContent, handleClose } = useContext(RestoreModalContext);
-
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
+
+    // Create state object to control visibility
+    const [ show, setShow ] = useState(false);
+
+    // Create state object for stage (prompt, loading, complete)
+    const [ stage, setStage ] = useState("prompt");
+
+    // Create state object for IP field
+    const [ ipAddress, setipAddress ] = useState("");
 
     // Create state object for submit button enable state
     const [ submitDisabled, setSubmitDisabled ] = useState(true);
 
+    // Ensure stage is set to prompt when showing modal
+    const showRestoreModal = () => {
+        setStage("prompt");
+        setShow(true);
+    };
+
     async function restoreConfig() {
         // Start animation, disable submit button
-        setRestoreModalContent({ ...restoreModalContent, ["stage"]: "loading" });
+        setStage("loading");
         setSubmitDisabled(true);
 
         // Send API call, wait for backend to download config file from target node
-        const body = {'ip' : restoreModalContent.ipAddress };
+        const body = {'ip' : ipAddress };
         const response = await send_post_request("restore_config", body);
 
         // Restored successfully
         if (response.ok) {
             // Show success checkmark animation
-            setRestoreModalContent({ ...restoreModalContent, ["stage"]: "complete" });
+            setStage("complete");
 
             // Wait for animation to complete before reloading
             await sleep(1200);
@@ -77,30 +53,20 @@ export const RestoreModal = () => {
 
         // Unreachable
         } else if (response.status == 404) {
-            // Hide upload modal (set same stage to prevent visual flash)
-            setRestoreModalContent({
-                ...restoreModalContent,
-                ["visible"]: false,
-                ["stage"]: "loading"
-            });
-            // Show error modal with possible connection failure reasons
+            // Hide upload modal, show error modal with possible connection failure reasons
+            setShow(false);
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
                 ["title"]: "Connection Error",
                 ["error"]: "unreachable",
-                ["body"]: restoreModalContent.ipAddress
+                ["body"]: ipAddress
             });
 
         // Duplicate
         } else if (response.status == 409) {
-            // Hide upload modal (set same stage to prevent visual flash)
-            setRestoreModalContent({
-                ...restoreModalContent,
-                ["visible"]: false,
-                ["stage"]: "loading"
-            });
-            // Show error modal
+            // Hide upload modal, show error modal
+            setShow(false);
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
@@ -123,17 +89,17 @@ export const RestoreModal = () => {
     const isIpValid = (ip) => {
         if (ipRegex.test(ip)) {
             setSubmitDisabled(false);
-            setRestoreModalContent({ ...restoreModalContent, ["ipAddress"]: ip });
+            setipAddress(ip);
         } else {
             setSubmitDisabled(true);
-            setRestoreModalContent({ ...restoreModalContent, ["ipAddress"]: ip });
+            setipAddress(ip);
         }
     };
 
     // Handler for IP address field, formats IP as user types
     const setIp = (value) => {
         // Format value entered by user
-        const newIP = formatIp(restoreModalContent.ipAddress, value);
+        const newIP = formatIp(ipAddress, value);
         // Enable upload button if IP is valid, set IP either way
         isIpValid(newIP);
     };
@@ -146,41 +112,45 @@ export const RestoreModal = () => {
     };
 
     return (
-        <Modal show={restoreModalContent.visible} onHide={handleClose} centered>
-            <HeaderWithCloseButton title="Restore Config" onClose={handleClose} />
+        <>
+            <Dropdown.Item onClick={showRestoreModal}>Restore config</Dropdown.Item>
 
-            <Modal.Body className="d-flex flex-column mx-auto text-center">
-                <p>This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
-                {(() => {
-                    switch (restoreModalContent.stage) {
-                        case "prompt":
-                            return (
-                                <>
-                                    <Form.Label><b>IP Address:</b></Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        value={restoreModalContent.ipAddress}
-                                        onChange={(e) => setIp(e.target.value)}
-                                        onKeyDown={handleEnterKey}
-                                    />
-                                </>
-                            );
-                        case "loading":
-                            return <LoadingSpinner />;
-                        case "complete":
-                            return <CheckmarkAnimation />;
-                    }
-                })()}
-            </Modal.Body>
-            <Modal.Footer className="mx-auto pt-0">
-                <Button
-                    variant="success"
-                    disabled={submitDisabled}
-                    onClick={restoreConfig}
-                >
-                    Restore
-                </Button>
-            </Modal.Footer>
-        </Modal>
+            <Modal show={show} onHide={() => setShow(false)} centered>
+                <HeaderWithCloseButton title="Restore Config" onClose={() => setShow(false)} />
+
+                <Modal.Body className="d-flex flex-column mx-auto text-center">
+                    <p>This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
+                    {(() => {
+                        switch (stage) {
+                            case "prompt":
+                                return (
+                                    <>
+                                        <Form.Label><b>IP Address:</b></Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            value={ipAddress}
+                                            onChange={(e) => setIp(e.target.value)}
+                                            onKeyDown={handleEnterKey}
+                                        />
+                                    </>
+                                );
+                            case "loading":
+                                return <LoadingSpinner />;
+                            case "complete":
+                                return <CheckmarkAnimation />;
+                        }
+                    })()}
+                </Modal.Body>
+                <Modal.Footer className="mx-auto pt-0">
+                    <Button
+                        variant="success"
+                        disabled={submitDisabled}
+                        onClick={restoreConfig}
+                    >
+                        Restore
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     );
 };

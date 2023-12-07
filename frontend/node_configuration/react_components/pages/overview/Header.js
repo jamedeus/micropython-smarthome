@@ -3,19 +3,15 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { UploadModalContext } from 'modals/UploadModal';
 import { ErrorModalContext } from 'modals/ErrorModal';
 import { sleep } from 'util/helper_functions';
-import { DesktopModalContext } from 'modals/DesktopIntegrationModal';
-import { RestoreModalContext } from 'modals/RestoreModal';
-import { WifiModalContext } from 'modals/WifiModal';
-import { GpsModalContext } from 'modals/GpsModal';
+import { DesktopModal } from 'modals/DesktopIntegrationModal';
+import { RestoreModal } from 'modals/RestoreModal';
+import { WifiModal } from 'modals/WifiModal';
+import { GpsModal } from 'modals/GpsModal';
 
 const Header = () => {
-    // Get callbacks for upload, error, and desktop integration modals
+    // Get callbacks for upload and error modals
     const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
-    const { showDesktopModal } = useContext(DesktopModalContext);
-    const { showRestoreModal } = useContext(RestoreModalContext);
-    const { showWifiModal } = useContext(WifiModalContext);
-    const { showGpsModal } = useContext(GpsModalContext);
 
     async function reuploadAll() {
         // Show upload modal with loading spinner
@@ -54,11 +50,11 @@ const Header = () => {
                     <i className="bi-gear-fill"></i>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                    <Dropdown.Item onClick={showWifiModal}>Set WIFI credentials</Dropdown.Item>
-                    <Dropdown.Item onClick={showGpsModal}>Set GPS coordinates</Dropdown.Item>
+                    <WifiModal />
+                    <GpsModal />
                     <Dropdown.Item onClick={reuploadAll}>Re-upload all</Dropdown.Item>
-                    <Dropdown.Item onClick={showRestoreModal}>Restore config</Dropdown.Item>
-                    <Dropdown.Item onClick={showDesktopModal}>Desktop integration</Dropdown.Item>
+                    <RestoreModal />
+                    <DesktopModal />
                 </Dropdown.Menu>
             </Dropdown>
         </div>

@@ -5,13 +5,9 @@ import Header from './Header';
 import KeywordsTable from './KeywordsTable';
 import NewConfigTable from './NewConfigTable';
 import ExistingNodesTable from './ExistingNodesTable';
-import { GpsModal } from 'modals/GpsModal';
-import { WifiModal } from 'modals/WifiModal';
 import { ErrorModal } from 'modals/ErrorModal';
 import { UploadModal } from 'modals/UploadModal';
-import { RestoreModal } from 'modals/RestoreModal';
 import { ChangeIpModal } from 'modals/ChangeIpModal';
-import { DesktopModal } from 'modals/DesktopIntegrationModal';
 import { ModalContextProvider } from 'modals/ModalContextProvider';
 
 
@@ -64,12 +60,8 @@ const App = () => {
                 </div>
 
                 {/* Modals (hidden) */}
-                <GpsModal />
-                <WifiModal />
                 <UploadModal />
                 <ErrorModal />
-                <DesktopModal />
-                <RestoreModal />
                 <ChangeIpModal />
             </div>
         </ModalContextProvider>
