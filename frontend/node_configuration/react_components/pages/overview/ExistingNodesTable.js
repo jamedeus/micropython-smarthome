@@ -62,8 +62,8 @@ const ExistingNodesTable = () => {
     // Set default collapse state
     const [open, setOpen] = useState(true);
 
-    // Get django context (contains existing nodes)
-    const { context } = useContext(OverviewContext);
+    // Get django context (contains existing nodes) and callback to delete node
+    const { context, deleteExistingNode } = useContext(OverviewContext);
 
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
@@ -83,9 +83,10 @@ const ExistingNodesTable = () => {
     async function delete_node(friendly_name) {
         let result = await send_post_request("delete_node", friendly_name);
 
-        // Refresh page if successfully deleted
+        // If successful close modal and update context (rerender without this row)
         if (result.ok) {
-            location.reload();
+            deleteExistingNode(friendly_name);
+            setErrorModalContent({ ...errorModalContent, ["visible"]: false });
 
         // Show error if failed
         } else {

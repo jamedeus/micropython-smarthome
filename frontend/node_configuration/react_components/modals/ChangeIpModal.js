@@ -7,6 +7,7 @@ import { sleep } from 'util/helper_functions';
 import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
+import { OverviewContext } from 'root/OverviewContext';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { LoadingSpinner, CheckmarkAnimation } from 'modals/animations';
 
@@ -49,6 +50,9 @@ ChangeIpModalContextProvider.propTypes = {
 
 
 export const ChangeIpModal = () => {
+    // Get context hook used to re-render with new IP
+    const { changeExistingNodeIp } = useContext(OverviewContext);
+
     // Get state object that determines modal contents
     const { changeIpModalContent, setChangeIpModalContent, handleClose } = useContext(ChangeIpModalContext);
 
@@ -75,12 +79,13 @@ export const ChangeIpModal = () => {
 
         // Restored successfully
         if (response.ok) {
-            // Show success checkmark animation
+            // Show success checkmark animation, update IP in context
             setChangeIpModalContent({ ...changeIpModalContent, ["stage"]: "complete" });
+            changeExistingNodeIp(changeIpModalContent.friendly_name, ipAddress);
 
-            // Wait for animation to complete before reloading
+            // Wait for animation to complete before hiding modal
             await sleep(1200);
-            location.reload();
+            setChangeIpModalContent({ ...changeIpModalContent, ["visible"]: false });
 
         // Unreachable
         } else if (response.status == 404) {

@@ -44,13 +44,32 @@ export const OverviewContextProvider = ({ children }) => {
         setContext({ ...context, ["schedule_keywords"]: update});
     };
 
+    const deleteExistingNode = (friendly_name) => {
+        let update = [ ...context.uploaded ];
+        update = update.filter(node => node.friendly_name !== friendly_name);
+        setContext({ ...context, ["uploaded"]: update});
+    };
+
+    const changeExistingNodeIp = (friendly_name, newIp) => {
+        let update = [ ...context.uploaded ];
+        update = update.map(node => {
+            if (node.friendly_name === friendly_name) {
+                return { ...node, ip: newIp };
+            }
+            return node;
+        });
+        setContext({ ...context, ["uploaded"]: update});
+    };
+
     return (
         <OverviewContext.Provider value={{
             context,
             setContext,
             addScheduleKeyword,
             editScheduleKeyword,
-            deleteScheduleKeyword
+            deleteScheduleKeyword,
+            deleteExistingNode,
+            changeExistingNodeIp
         }}>
             {children}
         </OverviewContext.Provider>
