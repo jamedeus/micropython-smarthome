@@ -112,28 +112,28 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
                 />
             </td>
             <td className="min align-middle">
-            {(() => {
-                switch(button) {
-                    case "delete":
-                        return (
-                            <Button variant="danger" size="sm" onClick={deleteKeyword}>
-                                <i className="bi-trash"></i>
-                            </Button>
-                        );
-                    case "edit":
-                        return (
-                            <Button variant="primary" size="sm" onClick={editKeyword}>
-                                <i className="bi-arrow-clockwise"></i>
-                            </Button>
-                        );
-                    case "loading":
-                        return (
-                            <Button variant="primary" size="sm" onClick={deleteKeyword}>
-                                <div className="spinner-border spinner-border-sm" role="status"></div>
-                            </Button>
-                        );
-                }
-            })()}
+                {(() => {
+                    switch(button) {
+                        case "delete":
+                            return (
+                                <Button variant="danger" size="sm" onClick={deleteKeyword}>
+                                    <i className="bi-trash"></i>
+                                </Button>
+                            );
+                        case "edit":
+                            return (
+                                <Button variant="primary" size="sm" onClick={editKeyword}>
+                                    <i className="bi-arrow-clockwise"></i>
+                                </Button>
+                            );
+                        case "loading":
+                            return (
+                                <Button variant="primary" size="sm" onClick={deleteKeyword}>
+                                    <div className="spinner-border spinner-border-sm" role="status"></div>
+                                </Button>
+                            );
+                    }
+                })()}
             </td>
         </tr>
     );
@@ -186,7 +186,7 @@ const NewKeywordRow = () => {
         const payload = {
             "keyword": keyword,
             "timestamp": timestamp
-        }
+        };
         const result = await send_post_request("add_schedule_keyword", payload);
 
         // If successful add to context (renders new row) + reset new keyword row

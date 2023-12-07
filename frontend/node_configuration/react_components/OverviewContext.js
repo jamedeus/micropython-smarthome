@@ -24,7 +24,7 @@ export const OverviewContextProvider = ({ children }) => {
     const addScheduleKeyword = (keyword, timestamp) => {
         let update = { ...context.schedule_keywords };
         update[keyword] = timestamp;
-        setContext({ ...context, ["schedule_keywords"]: update})
+        setContext({ ...context, ["schedule_keywords"]: update});
     };
 
     const editScheduleKeyword = (keyword_old, keyword_new, timestamp_new) => {
@@ -35,13 +35,13 @@ export const OverviewContextProvider = ({ children }) => {
             delete update[keyword_old];
             update[keyword_new] = timestamp_new;
         }
-        setContext({ ...context, ["schedule_keywords"]: update})
+        setContext({ ...context, ["schedule_keywords"]: update});
     };
 
     const deleteScheduleKeyword = (keyword) => {
         let update = { ...context.schedule_keywords };
         delete update[keyword];
-        setContext({ ...context, ["schedule_keywords"]: update})
+        setContext({ ...context, ["schedule_keywords"]: update});
     };
 
     return (

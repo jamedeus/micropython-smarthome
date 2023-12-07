@@ -142,11 +142,7 @@ export const RestoreModal = () => {
                     })()}
                 </Modal.Body>
                 <Modal.Footer className="mx-auto pt-0">
-                    <Button
-                        variant="success"
-                        disabled={submitDisabled}
-                        onClick={restoreConfig}
-                    >
+                    <Button variant="success" disabled={submitDisabled} onClick={restoreConfig} >
                         Restore
                     </Button>
                 </Modal.Footer>
