@@ -79,7 +79,7 @@ export const GpsModal = () => {
                     <ListGroup className="mt-2">
                         {locationResults.map((suggestion) => {
                             return (
-                                <ListGroupItem onClick={() => select_location(
+                                <ListGroupItem action onClick={() => select_location(
                                     suggestion.display_name,
                                     suggestion.lat,
                                     suggestion.lon

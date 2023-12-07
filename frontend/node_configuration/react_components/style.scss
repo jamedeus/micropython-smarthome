@@ -370,7 +370,9 @@ td:last-child{
 
         /* List group (location suggestions) */
         $list-group-bg: #212529;
+        $list-group-border-color: rgba(0, 0, 0, 0.125);
         $list-group-hover-bg: #1B1E1F;
+        $list-group-action-hover-bg: #1B1E1F;
         $list-group-active-bg: #1B1E1F;
         $list-group-action-active-bg: #1B1E1F;
         $list-group-color: #dddddd;
