@@ -118,7 +118,12 @@ const ExistingNodesTable = () => {
                         </thead>
                         <tbody>
                             {context.uploaded.map(node =>
-                                <ExistingNodeRow friendly_name={node.friendly_name} ip={node.ip} onDelete={show_delete_modal} />
+                                <ExistingNodeRow
+                                    key={node.friendly_name}
+                                    friendly_name={node.friendly_name}
+                                    ip={node.ip}
+                                    onDelete={show_delete_modal}
+                                />
                             )}
                         </tbody>
                     </Table>

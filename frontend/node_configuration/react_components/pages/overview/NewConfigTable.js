@@ -123,7 +123,7 @@ const NewConfigRow = ({ config }) => {
 };
 
 NewConfigRow.propTypes = {
-    config: PropTypes.object,
+    config: PropTypes.string,
 };
 
 
@@ -151,7 +151,7 @@ const NewConfigTable = () => {
                         </thead>
                         <tbody>
                             {context.not_uploaded.map((config) => {
-                                return <NewConfigRow config={config} />;
+                                return <NewConfigRow key={config} config={config} />;
                             })}
                         </tbody>
                     </Table>

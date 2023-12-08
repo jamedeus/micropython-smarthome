@@ -279,6 +279,7 @@ const KeywordsTable = () => {
                         <tbody>
                             {Object.keys(context.schedule_keywords).map(keyword =>
                                 <KeywordRow
+                                    key={keyword}
                                     initKeyword={keyword}
                                     initTimestamp={context.schedule_keywords[keyword]}
                                 />
