@@ -69,7 +69,7 @@ export const ErrorModal = () => {
                             return (
                                 <ul>
                                     {Object.keys(errorModalContent.body).map(node =>
-                                        <li>{node}: {errorModalContent.body[node]}</li>
+                                        <li key={node}>{node}: {errorModalContent.body[node]}</li>
                                     )}
                                 </ul>
                             );

@@ -46,7 +46,7 @@ export const GpsModal = () => {
             setLocationResults([]);
         // Make call and add suggestionse (debouced) when user types
         } else {
-            setLocationResults([{display_name: "Loading suggestions..."}]);
+            setLocationResults([{display_name: "Loading suggestions...", place_id: "loading"}]);
             debounced_api_call(search);
         }
     }
@@ -79,7 +79,7 @@ export const GpsModal = () => {
                     <ListGroup className="mt-2">
                         {locationResults.map((suggestion) => {
                             return (
-                                <ListGroupItem action onClick={() => select_location(
+                                <ListGroupItem action key={suggestion.place_id} onClick={() => select_location(
                                     suggestion.display_name,
                                     suggestion.lat,
                                     suggestion.lon
