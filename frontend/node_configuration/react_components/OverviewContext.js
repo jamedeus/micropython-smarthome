@@ -1,5 +1,6 @@
 import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
+import { v4 as uuid } from 'uuid';
 
 
 export const OverviewContext = createContext();
@@ -22,25 +23,22 @@ export const OverviewContextProvider = ({ children }) => {
     });
 
     const addScheduleKeyword = (keyword, timestamp) => {
-        let update = { ...context.schedule_keywords };
-        update[keyword] = timestamp;
+        let update = [ ...context.schedule_keywords ];
+        update.push({id: uuid(), keyword: keyword, timestamp: timestamp});
         setContext({ ...context, ["schedule_keywords"]: update});
     };
 
     const editScheduleKeyword = (keyword_old, keyword_new, timestamp_new) => {
-        let update = { ...context.schedule_keywords };
-        if (keyword_old === keyword_new) {
-            update[keyword_old] = timestamp_new;
-        } else {
-            delete update[keyword_old];
-            update[keyword_new] = timestamp_new;
-        }
+        let update = [ ...context.schedule_keywords ];
+        update = update.map(item =>
+            item.keyword === keyword_old ? { ...item, keyword: keyword_new, timestamp: timestamp_new} : item
+        );
         setContext({ ...context, ["schedule_keywords"]: update});
     };
 
     const deleteScheduleKeyword = (keyword) => {
-        let update = { ...context.schedule_keywords };
-        delete update[keyword];
+        let update = [ ...context.schedule_keywords ];
+        update = update.filter(item => item.keyword !== keyword);
         setContext({ ...context, ["schedule_keywords"]: update});
     };
 

@@ -168,7 +168,7 @@ def config_overview(request):
     context = {
         "not_uploaded": [],
         "uploaded": [],
-        "schedule_keywords": get_schedule_keywords_dict(),
+        "schedule_keywords": [],
         "desktop_integration_link": static("node_configuration/micropython-smarthome-integration.zip")
     }
 
@@ -179,9 +179,13 @@ def config_overview(request):
     else:
         context['client_ip'] = request.META.get('REMOTE_ADDR')
 
-    # Don't show sunrise or sunset (prevent editing time, overwrites on nodes)
-    del context["schedule_keywords"]["sunrise"]
-    del context["schedule_keywords"]["sunset"]
+    # Add all schedule rules except sunrise and sunset (can't edit) to context
+    # Database key is used as react unique identifier
+    for keyword in ScheduleKeyword.objects.all():
+        if keyword.keyword != "sunrise" and keyword.keyword != "sunset":
+            context["schedule_keywords"].append(
+                {"id": keyword.pk, "keyword": keyword.keyword, "timestamp": keyword.timestamp}
+            )
 
     not_uploaded = Config.objects.filter(node=None)
 

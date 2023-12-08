@@ -277,11 +277,11 @@ const KeywordsTable = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {Object.keys(context.schedule_keywords).map(keyword =>
+                            {context.schedule_keywords.map(item =>
                                 <KeywordRow
-                                    key={keyword}
-                                    initKeyword={keyword}
-                                    initTimestamp={context.schedule_keywords[keyword]}
+                                    key={item.id}
+                                    initKeyword={item.keyword}
+                                    initTimestamp={item.timestamp}
                                 />
                             )}
                             <NewKeywordRow />
