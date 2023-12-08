@@ -44,7 +44,7 @@ export const OverviewContextProvider = ({ children }) => {
 
     const addNewNode = (friendly_name, ip) => {
         let update = [ ...context.uploaded ];
-        update.push({friendly_name: friendly_name, ip: ip})
+        update.push({friendly_name: friendly_name, ip: ip});
         setContext({ ...context, ["uploaded"]: update});
     };
 

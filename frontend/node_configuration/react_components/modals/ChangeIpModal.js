@@ -83,7 +83,6 @@ export const ChangeIpModal = () => {
     // Get state object that determines modal contents
     const {
         changeIpModalContent,
-        setChangeIpModalContent,
         handleClose,
         handleFailed,
         handleComplete,

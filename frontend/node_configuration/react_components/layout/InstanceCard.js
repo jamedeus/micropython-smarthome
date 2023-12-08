@@ -2,6 +2,7 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
 import { ConfigContext } from 'root/ConfigContext';
 import NicknameInput from 'inputs/NicknameInput';
 import IPInput from 'inputs/IPInput';
@@ -128,13 +129,24 @@ function InstanceCard({ id }) {
             <Card>
                 <Card.Body>
                     <div className="d-flex justify-content-between">
-                        <button className="btn ps-2" style={{ visibility: 'hidden' }}><i className="bi-x-lg"></i></button>
+                        <Button className="ps-2" style={{ visibility: 'hidden' }}>
+                            <i className="bi-x-lg"></i>
+                        </Button>
                         <h4 className="card-title mx-auto my-auto">{`${id}`}</h4>
-                        <button className="btn my-auto pe-2 delete" onClick={() => startDeletingInstance(id)}><i className="bi-x-lg"></i></button>
+                        <Button
+                            variant="link"
+                            className="my-auto pe-2 delete"
+                            onClick={() => startDeletingInstance(id)}
+                        >
+                            <i className="bi-x-lg"></i>
+                        </Button>
                     </div>
                     <label className="w-100">
                         <b>Type:</b>
-                        <Form.Select value={instance._type} onChange={(event) => changeInstanceType(id, category, event)}>
+                        <Form.Select
+                            value={instance._type}
+                            onChange={(event) => changeInstanceType(id, category, event)}
+                        >
                             <option value="clear">Select {category} type</option>
                             {get_type_dropdown_options(category)}
                         </Form.Select>
