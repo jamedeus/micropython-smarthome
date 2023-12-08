@@ -14,7 +14,7 @@ const Page2 = () => {
 
     function targetSection(sensor) {
         return (
-            <Card className="mb-4">
+            <Card key={`${sensor}-targets`} className="mb-4">
                 <Card.Body>
                     <h6><b>{config[sensor]["nickname"]} ({config[sensor]["_type"]})</b> targets:</h6>
                     {/* Iterate devices, add checkbox for each */}
@@ -25,6 +25,7 @@ const Page2 = () => {
                                 <Form.Check
                                     type="checkbox"
                                     id={`${sensor}-${device}-target`}
+                                    key={`${sensor}-${device}-target`}
                                     label={devices[device]["nickname"]}
                                     checked={config[sensor]["targets"].includes(device)}
                                     onChange={(e) => handleSensorTargetSelect(sensor, device, e.target.checked)}

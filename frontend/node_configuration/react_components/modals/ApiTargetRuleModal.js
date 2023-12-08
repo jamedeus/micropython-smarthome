@@ -166,7 +166,7 @@ export const ApiTargetRuleModalContents = () => {
             >
                 <option value="">Select target instance</option>
                 {Object.keys(modalContent.target_node_options).map(option => (
-                    <option value={option}>{modalContent.target_node_options[option]["display"]}</option>
+                    <option key={option} value={option}>{modalContent.target_node_options[option]["display"]}</option>
                 ))}
             </Form.Select>
         );
@@ -183,7 +183,7 @@ export const ApiTargetRuleModalContents = () => {
             >
                 <option value="">Select command</option>
                 {modalContent.target_node_options[instance]["options"].map(option => (
-                    <option value={option}>{option}</option>
+                    <option key={option} value={option}>{option}</option>
                 ))}
             </Form.Select>
         );
@@ -200,7 +200,7 @@ export const ApiTargetRuleModalContents = () => {
             >
                 <option value="">Select key</option>
                 {modalContent.target_node_options.ir_key.keys[target].map(option => (
-                    <option value={option}>{option}</option>
+                    <option key={option} value={option}>{option}</option>
                 ))}
             </Form.Select>
         );

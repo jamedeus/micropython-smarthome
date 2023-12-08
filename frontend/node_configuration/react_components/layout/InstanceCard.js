@@ -18,6 +18,7 @@ import DefaultRuleIntRange from 'inputs/DefaultRuleIntRange';
 import DefaultRuleOnOff from 'inputs/DefaultRuleOnOff';
 import DefaultRuleApiTarget from 'inputs/DefaultRuleApiTarget';
 import { get_instance_metadata, get_type_dropdown_options } from 'util/metadata';
+import { v4 as uuid } from 'uuid';
 
 
 function InstanceCard({ id }) {
@@ -33,12 +34,14 @@ function InstanceCard({ id }) {
 
     console.log(`Rendering ${id}`);
 
+    // Returns list of nodes with input element for each parameter in config section
+    // Must use random UUID keys, all other values can change (even device/sensor ID)
     const renderInputs = () => {
         let inputs = [];
 
         if (instance.nickname !== undefined) {
             inputs.push(
-                <NicknameInput id={id} />
+                <NicknameInput key={uuid()} id={id} />
             );
         }
 
@@ -46,12 +49,12 @@ function InstanceCard({ id }) {
             // Is device if no targets key
             if (instance.targets === undefined) {
                 inputs.push(
-                    <DevicePinSelect id={id} />
+                    <DevicePinSelect key={uuid()} id={id} />
                 );
             // Otherwise is sensor
             } else {
                 inputs.push(
-                    <SensorPinSelect id={id} />
+                    <SensorPinSelect key={uuid()} id={id} />
                 );
             }
         }
@@ -59,24 +62,24 @@ function InstanceCard({ id }) {
         if (instance.ip !== undefined) {
             if (instanceMetadata.rule_prompt !== "api_target") {
                 inputs.push(
-                    <IPInput id={id} />
+                    <IPInput key={uuid()} id={id} />
                 );
             } else {
                 inputs.push(
-                    <TargetNodeDropdown id={id} />
+                    <TargetNodeDropdown key={uuid()} id={id} />
                 );
             }
         }
 
         if (instance.uri !== undefined) {
             inputs.push(
-                <URIInput id={id} />
+                <URIInput key={uuid()} id={id} />
             );
         }
 
         if (instance.on_path !== undefined && instance.off_path !== undefined) {
             inputs.push(
-                <HttpGetPathInputs id={id}/>
+                <HttpGetPathInputs key={uuid()} id={id}/>
             );
         }
 
@@ -86,7 +89,7 @@ function InstanceCard({ id }) {
         // Thermostat mode, units, tolerance inputs
         if (instance.mode !== undefined && instance.units !== undefined) {
             inputs.push(
-                <ThermostatParamInputs id={id} />
+                <ThermostatParamInputs key={uuid()} id={id} />
             );
         }
 
@@ -101,20 +104,20 @@ function InstanceCard({ id }) {
 
         // If instance has units key return thermostat input
         if (instance.units !== undefined) {
-            return <DefaultRuleThermostat id={id} />;
+            return <DefaultRuleThermostat key={uuid()} id={id} />;
         }
 
         switch (instanceMetadata.rule_prompt) {
             case 'standard':
-                return <DefaultRuleStandard id={id} />;
+                return <DefaultRuleStandard key={uuid()} id={id} />;
             case 'on_off':
-                return <DefaultRuleOnOff id={id} />;
+                return <DefaultRuleOnOff key={uuid()} id={id} />;
             case 'float_range':
-                return <DefaultRuleFloatRange id={id} />;
+                return <DefaultRuleFloatRange key={uuid()} id={id} />;
             case 'int_or_fade':
-                return <DefaultRuleIntRange id={id} />;
+                return <DefaultRuleIntRange key={uuid()} id={id} />;
             case 'api_target':
-                return <DefaultRuleApiTarget id={id} />;
+                return <DefaultRuleApiTarget key={uuid()} id={id} />;
             default:
                 return null;
         }

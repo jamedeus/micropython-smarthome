@@ -6,6 +6,7 @@ import { ConfigContext } from 'root/ConfigContext';
 import { TimeField } from 'inputs/TimeField';
 import { RuleField } from 'inputs/RuleField';
 import { ApiTargetModalContext } from 'modals/ApiTargetRuleModal';
+import { v4 as uuid } from 'uuid';
 
 
 const Page3 = () => {
@@ -25,7 +26,7 @@ const Page3 = () => {
     // Returns table row with timestamp and rule columns + edit button
     function scheduleRuleRow(instance, rule) {
         return (
-            <tr>
+            <tr key={uuid()}>
                 <td>
                     <TimeField instance={instance} timestamp={rule} />
                 </td>
@@ -61,7 +62,7 @@ const Page3 = () => {
     // Takes instance ID (device1, sensor3, etc), returns schedule rule card
     function scheduleRuleSection(instance) {
         return (
-            <Card className="mb-4">
+            <Card key={`${instance}-schedule-rules`} className="mb-4">
                 <Card.Body className="text-center">
                     <h6><b>{config[instance]["nickname"]} ({config[instance]["_type"]})</b></h6>
                     {(() => {

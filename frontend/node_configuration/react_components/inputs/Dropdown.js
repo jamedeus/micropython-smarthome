@@ -23,7 +23,7 @@ function Dropdown({ value, options, onChange, label="", isInvalid=false }) {
                     >
                         <option value="">Select {label.toLowerCase()}</option>
                         {options.map(option => (
-                            <option value={option.toLowerCase()}>{toTitle(option)}</option>
+                            <option key={option} value={option.toLowerCase()}>{toTitle(option)}</option>
                         ))}
                     </Form.Select>
                 </InputWrapper>
@@ -37,7 +37,7 @@ function Dropdown({ value, options, onChange, label="", isInvalid=false }) {
                     isInvalid={isInvalid}
                 >
                     {options.map(option => (
-                        <option value={option.toLowerCase()}>{toTitle(option)}</option>
+                        <option key={option} value={option.toLowerCase()}>{toTitle(option)}</option>
                     ))}
                 </Form.Select>
             );
