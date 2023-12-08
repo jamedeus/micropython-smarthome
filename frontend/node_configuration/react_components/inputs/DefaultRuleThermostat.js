@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import { get_instance_metadata } from 'util/metadata';
 import RuleSlider from './RuleSlider';
-import { average, convert_temperature } from 'util/thermostat_util';
+import { average } from 'util/helper_functions';
+import { convert_temperature } from 'util/thermostat_util';
+
 
 function DefaultRuleThermostat({ id }) {
     // Get instance section from config (state) object
@@ -38,7 +40,7 @@ function DefaultRuleThermostat({ id }) {
         <div className="mb-2">
             <label className="w-100"><b>Default Rule</b></label>
             <RuleSlider
-                rule_value={instance.default_rule}
+                rule_value={String(instance.default_rule)}
                 slider_min={convert_temperature(min_rule, "celsius", instance.units)}
                 slider_max={convert_temperature(max_rule, "celsius", instance.units)}
                 slider_step={0.1}

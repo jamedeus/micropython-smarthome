@@ -1,13 +1,3 @@
-// Takes 2 numbers (int, float, or string) and returns average
-function average(a, b) {
-    try {
-        return parseInt((parseFloat(a) + parseFloat(b)) / 2);
-    } catch(err) {
-        console.log(err);
-    }
-}
-
-
 // Takes temperature, old units, new units (options: celsius, fahrenheit, kelvin)
 function convert_temperature(temperature, old_units, new_units) {
     // First convert to Celsius
@@ -29,4 +19,4 @@ function convert_temperature(temperature, old_units, new_units) {
 }
 
 
-export { average, convert_temperature };
+export { convert_temperature };

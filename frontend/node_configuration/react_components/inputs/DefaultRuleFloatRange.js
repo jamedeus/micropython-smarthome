@@ -3,16 +3,7 @@ import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import { get_instance_metadata } from 'util/metadata';
 import RuleSlider from './RuleSlider';
-
-
-// Takes 2 numbers (int, float, or string) and returns average
-function average(a, b) {
-    try {
-        return parseInt((parseFloat(a) + parseFloat(b)) / 2);
-    } catch(err) {
-        console.log(err);
-    }
-}
+import { average } from 'util/helper_functions';
 
 
 function DefaultRuleFloatRange({ id }) {
@@ -47,7 +38,7 @@ function DefaultRuleFloatRange({ id }) {
         <div className="mb-2">
             <label className="w-100"><b>Default Rule</b></label>
             <RuleSlider
-                rule_value={instance.default_rule}
+                rule_value={String(instance.default_rule)}
                 slider_min={min_rule}
                 slider_max={max_rule}
                 slider_step={0.5}

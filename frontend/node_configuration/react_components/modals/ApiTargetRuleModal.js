@@ -7,8 +7,7 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
 import { api_target_options } from 'util/django_util';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
-
-const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+import { ipRegex } from 'util/validation';
 
 // Takes IP, returns object from api_target_options context
 function getTargetNodeOptions(ip) {

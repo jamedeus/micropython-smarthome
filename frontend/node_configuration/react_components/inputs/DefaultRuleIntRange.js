@@ -6,15 +6,8 @@ import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
 import { get_instance_metadata } from 'util/metadata';
 import RuleSlider from './RuleSlider';
+import { average } from 'util/helper_functions';
 
-// Takes 2 numbers (int, float, or string) and returns average
-function average(a, b) {
-    try {
-        return parseInt((parseFloat(a) + parseFloat(b)) / 2);
-    } catch(err) {
-        console.log(err);
-    }
-}
 
 function DefaultRuleIntRange({ id }) {
     // Get curent state + callback functions from context
@@ -85,7 +78,7 @@ function DefaultRuleIntRange({ id }) {
             <div className="mb-2">
                 <label className="w-100"><b>Default Rule</b></label>
                 <RuleSlider
-                    rule_value={instance.default_rule}
+                    rule_value={String(instance.default_rule)}
                     slider_min={parseInt(instance.min_rule)}
                     slider_max={parseInt(instance.max_rule)}
                     slider_step={1}
