@@ -5,6 +5,7 @@ import { ErrorModal } from 'modals/ErrorModal';
 import { ModalContextProvider } from 'modals/ModalContextProvider';
 import Header from './Header';
 import Floors from './Floors';
+import Macros from './Macros';
 
 
 const App = () => {
@@ -20,6 +21,8 @@ const App = () => {
             <div className="d-flex flex-column vh-100">
                 <Header />
                 <Floors />
+                <h1 className="text-center mt-5">Macros</h1>
+                <Macros />
 
                 {/* Button redirects to Node configuration overview */}
                 <div className="d-flex align-items-center flex-column mt-auto py-4">

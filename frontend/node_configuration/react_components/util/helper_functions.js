@@ -11,4 +11,11 @@ function average(a, b) {
     }
 }
 
-export { sleep, average };
+// Takes string, returns with first character of each word capitalized
+function toTitle(str) {
+    return str.replace(/\w\S*/g, function(txt){
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+    });
+}
+
+export { sleep, average, toTitle };

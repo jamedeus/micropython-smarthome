@@ -19,8 +19,14 @@ export const ApiOverviewContextProvider = ({ children }) => {
         };
     });
 
+    const deleteMacro = (name) => {
+        let update = { ...context.macros };
+        delete update[name];
+        setContext({ ...context, ["macros"]: update});
+    }
+
     return (
-        <ApiOverviewContext.Provider value={{ context, setContext }}>
+        <ApiOverviewContext.Provider value={{ context, setContext, deleteMacro }}>
             {children}
         </ApiOverviewContext.Provider>
     );

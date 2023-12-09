@@ -2,13 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import InputWrapper from './InputWrapper';
+import { toTitle } from 'util/helper_functions';
 
-// Takes string, returns with first character of each word capitalized
-function toTitle(str) {
-    return str.replace(/\w\S*/g, function(txt){
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-    });
-}
 
 function Dropdown({ value, options, onChange, label="", isInvalid=false }) {
     switch(true) {
