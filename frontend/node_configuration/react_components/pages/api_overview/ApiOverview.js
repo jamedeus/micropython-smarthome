@@ -4,6 +4,7 @@ import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { ErrorModal } from 'modals/ErrorModal';
 import { ModalContextProvider } from 'modals/ModalContextProvider';
 import Header from './Header';
+import Floors from './Floors';
 
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
         <ModalContextProvider>
             <div className="d-flex flex-column vh-100">
                 <Header />
+                <Floors />
 
                 {/* Button redirects to Node configuration overview */}
                 <div className="d-flex align-items-center flex-column mt-auto py-4">
