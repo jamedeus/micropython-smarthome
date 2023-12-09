@@ -19,6 +19,9 @@ export const ApiOverviewContextProvider = ({ children }) => {
         };
     });
 
+    // Create state for macro record mode
+    const [recording, setRecording] = useState("");
+
     const deleteMacro = (name) => {
         let update = { ...context.macros };
         delete update[name];
@@ -41,6 +44,8 @@ export const ApiOverviewContextProvider = ({ children }) => {
         <ApiOverviewContext.Provider value={{
             context,
             setContext,
+            recording,
+            setRecording,
             deleteMacro,
             deleteMacroAction
         }}>

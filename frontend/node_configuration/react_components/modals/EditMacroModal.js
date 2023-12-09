@@ -55,8 +55,14 @@ export const EditMacroModal = () => {
     // Get state object that determines modal contents
     const { editMacroContent, handleClose } = useContext(EditMacroModalContext);
 
-    // Get callback to remove macro action from context
-    const { deleteMacroAction } = useContext(ApiOverviewContext);
+    // Get callbacks to remove macro action, resume recording actions
+    const { deleteMacroAction, setRecording } = useContext(ApiOverviewContext);
+
+    // Handler for record more button, set record name and close modal
+    const startRecording = () => {
+        setRecording(editMacroContent.name);
+        handleClose();
+    };
 
     const TableRow = ({action, actionID}) => {
         // Create callback for delete button
@@ -125,7 +131,7 @@ export const EditMacroModal = () => {
                 </Table>
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-2">
-                <Button variant="success" className="mx-auto mb-3">
+                <Button variant="success" className="mx-auto mb-3" onClick={startRecording}>
                     Record More
                 </Button>
             </Modal.Footer>
