@@ -58,10 +58,11 @@ export const EditMacroModal = () => {
     // Get callbacks to remove macro action, resume recording actions
     const { deleteMacroAction, setRecording } = useContext(ApiOverviewContext);
 
-    // Handler for record more button, set record name and close modal
+    // Handler for record more button: set record name, close modal, change URL
     const startRecording = () => {
         setRecording(editMacroContent.name);
         handleClose();
+        history.pushState({}, '', `/api/recording/${editMacroContent.name}`);
     };
 
     const TableRow = ({action, actionID}) => {

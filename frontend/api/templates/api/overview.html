@@ -23,6 +23,7 @@
     <div id="root" class="container">
     {{ nodes|json_script:"nodes" }}
     {{ macros|json_script:"macros" }}
+    {{ recording|json_script:"recording" }}
     <script src="{% static 'node_configuration/api_overview.js' %}"></script>
 </body>
 </html>

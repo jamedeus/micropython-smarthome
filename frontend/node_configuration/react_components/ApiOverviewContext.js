@@ -9,20 +9,24 @@ export const ApiOverviewContextProvider = ({ children }) => {
     const [context, setContext] = useState(() => {
         function parse_dom_context(name) {
             const element = document.getElementById(name);
-            return JSON.parse(element.textContent);
+            if (element) {
+                return JSON.parse(element.textContent);
+            } else {
+                return "";
+            }
         }
 
         // Parse context elements created by django template
         return {
             nodes: parse_dom_context("nodes"),
-            macros: parse_dom_context("macros")
+            macros: parse_dom_context("macros"),
+            recording: parse_dom_context("recording")
         };
     });
 
-    // Create state for macro record mode
-    // Set default state from URL (temporary, causes issues if refreshed after
-    // clicking finish recording button) to stay in record mode after going back
-    const [recording, setRecording] = useState(document.URL.split("/recording/")[1]);
+    // Create state for macro record mode, contains name of macro
+    // being recorded (default loaded from django template context)
+    const [recording, setRecording] = useState(context.recording);
 
     const deleteMacro = (name) => {
         let update = { ...context.macros };

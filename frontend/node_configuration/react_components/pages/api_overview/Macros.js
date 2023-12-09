@@ -112,10 +112,14 @@ const Macros = () => {
 
     const startRecording = () => {
         setRecording(newMacroName);
+        // Add record mode URL params
+        history.pushState({}, '', `/api/recording/${newMacroName}`);
     };
 
     const finishRecording = () => {
         setRecording("");
+        // Remove URL params (prevents page refresh from resuming recording)
+        history.pushState({}, '', '/api');
     }
 
 
