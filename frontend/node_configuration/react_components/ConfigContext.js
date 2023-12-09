@@ -229,7 +229,7 @@ function update_ids(target, state) {
 // Fades out card to delete, slides up all cards below + add button
 async function delete_animation(cards, index, button) {
     // Fade out card to be deleted
-    cards[index].classList.add('fade-out');
+    cards[index].classList.add('fade-out-card');
 
     // Slide up all cards below, wait for animation to complete
     for (let i=parseInt(index)+1; i<cards.length; i++) {
@@ -244,7 +244,7 @@ async function delete_animation(cards, index, button) {
     }
     button.classList.remove('slide-up');
     // Prevent incorrect card being hidden after react re-render
-    cards[index].classList.remove('fade-out');
+    cards[index].classList.remove('fade-out-card');
 }
 
 export { filterObject };

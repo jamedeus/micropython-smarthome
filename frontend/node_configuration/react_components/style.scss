@@ -34,6 +34,11 @@ td.min {
     white-space: nowrap;
 }
 
+/* Vertically center contents of table row */
+tr {
+    vertical-align: middle;
+}
+
 /* Section backgrounds (existing nodes, schedule keywords) */
 .section {
     background-color: #eee;
@@ -200,7 +205,8 @@ td:last-child{
     }
 }
 
-.fade-out {
+/* Delete card in config editor */
+.fade-out-card {
     animation-name: fade-out;
     animation-duration: 0.4s;
     animation-timing-function: ease;
@@ -232,6 +238,90 @@ td:last-child{
         margin-left: 20px;
         left: 0;
     }
+}
+
+/* Fade animations (api frontend) */
+.fade-out {
+    opacity: 100%;
+    animation: fade-out 0.2s forwards;
+}
+
+.fade-in {
+    opacity: 0%;
+    animation: fade-in 0.2s forwards;
+}
+
+@keyframes fade-out {
+    0% {
+        opacity: 100%
+    }
+    100% {
+        opacity: 0%
+    }
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0%
+    }
+    100% {
+        opacity: 100%
+    }
+}
+
+/* Macro buttons */
+.btn-macro {
+    height: 3rem;
+    width: 3rem;
+    padding: 0px !important;
+}
+
+/* Macro running spinner */
+.loading-animation {
+    width: 2rem;
+    height: 2rem;
+}
+
+.loading-animation div {
+    box-sizing: border-box;
+    display: block;
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    margin: auto;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    animation: loading-animation 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    border-color: #fff transparent transparent transparent;
+}
+
+.loading-animation div:nth-child(1) {
+    animation-delay: -0.45s;
+}
+
+.loading-animation div:nth-child(2) {
+    animation-delay: -0.3s;
+}
+
+.loading-animation div:nth-child(3) {
+    animation-delay: -0.15s;
+}
+
+@keyframes loading-animation {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Prevent horizontal margins on modal */
+/* Margin keeps centerd on mobile */
+/* Used in record macro modal */
+.modal-fit-contents {
+    max-width: fit-content !important;
+    margin: auto !important;
 }
 
 @media (prefers-color-scheme: dark) {
