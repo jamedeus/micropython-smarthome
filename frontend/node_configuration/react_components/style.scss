@@ -382,6 +382,11 @@ td:last-child{
         $input-focus-color: #ffffff;
         $input-disabled-bg: #272c31;
 
+        /* Stop floating label changing color when focused */
+        .form-floating .form-control ~ label {
+            color: rgba(238, 238, 238, 0.65) !important;
+        }
+
         /* Checkboxes */
         $form-check-input-bg: #1B1E1F;
         $form-check-input-border: #1B1E1F;
