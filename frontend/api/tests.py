@@ -1132,62 +1132,6 @@ class TestEndpointErrors(TestCaseBackupRestore):
             self.assertFalse(mock_request.called)
 
 
-# Test endpoint that loads modal containing existing macro actions
-class EditModalTests(TestCaseBackupRestore):
-    def setUp(self):
-        # Create 3 test nodes
-        create_test_nodes()
-
-        # Create macro with a single action
-        # Payload sent by frontend to turn on node1 device1
-        payload = {
-            'name': 'Test1',
-            'action': {
-                'command': 'turn_on',
-                'instance': 'device1',
-                'target': '192.168.1.123',
-                'friendly_name': 'Cabinet Lights'
-            }
-        }
-        self.client.post('/add_macro_action', payload, content_type='application/json')
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
-    def test_edit_macro_button(self):
-        # Send request, confirm status and template used
-        response = self.client.get('/edit_macro/Test1')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'api/edit_modal.html')
-
-        expected_context = {
-            'name': 'Test1',
-            'actions': [
-                {
-                    "ip": "192.168.1.123",
-                    "args": [
-                        "turn_on",
-                        "device1"
-                    ],
-                    "node_name": "Test1",
-                    "target_name": "Cabinet Lights",
-                    "action_name": "Turn On"
-                }
-            ]
-        }
-
-        # Confirm correct context
-        self.assertEqual(response.context['name'], expected_context['name'])
-        self.assertEqual(response.context['actions'], expected_context['actions'])
-
-    def test_edit_non_existing_macro(self):
-        # Request a macro that does not exist, confirm error
-        response = self.client.get('/edit_macro/Test42')
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Error: Macro Test42 does not exist.')
-
-
 # Test endpoint that sets cookie to skip macro instructions modal
 class SkipInstructionsTests(TestCaseBackupRestore):
     def test_get_skip_instructions_cookie(self):

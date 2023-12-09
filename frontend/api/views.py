@@ -456,16 +456,6 @@ def add_macro_action(data):
     return JsonResponse("Done", safe=False, status=200)
 
 
-def edit_macro(request, name):
-    try:
-        macro = Macro.objects.get(name=name)
-    except Macro.DoesNotExist:
-        return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
-
-    context = {'name': name, 'actions': json.loads(macro.actions)}
-    return render(request, 'api/edit_modal.html', context)
-
-
 def delete_macro(request, name):
     try:
         macro = Macro.objects.get(name=name)

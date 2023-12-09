@@ -20,7 +20,9 @@ export const ApiOverviewContextProvider = ({ children }) => {
     });
 
     // Create state for macro record mode
-    const [recording, setRecording] = useState("");
+    // Set default state from URL (temporary, causes issues if refreshed after
+    // clicking finish recording button) to stay in record mode after going back
+    const [recording, setRecording] = useState(document.URL.split("/recording/")[1]);
 
     const deleteMacro = (name) => {
         let update = { ...context.macros };
