@@ -33,9 +33,9 @@ const MacroRow = ({ name, actions }) => {
 
             // Return to original text
             // TODO fade out (handle in CSS)
-            setRunAnimation("false")
+            setRunAnimation("false");
         }
-    }
+    };
 
     const del = async () => {
         // Start loading animation
@@ -54,7 +54,7 @@ const MacroRow = ({ name, actions }) => {
             // Remove from context (re-renders without this row)
             deleteMacro(name);
         }
-    }
+    };
 
     return (
         <div id={name} className="d-flex mb-3">
@@ -104,7 +104,7 @@ const Macros = () => {
 
     const startRecording = () => {
         alert("Not yet implemented");
-    }
+    };
 
     return (
         <div id="macros" className="text-center section p-3 mx-auto mb-5">

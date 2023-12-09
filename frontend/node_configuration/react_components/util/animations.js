@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 export const LoadingSpinner = () => {
     return (
@@ -14,14 +15,11 @@ export const ButtonSpinner = () => {
             <div></div><div></div><div></div><div></div>
         </div>
     );
-}
+};
 
 export const CheckmarkAnimation = ({ size="large" }) => {
-    console.log("Checkmark")
-    console.log(size)
     switch(size) {
         case "large":
-            console.log("large")
             return (
                 <svg className="checkmark mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                     <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
@@ -29,7 +27,6 @@ export const CheckmarkAnimation = ({ size="large" }) => {
                 </svg>
             );
         case "small":
-            console.log("Small checkmark")
             return (
                 <svg className="checkmark_sm mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
                     <circle className="checkmark__circle_sm" cx="26" cy="26" r="25" fill="none"/>
@@ -37,4 +34,8 @@ export const CheckmarkAnimation = ({ size="large" }) => {
                 </svg>
             );
     }
+};
+
+CheckmarkAnimation.propTypes = {
+    size: PropTypes.string
 };

@@ -23,7 +23,7 @@ export const ApiOverviewContextProvider = ({ children }) => {
         let update = { ...context.macros };
         delete update[name];
         setContext({ ...context, ["macros"]: update});
-    }
+    };
 
     return (
         <ApiOverviewContext.Provider value={{ context, setContext, deleteMacro }}>
