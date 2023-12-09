@@ -5,6 +5,7 @@ import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
+import { EditMacroModalContext } from 'modals/EditMacroModal';
 import { toTitle, sleep } from 'util/helper_functions';
 import { ButtonSpinner, CheckmarkAnimation } from 'util/animations';
 
@@ -13,9 +14,16 @@ const MacroRow = ({ name, actions }) => {
     // Get callback to delete macro context
     const { deleteMacro } = useContext(ApiOverviewContext);
 
+    // Get callback to open edit macro modal
+    const { openEditMacroModal } = useContext(EditMacroModalContext);
+
     // Create state objects for button animations
     const [runAnimation, setRunAnimation] = useState("false");
     const [deleteAnimation, setDeleteAnimation] = useState("false");
+
+    const edit = () => {
+        openEditMacroModal(name, actions);
+    };
 
     const run = async () => {
         // Start loading animation
@@ -71,7 +79,7 @@ const MacroRow = ({ name, actions }) => {
                     }
                 })()}
             </Button>
-            <Button variant="primary" className="btn-macro mx-3">Edit</Button>
+            <Button variant="primary" className="btn-macro mx-3" onClick={edit}>Edit</Button>
             <Button variant="danger" className="btn-macro mx-3" onClick={del}>
                 {(() => {
                     switch(deleteAnimation) {

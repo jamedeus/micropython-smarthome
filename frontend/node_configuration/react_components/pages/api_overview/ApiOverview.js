@@ -3,6 +3,7 @@ import Button from 'react-bootstrap/Button';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { ErrorModal } from 'modals/ErrorModal';
 import { ModalContextProvider } from 'modals/ModalContextProvider';
+import { EditMacroModal, EditMacroModalContextProvider } from 'modals/EditMacroModal';
 import Header from './Header';
 import Floors from './Floors';
 import Macros from './Macros';
@@ -18,22 +19,25 @@ const App = () => {
 
     return (
         <ModalContextProvider>
-            <div className="d-flex flex-column vh-100">
-                <Header />
-                <Floors />
-                <h1 className="text-center mt-5">Macros</h1>
-                <Macros />
+            <EditMacroModalContextProvider>
+                <div className="d-flex flex-column vh-100">
+                    <Header />
+                    <Floors />
+                    <h1 className="text-center mt-5">Macros</h1>
+                    <Macros />
 
-                {/* Button redirects to Node configuration overview */}
-                <div className="d-flex align-items-center flex-column mt-auto py-4">
-                    <Button variant="secondary" onClick={configuration}>
-                        Manage
-                    </Button>
+                    {/* Button redirects to Node configuration overview */}
+                    <div className="d-flex align-items-center flex-column mt-auto py-4">
+                        <Button variant="secondary" onClick={configuration}>
+                            Manage
+                        </Button>
+                    </div>
+
+                    {/* Modals (hidden) */}
+                    <ErrorModal />
+                    <EditMacroModal />
                 </div>
-
-                {/* Modals (hidden) */}
-                <ErrorModal />
-            </div>
+            </EditMacroModalContextProvider>
         </ModalContextProvider>
     );
 };

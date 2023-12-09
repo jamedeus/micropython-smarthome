@@ -25,8 +25,25 @@ export const ApiOverviewContextProvider = ({ children }) => {
         setContext({ ...context, ["macros"]: update});
     };
 
+    const deleteMacroAction = (name, index) => {
+        let update = { ...context.macros };
+        delete update[name][index];
+        // If last action deleted remove whole macro
+        if (update[name].every(item => item === null)) {
+            deleteMacro(name);
+        // If actions remain update macro
+        } else {
+            setContext({ ...context, ["macros"]: update});
+        }
+    };
+
     return (
-        <ApiOverviewContext.Provider value={{ context, setContext, deleteMacro }}>
+        <ApiOverviewContext.Provider value={{
+            context,
+            setContext,
+            deleteMacro,
+            deleteMacroAction
+        }}>
             {children}
         </ApiOverviewContext.Provider>
     );
