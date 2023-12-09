@@ -125,9 +125,9 @@ def api_overview(request, recording=False, start=False):
 
     for i in Node.objects.all():
         if i.floor in rooms.keys():
-            rooms[i.floor].append(i)
+            rooms[i.floor].append(i.friendly_name)
         else:
-            rooms[i.floor] = [i]
+            rooms[i.floor] = [i.friendly_name]
 
     context = {
         'nodes': {},
@@ -154,6 +154,8 @@ def api_overview(request, recording=False, start=False):
     if start:
         # Show instructions popup (unless cookie set)
         context['start_recording'] = True
+
+    print(json.dumps(context, indent=4))
 
     return render(request, 'api/overview.html', context)
 
