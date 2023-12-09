@@ -8,7 +8,7 @@ import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
 import { OverviewContext } from 'root/OverviewContext';
-import { LoadingSpinner, CheckmarkAnimation } from 'modals/animations';
+import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 
@@ -143,7 +143,7 @@ export const RestoreModal = () => {
                             case "loading":
                                 return <LoadingSpinner />;
                             case "complete":
-                                return <CheckmarkAnimation />;
+                                return <CheckmarkAnimation size="large" />;
                         }
                     })()}
                 </Modal.Body>

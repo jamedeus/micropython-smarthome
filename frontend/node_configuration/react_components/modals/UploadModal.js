@@ -5,7 +5,7 @@ import { sleep } from 'util/helper_functions';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
 import { HeaderStaticBackdrop } from 'modals/HeaderComponents';
-import { LoadingSpinner, CheckmarkAnimation } from 'modals/animations';
+import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 
 export const UploadModalContext = createContext();
 
@@ -49,7 +49,7 @@ export const UploadModal = () => {
                         case false:
                             return <LoadingSpinner />;
                         case true:
-                            return <CheckmarkAnimation />;
+                            return <CheckmarkAnimation size="large" />;
                     }
                 })()}
             </Modal.Body>

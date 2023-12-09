@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { toTitle, sleep } from 'util/helper_functions';
+import { ButtonSpinner, CheckmarkAnimation } from 'util/animations';
 
 
 const MacroRow = ({ name, actions }) => {
@@ -62,18 +63,9 @@ const MacroRow = ({ name, actions }) => {
                 {(() => {
                     switch(runAnimation) {
                         case("loading"):
-                            return (
-                                <div id="spinner" className="loading-animation loading-animation-show m-auto">
-                                    <div></div><div></div><div></div><div></div>
-                                </div>
-                            );
+                            return <ButtonSpinner />;
                         case("complete"):
-                            return (
-                                <svg id="checkmark" className="checkmark m-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                                    <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                                    <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                                </svg>
-                            );
+                            return <CheckmarkAnimation size="small" />;
                         default:
                             return "Run";
                     }
@@ -84,11 +76,7 @@ const MacroRow = ({ name, actions }) => {
                 {(() => {
                     switch(deleteAnimation) {
                         case("loading"):
-                            return (
-                                <div id="spinner" className="loading-animation loading-animation-show m-auto">
-                                    <div></div><div></div><div></div><div></div>
-                                </div>
-                            );
+                            return <ButtonSpinner />;
                         default:
                             return <i className="bi-trash"></i>;
                     }
