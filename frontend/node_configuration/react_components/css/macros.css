@@ -1,0 +1,21 @@
+.macro-row {
+    width: 100%;
+    min-width: 300px;
+}
+
+.macro-button {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.macro-name {
+    margin: auto;
+    padding-left: 3rem;
+}
+
+.macro-dropdown-button {
+    width: 3rem;
+}

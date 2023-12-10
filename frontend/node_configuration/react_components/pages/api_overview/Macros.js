@@ -3,12 +3,16 @@ import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 import Collapse from 'react-bootstrap/Collapse';
 import { RecordMacroModal } from 'modals/RecordMacroModal';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { EditMacroModalContext } from 'modals/EditMacroModal';
 import { toTitle, sleep } from 'util/helper_functions';
 import { ButtonSpinner, CheckmarkAnimation } from 'util/animations';
+import 'css/macros.css';
 
 
 const MacroRow = ({ name, actions }) => {
@@ -20,7 +24,6 @@ const MacroRow = ({ name, actions }) => {
 
     // Create state objects for button animations
     const [runAnimation, setRunAnimation] = useState("false");
-    const [deleteAnimation, setDeleteAnimation] = useState("false");
 
     const edit = () => {
         openEditMacroModal(name, actions);
@@ -48,7 +51,7 @@ const MacroRow = ({ name, actions }) => {
 
     const del = async () => {
         // Start loading animation
-        setDeleteAnimation("loading");
+        setRunAnimation("loading");
 
         // Delete macro
         const result = await fetch(`/delete_macro/${name}`);
@@ -62,35 +65,33 @@ const MacroRow = ({ name, actions }) => {
 
             // Remove from context (re-renders without this row)
             deleteMacro(name);
+        } else {
+            // Cancel loading animation
+            setRunAnimation("false");
         }
     };
 
     return (
         <div id={name} className="d-flex mb-3">
-            <h3 className="mx-auto my-auto">{toTitle(name)}</h3>
-            <Button variant="primary" className="btn-macro mx-3" onClick={run}>
-                {(() => {
-                    switch(runAnimation) {
-                        case("loading"):
-                            return <ButtonSpinner />;
-                        case("complete"):
-                            return <CheckmarkAnimation size="small" />;
-                        default:
-                            return "Run";
-                    }
-                })()}
-            </Button>
-            <Button variant="primary" className="btn-macro mx-3" onClick={edit}>Edit</Button>
-            <Button variant="danger" className="btn-macro mx-3" onClick={del}>
-                {(() => {
-                    switch(deleteAnimation) {
-                        case("loading"):
-                            return <ButtonSpinner />;
-                        default:
-                            return <i className="bi-trash"></i>;
-                    }
-                })()}
-            </Button>
+            <ButtonGroup className="macro-row">
+                <Button onClick={run} className="macro-button">
+                    {(() => {
+                        switch(runAnimation) {
+                            case("loading"):
+                                return <ButtonSpinner />;
+                            case("complete"):
+                                return <CheckmarkAnimation size="small" />;
+                            default:
+                                return <h3 className="macro-name">{toTitle(name)}</h3>;
+                        }
+                    })()}
+                </Button>
+
+                <DropdownButton as={ButtonGroup} title={<i className="bi-gear-fill"></i>} align="end" className="macro-dropdown-button">
+                    <Dropdown.Item onClick={edit}><i className="bi-pencil"></i> Edit</Dropdown.Item>
+                    <Dropdown.Item onClick={del}><i className="bi-trash"></i> Delete</Dropdown.Item>
+                </DropdownButton>
+            </ButtonGroup>
         </div>
     );
 };
