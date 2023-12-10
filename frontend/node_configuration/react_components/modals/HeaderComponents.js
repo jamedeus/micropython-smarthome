@@ -1,14 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-bootstrap/Modal';
+import Button from 'react-bootstrap/Button';
 
 
 export const HeaderWithCloseButton = ({ title, onClose }) => {
     return (
         <Modal.Header className="justify-content-between pb-0">
-            <button type="button" className="btn-close" style={{visibility: "hidden"}}></button>
+            <Button variant="link" className="btn-close" style={{visibility: "hidden"}}></Button>
             <h5 className="modal-title">{title}</h5>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+            <Button variant="link" className="btn-close" style={{right: "5%"}} onClick={onClose}></Button>
         </Modal.Header>
     );
 };

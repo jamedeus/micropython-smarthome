@@ -334,9 +334,15 @@ export const ApiTargetRuleModal = () => {
             <HeaderWithCloseButton title="API Target Rule" onClose={handleClose} />
 
             <Modal.Body className="d-flex flex-column mx-auto">
-                <button className="btn btn-sm btn-secondary mx-auto mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    className="mx-auto mb-3"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#api-rule-modal-help"
+                >
                     Help
-                </button>
+                </Button>
 
                 <div className="collapse" id="api-rule-modal-help">
                     <p className="text-center">Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.</p>
@@ -346,9 +352,15 @@ export const ApiTargetRuleModal = () => {
                     <p className="text-center">The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.</p>
 
                     <p className="text-center">
-                        <button className="btn btn-sm btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-examples" aria-expanded="false" aria-controls="api-rule-modal-examples">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="mx-auto mb-3"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#api-rule-modal-examples"
+                        >
                             Examples
-                        </button>
+                        </Button>
                     </p>
 
                     <div className="collapse" id="api-rule-modal-examples">
@@ -359,9 +371,15 @@ export const ApiTargetRuleModal = () => {
                         </ul>
 
                         <p className="text-center">
-                            <button className="btn btn-sm btn-secondary mb-3" type="button" data-bs-toggle="collapse" data-bs-target="#api-rule-modal-help" aria-expanded="false" aria-controls="api-rule-modal-help">
+                            <Button
+                                variant="secondary"
+                                size="sm"
+                                className="mx-auto mb-3"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#api-rule-modal-help"
+                            >
                                 Close
-                            </button>
+                            </Button>
                         </p>
                     </div>
                 </div>
