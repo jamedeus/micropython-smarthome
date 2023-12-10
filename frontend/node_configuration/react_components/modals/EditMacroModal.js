@@ -24,8 +24,8 @@ export const EditMacroModalContextProvider = ({ children }) => {
             ["visible"]: true,
             ["name"]: name,
             ["actions"]: actions
-        })
-    }
+        });
+    };
 
     const handleClose = () => {
         setEditMacroContent({
@@ -87,8 +87,8 @@ export const EditMacroModal = () => {
                 if (editMacroContent.actions.every(item => item === null)) {
                     handleClose();
                 }
-            };
-        }
+            }
+        };
 
         return (
             <tr id={`macro-action-${actionID}`}>
@@ -109,6 +109,11 @@ export const EditMacroModal = () => {
         );
     };
 
+    TableRow.propTypes = {
+        action: PropTypes.object,
+        actionID: PropTypes.number
+    };
+
     return (
         <Modal show={editMacroContent.visible} onHide={handleClose} centered>
             <HeaderWithCloseButton title={editMacroContent.name} onClose={handleClose} />
@@ -126,7 +131,7 @@ export const EditMacroModal = () => {
                     </thead>
                     <tbody>
                         {editMacroContent.actions.map((action, index) => {
-                            return <TableRow key={index} action={action} actionID={index} />
+                            return <TableRow key={index} action={action} actionID={index} />;
                         })}
                     </tbody>
                 </Table>

@@ -36,7 +36,7 @@ export const ApiOverviewContextProvider = ({ children }) => {
     window.onpageshow = function(event) {
         if (event.persisted) {
             setLoading(false);
-        };
+        }
     };
 
     const deleteMacro = (name) => {

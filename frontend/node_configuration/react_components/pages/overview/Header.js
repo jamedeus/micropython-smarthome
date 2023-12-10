@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { UploadModalContext } from 'modals/UploadModal';
 import { ErrorModalContext } from 'modals/ErrorModal';
@@ -43,7 +44,7 @@ const Header = () => {
     // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (
         <div className="d-flex justify-content-between">
-            <button type="button" className="btn my-auto" id="back_button" style={{visibility: "hidden"}}><i className="bi-chevron-left"></i></button>
+            <Button style={{visibility: "hidden"}}><i className="bi-chevron-left"></i></Button>
             <h1 className="my-3">Configure Nodes</h1>
             <Dropdown align="end" className="my-auto">
                 <Dropdown.Toggle variant="light" id="settings-button">

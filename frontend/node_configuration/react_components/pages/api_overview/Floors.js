@@ -27,6 +27,10 @@ const Floors = () => {
         );
     };
 
+    NodeButton.propTypes = {
+        friendlyName: PropTypes.string,
+    };
+
     // Takes section label and array of friendly names on floor
     // Returns section with button for each friendly name
     const FloorSection = ({ label, nodes }) => {
@@ -39,6 +43,11 @@ const Floors = () => {
                 })}
             </div>
         );
+    };
+
+    FloorSection.propTypes = {
+        label: PropTypes.string,
+        nodes: PropTypes.array
     };
 
     // Get array of floor numbers (used to determine layout)
@@ -61,7 +70,7 @@ const Floors = () => {
                         nodes={context.nodes[floorNumbers[0]]}
                     />
                 </>
-            )
+            );
         default:
             return (
                 <>
@@ -75,8 +84,8 @@ const Floors = () => {
                         );
                     })}
                 </>
-            )
-    };
+            );
+    }
 };
 
 

@@ -184,15 +184,15 @@ const Macros = () => {
 
     const openNewMacro = async () => {
         // Toggle collapse visibility
-        setShow(!show)
+        setShow(!show);
         // If collapse was previously closed focus input after opening
         if (!show) {
             await sleep(1);
             document.getElementById('new-macro-name').focus();
         }
-    }
+    };
 
-    console.log(recording)
+    console.log(recording);
 
     switch(recording.length) {
         case(0):
@@ -237,7 +237,7 @@ const Macros = () => {
                     })()}
                 </div>
 
-            )
+            );
         default:
             return (
                 <>
@@ -251,7 +251,7 @@ const Macros = () => {
 
                     <RecordMacroModal />
                 </>
-            )
+            );
     }
 };
 

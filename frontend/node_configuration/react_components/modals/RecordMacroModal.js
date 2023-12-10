@@ -28,8 +28,8 @@ export const RecordMacroModal = () => {
         setShow(false);
         if (checked) {
             fetch('/skip_instructions');
-        };
-    }
+        }
+    };
 
     return (
         <Modal show={show} onHide={handleClose} centered className="modal-fit-contents">
