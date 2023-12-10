@@ -100,69 +100,99 @@ MacroRow.propTypes = {
 };
 
 
+const NewMacroField = () => {
+    // Get callback to start recording macro
+    const { setRecording } = useContext(ApiOverviewContext);
+
+    // Create state object for new macro name input
+    const [newMacroName, setNewMacroName] = useState("");
+
+    // Start recording macro with name from input, add record mode URL params
+    const startRecording = () => {
+        setRecording(newMacroName);
+        history.pushState({}, '', `/api/recording/${newMacroName}`);
+    };
+
+    return (
+        <>
+            <div className="form-floating mb-3">
+                <FloatingLabel label="New macro name">
+                    <Form.Control
+                        type="text"
+                        value={newMacroName}
+                        placeholder="New macro name"
+                        onChange={(e) => setNewMacroName(e.target.value)}
+                    />
+                </FloatingLabel>
+                <div id="invalid-name" className="invalid-feedback">
+                    Name already in use
+                </div>
+            </div>
+            <Button
+                variant="success"
+                disabled={newMacroName.length === 0}
+                onClick={startRecording}
+            >
+                Start Recording
+            </Button>
+        </>
+    );
+};
+
+
 const Macros = () => {
-    // Get django context + record macro state and callback
+    // Get django context, state object for name of macro being recorded, callback to finish recording
     const { context, recording, setRecording } = useContext(ApiOverviewContext);
 
     // Create state object to set collapse visibility
     const [show, setShow] = useState(false);
 
-    // Create state object for new macro name input
-    const [newMacroName, setNewMacroName] = useState("");
-
-    const startRecording = () => {
-        setRecording(newMacroName);
-        // Add record mode URL params
-        history.pushState({}, '', `/api/recording/${newMacroName}`);
-    };
-
     const finishRecording = () => {
         setRecording("");
         // Remove URL params (prevents page refresh from resuming recording)
         history.pushState({}, '', '/api');
-    }
-
+    };
 
     return (
         <>
             <div className={ recording ? "d-none" : "text-center section p-3 mx-auto mb-5"}>
-                {Object.keys(context.macros).map((name) => {
-                    return <MacroRow key={name} name={name} actions={context.macros[name]} />;
-                })}
+                {(() => {
+                    switch(true) {
+                        // If macros exist render row for each, hide new macro field in collapse
+                        case(Object.keys(context.macros).length > 0):
+                            return (
+                                <>
+                                    {Object.keys(context.macros).map((name) => {
+                                        return (
+                                            <MacroRow
+                                                key={name}
+                                                name={name}
+                                                actions={context.macros[name]}
+                                            />
+                                        );
+                                    })}
 
-                <div className="text-center mt-3">
-                    <Button
-                        variant="secondary"
-                        className="mt-3 mx-auto"
-                        onClick={() => setShow(!show)}
-                    >
-                        <i className="bi-plus-lg"></i>
-                    </Button>
-                </div>
-                <Collapse in={show}>
-                    <div className="p-3">
-                        <div className="form-floating mb-3">
-                            <FloatingLabel label="New macro name">
-                                <Form.Control
-                                    type="text"
-                                    value={newMacroName}
-                                    placeholder="New macro name"
-                                    onChange={(e) => setNewMacroName(e.target.value)}
-                                />
-                            </FloatingLabel>
-                            <div id="invalid-name" className="invalid-feedback">
-                                Name already in use
-                            </div>
-                        </div>
-                        <Button
-                            variant="success"
-                            disabled={newMacroName.length === 0}
-                            onClick={startRecording}
-                        >
-                            Start Recording
-                        </Button>
-                    </div>
-                </Collapse>
+                                    <div className="text-center mt-3">
+                                        <Button
+                                            variant="secondary"
+                                            className="mt-3 mx-auto"
+                                            onClick={() => setShow(!show)}
+                                        >
+                                            <i className="bi-plus-lg"></i>
+                                        </Button>
+                                    </div>
+                                    <Collapse in={show}>
+                                        <div className="p-3">
+                                            <NewMacroField />
+                                        </div>
+                                    </Collapse>
+                                </>
+                            );
+                        // If no macros exist show new macro field, no collapse
+                        default:
+                            return <NewMacroField />;
+                    }
+                })()}
             </div>
 
             <Button
