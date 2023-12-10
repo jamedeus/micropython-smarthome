@@ -4,10 +4,6 @@
     width: 85%;
 }
 
-body.dark .result {
-    background-color: #2B2E2F;
-}
-
 .remote {
     border: 1px solid rgba(0,0,0,.125);
     padding: 0.5rem;
@@ -15,8 +11,16 @@ body.dark .result {
     border-radius: 20px
 }
 
-body.dark .remote {
-    background-color: #212529;
+@media (prefers-color-scheme: dark) {
+    :root {
+        .result {
+            background-color: #2B2E2F;
+        }
+
+        .remote {
+            background-color: #212529;
+        }
+    }
 }
 
 .edit-ir-macro-cell {
