@@ -1,21 +1,28 @@
+/* Minimum width for whole macro section */
+.macro-container {
+    min-width: 300px;
+    margin-bottom: 3rem;
+}
+
+/* Rows fill width, can expand if text is wider */
+/* Height prevents jump when animation replaces text */
 .macro-row {
     width: 100%;
-    min-width: 300px;
+    height: 3rem;
 }
 
-.macro-button {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
+/* Centered, 3rem offset accounts for options button */
 .macro-name {
     margin: auto;
     padding-left: 3rem;
 }
 
-.macro-dropdown-button {
+/* Fixed width to match text offset (centers text) */
+.macro-options {
     width: 3rem;
+}
+
+/* Reduce options dropdown width */
+.macro-options div:nth-child(2) {
+    min-width: fit-content !important;
 }

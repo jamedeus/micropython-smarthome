@@ -75,6 +75,7 @@ const MacroRow = ({ name, actions }) => {
         <div id={name} className="d-flex mb-3">
             <ButtonGroup className="macro-row">
                 <Button onClick={run} className="macro-button">
+                    <h3 className="macro-name">
                     {(() => {
                         switch(runAnimation) {
                             case("loading"):
@@ -82,12 +83,13 @@ const MacroRow = ({ name, actions }) => {
                             case("complete"):
                                 return <CheckmarkAnimation size="small" />;
                             default:
-                                return <h3 className="macro-name">{toTitle(name)}</h3>;
+                                return toTitle(name);
                         }
                     })()}
+                    </h3>
                 </Button>
 
-                <DropdownButton as={ButtonGroup} title={<i className="bi-gear-fill"></i>} align="end" className="macro-dropdown-button">
+                <DropdownButton as={ButtonGroup} title={<i className="bi-gear-fill"></i>} align="end" className="macro-options">
                     <Dropdown.Item onClick={edit}><i className="bi-pencil"></i> Edit</Dropdown.Item>
                     <Dropdown.Item onClick={del}><i className="bi-trash"></i> Delete</Dropdown.Item>
                 </DropdownButton>
@@ -197,7 +199,7 @@ const Macros = () => {
     switch(recording.length) {
         case(0):
             return (
-                <div className="text-center section p-3 mx-auto mb-5">
+                <div className="section p-3 mx-auto macro-container">
                     {(() => {
                         switch(true) {
                             // If macros exist render row for each, hide new macro field in collapse
