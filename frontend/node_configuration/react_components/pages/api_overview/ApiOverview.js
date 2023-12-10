@@ -7,6 +7,7 @@ import { EditMacroModal, EditMacroModalContextProvider } from 'modals/EditMacroM
 import Header from './Header';
 import Floors from './Floors';
 import Macros from './Macros';
+import { LoadingSpinner } from 'util/animations';
 
 
 const App = () => {
@@ -40,9 +41,7 @@ const App = () => {
 
                 {/* Loading overlay (hidden) */}
                 <div id="loading_overlay" className={loading ? "d-flex" : "d-none"}>
-                    <div id="loading_spinner" className="spinner">
-                        <div></div><div></div><div></div><div></div>
-                    </div>
+                    <LoadingSpinner size="large" />
                 </div>
             </EditMacroModalContextProvider>
         </ModalContextProvider>

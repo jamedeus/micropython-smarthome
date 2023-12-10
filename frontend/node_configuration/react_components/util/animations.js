@@ -2,20 +2,27 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import 'css/animations.css';
 
-export const LoadingSpinner = () => {
-    return (
-        <div className="spinner-border mx-auto" style={{width: "3rem", height: "3rem"}} role="status">
-            <span className="visually-hidden">Loading...</span>
-        </div>
-    );
-};
-
-export const ButtonSpinner = () => {
-    return (
-        <div id="spinner" className="loading-animation loading-animation-show m-auto">
-            <div></div><div></div><div></div><div></div>
-        </div>
-    );
+export const LoadingSpinner = ({ size }) => {
+    switch(size) {
+        case "large":
+            return (
+                <div id="spinner" className="loading-animation loading-animation-lg m-auto">
+                    <div></div><div></div><div></div><div></div>
+                </div>
+            );
+        case "medium":
+            return (
+                <div id="spinner" className="loading-animation loading-animation-md m-auto">
+                    <div></div><div></div><div></div><div></div>
+                </div>
+            );
+        case "small":
+            return (
+                <div id="spinner" className="loading-animation loading-animation-sm m-auto">
+                    <div></div><div></div><div></div><div></div>
+                </div>
+            );
+    }
 };
 
 export const CheckmarkAnimation = ({ size="large" }) => {

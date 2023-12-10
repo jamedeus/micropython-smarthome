@@ -11,7 +11,7 @@ import { RecordMacroModal } from 'modals/RecordMacroModal';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { EditMacroModalContext } from 'modals/EditMacroModal';
 import { toTitle, sleep } from 'util/helper_functions';
-import { ButtonSpinner, CheckmarkAnimation } from 'util/animations';
+import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import 'css/macros.css';
 
 
@@ -79,7 +79,7 @@ const MacroRow = ({ name, actions }) => {
                     {(() => {
                         switch(runAnimation) {
                             case("loading"):
-                                return <ButtonSpinner />;
+                                return <LoadingSpinner size="small" />;
                             case("complete"):
                                 return <CheckmarkAnimation size="small" />;
                             default:

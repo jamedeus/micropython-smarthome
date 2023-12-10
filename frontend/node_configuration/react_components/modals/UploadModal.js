@@ -47,7 +47,7 @@ export const UploadModal = () => {
                 {(() => {
                     switch (uploadComplete) {
                         case false:
-                            return <LoadingSpinner />;
+                            return <LoadingSpinner size="medium" />;
                         case true:
                             return <CheckmarkAnimation size="large" />;
                     }
