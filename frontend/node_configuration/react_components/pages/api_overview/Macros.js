@@ -4,6 +4,7 @@ import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
+import { RecordMacroModal } from 'modals/RecordMacroModal';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { EditMacroModalContext } from 'modals/EditMacroModal';
 import { toTitle, sleep } from 'util/helper_functions';
@@ -102,21 +103,21 @@ MacroRow.propTypes = {
 
 const NewMacroField = () => {
     // Get callback to start recording macro
-    const { setRecording } = useContext(ApiOverviewContext);
+    const { startRecording } = useContext(ApiOverviewContext);
 
     // Create state object for new macro name input, validation status
     const [newMacroName, setNewMacroName] = useState("");
     const [invalid, setInvalid] = useState(false);
 
     // Start recording macro with name from input, add record mode URL params
-    const startRecording = async () => {
+    const handleStart = async () => {
         // Check if name is available
         const response = await fetch(`/macro_name_available/${newMacroName}`);
         const status = await response.status;
 
         // If name is available start recording
         if (status === 200) {
-            setRecording(newMacroName);
+            startRecording(newMacroName);
             history.pushState({}, '', `/api/recording/${newMacroName}`);
         // If name is taken show invalid highlight
         } else {
@@ -133,7 +134,7 @@ const NewMacroField = () => {
     // Start recording if enter key pressed in field with text
     const handleEnterKey = (e) => {
         if (e.key === "Enter" && newMacroName.length > 0) {
-            startRecording();
+            handleStart();
         }
     };
 
@@ -158,7 +159,7 @@ const NewMacroField = () => {
             <Button
                 variant="success"
                 disabled={newMacroName.length === 0}
-                onClick={startRecording}
+                onClick={handleStart}
             >
                 Start Recording
             </Button>
@@ -190,57 +191,67 @@ const Macros = () => {
         }
     }
 
-    return (
-        <>
-            <div className={ recording ? "d-none" : "text-center section p-3 mx-auto mb-5"}>
-                {(() => {
-                    switch(true) {
-                        // If macros exist render row for each, hide new macro field in collapse
-                        case(Object.keys(context.macros).length > 0):
-                            return (
-                                <>
-                                    {Object.keys(context.macros).map((name) => {
-                                        return (
-                                            <MacroRow
-                                                key={name}
-                                                name={name}
-                                                actions={context.macros[name]}
-                                            />
-                                        );
-                                    })}
+    console.log(recording)
 
-                                    <div className="text-center mt-3">
-                                        <Button
-                                            variant="secondary"
-                                            className="mt-3 mx-auto"
-                                            onClick={openNewMacro}
-                                        >
-                                            <i className="bi-plus-lg"></i>
-                                        </Button>
-                                    </div>
-                                    <Collapse in={show}>
-                                        <div className="p-3">
-                                            <NewMacroField />
+    switch(recording.length) {
+        case(0):
+            return (
+                <div className="text-center section p-3 mx-auto mb-5">
+                    {(() => {
+                        switch(true) {
+                            // If macros exist render row for each, hide new macro field in collapse
+                            case(Object.keys(context.macros).length > 0):
+                                return (
+                                    <>
+                                        {Object.keys(context.macros).map((name) => {
+                                            return (
+                                                <MacroRow
+                                                    key={name}
+                                                    name={name}
+                                                    actions={context.macros[name]}
+                                                />
+                                            );
+                                        })}
+
+                                        <div className="text-center mt-3">
+                                            <Button
+                                                variant="secondary"
+                                                className="mt-3 mx-auto"
+                                                onClick={openNewMacro}
+                                            >
+                                                <i className="bi-plus-lg"></i>
+                                            </Button>
                                         </div>
-                                    </Collapse>
-                                </>
-                            );
-                        // If no macros exist show new macro field, no collapse
-                        default:
-                            return <NewMacroField />;
-                    }
-                })()}
-            </div>
+                                        <Collapse in={show}>
+                                            <div className="p-3">
+                                                <NewMacroField />
+                                            </div>
+                                        </Collapse>
+                                    </>
+                                );
+                            // If no macros exist show new macro field, no collapse
+                            default:
+                                return <NewMacroField />;
+                        }
+                    })()}
+                </div>
 
-            <Button
-                variant="danger"
-                className={ recording ? "mb-5 mx-auto" : "d-none" }
-                onClick={finishRecording}
-            >
-                Finish Recording
-            </Button>
-        </>
-    );
+            )
+        default:
+            return (
+                <>
+                    <Button
+                        variant="danger"
+                        className={ recording ? "mb-5 mx-auto" : "d-none" }
+                        onClick={finishRecording}
+                    >
+                        Finish Recording
+                    </Button>
+
+                    <RecordMacroModal />
+                </>
+            )
+    }
 };
 
 

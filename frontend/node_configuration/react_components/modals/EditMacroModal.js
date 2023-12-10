@@ -56,11 +56,11 @@ export const EditMacroModal = () => {
     const { editMacroContent, handleClose } = useContext(EditMacroModalContext);
 
     // Get callbacks to remove macro action, resume recording actions
-    const { deleteMacroAction, setRecording } = useContext(ApiOverviewContext);
+    const { deleteMacroAction, startRecording } = useContext(ApiOverviewContext);
 
     // Handler for record more button: set record name, close modal, change URL
-    const startRecording = () => {
-        setRecording(editMacroContent.name);
+    const resumeRecording = () => {
+        startRecording(editMacroContent.name);
         handleClose();
         history.pushState({}, '', `/api/recording/${editMacroContent.name}`);
     };
@@ -132,7 +132,7 @@ export const EditMacroModal = () => {
                 </Table>
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-2">
-                <Button variant="success" className="mx-auto mb-3" onClick={startRecording}>
+                <Button variant="success" className="mx-auto mb-3" onClick={resumeRecording}>
                     Record More
                 </Button>
             </Modal.Footer>

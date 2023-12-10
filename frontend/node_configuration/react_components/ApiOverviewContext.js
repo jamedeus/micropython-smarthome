@@ -20,7 +20,8 @@ export const ApiOverviewContextProvider = ({ children }) => {
         return {
             nodes: parse_dom_context("nodes"),
             macros: parse_dom_context("macros"),
-            recording: parse_dom_context("recording")
+            recording: parse_dom_context("recording"),
+            start_recording: false
         };
     });
 
@@ -46,6 +47,13 @@ export const ApiOverviewContextProvider = ({ children }) => {
         }
     };
 
+    // Takes new macro name, sets recording state, sets context param
+    // that opens instruction modal if "don't show again" cookie not set
+    const startRecording = (name) => {
+        setRecording(name);
+        setContext({ ...context, ["start_recording"]: true});
+    };
+
     return (
         <ApiOverviewContext.Provider value={{
             context,
@@ -53,7 +61,8 @@ export const ApiOverviewContextProvider = ({ children }) => {
             recording,
             setRecording,
             deleteMacro,
-            deleteMacroAction
+            deleteMacroAction,
+            startRecording
         }}>
             {children}
         </ApiOverviewContext.Provider>

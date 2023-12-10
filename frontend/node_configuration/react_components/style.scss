@@ -319,7 +319,7 @@ td:last-child{
 /* Prevent horizontal margins on modal */
 /* Margin keeps centerd on mobile */
 /* Used in record macro modal */
-.modal-fit-contents {
+.modal-fit-contents div:nth-child(1) {
     max-width: fit-content !important;
     margin: auto !important;
 }
