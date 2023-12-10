@@ -199,7 +199,7 @@ export const ChangeIpModal = () => {
                         case "loading":
                             return <LoadingSpinner size="medium" />;
                         case "complete":
-                            return <CheckmarkAnimation size="large" />;
+                            return <CheckmarkAnimation size="large" color="green" />;
                     }
                 })()}
             </Modal.Body>

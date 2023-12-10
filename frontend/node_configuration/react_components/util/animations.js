@@ -1,49 +1,60 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import 'css/animations.css';
+import 'css/LoadingSpinner.css';
+import 'css/CheckmarkAnimation.css';
 
 export const LoadingSpinner = ({ size }) => {
+    let classList = ["loading-animation", "m-auto"];
+
     switch(size) {
         case "large":
-            return (
-                <div id="spinner" className="loading-animation loading-animation-lg m-auto">
-                    <div></div><div></div><div></div><div></div>
-                </div>
-            );
+            classList.push("loading-animation-lg");
+            break;
         case "medium":
-            return (
-                <div id="spinner" className="loading-animation loading-animation-md m-auto">
-                    <div></div><div></div><div></div><div></div>
-                </div>
-            );
+            classList.push("loading-animation-md");
+            break;
         case "small":
-            return (
-                <div id="spinner" className="loading-animation loading-animation-sm m-auto">
-                    <div></div><div></div><div></div><div></div>
-                </div>
-            );
+            classList.push("loading-animation-sm");
+            break;
     }
+
+    return (
+        <div id="spinner" className={classList.join(" ")}>
+            <div></div><div></div><div></div><div></div>
+        </div>
+    );
 };
 
-export const CheckmarkAnimation = ({ size="large" }) => {
+export const CheckmarkAnimation = ({ size, color }) => {
+    let classList = ["checkmark", "m-auto"];
+
     switch(size) {
         case "large":
-            return (
-                <svg className="checkmark mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                    <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
-                    <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                </svg>
-            );
+            classList.push("checkmark-lg");
+            break;
         case "small":
-            return (
-                <svg className="checkmark_sm mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
-                    <circle className="checkmark__circle_sm" cx="26" cy="26" r="25" fill="none"/>
-                    <path className="checkmark__check_sm" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
-                </svg>
-            );
+            classList.push("checkmark-sm");
+            break;
     }
+
+    switch(color) {
+        case "green":
+            classList.push("checkmark-green");
+            break;
+        case "white":
+            classList.push("checkmark-white");
+            break;
+    }
+
+    return (
+        <svg className={classList.join(" ")} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+            <circle className="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+            <path className="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+        </svg>
+    );
 };
 
 CheckmarkAnimation.propTypes = {
-    size: PropTypes.string
+    size: PropTypes.string,
+    color: PropTypes.string
 };

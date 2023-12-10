@@ -81,7 +81,7 @@ const MacroRow = ({ name, actions }) => {
                             case("loading"):
                                 return <LoadingSpinner size="small" />;
                             case("complete"):
-                                return <CheckmarkAnimation size="small" />;
+                                return <CheckmarkAnimation size="small" color="white" />;
                             default:
                                 return toTitle(name);
                         }

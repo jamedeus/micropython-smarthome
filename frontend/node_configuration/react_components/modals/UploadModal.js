@@ -49,7 +49,7 @@ export const UploadModal = () => {
                         case false:
                             return <LoadingSpinner size="medium" />;
                         case true:
-                            return <CheckmarkAnimation size="large" />;
+                            return <CheckmarkAnimation size="large" color="green" />;
                     }
                 })()}
             </Modal.Body>
