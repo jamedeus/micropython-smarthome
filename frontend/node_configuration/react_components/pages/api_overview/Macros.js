@@ -104,13 +104,37 @@ const NewMacroField = () => {
     // Get callback to start recording macro
     const { setRecording } = useContext(ApiOverviewContext);
 
-    // Create state object for new macro name input
+    // Create state object for new macro name input, validation status
     const [newMacroName, setNewMacroName] = useState("");
+    const [invalid, setInvalid] = useState(false);
 
     // Start recording macro with name from input, add record mode URL params
-    const startRecording = () => {
-        setRecording(newMacroName);
-        history.pushState({}, '', `/api/recording/${newMacroName}`);
+    const startRecording = async () => {
+        // Check if name is available
+        const response = await fetch(`/macro_name_available/${newMacroName}`);
+        const status = await response.status;
+
+        // If name is available start recording
+        if (status === 200) {
+            setRecording(newMacroName);
+            history.pushState({}, '', `/api/recording/${newMacroName}`);
+        // If name is taken show invalid highlight
+        } else {
+            setInvalid(true);
+        }
+    };
+
+    // Clear previous invalid highlight when user types in field
+    const handleInput = (value) => {
+        setNewMacroName(value);
+        setInvalid(false);
+    };
+
+    // Start recording if enter key pressed in field with text
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter" && newMacroName.length > 0) {
+            startRecording();
+        }
     };
 
     return (
@@ -119,14 +143,17 @@ const NewMacroField = () => {
                 <FloatingLabel label="New macro name">
                     <Form.Control
                         type="text"
+                        id="new-macro-name"
                         value={newMacroName}
                         placeholder="New macro name"
-                        onChange={(e) => setNewMacroName(e.target.value)}
+                        onChange={(e) => handleInput(e.target.value)}
+                        onKeyDown={handleEnterKey}
+                        isInvalid={invalid}
                     />
+                    <Form.Control.Feedback type="invalid">
+                        Name already in use
+                    </Form.Control.Feedback>
                 </FloatingLabel>
-                <div id="invalid-name" className="invalid-feedback">
-                    Name already in use
-                </div>
             </div>
             <Button
                 variant="success"
@@ -153,6 +180,16 @@ const Macros = () => {
         history.pushState({}, '', '/api');
     };
 
+    const openNewMacro = async () => {
+        // Toggle collapse visibility
+        setShow(!show)
+        // If collapse was previously closed focus input after opening
+        if (!show) {
+            await sleep(1);
+            document.getElementById('new-macro-name').focus();
+        }
+    }
+
     return (
         <>
             <div className={ recording ? "d-none" : "text-center section p-3 mx-auto mb-5"}>
@@ -176,7 +213,7 @@ const Macros = () => {
                                         <Button
                                             variant="secondary"
                                             className="mt-3 mx-auto"
-                                            onClick={() => setShow(!show)}
+                                            onClick={openNewMacro}
                                         >
                                             <i className="bi-plus-lg"></i>
                                         </Button>
