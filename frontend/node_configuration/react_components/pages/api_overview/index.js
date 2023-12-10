@@ -4,6 +4,7 @@ import App from './ApiOverview';
 import { ApiOverviewContextProvider } from 'root/ApiOverviewContext';
 import 'css/dark_mode.scss';
 import 'css/loading.css';
+import 'css/style.css';
 
 
 const container = document.getElementById('root');
