@@ -81,7 +81,7 @@ export const useUploader = () => {
         }
 
         // Upload config file to target IP address
-        var response = await send_post_request(endpoint, {config: filename, ip: targetIP});
+        const response = await send_post_request(endpoint, {config: filename, ip: targetIP});
 
         // If upload successful, show success animation and reload page
         if (response.ok) {

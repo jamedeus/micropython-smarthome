@@ -191,12 +191,13 @@ function update_ids(target, state) {
     const index = target.replace(/[a-zA-Z]/g, '');
 
     // Get list of all instances in same category
-    var instances = filterObject(state, category);
+    const instances = filterObject(state, category);
 
-    // If target is device get list of sensors (used to update target IDs)
+    // Get list of all sensors (used to update target IDs)
+    const sensors = filterObject(state, 'sensor');
+
+    // If target is device remove from all sensor target lists
     if (category === 'device') {
-        var sensors = filterObject(state, 'sensor');
-        // Remove device from all sensor targets
         for (const sensor in sensors) {
             state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== target);
         }

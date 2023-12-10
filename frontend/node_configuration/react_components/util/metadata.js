@@ -2,7 +2,7 @@ import React from 'react';
 
 // Get device/sensor metadata object, used to determine input elements for each type
 // Contains config templates for each device/sensor, added to output object when selected
-var metadata = JSON.parse(document.getElementById("instance_metadata").textContent);
+let metadata = JSON.parse(document.getElementById("instance_metadata").textContent);
 
 
 // Takes metadata entry, replaces "placeholder" with "" in config template
