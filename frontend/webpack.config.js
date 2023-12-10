@@ -9,6 +9,7 @@ const config = {
         edit_config: './node_configuration/react_components/pages/edit_config/index.js',
         overview: './node_configuration/react_components/pages/overview/index.js',
         api_overview: './node_configuration/react_components/pages/api_overview/index.js',
+        api_card: './node_configuration/react_components/pages/api_card/index.js',
     },
     output: {
         path: path.resolve(__dirname, 'node_configuration/static/node_configuration/'),
