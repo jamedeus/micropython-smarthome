@@ -1,6 +1,15 @@
-/* Delete instance card animation */
+/* Calculated when instance card deleted */
+/* Determines height of slide up animation */
 :root {
     --animation-height: 25rem;
+}
+
+/* Applied to all cards below deleted card, slides into place */
+.slide-up {
+    animation-name: slide-up;
+    animation-duration: 0.8s;
+    animation-timing-function: ease;
+    animation-fill-mode: forwards;
 }
 
 @keyframes slide-up {
@@ -12,9 +21,10 @@
     }
 }
 
-.slide-up {
-    animation-name: slide-up;
-    animation-duration: 0.8s;
+/* Applied to deleted card, fades out before being removed */
+.fade-out-card {
+    animation-name: fade-out;
+    animation-duration: 0.4s;
     animation-timing-function: ease;
     animation-fill-mode: forwards;
 }
@@ -28,15 +38,8 @@
     }
 }
 
-/* Delete card in config editor */
-.fade-out-card {
-    animation-name: fade-out;
-    animation-duration: 0.4s;
-    animation-timing-function: ease;
-    animation-fill-mode: forwards;
-}
-
-/* Popup div for setting timestamp and rule on page 3 */
+/* Popup div for setting timestamps and rules (page 3) */
+/* Aligns with parent with 20px margin on either side */
 .schedule-rule-param-popup {
     position: absolute;
     border: 3px solid #1B1E1F;
@@ -49,11 +52,22 @@
     min-width: fit-content;
 }
 
-/* Mobile: Full width popup div instead of aligning to parent element */
+/* Mobile: Fill screen width instead of aligning to parent */
 @media screen and (max-width: 768px) {
     .schedule-rule-param-popup {
         min-width: calc(100% - 40px);
         margin-left: 20px;
         left: 0;
+    }
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Use lighter color for inputs outside cards (background contrast) */
+        /* Overrides styles above with more-specific selector */
+        #metadata input {
+            background-color: #31363b;
+        }
     }
 }

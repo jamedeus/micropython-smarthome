@@ -71,6 +71,9 @@
         $card-bg: #212529;
         $table-color: #eee;
 
+        --#{$variable-prefix}body-color: #{$body-color};
+        --#{$variable-prefix}body-bg: #{$body-bg};
+
         /* Tables */
         $table-bg: #212529 !important;
         $table-hover-bg: #35393f !important;
@@ -120,12 +123,6 @@
             color: #696b6e;
         }
 
-        /* Use lighter color for inputs outside cards (background contrast) */
-        /* Overrides styles above with more-specific selector */
-        #metadata input {
-            background-color: #31363b;
-        }
-
         /* Contrasting background for inputs inside modal */
         .modal-input, .modal-input:focus {
             background-color: #1b1e1f !important;
@@ -137,7 +134,11 @@
         }
 
         /* Fix form validation messages in dark mode */
-        .is-invalid~.invalid-feedback, .is-invalid~.invalid-tooltip, .was-validated :invalid~.invalid-feedback, .was-validated :invalid~.invalid-tooltip {
+        /* Don't know why but the feedback text never appears without */
+        .is-invalid~.invalid-feedback,
+        .is-invalid~.invalid-tooltip,
+        .was-validated :invalid~.invalid-feedback,
+        .was-validated :invalid~.invalid-tooltip {
             display: block;
         }
 
@@ -169,12 +170,6 @@
             font-weight: bold !important;
         }
 
-        /* Fix slight annoying color difference between radio button and submit button */
-        .btn-check:active + .btn-outline-primary, .btn-check:checked + .btn-outline-primary, .btn-outline-primary.active, .btn-outline-primary.dropdown-toggle.show, .btn-outline-primary:active {
-            background-color: $primary;
-            border-color: $primary;
-        }
-
         /* ApiTarget rule modal On/Off toggle */
         .btn-check + .btn-dark {
             background-color: #282d32;
@@ -184,9 +179,6 @@
             background-color: #1B1E1F;
             border-color: #1B1E1F;
         }
-
-        --#{$variable-prefix}body-color: #{$body-color};
-        --#{$variable-prefix}body-bg: #{$body-bg};
 
         /* Prevent color change on focus (not enough contrast with body bg) */
         .btn-dark:hover, .btn-dark:focus, .btn-dark:active {

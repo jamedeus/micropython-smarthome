@@ -271,8 +271,8 @@ const KeywordsTable = () => {
                     <Table id="nodes_table" className="table-borderless table-sm table-hover mt-3 mx-auto">
                         <thead>
                             <tr>
-                                <th className="w-50"><span>Keyword</span></th>
-                                <th className="w-50"><span>Timestamp</span></th>
+                                <th className="w-50">Keyword</th>
+                                <th className="w-50">Timestamp</th>
                                 <th></th>
                             </tr>
                         </thead>

@@ -143,8 +143,8 @@ const NewConfigTable = () => {
                     <Table borderless hover size="sm" className="mt-3 mx-auto">
                         <thead>
                             <tr>
-                                <th className="w-50"><span>Name</span></th>
-                                <th className="w-50"><span>IP</span></th>
+                                <th className="w-50">Name</th>
+                                <th className="w-50">IP</th>
                                 <th></th>
                                 <th></th>
                             </tr>

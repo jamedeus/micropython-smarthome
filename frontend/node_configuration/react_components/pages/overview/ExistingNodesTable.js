@@ -111,8 +111,8 @@ const ExistingNodesTable = () => {
                     <Table id="nodes_table" className="table-borderless table-sm table-hover mt-3 mx-auto">
                         <thead>
                             <tr>
-                                <th className="w-50"><span>Name</span></th>
-                                <th className="w-50"><span>IP</span></th>
+                                <th className="w-50">Name</th>
+                                <th className="w-50">IP</th>
                                 <th></th>
                             </tr>
                         </thead>
