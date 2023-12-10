@@ -2,7 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './EditConfig';
 import { ConfigProvider } from 'root/ConfigContext';
-import 'root/style.scss';
+import 'css/dark_mode.scss';
 
 
 const container = document.getElementById('root');

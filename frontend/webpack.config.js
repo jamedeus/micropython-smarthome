@@ -38,7 +38,7 @@ const config = {
 
             },
             {
-                test: /\.(s(a|c)ss)$/,
+                test: /\.(css|s(a|c)ss)$/,
                 use: ['style-loader', 'css-loader', 'sass-loader']
             }
 
@@ -48,6 +48,7 @@ const config = {
     },
     resolve: {
         alias: {
+            css: path.resolve(__dirname, 'node_configuration/react_components/css'),
             root: path.resolve(__dirname, 'node_configuration/react_components/'),
             util: path.resolve(__dirname, 'node_configuration/react_components/util/'),
             inputs: path.resolve(__dirname, 'node_configuration/react_components/inputs/'),
