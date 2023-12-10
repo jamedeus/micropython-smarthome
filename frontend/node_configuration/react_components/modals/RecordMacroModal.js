@@ -38,15 +38,15 @@ export const RecordMacroModal = () => {
             </Modal.Header>
 
             <Modal.Body className="pb-0">
-                <div className="section p-3">
-                    <p className="text-center">Use the interface as you normally would<br/>to record actions.</p>
+                <div className="text-center section p-3">
+                    <p>Use the interface as you normally would<br/>to record actions.</p>
                     <ul className="text-start">
                         <li>Change rules, turn devices on/off,<br/>and enable/disable things</li>
                         <li>Don&apos;t worry about conflicts, only<br/>the last change will be saved</li>
                         <li>Example: If a light is turned off, then<br/>turned on, only on is saved</li>
                     </ul>
-                    <p className="text-center">When you&apos;re done, return to the<br/>overview and click &ldquo;Finish Recording&rdquo;.</p>
-                    <p className="text-center">You can always click the edit button<br/>later to delete actions or record more.</p>
+                    <p>When you&apos;re done, return to the<br/>overview and click &ldquo;Finish Recording&rdquo;.</p>
+                    <p>You can always click the edit button<br/>later to delete actions or record more.</p>
                 </div>
                 <div className="d-flex flex-column pt-3 pb-2">
                     <Form.Check

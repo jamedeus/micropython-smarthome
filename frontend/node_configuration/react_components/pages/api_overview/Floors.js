@@ -35,7 +35,7 @@ const Floors = () => {
     // Returns section with button for each friendly name
     const FloorSection = ({ label, nodes }) => {
         return (
-            <div className="section mt-3 mb-4 p-3">
+            <div className="text-center section mt-3 mb-4 p-3">
                 <h5 className="mb-3"><b>{label}</b></h5>
 
                 {nodes.map((node) => {

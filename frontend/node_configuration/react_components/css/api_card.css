@@ -1,13 +1,6 @@
-/* Loading overlay shown when leaving overview */
-#loading_overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    z-index: 999;
+/* Block double tap zoom on mobile (allows pressing buttons quickly) */
+body {
+    touch-action: manipulation;
 }
 
 /* Transition shown when api_card.html loads */

@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import App from './ApiOverview';
 import { ApiOverviewContextProvider } from 'root/ApiOverviewContext';
 import 'css/dark_mode.scss';
-import 'css/loading.css';
 import 'css/style.css';
 
 

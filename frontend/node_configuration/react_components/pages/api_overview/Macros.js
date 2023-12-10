@@ -199,7 +199,7 @@ const Macros = () => {
     switch(recording.length) {
         case(0):
             return (
-                <div className="section p-3 mx-auto macro-container">
+                <div className="text-center section p-3 mx-auto macro-container">
                     {(() => {
                         switch(true) {
                             // If macros exist render row for each, hide new macro field in collapse

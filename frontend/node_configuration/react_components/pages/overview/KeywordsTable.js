@@ -264,7 +264,7 @@ const KeywordsTable = () => {
 
     // Render table with row for each existing keyword + empty row to add new keywords
     return (
-        <Row id="keywords" className="section px-0 pt-2">
+        <Row id="keywords" className="text-center section px-0 pt-2">
             <h3 className="text-center my-1" onClick={() => setOpen(!open)}>Schedule Keywords</h3>
             <Collapse in={open}>
                 <div>

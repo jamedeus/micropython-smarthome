@@ -104,7 +104,7 @@ const ExistingNodesTable = () => {
 
     // Render table with row for each existing node
     return (
-        <Row id="existing" className="section px-0 pt-2">
+        <Row id="existing" className="text-center section px-0 pt-2">
             <h3 className="text-center my-1" onClick={() => setOpen(!open)}>Existing Nodes</h3>
             <Collapse in={open}>
                 <div>
