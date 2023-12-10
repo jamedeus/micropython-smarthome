@@ -37,9 +37,13 @@
     border-color: #000 transparent transparent transparent;
 }
 
-body.dark .spinner div {
-    border: 8px solid #fff;
-    border-color: #fff transparent transparent transparent;
+@media (prefers-color-scheme: dark) {
+    :root {
+        .spinner div {
+            border: 8px solid #fff;
+            border-color: #fff transparent transparent transparent;
+        }
+    }
 }
 
 .spinner div:nth-child(1) {

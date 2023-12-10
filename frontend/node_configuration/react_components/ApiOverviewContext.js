@@ -29,6 +29,16 @@ export const ApiOverviewContextProvider = ({ children }) => {
     // being recorded (default loaded from django template context)
     const [recording, setRecording] = useState(context.recording);
 
+    // Create state to show loading overlay
+    const [loading, setLoading] = useState(false);
+
+    // Remove loading overlay when navigated to with browser back button
+    window.onpageshow = function(event) {
+        if (event.persisted) {
+            setLoading(false);
+        };
+    };
+
     const deleteMacro = (name) => {
         let update = { ...context.macros };
         delete update[name];
@@ -60,6 +70,8 @@ export const ApiOverviewContextProvider = ({ children }) => {
             setContext,
             recording,
             setRecording,
+            loading,
+            setLoading,
             deleteMacro,
             deleteMacroAction,
             startRecording

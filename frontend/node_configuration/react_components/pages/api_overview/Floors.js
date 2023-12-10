@@ -5,11 +5,12 @@ import { ApiOverviewContext } from 'root/ApiOverviewContext';
 
 
 const Floors = () => {
-    // Get django context, recording mode state
-    const { context, recording } = useContext(ApiOverviewContext);
+    // Get django context, recording mode state, callback to show loading overlay
+    const { context, recording, setLoading } = useContext(ApiOverviewContext);
 
     // Takes node friendly name, redirects to card interface
     function open(friendlyName) {
+        setLoading(true);
         if (recording === "") {
             window.location.href = `/api/${friendlyName}`;
         } else {

@@ -10,8 +10,8 @@ import Macros from './Macros';
 
 
 const App = () => {
-    // Get django context
-    const { context } = useContext(ApiOverviewContext);
+    // Get state bool for loading overlay
+    const { loading } = useContext(ApiOverviewContext);
 
     const configuration = () => {
         window.location.href = "/config_overview";
@@ -36,6 +36,13 @@ const App = () => {
                     {/* Modals (hidden) */}
                     <ErrorModal />
                     <EditMacroModal />
+                </div>
+
+                {/* Loading overlay (hidden) */}
+                <div id="loading_overlay" className={loading ? "d-flex" : "d-none"}>
+                    <div id="loading_spinner" className="spinner">
+                        <div></div><div></div><div></div><div></div>
+                    </div>
                 </div>
             </EditMacroModalContextProvider>
         </ModalContextProvider>
