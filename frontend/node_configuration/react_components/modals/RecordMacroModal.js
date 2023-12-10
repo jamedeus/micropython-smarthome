@@ -3,19 +3,36 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
+import { getCookie } from 'util/django_util';
 
 
 export const RecordMacroModal = () => {
-    // Create state object to control visibility, set default from bool that toggles
-    // to True when recording started (but not when returning to overview from node)
+    // Get context object, start_recording key contains bool that toggles to true
+    // when recording started (but not when returning to overview from node page)
     const { context } = useContext(ApiOverviewContext);
-    const [ show, setShow ] = useState(context.start_recording);
+
+    // Show modal if start_recording is true and skip instructions cookie not set
+    let visible = false;
+    if (context.start_recording && !getCookie("skip_instructions")) {
+        visible = true;
+    }
+
+    // Create state object to control visibility
+    const [ show, setShow ] = useState(visible);
 
     // Create state object for checkbox
     const [ checked, setChecked ] = useState(false);
 
+    // Hide modal, set skip_instructions cookie if box was checked
+    const handleClose = () => {
+        setShow(false);
+        if (checked) {
+            fetch('/skip_instructions');
+        };
+    }
+
     return (
-        <Modal show={show} onHide={() => setShow(false)} centered className="modal-fit-contents">
+        <Modal show={show} onHide={handleClose} centered className="modal-fit-contents">
             <Modal.Header className="justify-content-between pb-0">
                 <h3 className="modal-title mx-auto mb-0">Macro Instructions</h3>
             </Modal.Header>
@@ -42,7 +59,7 @@ export const RecordMacroModal = () => {
                 </div>
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-0">
-                <Button variant="success" onClick={() => setShow(false)} >
+                <Button variant="success" onClick={handleClose} >
                     OK
                 </Button>
             </Modal.Footer>

@@ -1259,17 +1259,16 @@ class OverviewPageTests(TestCaseBackupRestore):
         create_test_nodes()
 
         # Request page with params to start recording macro named "New Macro Name"
-        response = self.client.get('/api/recording/New Macro Name/start')
+        response = self.client.get('/api/recording/New Macro Name')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/overview.html')
 
         # Confirm context includes correct variables
         self.assertEqual(response.context['recording'], 'New Macro Name')
-        self.assertEqual(response.context['start_recording'], True)
 
         # Set cookie to skip instructions (checkbox in popup), request page again
         self.client.cookies['skip_instructions'] = 'true'
-        response = self.client.get('/api/recording/New Macro Name/start')
+        response = self.client.get('/api/recording/New Macro Name')
         self.assertEqual(response.status_code, 200)
 
         # Remove test configs from disk

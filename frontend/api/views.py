@@ -120,7 +120,7 @@ def get_status(request, node):
 
 
 @ensure_csrf_cookie
-def api_overview(request, recording=False, start=False):
+def api_overview(request, recording=False):
     rooms = {}
 
     for i in Node.objects.all():
@@ -146,14 +146,6 @@ def api_overview(request, recording=False, start=False):
 
     if recording:
         context['recording'] = recording
-
-        # Block instructions popup if cookie set
-        if request.COOKIES.get('skip_instructions'):
-            context['skip_instructions'] = True
-
-    if start:
-        # Show instructions popup (unless cookie set)
-        context['start_recording'] = True
 
     print(json.dumps(context, indent=4))
 

@@ -71,6 +71,7 @@ async function send_post_request(url, body) {
 }
 
 export {
+    getCookie,
     send_post_request,
     edit_existing,
     orig_name,
