@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
@@ -6,9 +6,14 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import Collapse from 'react-bootstrap/Collapse';
 import { ScheduleRulesTable } from './ScheduleRules';
 import RuleInput from './RuleInput';
+import { ApiCardContext } from 'root/ApiCardContext';
 
 
-const DeviceCard = ({ id, params }) => {
+const DeviceCard = ({ id }) => {
+    // Get status object
+    const {status} = useContext(ApiCardContext);
+    const params = status["devices"][id];
+
     // Create state for trigger button
     const [powerState, setPowerState] = useState(false);
 
@@ -17,6 +22,11 @@ const DeviceCard = ({ id, params }) => {
 
     // Create state for schedule rules section collapse
     const [rulesOpen, setRulesOpen] = useState(false);
+
+    // Update enabled state when param changes
+    useEffect(() => {
+        setEnabled(params.enabled);
+    }, [params.enabled]);
 
     return (
         <Card className="mb-4">
@@ -79,8 +89,7 @@ const DeviceCard = ({ id, params }) => {
 };
 
 DeviceCard.propTypes = {
-    id: PropTypes.string,
-    params: PropTypes.object
+    id: PropTypes.string
 };
 
 

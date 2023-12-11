@@ -1,4 +1,4 @@
-import React, { useState, createContext } from 'react';
+import React, { useState, createContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { getCookie } from 'util/django_util';
 
@@ -20,6 +20,25 @@ export const ApiCardContextProvider = ({ children }) => {
         // Parse context element created by django template
         return parse_dom_context("context");
     });
+
+    // Get current status object, overwrite state, update cards
+    // Called every 5 seconds by effect below
+    async function get_new_status() {
+        try {
+            const response = await fetch(`/get_status/${status.metadata.id}`);
+            const data = await response.json();
+            setStatus(data);
+            console.log("update", data)
+        } catch (error) {
+            console.error('Failed to update status:', error);
+        }
+    }
+
+    // Update state every 5 seconds
+    useEffect(() => {
+        const timer = setInterval(get_new_status, 5000);
+        return () => clearInterval(timer);
+    }, []);
 
     // Takes command params, posts to backend, backend makes API
     // call to esp32 using faster non-http compliant protocol

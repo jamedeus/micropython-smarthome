@@ -16,20 +16,12 @@ const Layout = () => {
         <Row>
             <Col id="sensor-cards" className="col-sm">
                 {Object.keys(status.sensors).map((sensor) => {
-                    return <SensorCard
-                                key={sensor}
-                                id={sensor}
-                                params={status.sensors[sensor]}
-                            />;
+                    return <SensorCard key={sensor} id={sensor} />;
                 })}
             </Col>
             <Col id="device-cards" className="col-sm">
                 {Object.keys(status.devices).map((device) => {
-                    return <DeviceCard
-                                key={device}
-                                id={device}
-                                params={status.devices[device]}
-                            />;
+                    return <DeviceCard key={device} id={device} />;
                 })}
             </Col>
         </Row>

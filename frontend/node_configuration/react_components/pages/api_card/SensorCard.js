@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
@@ -6,14 +6,24 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import Collapse from 'react-bootstrap/Collapse';
 import { ScheduleRulesTable } from './ScheduleRules';
 import RuleInput from './RuleInput';
+import { ApiCardContext } from 'root/ApiCardContext';
 
 
-const SensorCard = ({ id, params }) => {
+const SensorCard = ({ id }) => {
+    // Get status object
+    const {status} = useContext(ApiCardContext);
+    const params = status["sensors"][id];
+
     // Create state for trigger button
     const [triggered, setTriggered] = useState(false);
 
     // Create state for enable status
     const [enabled, setEnabled] = useState(params.enabled);
+
+    // Update enabled state when param changes
+    useEffect(() => {
+        setEnabled(params.enabled);
+    }, [params.enabled]);
 
     return (
         <Card className="mb-4">
@@ -77,8 +87,7 @@ const SensorCard = ({ id, params }) => {
 };
 
 SensorCard.propTypes = {
-    id: PropTypes.string,
-    params: PropTypes.object
+    id: PropTypes.string
 };
 
 

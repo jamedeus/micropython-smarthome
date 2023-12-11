@@ -13,6 +13,10 @@ const RuleInput = ({ id, params }) => {
     // Get callback to change rule in status context
     const {set_rule} = useContext(ApiCardContext);
 
+    // Create local state for prompt type (not included in
+    // status updates, will remove input if allowed to update)
+    const [prompt, setPrompt] = useState(params.prompt);
+
     let category;
     if (id.startsWith("device")) {
         category = "devices";
@@ -44,14 +48,18 @@ const RuleInput = ({ id, params }) => {
         set_rule(id, category, new_rule);
     };
 
-    switch(params.prompt) {
+    switch(prompt) {
         case("float_range"):
+            // Create local state for rule limits (not included in
+            // status updates, will break slider if allowed to update)
+            const [min_rule, setMinRule] = useState(params.min_rule);
+            const [max_rule, setMaxRule] = useState(params.max_rule);
             return (
                 <div className="my-4 pb-2">
                     <RuleSlider
                         rule_value={String(params.current_rule)}
-                        slider_min={params.min_rule}
-                        slider_max={params.max_rule}
+                        slider_min={min_rule}
+                        slider_max={max_rule}
                         slider_step={0.5}
                         button_step={0.5}
                         display_type={"float"}
