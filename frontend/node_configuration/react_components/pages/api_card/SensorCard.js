@@ -7,6 +7,19 @@ import Collapse from 'react-bootstrap/Collapse';
 import { ScheduleRulesTable } from './ScheduleRules';
 import RuleInput from './RuleInput';
 import { ApiCardContext } from 'root/ApiCardContext';
+import 'css/TriggerButton.css';
+
+
+const TriggerButton = ({ on }) => {
+    return (
+        <Button
+            variant="outline-primary"
+            className={on ? "trigger-button my-auto me-auto trigger-on" : "trigger-button my-auto me-auto"}
+        >
+            <i className="bi-exclamation-lg"></i>
+        </Button>
+    );
+}
 
 
 const SensorCard = ({ id }) => {
@@ -28,12 +41,7 @@ const SensorCard = ({ id }) => {
         <Card className="mb-4">
             <Card.Body className="d-flex flex-column">
                 <div className="d-flex justify-content-between">
-                    <Button
-                        variant="outline-primary"
-                        className="trigger-button my-auto me-auto"
-                    >
-                        <i className="bi-exclamation-lg"></i>
-                    </Button>
+                    <TriggerButton on={params.condition_met} />
 
                     <h4 className="card-title mx-auto my-auto">
                         {params.nickname}
