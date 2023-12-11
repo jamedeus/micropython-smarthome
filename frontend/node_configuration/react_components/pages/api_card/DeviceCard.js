@@ -11,22 +11,18 @@ import { ApiCardContext } from 'root/ApiCardContext';
 
 const DeviceCard = ({ id }) => {
     // Get status object
-    const {status} = useContext(ApiCardContext);
+    const {status, enable_instance} = useContext(ApiCardContext);
     const params = status["devices"][id];
 
     // Create state for trigger button
     const [powerState, setPowerState] = useState(false);
 
-    // Create state for enable status (controls card collapse)
-    const [enabled, setEnabled] = useState(params.enabled);
-
-    // Create state for schedule rules section collapse
-    const [rulesOpen, setRulesOpen] = useState(false);
-
-    // Update enabled state when param changes
-    useEffect(() => {
-        setEnabled(params.enabled);
-    }, [params.enabled]);
+    let category;
+    if (id.startsWith("device")) {
+        category = "devices";
+    } else {
+        category = "sensors";
+    }
 
     return (
         <Card className="mb-4">
@@ -48,7 +44,11 @@ const DeviceCard = ({ id }) => {
                             <i className="bi-list"></i>
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item onClick={() => setEnabled(!enabled)}>Disable</Dropdown.Item>
+                            <Dropdown.Item
+                                onClick={() => enable_instance(id, category, !params.enabled)}
+                            >
+                                {params.enabled ? "Disable" : "Enable"}
+                            </Dropdown.Item>
                             <Dropdown.Item>Schedule Toggle</Dropdown.Item>
                             <Dropdown.Item>Reset rule</Dropdown.Item>
                             <Dropdown.Item>Debug</Dropdown.Item>
@@ -56,7 +56,7 @@ const DeviceCard = ({ id }) => {
                     </Dropdown>
                 </div>
 
-                <Collapse in={enabled}>
+                <Collapse in={params.enabled}>
                     <div>
                         <RuleInput id={id} params={params} />
 

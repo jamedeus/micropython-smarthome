@@ -21,6 +21,10 @@ export const ApiCardContextProvider = ({ children }) => {
         return parse_dom_context("context");
     });
 
+    // Create local state for IP address (not included in
+    // status updates, will disappear if allowed to update)
+    const [targetIP, setTargetIP] = useState(status.metadata.ip);
+
     // Get current status object, overwrite state, update cards
     // Called every 5 seconds by effect below
     async function get_new_status() {
@@ -44,7 +48,7 @@ export const ApiCardContextProvider = ({ children }) => {
     // call to esp32 using faster non-http compliant protocol
     async function send_command(value) {
         // Add IP of target node
-        value["target"] = status.metadata.ip
+        value["target"] = targetIP;
 
         const result = await fetch('/send_command', {
             method: 'POST',
@@ -59,10 +63,31 @@ export const ApiCardContextProvider = ({ children }) => {
         return result
     };
 
+    async function enable_instance(id, category, enable) {
+        // Build payload from args
+        const payload = {'command': '', 'instance': id, 'delay_input': ''};
+        if (enable === true) {
+            payload.command = 'enable';
+        } else {
+            payload.command = 'disable';
+        }
+
+        // Send API call, update state if successful
+        const result = await send_command(payload);
+        if (result.ok) {
+            let section = { ...status[category] };
+            section[id]["enabled"] = enable;
+            setStatus({ ...status, [category]: section });
+        } else {
+            console.log("Failed to enable:", id)
+            console.log(result)
+        };
+    }
+
     async function set_rule(id, category, value) {
         let section = { ...status[category] };
         section[id]["current_rule"] = value;
-        setStatus({ ...status, [category]: section })
+        setStatus({ ...status, [category]: section });
         // TODO debounced API call, prevent slider spam
     }
 
@@ -71,6 +96,7 @@ export const ApiCardContextProvider = ({ children }) => {
             status,
             setStatus,
             send_command,
+            enable_instance,
             set_rule
         }}>
             {children}

@@ -11,19 +11,18 @@ import { ApiCardContext } from 'root/ApiCardContext';
 
 const SensorCard = ({ id }) => {
     // Get status object
-    const {status} = useContext(ApiCardContext);
+    const {status, enable_instance} = useContext(ApiCardContext);
     const params = status["sensors"][id];
 
     // Create state for trigger button
     const [triggered, setTriggered] = useState(false);
 
-    // Create state for enable status
-    const [enabled, setEnabled] = useState(params.enabled);
-
-    // Update enabled state when param changes
-    useEffect(() => {
-        setEnabled(params.enabled);
-    }, [params.enabled]);
+    let category;
+    if (id.startsWith("device")) {
+        category = "devices";
+    } else {
+        category = "sensors";
+    }
 
     return (
         <Card className="mb-4">
@@ -45,7 +44,11 @@ const SensorCard = ({ id }) => {
                             <i className="bi-list"></i>
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item onClick={() => setEnabled(!enabled)}>Disable</Dropdown.Item>
+                            <Dropdown.Item
+                                onClick={() => enable_instance(id, category, !params.enabled)}
+                            >
+                                {params.enabled ? "Disable" : "Enable"}
+                            </Dropdown.Item>
                             <Dropdown.Item>Schedule Toggle</Dropdown.Item>
                             <Dropdown.Item>Reset rule</Dropdown.Item>
                             <Dropdown.Item>Show targets</Dropdown.Item>
@@ -54,7 +57,7 @@ const SensorCard = ({ id }) => {
                     </Dropdown>
                 </div>
 
-                <Collapse in={enabled}>
+                <Collapse in={params.enabled}>
                     <div>
                         <RuleInput id={id} params={params} />
 
