@@ -1,9 +1,10 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Collapse from 'react-bootstrap/Collapse';
-import { ApiCardContext } from 'root/ApiCardContext';
+import { ScheduleRulesTable } from './ScheduleRules';
 
 
 const SensorCard = ({ id, params }) => {
@@ -33,7 +34,7 @@ const SensorCard = ({ id, params }) => {
                             <i className="bi-list"></i>
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item>Disable</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setEnabled(!enabled)}>Disable</Dropdown.Item>
                             <Dropdown.Item>Schedule Toggle</Dropdown.Item>
                             <Dropdown.Item>Reset rule</Dropdown.Item>
                             <Dropdown.Item>Show targets</Dropdown.Item>
@@ -43,20 +44,39 @@ const SensorCard = ({ id, params }) => {
                 </div>
 
                 <Collapse in={enabled}>
-                    <div className="text-center mt-3">
-                        <Button
-                            size="sm"
-                            variant="primary"
-                            className="open-rules"
-                        >
-                            Schedule Rules
-                        </Button>
+                    <div>
+                        <div className="text-center my-3">
+                            <Button
+                                size="sm"
+                                variant="primary"
+                                className="open-rules"
+                                data-bs-toggle="collapse"
+                                data-bs-target={`#${id}-schedule-rules`}
+                            >
+                                Schedule rules
+                            </Button>
+                        </div>
+
+                        <div className="collapse text-center" id={`${id}-schedule-rules`}>
+                            <ScheduleRulesTable id={id} schedule={params.schedule} />
+
+                            <div className="text-center mx-3 mb-3">
+                                <Button variant="secondary" size="sm">
+                                    <i className="bi-plus-lg"></i>
+                                </Button>
+                            </div>
+                        </div>
                     </div>
                 </Collapse>
             </Card.Body>
         </Card>
     );
-}
+};
+
+SensorCard.propTypes = {
+    id: PropTypes.string,
+    params: PropTypes.object
+};
 
 
 export default SensorCard;

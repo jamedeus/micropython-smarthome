@@ -1,17 +1,21 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Collapse from 'react-bootstrap/Collapse';
-import { ApiCardContext } from 'root/ApiCardContext';
+import { ScheduleRulesTable } from './ScheduleRules';
 
 
 const DeviceCard = ({ id, params }) => {
     // Create state for trigger button
     const [powerState, setPowerState] = useState(false);
 
-    // Create state for enable status
+    // Create state for enable status (controls card collapse)
     const [enabled, setEnabled] = useState(params.enabled);
+
+    // Create state for schedule rules section collapse
+    const [rulesOpen, setRulesOpen] = useState(false);
 
     return (
         <Card className="mb-4">
@@ -33,29 +37,48 @@ const DeviceCard = ({ id, params }) => {
                             <i className="bi-list"></i>
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
-                            <Dropdown.Item>Disable</Dropdown.Item>
+                            <Dropdown.Item onClick={() => setEnabled(!enabled)}>Disable</Dropdown.Item>
                             <Dropdown.Item>Schedule Toggle</Dropdown.Item>
                             <Dropdown.Item>Reset rule</Dropdown.Item>
                             <Dropdown.Item>Debug</Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
-                    </div>
+                </div>
 
-                    <Collapse in={enabled}>
-                    <div className="text-center mt-3">
-                    <Button
-                    size="sm"
-                    variant="primary"
-                    className="open-rules"
-                    >
-                    Schedule Rules
-                    </Button>
+                <Collapse in={enabled}>
+                    <div>
+                        <div className="text-center my-3">
+                            <Button
+                                size="sm"
+                                variant="primary"
+                                className="open-rules"
+                                data-bs-toggle="collapse"
+                                data-bs-target={`#${id}-schedule-rules`}
+                            >
+                                Schedule rules
+                            </Button>
+                        </div>
+
+                        <div className="collapse text-center" id={`${id}-schedule-rules`}>
+                            <ScheduleRulesTable id={id} schedule={params.schedule} />
+
+                            <div className="text-center mx-3 mb-3">
+                                <Button variant="secondary" size="sm">
+                                    <i className="bi-plus-lg"></i>
+                                </Button>
+                            </div>
+                        </div>
                     </div>
-                    </Collapse>
+                </Collapse>
             </Card.Body>
         </Card>
     );
-}
+};
+
+DeviceCard.propTypes = {
+    id: PropTypes.string,
+    params: PropTypes.object
+};
 
 
 export default DeviceCard;
