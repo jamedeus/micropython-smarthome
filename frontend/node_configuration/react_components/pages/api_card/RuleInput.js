@@ -1,10 +1,5 @@
 import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
-import Card from 'react-bootstrap/Card';
-import Button from 'react-bootstrap/Button';
-import Dropdown from 'react-bootstrap/Dropdown';
-import Collapse from 'react-bootstrap/Collapse';
-import { ScheduleRulesTable } from './ScheduleRules';
 import { ApiCardContext } from 'root/ApiCardContext';
 import RuleSlider from 'inputs/RuleSlider';
 
@@ -15,7 +10,7 @@ const RuleInput = ({ id, params }) => {
 
     // Create local state for prompt type (not included in
     // status updates, will remove input if allowed to update)
-    const [prompt, setPrompt] = useState(params.prompt);
+    const [prompt] = useState(params.prompt);
 
     let category;
     if (id.startsWith("device")) {
@@ -52,8 +47,8 @@ const RuleInput = ({ id, params }) => {
         case("float_range"):
             // Create local state for rule limits (not included in
             // status updates, will break slider if allowed to update)
-            const [min_rule, setMinRule] = useState(params.min_rule);
-            const [max_rule, setMaxRule] = useState(params.max_rule);
+            const [min_rule] = useState(params.min_rule);
+            const [max_rule] = useState(params.max_rule);
             return (
                 <div className="my-4 pb-2">
                     <RuleSlider
@@ -86,6 +81,11 @@ const RuleInput = ({ id, params }) => {
         case("api_target"):
             return <input type="text" value={params.current_rule} className="d-none" />;
     }
-}
+};
+
+RuleInput.propTypes = {
+    id: PropTypes.string,
+    params: PropTypes.object
+};
 
 export default RuleInput;

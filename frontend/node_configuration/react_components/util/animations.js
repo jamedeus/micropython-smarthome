@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import 'css/LoadingSpinner.css';
 import 'css/CheckmarkAnimation.css';
 
+
 export const LoadingSpinner = ({ size }) => {
     let classList = ["loading-animation", "m-auto"];
 
@@ -24,6 +25,11 @@ export const LoadingSpinner = ({ size }) => {
         </div>
     );
 };
+
+LoadingSpinner.propTypes = {
+    size: PropTypes.string
+};
+
 
 export const CheckmarkAnimation = ({ size, color }) => {
     let classList = ["checkmark", "m-auto"];

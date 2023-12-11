@@ -1,8 +1,6 @@
 import React, { useContext } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Button from 'react-bootstrap/Button';
-import Dropdown from 'react-bootstrap/Dropdown';
 import { ApiCardContext } from 'root/ApiCardContext';
 import SensorCard from './SensorCard';
 import DeviceCard from './DeviceCard';
@@ -10,7 +8,7 @@ import DeviceCard from './DeviceCard';
 
 const Layout = () => {
     // Get status object, function to make API calls
-    const {status, send_command} = useContext(ApiCardContext);
+    const {status} = useContext(ApiCardContext);
 
     return (
         <Row>
@@ -26,7 +24,7 @@ const Layout = () => {
             </Col>
         </Row>
     );
-}
+};
 
 
 export default Layout;

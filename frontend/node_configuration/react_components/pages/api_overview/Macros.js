@@ -76,16 +76,16 @@ const MacroRow = ({ name, actions }) => {
             <ButtonGroup className="macro-row">
                 <Button onClick={run} className="macro-button">
                     <h3 className="macro-name">
-                    {(() => {
-                        switch(runAnimation) {
-                            case("loading"):
-                                return <LoadingSpinner size="small" />;
-                            case("complete"):
-                                return <CheckmarkAnimation size="small" color="white" />;
-                            default:
-                                return toTitle(name);
-                        }
-                    })()}
+                        {(() => {
+                            switch(runAnimation) {
+                                case("loading"):
+                                    return <LoadingSpinner size="small" />;
+                                case("complete"):
+                                    return <CheckmarkAnimation size="small" color="white" />;
+                                default:
+                                    return toTitle(name);
+                            }
+                        })()}
                     </h3>
                 </Button>
 

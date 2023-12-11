@@ -23,7 +23,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
     // Create local state for IP address (not included in
     // status updates, will disappear if allowed to update)
-    const [targetIP, setTargetIP] = useState(status.metadata.ip);
+    const [targetIP] = useState(status.metadata.ip);
 
     // Get current status object, overwrite state, update cards
     // Called every 5 seconds by effect below
@@ -32,7 +32,7 @@ export const ApiCardContextProvider = ({ children }) => {
             const response = await fetch(`/get_status/${status.metadata.id}`);
             const data = await response.json();
             setStatus(data);
-            console.log("update", data)
+            console.log("update", data);
         } catch (error) {
             console.error('Failed to update status:', error);
         }
@@ -60,8 +60,8 @@ export const ApiCardContextProvider = ({ children }) => {
             }
         });
 
-        return result
-    };
+        return result;
+    }
 
     async function enable_instance(id, category, enable) {
         // Build payload from args
@@ -79,9 +79,9 @@ export const ApiCardContextProvider = ({ children }) => {
             section[id]["enabled"] = enable;
             setStatus({ ...status, [category]: section });
         } else {
-            console.log("Failed to enable:", id)
-            console.log(result)
-        };
+            console.log("Failed to enable:", id);
+            console.log(result);
+        }
     }
 
     async function set_rule(id, category, value) {

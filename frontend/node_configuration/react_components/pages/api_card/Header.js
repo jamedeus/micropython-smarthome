@@ -16,15 +16,15 @@ const Header = () => {
     // Dropdown menu callbacks, send API commands
     const reboot = () => {
         send_command({'command': 'reboot'});
-    }
+    };
 
     const clearLog = () => {
         send_command({'command': 'clear_log'});
-    }
+    };
 
     const resetAllRules = () => {
         send_command({'command': 'reset_all_rules'});
-    }
+    };
 
     return (
         <div className="d-flex justify-content-between">
