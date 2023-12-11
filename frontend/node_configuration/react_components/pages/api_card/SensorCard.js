@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Collapse from 'react-bootstrap/Collapse';
 import { ScheduleRulesTable } from './ScheduleRules';
+import RuleInput from './RuleInput';
 
 
 const SensorCard = ({ id, params }) => {
@@ -45,6 +46,8 @@ const SensorCard = ({ id, params }) => {
 
                 <Collapse in={enabled}>
                     <div>
+                        <RuleInput id={id} params={params} />
+
                         <div className="text-center my-3">
                             <Button
                                 size="sm"

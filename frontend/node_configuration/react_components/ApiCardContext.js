@@ -40,11 +40,19 @@ export const ApiCardContextProvider = ({ children }) => {
         return result
     };
 
+    async function set_rule(id, category, value) {
+        let section = { ...status[category] };
+        section[id]["current_rule"] = value;
+        setStatus({ ...status, [category]: section })
+        // TODO debounced API call, prevent slider spam
+    }
+
     return (
         <ApiCardContext.Provider value={{
             status,
             setStatus,
-            send_command
+            send_command,
+            set_rule
         }}>
             {children}
         </ApiCardContext.Provider>
