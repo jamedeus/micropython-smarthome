@@ -10,11 +10,12 @@ import { ApiCardContext } from 'root/ApiCardContext';
 import 'css/TriggerButton.css';
 
 
-const TriggerButton = ({ on }) => {
+const TriggerButton = ({ on, onClick }) => {
     return (
         <Button
             variant="outline-primary"
             className={on ? "trigger-button my-auto me-auto trigger-on" : "trigger-button my-auto me-auto"}
+            onClick={onClick}
         >
             <i className="bi-exclamation-lg"></i>
         </Button>
@@ -24,7 +25,7 @@ const TriggerButton = ({ on }) => {
 
 const SensorCard = ({ id }) => {
     // Get status object
-    const {status, enable_instance} = useContext(ApiCardContext);
+    const {status, enable_instance, trigger_sensor} = useContext(ApiCardContext);
     const params = status["sensors"][id];
 
     // Create state for trigger button
@@ -37,11 +38,15 @@ const SensorCard = ({ id }) => {
         category = "sensors";
     }
 
+    const trigger = () => {
+        trigger_sensor(id);
+    };
+
     return (
         <Card className="mb-4">
             <Card.Body className="d-flex flex-column">
                 <div className="d-flex justify-content-between">
-                    <TriggerButton on={params.condition_met} />
+                    <TriggerButton on={params.condition_met} onClick={trigger} />
 
                     <h4 className="card-title mx-auto my-auto">
                         {params.nickname}

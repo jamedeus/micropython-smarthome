@@ -10,11 +10,12 @@ import { ApiCardContext } from 'root/ApiCardContext';
 import 'css/PowerButton.css';
 
 
-const PowerButton = ({ on }) => {
+const PowerButton = ({ on, onClick }) => {
     return (
         <Button
             variant="outline-primary"
             className={on ? "power-button my-auto me-auto toggle-on" : "power-button my-auto me-auto"}
+            onClick={onClick}
         >
             <i className="bi-lightbulb"></i>
         </Button>
@@ -24,7 +25,7 @@ const PowerButton = ({ on }) => {
 
 const DeviceCard = ({ id }) => {
     // Get status object
-    const {status, enable_instance} = useContext(ApiCardContext);
+    const {status, enable_instance, turn_on} = useContext(ApiCardContext);
     const params = status["devices"][id];
 
     // Create state for trigger button
@@ -37,11 +38,15 @@ const DeviceCard = ({ id }) => {
         category = "sensors";
     }
 
+    const turn_on_off = () => {
+        turn_on(id, !params.turned_on);
+    }
+
     return (
         <Card className="mb-4">
             <Card.Body className="d-flex flex-column">
                 <div className="d-flex justify-content-between">
-                    <PowerButton on={params.turned_on} />
+                    <PowerButton on={params.turned_on} onClick={turn_on_off} />
 
                     <h4 className="card-title mx-auto my-auto">
                         {params.nickname}

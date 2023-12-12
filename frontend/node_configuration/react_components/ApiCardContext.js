@@ -84,6 +84,37 @@ export const ApiCardContextProvider = ({ children }) => {
         }
     }
 
+    async function trigger_sensor(id) {
+        const payload = {'command': 'trigger_sensor', 'instance': id};
+        const result = await send_command(payload);
+        if (result.ok) {
+            let section = { ...status["sensors"] };
+            section[id]["condition_met"] = true;
+            setStatus({ ...status, ["sensors"]: section });
+        } else {
+            console.log("Failed to trigger:", id);
+            console.log(result);
+        }
+    }
+
+    async function turn_on(id, state) {
+        const payload = {'command': '', 'instance': id};
+        if (state) {
+            payload.command = 'turn_on';
+        } else {
+            payload.command = 'turn_off';
+        }
+        const result = await send_command(payload);
+        if (result.ok) {
+            let section = { ...status["devices"] };
+            section[id]["turned_on"] = state;
+            setStatus({ ...status, ["devices"]: section });
+        } else {
+            console.log("Failed to set power state:", id);
+            console.log(result);
+        }
+    }
+
     async function set_rule(id, category, value) {
         let section = { ...status[category] };
         section[id]["current_rule"] = value;
@@ -97,6 +128,8 @@ export const ApiCardContextProvider = ({ children }) => {
             setStatus,
             send_command,
             enable_instance,
+            trigger_sensor,
+            turn_on,
             set_rule
         }}>
             {children}
