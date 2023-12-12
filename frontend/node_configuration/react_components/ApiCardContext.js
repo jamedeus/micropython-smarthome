@@ -122,6 +122,13 @@ export const ApiCardContextProvider = ({ children }) => {
         // TODO debounced API call, prevent slider spam
     }
 
+    async function reset_rule(id) {
+        const result = await send_command({'command': 'reset_rule', 'instance': id});
+        if (!result.ok) {
+            console.log("Failed to reset rule:", id)
+        }
+    }
+
     return (
         <ApiCardContext.Provider value={{
             status,
@@ -130,7 +137,8 @@ export const ApiCardContextProvider = ({ children }) => {
             enable_instance,
             trigger_sensor,
             turn_on,
-            set_rule
+            set_rule,
+            reset_rule
         }}>
             {children}
         </ApiCardContext.Provider>

@@ -25,7 +25,7 @@ const TriggerButton = ({ on, onClick }) => {
 
 const SensorCard = ({ id }) => {
     // Get status object
-    const {status, enable_instance, trigger_sensor} = useContext(ApiCardContext);
+    const {status, enable_instance, trigger_sensor, reset_rule} = useContext(ApiCardContext);
     const params = status["sensors"][id];
 
     // Create state for trigger button
@@ -63,7 +63,12 @@ const SensorCard = ({ id }) => {
                                 {params.enabled ? "Disable" : "Enable"}
                             </Dropdown.Item>
                             <Dropdown.Item>Schedule Toggle</Dropdown.Item>
-                            <Dropdown.Item>Reset rule</Dropdown.Item>
+                            <Dropdown.Item
+                                disabled={params.current_rule === params.scheduled_rule}
+                                onClick={() => reset_rule(id)}
+                            >
+                                Reset rule
+                            </Dropdown.Item>
                             <Dropdown.Item>Show targets</Dropdown.Item>
                             <Dropdown.Item>Debug</Dropdown.Item>
                         </Dropdown.Menu>
@@ -72,6 +77,8 @@ const SensorCard = ({ id }) => {
 
                 <Collapse in={params.enabled}>
                     <div>
+                        {/* BUG if sensor is disabled this will pass string to rule slider current_rule */}
+                        {/* Renders slider with NaN, broken until next status update after enabling card */}
                         <RuleInput id={id} params={params} />
 
                         <div className="text-center my-3">
