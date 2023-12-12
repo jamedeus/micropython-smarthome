@@ -30,6 +30,10 @@ export const ApiCardContextProvider = ({ children }) => {
     async function get_new_status() {
         try {
             const response = await fetch(`/get_status/${status.metadata.id}`);
+            if (response.status !== 200) {
+                const error = await response.text();
+                throw new Error(`${error} (status ${response.status})`);
+            }
             const data = await response.json();
             setStatus(data);
             console.log("update", data);
