@@ -26,13 +26,6 @@
     box-shadow: none !important;
 }
 
-body.dark .trigger-button {
-    background-image: radial-gradient(circle, #0550B8 5%, transparent 55%);
-
-    /* Add border for visibility when not filled in (device turned off) */
-    border: 1px solid #dee2e617 !important;
-}
-
 .trigger-on {
     animation-name: trigger-on;
     animation-duration: 1.2s;
@@ -78,5 +71,21 @@ body.dark .trigger-button {
     }
     100% {
         box-shadow: 0px 0px 20px -25px #37eb5c;
+    }
+}
+
+/* Dark mode button colors */
+@media (prefers-color-scheme: dark) {
+    :root {
+        .menu-button {
+            border: 1px solid #dee2e617 !important;
+        }
+
+        .trigger-button {
+            background-image: radial-gradient(circle, #0550B8 5%, transparent 55%);
+
+            /* Add border for visibility when not filled in (device turned off) */
+            border: 1px solid #dee2e617 !important;
+        }
     }
 }
