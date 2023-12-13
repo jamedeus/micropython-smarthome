@@ -18,4 +18,14 @@ function toTitle(str) {
     });
 }
 
-export { sleep, average, toTitle };
+const debounce = (func, wait) => {
+    let timeout;
+    return (...args) => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            func(...args);
+        }, wait);
+    };
+};
+
+export { sleep, average, toTitle, debounce };

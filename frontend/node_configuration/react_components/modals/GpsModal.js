@@ -6,6 +6,7 @@ import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { send_post_request } from 'util/django_util';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
+import { debounce } from 'util/helper_functions';
 
 
 export const GpsModal = () => {
@@ -21,16 +22,6 @@ export const GpsModal = () => {
         let data = await response.json();
         return data;
     }
-
-    const debounce = (func, wait) => {
-        let timeout;
-        return (...args) => {
-            clearTimeout(timeout);
-            timeout = setTimeout(() => {
-                func(...args);
-            }, wait);
-        };
-    };
 
     // Debounced API call, writes results to state object
     // Triggers re-render with list item for each search result

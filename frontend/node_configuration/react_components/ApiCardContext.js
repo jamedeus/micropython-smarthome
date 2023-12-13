@@ -1,6 +1,7 @@
-import React, { useState, createContext } from 'react';
+import React, { useState, createContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { getCookie } from 'util/django_util';
+import { debounce } from 'util/helper_functions';
 
 
 export const ApiCardContext = createContext();
@@ -101,12 +102,27 @@ export const ApiCardContextProvider = ({ children }) => {
         }
     }
 
+    // Handler for rule sliders and buttons, updates local state immediately, calls
+    // debounced function to send API call to node when user stops moving slider
     async function set_rule(id, category, value) {
         let section = { ...status[category] };
         section[id]["current_rule"] = value;
         setStatus({ ...status, [category]: section });
-        // TODO debounced API call, prevent slider spam
+        debounced_set_rule(id, value);
     }
+
+    // Called by set_rule, sends API call to node once user stops moving slider for
+    // 150ms (prevents constant API calls saturating ESP32 bandwidth)
+    const debounced_set_rule = useCallback(debounce(async (id, rule) => {
+        const payload = {
+            'command': 'set_rule',
+            'instance': id,
+            'rule': String(rule)
+        };
+        const result = await send_command(payload);
+        console.log(result);
+    }, 150), []);
+
 
     async function reset_rule(id) {
         const result = await send_command({'command': 'reset_rule', 'instance': id});
