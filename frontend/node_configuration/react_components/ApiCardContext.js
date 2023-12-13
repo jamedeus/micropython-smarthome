@@ -31,6 +31,37 @@ export const ApiCardContextProvider = ({ children }) => {
         window.location.href = "/api";
     }
 
+    // Takes instance ID (device1, sensor2, etc), returns category
+    // string (used to look up instance in state object)
+    function get_instance_category(id) {
+        if (id.startsWith('device')) {
+            return 'devices';
+        } else if (id.startsWith('sensor')) {
+            return 'sensors';
+        } else {
+            throw new Error('Received invalid instance id:', id);
+        }
+    }
+
+    // Takes instance ID, returns corresponding state object section
+    function get_instance_section(id) {
+        const category = get_instance_category(id);
+        return { ...status[category][id] };
+    }
+
+    // Takes instance ID, param to update, and new value
+    // Overwrites param in state object (trigger re-render)
+    function update_instance(id, param, value) {
+        const category = get_instance_category(id);
+        setStatus({
+            ...status, [category]: {
+                ...status[category], [id]: {
+                    ...status[category][id], [param]: value
+                }
+            }
+        })
+    }
+
     // Takes command params, posts to backend, backend makes API
     // call to esp32 using faster non-http compliant protocol
     async function send_command(value) {
@@ -62,9 +93,7 @@ export const ApiCardContextProvider = ({ children }) => {
         // Send API call, update state if successful
         const result = await send_command(payload);
         if (result.ok) {
-            let section = { ...status[category] };
-            section[id]["enabled"] = enable;
-            setStatus({ ...status, [category]: section });
+            update_instance(id, "enabled", enable);
         } else {
             console.log("Failed to enable:", id);
             console.log(result);
@@ -75,9 +104,7 @@ export const ApiCardContextProvider = ({ children }) => {
         const payload = {'command': 'trigger_sensor', 'instance': id};
         const result = await send_command(payload);
         if (result.ok) {
-            let section = { ...status["sensors"] };
-            section[id]["condition_met"] = true;
-            setStatus({ ...status, ["sensors"]: section });
+            update_instance(id, "condition_met", true);
         } else {
             console.log("Failed to trigger:", id);
             console.log(result);
@@ -93,9 +120,7 @@ export const ApiCardContextProvider = ({ children }) => {
         }
         const result = await send_command(payload);
         if (result.ok) {
-            let section = { ...status["devices"] };
-            section[id]["turned_on"] = state;
-            setStatus({ ...status, ["devices"]: section });
+            update_instance(id, "turned_on", state);
         } else {
             console.log("Failed to set power state:", id);
             console.log(result);
@@ -105,9 +130,7 @@ export const ApiCardContextProvider = ({ children }) => {
     // Handler for rule sliders and buttons, updates local state immediately, calls
     // debounced function to send API call to node when user stops moving slider
     async function set_rule(id, category, value) {
-        let section = { ...status[category] };
-        section[id]["current_rule"] = value;
-        setStatus({ ...status, [category]: section });
+        update_instance(id, "current_rule", value);
         debounced_set_rule(id, value);
     }
 
