@@ -90,8 +90,10 @@ export const ApiCardContextProvider = ({ children }) => {
             payload.command = 'disable';
         }
 
-        // Send API call, update state if successful
+        // Send API call to node
         const result = await send_command(payload);
+
+        // If successful make same change in state (re-render immediately)
         if (result.ok) {
             update_instance(id, "enabled", enable);
         } else {
@@ -101,8 +103,11 @@ export const ApiCardContextProvider = ({ children }) => {
     }
 
     async function trigger_sensor(id) {
+        // Send API call to node
         const payload = {'command': 'trigger_sensor', 'instance': id};
         const result = await send_command(payload);
+
+        // If successful make same change in state (re-render immediately)
         if (result.ok) {
             update_instance(id, "condition_met", true);
         } else {
@@ -118,7 +123,11 @@ export const ApiCardContextProvider = ({ children }) => {
         } else {
             payload.command = 'turn_off';
         }
+
+        // Send API call to node
         const result = await send_command(payload);
+
+        // If successful make same change in state (re-render immediately)
         if (result.ok) {
             update_instance(id, "turned_on", state);
         } else {
@@ -146,10 +155,16 @@ export const ApiCardContextProvider = ({ children }) => {
         console.log(result);
     }, 150), []);
 
-
+    // Called by reset option in dropdown, replaces current_rule with scheduled_rule
     async function reset_rule(id) {
+        // Send API call to node
         const result = await send_command({'command': 'reset_rule', 'instance': id});
-        if (!result.ok) {
+
+        // If successful make same change in state (re-render immediately)
+        if (result.ok) {
+            const instance = get_instance_section(id);
+            update_instance(id, "current_rule", instance.scheduled_rule);
+        } else {
             console.log("Failed to reset rule:", id)
         }
     }
