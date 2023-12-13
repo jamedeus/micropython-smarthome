@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { HeaderStaticBackdrop } from 'modals/HeaderComponents';
+import { LoadingSpinner } from 'util/animations';
 
 export const ErrorModalContext = createContext();
 
@@ -73,6 +74,13 @@ export const ErrorModal = () => {
                                     )}
                                 </ul>
                             );
+                        case "connection_error":
+                            return (
+                                <>
+                                    <p className="text-center pt-0">Attempting to reestablish connection...</p>
+                                    <LoadingSpinner size="medium" />
+                                </>
+                            );
                         default:
                             return <p>{errorModalContent.body}</p>;
                     }
@@ -102,6 +110,14 @@ export const ErrorModal = () => {
                                     <Button variant="danger" className="m-1" onClick={errorModalContent.handleConfirm}>Delete</Button>
                                 </>
                             );
+                        case "connection_error":
+                            return <Button
+                                        variant="success"
+                                        className="m-1"
+                                        onClick={errorModalContent.handleConfirm}
+                                    >
+                                        Back to Overview
+                                    </Button>;
                         default:
                             return <Button variant="success" className="m-1" onClick={handleClose}>OK</Button>;
                     }

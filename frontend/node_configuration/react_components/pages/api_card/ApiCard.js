@@ -1,22 +1,21 @@
 import React from 'react';
 import { ErrorModal } from 'modals/ErrorModal';
-import { ModalContextProvider } from 'modals/ModalContextProvider';
 import Header from './Header';
 import Layout from './Layout';
+import { UpdateStatus } from './UpdateStatus';
 import 'css/api_card.css';
 
 
 const App = () => {
     return (
-        <ModalContextProvider>
-            <div className="fade-in">
-                <Header />
-                <Layout />
+        <div className="fade-in">
+            <Header />
+            <Layout />
+            <UpdateStatus />
 
-                {/* Modals (hidden) */}
-                <ErrorModal />
-            </div>
-        </ModalContextProvider>
+            {/* Modals (hidden) */}
+            <ErrorModal />
+        </div>
     );
 };
 

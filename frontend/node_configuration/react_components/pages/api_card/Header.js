@@ -6,12 +6,7 @@ import { ApiCardContext } from 'root/ApiCardContext';
 
 const Header = () => {
     // Get status object, function to make API calls
-    const {status, send_command} = useContext(ApiCardContext);
-
-    // Back button callback, redirect to overview
-    const overview = () => {
-        window.location.href = "/api";
-    };
+    const {status, send_command, overview} = useContext(ApiCardContext);
 
     // Dropdown menu callbacks, send API commands
     const reboot = () => {

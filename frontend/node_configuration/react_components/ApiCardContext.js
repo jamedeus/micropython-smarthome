@@ -1,4 +1,4 @@
-import React, { useState, createContext, useEffect } from 'react';
+import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { getCookie } from 'util/django_util';
 
@@ -25,28 +25,10 @@ export const ApiCardContextProvider = ({ children }) => {
     // status updates, will disappear if allowed to update)
     const [targetIP] = useState(status.metadata.ip);
 
-    // Get current status object, overwrite state, update cards
-    // Called every 5 seconds by effect below
-    async function get_new_status() {
-        try {
-            const response = await fetch(`/get_status/${status.metadata.id}`);
-            if (response.status !== 200) {
-                const error = await response.text();
-                throw new Error(`${error} (status ${response.status})`);
-            }
-            const data = await response.json();
-            setStatus(data);
-            console.log("update", data);
-        } catch (error) {
-            console.error('Failed to update status:', error);
-        }
+    // Button callback, redirect to overview
+    function overview() {
+        window.location.href = "/api";
     }
-
-    // Update state every 5 seconds
-    useEffect(() => {
-        const timer = setInterval(get_new_status, 5000);
-        return () => clearInterval(timer);
-    }, []);
 
     // Takes command params, posts to backend, backend makes API
     // call to esp32 using faster non-http compliant protocol
@@ -137,6 +119,7 @@ export const ApiCardContextProvider = ({ children }) => {
         <ApiCardContext.Provider value={{
             status,
             setStatus,
+            overview,
             send_command,
             enable_instance,
             trigger_sensor,
