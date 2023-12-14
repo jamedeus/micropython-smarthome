@@ -4,7 +4,7 @@ import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
-import { sleep } from 'util/helper_functions';
+import { sleep, toTitle } from 'util/helper_functions';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 
 
@@ -116,7 +116,11 @@ export const EditMacroModal = () => {
 
     return (
         <Modal show={editMacroContent.visible} onHide={handleClose} centered>
-            <HeaderWithCloseButton title={editMacroContent.name} onClose={handleClose} />
+            <HeaderWithCloseButton
+                title={`Edit ${toTitle(editMacroContent.name)} Macro`}
+                onClose={handleClose}
+                size="3"
+            />
 
             <Modal.Body className="d-flex flex-column align-items-center">
                 <h5 className="text-center mt-3">Actions</h5>
