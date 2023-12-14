@@ -6,6 +6,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import Collapse from 'react-bootstrap/Collapse';
 import { ScheduleRulesTable } from './ScheduleRules';
 import RuleInput from './RuleInput';
+import { DebugModalContext } from 'modals/DebugModal';
 import { ApiCardContext } from 'root/ApiCardContext';
 import 'css/TriggerButton.css';
 
@@ -27,6 +28,9 @@ const SensorCard = ({ id }) => {
     // Get status object
     const {status, enable_instance, trigger_sensor, reset_rule} = useContext(ApiCardContext);
     const params = status["sensors"][id];
+
+    // Get function to open debug modal
+    const { showDebugModal } = useContext(DebugModalContext);
 
     // Create state for trigger button
     const [triggered, setTriggered] = useState(false);
@@ -70,7 +74,9 @@ const SensorCard = ({ id }) => {
                                 Reset rule
                             </Dropdown.Item>
                             <Dropdown.Item>Show targets</Dropdown.Item>
-                            <Dropdown.Item>Debug</Dropdown.Item>
+                            <Dropdown.Item onClick={() => showDebugModal(id)}>
+                                Debug
+                            </Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>

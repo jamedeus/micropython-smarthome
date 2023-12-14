@@ -1,5 +1,6 @@
 import React from 'react';
 import { ErrorModal } from 'modals/ErrorModal';
+import { DebugModal } from 'modals/DebugModal';
 import Header from './Header';
 import Layout from './Layout';
 import { UpdateStatus } from './UpdateStatus';
@@ -15,6 +16,7 @@ const App = () => {
 
             {/* Modals (hidden) */}
             <ErrorModal />
+            <DebugModal />
         </div>
     );
 };
