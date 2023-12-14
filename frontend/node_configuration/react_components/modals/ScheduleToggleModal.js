@@ -54,11 +54,32 @@ export const ScheduleToggleContextProvider = ({ children }) => {
     };
 
     const setDelay = (delay) => {
-        console.log(delay)
         setScheduleToggleContent({
             ...scheduleToggleContent,
-            ["delay"]: delay
+            ["delay"]: formatDelayField(delay, scheduleToggleContent.delay)
         });
+    };
+
+    // Format delay field as user types (prevent non-numeric, limit length)
+    const formatDelayField = (newDelay, oldDelay) => {
+        // Backspace and delete bypass formatting
+        if (newDelay.length < oldDelay.length) {
+            return newDelay;
+        }
+
+        // Remove non-numeric characters
+        newDelay = newDelay.replace(/[^\d.]/g, '');
+
+        // Limit delay to (very) roughly 1 day
+        if (scheduleToggleContent.units === 'seconds') {
+            newDelay = newDelay.substring(0,5);
+        } else if (scheduleToggleContent.units === 'minutes') {
+            newDelay = newDelay.substring(0,4);
+        } else if (scheduleToggleContent.units === 'hours') {
+            newDelay = newDelay.substring(0,2);
+        };
+
+        return newDelay;
     };
 
     const setUnits = (units) => {
@@ -163,7 +184,13 @@ export const ScheduleToggleModal = () => {
                 </InputGroup>
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-0">
-                <Button variant="success" onClick={submit}>Schedule</Button>
+                <Button
+                    variant="success"
+                    disabled={scheduleToggleContent.delay.length === 0}
+                    onClick={submit}
+                >
+                    Schedule
+                </Button>
             </Modal.Footer>
         </Modal>
     );
