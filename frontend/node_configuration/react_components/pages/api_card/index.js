@@ -4,6 +4,7 @@ import App from './ApiCard';
 import { ApiCardContextProvider } from 'root/ApiCardContext';
 import { ModalContextProvider } from 'modals/ModalContextProvider';
 import { DebugModalContextProvider } from 'modals/DebugModal';
+import { ScheduleToggleContextProvider } from 'modals/ScheduleToggleModal';
 import 'css/dark_mode.scss';
 import 'css/style.css';
 
@@ -14,7 +15,9 @@ root.render(
     <ModalContextProvider>
         <ApiCardContextProvider>
             <DebugModalContextProvider>
-                <App />
+                <ScheduleToggleContextProvider>
+                    <App />
+                </ScheduleToggleContextProvider>
             </DebugModalContextProvider>
         </ApiCardContextProvider>
     </ModalContextProvider>

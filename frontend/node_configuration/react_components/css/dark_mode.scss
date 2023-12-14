@@ -99,6 +99,11 @@
         $input-focus-color: #ffffff;
         $input-disabled-bg: #272c31;
 
+        /* Input group text */
+        $input-group-addon-bg: #1b1e1f;
+        $input-group-addon-border-color: #1b1e1f;
+        $input-group-addon-color: #ffffff;
+
         /* Stop floating label changing color when focused */
         .form-floating .form-control ~ label {
             color: rgba(238, 238, 238, 0.65) !important;

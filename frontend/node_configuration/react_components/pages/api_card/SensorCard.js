@@ -8,6 +8,7 @@ import { ScheduleRulesTable } from './ScheduleRules';
 import RuleInput from './RuleInput';
 import { DebugModalContext } from 'modals/DebugModal';
 import { ApiCardContext } from 'root/ApiCardContext';
+import { ScheduleToggleContext } from 'modals/ScheduleToggleModal';
 import 'css/TriggerButton.css';
 
 
@@ -31,6 +32,9 @@ const SensorCard = ({ id }) => {
 
     // Get function to open debug modal
     const { showDebugModal } = useContext(DebugModalContext);
+
+    // Get function to open schedule toggle modal
+    const { showScheduleToggle } = useContext(ScheduleToggleContext);
 
     // Create state for trigger button
     const [triggered, setTriggered] = useState(false);
@@ -66,7 +70,9 @@ const SensorCard = ({ id }) => {
                             >
                                 {params.enabled ? "Disable" : "Enable"}
                             </Dropdown.Item>
-                            <Dropdown.Item>Schedule Toggle</Dropdown.Item>
+                            <Dropdown.Item onClick={() => showScheduleToggle(id, params.enabled)}>
+                                Schedule Toggle
+                            </Dropdown.Item>
                             <Dropdown.Item
                                 disabled={params.current_rule === params.scheduled_rule}
                                 onClick={() => reset_rule(id)}
