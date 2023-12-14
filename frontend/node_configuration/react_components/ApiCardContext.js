@@ -81,7 +81,7 @@ export const ApiCardContextProvider = ({ children }) => {
         return result;
     }
 
-    async function enable_instance(id, category, enable) {
+    async function enable_instance(id, enable) {
         // Build payload from args
         const payload = {'command': '', 'instance': id, 'delay_input': ''};
         if (enable === true) {

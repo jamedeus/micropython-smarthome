@@ -42,7 +42,7 @@ const SensorCard = ({ id }) => {
     const DropdownOptions = (
         <>
             <Dropdown.Item
-                onClick={() => enable_instance(id, "sensors", !params.enabled)}
+                onClick={() => enable_instance(id, !params.enabled)}
             >
                 {params.enabled ? "Disable" : "Enable"}
             </Dropdown.Item>

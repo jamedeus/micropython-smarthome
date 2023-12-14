@@ -43,7 +43,7 @@ const DeviceCard = ({ id }) => {
     const DropdownOptions = (
         <>
             <Dropdown.Item
-                onClick={() => enable_instance(id, "devices", !params.enabled)}
+                onClick={() => enable_instance(id, !params.enabled)}
             >
                 {params.enabled ? "Disable" : "Enable"}
             </Dropdown.Item>
