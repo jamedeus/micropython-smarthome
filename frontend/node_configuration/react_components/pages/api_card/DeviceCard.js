@@ -1,14 +1,12 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
-import Collapse from 'react-bootstrap/Collapse';
-import { ScheduleRulesTable } from './ScheduleRules';
 import RuleInput from './RuleInput';
 import { DebugModalContext } from 'modals/DebugModal';
 import { ApiCardContext } from 'root/ApiCardContext';
 import { ScheduleToggleContext } from 'modals/ScheduleToggleModal';
+import InstanceCard from './InstanceCard';
 import 'css/PowerButton.css';
 
 
@@ -36,88 +34,40 @@ const DeviceCard = ({ id }) => {
     // Get function to open schedule toggle modal
     const { showScheduleToggle } = useContext(ScheduleToggleContext);
 
-    // Create state for trigger button
-    const [powerState, setPowerState] = useState(false);
-
-    let category;
-    if (id.startsWith("device")) {
-        category = "devices";
-    } else {
-        category = "sensors";
-    }
-
+    // Create callback for power button
     const turn_on_off = () => {
         turn_on(id, !params.turned_on);
     }
 
-    return (
-        <Card className="mb-4">
-            <Card.Body className="d-flex flex-column">
-                <div className="d-flex justify-content-between">
-                    <PowerButton on={params.turned_on} onClick={turn_on_off} />
+    const ActionButton = <PowerButton on={params.turned_on} onClick={turn_on_off} />;
+    const DropdownOptions = (
+        <>
+            <Dropdown.Item
+                onClick={() => enable_instance(id, "devices", !params.enabled)}
+            >
+                {params.enabled ? "Disable" : "Enable"}
+            </Dropdown.Item>
+            <Dropdown.Item onClick={() => showScheduleToggle(id, params.enabled)}>
+                Schedule Toggle
+            </Dropdown.Item>
+            <Dropdown.Item
+                disabled={params.current_rule === params.scheduled_rule}
+                onClick={() => reset_rule(id)}
+            >
+                Reset rule
+            </Dropdown.Item>
+            <Dropdown.Item onClick={() => showDebugModal(id)}>
+                Debug
+            </Dropdown.Item>
+        </>
+    )
 
-                    <h4 className="card-title mx-auto my-auto">
-                        {params.nickname}
-                    </h4>
-
-                    <Dropdown align="end" className="ms-auto my-auto">
-                        <Dropdown.Toggle variant="outline-secondary" className="menu-button">
-                            <i className="bi-list"></i>
-                        </Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            <Dropdown.Item
-                                onClick={() => enable_instance(id, category, !params.enabled)}
-                            >
-                                {params.enabled ? "Disable" : "Enable"}
-                            </Dropdown.Item>
-                            <Dropdown.Item onClick={() => showScheduleToggle(id, params.enabled)}>
-                                Schedule Toggle
-                            </Dropdown.Item>
-                            <Dropdown.Item
-                                disabled={params.current_rule === params.scheduled_rule}
-                                onClick={() => reset_rule(id)}
-                            >
-                                Reset rule
-                            </Dropdown.Item>
-                            <Dropdown.Item onClick={() => showDebugModal(id)}>
-                                Debug
-                            </Dropdown.Item>
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </div>
-
-                <Collapse in={params.enabled}>
-                    <div>
-                        {/* BUG if device is disabled this will pass string to rule slider current_rule */}
-                        {/* Renders slider with NaN, broken until next status update after enabling card */}
-                        <RuleInput id={id} params={params} />
-
-                        <div className="text-center my-3">
-                            <Button
-                                size="sm"
-                                variant="primary"
-                                className="open-rules"
-                                data-bs-toggle="collapse"
-                                data-bs-target={`#${id}-schedule-rules`}
-                            >
-                                Schedule rules
-                            </Button>
-                        </div>
-
-                        <div className="collapse text-center" id={`${id}-schedule-rules`}>
-                            <ScheduleRulesTable id={id} schedule={params.schedule} />
-
-                            <div className="text-center mx-3 mb-3">
-                                <Button variant="secondary" size="sm">
-                                    <i className="bi-plus-lg"></i>
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
-                </Collapse>
-            </Card.Body>
-        </Card>
-    );
+    return <InstanceCard
+                id={id}
+                params={params}
+                actionButton={ActionButton}
+                dropdownOptions={DropdownOptions}
+            />
 };
 
 DeviceCard.propTypes = {
