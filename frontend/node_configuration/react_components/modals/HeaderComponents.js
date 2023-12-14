@@ -37,7 +37,8 @@ export const HeaderWithCloseButton = ({ title, onClose, size="5" }) => {
 
 HeaderWithCloseButton.propTypes = {
     title: PropTypes.string,
-    onClose: PropTypes.func
+    onClose: PropTypes.func,
+    size: PropTypes.string
 };
 
 
@@ -50,5 +51,6 @@ export const HeaderStaticBackdrop = ({ title, size="3" }) => {
 };
 
 HeaderStaticBackdrop.propTypes = {
-    title: PropTypes.string
+    title: PropTypes.string,
+    size: PropTypes.string
 };

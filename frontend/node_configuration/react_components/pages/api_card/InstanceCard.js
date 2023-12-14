@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
@@ -6,30 +6,9 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import Collapse from 'react-bootstrap/Collapse';
 import { ScheduleRulesTable } from './ScheduleRules';
 import RuleInput from './RuleInput';
-import { DebugModalContext } from 'modals/DebugModal';
-import { ApiCardContext } from 'root/ApiCardContext';
-import { ScheduleToggleContext } from 'modals/ScheduleToggleModal';
-import 'css/PowerButton.css';
-
-
-const PowerButton = ({ on, onClick }) => {
-    return (
-        <Button
-            variant="outline-primary"
-            className={on ? "power-button my-auto me-auto toggle-on" : "power-button my-auto me-auto"}
-            onClick={onClick}
-        >
-            <i className="bi-lightbulb"></i>
-        </Button>
-    );
-}
 
 
 const InstanceCard = ({ id, params, actionButton, dropdownOptions }) => {
-
-    // Get function to open schedule toggle modal
-    const { showScheduleToggle } = useContext(ScheduleToggleContext);
-
     return (
         <Card className="mb-4">
             <Card.Body className="d-flex flex-column">
@@ -85,7 +64,10 @@ const InstanceCard = ({ id, params, actionButton, dropdownOptions }) => {
 };
 
 InstanceCard.propTypes = {
-    id: PropTypes.string
+    id: PropTypes.string,
+    params: PropTypes.object,
+    actionButton: PropTypes.node,
+    dropdownOptions: PropTypes.node
 };
 
 

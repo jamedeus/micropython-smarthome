@@ -33,10 +33,9 @@ export const ScheduleToggleContextProvider = ({ children }) => {
             ...scheduleToggleContent,
             ["visible"]: true,
             ["target"]: id
-        }
+        };
 
         // Set default to opposite of current state
-        let state;
         if (enabled === true) {
             update.action = "disable_in";
         } else {
@@ -77,7 +76,7 @@ export const ScheduleToggleContextProvider = ({ children }) => {
             newDelay = newDelay.substring(0,4);
         } else if (scheduleToggleContent.units === 'hours') {
             newDelay = newDelay.substring(0,2);
-        };
+        }
 
         return newDelay;
     };
@@ -95,23 +94,19 @@ export const ScheduleToggleContextProvider = ({ children }) => {
             'command': scheduleToggleContent.action,
             'instance': scheduleToggleContent.target,
             'delay': scheduleToggleContent.delay
-        }
-
-        console.log("Modal contents:")
-        console.log(scheduleToggleContent)
+        };
 
         // Convert delay to minutes
         if (scheduleToggleContent.units === 'seconds') {
-            console.log(parseInt(payload.delay) / 60)
             payload.delay = String(parseInt(payload.delay) / 60);
         } else if (scheduleToggleContent.units === 'hours') {
             payload.delay = String(parseInt(payload.delay) * 60);
-        };
+        }
 
         const result = await send_command(payload);
         const response = await result.json();
         console.log(response);
-    }
+    };
 
     return (
         <ScheduleToggleContext.Provider value={{

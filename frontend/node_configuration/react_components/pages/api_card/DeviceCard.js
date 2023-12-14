@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
-import RuleInput from './RuleInput';
 import { DebugModalContext } from 'modals/DebugModal';
 import { ApiCardContext } from 'root/ApiCardContext';
 import { ScheduleToggleContext } from 'modals/ScheduleToggleModal';
@@ -20,7 +19,12 @@ const PowerButton = ({ on, onClick }) => {
             <i className="bi-lightbulb"></i>
         </Button>
     );
-}
+};
+
+PowerButton.propTypes = {
+    on: PropTypes.bool,
+    onClick: PropTypes.func
+};
 
 
 const DeviceCard = ({ id }) => {
@@ -37,7 +41,7 @@ const DeviceCard = ({ id }) => {
     // Create callback for power button
     const turn_on_off = () => {
         turn_on(id, !params.turned_on);
-    }
+    };
 
     const ActionButton = <PowerButton on={params.turned_on} onClick={turn_on_off} />;
     const DropdownOptions = (
@@ -60,14 +64,14 @@ const DeviceCard = ({ id }) => {
                 Debug
             </Dropdown.Item>
         </>
-    )
+    );
 
     return <InstanceCard
                 id={id}
                 params={params}
                 actionButton={ActionButton}
                 dropdownOptions={DropdownOptions}
-            />
+            />;
 };
 
 DeviceCard.propTypes = {

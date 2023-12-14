@@ -59,7 +59,7 @@ export const ApiCardContextProvider = ({ children }) => {
                     ...status[category][id], [param]: value
                 }
             }
-        })
+        });
     }
 
     // Takes command params, posts to backend, backend makes API
@@ -165,7 +165,7 @@ export const ApiCardContextProvider = ({ children }) => {
             const instance = get_instance_section(id);
             update_instance(id, "current_rule", instance.scheduled_rule);
         } else {
-            console.log("Failed to reset rule:", id)
+            console.log("Failed to reset rule:", id);
         }
     }
 

@@ -19,7 +19,12 @@ const TriggerButton = ({ on, onClick }) => {
             <i className="bi-exclamation-lg"></i>
         </Button>
     );
-}
+};
+
+TriggerButton.propTypes = {
+    on: PropTypes.bool,
+    onClick: PropTypes.func
+};
 
 
 const SensorCard = ({ id }) => {
@@ -60,14 +65,14 @@ const SensorCard = ({ id }) => {
                 Debug
             </Dropdown.Item>
         </>
-    )
+    );
 
     return <InstanceCard
                 id={id}
                 params={params}
                 actionButton={ActionButton}
                 dropdownOptions={DropdownOptions}
-            />
+            />;
 };
 
 SensorCard.propTypes = {

@@ -1,6 +1,4 @@
-import React, { useState, useContext, createContext, useEffect } from 'react';
-import PropTypes from 'prop-types';
-import { getCookie } from 'util/django_util';
+import { useContext, useEffect } from 'react';
 import { ApiCardContext } from 'root/ApiCardContext';
 import { ErrorModalContext } from 'modals/ErrorModal';
 
@@ -61,4 +59,4 @@ export const UpdateStatus = () => {
         const timer = setInterval(get_new_status, 5000);
         return () => clearInterval(timer);
     }, []);
-}
+};
