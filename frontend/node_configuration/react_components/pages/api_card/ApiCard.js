@@ -5,6 +5,7 @@ import { ScheduleToggleModal } from 'modals/ScheduleToggleModal';
 import Header from './Header';
 import Layout from './Layout';
 import { UpdateStatus } from './UpdateStatus';
+import { FadeModal } from 'modals/FadeModal';
 import 'css/api_card.css';
 
 
@@ -16,6 +17,7 @@ const App = () => {
             <UpdateStatus />
 
             {/* Modals (hidden) */}
+            <FadeModal />
             <ErrorModal />
             <DebugModal />
             <ScheduleToggleModal />

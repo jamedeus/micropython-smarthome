@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './ApiCard';
 import { ApiCardContextProvider } from 'root/ApiCardContext';
 import { ModalContextProvider } from 'modals/ModalContextProvider';
+import { FadeContextProvider } from 'modals/FadeModal';
 import { DebugModalContextProvider } from 'modals/DebugModal';
 import { ScheduleToggleContextProvider } from 'modals/ScheduleToggleModal';
 import 'css/dark_mode.scss';
@@ -16,7 +17,9 @@ root.render(
         <ApiCardContextProvider>
             <DebugModalContextProvider>
                 <ScheduleToggleContextProvider>
-                    <App />
+                    <FadeContextProvider>
+                        <App />
+                    </FadeContextProvider>
                 </ScheduleToggleContextProvider>
             </DebugModalContextProvider>
         </ApiCardContextProvider>

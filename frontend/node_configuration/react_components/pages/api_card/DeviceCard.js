@@ -1,9 +1,10 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { DebugModalContext } from 'modals/DebugModal';
 import { ApiCardContext } from 'root/ApiCardContext';
+import { FadeContext } from 'modals/FadeModal';
 import { ScheduleToggleContext } from 'modals/ScheduleToggleModal';
 import InstanceCard from './InstanceCard';
 import 'css/PowerButton.css';
@@ -38,6 +39,13 @@ const DeviceCard = ({ id }) => {
     // Get function to open schedule toggle modal
     const { showScheduleToggle } = useContext(ScheduleToggleContext);
 
+    // Get function to open fade modal
+    const { showFadeModal } = useContext(FadeContext);
+
+    // Create local state for prompt type (not included in
+    // status updates, will remove nodes if allowed to update)
+    const [prompt] = useState(params.prompt);
+
     // Create callback for power button
     const turn_on_off = () => {
         turn_on(id, !params.turned_on);
@@ -60,6 +68,15 @@ const DeviceCard = ({ id }) => {
             >
                 Reset rule
             </Dropdown.Item>
+            {(() => {
+                if (prompt === "int_or_fade") {
+                    return (
+                        <Dropdown.Item onClick={() => showFadeModal(id)}>
+                            Start Fade
+                        </Dropdown.Item>
+                    )
+                }
+            })()}
             <Dropdown.Item onClick={() => showDebugModal(id)}>
                 Debug
             </Dropdown.Item>
