@@ -26,10 +26,22 @@ export const ApiCardContextProvider = ({ children }) => {
     // status updates, will disappear if allowed to update)
     const [targetIP] = useState(status.metadata.ip);
 
-    // Button callback, redirect to overview
+    // Create state to control fade in/fade out animation
+    // Fades in when true, fades out when false (both persist)
+    const [loading, setLoading] = useState(true);
+
+    // Button callback, fade out and redirect to overview
     function overview() {
+        setLoading(false);
         window.location.href = "/api";
     }
+
+    // Reset loading animation when navigated to with browser back button
+    window.onpageshow = function(event) {
+        if (event.persisted) {
+            setLoading(true);
+        }
+    };
 
     // Takes instance ID (device1, sensor2, etc), returns category
     // string (used to look up instance in state object)
@@ -179,7 +191,8 @@ export const ApiCardContextProvider = ({ children }) => {
             trigger_sensor,
             turn_on,
             set_rule,
-            reset_rule
+            reset_rule,
+            loading
         }}>
             {children}
         </ApiCardContext.Provider>
