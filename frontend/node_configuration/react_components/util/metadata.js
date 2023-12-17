@@ -1,5 +1,12 @@
 import React from 'react';
 
+// Map IR Blaster targets to list of key options
+// TODO remove once IR Blaster metadata added
+const ir_keys = {
+    'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'],
+    'ac': ['start', 'stop', 'off']
+};
+
 // Get device/sensor metadata object, used to determine input elements for each type
 // Contains config templates for each device/sensor, added to output object when selected
 let metadata = JSON.parse(document.getElementById("instance_metadata").textContent);
@@ -48,4 +55,4 @@ function get_type_dropdown_options(category) {
 }
 
 
-export { get_instance_metadata, get_config_template, get_type_dropdown_options };
+export { ir_keys, get_instance_metadata, get_config_template, get_type_dropdown_options };

@@ -5,23 +5,14 @@ import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
-import { api_target_options } from 'util/django_util';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { ipRegex } from 'util/validation';
-
-// Takes IP, returns object from api_target_options context
-function getTargetNodeOptions(ip) {
-    const friendly_name = Object.keys(api_target_options.addresses).find(key =>
-        api_target_options.addresses[key] === ip
-    );
-    return api_target_options[friendly_name];
-}
 
 export const ApiTargetModalContext = createContext();
 
 export const ApiTargetModalContextProvider = ({ children }) => {
     // Get curent state from global context
-    const { config } = useContext(ConfigContext);
+    const { config, getTargetNodeOptions } = useContext(ConfigContext);
 
     // Create state objects for modal visibility, contents
     const [show, setShow] = useState(false);
