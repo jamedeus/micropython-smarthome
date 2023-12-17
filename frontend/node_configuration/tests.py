@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.core.exceptions import ValidationError
+from .get_api_target_menu_options import convert_config_to_api_target_options
 from .views import validate_full_config, get_modules, get_api_target_menu_options, provision
 from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinates
 from Webrepl import websocket, Webrepl, handshake_message
@@ -1766,6 +1767,30 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
 
         # Remove test configs from disk
         clean_up_test_nodes()
+
+    # Original bug: Function that adds endpoints used conditional with hard-coded sensor
+    # types to determine if trigger_sensor was supported. When new non-triggerable sensors
+    # were added they incorrectly received trigger_sensor option. Now checks triggerable
+    # param in metadata object to determine if endpoint compatible.
+    def test_regression_check_metadata(self):
+        # Create test config with new non-triggerable type
+        config = {
+            'metadata': {},
+            'wifi': {},
+            'sensor1': {
+                'nickname': 'Thermostat',
+                '_type': 'dht22'
+            }
+        }
+
+        # Pass to function, confirm options does not contain trigger_sensor
+        options = convert_config_to_api_target_options(config.copy())
+        self.assertNotIn('trigger_sensor', options['sensor1']['options'])
+
+        # Change sensor to a triggerable type, confirm options include trigger_sensor
+        config['sensor1']['_type'] = 'pir'
+        options = convert_config_to_api_target_options(config)
+        self.assertIn('trigger_sensor', options['sensor1']['options'])
 
 
 # Test setting default wifi credentials

@@ -1,5 +1,16 @@
 from .models import Node
+from helper_functions import get_device_and_sensor_metadata
 from validation_constants import ir_blaster_options, device_endpoints, sensor_endpoints
+
+# Get object containing all device/sensor metadata
+metadata = get_device_and_sensor_metadata()
+
+
+# Takes category (devices or sensors) and type, returns metadata section
+def get_metadata_section(category, _type):
+    for i in metadata[category]:
+        if i['config_name'] == _type:
+            return i
 
 
 # Helper function for get_api_target_menu_options, converts individual configs to frontend options
@@ -20,19 +31,16 @@ def convert_config_to_api_target_options(config):
                 }
 
             # All sensors have same options except thermostat and switch (trigger unsupported)
-            # TODO should use metadata triggerable param, remove hardcoded types
-            elif i.startswith("sensor") and config[i]["_type"] not in ["si7021", "switch"]:
-                result[i] = {
-                    "display": f'{config[i]["nickname"]} ({config[i]["_type"]})',
-                    "options": sensor_endpoints
-                }
-
-            else:
+            elif i.startswith("sensor"):
                 result[i] = {
                     "display": f'{config[i]["nickname"]} ({config[i]["_type"]})',
                     "options": sensor_endpoints.copy()
                 }
-                result[i]["options"].remove('trigger_sensor')
+
+                # Remove trigger endpoint if sensor is not triggerable
+                sensor_metadata = get_metadata_section("sensors", config[i]["_type"])
+                if not sensor_metadata["triggerable"]:
+                    result[i]["options"].remove("trigger_sensor")
 
         else:
             # Add options for all configured IR Blaster targets
