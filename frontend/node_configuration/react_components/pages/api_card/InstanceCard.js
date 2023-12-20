@@ -15,7 +15,7 @@ const InstanceCard = ({ id, params, actionButton, dropdownOptions }) => {
                 <div className="d-flex justify-content-between">
                     {actionButton}
 
-                    <h4 className="card-title mx-auto my-auto">
+                    <h4 className="card-title text-center m-auto">
                         {params.nickname}
                     </h4>
 
