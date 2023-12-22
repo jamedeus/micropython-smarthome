@@ -77,3 +77,8 @@ td:last-child{
     border-bottom-right-radius: 10px;
 }
 /* --- */
+
+/* Grey out disabled buttons */
+.btn-primary:disabled {
+    background-color: #4b5157;
+}

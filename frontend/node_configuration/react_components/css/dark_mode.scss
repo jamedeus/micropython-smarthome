@@ -207,6 +207,11 @@
         /* Spinkit dark mode */
         --sk-color: #fff;
 
+        /* Grey out disabled buttons */
+        .btn-primary:disabled {
+            background-color: #4b5157 !important;
+        }
+
         /* List group (location suggestions) */
         $list-group-bg: #212529;
         $list-group-border-color: rgba(0, 0, 0, 0.125);
