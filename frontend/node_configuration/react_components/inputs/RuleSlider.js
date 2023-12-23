@@ -28,14 +28,15 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
                     renderTrack={({ props, children }) => (
                         <div
                             {...props}
+                            className="sliderTrack"
                             style={{
                                 ...props.style,
-                                height: '8px',
-                                width: '100%',
-                                borderRadius: '4px',
                                 background: getTrackBackground({
                                     values,
-                                    colors: ['#0D6EFD', '#1B1E1F'],
+                                    colors: [
+                                        'var(--slider-track-fill)',
+                                        'var(--slider-track-background)'
+                                    ],
                                     min: slider_min,
                                     max: slider_max
                                 }),
@@ -45,21 +46,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
                         </div>
                     )}
                     renderThumb={({ props }) => (
-                        <div
-                            {...props}
-                            style={{
-                                ...props.style,
-                                height: '42px',
-                                width: '42px',
-                                borderRadius: '100%',
-                                backgroundColor: '#0D6EFD',
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                                fontWeight: 'bold',
-                                outline: 'none',
-                            }}
-                        >
+                        <div {...props} className="sliderHandle">
                             {(() => {
                                 if (display_type === "int") {
                                     return parseInt(values[0]);
