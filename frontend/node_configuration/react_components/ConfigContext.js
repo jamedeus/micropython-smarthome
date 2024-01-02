@@ -4,6 +4,7 @@ import { get_config_template } from 'util/metadata';
 import { sleep } from 'util/helper_functions';
 import { get_instance_metadata, ir_keys } from 'util/metadata';
 import { api_target_options, target_node_ip } from 'util/django_util';
+import { v4 as uuid } from 'uuid';
 
 
 // Takes object and key prefix, returns all keys that begin with prefix
@@ -45,6 +46,27 @@ export const ConfigProvider = ({ children }) => {
 
     const updateConfig = newConfig => {
         setConfig(newConfig);
+    };
+
+    // Create state for device and sensor UUIDs (used as react key)
+    const [UUIDs, setUUIDs] = useState({devices: [], sensors: []});
+
+    // Takes card index, returns UUID
+    const getKey = (id, category) => {
+        // Add new UUID if not found
+        if (!UUIDs[category][id]) {
+            return addKey(id, category);
+        }
+        return UUIDs[category][id];
+    };
+
+    // Adds new UUID to state object, returns same UUID
+    const addKey = (id, category) => {
+        const newID = uuid();
+        setUUIDs({ ...UUIDs, [category]: {
+            ...UUIDs[category], [id]: newID
+        }});
+        return newID;
     };
 
     // Create state object to control invalid field highlight
@@ -238,11 +260,68 @@ export const ConfigProvider = ({ children }) => {
         return options;
     };
 
+    // Called by deleteInstance, decrements IDs of all subsequent instances to prevent gaps
+    // Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc
+    function update_ids(target, state) {
+        // Get category (device or sensor) and index of removed instance
+        const category = target.replace(/[0-9]/g, '');
+        const index = target.replace(/[a-zA-Z]/g, '');
+
+        // Get list of all instances in same category
+        const instances = filterObject(state, category);
+
+        // Get UUIDs of all instances in same category
+        const newUUIDs = { ...UUIDs[`${category}s`] };
+
+        // Get list of all sensors (used to update target IDs)
+        const sensors = filterObject(state, 'sensor');
+
+        // If target is device remove from all sensor target lists
+        if (category === 'device') {
+            for (const sensor in sensors) {
+                state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== target);
+            }
+        }
+
+        // Iterate all instances in category starting from the removed instance index
+        for (let i=parseInt(index); i<Object.entries(instances).length+1; i++) {
+            // Removed index now available, decrement next index by 1
+            const new_id = `${category}${i}`;
+            const old_id = `${category}${i+1}`;
+            state[new_id] = JSON.parse(JSON.stringify(state[old_id]));
+            delete state[old_id];
+
+            // Decrement UUID index to keep associated with correct card
+            newUUIDs[new_id] = newUUIDs[old_id];
+            delete newUUIDs[old_id];
+
+            // Decrement device index in sensor targets lists to match above
+            if (category === 'device') {
+                for (const sensor in sensors) {
+                    if (state[sensor]['targets'].includes(old_id)) {
+                        state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== old_id);
+                        state[sensor]['targets'].push(new_id);
+                    }
+                }
+            }
+        }
+
+        // Update UUIDs
+        setUUIDs({ ...UUIDs, [`${category}s`]: {
+            ...newUUIDs
+        }});
+
+        // Return state (calling function updates)
+        return state;
+    }
+
     return (
         <ConfigContext.Provider value=
             {{
                 config,
                 updateConfig,
+                UUIDs,
+                getKey,
                 highlightInvalid,
                 setHighlightInvalid,
                 logState,
@@ -265,48 +344,6 @@ export const ConfigProvider = ({ children }) => {
 ConfigProvider.propTypes = {
     children: PropTypes.node,
 };
-
-// Called by deleteInstance, decrements IDs of all subsequent instances to prevent gaps
-// Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc
-function update_ids(target, state) {
-    // Get category (device or sensor) and index of removed instance
-    const category = target.replace(/[0-9]/g, '');
-    const index = target.replace(/[a-zA-Z]/g, '');
-
-    // Get list of all instances in same category
-    const instances = filterObject(state, category);
-
-    // Get list of all sensors (used to update target IDs)
-    const sensors = filterObject(state, 'sensor');
-
-    // If target is device remove from all sensor target lists
-    if (category === 'device') {
-        for (const sensor in sensors) {
-            state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== target);
-        }
-    }
-
-    // Iterate all instances in category starting from the removed instance index
-    for (let i=parseInt(index); i<Object.entries(instances).length+1; i++) {
-        // Removed index now available, decrement next index by 1
-        const new_id = `${category}${i}`;
-        const old_id = `${category}${i+1}`;
-        state[new_id] = JSON.parse(JSON.stringify(state[old_id]));
-        delete state[old_id];
-
-        // Decrement device index in sensor targets lists to match above
-        if (category === 'device') {
-            for (const sensor in sensors) {
-                if (state[sensor]['targets'].includes(old_id)) {
-                    state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== old_id);
-                    state[sensor]['targets'].push(new_id);
-                }
-            }
-        }
-    }
-
-    return state;
-}
 
 // Delete instance card animation
 // Takes array of card divs, index of card to delete, add instance button

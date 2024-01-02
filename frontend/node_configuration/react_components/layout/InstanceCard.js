@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
@@ -33,6 +33,9 @@ function InstanceCard({ id }) {
     // Get metadata object for selected type
     const instanceMetadata = get_instance_metadata(category, instance._type);
 
+    // Create stable UUID for input field keys
+    const [key] = useState(uuid());
+
     console.log(`Rendering ${id}`);
 
     // Returns list of nodes with input element for each parameter in config section
@@ -42,7 +45,7 @@ function InstanceCard({ id }) {
 
         if (instance.nickname !== undefined) {
             inputs.push(
-                <NicknameInput key={uuid()} id={id} />
+                <NicknameInput key={key + '-nickname'} id={id} />
             );
         }
 
@@ -50,12 +53,12 @@ function InstanceCard({ id }) {
             // Is device if no targets key
             if (instance.targets === undefined) {
                 inputs.push(
-                    <DevicePinSelect key={uuid()} id={id} />
+                    <DevicePinSelect key={key + '-pin'} id={id} />
                 );
             // Otherwise is sensor
             } else {
                 inputs.push(
-                    <SensorPinSelect key={uuid()} id={id} />
+                    <SensorPinSelect key={key + '-pin'} id={id} />
                 );
             }
         }
@@ -63,24 +66,24 @@ function InstanceCard({ id }) {
         if (instance.ip !== undefined) {
             if (instanceMetadata.rule_prompt !== "api_target") {
                 inputs.push(
-                    <IPInput key={uuid()} id={id} />
+                    <IPInput key={key + '-ip'} id={id} />
                 );
             } else {
                 inputs.push(
-                    <TargetNodeDropdown key={uuid()} id={id} />
+                    <TargetNodeDropdown key={key + '-ip'} id={id} />
                 );
             }
         }
 
         if (instance.uri !== undefined) {
             inputs.push(
-                <URIInput key={uuid()} id={id} />
+                <URIInput key={key + '-uri'} id={id} />
             );
         }
 
         if (instance.on_path !== undefined && instance.off_path !== undefined) {
             inputs.push(
-                <HttpGetPathInputs key={uuid()} id={id}/>
+                <HttpGetPathInputs key={key + '-paths'} id={id}/>
             );
         }
 
@@ -90,7 +93,7 @@ function InstanceCard({ id }) {
         // Thermostat mode, units, tolerance inputs
         if (instance.mode !== undefined && instance.units !== undefined) {
             inputs.push(
-                <ThermostatParamInputs key={uuid()} id={id} />
+                <ThermostatParamInputs key={key + '-params'} id={id} />
             );
         }
 
@@ -105,20 +108,20 @@ function InstanceCard({ id }) {
 
         // If instance has units key return thermostat input
         if (instance.units !== undefined) {
-            return <DefaultRuleThermostat key={uuid()} id={id} />;
+            return <DefaultRuleThermostat key={key + '-default_rule'} id={id} />;
         }
 
         switch (instanceMetadata.rule_prompt) {
             case 'standard':
-                return <DefaultRuleStandard key={uuid()} id={id} />;
+                return <DefaultRuleStandard key={key + '-default_rule'} id={id} />;
             case 'on_off':
-                return <DefaultRuleOnOff key={uuid()} id={id} />;
+                return <DefaultRuleOnOff key={key + '-default_rule'} id={id} />;
             case 'float_range':
-                return <DefaultRuleFloatRange key={uuid()} id={id} />;
+                return <DefaultRuleFloatRange key={key + '-default_rule'} id={id} />;
             case 'int_or_fade':
-                return <DefaultRuleIntRange key={uuid()} id={id} />;
+                return <DefaultRuleIntRange key={key + '-default_rule'} id={id} />;
             case 'api_target':
-                return <DefaultRuleApiTarget key={uuid()} id={id} />;
+                return <DefaultRuleApiTarget key={key + '-default_rule'} id={id} />;
             default:
                 return null;
         }
