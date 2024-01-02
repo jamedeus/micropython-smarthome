@@ -7,7 +7,7 @@ import { api_target_options, target_node_ip } from 'util/django_util';
 import { v4 as uuid } from 'uuid';
 
 
-// Takes object and key prefix, returns all keys that begin with prefix
+// Takes object and key prefix, returns object with all keys that begin with prefix
 function filterObject(obj, prefix) {
     return Object.entries(obj).reduce((acc, [key, value]) => {
         if (key.startsWith(prefix)) {
@@ -15,6 +15,11 @@ function filterObject(obj, prefix) {
         }
         return acc;
     }, {});
+}
+
+// Takes object and key prefix, returns array of keys that begin with prefix
+function filterObjectKeys(obj, prefix) {
+    return Object.keys(filterObject(obj, prefix));
 }
 
 export const ConfigContext = createContext();
@@ -49,24 +54,23 @@ export const ConfigProvider = ({ children }) => {
     };
 
     // Create state for device and sensor UUIDs (used as react key)
-    const [UUIDs, setUUIDs] = useState({devices: [], sensors: []});
+    // Pre-populate with id-UUID pairs for existing instances (if editing)
+    const [UUIDs, setUUIDs] = useState(
+        {
+            devices: Object.fromEntries(
+                filterObjectKeys(config, "device")
+                .map((id) => [id, uuid()])
+            ),
+            sensors: Object.fromEntries(
+                filterObjectKeys(config, "sensor")
+                .map((id) => [id, uuid()])
+            )
+        }
+    );
 
     // Takes card index, returns UUID
     const getKey = (id, category) => {
-        // Add new UUID if not found
-        if (!UUIDs[category][id]) {
-            return addKey(id, category);
-        }
         return UUIDs[category][id];
-    };
-
-    // Adds new UUID to state object, returns same UUID
-    const addKey = (id, category) => {
-        const newID = uuid();
-        setUUIDs({ ...UUIDs, [category]: {
-            ...UUIDs[category], [id]: newID
-        }});
-        return newID;
     };
 
     // Create state object to control invalid field highlight
@@ -84,6 +88,11 @@ export const ConfigProvider = ({ children }) => {
         // Add key to state object with empty config
         // Will be populated with metadata template when user selects type
         setConfig({ ...config, [`${category}${index}`]: {} });
+
+        // Create UUID for new instance
+        setUUIDs({ ...UUIDs, [`${category}s`]: {
+            ...UUIDs[`${category}s`], [`${category}${index}`]: uuid()
+        }});
     };
 
     // Handler for delete button on device and sensor cards
@@ -320,7 +329,6 @@ export const ConfigProvider = ({ children }) => {
             {{
                 config,
                 updateConfig,
-                UUIDs,
                 getKey,
                 highlightInvalid,
                 setHighlightInvalid,
