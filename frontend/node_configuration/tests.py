@@ -2746,11 +2746,51 @@ class ManagementCommandTests(TestCaseBackupRestore):
         with open(os.path.join(settings.CONFIG_DIR, 'test3.json'), 'r') as file:
             self.assertEqual(json.load(file), test_config_3)
 
+    def test_generate_cli_config(self):
+        # Delete cli_config.json, confirm does not exist
+        os.remove(self.cli_config_path)
+        self.assertFalse(os.path.exists(self.cli_config_path))
+
+        # Call command, confirm correct output, confirm created on disk
+        call_command("generate_cli_config", stdout=self.output)
+        self.assertIn("Generated config:", self.output.getvalue())
+        self.assertTrue(os.path.exists(self.cli_config_path))
+
+        # Read config from disk, confirm correct contents
+        with open(self.cli_config_path) as file:
+            config = json.load(file)
+            # Confirm number of nodes and keywords, config dir, webrepl password
+            self.assertEqual(len(config['nodes']), 3)
+            self.assertEqual(len(config['schedule_keywords']), 2)
+            self.assertEqual(config['config_directory'], settings.CONFIG_DIR)
+            self.assertEqual(config['webrepl_password'], settings.NODE_PASSWD)
+
+            # Confirm correct IP and config path for each node
+            self.assertEqual(config['nodes']['test1']['ip'], '192.168.1.123')
+            self.assertEqual(config['nodes']['test2']['ip'], '192.168.1.124')
+            self.assertEqual(config['nodes']['test3']['ip'], '192.168.1.125')
+            self.assertEqual(
+                config['nodes']['test1']['config'],
+                os.path.join(settings.CONFIG_DIR, 'test1.json')
+            )
+            self.assertEqual(
+                config['nodes']['test2']['config'],
+                os.path.join(settings.CONFIG_DIR, 'test2.json')
+            )
+            self.assertEqual(
+                config['nodes']['test3']['config'],
+                os.path.join(settings.CONFIG_DIR, 'test3.json')
+            )
+
+            # Confirm correct name and timestamp for each keyword
+            self.assertEqual(config['schedule_keywords']['sunrise'], '06:00')
+            self.assertEqual(config['schedule_keywords']['sunset'], '18:00')
+
     def test_cli_sync_disabled(self):
         # Disable CLI_SYNC
         settings.CLI_SYNC = False
 
-        # Confirm both commands raise correct error
+        # Confirm all commands raise correct error
         with self.assertRaises(CommandError):
             call_command("export_configs_to_disk", stdout=self.output)
             self.assertIn(
@@ -2762,6 +2802,13 @@ class ManagementCommandTests(TestCaseBackupRestore):
             call_command("import_configs_from_disk", stdout=self.output)
             self.assertIn(
                 'Files cannot be read in diskless mode, set the CLI_SYNC env var to enable.',
+                self.output.getvalue()
+            )
+
+        with self.assertRaises(CommandError):
+            call_command("generate_cli_config", stdout=self.output)
+            self.assertIn(
+                'Files cannot be written in diskless mode, set the CLI_SYNC env var to enable.',
                 self.output.getvalue()
             )
 
