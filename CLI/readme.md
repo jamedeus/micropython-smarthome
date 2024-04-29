@@ -10,12 +10,19 @@ Tools:
 * [config_generator.py](CLI/config_generator.py): Generate new config files, edit existing config files
 * [provision.py](CLI/provision.py): Upload config files and all their dependencies to new nodes
 
-## Bash Completion
+## Setup
+
+The [util module](util/) must be installed before using the CLI tools:
+```
+pip3 install -e util/
+```
 
 To install the bash completions simply copy them to the global directory:
 ```
 sudo cp CLI/bash_completion/* /etc/bash_completion.d/
 ```
+
+The changes will take effect after opening a new shell.
 
 ## API Client
 
