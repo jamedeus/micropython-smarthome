@@ -6,10 +6,10 @@ const isProduction = process.env.NODE_ENV == 'development';
 
 const config = {
     entry: {
-        edit_config: './node_configuration/react_components/pages/edit_config/index.js',
-        overview: './node_configuration/react_components/pages/overview/index.js',
-        api_overview: './node_configuration/react_components/pages/api_overview/index.js',
-        api_card: './node_configuration/react_components/pages/api_card/index.js',
+        edit_config: './src/pages/edit_config/index.js',
+        overview: './src/pages/overview/index.js',
+        api_overview: './src/pages/api_overview/index.js',
+        api_card: './src/pages/api_card/index.js',
     },
     output: {
         path: path.resolve(__dirname, 'node_configuration/static/node_configuration/'),
@@ -49,12 +49,12 @@ const config = {
     },
     resolve: {
         alias: {
-            css: path.resolve(__dirname, 'node_configuration/react_components/css'),
-            root: path.resolve(__dirname, 'node_configuration/react_components/'),
-            util: path.resolve(__dirname, 'node_configuration/react_components/util/'),
-            inputs: path.resolve(__dirname, 'node_configuration/react_components/inputs/'),
-            layout: path.resolve(__dirname, 'node_configuration/react_components/layout/'),
-            modals: path.resolve(__dirname, 'node_configuration/react_components/modals/'),
+            css: path.resolve(__dirname, 'src/css'),
+            root: path.resolve(__dirname, 'src/'),
+            util: path.resolve(__dirname, 'src/util/'),
+            inputs: path.resolve(__dirname, 'src/inputs/'),
+            layout: path.resolve(__dirname, 'src/layout/'),
+            modals: path.resolve(__dirname, 'src/modals/'),
             node_modules: path.resolve(__dirname, 'node_modules/')
         }
     }
