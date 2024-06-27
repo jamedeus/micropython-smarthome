@@ -5,3 +5,17 @@
 [![Latest Release](https://gitlab.com/jamedeus/micropython-smarthome/-/badges/release.svg?key_text=Firmware+Release&key_width=112)](https://gitlab.com/jamedeus/micropython-smarthome/-/releases)
 
 # Micropython Smarthome
+
+## Firmware
+
+Pre-built firmware binaries can be downloaded from [releases](https://gitlab.com/jamedeus/micropython-smarthome/-/releases).
+
+See [firmware](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master/firmware) for build instructions.
+
+## Command line tools
+
+See [CLI readme](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master/CLI).
+
+## Unit testing
+
+See [test readme](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master/tests).
