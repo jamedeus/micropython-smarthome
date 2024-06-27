@@ -103,6 +103,7 @@ build_firmware:
   artifacts:
     paths:
       - firmware/firmware_$CI_COMMIT_TAG.bin
+    expire_in: never
   release:
     tag_name: $CI_COMMIT_TAG
     ref: $CI_COMMIT_SHA
@@ -111,7 +112,7 @@ build_firmware:
     assets:
       links:
         - name: 'firmware_$CI_COMMIT_TAG.bin'
-          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/download'
+          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/firmware/firmware_$CI_COMMIT_TAG.bin'
 
 # Deploy most-recent container
 deploy:
