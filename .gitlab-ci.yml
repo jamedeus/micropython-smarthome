@@ -94,7 +94,7 @@ build_firmware:
   script:
     # Fresh build ensures files from previous commit not included in firmware
     - 'bash build.sh fresh'
-    - 'mv firmware/firmware.bin firmware/firmware_$CI_COMMIT_TAG.bin'
+    - 'mv firmware.bin firmware_$CI_COMMIT_TAG.bin'
     # Delete SSL certs (new certs for each build for improved security)
     - 'rm setup_ssl_certs.py'
   rules:
