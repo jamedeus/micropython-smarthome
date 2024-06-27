@@ -1,12 +1,11 @@
 import os
 import gc
-import uos
 from flashbdev import bdev
 
 # Mount filesystem (or format if first boot)
 try:
     if bdev:
-        uos.mount(bdev, "/")
+        os.mount(bdev, "/")
 except OSError:
     import inisetup
     vfs = inisetup.setup()

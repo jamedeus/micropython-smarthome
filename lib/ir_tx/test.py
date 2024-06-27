@@ -13,7 +13,7 @@ if ESP32 or RP2:
     from machine import Pin
 else:
     from pyb import Pin, LED
-import uasyncio as asyncio
+import asyncio
 from primitives.switch import Switch
 from primitives.delay_ms import Delay_ms
 # Import all implemented classes

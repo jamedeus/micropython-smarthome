@@ -1,8 +1,8 @@
 import os
 import json
+import asyncio
 import network
 import unittest
-import uasyncio as asyncio
 from machine import reset, Pin
 import SoftwareTimer
 from Config import Config
@@ -17,7 +17,7 @@ with open('config.json', 'r') as file:
 mock_address = f"{test_config['mock_receiver']['ip']}:{test_config['mock_receiver']['port']}"
 
 # Get IP address
-ip = network.WLAN(network.STA_IF).ifconfig()[0]
+ip = network.WLAN(network.WLAN.IF_STA).ifconfig()[0]
 
 
 config_file = {

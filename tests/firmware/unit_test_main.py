@@ -2,8 +2,8 @@ import os
 import gc
 import sys
 import json
+import asyncio
 import network
-import uasyncio as asyncio
 import logging
 import unittest
 

@@ -7,6 +7,7 @@ import json
 import shutil
 import logging
 import asyncio
+import requests
 import unittest
 import nest_asyncio
 
@@ -58,6 +59,16 @@ def set_mocks():
     import mock_json
     json.JSONDecoder = mock_json.MockDecoder
     json.loads = mock_json.mock_loads
+
+    # Patch requests.Response.json to raise ValueError instead of JSONDecodeError
+    import mock_requests
+    requests.Response = mock_requests.MockResponse
+    requests.sessions.Session.request = mock_requests.mock_request
+
+    # Patch asyncio to add missing sleep methods
+    import mock_asyncio
+    asyncio.sleep_ms = mock_asyncio.sleep_ms
+    asyncio.sleep_us = mock_asyncio.sleep_us
 
     # Use unit_test_config.json as mock config.json, allow saving schedule rules, keywords, etc
     # Also contains IP and ports for mock_command_receiver container

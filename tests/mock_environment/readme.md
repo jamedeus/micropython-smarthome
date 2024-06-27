@@ -58,8 +58,8 @@ The port `9999` is used to simulate requests to TpLink Kasa devices. This cannot
 - [x] ir_tx.Player
 - [x] time.sleep_ms
 - [x] time.sleep_us
-- [x] urequests
-- [x] uasyncio
+- [x] requests
+- [x] asyncio
 - [x] si7021
 - [x] gc
 - [x] network
@@ -67,7 +67,9 @@ The port `9999` is used to simulate requests to TpLink Kasa devices. This cannot
 - [x] logging
 - [x] ubinascii
 - [x] dht
+- [x] tls
 
-The following are not currently mocked, but may be added in the future if tests for `_boot.py` are added:
-- [ ] uos
+The following are not currently mocked, but may be added in the future if tests for `core/boot.py` are added:
+- [ ] os
+- [ ] inisetup
 - [ ] flashbdev

@@ -1,5 +1,5 @@
 import logging
-import urequests
+import requests
 from HttpGet import HttpGet
 
 # Set name for module's log lines
@@ -19,6 +19,6 @@ class TasmotaRelay(HttpGet):
 
     def check_state(self):
         try:
-            return urequests.get('http://' + str(self.uri) + '/cm?cmnd=Power').json()["POWER"]
+            return requests.get('http://' + str(self.uri) + '/cm?cmnd=Power').json()["POWER"]
         except OSError:
             return "Network Error"

@@ -1,7 +1,7 @@
+import asyncio
 import logging
 from machine import Pin
 from ir_tx import Player
-import uasyncio as asyncio
 from util import read_config_from_disk, write_config_to_disk, print_with_timestamp
 
 # Set name for module's log lines

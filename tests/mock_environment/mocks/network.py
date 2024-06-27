@@ -1,7 +1,5 @@
 from threading import Timer
 
-AP_IF = 1
-STA_IF = 0
 STAT_ASSOC_FAIL = 203
 STAT_BEACON_TIMEOUT = 200
 STAT_CONNECTING = 1001
@@ -18,28 +16,49 @@ class WLAN:
     _instance_sta = None
     _instance_ap = None
 
-    def __new__(cls, interface=STA_IF, *args, **kwargs):
+    # Interface constants
+    IF_AP = 1
+    IF_STA = 0
+
+    # Security constants
+    SEC_OPEN = 0
+    SEC_WEP = 1
+    SEC_WPA = 2
+    SEC_WPA2 = 3
+    SEC_WPA_WPA2 = 4
+    SEC_WPA2_ENT = 5
+    SEC_WPA3 = 6
+    SEC_WPA2_WPA3 = 7
+    SEC_WAPI = 8
+    SEC_OWE = 9
+
+    # Power management constants
+    PM_NONE = 0
+    PM_PERFORMANCE = 1
+    PM_POWERSAVE = 2
+
+    def __new__(cls, interface=IF_STA, *args, **kwargs):
         # Station singleton
-        if interface == STA_IF:
+        if interface == cls.IF_STA:
             if cls._instance_sta is None:
                 cls._instance_sta = super().__new__(cls)
                 cls._instance_sta._active = False
                 cls._instance_sta._status = STAT_IDLE
                 cls._instance_sta.connected = False
-                cls._instance_sta.interface = STA_IF
+                cls._instance_sta.interface = cls.IF_STA
                 cls._instance_sta.reconnects = -1
                 cls._instance_sta.ssid = ''
                 cls._instance_sta._ifconfig = ('0.0.0.0', '0.0.0.0', '0.0.0.0', '0.0.0.0')
             return cls._instance_sta
 
         # Access point singleton
-        elif interface == AP_IF:
+        elif interface == cls.IF_AP:
             if cls._instance_ap is None:
                 cls._instance_ap = super().__new__(cls)
                 cls._instance_ap._active = False
                 cls._instance_ap._status = None
                 cls._instance_ap.connected = False
-                cls._instance_ap.interface = AP_IF
+                cls._instance_ap.interface = cls.IF_AP
                 cls._instance_ap.ssid = 'ESP_80AEE9'
                 cls._instance_ap._ifconfig = ('192.168.4.1', '255.255.255.0', '192.168.4.1', '0.0.0.0')
             return cls._instance_ap
@@ -62,9 +81,9 @@ class WLAN:
     # Connect after 100ms delay
     def connect(self, ssid, password):
         # Only station can connect, must not already be connected
-        if self.interface == STA_IF and self._status != STAT_GOT_IP:
+        if self.interface == self.IF_STA and self._status != STAT_GOT_IP:
             self._status = STAT_CONNECTING
-            if ssid != "wrong":
+            if password != "wrong":
                 Timer(0.1, self.finish_connecting).start()
             else:
                 Timer(0.1, self.fail_connection).start()
@@ -82,12 +101,12 @@ class WLAN:
     # Simulate incorrect ssid, runs 100ms after connect
     def fail_connection(self):
         self.connected = False
-        self._status = STAT_NO_AP_FOUND
+        self._status = STAT_WRONG_PASSWORD
 
     def disconnect(self):
         self.connected = False
 
-        if self.interface == STA_IF:
+        if self.interface == self.IF_STA:
             self._ifconfig = ('0.0.0.0', '0.0.0.0', '0.0.0.0', '0.0.0.0')
             self._status = 8
 
@@ -103,13 +122,13 @@ class WLAN:
                 raise ValueError("unknown config param")
 
         elif reconnects is not None:
-            if self.interface == STA_IF:
+            if self.interface == self.IF_STA:
                 self.reconnects = reconnects
             else:
                 raise OSError("STA required")
 
         elif ssid is not None:
-            if self.interface == STA_IF:
+            if self.interface == self.IF_STA:
                 raise OSError("AP required")
             else:
                 self.ssid = ssid

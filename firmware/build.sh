@@ -1,37 +1,43 @@
 #!/bin/bash
 
-# Known-working commit, new commits sometimes break build
-micropython_commit="ed7a3b11d9a6c21a964d55ebfcdefeb392389d10"
+# See readme for current compatible idf version:
+# https://github.com/micropython/micropython/blob/master/ports/esp32/README.md
+MICROPYTHON_TAG="v1.23.0"
+ESP_IDF_TAG="v5.0.4"
+
+# Get path to directory containing script (firmware dir)
+FIRMWARE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+# Get sub paths
+MANIFEST="$FIRMWARE_DIR/manifest.py"
+ESP_IDF_DIR="$FIRMWARE_DIR/esp-idf"
+MICROPYTHON_DIR="$FIRMWARE_DIR/micropython"
+ESP32_PORT_DIR="$FIRMWARE_DIR/micropython/ports/esp32"
 
 
 # Clone esp-idf devkit, check out branch compatible with micropython, install
 clone_esp_idf() {
-    git clone https://github.com/espressif/esp-idf.git
-    cd esp-idf
-    git checkout v4.4
-    git submodule update --init --recursive
+    git clone -b $ESP_IDF_TAG --recursive https://github.com/espressif/esp-idf.git
+    cd "$ESP_IDF_DIR" || { printf "FATAL: Failed to clone esp-idf\n"; exit 1; }
     ./install.sh
-    cd ..
+    cd "$FIRMWARE_DIR" || { printf "FATAL: Failed to return to firmware dir\n"; exit 1; }
 }
 
 
 # Source esp-idf env vars required for micropython build
 source_esp_idf() {
-    cd esp-idf
-    source export.sh
-    cd ..
+    source "$ESP_IDF_DIR/export.sh" || { printf "FATAL: Failed to source esp-idf\n"; exit 1; }
 }
 
 
 # Clone micropython repo, compile build tools
 clone_micropython() {
-    git clone --recurse-submodules https://github.com/micropython/micropython.git
-    cd micropython
-    git checkout $micropython_commit
+    git clone --depth 1 -b $MICROPYTHON_TAG https://github.com/micropython/micropython.git
+    cd "$MICROPYTHON_DIR" || { printf "FATAL: Failed to clone micropython\n"; exit 1; }
     make -C mpy-cross
-    cd ports/esp32
+    cd "$ESP32_PORT_DIR" || { printf "FATAL: Unable to find micropython esp32 port\n"; exit 1; }
     make submodules
-    cd ../../..
+    cd "$FIRMWARE_DIR" || { printf "FATAL: Failed to return to firmware dir\n"; exit 1; }
 }
 
 
@@ -70,47 +76,65 @@ package_setup_page() {
 }
 
 
+# Generate self-signed SSL certificates used to serve the setup page over HTTPS
+generate_ssl_certs() {
+    openssl ecparam -name prime256v1 -genkey -noout -out key.der -outform DER
+    openssl req -new -x509 -key key.der -out cert.der -outform DER -days 365 -nodes \
+        -subj "/CN=micropython-smarthome/O=https:\/\/gitlab.com\/jamedeus\/micropython-smarthome"
+
+    # Parse key and cert as hexadecimal, write to python vars
+    key_hex=$(xxd -p key.der | tr -d '\n' | sed 's/\(..\)/\\x\1/g')
+    cert_hex=$(xxd -p cert.der | tr -d '\n' | sed 's/\(..\)/\\x\1/g')
+    echo "KEY = b\"${key_hex}\"" >> setup_ssl_certs.py
+    echo "CERT = b\"${cert_hex}\"" >> setup_ssl_certs.py
+
+    rm key.der cert.der
+}
+
+
 # Compile micropython firmware
 # Updates existing build if present
 build() {
-    manifest="`pwd`/manifest.py"
-    cd micropython/ports/esp32
-    make BOARD=GENERIC FROZEN_MANIFEST=$manifest
-    cp build-GENERIC/firmware.bin ../../..
-    cd ../../..
+    cd "$ESP32_PORT_DIR" || { printf "FATAL: Unable to find micropython esp32 port\n"; exit 1; }
+    make submodules
+    make BOARD=ESP32_GENERIC FROZEN_MANIFEST="$MANIFEST" || exit
+    cp build-ESP32_GENERIC/firmware.bin ../../..
+    cd "$FIRMWARE_DIR" || { printf "FATAL: Failed to return to firmware dir\n"; exit 1; }
 }
 
 
 # Remove existing build (if present), recompile
 # Slower but necessary after deleteing modules (still in existing build)
 fresh_build() {
-    rm -rf micropython/ports/esp32/build-GENERIC
+    rm -rf "$ESP32_PORT_DIR/build-ESP32_GENERIC"
     build
 }
 
 
-# Get path to firmware dir
-FIRMWARE_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-
 # Must be in firmware dir
-if [[ $(pwd) != $FIRMWARE_DIR ]]; then
+if [[ $(pwd) != "$FIRMWARE_DIR" ]]; then
     START_DIR=$(pwd)
-    cd $FIRMWARE_DIR
+    cd "$FIRMWARE_DIR" || { printf "FATAL: Failed to change to firmware dir\n"; exit 1; }
 fi
 
 # Clone dependencies if they don't exist
-if [[ ! -d $FIRMWARE_DIR/esp-idf ]]; then
+if [[ ! -d $ESP_IDF_DIR ]]; then
     clone_esp_idf
 fi
-if [[ ! -d $FIRMWARE_DIR/micropython ]]; then
+if [[ ! -d $MICROPYTHON_DIR ]]; then
     clone_micropython
 fi
 
-# Set env vars
+# Set ESP IDF env vars
 source_esp_idf
 
 # Build setup page
 package_setup_page
+
+# Generate setup page SSL certs if they don't exist
+if [[ ! -f $FIRMWARE_DIR/setup_ssl_certs.py ]]; then
+    generate_ssl_certs
+fi
 
 # Update existing build unless user passed fresh arg
 if [[ $1 == "f" || $1 == "--f" || $1 == "fresh" ]]; then
@@ -121,5 +145,5 @@ fi
 
 # Return to starting dir
 if [[ $START_DIR ]]; then
-    cd $START_DIR
+    cd "$START_DIR" || exit
 fi

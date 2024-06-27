@@ -16,7 +16,7 @@ with open('config.json', 'r') as file:
     config = json.load(file)
 
 # Connect to network if not connected (get node_ip for expected_attributes)
-wlan = network.WLAN(network.STA_IF)
+wlan = network.WLAN(network.WLAN.IF_STA)
 if not wlan.isconnected():
     wlan.connect(config['wifi']['ssid'], config['wifi']['password'])
     while not wlan.isconnected():
