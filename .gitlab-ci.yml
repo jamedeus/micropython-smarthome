@@ -112,7 +112,6 @@ build_firmware:
       links:
         - name: 'firmware_$CI_COMMIT_TAG.bin'
           url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/download'
-          link_type: 'firmware'
 
 # Deploy most-recent container
 deploy:
