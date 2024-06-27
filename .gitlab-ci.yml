@@ -3,16 +3,15 @@ before_script:
   - printenv
 
 stages:
-  - test_firmware
-  - test_frontend
-  - test_cli
-  - build
+  - test
+  - build_frontend
+  - build_firmware
   - deploy
 
 # Core module unit tests
 # Runs in mocked environment to simulate micropython on esp32
 test_firmware:
-  stage: test_firmware
+  stage: test
   tags:
     - arm64
   script:
@@ -29,7 +28,7 @@ test_firmware:
 
 # Run django unit tests
 test_frontend:
-  stage: test_frontend
+  stage: test
   tags:
     - arm64
   script:
@@ -48,7 +47,7 @@ test_frontend:
 
 # Run CLI tool unit tests
 test_cli:
-  stage: test_cli
+  stage: test
   tags:
     - arm64
   script:
@@ -66,7 +65,7 @@ test_cli:
 
 # Build new container, increment most-recent tag
 build_frontend:
-  stage: build
+  stage: build_frontend
   tags:
     - arm64
   script:
@@ -85,7 +84,7 @@ build_frontend:
         - 'Pipfile'
 
 build_firmware:
-  stage: build
+  stage: build_firmware
   tags:
     - nas
     - shell
