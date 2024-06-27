@@ -6,3 +6,5 @@ firmware/*.bin
 *.coverage*
 .env
 *release.log
+setup_ssl_certs.py
+*.der

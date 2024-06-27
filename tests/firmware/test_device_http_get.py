@@ -6,7 +6,7 @@ from HttpGet import HttpGet, uri_pattern
 
 # Import dependencies for tests that only run in mocked environment
 if sys.implementation.name == 'cpython':
-    import urequests
+    import requests
     from unittest.mock import patch
 
 
@@ -52,18 +52,18 @@ class TestHttpGet(unittest.TestCase):
     @cpython_only
     def test_05_send_method(self):
         # Build mock response object
-        response = urequests.Response()
+        response = requests.Response()
         response.status_code = 200
 
-        # Confirm send method calls urequests.get with correct URI and path
-        with patch.object(urequests, 'get', return_value=response) as mock_request:
+        # Confirm send method calls requests.get with correct URI and path
+        with patch.object(requests, 'get', return_value=response) as mock_request:
             # Turn on, should return True, confirm correct arg passed
             self.assertTrue(self.instance.send(1))
             self.assertTrue(mock_request.called_once)
             self.assertEqual(mock_request.call_args_list[0][0][0], 'http://192.168.1.100/on')
 
         # Repeat with off command, confirm called with correct URI and path
-        with patch.object(urequests, 'get', return_value=response) as mock_request:
+        with patch.object(requests, 'get', return_value=response) as mock_request:
             # Turn off, should return True, confirm correct arg passed
             self.assertTrue(self.instance.send(0))
             self.assertTrue(mock_request.called_once)
@@ -71,7 +71,7 @@ class TestHttpGet(unittest.TestCase):
 
         # Confirm send method returns False when request fails
         response.status_code = 500
-        with patch.object(urequests, 'get', return_value=response) as mock_request:
+        with patch.object(requests, 'get', return_value=response) as mock_request:
             self.assertFalse(self.instance.send(1))
             self.assertTrue(mock_request.called_once)
             self.assertEqual(mock_request.call_args_list[0][0][0], 'http://192.168.1.100/on')

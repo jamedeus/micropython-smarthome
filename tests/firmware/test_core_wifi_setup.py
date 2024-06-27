@@ -1,13 +1,20 @@
 import os
 import sys
 import json
+import asyncio
 import network
-import uasyncio as asyncio
 import unittest
 from setup_page import setup_page
 from cpython_only import cpython_only
 from util import read_config_from_disk, write_config_to_disk
-from wifi_setup import test_connection, create_config_file, handle_client, dns_redirect, serve_setup_page
+from wifi_setup import (
+    test_connection,
+    create_config_file,
+    handle_http_client,
+    handle_https_client,
+    dns_redirect,
+    serve_setup_page
+)
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
@@ -16,7 +23,7 @@ with open('config.json', 'r') as file:
 
 # Import dependencies for tests that only run in mocked environment
 if sys.implementation.name == 'cpython':
-    from unittest.mock import patch, Mock, AsyncMock
+    from unittest.mock import patch, Mock, AsyncMock, call
 
     # Used to simulate DNS request to captive portal
     class DnsRequestClient(asyncio.DatagramProtocol):
@@ -67,9 +74,9 @@ class WifiSetupTests(unittest.TestCase):
         os.remove('config.json')
 
         # Set up network interfaces
-        cls.ap = network.WLAN(network.AP_IF)
+        cls.ap = network.WLAN(network.WLAN.IF_AP)
         cls.ap.active(True)
-        cls.wlan = network.WLAN(network.STA_IF)
+        cls.wlan = network.WLAN(network.WLAN.IF_STA)
         cls.wlan.active(True)
 
         # Make sure not connected
@@ -99,7 +106,12 @@ class WifiSetupTests(unittest.TestCase):
 
     def test_01_test_connection(self):
         # Should return True if connection succeeds
-        self.assertTrue(test_connection(config['wifi']['ssid'], config['wifi']['password']))
+        self.assertTrue(
+            test_connection(
+                config['wifi']['ssid'],
+                config['wifi']['password']
+            )
+        )
 
         # Disconnect (prevent failure on next test)
         self.wlan.disconnect()
@@ -107,7 +119,7 @@ class WifiSetupTests(unittest.TestCase):
             continue
 
         # Should return False if connection fails
-        self.assertFalse(test_connection('wrong', 'invalid'))
+        self.assertFalse(test_connection(config['wifi']['ssid'], 'wrong'))
 
         # Disconnect (prevent failure on next test)
         self.wlan.disconnect()
@@ -136,11 +148,11 @@ class WifiSetupTests(unittest.TestCase):
             continue
 
         # Should return False if wifi ssid/pass is incorrect
-        payload['ssid'] = 'wrong'
+        payload['password'] = 'wrong'
         self.assertFalse(create_config_file(payload))
 
         # Should return False if key missing from payload
-        del payload['ssid']
+        del payload['password']
         self.assertFalse(create_config_file(payload))
 
     def test_03_dns_redirect(self):
@@ -157,7 +169,7 @@ class WifiSetupTests(unittest.TestCase):
     @cpython_only
     def test_04_serve_setup_page(self):
         # Mock all methods so function returns immediately
-        with patch('wifi_setup.handle_client'), \
+        with patch('wifi_setup.handle_https_client'), \
              patch('wifi_setup.run_captive_portal'), \
              patch('wifi_setup.asyncio.start_server'), \
              patch('wifi_setup.asyncio.get_event_loop', return_value=AsyncMock()) as mock_loop, \
@@ -171,10 +183,55 @@ class WifiSetupTests(unittest.TestCase):
         self.assertTrue(self.wlan.active())
         self.assertEqual(self.wlan.config('reconnects'), 0)
         self.assertEqual(self.ap.config('ssid'), 'Smarthome_Setup_AEE9')
-        self.assertEqual(self.ap.ifconfig(), ('192.168.4.1', '255.255.255.0', '192.168.4.1', '192.168.4.1'))
+        self.assertEqual(
+            self.ap.ifconfig(),
+            ('192.168.4.1', '255.255.255.0', '192.168.4.1', '192.168.4.1')
+        )
 
     @cpython_only
-    def test_05_handle_client_get(self):
+    def test_05_handle_http_client_get(self):
+        # Create mock stream handlers simulating GET request
+        mock_reader = AsyncMock()
+        mock_writer = AsyncMock()
+        request = b'GET / HTTP/1.1\r\n\r\n'
+        mock_reader.read = asyncio.coroutine(Mock(return_value=request))
+
+        # Simulate connection, confirm responds with redirect page
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(handle_http_client(mock_reader, mock_writer))
+        self.assertEqual(
+            mock_writer.write.call_args_list,
+            [
+                call(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n'),
+                call(b'<html><head><meta http-equiv="refresh" content="0; url=https://192.168.4.1:443/"></head>'),
+                call(b'<body><script>window.location="https://192.168.4.1:443/";</script>'),
+                call(b'<a href="https://192.168.4.1:443/">Click here if you are not redirected</a></body></html>\r\n')
+            ]
+        )
+
+    @cpython_only
+    def test_06_handle_http_client_post(self):
+        # Create mock stream handlers simulating POST request
+        mock_reader = AsyncMock()
+        mock_writer = AsyncMock()
+        request = b'POST / HTTP/1.1\r\n\r\n{"data": "value"}'
+        mock_reader.read = asyncio.coroutine(Mock(return_value=request))
+
+        # Simulate connection, confirm responds with redirect page
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(handle_http_client(mock_reader, mock_writer))
+        self.assertEqual(
+            mock_writer.write.call_args_list,
+            [
+                call(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n'),
+                call(b'<html><head><meta http-equiv="refresh" content="0; url=https://192.168.4.1:443/"></head>'),
+                call(b'<body><script>window.location="https://192.168.4.1:443/";</script>'),
+                call(b'<a href="https://192.168.4.1:443/">Click here if you are not redirected</a></body></html>\r\n')
+            ]
+        )
+
+    @cpython_only
+    def test_07_handle_https_client_get_https(self):
         # Create mock stream handlers simulating GET request
         mock_reader = AsyncMock()
         mock_writer = AsyncMock()
@@ -183,11 +240,18 @@ class WifiSetupTests(unittest.TestCase):
 
         # Simulate connection, confirm correct response (serve setup page)
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(handle_client(mock_reader, mock_writer))
-        mock_writer.awrite.assert_called_once_with(f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n{setup_page}")
+        loop.run_until_complete(handle_https_client(mock_reader, mock_writer))
+        self.assertEqual(
+            mock_writer.write.call_args_list,
+            [
+                call(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'),
+                call(b'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload\r\n\r\n'),
+                call(setup_page)
+            ]
+        )
 
     @cpython_only
-    def test_06_handle_client_post(self):
+    def test_08_handle_https_client_post(self):
         # Create mock stream handlers simulating POST request with invalid JSON
         mock_reader = AsyncMock()
         mock_writer = AsyncMock()
@@ -197,21 +261,40 @@ class WifiSetupTests(unittest.TestCase):
         # Simulate connection, confirm correct error
         with patch('wifi_setup.create_config_file', return_value=False):
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(handle_client(mock_reader, mock_writer))
-            mock_writer.awrite.assert_called_once_with('HTTP/1.1 400 Bad Request\r\n\r\n')
+            loop.run_until_complete(handle_https_client(mock_reader, mock_writer))
+            mock_writer.write.assert_called_once_with(
+                'HTTP/1.1 400 Bad Request\r\n\r\n'
+            )
 
         mock_writer.reset_mock()
 
         # Simulate connection with valid JSON payload, confirm correct response
         with patch('wifi_setup.create_config_file', return_value=True):
             loop = asyncio.get_event_loop()
-            loop.run_until_complete(handle_client(mock_reader, mock_writer))
-            mock_writer.awrite.assert_called_once_with(
-                'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{"ip": "0.0.0.0"}'
+            loop.run_until_complete(handle_https_client(mock_reader, mock_writer))
+            self.assertEqual(
+                mock_writer.write.call_args_list,
+                [
+                    call(b'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n'),
+                    call('{"ip": "0.0.0.0"}')
+                ]
             )
 
     @cpython_only
-    def test_07_captive_portal(self):
+    def test_09_handle_https_client_error(self):
+        # Create mock stream handlers simulating client closing connection early
+        mock_reader = AsyncMock()
+        mock_writer = AsyncMock()
+        mock_reader.read = asyncio.coroutine(Mock(side_effect=OSError))
+
+        # Simulate connection, confirm no response sent after connection closed
+        with patch('wifi_setup.create_config_file', return_value=False):
+            loop = asyncio.get_event_loop()
+            loop.run_until_complete(handle_https_client(mock_reader, mock_writer))
+            mock_writer.write.assert_not_called()
+
+    @cpython_only
+    def test_10_captive_portal(self):
         # Simulate DNS query to run_captive_portal task in test script
         response = asyncio.run(send_dns_query())
 

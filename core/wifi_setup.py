@@ -1,10 +1,12 @@
 import gc
+import tls
 import json
 import socket
+import asyncio
 import network
-import ubinascii
-import uasyncio as asyncio
+import binascii
 from machine import Timer
+import setup_ssl_certs
 from util import reboot
 from setup_page import setup_page
 
@@ -12,21 +14,28 @@ reboot_timer = Timer(1)
 
 # Access point interface broadcasts setup network, serves captive portal
 # Wlan interface verifies ssid + password received from setup (attempt connection)
-ap = network.WLAN(network.AP_IF)
-wlan = network.WLAN(network.STA_IF)
+ap = network.WLAN(network.WLAN.IF_AP)
+wlan = network.WLAN(network.WLAN.IF_STA)
+
+# Create SSL context using cert and key frozen into firmware
+ssl_context = tls.SSLContext(tls.PROTOCOL_TLS_SERVER)
+ssl_context.load_cert_chain(setup_ssl_certs.CERT, setup_ssl_certs.KEY)
 
 
 def test_connection(ssid, password):
     wlan.connect(ssid, password)
 
-    while wlan.status() == network.STAT_CONNECTING:
+    # Wait until connection succeeds or fails
+    while wlan.status() in (network.STAT_CONNECTING, network.STAT_IDLE):
         pass
 
+    # Return True if connection succeeded
     if wlan.status() == network.STAT_GOT_IP:
         return True
-    else:
-        wlan.disconnect()
-        return False
+
+    # Clean up unsuccessful connection and return False
+    wlan.disconnect()
+    return False
 
 
 def create_config_file(data):
@@ -64,41 +73,67 @@ def create_config_file(data):
         return False
 
 
-async def handle_client(reader, writer):
+# Redirect all HTTP requests to port 443
+async def handle_http_client(reader, writer):
     request = await reader.read(1024)
-    print('Received request:', request)
+    print('Received HTTP request:', request)
 
-    # Parse request method from headers
-    method = request.split(b' ', 1)[0]
-
-    # POST: Create config file from data, reboot if successful
-    if method == b'POST':
-        # Parse form data from end of request
-        data = request.split(b'\r\n\r\n')[1]
-        data = json.loads(data)
-        print('Form data:', data)
-
-        # Create config from form data, reboot after 1 second if successful
-        if create_config_file(data):
-            print("Config file created, rebooting...")
-            reboot_timer.init(period=5000, mode=Timer.ONE_SHOT, callback=reboot)
-
-            # Post node IP to frontend, displayed in success animation
-            response = json.dumps({"ip": wlan.ifconfig()[0]})
-            await writer.awrite(f'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{response}')
-
-        # Return 400 if unable to generate
-        else:
-            print("ERROR: Failed to create config file")
-            await writer.awrite('HTTP/1.1 400 Bad Request\r\n\r\n')
-
-    # GET: Serve setup page
-    else:
-        # Build script creates setup_page.py (single variable containing contents of setup.html)
-        response = f"HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n{setup_page}"
-        await writer.awrite(response)
-
+    # Serve page with meta refresh tag to redirect to HTTPS
+    print("Serving redirect page")
+    writer.write(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n')
+    writer.write(b'<html><head><meta http-equiv="refresh" content="0; url=https://192.168.4.1:443/"></head>')
+    writer.write(b'<body><script>window.location="https://192.168.4.1:443/";</script>')
+    writer.write(b'<a href="https://192.168.4.1:443/">Click here if you are not redirected</a></body></html>\r\n')
+    await writer.drain()
     await writer.aclose()
+
+
+async def handle_https_client(reader, writer):
+    try:
+        request = await reader.read(1024)
+        print('Received HTTPS request:', request)
+
+        # Parse request method from headers
+        method = request.split(b' ', 1)[0]
+
+        # POST: Create config file from data, reboot if successful
+        if method == b'POST':
+            # Parse form data from end of request
+            data = request.split(b'\r\n\r\n')[1]
+            data = json.loads(data)
+            print('Form data:', data)
+
+            # Create config from form data, reboot after 15 seconds if successful
+            if create_config_file(data):
+                # Post node IP to frontend (displayed in success animation)
+                response = json.dumps({"ip": wlan.ifconfig()[0]})
+                writer.write(b'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n')
+                writer.write(response)
+                await writer.drain()
+
+                print("Config file created, rebooting...")
+                reboot_timer.init(period=15000, mode=Timer.ONE_SHOT, callback=reboot)
+
+            # Return 400 if unable to generate
+            else:
+                print("ERROR: Failed to create config file")
+                writer.write('HTTP/1.1 400 Bad Request\r\n\r\n')
+                await writer.drain()
+
+        # GET: Serve setup page (setup script creates setup_page.py with single
+        # variable containing contents of setup.html + compiled CSS)
+        else:
+            print("Serving setup page")
+            writer.write(b'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n')
+            writer.write(b'Strict-Transport-Security: max-age=31536000; includeSubDomains; preload\r\n\r\n')
+            writer.write(setup_page)
+            await writer.drain()
+
+        await writer.aclose()
+
+    # Silence errors from client disconnecting early
+    except OSError:
+        pass
 
 
 # Respond to all DNS queries with setup page IP
@@ -115,6 +150,7 @@ async def run_captive_portal(port=53):
             data, addr = udps.recvfrom(4096)
             response = dns_redirect(data, '192.168.4.1')
             udps.sendto(response, addr)
+            print("Sending captive portal redirect")
             await asyncio.sleep_ms(100)
 
         # Raises "[Errno 11] EAGAIN" if timed out with no connection
@@ -140,7 +176,7 @@ def dns_redirect(query, ip):
 
 def serve_setup_page():
     # Append last byte of access point mac address to SSID
-    mac_address = ubinascii.hexlify(ap.config('mac')).decode()
+    mac_address = binascii.hexlify(ap.config('mac')).decode()
     ap.config(ssid=f'Smarthome_Setup_{mac_address.upper()[-4:]}')
 
     # Set IP, subnet, gateway, DNS
@@ -155,8 +191,10 @@ def serve_setup_page():
 
     loop = asyncio.get_event_loop()
 
-    # Listen for TCP connections on port 80, serve setup page
+    # Listen for TCP connections on port 80, redirect to port 443
+    loop.create_task(asyncio.start_server(handle_http_client, '0.0.0.0', 80))
+    # Serve setup page on port 443 with SSL
+    loop.create_task(asyncio.start_server(handle_https_client, "0.0.0.0", 443, 5, ssl=ssl_context))
     # Listen for DNS queries on port 53, redirect to setup page
-    loop.create_task(asyncio.start_server(handle_client, "0.0.0.0", 80, 5))
     loop.create_task(run_captive_portal())
     loop.run_forever()

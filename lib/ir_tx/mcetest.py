@@ -13,7 +13,7 @@ else:
     from pyb import Pin, LED
 
 from micropython import const
-import uasyncio as asyncio
+import asyncio
 from aswitch import Switch, Delay_ms
 from ir_tx.mce import MCE
 

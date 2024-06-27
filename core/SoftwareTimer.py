@@ -1,6 +1,6 @@
 import time
+import asyncio
 from machine import Timer
-import uasyncio as asyncio
 
 
 class SoftwareTimer():

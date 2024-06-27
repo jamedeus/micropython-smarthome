@@ -1,6 +1,6 @@
+import asyncio
 import logging
 from math import isnan
-import uasyncio as asyncio
 import SoftwareTimer
 from Sensor import Sensor
 

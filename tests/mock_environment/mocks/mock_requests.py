@@ -1,4 +1,4 @@
-from requests import *
+from requests import Response, JSONDecodeError
 from requests.sessions import Session
 
 # Save reference to original request method
@@ -25,7 +25,3 @@ def mock_request(self, *args, **kwargs):
     response = MockResponse()
     response.__dict__ = vanilla_response.__dict__.copy()
     return response
-
-
-Response = MockResponse
-Session.request = mock_request

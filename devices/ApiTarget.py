@@ -32,7 +32,7 @@ class ApiTarget(Device):
     # Returns node_ip attribute (sets attribute on first call)
     def get_node_ip(self):
         if self.node_ip is None:
-            wlan = network.WLAN(network.STA_IF)
+            wlan = network.WLAN(network.WLAN.IF_STA)
             if wlan.isconnected():
                 self.node_ip = wlan.ifconfig()[0]
         return self.node_ip

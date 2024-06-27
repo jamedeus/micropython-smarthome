@@ -1,6 +1,6 @@
 import re
 import logging
-import urequests
+import requests
 from Device import Device
 
 # Set name for module's log lines
@@ -54,7 +54,7 @@ class HttpGet(Device):
 
     # Takes URL, makes request, returns response object
     def request(self, url):
-        return urequests.get(url)
+        return requests.get(url)
 
     # Takes bool, turns on if True, turns off if False
     # Returns True if HTTP response is 200, otherwise returns False

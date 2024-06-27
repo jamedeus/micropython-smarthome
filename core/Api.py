@@ -1,10 +1,10 @@
 import re
 import gc
 import json
+import asyncio
 import logging
 from math import isnan
-import uasyncio as asyncio
-from uasyncio import Lock
+from asyncio import Lock
 from functools import wraps
 import SoftwareTimer
 from util import (

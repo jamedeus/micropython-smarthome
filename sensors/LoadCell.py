@@ -1,7 +1,7 @@
+import asyncio
 import logging
 from math import isnan
 from machine import Pin
-import uasyncio as asyncio
 from hx711 import HX711
 from Sensor import Sensor
 
