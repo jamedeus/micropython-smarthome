@@ -19,7 +19,7 @@ While the app can be run as a local development server, docker is strongly recom
 
 Build the docker image:
 ```
-sudo docker build -t micropython-smarthome:1.0 . -f frontend/docker/Dockerfile
+docker build -t micropython-smarthome:1.0 . -f frontend/docker/Dockerfile
 ```
 
 Copy the [docker-compose.yaml example](frontend/docker/docker-compose.yaml) and make changes as needed.

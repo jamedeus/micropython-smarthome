@@ -19,3 +19,25 @@ See [CLI readme](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master
 ## Unit testing
 
 See [test readme](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master/tests).
+
+## Development
+
+Requirements:
+* pipenv
+* npm
+* docker
+
+Install dependencies for the frontend, firmware, and CLI tools:
+```
+pipenv install --dev
+cd frontend
+npm install
+cd ..
+cd firmware
+npm install
+```
+
+Install git hooks (see comments at the top of each file):
+```
+cp hooks/pre-commit hooks/post-commit .git/hooks/
+```

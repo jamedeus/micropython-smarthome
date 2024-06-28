@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-# Build: sudo docker build -t smarthome_mock_receiver:0.1 . -f Dockerfile
+# Build: docker build -t smarthome_mock_receiver:0.1 . -f Dockerfile
 
 FROM python:3.10-slim-buster
 ENV PYTHONDONTWRITEBYTECODE=1
