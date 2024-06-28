@@ -32,7 +32,7 @@ Then simply run [runtests.py](tests/mock_environment/runtests.py) from the proje
 ```
 cd ../../
 coverage run --source='core,devices,sensors' tests/mock_environment/runtests.py
-coverage report -m --precision=1
+coverage report
 ```
 
 ## Ports

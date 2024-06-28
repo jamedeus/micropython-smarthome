@@ -19,7 +19,7 @@ test_firmware:
     - pip3 install pipenv
     - pipenv install
     - pipenv run coverage run --source='core,devices,sensors' tests/mock_environment/runtests.py
-    - pipenv run coverage report -m --precision=1
+    - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   rules:
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
@@ -38,8 +38,8 @@ test_frontend:
     - pipenv install
     - cd frontend/
     - export CLI_SYNC=True
-    - pipenv run coverage run --source='.' --omit='*manage.py,*wsgi.py,*asgi.py,*/tests.py,*unit_test_helpers.py,*/migrations/*.py' manage.py test
-    - pipenv run coverage report -m --precision=1
+    - pipenv run coverage run --source='.' manage.py test
+    - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   rules:
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
@@ -57,8 +57,8 @@ test_cli:
     - pip3 install pipenv
     - pipenv install
     - export PYTHONPATH=$PYTHONPATH:`pwd`/CLI
-    - pipenv run coverage run --omit='tests/*' -m unittest discover tests/cli
-    - pipenv run coverage report -m --precision=1
+    - pipenv run coverage run -m unittest discover tests/cli
+    - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   rules:
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
