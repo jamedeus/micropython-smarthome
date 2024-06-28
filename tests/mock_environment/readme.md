@@ -13,7 +13,7 @@ A [mock API receiver script](mock_command_receiver/mock_command_receiver.py) is 
 Build the mock API receiver docker image and start it:
 ```
 cd tests/mock_environment/mock_command_receiver/
-sudo docker build -t smarthome_mock_receiver:0.1 . -f Dockerfile
+docker build -t smarthome_mock_receiver:0.1 . -f Dockerfile
 docker compose up -d
 cd ..
 ```
