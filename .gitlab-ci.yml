@@ -33,11 +33,8 @@ test_frontend:
   tags:
     - nas
     - docker
-  before_script:
-    - pip3 install pipenv
-    - useradd -m -s /bin/bash unittest
-    - su unittest
   script:
+    - pip3 install pipenv
     - pipenv install
     - cd frontend/
     - export CLI_SYNC=True
