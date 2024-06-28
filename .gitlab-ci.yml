@@ -17,7 +17,7 @@ test_firmware:
     - docker
   script:
     - pip3 install pipenv
-    - pipenv install
+    - pipenv install --dev
     - pipenv run coverage run --source='core,devices,sensors' tests/mock_environment/runtests.py
     - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
@@ -35,7 +35,7 @@ test_frontend:
     - docker
   script:
     - pip3 install pipenv
-    - pipenv install
+    - pipenv install --dev
     - cd frontend/
     - pipenv run coverage run --source='.' manage.py test
     - pipenv run coverage report
@@ -54,7 +54,7 @@ test_cli:
     - docker
   script:
     - pip3 install pipenv
-    - pipenv install
+    - pipenv install --dev
     - export PYTHONPATH=$PYTHONPATH:`pwd`/CLI
     - pipenv run coverage run -m unittest discover tests/cli
     - pipenv run coverage report
