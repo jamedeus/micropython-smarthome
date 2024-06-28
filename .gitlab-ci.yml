@@ -1,5 +1,4 @@
 before_script:
-  - docker info
   - printenv
 
 stages:
@@ -12,12 +11,12 @@ stages:
 # Runs in mocked environment to simulate micropython on esp32
 test_firmware:
   stage: test
+  image: python:3.10-bullseye
   tags:
     - nas
-    - shell
+    - docker
   script:
     - pip3 install pipenv
-    - export PATH=$PATH:/home/gitlab-runner/.local/bin
     - pipenv install
     - pipenv run coverage run --source='core,devices,sensors' tests/mock_environment/runtests.py
     - pipenv run coverage report -m --precision=1
@@ -30,15 +29,15 @@ test_firmware:
 # Run django unit tests
 test_frontend:
   stage: test
+  image: python:3.10-bullseye
   tags:
     - nas
-    - shell
+    - docker
   script:
     - pip3 install pipenv
-    - export PATH=$PATH:/home/gitlab-runner/.local/bin
-    - export CLI_SYNC=True
     - pipenv install
     - cd frontend/
+    - export CLI_SYNC=True
     - pipenv run coverage run --source='.' --omit='*manage.py,*wsgi.py,*asgi.py,*/tests.py,*unit_test_helpers.py,*/migrations/*.py' manage.py test
     - pipenv run coverage report -m --precision=1
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
@@ -50,12 +49,12 @@ test_frontend:
 # Run CLI tool unit tests
 test_cli:
   stage: test
+  image: python:3.10-bullseye
   tags:
     - nas
-    - shell
+    - docker
   script:
     - pip3 install pipenv
-    - export PATH=$PATH:/home/gitlab-runner/.local/bin
     - pipenv install
     - export PYTHONPATH=$PYTHONPATH:`pwd`/CLI
     - pipenv run coverage run --omit='tests/*' -m unittest discover tests/cli
@@ -103,6 +102,8 @@ build_frontend:
   tags:
     - nas
     - shell
+  before_script:
+    - docker info
   script:
     - 'IMAGE_NAME="micropython-smarthome"'
     - 'LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
@@ -122,6 +123,8 @@ deploy:
   tags:
     - nas
     - shell
+  before_script:
+    - docker info
   script:
     - 'IMAGE_NAME="micropython-smarthome"'
     - 'LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
