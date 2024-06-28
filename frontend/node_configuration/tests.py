@@ -41,6 +41,18 @@ from .unit_test_helpers import (
 # Ensure CLI_SYNC is True (writes test configs to disk when created)
 settings.CLI_SYNC = True
 
+# Create CONFIG_DIR if it does not exist
+if not os.path.exists(settings.CONFIG_DIR):
+    os.mkdir(settings.CONFIG_DIR, mode=0o775)
+    with open(os.path.join(settings.CONFIG_DIR, 'readme'), 'w') as file:
+        file.write('This directory was automatically created for frontend unit tests.\n')
+        file.write('You can safely delete it, it will be recreated each time tests run.')
+
+# Create cli_config.json if it does not exist
+if not os.path.exists(os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')):
+    from helper_functions import write_cli_config
+    write_cli_config(get_cli_config())
+
 
 # Test the Node model
 class NodeTests(TestCaseBackupRestore):

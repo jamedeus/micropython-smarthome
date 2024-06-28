@@ -37,7 +37,6 @@ test_frontend:
     - pip3 install pipenv
     - pipenv install
     - cd frontend/
-    - export CLI_SYNC=True
     - pipenv run coverage run --source='.' manage.py test
     - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'

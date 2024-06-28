@@ -72,16 +72,9 @@ python3 manage.py import_configs_from_disk
 
 Tests provide full coverage of the django backend. There are currently no tests for templates, these will be added after a future UI overhaul.
 
-Testing requires the `CLI_SYNC` env var and a writable disk - files must be written/deleted to verify all functions. If this is already set in your pipenv simply run:
+To run tests:
 ```
 cd frontend/
 pipenv run coverage run --source='.' manage.py test
-pipenv run coverage report
-```
-
-If you don't want to set `CLI_SYNC` permanently you can prepend it to the testing command:
-```
-cd frontend/
-CLI_SYNC=True pipenv run coverage run --source='.' manage.py test
 pipenv run coverage report
 ```
