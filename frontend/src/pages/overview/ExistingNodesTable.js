@@ -11,11 +11,11 @@ import { ChangeIpModalContext } from 'modals/ChangeIpModal';
 import { useUploader } from 'modals/UploadModal';
 
 
-const ExistingNodeRow = ({ friendly_name, ip, onDelete }) => {
+const ExistingNodeRow = ({ friendly_name, filename, ip, onDelete }) => {
     // Create handler for re-upload menu option
     const { upload } = useUploader();
     const reupload = () => {
-        upload(friendly_name, ip, true);
+        upload(filename, ip, true);
     };
 
     // Create handler for edit menu option
@@ -53,6 +53,7 @@ const ExistingNodeRow = ({ friendly_name, ip, onDelete }) => {
 
 ExistingNodeRow.propTypes = {
     friendly_name: PropTypes.string,
+    filename: PropTypes.string,
     ip: PropTypes.string,
     onDelete: PropTypes.func
 };
@@ -121,6 +122,7 @@ const ExistingNodesTable = () => {
                                 <ExistingNodeRow
                                     key={node.friendly_name}
                                     friendly_name={node.friendly_name}
+                                    filename={node.filename}
                                     ip={node.ip}
                                     onDelete={show_delete_modal}
                                 />
