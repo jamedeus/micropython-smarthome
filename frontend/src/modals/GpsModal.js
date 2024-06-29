@@ -18,8 +18,10 @@ export const GpsModal = () => {
 
     // API returns array of up to 10 possible matches
     async function api_call(search) {
-        let response = await fetch(`https://geocode.maps.co/search?q=${encodeURIComponent(search)}`);
-        let data = await response.json();
+        const response = await fetch(
+            `https://geocode.maps.co/search?q=${encodeURIComponent(search)}`
+        );
+        const data = await response.json();
         return data;
     }
 
@@ -43,18 +45,25 @@ export const GpsModal = () => {
     }
 
     // Called when user clicks result, posts coordinates to backend
-    async function select_location(name, lat, lon) {
-        let data = {name, lat, lon};
-        send_post_request('set_default_location', data);
+    async function select_location(name, lat, lon) {;
+        send_post_request(
+            'set_default_location',
+            {name, lat, lon}
+        );
         setShow(false);
     }
 
     return (
         <>
-            <Dropdown.Item onClick={() => setShow(true)}>Set GPS coordinates</Dropdown.Item>
+            <Dropdown.Item onClick={() => setShow(true)}>
+                Set GPS coordinates
+            </Dropdown.Item>
 
             <Modal show={show} onHide={() => setShow(false)} centered>
-                <HeaderWithCloseButton title="Set Default Location" onClose={() => setShow(false)} />
+                <HeaderWithCloseButton
+                    title="Set Default Location"
+                    onClose={() => setShow(false)}
+                />
 
                 <Modal.Body className="d-flex flex-column mx-auto text-center">
                     <p>Approximate GPS coordinates are used to determine sunrise and sunset times. This is looked up from your IP by default.</p>
@@ -70,11 +79,13 @@ export const GpsModal = () => {
                     <ListGroup className="mt-2">
                         {locationResults.map((suggestion) => {
                             return (
-                                <ListGroupItem action key={suggestion.place_id} onClick={() => select_location(
-                                    suggestion.display_name,
-                                    suggestion.lat,
-                                    suggestion.lon
-                                )}>
+                                <ListGroupItem action key={suggestion.place_id}
+                                    onClick={() => select_location(
+                                        suggestion.display_name,
+                                        suggestion.lat,
+                                        suggestion.lon
+                                    )
+                                }>
                                     {suggestion.display_name}
                                 </ListGroupItem>
                             );

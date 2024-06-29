@@ -20,7 +20,10 @@ export const WifiModal = () => {
 
     // Submit handler, post credentials to backend and close modal
     const setWifiCredentials = () => {
-        send_post_request("set_default_credentials", {"ssid": ssid, "password": password});
+        send_post_request(
+            "set_default_credentials",
+            {"ssid": ssid, "password": password}
+        );
         setShow(false);
     };
 
@@ -51,13 +54,20 @@ export const WifiModal = () => {
 
     return (
         <>
-            <Dropdown.Item onClick={() => setShow(true)}>Set WIFI credentials</Dropdown.Item>
+            <Dropdown.Item onClick={() => setShow(true)}>
+                Set WIFI credentials
+            </Dropdown.Item>
 
             <Modal show={show} onHide={() => setShow(false)} centered>
-                <HeaderWithCloseButton title="Set Default Wifi" onClose={() => setShow(false)} />
+                <HeaderWithCloseButton
+                    title="Set Default Wifi"
+                    onClose={() => setShow(false)}
+                />
 
                 <Modal.Body className="d-flex flex-column mx-auto">
-                    <p className="text-center">These credentials will be pre-filled every time a new config is created</p>
+                    <p className="text-center">
+                        These credentials will be pre-filled every time a new config is created
+                    </p>
 
                     <Form.Label><b>Network:</b></Form.Label>
                     <Form.Control
@@ -77,8 +87,19 @@ export const WifiModal = () => {
                     />
                 </Modal.Body>
                 <Modal.Footer className="mx-auto pt-0">
-                    <Button variant="secondary" onClick={() => setShow(false)}>Cancel</Button>
-                    <Button variant="success" onClick={setWifiCredentials} disabled={submitDisabled}>OK</Button>
+                    <Button
+                        variant="secondary"
+                        onClick={() => setShow(false)}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        variant="success"
+                        onClick={setWifiCredentials}
+                        disabled={submitDisabled}
+                    >
+                        OK
+                    </Button>
                 </Modal.Footer>
             </Modal>
         </>

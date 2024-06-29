@@ -19,7 +19,13 @@ export const UploadModalContextProvider = ({ children }) => {
     };
 
     return (
-        <UploadModalContext.Provider value={{ showUpload, setShowUpload, uploadComplete, setUploadComplete, handleClose }}>
+        <UploadModalContext.Provider value={{
+            showUpload,
+            setShowUpload,
+            uploadComplete,
+            setUploadComplete,
+            handleClose
+        }}>
             {children}
         </UploadModalContext.Provider>
     );
@@ -34,24 +40,22 @@ export const UploadModal = () => {
     const { showUpload, uploadComplete, handleClose } = useContext(UploadModalContext);
 
     return (
-        <Modal show={showUpload} onHide={handleClose} backdrop="static" keyboard={false} centered>
-            {(() => {
-                switch (uploadComplete) {
-                    case false:
-                        return <HeaderStaticBackdrop title="Uploading..." />;
-                    case true:
-                        return <HeaderStaticBackdrop title="Upload Complete" />;
-                }
-            })()}
+        <Modal
+            show={showUpload}
+            onHide={handleClose}
+            backdrop="static"
+            keyboard={false}
+            centered
+        >
+            {uploadComplete ?
+                <HeaderStaticBackdrop title="Upload Complete" /> :
+                <HeaderStaticBackdrop title="Uploading..." />
+            }
             <Modal.Body className="d-flex justify-content-center mb-4">
-                {(() => {
-                    switch (uploadComplete) {
-                        case false:
-                            return <LoadingSpinner size="medium" />;
-                        case true:
-                            return <CheckmarkAnimation size="large" color="green" />;
-                    }
-                })()}
+                {uploadComplete ?
+                    <CheckmarkAnimation size="large" color="green" /> :
+                    <LoadingSpinner size="medium" />
+                }
             </Modal.Body>
         </Modal>
     );
@@ -81,7 +85,10 @@ export const useUploader = () => {
         }
 
         // Upload config file to target IP address
-        const response = await send_post_request(endpoint, {config: filename, ip: targetIP});
+        const response = await send_post_request(
+            endpoint,
+            {config: filename, ip: targetIP}
+        );
 
         // If upload successful, show success animation and reload page
         if (response.ok) {

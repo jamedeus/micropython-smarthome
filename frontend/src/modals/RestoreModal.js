@@ -117,38 +117,50 @@ export const RestoreModal = () => {
         }
     };
 
+    // Renders form or loading animation
+    const Contents = () => {
+        switch (stage) {
+            case "prompt":
+                return (
+                    <>
+                        <Form.Label><b>IP Address:</b></Form.Label>
+                        <Form.Control
+                            type="text"
+                            value={ipAddress}
+                            onChange={(e) => setIp(e.target.value)}
+                            onKeyDown={handleEnterKey}
+                        />
+                    </>
+                );
+            case "loading":
+                return <LoadingSpinner size="medium" />;
+            case "complete":
+                return <CheckmarkAnimation size="large" color="green" />;
+        }
+    };
+
     return (
         <>
-            <Dropdown.Item onClick={showRestoreModal}>Restore config</Dropdown.Item>
+            <Dropdown.Item onClick={showRestoreModal}>
+                Restore config
+            </Dropdown.Item>
 
             <Modal show={show} onHide={() => setShow(false)} centered>
-                <HeaderWithCloseButton title="Restore Config" onClose={() => setShow(false)} />
+                <HeaderWithCloseButton
+                    title="Restore Config"
+                    onClose={() => setShow(false)}
+                />
 
                 <Modal.Body className="d-flex flex-column mx-auto text-center">
                     <p>This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
-                    {(() => {
-                        switch (stage) {
-                            case "prompt":
-                                return (
-                                    <>
-                                        <Form.Label><b>IP Address:</b></Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            value={ipAddress}
-                                            onChange={(e) => setIp(e.target.value)}
-                                            onKeyDown={handleEnterKey}
-                                        />
-                                    </>
-                                );
-                            case "loading":
-                                return <LoadingSpinner size="medium" />;
-                            case "complete":
-                                return <CheckmarkAnimation size="large" color="green" />;
-                        }
-                    })()}
+                    <Contents />
                 </Modal.Body>
                 <Modal.Footer className="mx-auto pt-0">
-                    <Button variant="success" disabled={submitDisabled} onClick={restoreConfig} >
+                    <Button
+                        variant="success"
+                        disabled={submitDisabled}
+                        onClick={restoreConfig}
+                    >
                         Restore
                     </Button>
                 </Modal.Footer>

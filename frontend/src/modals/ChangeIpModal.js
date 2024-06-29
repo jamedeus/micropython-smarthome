@@ -20,7 +20,10 @@ export const ChangeIpModalContextProvider = ({ children }) => {
     });
 
     const handleClose = () => {
-        setChangeIpModalContent({ ...changeIpModalContent, ["visible"]: false });
+        setChangeIpModalContent({
+            ...changeIpModalContent,
+            ["visible"]: false }
+        );
     };
 
     // Takes node name, shows modal with IP input
@@ -53,7 +56,10 @@ export const ChangeIpModalContextProvider = ({ children }) => {
 
     // Takes stage (prompt, loading, or complete), triggers re-render
     const setStage = (stage) => {
-        setChangeIpModalContent({ ...changeIpModalContent, ["stage"]: stage });
+        setChangeIpModalContent({
+            ...changeIpModalContent,
+            ["stage"]: stage }
+        );
     };
 
     return (
@@ -175,6 +181,28 @@ export const ChangeIpModal = () => {
         }
     };
 
+    // Renders form or loading animation
+    const Contents = () => {
+        switch (changeIpModalContent.stage) {
+            case "prompt":
+                return (
+                    <>
+                        <Form.Label><b>New IP:</b></Form.Label>
+                        <Form.Control
+                            type="text"
+                            value={ipAddress}
+                            onChange={(e) => setIp(e.target.value)}
+                            onKeyDown={handleEnterKey}
+                        />
+                    </>
+                );
+            case "loading":
+                return <LoadingSpinner size="medium" />;
+            case "complete":
+                return <CheckmarkAnimation size="large" color="green" />;
+        }
+    };
+
     return (
         <Modal show={changeIpModalContent.visible} onHide={handleClose} centered>
             <HeaderWithCloseButton title="Change IP" onClose={handleClose} />
@@ -182,29 +210,10 @@ export const ChangeIpModal = () => {
             <Modal.Body className="d-flex flex-column mx-auto text-center">
                 <p>Upload an existing config file to a new IP</p>
                 <p>This has no effect on the existing node, don&lsquo;t forget to upload another config or unplug it</p>
-                {(() => {
-                    switch (changeIpModalContent.stage) {
-                        case "prompt":
-                            return (
-                                <>
-                                    <Form.Label><b>New IP:</b></Form.Label>
-                                    <Form.Control
-                                        type="text"
-                                        value={ipAddress}
-                                        onChange={(e) => setIp(e.target.value)}
-                                        onKeyDown={handleEnterKey}
-                                    />
-                                </>
-                            );
-                        case "loading":
-                            return <LoadingSpinner size="medium" />;
-                        case "complete":
-                            return <CheckmarkAnimation size="large" color="green" />;
-                    }
-                })()}
+                <Contents />
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-0">
-                <Button variant="success" disabled={submitDisabled} onClick={changeIP} >
+                <Button variant="success" disabled={submitDisabled} onClick={changeIP}>
                     Change
                 </Button>
             </Modal.Footer>
