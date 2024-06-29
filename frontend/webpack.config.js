@@ -53,7 +53,6 @@ const config = {
             root: path.resolve(__dirname, 'src/'),
             util: path.resolve(__dirname, 'src/util/'),
             inputs: path.resolve(__dirname, 'src/inputs/'),
-            layout: path.resolve(__dirname, 'src/layout/'),
             modals: path.resolve(__dirname, 'src/modals/'),
             node_modules: path.resolve(__dirname, 'node_modules/')
         }

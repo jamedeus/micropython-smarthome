@@ -1,5 +1,5 @@
 import React from 'react';
-import PageContainer from 'layout/PageContainer';
+import PageContainer from './PageContainer';
 import { ErrorModalContextProvider } from 'modals/ErrorModal';
 import { UploadModalContextProvider } from 'modals/UploadModal';
 
