@@ -1,6 +1,6 @@
 // Takes name of context element created with json_script django tag
 // Parses JSON contents if it exists and returns, otherwise returns null
-function load_django_context(name) {
+function parse_dom_context(name) {
     const element = document.getElementById(name);
     if (element) {
         return JSON.parse(element.textContent);
@@ -10,13 +10,13 @@ function load_django_context(name) {
 }
 
 // Parse bool that determines whether editing config (re-upload on submit) or creating new
-const edit_existing = load_django_context("edit_existing");
+const edit_existing = parse_dom_context("edit_existing");
 
 // Parse IP of target node if editing existing config
-const target_node_ip = load_django_context("target_node_ip");
+const target_node_ip = parse_dom_context("target_node_ip");
 
 // Parse original friendly name of config being edited (prevent duplicate detection from rejecting)
-const config = load_django_context("config");
+const config = parse_dom_context("config");
 let orig_name;
 if (orig_name) {
     orig_name = config.metadata.id.toLowerCase();
@@ -24,18 +24,18 @@ if (orig_name) {
 
 // Parse ApiTarget options object set by django template
 // Contains valid API commands for each instance (device/sensor) of all existing nodes
-const api_target_options = load_django_context("api_target_options");
+const api_target_options = parse_dom_context("api_target_options");
 
 // Parse schedule keywords object from element created by django template
 // Contains object with keywords as key, timestamps as value (HH:MM)
-const schedule_keywords = load_django_context("schedule_keywords");
+const schedule_keywords = parse_dom_context("schedule_keywords");
 
 // Parse client_ip string from element created by django template
 // Displayed in desktop integration instructions
-const client_ip = load_django_context("client_ip");
+const client_ip = parse_dom_context("client_ip");
 
 // Parse link to desktop_integration_modal installer zip
-const desktop_integration_link = load_django_context("desktop_integration_link");
+const desktop_integration_link = parse_dom_context("desktop_integration_link");
 
 // Takes name of cookie, returns cookie
 function getCookie(name) {
@@ -71,6 +71,7 @@ async function send_post_request(url, body) {
 }
 
 export {
+    parse_dom_context,
     getCookie,
     send_post_request,
     edit_existing,

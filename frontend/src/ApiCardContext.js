@@ -1,6 +1,6 @@
 import React, { useState, createContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { getCookie } from 'util/django_util';
+import { parse_dom_context, getCookie } from 'util/django_util';
 import { debounce } from 'util/helper_functions';
 
 
@@ -9,16 +9,6 @@ export const ApiCardContext = createContext();
 export const ApiCardContextProvider = ({ children }) => {
     // Load context set by django template
     const [status, setStatus] = useState(() => {
-        function parse_dom_context(name) {
-            const element = document.getElementById(name);
-            if (element) {
-                return JSON.parse(element.textContent);
-            } else {
-                return "";
-            }
-        }
-
-        // Parse context element created by django template
         return parse_dom_context("context");
     });
 

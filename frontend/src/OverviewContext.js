@@ -1,6 +1,7 @@
 import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { v4 as uuid } from 'uuid';
+import { parse_dom_context } from 'util/django_util';
 
 
 export const OverviewContext = createContext();
@@ -8,12 +9,6 @@ export const OverviewContext = createContext();
 export const OverviewContextProvider = ({ children }) => {
     // Load context set by django template
     const [context, setContext] = useState(() => {
-        function parse_dom_context(name) {
-            const element = document.getElementById(name);
-            return JSON.parse(element.textContent);
-        }
-
-        // Parse context elements created by django template
         return {
             not_uploaded: parse_dom_context("not_uploaded"),
             uploaded: parse_dom_context("uploaded"),
