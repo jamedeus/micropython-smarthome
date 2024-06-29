@@ -14,7 +14,13 @@ import { useUploader } from 'modals/UploadModal';
 
 const NewConfigRow = ({ config }) => {
     // Get callbacks for error modal
-    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
+    const {
+        errorModalContent,
+        setErrorModalContent,
+        handleClose
+    } = useContext(ErrorModalContext);
+
+    const { deleteNewConfig } = useContext(OverviewContext);
 
     // Create state objects for IP field, submit button
     const [ipAddress, setIpAddress] = useState('');
@@ -41,11 +47,12 @@ const NewConfigRow = ({ config }) => {
     async function delete_config(filename) {
         let result = await send_post_request("delete_config", filename);
 
-        // Refresh page if successfully deleted
+        // Remove filename from state if successfully deleted
         if (result.ok) {
-            location.reload();
+            handleClose();
+            deleteNewConfig(filename);
 
-            // Show error if failed
+        // Show error if failed
         } else {
             const error = await result.text();
 

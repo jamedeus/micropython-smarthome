@@ -42,6 +42,8 @@ export const OverviewContextProvider = ({ children }) => {
         setContext({ ...context, ["schedule_keywords"]: update});
     };
 
+    // BUG: missing filename, reupload option will not work
+    // Requires backend change, fix after merge
     const addNewNode = (friendly_name, ip) => {
         let update = [ ...context.uploaded ];
         update.push({friendly_name: friendly_name, ip: ip});
@@ -65,6 +67,13 @@ export const OverviewContextProvider = ({ children }) => {
         setContext({ ...context, ["uploaded"]: update});
     };
 
+    // Delete a config that has not been uploaded yet
+    const deleteNewConfig = (filename) => {
+        let update = [ ...context.not_uploaded ];
+        update = update.filter(item => item !== filename);
+        setContext({ ...context, ["not_uploaded"]: update });
+    };
+
     return (
         <OverviewContext.Provider value={{
             context,
@@ -74,7 +83,8 @@ export const OverviewContextProvider = ({ children }) => {
             deleteScheduleKeyword,
             addNewNode,
             deleteExistingNode,
-            changeExistingNodeIp
+            changeExistingNodeIp,
+            deleteNewConfig
         }}>
             {children}
         </OverviewContext.Provider>

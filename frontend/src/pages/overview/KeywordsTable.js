@@ -58,7 +58,6 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
             payload
         );
 
-        // Reload if successfully deleted
         // If successful update context (re-renders this row) and reset button
         if (result.ok) {
             editScheduleKeyword(initKeyword, keyword, timestamp);
