@@ -56,12 +56,10 @@ export const ConfigProvider = ({ children }) => {
     const [UUIDs, setUUIDs] = useState(
         {
             devices: Object.fromEntries(
-                filterObjectKeys(config, "device")
-                .map((id) => [id, uuid()])
+                filterObjectKeys(config, "device").map((id) => [id, uuid()])
             ),
             sensors: Object.fromEntries(
-                filterObjectKeys(config, "sensor")
-                .map((id) => [id, uuid()])
+                filterObjectKeys(config, "sensor").map((id) => [id, uuid()])
             )
         }
     );

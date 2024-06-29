@@ -74,7 +74,7 @@ const DeviceCard = ({ id }) => {
                         <Dropdown.Item onClick={() => showFadeModal(id)}>
                             Start Fade
                         </Dropdown.Item>
-                    )
+                    );
                 }
             })()}
             <Dropdown.Item onClick={() => showDebugModal(id)}>
@@ -83,12 +83,14 @@ const DeviceCard = ({ id }) => {
         </>
     );
 
-    return <InstanceCard
-                id={id}
-                params={params}
-                actionButton={ActionButton}
-                dropdownOptions={DropdownOptions}
-            />;
+    return (
+        <InstanceCard
+            id={id}
+            params={params}
+            actionButton={ActionButton}
+            dropdownOptions={DropdownOptions}
+        />
+    );
 };
 
 DeviceCard.propTypes = {

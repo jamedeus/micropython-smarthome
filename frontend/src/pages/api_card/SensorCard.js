@@ -67,12 +67,14 @@ const SensorCard = ({ id }) => {
         </>
     );
 
-    return <InstanceCard
-                id={id}
-                params={params}
-                actionButton={ActionButton}
-                dropdownOptions={DropdownOptions}
-            />;
+    return (
+        <InstanceCard
+            id={id}
+            params={params}
+            actionButton={ActionButton}
+            dropdownOptions={DropdownOptions}
+        />
+    );
 };
 
 SensorCard.propTypes = {

@@ -17,7 +17,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             default:
                 return values[0];
         }
-    }
+    };
 
     // Return slider with values set from args
     return (

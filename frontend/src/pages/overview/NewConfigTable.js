@@ -20,7 +20,7 @@ const NewConfigRow = ({ filename, friendlyName }) => {
         handleClose
     } = useContext(ErrorModalContext);
 
-    const { handleNewConfigUpload } = useContext(OverviewContext);
+    const { handleNewConfigUpload, deleteNewConfig } = useContext(OverviewContext);
 
     // Create state objects for IP field, submit button
     const [ipAddress, setIpAddress] = useState('');
@@ -138,7 +138,7 @@ const NewConfigRow = ({ filename, friendlyName }) => {
 
 NewConfigRow.propTypes = {
     filename: PropTypes.string,
-        friendlyName: PropTypes.string
+    friendlyName: PropTypes.string
 };
 
 

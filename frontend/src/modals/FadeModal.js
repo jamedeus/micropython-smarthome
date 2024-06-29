@@ -73,7 +73,7 @@ export const FadeContextProvider = ({ children }) => {
     // Return true if both fields have value, false if either empty
     const readyToSubmit = () => {
         return fadeModalContent.duration !== '' && fadeModalContent.brightness !== '';
-    }
+    };
 
     // Change IP if enter key pressed in either field
     const handleEnterKey = (e) => {

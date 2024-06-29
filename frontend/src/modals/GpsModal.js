@@ -45,7 +45,7 @@ export const GpsModal = () => {
     }
 
     // Called when user clicks result, posts coordinates to backend
-    async function select_location(name, lat, lon) {;
+    async function select_location(name, lat, lon) {
         send_post_request(
             'set_default_location',
             {name, lat, lon}
@@ -84,8 +84,8 @@ export const GpsModal = () => {
                                         suggestion.display_name,
                                         suggestion.lat,
                                         suggestion.lon
-                                    )
-                                }>
+                                    )}
+                                >
                                     {suggestion.display_name}
                                 </ListGroupItem>
                             );

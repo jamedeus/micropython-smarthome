@@ -12,7 +12,7 @@ const SensorCards = ({instances}) => {
     return (
         <Col sm id="sensors">
             <h2 className="text-center">Add Sensors</h2>
-            {instances.map((id, index) => (
+            {instances.map((id) => (
                 <InstanceCard key={getKey(id, "sensors")} id={id} />
             ))}
             <div id="add_sensor" className="text-center position-relative mb-3">

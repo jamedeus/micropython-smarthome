@@ -49,7 +49,7 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         if (!friendly_name) {
             throw new Error(
                 'getTargetNodeOptions received an IP that does not match an existing node'
-            )
+            );
         }
 
         return api_target_options[friendly_name];
