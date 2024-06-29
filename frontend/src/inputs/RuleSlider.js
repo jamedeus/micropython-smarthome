@@ -7,6 +7,18 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
     // Create array containing current rule, required my slider component
     const values = [rule_value];
 
+    // Returns value displayed on slider handle
+    const getThumbValue = () => {
+        switch(display_type) {
+            case("int"):
+                return parseInt(values[0]);
+            case("float"):
+                return parseFloat(values[0]).toFixed(1);
+            default:
+                return values[0];
+        }
+    }
+
     // Return slider with values set from args
     return (
         <div className="d-flex flex-row align-items-center my-2">
@@ -47,15 +59,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
                     )}
                     renderThumb={({ props }) => (
                         <div {...props} className="sliderHandle">
-                            {(() => {
-                                if (display_type === "int") {
-                                    return parseInt(values[0]);
-                                } else if (display_type === "float") {
-                                    return parseFloat(values[0]).toFixed(1);
-                                } else {
-                                    return values[0];
-                                }
-                            })()}
+                            {getThumbValue()}
                         </div>
                     )}
                 />
@@ -73,7 +77,10 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
 }
 
 RuleSlider.propTypes = {
-    rule_value: PropTypes.string,
+    rule_value: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.string
+    ]),
     slider_min: PropTypes.number,
     slider_max: PropTypes.number,
     slider_step: PropTypes.number,

@@ -45,6 +45,9 @@ export const RuleField = ({ instance, timestamp }) => {
             update.fade_rule = true;
             update.duration = duration;
             update.rule = rule;
+        // Otherwise set 60 second placeholder (default if user toggles fade)
+        } else {
+            update.duration = 60;
         }
 
         // Set modal contents, show
