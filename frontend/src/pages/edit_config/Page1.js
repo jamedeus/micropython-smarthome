@@ -22,10 +22,12 @@ const Page1 = () => {
                 <Row className="mt-3">
                     <SensorCards instances={Object.entries(config)
                         .filter(([id]) => id.startsWith('sensor'))
+                        .sort()
                         .map((id) => id[0])}
                     />
                     <DeviceCards instances={Object.entries(config)
                         .filter(([id]) => id.startsWith('device'))
+                        .sort()
                         .map((id) => id[0])}
                     />
                 </Row>
