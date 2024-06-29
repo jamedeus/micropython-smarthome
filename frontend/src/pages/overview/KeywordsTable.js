@@ -53,10 +53,13 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
 
         // Change delete button to loading animation, make API call
         setButton("loading");
-        const result = await send_post_request("edit_schedule_keyword", payload);
+        const result = await send_post_request(
+            "edit_schedule_keyword",
+            payload
+        );
 
         // Reload if successfully deleted
-        // If successful update context (re-renders this row) and change button back
+        // If successful update context (re-renders this row) and reset button
         if (result.ok) {
             editScheduleKeyword(initKeyword, keyword, timestamp);
             setButton("delete");
@@ -70,7 +73,10 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
     const deleteKeyword = async () => {
         // Change delete button to loading animation, make API call
         setButton("loading");
-        const result = await send_post_request("delete_schedule_keyword", {"keyword": keyword});
+        const result = await send_post_request(
+            "delete_schedule_keyword",
+            {"keyword": keyword}
+        );
 
         // If successful delete from context and re-render (removes this row)
         if (result.ok) {
@@ -87,6 +93,30 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
     const handleEnterKey = (e) => {
         if (e.key === "Enter" && button === "edit") {
             editKeyword();
+        }
+    };
+
+    // Returns save/delete button or loading animation based on button state
+    const SaveButton = () => {
+        switch(button) {
+            case "delete":
+                return (
+                    <Button variant="danger" size="sm" onClick={deleteKeyword}>
+                        <i className="bi-trash"></i>
+                    </Button>
+                );
+            case "edit":
+                return (
+                    <Button variant="primary" size="sm" onClick={editKeyword}>
+                        <i className="bi-arrow-clockwise"></i>
+                    </Button>
+                );
+            case "loading":
+                return (
+                    <Button variant="primary" size="sm" onClick={deleteKeyword}>
+                        <div className="spinner-border spinner-border-sm" role="status"></div>
+                    </Button>
+                );
         }
     };
 
@@ -112,28 +142,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
                 />
             </td>
             <td className="min align-middle">
-                {(() => {
-                    switch(button) {
-                        case "delete":
-                            return (
-                                <Button variant="danger" size="sm" onClick={deleteKeyword}>
-                                    <i className="bi-trash"></i>
-                                </Button>
-                            );
-                        case "edit":
-                            return (
-                                <Button variant="primary" size="sm" onClick={editKeyword}>
-                                    <i className="bi-arrow-clockwise"></i>
-                                </Button>
-                            );
-                        case "loading":
-                            return (
-                                <Button variant="primary" size="sm" onClick={deleteKeyword}>
-                                    <div className="spinner-border spinner-border-sm" role="status"></div>
-                                </Button>
-                            );
-                    }
-                })()}
+                <SaveButton />
             </td>
         </tr>
     );
@@ -211,6 +220,27 @@ const NewKeywordRow = () => {
         }
     };
 
+    const AddButton = () => {
+        return (
+            <Button
+                variant="primary"
+                size="sm"
+                disabled={buttonDisabled}
+                onClick={addKeyword}
+            >
+                <i className="bi-plus"></i>
+            </Button>
+        );
+    };
+
+    const LoadingButton = () => {
+        return (
+            <Button variant="primary" size="sm">
+                <div className="spinner-border spinner-border-sm" role="status"></div>
+            </Button>
+        );
+    };
+
     return (
         <tr id={`${keyword}_row`}>
             <td className="align-middle">
@@ -233,22 +263,7 @@ const NewKeywordRow = () => {
                 />
             </td>
             <td className="min align-middle">
-                {(() => {
-                    switch(buttonLoading) {
-                        case false:
-                            return (
-                                <Button variant="primary" size="sm" disabled={buttonDisabled} onClick={addKeyword}>
-                                    <i className="bi-plus"></i>
-                                </Button>
-                            );
-                        case true:
-                            return (
-                                <Button variant="primary" size="sm">
-                                    <div className="spinner-border spinner-border-sm" role="status"></div>
-                                </Button>
-                            );
-                    }
-                })()}
+                {buttonLoading ? <LoadingButton /> : <AddButton />}
             </td>
         </tr>
     );
@@ -265,10 +280,12 @@ const KeywordsTable = () => {
     // Render table with row for each existing keyword + empty row to add new keywords
     return (
         <Row id="keywords" className="text-center section px-0 pt-2">
-            <h3 className="text-center my-1" onClick={() => setOpen(!open)}>Schedule Keywords</h3>
+            <h3 className="text-center my-1" onClick={() => setOpen(!open)}>
+                Schedule Keywords
+            </h3>
             <Collapse in={open}>
                 <div>
-                    <Table id="nodes_table" className="table-borderless table-sm table-hover mt-3 mx-auto">
+                    <Table className="table-borderless table-sm table-hover mt-3 mx-auto">
                         <thead>
                             <tr>
                                 <th className="w-50">Keyword</th>

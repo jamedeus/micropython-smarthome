@@ -29,18 +29,10 @@ const App = () => {
                 <Header />
 
                 {/* Add new config table if un-uploaded configs exist */}
-                {(() => {
-                    if (context.not_uploaded.length) {
-                        return <NewConfigTable />;
-                    }
-                })()}
+                {context.not_uploaded.length ? <NewConfigTable /> : null}
 
                 {/* Add existing nodes table if existing nodes exist */}
-                {(() => {
-                    if (context.uploaded.length) {
-                        return <ExistingNodesTable />;
-                    }
-                })()}
+                {context.uploaded.length ? <ExistingNodesTable /> : null}
 
                 {/* Button to create new config file */}
                 <div className="mt-2 mb-5 text-center">

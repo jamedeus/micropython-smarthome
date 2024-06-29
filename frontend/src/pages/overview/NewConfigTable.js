@@ -114,7 +114,11 @@ const NewConfigRow = ({ config }) => {
                 </Button>
             </td>
             <td className="min align-middle">
-                <Button variant="danger" size="sm" onClick={() => show_delete_modal(config)}>
+                <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => show_delete_modal(config)}
+                >
                     <i className="bi-trash"></i>
                 </Button>
             </td>
@@ -137,7 +141,9 @@ const NewConfigTable = () => {
     // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (
         <Row id="not_uploaded" className="text-center section pt-2 px-0 mb-5">
-            <h3 className="text-center my-1" onClick={() => setOpen(!open)}>Configs Ready to Upload</h3>
+            <h3 className="text-center my-1" onClick={() => setOpen(!open)}>
+                Configs Ready to Upload
+            </h3>
             <Collapse in={open}>
                 <div>
                     <Table borderless hover size="sm" className="mt-3 mx-auto">

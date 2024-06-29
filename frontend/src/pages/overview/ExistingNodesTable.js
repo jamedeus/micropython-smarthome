@@ -12,15 +12,26 @@ import { useUploader } from 'modals/UploadModal';
 
 
 const ExistingNodeRow = ({ friendly_name, filename, ip, onDelete }) => {
-    // Create handler for re-upload menu option
     const { upload } = useUploader();
+
+    // Handler for Re-upload menu option
     const reupload = () => {
         upload(filename, ip, true);
     };
 
-    // Create handler for edit menu option
+    // Handler for Edit menu option
     const edit = () => {
         window.location.href = `/edit_config/${friendly_name}`;
+    };
+
+    // Handler for Change IP menu option
+    const changeIp = () => {
+        showChangeIpModal(friendly_name);
+    };
+
+    // Handler for Delete menu option
+    const handleDelete = () => {
+        onDelete(friendly_name);
     };
 
     // Get callback for change IP modal
@@ -29,10 +40,14 @@ const ExistingNodeRow = ({ friendly_name, filename, ip, onDelete }) => {
     return (
         <tr id={friendly_name}>
             <td className="align-middle">
-                <span className="form-control keyword text-center">{friendly_name}</span>
+                <span className="form-control keyword text-center">
+                    {friendly_name}
+                </span>
             </td>
             <td className="align-middle">
-                <span className="form-control keyword text-center">{ip}</span>
+                <span className="form-control keyword text-center">
+                    {ip}
+                </span>
             </td>
             <td className="min align-middle">
                 <Dropdown align="end" className="my-auto">
@@ -40,10 +55,18 @@ const ExistingNodeRow = ({ friendly_name, filename, ip, onDelete }) => {
                         <i className="bi-list"></i>
                     </Dropdown.Toggle>
                     <Dropdown.Menu>
-                        <Dropdown.Item onClick={edit}>Edit</Dropdown.Item>
-                        <Dropdown.Item onClick={reupload}>Re-upload</Dropdown.Item>
-                        <Dropdown.Item onClick={() => showChangeIpModal(friendly_name)}>Change IP</Dropdown.Item>
-                        <Dropdown.Item onClick={() => onDelete(friendly_name)}>Delete</Dropdown.Item>
+                        <Dropdown.Item onClick={edit}>
+                            Edit
+                        </Dropdown.Item>
+                        <Dropdown.Item onClick={reupload}>
+                            Re-upload
+                        </Dropdown.Item>
+                        <Dropdown.Item onClick={changeIp}>
+                            Change IP
+                        </Dropdown.Item>
+                        <Dropdown.Item onClick={handleDelete}>
+                            Delete
+                        </Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
             </td>
@@ -106,10 +129,12 @@ const ExistingNodesTable = () => {
     // Render table with row for each existing node
     return (
         <Row id="existing" className="text-center section px-0 pt-2">
-            <h3 className="text-center my-1" onClick={() => setOpen(!open)}>Existing Nodes</h3>
+            <h3 className="text-center my-1" onClick={() => setOpen(!open)}>
+                Existing Nodes
+            </h3>
             <Collapse in={open}>
                 <div>
-                    <Table id="nodes_table" className="table-borderless table-sm table-hover mt-3 mx-auto">
+                    <Table className="table-borderless table-sm table-hover mt-3 mx-auto">
                         <thead>
                             <tr>
                                 <th className="w-50">Name</th>

@@ -44,7 +44,9 @@ const Header = () => {
     // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (
         <div className="d-flex justify-content-between">
-            <Button style={{visibility: "hidden"}}><i className="bi-chevron-left"></i></Button>
+            <Button style={{visibility: "hidden"}}>
+                <i className="bi-chevron-left"></i>
+            </Button>
             <h1 className="my-3">Configure Nodes</h1>
             <Dropdown align="end" className="my-auto">
                 <Dropdown.Toggle variant="light" id="settings-button">
@@ -53,7 +55,9 @@ const Header = () => {
                 <Dropdown.Menu>
                     <WifiModal />
                     <GpsModal />
-                    <Dropdown.Item onClick={reuploadAll}>Re-upload all</Dropdown.Item>
+                    <Dropdown.Item onClick={reuploadAll}>
+                        Re-upload all
+                    </Dropdown.Item>
                     <RestoreModal />
                     <DesktopModal />
                 </Dropdown.Menu>
