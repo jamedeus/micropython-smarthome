@@ -26,10 +26,6 @@ if (orig_name) {
 // Contains valid API commands for each instance (device/sensor) of all existing nodes
 const api_target_options = parse_dom_context("api_target_options");
 
-// Parse schedule keywords object from element created by django template
-// Contains object with keywords as key, timestamps as value (HH:MM)
-const schedule_keywords = parse_dom_context("schedule_keywords");
-
 // Parse client_ip string from element created by django template
 // Displayed in desktop integration instructions
 const client_ip = parse_dom_context("client_ip");
@@ -78,7 +74,6 @@ export {
     orig_name,
     target_node_ip,
     api_target_options,
-    schedule_keywords,
     client_ip,
     desktop_integration_link
 };

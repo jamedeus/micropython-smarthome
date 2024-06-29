@@ -28,7 +28,11 @@ const Page3 = () => {
         return (
             <tr key={uuid()}>
                 <td>
-                    <TimeField instance={instance} timestamp={rule} />
+                    <TimeField
+                        instance={instance}
+                        timestamp={rule}
+                        schedule_keywords={config.metadata.schedule_keywords}
+                    />
                 </td>
                 <td>
                     {(() => {

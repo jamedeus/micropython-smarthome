@@ -4,7 +4,6 @@ import { ConfigContext } from 'root/ConfigContext';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
 import Dropdown from 'inputs/Dropdown.js';
-import { schedule_keywords } from 'util/django_util';
 
 // Used to identify HH:MM timestamp
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
@@ -24,12 +23,7 @@ function format12h(timestamp) {
     return `${hour}:${minute} ${suffix}`;
 }
 
-// Takes timestamp, returns true if matches existing keyword, otherwise False
-function isKeyword(timestamp) {
-    return Object.keys(schedule_keywords).includes(timestamp);
-}
-
-export const TimeField = ({ instance, timestamp }) => {
+export const TimeField = ({ instance, timestamp, schedule_keywords }) => {
     // Get curent state from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
@@ -41,6 +35,11 @@ export const TimeField = ({ instance, timestamp }) => {
         timestamp: '',
         show_keyword: false
     });
+
+    // Takes timestamp, returns true if matches existing keyword, otherwise False
+    function isKeyword(timestamp) {
+        return Object.keys(schedule_keywords).includes(timestamp);
+    }
 
     const handleShow = () => {
         // Replace popupContent with params for selected rule
@@ -128,5 +127,6 @@ export const TimeField = ({ instance, timestamp }) => {
 
 TimeField.propTypes = {
     instance: PropTypes.string,
-    timestamp: PropTypes.string
+    timestamp: PropTypes.string,
+    schedule_keywords: PropTypes.object
 };
