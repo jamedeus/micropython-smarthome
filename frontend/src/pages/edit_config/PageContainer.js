@@ -81,7 +81,7 @@ const PageContainer = () => {
     // Get state and callback for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
-    // Get upload function
+    // Get upload function, create onComplete callback (redirects to overview)
     const { upload } = useUploader();
 
     function prevPage() {
@@ -132,14 +132,14 @@ const PageContainer = () => {
         // If successfully created new config, redirect to overview
         if (!edit_existing && response.ok) {
             // Redirect back to overview where user can upload the newly-created config
-            window.location.replace("/config_overview");
+            returnToOverview();
 
         // If successfully edited existing config, re-upload to target node
         } else if (edit_existing && response.ok) {
             // Convert friendly name into config filename
             const target_filename = `${config.metadata.id.toLowerCase().replace(' ', '-')}.json`;
-            // Show upload modal, upload
-            upload(target_filename, target_node_ip, true);
+            // Show upload modal, upload, redirect to overview when complete
+            upload(target_filename, target_node_ip, true, returnToOverview);
 
         // If config with same name already exists, show modal allowing user to overwrite
         } else if (!edit_existing && response.status == 409) {

@@ -68,8 +68,21 @@ export const OverviewContextProvider = ({ children }) => {
     // Delete a config that has not been uploaded yet
     const deleteNewConfig = (filename) => {
         let update = [ ...context.not_uploaded ];
-        update = update.filter(item => item !== filename);
+        update = update.filter(config => config.filename !== filename);
         setContext({ ...context, ["not_uploaded"]: update });
+    };
+
+    // Adds new config to uploaded, removes from not_uploaded
+    const handleNewConfigUpload = (friendly_name, filename, ip) => {
+        let uploaded = [ ...context.uploaded ];
+        uploaded.push({friendly_name: friendly_name, filename: filename, ip: ip});
+        let not_uploaded = [ ...context.not_uploaded ];
+        not_uploaded = not_uploaded.filter(config => config.filename !== filename);
+        setContext({
+            ...context,
+            ["uploaded"]: uploaded,
+            ["not_uploaded"]: not_uploaded
+        });
     };
 
     return (
@@ -82,7 +95,8 @@ export const OverviewContextProvider = ({ children }) => {
             addNewNode,
             deleteExistingNode,
             changeExistingNodeIp,
-            deleteNewConfig
+            deleteNewConfig,
+            handleNewConfigUpload
         }}>
             {children}
         </OverviewContext.Provider>

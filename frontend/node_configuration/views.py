@@ -190,7 +190,10 @@ def config_overview(request):
     not_uploaded = Config.objects.filter(node=None)
 
     for i in not_uploaded:
-        context["not_uploaded"].append(str(i))
+        context["not_uploaded"].append({
+            'filename': i.filename,
+            'friendly_name': i.config['metadata']['id']
+        })
 
     uploaded = Node.objects.all()
     for i in uploaded:

@@ -11,13 +11,12 @@ import { GpsModal } from 'modals/GpsModal';
 
 const Header = () => {
     // Get callbacks for upload and error modals
-    const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
+    const { handleShow, handleClose, setUploadComplete } = useContext(UploadModalContext);
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
     async function reuploadAll() {
         // Show upload modal with loading spinner
-        setUploadComplete(false);
-        setShowUpload(true);
+        handleShow();
 
         // Send request, receive report on which uploads succeeded/failed
         let response = await fetch("/reupload_all");
@@ -27,7 +26,7 @@ const Header = () => {
         // Change title, show success animation, close modal when complete
         setUploadComplete(true);
         await sleep(1200);
-        setShowUpload(false);
+        handleClose();
 
         // If any failed, show error modal with names and failure reasons
         if (Object.keys(response.failed).length !== 0) {

@@ -18,13 +18,19 @@ export const UploadModalContextProvider = ({ children }) => {
         setShowUpload(false);
     };
 
+    // Resets animation before showing modal
+    const handleShow = () => {
+        setUploadComplete(false);
+        setShowUpload(true);
+    };
+
     return (
         <UploadModalContext.Provider value={{
             showUpload,
-            setShowUpload,
             uploadComplete,
             setUploadComplete,
-            handleClose
+            handleClose,
+            handleShow
         }}>
             {children}
         </UploadModalContext.Provider>
@@ -64,7 +70,7 @@ export const UploadModal = () => {
 // Custom hook that returns upload function
 export const useUploader = () => {
     // Get callbacks for upload modal
-    const { setShowUpload, setUploadComplete } = useContext(UploadModalContext);
+    const { handleShow, handleClose, setUploadComplete } = useContext(UploadModalContext);
 
     // Get state and callback for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
@@ -72,9 +78,9 @@ export const useUploader = () => {
     // Takes config filename and target IP address, uploads file to node
     // If optional reupload bool is true no entry is created in the database
     // Shows modal with loading animation while waiting, changes to success animation when complete
-    async function upload(filename, targetIP, reupload=false) {
+    async function upload(filename, targetIP, reupload=false, onComplete=null) {
         // Show modal with loading animation
-        setShowUpload(true);
+        handleShow();
 
         // Set correct endpoint based on upload arg
         // Default: Upload and create new database entry if successful
@@ -95,15 +101,21 @@ export const useUploader = () => {
             // Change title, show success animation
             setUploadComplete(true);
 
-            // Wait for animation to complete before reloading
+            // Wait for animation to complete
             await sleep(1200);
-            window.location.replace("/config_overview");
+
+            // Call onComplete handler if given, hide upload modal
+            if (onComplete) {
+                console.log("Calling onComplete");
+                onComplete();
+            }
+            handleClose();
 
         // Unable to upload because of filesystem error on node
         } else if (response.status == 409) {
             const error = await response.text();
             // Hide upload modal, show response in error modal
-            setShowUpload(false);
+            handleClose();
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
@@ -115,7 +127,7 @@ export const useUploader = () => {
         // Unable to upload because node is unreachable
         } else if (response.status == 404) {
             // Hide upload modal, show error modal
-            setShowUpload(false);
+            handleClose();
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
@@ -129,7 +141,7 @@ export const useUploader = () => {
             alert(await response.text());
 
             // Hide modal allowing user to access page again
-            setShowUpload(false);
+            handleClose();
         }
     }
 

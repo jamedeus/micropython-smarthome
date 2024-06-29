@@ -12,7 +12,7 @@ import { formatIp, ipRegex } from 'util/validation';
 import { useUploader } from 'modals/UploadModal';
 
 
-const NewConfigRow = ({ config }) => {
+const NewConfigRow = ({ filename, friendlyName }) => {
     // Get callbacks for error modal
     const {
         errorModalContent,
@@ -20,7 +20,7 @@ const NewConfigRow = ({ config }) => {
         handleClose
     } = useContext(ErrorModalContext);
 
-    const { deleteNewConfig } = useContext(OverviewContext);
+    const { handleNewConfigUpload } = useContext(OverviewContext);
 
     // Create state objects for IP field, submit button
     const [ipAddress, setIpAddress] = useState('');
@@ -29,7 +29,10 @@ const NewConfigRow = ({ config }) => {
     // Create handler for upload button
     const { upload } = useUploader();
     const uploadNewConfig = () => {
-        upload(config, ipAddress, false);
+        const onUploadComplete = () => {
+            handleNewConfigUpload(friendlyName, filename, ipAddress);
+        };
+        upload(filename, ipAddress, false, onUploadComplete);
     };
 
     // Takes config filename, opens modal to confirm deletion
@@ -95,14 +98,14 @@ const NewConfigRow = ({ config }) => {
 
     // Return single table row with listeners to upload, delete config
     return (
-        <tr id={config}>
+        <tr id={filename}>
             <td className="align-middle">
-                <span className="form-control text-center">{config}</span>
+                <span className="form-control text-center">{filename}</span>
             </td>
             <td className="align-middle">
                 <Form.Control
                     type="text"
-                    id={`${config}-ip`}
+                    id={`${filename}-ip`}
                     value={ipAddress}
                     onChange={(e) => setIp(e.target.value)}
                     className="text-center ip-input"
@@ -124,7 +127,7 @@ const NewConfigRow = ({ config }) => {
                 <Button
                     variant="danger"
                     size="sm"
-                    onClick={() => show_delete_modal(config)}
+                    onClick={() => show_delete_modal(filename)}
                 >
                     <i className="bi-trash"></i>
                 </Button>
@@ -134,7 +137,8 @@ const NewConfigRow = ({ config }) => {
 };
 
 NewConfigRow.propTypes = {
-    config: PropTypes.string,
+    filename: PropTypes.string,
+        friendlyName: PropTypes.string
 };
 
 
@@ -164,7 +168,13 @@ const NewConfigTable = () => {
                         </thead>
                         <tbody>
                             {context.not_uploaded.map((config) => {
-                                return <NewConfigRow key={config} config={config} />;
+                                return (
+                                    <NewConfigRow
+                                        key={config.filename}
+                                        filename={config.filename}
+                                        friendlyName={config.friendly_name}
+                                    />
+                                );
                             })}
                         </tbody>
                     </Table>
