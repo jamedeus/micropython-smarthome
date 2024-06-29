@@ -7,7 +7,7 @@ import { ApiTargetModalContext } from 'modals/ApiTargetRuleModal';
 
 function DefaultRuleApiTarget({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
@@ -15,13 +15,20 @@ function DefaultRuleApiTarget({ id }) {
     // Get callback to open rule modal
     const { handleShow } = useContext(ApiTargetModalContext);
 
+    // Add invalid highlight to set rule button if not set after page validated
+    let invalid = false;
+    if (highlightInvalid && !instance.default_rule) {
+        invalid = true;
+    }
+
     return (
         <>
             <div className="mb-2 pt-3 text-center">
                 <Button
                     id={`${id}-default_rule-button`}
-                    variant="secondary"
+                    variant={invalid ? "outline-danger" :"secondary"}
                     onClick={() => handleShow(id, "default_rule")}
+                    disabled={!instance.ip}
                 >
                     Set rule
                 </Button>
