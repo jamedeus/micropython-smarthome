@@ -28,6 +28,8 @@ Add the IP of your docker host to [unit_test_config.json](tests/firmware/unit_te
 }
 ```
 
+Check the firewall on your docker host and make sure these ports and `9999` are not blocked.
+
 Then simply run [runtests.py](tests/mock_environment/runtests.py) from the project root directory:
 ```
 cd ../../
@@ -45,6 +47,8 @@ These ports are used for:
 - `api_port`: Simulates another ESP32 node for [ApiTarget](tests/firmware/test_device_apitarget.py) tests
 
 The port `9999` is used to simulate requests to TpLink Kasa devices. This cannot be changed because it is not configurable on the actual TpLink devices (the same test suite is run against physical hardware when run outside the mocked environment).
+
+The mock receiver host's firewall **must not block these ports** or the tests will fail.
 
 ## Mocked Micropython Modules
 - [x] machine.pin
