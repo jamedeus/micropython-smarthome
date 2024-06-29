@@ -19,16 +19,16 @@ if [[ $2 ]]; then
     if [[ -e $2 ]]; then
         firmware=$2
     else
-        printf "ERROR: $2 not found\n"
+        printf "ERROR: %s not found\n" "$2"
         exit 1
     fi
 else
-    # Get latest firmware by version number (may break if renamed)
-    firmware=`\ls firmware*.bin | sort -V | tail -n 1`
+    # Get latest firmware by version number (may break if firmware renamed)
+    firmware=$(find firmware*.bin | sort -V | tail -n 1)
 fi
 
 # Flash esp32
-printf "Flashing $firmware to $target\n\n"
-esptool.py --port $target erase_flash && \
-esptool.py --chip esp32 --port $target --baud 460800 write_flash -z 0x1000 $firmware || \
-printf "\nERROR: Failed to flash $firmware to $target\n"
+printf "Flashing %s to %s\n\n" "$firmware" "$target"
+esptool.py --port "$target" erase_flash && \
+esptool.py --chip esp32 --port "$target" --baud 460800 write_flash -z 0x1000 "$firmware" || \
+printf "\nERROR: Failed to flash %s to %s\n" "$firmware" "$target"

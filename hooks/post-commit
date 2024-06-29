@@ -1,17 +1,11 @@
 #!/bin/sh
 
-# This script pushes a new firmware release if any files included in the
-# firmware have changed. It is recommended to run in the background by
-# adding this statement to .git/hooks/post-commit:
-#
-# nohup hooks/post-commit >/dev/null 2>&1 &
-#
-# A gitlab access token must be added to .env with this syntax (no quotes):
-# SMARTHOME_ACCESS_TOKEN=your-access-token
+# This hook creates a tag if any files included in the firmware have changed.
+# Pushing the tag creates a CI/CD job that builds and releases the firmware.
 
 
 # Skip if not on master branch
-if [ "`git branch --show-current`" != "master" ]; then
+if [ "$(git branch --show-current)" != "master" ]; then
     exit
 fi
 
@@ -22,54 +16,11 @@ FIRMWARE_FILES=$(git diff --name-only HEAD^ HEAD | grep -E "^(devices/|sensors/|
 # Remove readme files (not included in firmware, shouldn't trigger release)
 FIRMWARE_FILES=$(echo "$FIRMWARE_FILES" | grep -v "readme.md")
 
-if [ ! -z "$FIRMWARE_FILES" ]; then
+if [ -n "$FIRMWARE_FILES" ]; then
     # Increment most-recent tag
-    export LAST_TAG=$(git tag | sort -V | tail -n 1)
-    export NEW_TAG=$(echo $LAST_TAG | awk -F. '{$NF = $NF + 1;} 1' OFS=.)
+    LAST_TAG="$(git tag | sort -V | tail -n 1)"
+    NEW_TAG="$(echo "$LAST_TAG" | awk -F. '{$NF = $NF + 1;} 1' OFS=.)"
 
-    # Tag new commit
-    git tag $NEW_TAG
-    printf "$(date -Iseconds): Tagged new commit $NEW_TAG\n" >> firmware/release.log
-
-    # Get hash of last commit
-    export HASH=$(git log -1 --format=format:"%H")
-
-    # Get gitlab access token
-    export $(envsubst < .env)
-
-    # Build firmware (fresh build, overwrite previous)
-    bash firmware/build.sh fresh
-    mv firmware/firmware.bin firmware/firmware_$NEW_TAG.bin
-    filename="firmware_$NEW_TAG.bin"
-    printf "$(date -Iseconds): Built new firmware: firmware/$filename\n" >> firmware/release.log
-
-    # Upload firmware to gitlab, parse URL from response
-    output=$(curl --request POST \
-                  --header "PRIVATE-TOKEN: $SMARTHOME_ACCESS_TOKEN" \
-                  --form "file=@$HOME/git/micropython-smarthome/firmware/firmware_$NEW_TAG.bin" \
-                  "https://gitlab.com/api/v4/projects/30373611/uploads"
-    )
-    url=$(echo "$output" | jq -r '.full_path')
-    printf "$(date -Iseconds): Uploaded firmware to gitlab, response:\n" >> firmware/release.log
-    printf "$output\n" >> firmware/release.log
-
-    # Build JSON payload for new release
-    payload=$(jq -n \
-                 --arg name "Release $NEW_TAG" \
-                 --arg tag "$NEW_TAG" \
-                 --arg ref "$HASH" \
-                 --arg url "https://gitlab.com$url" \
-                 --arg filename "firmware_$NEW_TAG.bin" \
-                 '{ "name": $name, "tag_name": $tag, "ref": $ref, "assets": { "links": [{ "name": $filename, "url": $url }] } }'
-    )
-    printf "$(date -Iseconds): Built release payload: $payload\n" >> firmware/release.log
-
-    # Push new release
-    output=$(curl --header 'Content-Type: application/json' \
-                  --header "PRIVATE-TOKEN: $SMARTHOME_ACCESS_TOKEN" \
-                  --data "$payload" \
-                  --request POST "https://gitlab.com/api/v4/projects/30373611/releases"
-    )
-    printf "$(date -Iseconds): Pushed new release to gitlab, response:\n" >> firmware/release.log
-    printf "$output\n\n" >> firmware/release.log
+    # Tag new commit (triggers firmware build job)
+    git tag "$NEW_TAG"
 fi

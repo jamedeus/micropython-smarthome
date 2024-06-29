@@ -13,7 +13,7 @@ A [mock API receiver script](mock_command_receiver/mock_command_receiver.py) is 
 Build the mock API receiver docker image and start it:
 ```
 cd tests/mock_environment/mock_command_receiver/
-sudo docker build -t smarthome_mock_receiver:0.1 . -f Dockerfile
+docker build -t smarthome_mock_receiver:0.1 . -f Dockerfile
 docker compose up -d
 cd ..
 ```
@@ -32,7 +32,7 @@ Then simply run [runtests.py](tests/mock_environment/runtests.py) from the proje
 ```
 cd ../../
 coverage run --source='core,devices,sensors' tests/mock_environment/runtests.py
-coverage report -m --precision=1
+coverage report
 ```
 
 ## Ports
@@ -58,8 +58,8 @@ The port `9999` is used to simulate requests to TpLink Kasa devices. This cannot
 - [x] ir_tx.Player
 - [x] time.sleep_ms
 - [x] time.sleep_us
-- [x] urequests
-- [x] uasyncio
+- [x] requests
+- [x] asyncio
 - [x] si7021
 - [x] gc
 - [x] network
@@ -67,7 +67,9 @@ The port `9999` is used to simulate requests to TpLink Kasa devices. This cannot
 - [x] logging
 - [x] ubinascii
 - [x] dht
+- [x] tls
 
-The following are not currently mocked, but may be added in the future if tests for `_boot.py` are added:
-- [ ] uos
+The following are not currently mocked, but may be added in the future if tests for `core/boot.py` are added:
+- [ ] os
+- [ ] inisetup
 - [ ] flashbdev

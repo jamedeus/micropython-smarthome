@@ -18,8 +18,8 @@ To run the CLI tests go to the repo root and paste this:
 
 ```
 export PYTHONPATH=$PYTHONPATH:`pwd`/CLI
-pipenv run coverage run --omit='tests/*' -m unittest discover tests/cli
-pipenv run coverage report -m --precision=1
+pipenv run coverage run -m unittest discover tests/cli
+pipenv run coverage report
 ```
 
 ## Client

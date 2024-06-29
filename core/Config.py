@@ -3,7 +3,7 @@ import gc
 import time
 import logging
 import network
-import urequests
+import requests
 from random import randrange
 from machine import Pin, Timer, RTC
 import SoftwareTimer
@@ -324,7 +324,7 @@ class Config():
         log.debug(f"Attempting to connect to {self.credentials[0]}")
 
         # Connect to wifi
-        wlan = network.WLAN(network.STA_IF)
+        wlan = network.WLAN(network.WLAN.IF_STA)
         wlan.active(True)
         if not wlan.isconnected():
             wlan.connect(self.credentials[0], self.credentials[1])
@@ -349,7 +349,7 @@ class Config():
                 if self.gps:
                     url += f"&lat={self.gps['lat']}&long={self.gps['lon']}"
 
-                response = urequests.get(url)
+                response = requests.get(url)
 
                 # Parse time parameters
                 hour, minute, second = response.json()["current_time"].split(":")

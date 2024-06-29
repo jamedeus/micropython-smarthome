@@ -1,5 +1,5 @@
 import logging
-import urequests
+import requests
 from DimmableLight import DimmableLight
 
 # Set name for module's log lines
@@ -33,7 +33,7 @@ class Wled(DimmableLight):
             return True
 
         try:
-            response = urequests.post(f'http://{self.ip}/json/state', json=self.get_payload(state))
+            response = requests.post(f'http://{self.ip}/json/state', json=self.get_payload(state))
             self.print(f"brightness = {self.current_rule}, state = {state}")
         except OSError:
             # Wifi interruption, send failed

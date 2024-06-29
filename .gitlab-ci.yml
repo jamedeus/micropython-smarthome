@@ -1,26 +1,25 @@
 before_script:
-  - docker info
   - printenv
 
 stages:
-  - test_firmware
-  - test_frontend
-  - test_cli
-  - build
+  - test
+  - build_firmware
+  - build_frontend
   - deploy
 
 # Core module unit tests
 # Runs in mocked environment to simulate micropython on esp32
 test_firmware:
-  stage: test_firmware
+  stage: test
+  image: python:3.10-bullseye
   tags:
-    - arm64
+    - nas
+    - docker
   script:
     - pip3 install pipenv
-    - export PATH=$PATH:/home/gitlab-runner/.local/bin
-    - pipenv install
+    - pipenv install --dev
     - pipenv run coverage run --source='core,devices,sensors' tests/mock_environment/runtests.py
-    - pipenv run coverage report -m --precision=1
+    - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   rules:
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
@@ -29,17 +28,17 @@ test_firmware:
 
 # Run django unit tests
 test_frontend:
-  stage: test_frontend
+  stage: test
+  image: python:3.10-bullseye
   tags:
-    - arm64
+    - nas
+    - docker
   script:
     - pip3 install pipenv
-    - export PATH=$PATH:/home/gitlab-runner/.local/bin
-    - export CLI_SYNC=True
-    - pipenv install
+    - pipenv install --dev
     - cd frontend/
-    - pipenv run coverage run --source='.' --omit='*manage.py,*wsgi.py,*asgi.py,*/tests.py,*unit_test_helpers.py,*/migrations/*.py' manage.py test
-    - pipenv run coverage report -m --precision=1
+    - pipenv run coverage run --source='.' manage.py test
+    - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   rules:
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
@@ -48,36 +47,69 @@ test_frontend:
 
 # Run CLI tool unit tests
 test_cli:
-  stage: test_cli
+  stage: test
+  image: python:3.10-bullseye
   tags:
-    - arm64
+    - nas
+    - docker
   script:
     - pip3 install pipenv
-    - export PATH=$PATH:/home/gitlab-runner/.local/bin
-    - pipenv install
+    - pipenv install --dev
     - export PYTHONPATH=$PYTHONPATH:`pwd`/CLI
-    - pipenv run coverage run --omit='tests/*' -m unittest discover tests/cli
-    - pipenv run coverage report -m --precision=1
+    - pipenv run coverage run -m unittest discover tests/cli
+    - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
   rules:
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
       when: never
     - when: always
 
-# Build new container, increment most-recent tag
-build:
-  stage: build
+build_firmware:
+  stage: build_firmware
   tags:
-    - arm64
+    - nas
+    - shell
+  before_script:
+    - 'cd firmware/'
+    - 'npm install -D'
   script:
-    - 'export IMAGE_NAME="micropython-smarthome"'
-    - 'export LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
-    - "export NEW_TAG=$(echo $LAST_TAG | awk -F. '{$NF = $NF + 1;} 1' OFS=.)"
-    - 'docker build --platform linux/arm64 -t $IMAGE_NAME:$NEW_TAG . -f frontend/docker/Dockerfile'
+    # Fresh build ensures files from previous commit not included in firmware
+    - 'bash build.sh fresh'
+    - 'mv firmware.bin firmware_$CI_COMMIT_TAG.bin'
+    # Delete SSL certs (new certs for each build for improved security)
+    - 'rm setup_ssl_certs.py'
+  rules:
+    - if: '$CI_COMMIT_TAG'
+      when: always
+  artifacts:
+    paths:
+      - firmware/firmware_$CI_COMMIT_TAG.bin
+    expire_in: never
+  release:
+    tag_name: $CI_COMMIT_TAG
+    ref: $CI_COMMIT_SHA
+    name: 'Release $CI_COMMIT_TAG'
+    description: 'Firmware version $CI_COMMIT_TAG'
+    assets:
+      links:
+        - name: 'firmware_$CI_COMMIT_TAG.bin'
+          url: '$CI_PROJECT_URL/-/jobs/$CI_JOB_ID/artifacts/file/firmware/firmware_$CI_COMMIT_TAG.bin'
+
+# Build new container, increment most-recent tag
+build_frontend:
+  stage: build_frontend
+  tags:
+    - nas
+    - shell
+  before_script:
+    - docker info
+  script:
+    - 'IMAGE_NAME="micropython-smarthome"'
+    - 'LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
+    - "NEW_TAG=$(echo $LAST_TAG | awk -F. '{$NF = $NF + 1;} 1' OFS=.)"
+    - 'docker build --platform linux/amd64 -t $IMAGE_NAME:$NEW_TAG . -f frontend/docker/Dockerfile'
   rules:
     - if: '$CI_COMMIT_BRANCH != "master"'
-      when: never
-    - if: '$GITLAB_USER_NAME == "Firmware Release"'
       when: never
     - changes:
         - 'frontend/**/*'
@@ -88,16 +120,17 @@ build:
 deploy:
   stage: deploy
   tags:
-    - arm64
+    - nas
+    - shell
+  before_script:
+    - docker info
   script:
-    - 'export IMAGE_NAME="micropython-smarthome"'
-    - 'export LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
-    - 'sed -i "s|$IMAGE_NAME:[0-9]*\.[0-9]*|$IMAGE_NAME:$LAST_TAG|g" /home/pi/docker/docker-compose.yaml'
-    - 'docker compose -f /home/pi/docker/docker-compose.yaml up -d'
+    - 'IMAGE_NAME="micropython-smarthome"'
+    - 'LAST_TAG=$(docker images --format "{{.Repository}}:{{.Tag}}" | grep "^${IMAGE_NAME}:[0-9]*\.[0-9]*$" | sort --version-sort | tail -n 1 | cut -d\: -f 2)'
+    - 'sed -i "s|$IMAGE_NAME:[0-9]*\.[0-9]*|$IMAGE_NAME:$LAST_TAG|g" /home/jamedeus/docker/docker-compose.yaml'
+    - 'docker compose -f /home/jamedeus/docker/docker-compose.yaml up -d'
   rules:
     - if: '$CI_COMMIT_BRANCH != "master"'
-      when: never
-    - if: '$GITLAB_USER_NAME == "Firmware Release"'
       when: never
     - changes:
         - 'frontend/**/*'

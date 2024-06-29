@@ -4,7 +4,7 @@ require("unittest")
 
 # Core modules
 module("Api.py", base_path="../core")
-module("_boot.py", base_path="../core")
+module("boot.py", base_path="../core")
 module("Config.py", base_path="../core")
 module("Group.py", base_path="../core")
 module("main.py", base_path="../core")
@@ -36,6 +36,7 @@ module("Switch.py", base_path="../sensors")
 module("Thermostat.py", base_path="../sensors")
 
 # Libraries
+module("setup_ssl_certs.py", base_path=".")
 module("api_keys.py", base_path="../lib")
 package("ir_tx", base_path="../lib")
 module("samsung_ir_codes.py", base_path="../lib")

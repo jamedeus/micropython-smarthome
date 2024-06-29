@@ -1,7 +1,7 @@
 import gc
-import webrepl
+import asyncio
 import logging
-import uasyncio as asyncio
+import webrepl
 from Api import app
 from Config import Config
 from SoftwareTimer import timer

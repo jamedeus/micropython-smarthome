@@ -7,15 +7,14 @@ name = "pypi"
 colorama = "~=0.4.3"
 django = "~=4.0"
 django-pwa = ">=1.1"
-flask = "~=2.0"
-ipython = "*"
-coverage = "*"
 util = {editable = true, path = "util"}
 questionary = "*"
-nest-asyncio = "*"
 requests = "*"
 
 [dev-packages]
+ipython = "*"
+nest-asyncio = "*"
+coverage = "*"
 
 [requires]
 python_version = "3.10"

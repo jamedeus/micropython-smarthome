@@ -5,3 +5,46 @@
 [![Latest Release](https://gitlab.com/jamedeus/micropython-smarthome/-/badges/release.svg?key_text=Firmware+Release&key_width=112)](https://gitlab.com/jamedeus/micropython-smarthome/-/releases)
 
 # Micropython Smarthome
+
+## Firmware
+
+Pre-built firmware binaries can be downloaded from [releases](https://gitlab.com/jamedeus/micropython-smarthome/-/releases).
+
+See [firmware](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master/firmware) for build instructions.
+
+## Command line tools
+
+See [CLI readme](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master/CLI).
+
+## Unit testing
+
+See [test readme](https://gitlab.com/jamedeus/micropython-smarthome/-/tree/master/tests).
+
+## Development
+
+Requirements:
+* pipenv
+* npm
+* docker
+
+Install dependencies for the frontend, firmware, and CLI tools:
+```
+pipenv install --dev
+cd frontend
+npm install
+cd ..
+cd firmware
+npm install
+```
+
+Install git hooks (see comments at the top of each file):
+```
+cp hooks/pre-commit hooks/post-commit .git/hooks/
+```
+
+## Useful documentation links
+
+[Micropython ESP32 build instructions](https://github.com/micropython/micropython/blob/master/ports/esp32/README.md#setting-up-esp-idf-and-the-build-environment)
+[Micropython release history](https://github.com/micropython/micropython/releases)
+[Micropython asyncio](https://docs.micropython.org/en/latest/library/asyncio.html)
+[Micropython manifest files](https://docs.micropython.org/en/latest/reference/manifest.html)

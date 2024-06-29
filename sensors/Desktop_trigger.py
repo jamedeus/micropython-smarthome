@@ -1,6 +1,6 @@
 import logging
-import urequests
-import uasyncio as asyncio
+import asyncio
+import requests
 from Sensor import Sensor
 
 # Set name for module's log lines
@@ -43,7 +43,7 @@ class Desktop_trigger(Sensor):
         super().disable()
 
     def get_idle_time(self):
-        response = urequests.get(f'http://{self.ip}:{self.port}/idle_time')
+        response = requests.get(f'http://{self.ip}:{self.port}/idle_time')
         if response.status_code == 200:
             return response.json()
         else:
@@ -55,7 +55,7 @@ class Desktop_trigger(Sensor):
 
     def get_monitor_state(self):
         try:
-            return urequests.get(f'http://{self.ip}:{self.port}/state').json()["state"]
+            return requests.get(f'http://{self.ip}:{self.port}/state').json()["state"]
         except (OSError, IndexError):
             # Wifi interruption, return False - caller will try again in 1 second
             return False

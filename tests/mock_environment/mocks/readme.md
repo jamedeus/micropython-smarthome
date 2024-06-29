@@ -98,13 +98,13 @@ The `ifconfig` method called with no argument returns the `_ifconfig` attribute,
 
 This module mocks the [si7021 driver](https://github.com/chrisbalmer/micropython-si7021) used in this project. It simply returns hardcoded temperature and humidity values.
 
-## Uasyncio module
+## Asyncio module
 
-The cpython `asyncio` module is aliased to `uasyncio` and used as-is, with the addition of `sleep_ms` and `sleep_us` coroutines that only exist in micropython.
+The cpython `asyncio` module is used as-is, with the addition of `sleep_ms` and `sleep_us` coroutines that only exist in micropython.
 
-## Urequests module
+## Requests module
 
-The cpython `requests` module is aliased to `urequests` and used as-is in most cases.
+The cpython `requests` module is used as-is in most cases.
 
 The `Response` class (returned by most requests methods) is replaced by a subclass that modifies the `json()` method. When the response contents are not valid JSON a `ValueError` is raised instead of `JSONDecodeError` to match the behavior of micropython's `urequests`. There are no other differences.
 

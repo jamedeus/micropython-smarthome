@@ -3,7 +3,10 @@ cli_config.json
 firmware/esp-idf/
 firmware/micropython/
 firmware/*.bin
-*.coverage*
+.coverage
+*.coverage.*
 .env
 *release.log
 frontend/node_configuration/static/node_configuration/edit_config.js
+setup_ssl_certs.py
+*.der

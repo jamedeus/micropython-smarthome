@@ -11,7 +11,7 @@
 
 
 # Skip if not on master branch
-if [ "`git branch --show-current`" != "master" ]; then
+if [ "$(git branch --show-current)" != "master" ]; then
     exit
 fi
 
@@ -22,7 +22,7 @@ STATIC_FILES=$(git diff --cached --name-only --diff-filter=d | grep -E "^(fronte
 DESKTOP_INTEGRATION=$(git diff --cached --name-only --diff-filter=d | grep -E "^(desktop-integration/)")
 
 
-if [ ! -z "$STATIC_FILES" ]; then
+if [ -n "$STATIC_FILES" ]; then
     # Get short hash of last commit (used as PWA version number)
     COMMIT_HASH=$(git rev-parse --short HEAD)
 
@@ -34,7 +34,7 @@ if [ ! -z "$STATIC_FILES" ]; then
 fi
 
 
-if [ ! -z "$DESKTOP_INTEGRATION" ]; then
+if [ -n "$DESKTOP_INTEGRATION" ]; then
     # Zip current contents of desktop-integration, overwrite old bundle in static dir
     zip -r frontend/node_configuration/static/node_configuration/micropython-smarthome-integration.zip desktop-integration/
 

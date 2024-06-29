@@ -42,6 +42,18 @@ from .unit_test_helpers import (
 # Ensure CLI_SYNC is True (writes test configs to disk when created)
 settings.CLI_SYNC = True
 
+# Create CONFIG_DIR if it does not exist
+if not os.path.exists(settings.CONFIG_DIR):
+    os.mkdir(settings.CONFIG_DIR, mode=0o775)
+    with open(os.path.join(settings.CONFIG_DIR, 'readme'), 'w') as file:
+        file.write('This directory was automatically created for frontend unit tests.\n')
+        file.write('You can safely delete it, it will be recreated each time tests run.')
+
+# Create cli_config.json if it does not exist
+if not os.path.exists(os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')):
+    from helper_functions import write_cli_config
+    write_cli_config(get_cli_config())
+
 
 # Test the Node model
 class NodeTests(TestCaseBackupRestore):
@@ -1906,15 +1918,6 @@ class DeleteConfigTests(TestCaseBackupRestore):
         self.assertEqual(response.status_code, 200)
         self.assertTrue(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
-    def tearDown(self):
-        # Undo permissions changes made by some tests
-        # Prevents broken permissions after failed test
-        os.chmod(settings.CONFIG_DIR, 0o775)
-        try:
-            os.chmod(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'), 0o664)
-        except FileNotFoundError:
-            pass
-
     def test_delete_existing_config(self):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1943,17 +1946,15 @@ class DeleteConfigTests(TestCaseBackupRestore):
         # Confirm starting condition
         self.assertEqual(len(Config.objects.all()), 1)
 
-        # Make read-only
-        os.chmod(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'), 0o444)
-        os.chmod(settings.CONFIG_DIR, 0o554)
-
-        # Attempt to delete, confirm fails with permission denied error
-        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(
-            response.json(),
-            'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
-        )
+        # Mock file with read-only file permissions
+        with patch('os.remove', side_effect=PermissionError):
+            # Attempt to delete, confirm fails with permission denied error
+            response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
+            self.assertEqual(response.status_code, 500)
+            self.assertEqual(
+                response.json(),
+                'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
+            )
 
         # Confirm Config still exists
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1991,15 +1992,6 @@ class DeleteNodeTests(TestCaseBackupRestore):
         self.config = Config.objects.all()[0]
         self.config.node = self.node
         self.config.save()
-
-    def tearDown(self):
-        # Undo permissions changes made by some tests
-        # Prevents broken permissions after failed test
-        os.chmod(settings.CONFIG_DIR, 0o775)
-        try:
-            os.chmod(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'), 0o664)
-        except FileNotFoundError:
-            pass
 
     def test_delete_existing_node(self):
         # Confirm node exists in database and cli_config.json
@@ -2040,17 +2032,15 @@ class DeleteNodeTests(TestCaseBackupRestore):
         self.assertEqual(len(Config.objects.all()), 1)
         self.assertEqual(len(Node.objects.all()), 1)
 
-        # Make read-only
-        os.chmod(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json'), 0o444)
-        os.chmod(settings.CONFIG_DIR, 0o554)
-
-        # Attempt to delete, confirm fails with permission denied error
-        response = self.client.post('/delete_node', json.dumps('Test Node'))
-        self.assertEqual(response.status_code, 500)
-        self.assertEqual(
-            response.json(),
-            'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
-        )
+        # Mock file with read-only file permissions
+        with patch('os.remove', side_effect=PermissionError):
+            # Attempt to delete, confirm fails with permission denied error
+            response = self.client.post('/delete_node', json.dumps('Test Node'))
+            self.assertEqual(response.status_code, 500)
+            self.assertEqual(
+                response.json(),
+                'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
+            )
 
         # Confirm Node and Config still exist
         self.assertEqual(len(Config.objects.all()), 1)

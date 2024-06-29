@@ -601,14 +601,14 @@ class TestConfig(unittest.TestCase):
         with self.assertRaises(MockRebootCalled):
             Config.api_calls(self.config)
 
-        # Create urequests.get mock that raises OSError (failed connection)
+        # Create requests.get mock that raises OSError (failed connection)
         def mock_get(*args):
             raise OSError
 
         # Remove from cache, re-import, apply mocks
-        del sys.modules["urequests"]
-        import urequests
-        urequests.get = mock_get
+        del sys.modules["requests"]
+        import requests
+        requests.get = mock_get
         del sys.modules["Config"]
         from Config import Config
 

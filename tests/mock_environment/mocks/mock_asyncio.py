@@ -1,4 +1,4 @@
-from asyncio import *
+from asyncio import sleep
 
 
 async def sleep_us(us):
