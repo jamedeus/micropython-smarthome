@@ -55,6 +55,9 @@
     "webpack-dev-server": "^4.15.1"
   },
   "scripts": {
-    "build": "webpack --config webpack.config.js --mode production"
+    "build": "webpack --mode=production --node-env=production",
+    "build:dev": "webpack --mode=development",
+    "build:prod": "webpack --mode=production --node-env=production",
+    "watch": "webpack --watch"
   }
 }
