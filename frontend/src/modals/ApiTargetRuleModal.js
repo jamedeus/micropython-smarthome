@@ -4,15 +4,17 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-import { ConfigContext } from 'root/ConfigContext';
+import { ConfigContext, filterObject } from 'root/ConfigContext';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
-import { ipRegex } from 'util/validation';
+import { get_instance_metadata, ir_keys } from 'util/metadata';
+import { api_target_options, target_node_ip } from 'util/django_util';
+
 
 export const ApiTargetModalContext = createContext();
 
 export const ApiTargetModalContextProvider = ({ children }) => {
     // Get curent state from global context
-    const { config, getTargetNodeOptions } = useContext(ConfigContext);
+    const { config } = useContext(ConfigContext);
 
     // Create state objects for modal visibility, contents
     const [show, setShow] = useState(false);
@@ -32,14 +34,99 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         sub_command_off: '',
     });
 
-    const handleShow = (instance, rule_key) => {
-        // Prevent crash if set rule clicked before selecting target
-        if (config[instance]["ip"] !== undefined) {
-            if ( ! ipRegex.test(config[instance]["ip"])) {
-                // TODO highlight field red instead
-                alert("Select target node first");
-                return false;
+    // Takes IP, returns object from api_target_options context
+    const getTargetNodeOptions = (ip) => {
+        // Generate options from current state if self-targeting
+        if (ip === '127.0.0.1' || ip === target_node_ip) {
+            return getSelfTargetOptions();
+        }
+
+        // Find target node options in object if not self-targeting
+        const friendly_name = Object.keys(api_target_options.addresses).find(key =>
+            api_target_options.addresses[key] === ip
+        );
+        // Throw error if not found (prevent crash when opening modal)
+        if (!friendly_name) {
+            throw new Error(
+                'getTargetNodeOptions received an IP that does not match an existing node'
+            )
+        }
+
+        return api_target_options[friendly_name];
+    };
+
+    // Builds ApiTarget options for all currently configured devices and sensors
+    const getSelfTargetOptions = () => {
+        const options = {};
+
+        // Get all devices and sensors
+        const devices = filterObject(config, "device");
+        const sensors = filterObject(config, "sensor");
+
+        // Add options for each configured device and sensor
+        for (let device in devices) {
+            // Add display string and universal options
+            options[device] = {
+                display: `${config[device]['nickname']} (${config[device]['_type']})`,
+                options: [
+                    'enable',
+                    'disable',
+                    'enable_in',
+                    'disable_in',
+                    'set_rule',
+                    'reset_rule'
+                ]
+            };
+
+            // Add on/off endpoints for all types except ApiTarget (prevent infinite loop)
+            if (config[device]['_type'] !== "api-target") {
+                options[device]['options'].push('turn_on', 'turn_off');
             }
+        }
+        for (let sensor in sensors) {
+            // Add display string and universal options
+            options[sensor] = {
+                display: `${config[sensor]['nickname']} (${config[sensor]['_type']})`,
+                options: [
+                    'enable',
+                    'disable',
+                    'enable_in',
+                    'disable_in',
+                    'set_rule',
+                    'reset_rule'
+                ]
+            };
+
+            // Add trigger_sensor endpoint for triggerable sensors
+            const metadata = get_instance_metadata('sensor', config[sensor]['_type']);
+            if (metadata.triggerable) {
+                options[sensor]['options'].push('trigger_sensor');
+            }
+        }
+
+        // If IR Blaster with at least 1 target configured, add options for each target
+        if (Object.keys(config).includes("ir_blaster") && config.ir_blaster.target.length) {
+            options['ir_key'] = {
+                display: "Ir Blaster",
+                options: [ ...config.ir_blaster.target ],
+                keys: {}
+            };
+            config.ir_blaster.target.forEach(target => {
+                options.ir_key.keys[target] = ir_keys[target];
+            });
+        }
+
+        return options;
+    };
+
+    const handleShow = (instance, rule_key) => {
+        // Prevent crash if set rule clicked before selecting target, or if
+        // target IP is outdated (eg target node config deleted)
+        const ip = config[instance]["ip"];
+        if (!ip || !Object.values(api_target_options.addresses).includes(ip)) {
+            // TODO highlight field red instead
+            alert("Select target node first");
+            return false;
         }
 
         // Replace modalContent with params for selected rule
@@ -47,7 +134,7 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         update.instance = instance;
         update.rule_key = rule_key;
         update.schedule_rule = !(rule_key === "default_rule");
-        update.target_node_options = getTargetNodeOptions(config[instance]['ip']);
+        update.target_node_options = getTargetNodeOptions(ip);
         update.show_help = false;
         update.show_examples = false;
         update.view_on_rule = true;

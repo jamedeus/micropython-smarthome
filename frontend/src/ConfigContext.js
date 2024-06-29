@@ -2,8 +2,6 @@ import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { get_config_template } from 'util/metadata';
 import { sleep } from 'util/helper_functions';
-import { get_instance_metadata, ir_keys } from 'util/metadata';
-import { api_target_options, target_node_ip } from 'util/django_util';
 import { v4 as uuid } from 'uuid';
 
 
@@ -190,85 +188,6 @@ export const ConfigProvider = ({ children }) => {
         setConfig({ ...config, ['ir_blaster']: ir_blaster });
     };
 
-    // Takes IP, returns object from api_target_options context
-    const getTargetNodeOptions = (ip) => {
-        // Generate options from current state if self-targeting
-        if (ip === '127.0.0.1' || ip === target_node_ip) {
-            return getSelfTargetOptions();
-        }
-
-        // Find target node options in object if not self-targeting
-        const friendly_name = Object.keys(api_target_options.addresses).find(key =>
-            api_target_options.addresses[key] === ip
-        );
-
-        return api_target_options[friendly_name];
-    };
-
-    // Builds ApiTarget options for all currently configured devices and sensors
-    const getSelfTargetOptions = () => {
-        const options = {};
-
-        // Get all devices and sensors
-        const devices = filterObject(config, "device");
-        const sensors = filterObject(config, "sensor");
-
-        // Add options for each configured device and sensor
-        for (let device in devices) {
-            // Add display string and universal options
-            options[device] = {
-                display: `${config[device]['nickname']} (${config[device]['_type']})`,
-                options: [
-                    'enable',
-                    'disable',
-                    'enable_in',
-                    'disable_in',
-                    'set_rule',
-                    'reset_rule'
-                ]
-            };
-
-            // Add on/off endpoints for all types except ApiTarget (prevent infinite loop)
-            if (config[device]['_type'] !== "api-target") {
-                options[device]['options'].push('turn_on', 'turn_off');
-            }
-        }
-        for (let sensor in sensors) {
-            // Add display string and universal options
-            options[sensor] = {
-                display: `${config[sensor]['nickname']} (${config[sensor]['_type']})`,
-                options: [
-                    'enable',
-                    'disable',
-                    'enable_in',
-                    'disable_in',
-                    'set_rule',
-                    'reset_rule'
-                ]
-            };
-
-            // Add trigger_sensor endpoint for triggerable sensors
-            const metadata = get_instance_metadata('sensor', config[sensor]['_type']);
-            if (metadata.triggerable) {
-                options[sensor]['options'].push('trigger_sensor');
-            }
-        }
-
-        // If IR Blaster with at least 1 target configured, add options for each target
-        if (Object.keys(config).includes("ir_blaster") && config.ir_blaster.target.length) {
-            options['ir_key'] = {
-                display: "Ir Blaster",
-                options: [ ...config.ir_blaster.target ],
-                keys: {}
-            };
-            config.ir_blaster.target.forEach(target => {
-                options.ir_key.keys[target] = ir_keys[target];
-            });
-        }
-
-        return options;
-    };
-
     // Called by deleteInstance, decrements IDs of all subsequent instances to prevent gaps
     // Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc
     function update_ids(target, state) {
@@ -340,8 +259,7 @@ export const ConfigProvider = ({ children }) => {
                 handleInstanceUpdate,
                 handleSensorTargetSelect,
                 handleSliderButton,
-                handleIrTargetSelect,
-                getTargetNodeOptions
+                handleIrTargetSelect
             }}
         >
             {children}
