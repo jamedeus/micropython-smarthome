@@ -137,7 +137,7 @@ const PageContainer = () => {
         // If successfully edited existing config, re-upload to target node
         } else if (edit_existing && response.ok) {
             // Convert friendly name into config filename
-            const target_filename = `${config.metadata.id.toLowerCase().replace(' ', '-')}.json`;
+            const target_filename = `${config.metadata.id.toLowerCase().replaceAll(' ', '-')}.json`;
             // Show upload modal, upload, redirect to overview when complete
             upload(target_filename, target_node_ip, true, returnToOverview);
 
