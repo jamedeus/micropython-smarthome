@@ -469,7 +469,11 @@ def restore_config(data):
     config.node = node
     config.save()
 
-    response = {"friendly_name": node.friendly_name, "ip": node.ip}
+    response = {
+        "friendly_name": node.friendly_name,
+        "filename": node.config.filename,
+        "ip": node.ip
+    }
     return JsonResponse(response, safe=False, status=200)
 
 

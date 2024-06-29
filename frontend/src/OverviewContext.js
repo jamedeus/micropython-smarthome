@@ -42,11 +42,9 @@ export const OverviewContextProvider = ({ children }) => {
         setContext({ ...context, ["schedule_keywords"]: update});
     };
 
-    // BUG: missing filename, reupload option will not work
-    // Requires backend change, fix after merge
-    const addNewNode = (friendly_name, ip) => {
+    const addNewNode = (friendly_name, filename, ip) => {
         let update = [ ...context.uploaded ];
-        update.push({friendly_name: friendly_name, ip: ip});
+        update.push({friendly_name: friendly_name, filename: filename, ip: ip});
         setContext({ ...context, ["uploaded"]: update});
     };
 

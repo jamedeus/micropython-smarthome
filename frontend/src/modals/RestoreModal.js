@@ -54,7 +54,7 @@ export const RestoreModal = () => {
 
             // Render new row, close modal
             const data = await response.json();
-            addNewNode(data.friendly_name, data.ip);
+            addNewNode(data.friendly_name, data.filename, data.ip);
             setShow(false);
 
         // Unreachable
