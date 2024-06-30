@@ -198,17 +198,6 @@ const PageContainer = () => {
         await submitButton();
     }
 
-    const VisiblePage = () => {
-        switch(page) {
-            case 1:
-                return <Page1 />;
-            case 2:
-                return <Page2 />;
-            case 3:
-                return <Page3 />;
-        }
-    };
-
     const PrevPageButton = () => {
         return (
             <Button variant="primary" className="mb-4" onClick={prevPage}>
@@ -242,7 +231,16 @@ const PageContainer = () => {
         <ApiTargetModalContextProvider>
             <div className="d-flex flex-column vh-100">
                 <h1 className="text-center pt-3 pb-4">{document.title}</h1>
-                <VisiblePage />
+                {(() => {
+                    switch(page) {
+                        case 1:
+                            return <Page1 />;
+                        case 2:
+                            return <Page2 />;
+                        case 3:
+                            return <Page3 />;
+                    }
+                })()}
                 <div className="d-flex justify-content-between mx-3 mt-auto">
                     <PrevPageButton />
                     {page === 3 ? <SubmitButton /> : null}
