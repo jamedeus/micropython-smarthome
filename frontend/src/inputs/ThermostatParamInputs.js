@@ -19,8 +19,8 @@ function ThermostatParamInputs({ id }) {
         } else {
             // Remove everything except digits and period, 4 digit max
             let input = parseFloat(value.replace(/[^\d.]/g, '').substring(0,4));
-            // Constrain to 0.1 - 10.0 degrees
-            input = Math.max(0.1, Math.min(input, 10));
+            // Constrain to 0 - 10.0 degrees
+            input = Math.max(0, Math.min(input, 10));
             if (isNaN(input)) {
                 input = "";
             }
@@ -54,6 +54,19 @@ function ThermostatParamInputs({ id }) {
         handleInputChange(id, "mode", newMode);
     };
 
+    // Add invalid highlight to tolerance field if:
+    // - Form has been validated and field still empty
+    // - Field contains 0
+    // - Field contents end with .
+    let invalidTolerance = false;
+    if (
+        (highlightInvalid && !instance.tolerance) ||
+        instance.tolerance === 0 ||
+        String(instance.tolerance).endsWith('.')
+    ) {
+        invalidTolerance = true;
+    }
+
     return (
         <>
             <Dropdown
@@ -77,7 +90,7 @@ function ThermostatParamInputs({ id }) {
                     type="text"
                     value={instance.tolerance}
                     onChange={(e) => setTolerance(e.target.value)}
-                    isInvalid={highlightInvalid && !instance.tolerance}
+                    isInvalid={invalidTolerance}
                 />
             </InputWrapper>
         </>
