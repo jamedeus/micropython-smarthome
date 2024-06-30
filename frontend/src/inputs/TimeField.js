@@ -104,9 +104,13 @@ export const TimeField = ({ instance, timestamp, schedule_keywords, highlightInv
             </span>
 
             {/* Edit timestamp popup */}
-            <PopupDiv show={popupContent.visible} anchorRef={buttonRef} onClose={handleClose}>
+            <PopupDiv
+                show={popupContent.visible}
+                anchorRef={buttonRef}
+                onClose={handleClose}
+            >
                 <>
-                    <div id="timestamp-input" className={popupContent.show_keyword === true ? "d-none" : ""}>
+                    <div className={popupContent.show_keyword ? "d-none" : ""}>
                         <Form.Label>Time</Form.Label>
                         <Form.Control
                             className="text-center"
@@ -116,7 +120,7 @@ export const TimeField = ({ instance, timestamp, schedule_keywords, highlightInv
                             autoFocus
                         />
                     </div>
-                    <div id="keyword-input" className={popupContent.show_keyword === false ? "d-none" : ""}>
+                    <div className={popupContent.show_keyword ? "" : "d-none"}>
                         <Form.Label>Keyword</Form.Label>
                         <Dropdown
                             value={popupContent.timestamp}
