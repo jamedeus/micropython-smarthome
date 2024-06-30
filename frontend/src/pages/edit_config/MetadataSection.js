@@ -32,6 +32,15 @@ function MetadataSection() {
         handleInputChange("metadata", "id", new_name);
     }
 
+    // Floor must be positive or negative integer, 3 digits max
+    function set_floor(value) {
+        let input = value.replace(/[^\d]/g, '').substring(0,3);
+        if (value[0] === '-') {
+            input = '-' + input;
+        }
+        handleInputChange("metadata", "floor", input);
+    }
+
     return (
         <div id="metadata">
             <div className="mb-4">
@@ -59,7 +68,7 @@ function MetadataSection() {
                     <Form.Control
                         type="text"
                         value={config.metadata.floor}
-                        onChange={(e) => handleInputChange("metadata", "floor", e.target.value)}
+                        onChange={(e) => set_floor(e.target.value)}
                         isInvalid={(highlightInvalid && !config.metadata.floor)}
                     />
                 </InputWrapper>
