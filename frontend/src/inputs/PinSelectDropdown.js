@@ -9,7 +9,7 @@ function PinSelectDropdown({id, config, selected, onChange, options, isInvalid})
     let usedPins = [];
     for (const section in config) {
         if (section !== id && config[section]["pin"] !== undefined) {
-            usedPins.push(config[section]["pin"]);
+            usedPins.push(String(config[section]["pin"]));
         }
     }
 
@@ -35,7 +35,10 @@ function PinSelectDropdown({id, config, selected, onChange, options, isInvalid})
 PinSelectDropdown.propTypes = {
     id: PropTypes.string,
     config: PropTypes.object,
-    selected: PropTypes.string,
+    selected: PropTypes.PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.string
+    ]),
     onChange: PropTypes.func,
     options: PropTypes.array,
     isInvalid: PropTypes.bool
