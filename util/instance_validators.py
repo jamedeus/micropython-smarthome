@@ -38,6 +38,9 @@ def validate_rules(instance):
 
     # Validate shedule rules
     for time in instance['schedule']:
+        if not time:
+            return f"{instance['nickname']}: Missing schedule rule timestamp"
+
         valid = schedule_validator(instance['schedule'][time], **instance)
 
         if valid is False:

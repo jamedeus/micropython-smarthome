@@ -2403,6 +2403,22 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         self.assertEqual(response.json(), {'Error': 'Config not found'})
         self.assertEqual(len(Config.objects.all()), 0)
 
+    # Original bug: Did not catch schedule rules with no timestamp (didn't make
+    # node crash but should still reject, user may have forgot to add time)
+    def test_regression_empty_schedule_rule_timestamp(self):
+        # Confirm starting condition
+        self.assertEqual(len(Config.objects.all()), 0)
+
+        # Add schedule rule with empty timestamp
+        invalid_request_payload = deepcopy(request_payload)
+        invalid_request_payload['device2']['schedule'][''] = '100'
+
+        # Post invalid payload, confirm rejected with correct error, confirm config not created
+        response = self.client.post('/generate_config_file', json.dumps(invalid_request_payload))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json(), {'Error': 'Lamp: Missing schedule rule timestamp'})
+        self.assertEqual(len(Config.objects.all()), 0)
+
 
 # Test the validate_full_config function called when user submits config generator form
 class ValidateConfigTests(TestCaseBackupRestore):
