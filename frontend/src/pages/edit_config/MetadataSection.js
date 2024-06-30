@@ -7,7 +7,11 @@ import { send_post_request, edit_existing, orig_name } from 'util/django_util';
 
 function MetadataSection() {
     // Get curent state + callback functions from context
-    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
+    const {
+        config,
+        handleInputChange,
+        highlightInvalid
+    } = useContext(ConfigContext);
 
     // Add invalid highlight when duplicate name entered
     async function prevent_duplicate_friendly_name(event) {
@@ -18,7 +22,10 @@ function MetadataSection() {
         // Skip API call if editing and new name matches original name
         if (!edit_existing || new_name.toLowerCase() != orig_name) {
             // Send new name to backend
-            const response = await send_post_request('/check_duplicate', {'name': new_name});
+            const response = await send_post_request(
+                '/check_duplicate',
+                {'name': new_name}
+            );
 
             // If name is duplicate add invalid highlight, otherwise remove
             if (!response.ok) {
