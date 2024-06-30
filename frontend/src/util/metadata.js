@@ -47,11 +47,15 @@ function get_config_template(category, type) {
 
 
 // Takes category ("device" or "sensor"), returns array of dropdown options
-// containing every driver type in category
-function get_type_dropdown_options(category) {
-    return Object.entries(metadata[`${category}s`]).map(([key, type]) => (
-        <option key={key} value={type.config_name}>{type.class_name}</option>
-    ));
+// containing every driver type in category.
+// Optional exclude array can contain config_names that should be skipped.
+function get_type_dropdown_options(category, exclude=[]) {
+    return Object.entries(metadata[`${category}s`])
+        .filter(([key, _]) =>
+            !exclude.includes(key)
+        ).map(([key, type]) => (
+            <option key={key} value={type.config_name}>{type.class_name}</option>
+        ));
 }
 
 

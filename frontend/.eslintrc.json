@@ -19,7 +19,7 @@
     ],
     "rules": {
         "indent": ["warn", 4, { "SwitchCase": 1 }],
-        "no-unused-vars": ["error", { "varsIgnorePattern": "^_" }],
+        "no-unused-vars": ["error", { "varsIgnorePattern": "^_", "args": "none" }],
         "padding-line-between-statements": [
             "warn",
             { "blankLine": "always", "prev": "import", "next": "*" },

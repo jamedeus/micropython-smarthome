@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { ConfigContext } from 'root/ConfigContext';
+import { ConfigContext, filterObject } from 'root/ConfigContext';
 import NicknameInput from 'inputs/NicknameInput';
 import IPInput from 'inputs/IPInput';
 import URIInput from 'inputs/URIInput';
@@ -42,6 +42,30 @@ function InstanceCard({ id }) {
     const [key] = useState(uuid());
 
     console.log(`Rendering ${id}`);
+
+    // Returns true if any sensor (except this card) has type si7021
+    // Used to remove si7021 option once used (can't have multiple)
+    const containsSi7021 = () => {
+        // Get object containing all sensors excluding this card
+        const otherSensors= Object.entries(config).reduce((acc, [key, value]) => {
+            if (key.startsWith('sensor') && key != id) {
+                acc[key] = value;
+            }
+            return acc;
+        }, {});
+        // Get array of sensor types (excluding this card)
+        const types = Object.values(otherSensors).map(sensor => sensor._type);
+        return types.includes('si7021');
+    }
+
+    // Get dropdown options from metadata
+    // Remove si7021 option if already used on another card
+    let dropdownOptions;
+    if (category === 'sensor' && containsSi7021(config)) {
+        dropdownOptions = get_type_dropdown_options(category, ['si7021']);
+    } else {
+        dropdownOptions = get_type_dropdown_options(category);
+    }
 
     // Returns list of nodes with input element for each parameter in config section
     // Must use random UUID keys, all other values can change (even device/sensor ID)
@@ -157,7 +181,7 @@ function InstanceCard({ id }) {
                             isInvalid={(highlightInvalid && !instance._type)}
                         >
                             <option value="clear">Select {category} type</option>
-                            {get_type_dropdown_options(category)}
+                            {dropdownOptions}
                         </Form.Select>
                     </label>
                     <Card.Body id={`${id}-params`}>
