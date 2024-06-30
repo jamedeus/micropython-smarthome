@@ -63,12 +63,28 @@ function hasEmptyFields(config) {
                 console.log(`Empty field in ${key}`);
                 return true;
             }
-        } else if (config[key] === '') {
+        } else if (config[key] === null || config[key] === '') {
             console.log(`Empty field: ${key}`);
             return true;
         }
     }
     return false;
+}
+
+// Takes config object, returns true if any keys are null or empty strings
+// Used to detect unset schedule rule time before submitting
+function hasEmptyKeys(config) {
+    for (let key in config) {
+        if (key === null || key === '') {
+            console.log('Config contains empty key');
+            return true;
+        } else if (typeof(config[key]) === 'object') {
+            if (hasEmptyKeys(config[key])) {
+                console.log('Config contains empty key');
+                return true;
+            }
+        }
+    }
 }
 
 const PageContainer = () => {
@@ -121,6 +137,12 @@ const PageContainer = () => {
     async function submitButton() {
         console.log(config);
 
+        // Don't submit if config has empty keys (schedule rule time not set)
+        if (hasEmptyKeys(config)) {
+            setHighlightInvalid(true);
+            return;
+        }
+
         // Overwrites if editing existing config, otherwise create config
         let response;
         if (edit_existing) {
@@ -155,6 +177,7 @@ const PageContainer = () => {
         // If other error, display in alert
         } else {
             alert(await response.text());
+            setHighlightInvalid(true);
         }
     }
 

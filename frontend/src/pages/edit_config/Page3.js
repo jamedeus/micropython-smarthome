@@ -11,7 +11,7 @@ import { v4 as uuid } from 'uuid';
 
 const Page3 = () => {
     // Get curent state + callback functions from context
-    const { config, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     // Get callback to open ApiTarget rule modal
     const { handleShow } = useContext(ApiTargetModalContext);
@@ -32,6 +32,7 @@ const Page3 = () => {
                         instance={instance}
                         timestamp={rule}
                         schedule_keywords={config.metadata.schedule_keywords}
+                        highlightInvalid={highlightInvalid}
                     />
                 </td>
                 <td>
@@ -106,8 +107,8 @@ const Page3 = () => {
         // Get existing rules
         const rules = { ...config[instance]["schedule"] };
 
-        // Add rule with placeholder timestamp, default_rule value
-        rules["Set time"] = config[instance]["default_rule"];
+        // Add rule with blank timestamp, default_rule value
+        rules[""] = config[instance]["default_rule"];
         handleInputChange(instance, "schedule", rules);
     }
 

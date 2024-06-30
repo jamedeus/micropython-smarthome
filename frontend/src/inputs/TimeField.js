@@ -10,6 +10,11 @@ const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
 
 // Takes 24h timestamp, returns 12h with am/pm suffix
 function format12h(timestamp) {
+    // Return placeholder string if timestamp empty
+    if (!timestamp) {
+        return 'Set time';
+    }
+
     // Return keywords unchanged
     if ( ! timestamp_regex.test(timestamp)) {
         return timestamp;
@@ -23,7 +28,7 @@ function format12h(timestamp) {
     return `${hour}:${minute} ${suffix}`;
 }
 
-export const TimeField = ({ instance, timestamp, schedule_keywords }) => {
+export const TimeField = ({ instance, timestamp, schedule_keywords, highlightInvalid }) => {
     // Get curent state from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
@@ -81,10 +86,20 @@ export const TimeField = ({ instance, timestamp, schedule_keywords }) => {
     // Reference to span that shows current time, opens popup
     const buttonRef = useRef(null);
 
+    // Add invalid highlight if timestamp is empty and highlightInvalid is true
+    let invalid = false;
+    if (highlightInvalid && !timestamp) {
+        invalid = true;
+    }
+
     return (
         <div>
             {/* Display current timestamp, open edit popup when clicked */}
-            <span ref={buttonRef} className="form-control" onClick={() => handleShow()}>
+            <span
+                ref={buttonRef}
+                className={`form-control ${invalid ? 'is-invalid' : ''}`}
+                onClick={() => handleShow()}
+            >
                 {format12h(timestamp)}
             </span>
 
@@ -128,5 +143,6 @@ export const TimeField = ({ instance, timestamp, schedule_keywords }) => {
 TimeField.propTypes = {
     instance: PropTypes.string,
     timestamp: PropTypes.string,
-    schedule_keywords: PropTypes.object
+    schedule_keywords: PropTypes.object,
+    highlightInvalid: PropTypes.bool
 };
