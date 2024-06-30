@@ -7,6 +7,6 @@ firmware/*.bin
 *.coverage.*
 .env
 *release.log
-frontend/node_configuration/static/node_configuration/edit_config.js
+frontend/node_configuration/static/
 setup_ssl_certs.py
 *.der
