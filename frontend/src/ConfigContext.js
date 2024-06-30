@@ -222,7 +222,12 @@ export const ConfigProvider = ({ children }) => {
         // If target is device remove from all sensor target lists
         if (category === 'device') {
             for (const sensor in sensors) {
-                state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== target);
+                // Prevent error if sensor type not selected yet (no targets key)
+                if (state[sensor]['targets']) {
+                    state[sensor]['targets'] = state[sensor]['targets'].filter(
+                        item => item !== target
+                    );
+                }
             }
         }
 
