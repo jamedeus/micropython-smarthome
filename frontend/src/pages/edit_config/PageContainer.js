@@ -63,7 +63,7 @@ function hasEmptyFields(config) {
                 console.log(`Empty field in ${key}`);
                 return true;
             }
-        } else if (config[key] === null || config[key] === '') {
+        } else if ([null, '', undefined].includes(config[key])) {
             console.log(`Empty field: ${key}`);
             return true;
         }
@@ -75,7 +75,7 @@ function hasEmptyFields(config) {
 // Used to detect unset schedule rule time before submitting
 function hasEmptyKeys(config) {
     for (let key in config) {
-        if (key === null || key === '') {
+        if ([null, '', undefined].includes(key)) {
             console.log('Config contains empty key');
             return true;
         } else if (typeof(config[key]) === 'object') {

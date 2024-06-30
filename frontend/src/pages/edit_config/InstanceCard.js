@@ -24,7 +24,12 @@ import { v4 as uuid } from 'uuid';
 
 function InstanceCard({ id }) {
     // Get curent state + callback functions from context
-    const { config, startDeletingInstance, changeInstanceType } = useContext(ConfigContext);
+    const {
+        config,
+        startDeletingInstance,
+        changeInstanceType,
+        highlightInvalid
+    } = useContext(ConfigContext);
 
     // Get instance section in config + category (device or sensor)
     const instance = config[id];
@@ -149,6 +154,7 @@ function InstanceCard({ id }) {
                         <Form.Select
                             value={instance._type}
                             onChange={(event) => changeInstanceType(id, category, event)}
+                            isInvalid={(highlightInvalid && !instance._type)}
                         >
                             <option value="clear">Select {category} type</option>
                             {get_type_dropdown_options(category)}
@@ -164,7 +170,7 @@ function InstanceCard({ id }) {
 }
 
 InstanceCard.propTypes = {
-    id: PropTypes.string,
+    id: PropTypes.string
 };
 
 export default InstanceCard;

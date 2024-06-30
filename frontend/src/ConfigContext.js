@@ -100,7 +100,8 @@ export const ConfigProvider = ({ children }) => {
 
         // Add key to state object with empty config
         // Will be populated with metadata template when user selects type
-        setConfig({ ...config, [`${category}${index}`]: {} });
+        // _type = undefined used to detect empty and add invalid highlight
+        setConfig({ ...config, [`${category}${index}`]: {'_type': undefined} });
 
         // Create UUID for new instance
         setUUIDs({ ...UUIDs, [`${category}s`]: {
