@@ -45,7 +45,7 @@ const Page2 = () => {
                     <h6>
                         <b>{sensorNickname} ({sensorType})</b> targets:
                     </h6>
-                    {Object.keys(devices).map(device => {
+                    {Object.keys(devices).sort().map(device => {
                         return (
                             <TargetCheckbox
                                 key={device}
@@ -66,7 +66,7 @@ const Page2 = () => {
     return (
         <>
             <h3>Select targets for each sensor</h3>
-            {Object.keys(sensors).map(sensor => {
+            {Object.keys(sensors).sort().map(sensor => {
                 return <TargetSection key={sensor} sensor={sensor} />;
             })}
         </>

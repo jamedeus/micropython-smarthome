@@ -150,7 +150,7 @@ const Page3 = () => {
     return (
         <>
             <h3>Add schedule rules (optional)</h3>
-            {Object.keys(config).map(instance => {
+            {Object.keys(config).sort().map(instance => {
                 if (instance.startsWith("device") || instance.startsWith("sensor")) {
                     return (
                         <ScheduleRuleSection
