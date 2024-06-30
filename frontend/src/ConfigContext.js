@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { get_config_template } from 'util/metadata';
 import { sleep } from 'util/helper_functions';
 import { v4 as uuid } from 'uuid';
+import { api_target_options } from 'util/django_util';
 
 
 // Takes object and key prefix, returns object with all keys that begin with prefix
@@ -28,11 +29,12 @@ export const ConfigProvider = ({ children }) => {
         // Context element created with json_script django filter
         const element = document.getElementById("config");
 
+        let config;
         // Use context if present, otherwise use blank template
         if (element) {
-            return JSON.parse(element.textContent);
+            config = JSON.parse(element.textContent);
         } else {
-            return {
+            config = {
                 metadata: {
                     id: '',
                     floor: '',
@@ -45,6 +47,21 @@ export const ConfigProvider = ({ children }) => {
                 }
             };
         }
+
+        // Check for api-target with invalid target IP (doesn't match any node)
+        // If found, clear ip, default_rule, and schedule rules fields
+        const apiTargets = Object.entries(config).filter(([id, params]) => {
+            return id.startsWith('device') && params._type === 'api-target';
+        });
+        apiTargets.forEach(([id, params]) => {
+            if (!Object.values(api_target_options.addresses).includes(params.ip)) {
+                config[id]['ip'] = '';
+                config[id]['default_rule'] = '';
+                config[id]['schedule'] = {};
+            }
+        });
+
+        return config;
     });
 
     const updateConfig = newConfig => {
