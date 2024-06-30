@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext, filterObject } from 'root/ConfigContext';
@@ -12,44 +13,62 @@ const Page2 = () => {
     const devices = filterObject(config, 'device');
     const sensors = filterObject(config, 'sensor');
 
-    function targetSection(sensor) {
+    const TargetCheckbox = ({ sensor, device }) => {
+        const handleClick = (e) => {
+            handleSensorTargetSelect(sensor, device, e.target.checked);
+        };
+
+        return (
+            <Form.Check
+                type="checkbox"
+                id={`${sensor}-${device}-target`}
+                key={`${sensor}-${device}-target`}
+                label={devices[device]["nickname"]}
+                checked={config[sensor]["targets"].includes(device)}
+                onChange={handleClick}
+            />
+        );
+    };
+
+    TargetCheckbox.propTypes = {
+        sensor: PropTypes.string,
+        device: PropTypes.string
+    };
+
+    const TargetSection = ({ sensor }) => {
+        const sensorNickname = config[sensor]["nickname"];
+        const sensorType = config[sensor]["_type"];
+
         return (
             <Card key={`${sensor}-targets`} className="mb-4">
                 <Card.Body>
-                    <h6><b>{config[sensor]["nickname"]} ({config[sensor]["_type"]})</b> targets:</h6>
-                    {/* Iterate devices, add checkbox for each */}
-                    {(() => {
-                        let inputs = [];
-                        for (let device in devices) {
-                            inputs.push(
-                                <Form.Check
-                                    type="checkbox"
-                                    id={`${sensor}-${device}-target`}
-                                    key={`${sensor}-${device}-target`}
-                                    label={devices[device]["nickname"]}
-                                    checked={config[sensor]["targets"].includes(device)}
-                                    onChange={(e) => handleSensorTargetSelect(sensor, device, e.target.checked)}
-                                />
-                            );
-                        }
-                        return inputs;
-                    })()}
+                    <h6>
+                        <b>{sensorNickname} ({sensorType})</b> targets:
+                    </h6>
+                    {Object.keys(devices).map(device => {
+                        return (
+                            <TargetCheckbox
+                                key={device}
+                                sensor={sensor}
+                                device={device}
+                            />
+                        );
+                    })}
                 </Card.Body>
             </Card>
         );
-    }
+    };
+
+    TargetSection.propTypes = {
+        sensor: PropTypes.string
+    };
 
     return (
         <>
             <h3>Select targets for each sensor</h3>
-            {/* Iterate sensors, add card for each */}
-            {(() => {
-                let cards = [];
-                for (let sensor in sensors) {
-                    cards.push(targetSection(sensor, config[sensor]));
-                }
-                return cards;
-            })()}
+            {Object.keys(sensors).map(sensor => {
+                return <TargetSection key={sensor} sensor={sensor} />;
+            })}
         </>
     );
 };
