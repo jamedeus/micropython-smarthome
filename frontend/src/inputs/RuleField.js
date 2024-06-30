@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import Form from 'react-bootstrap/Form';
@@ -38,41 +38,175 @@ OnOffRuleInput.propTypes = {
     setRule: PropTypes.func
 };
 
-const ThermostatRuleInput = ({ rule, units, limits, onButtonClick, setRule }) => {
+// Wrapper for slider input that adds toggle which replaces input with standard
+// rule dropdown (enabled or disabled) for instances that take either rule type
+const SliderRuleWrapper = ({
+    rule,
+    setRule,
+    internalRule,
+    setInternalRule,
+    defaultRangeRule,
+    children
+}) => {
+    const [type, setType] = useState(
+        ['enabled', 'disabled'].includes(rule) ? 'standard' : 'range'
+    );
+
+    const toggle = () => {
+        if (type === 'standard') {
+            setInternalRule(defaultRangeRule);
+            setType('range');
+        } else {
+            setInternalRule('enabled');
+            setType('standard');
+        }
+    };
+
+    // Creates slight delay before re-render when setInternalRule called
+    useEffect(() => {
+        setRule(internalRule);
+    }, [internalRule]);
+
     return (
-        <RuleSlider
-            rule_value={rule}
-            slider_min={convert_temperature(limits[0], "celsius", units)}
-            slider_max={convert_temperature(limits[1], "celsius", units)}
-            slider_step={0.1}
-            button_step={0.5}
-            display_type={"float"}
-            onButtonClick={onButtonClick}
-            onSliderMove={setRule}
-        />
+        <>
+            {/* Range or enabled/disabled */}
+            <div className="d-flex mt-2">
+                <Form.Check
+                    className="mb-3"
+                    type="switch"
+                    label="Range"
+                    checked={type === 'range'}
+                    onChange={toggle}
+                />
+            </div>
+
+            {type === 'range' ? (
+                children
+            ) : (
+                <StandardRuleInput
+                    rule={internalRule}
+                    setRule={setInternalRule}
+                />
+            )}
+        </>
+    );
+};
+
+SliderRuleWrapper.propTypes = {
+    rule: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.string
+    ]),
+    setRule: PropTypes.func,
+    internalRule: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.string
+    ]),
+    setInternalRule: PropTypes.func,
+    defaultRangeRule: PropTypes.number,
+    children: PropTypes.node
+};
+
+// Handler for slider + and - buttons
+const handleButtonClick = (rule, step, direction, min_rule, max_rule) => {
+    let new_rule;
+    if (direction === "up") {
+        new_rule = parseFloat(rule) + parseFloat(step);
+    } else {
+        new_rule = parseFloat(rule) - parseFloat(step);
+    }
+
+    // Enforce rule limits
+    if (new_rule < parseFloat(min_rule)) {
+        new_rule = parseFloat(min_rule);
+    } else if (new_rule > parseFloat(max_rule)) {
+        new_rule = parseFloat(max_rule);
+    }
+
+    return new_rule;
+};
+
+const ThermostatRuleInput = ({ rule, units, limits, setRule }) => {
+    const [internalRule, setInternalRule] = useState(rule);
+
+    const onButtonClick = (step, direction, min_rule, max_rule) => {
+        const newRule = handleButtonClick(rule, step, direction, min_rule, max_rule);
+        setRule(newRule);
+    };
+
+    // Default rule when changing from dropdown to slider
+    let defaultRangeRule;
+    switch(units) {
+        case('celsius'):
+            defaultRangeRule = 22;
+            break;
+        case('fahrenheit'):
+            defaultRangeRule = 71;
+            break;
+        case('kelvin'):
+            defaultRangeRule = 295;
+            break;
+    }
+
+    return (
+        <SliderRuleWrapper
+            rule={rule}
+            setRule={setRule}
+            internalRule={internalRule}
+            setInternalRule={setInternalRule}
+            defaultRangeRule={defaultRangeRule}
+        >
+            <RuleSlider
+                rule_value={rule}
+                slider_min={convert_temperature(limits[0], "celsius", units)}
+                slider_max={convert_temperature(limits[1], "celsius", units)}
+                slider_step={0.1}
+                button_step={0.5}
+                display_type={"float"}
+                onButtonClick={onButtonClick}
+                onSliderMove={setRule}
+            />
+        </SliderRuleWrapper>
     );
 };
 
 ThermostatRuleInput.propTypes = {
-    rule: PropTypes.number,
+    rule: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.string
+    ]),
     units: PropTypes.string,
     limits: PropTypes.array,
-    onButtonClick: PropTypes.func,
     setRule: PropTypes.func
 };
 
-const FloatRangeRuleInput = ({ rule, limits, onButtonClick, setRule }) => {
+const FloatRangeRuleInput = ({ rule, limits, setRule }) => {
+    const [internalRule, setInternalRule] = useState(rule);
+
+    const onButtonClick = (step, direction, min_rule, max_rule) => {
+        const newRule = handleButtonClick(rule, step, direction, min_rule, max_rule);
+        setInternalRule(newRule);
+    };
+
     return (
-        <RuleSlider
-            rule_value={rule}
-            slider_min={limits[0]}
-            slider_max={limits[1]}
-            slider_step={0.5}
-            button_step={0.5}
-            display_type={"float"}
-            onButtonClick={onButtonClick}
-            onSliderMove={setRule}
-        />
+        <SliderRuleWrapper
+            rule={rule}
+            setRule={setRule}
+            internalRule={internalRule}
+            setInternalRule={setInternalRule}
+            defaultRangeRule={parseInt(parseInt(limits[1]) / 2)}
+        >
+            <RuleSlider
+                rule_value={rule}
+                slider_min={limits[0]}
+                slider_max={limits[1]}
+                slider_step={0.5}
+                button_step={0.5}
+                display_type={"float"}
+                onButtonClick={onButtonClick}
+                onSliderMove={setRule}
+            />
+        </SliderRuleWrapper>
     );
 };
 
@@ -82,25 +216,41 @@ FloatRangeRuleInput.propTypes = {
         PropTypes.string
     ]),
     limits: PropTypes.array,
-    onButtonClick: PropTypes.func,
     setRule: PropTypes.func
 };
 
-const IntOrFadeRuleInput = ({ rule, fade, duration, limits, onButtonClick, setRule, set_popup_param }) => {
+const IntOrFadeRuleInput = ({ rule, fade, duration, limits, setRule, set_popup_param }) => {
+    const [internalRule, setInternalRule] = useState(rule);
+
+    const onButtonClick = (step, direction, min_rule, max_rule) => {
+        const newRule = handleButtonClick(rule, step, direction, min_rule, max_rule);
+        setInternalRule(newRule);
+    };
+
+    // Creates slight delay before re-render when setInternalRule called
+    useEffect(() => {
+        setRule(internalRule);
+    }, [internalRule]);
+
     return (
-        <>
+        <SliderRuleWrapper
+            rule={rule}
+            setRule={setRule}
+            internalRule={internalRule}
+            setInternalRule={setInternalRule}
+            defaultRangeRule={parseInt(parseInt(limits[1]) / 2)}
+        >
             <RuleSlider
-                rule_value={parseInt(rule)}
+                rule_value={parseInt(internalRule)}
                 slider_min={parseInt(limits[0])}
                 slider_max={parseInt(limits[1])}
                 slider_step={1}
                 button_step={1}
                 display_type={"int"}
                 onButtonClick={onButtonClick}
-                onSliderMove={setRule}
+                onSliderMove={setInternalRule}
             />
 
-            {/* Fade duration input */}
             <div className={fade ? "text-center" : "d-none"}>
                 <Form.Label className="mt-2">Duration (seconds)</Form.Label>
                 <Form.Control
@@ -110,17 +260,16 @@ const IntOrFadeRuleInput = ({ rule, fade, duration, limits, onButtonClick, setRu
                 />
             </div>
 
-            {/* Fade mode */}
             <div className="d-flex mt-2">
                 <Form.Check
-                    id="fade-switch"
+                    className="mt-3"
                     type="switch"
                     label="Fade"
                     checked={fade}
                     onChange={(e) => set_popup_param("fade_rule", e.target.checked)}
                 />
             </div>
-        </>
+        </SliderRuleWrapper>
     );
 };
 
@@ -135,7 +284,6 @@ IntOrFadeRuleInput.propTypes = {
         PropTypes.string
     ]),
     limits: PropTypes.array,
-    onButtonClick: PropTypes.func,
     setRule: PropTypes.func,
     set_popup_param: PropTypes.func
 };
@@ -214,25 +362,6 @@ export const RuleField = ({ instance, timestamp }) => {
         setPopupContent({ ...popupContent, ["rule"]: value});
     };
 
-    // Handler for slider + and - buttons
-    const onButtonClick = (step, direction, min_rule, max_rule) => {
-        let new_rule;
-        if (direction === "up") {
-            new_rule = parseFloat(popupContent.rule) + parseFloat(step);
-        } else {
-            new_rule = parseFloat(popupContent.rule) - parseFloat(step);
-        }
-
-        // Enforce rule limits
-        if (new_rule < parseFloat(min_rule)) {
-            new_rule = parseFloat(min_rule);
-        } else if (new_rule > parseFloat(max_rule)) {
-            new_rule = parseFloat(max_rule);
-        }
-
-        setPopupContent({ ...popupContent, ["rule"]: new_rule});
-    };
-
     // Reference to span that shows current rule, opens popup
     const buttonRef = useRef(null);
 
@@ -259,7 +388,6 @@ export const RuleField = ({ instance, timestamp }) => {
                                     rule={popupContent.rule}
                                     units={config[instance]["units"]}
                                     limits={popupContent.metadata.rule_limits}
-                                    onButtonClick={onButtonClick}
                                     setRule={setRule}
                                 />
                             );
@@ -286,7 +414,6 @@ export const RuleField = ({ instance, timestamp }) => {
                                     <FloatRangeRuleInput
                                         rule={popupContent.rule}
                                         limits={popupContent.metadata.rule_limits}
-                                        onButtonClick={onButtonClick}
                                         setRule={setRule}
                                     />
                                 );
@@ -300,7 +427,6 @@ export const RuleField = ({ instance, timestamp }) => {
                                             config[popupContent.instance]["min_rule"],
                                             config[popupContent.instance]["max_rule"]
                                         ]}
-                                        onButtonClick={onButtonClick}
                                         setRule={setRule}
                                         set_popup_param={set_popup_param}
                                     />
