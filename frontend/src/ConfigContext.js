@@ -123,7 +123,10 @@ export const ConfigProvider = ({ children }) => {
         // Get animation height (card height + 1.5rem spacing), set CSS var used in animation
         const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
         const animation_height = card.clientHeight / remPx + 1.5;
-        document.documentElement.style.setProperty('--animation-height', `${animation_height}rem`);
+        document.documentElement.style.setProperty(
+            '--animation-height',
+            `${animation_height}rem`
+        );
 
         // Wait for animation to complete before removing from state object
         await delete_animation(cards, index, button);
@@ -248,7 +251,9 @@ export const ConfigProvider = ({ children }) => {
             if (category === 'device') {
                 for (const sensor in sensors) {
                     if (state[sensor]['targets'].includes(old_id)) {
-                        state[sensor]['targets'] = state[sensor]['targets'].filter(item => item !== old_id);
+                        state[sensor]['targets'] = state[sensor]['targets'].filter(
+                            item => item !== old_id
+                        );
                         state[sensor]['targets'].push(new_id);
                     }
                 }
