@@ -3,25 +3,6 @@ import PropTypes from 'prop-types';
 import RuleSlider from 'inputs/RuleSlider';
 
 const IntRangeRuleInput = ({ rule, setRule, min, max }) => {
-    // Handler for slider + and - buttons
-    const handleButtonClick = (rule, direction, min, max) => {
-        let new_rule;
-        if (direction === "up") {
-            new_rule = parseInt(rule) + 1;
-        } else {
-            new_rule = parseInt(rule) - 1;
-        }
-
-        // Enforce rule limits
-        if (new_rule < parseInt(min)) {
-            new_rule = parseInt(max);
-        } else if (new_rule > parseInt(max)) {
-            new_rule = parseInt(max);
-        }
-
-        setRule(new_rule);
-    };
-
     return (
         <RuleSlider
             rule_value={rule}
@@ -30,8 +11,7 @@ const IntRangeRuleInput = ({ rule, setRule, min, max }) => {
             slider_step={1}
             button_step={1}
             display_type={"int"}
-            onButtonClick={handleButtonClick}
-            onSliderMove={setRule}
+            setRule={setRule}
         />
     );
 };

@@ -3,9 +3,28 @@ import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import { Range, getTrackBackground } from 'react-range';
 
-function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_step, display_type, onButtonClick, onSliderMove }) {
+function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_step, display_type, setRule }) {
     // Create array containing current rule, required my slider component
     const values = [rule_value];
+
+    // Handler for slider + and - buttons
+    const handleButtonClick = (rule, direction) => {
+        let new_rule;
+        if (direction === "up") {
+            new_rule = parseFloat(rule) + parseFloat(button_step);
+        } else {
+            new_rule = parseFloat(rule) - parseFloat(button_step);
+        }
+
+        // Enforce rule limits
+        if (new_rule < parseFloat(slider_min)) {
+            new_rule = parseFloat(slider_max);
+        } else if (new_rule > parseFloat(slider_max)) {
+            new_rule = parseFloat(slider_max);
+        }
+
+        setRule(new_rule);
+    };
 
     // Returns value displayed on slider handle
     const getThumbValue = () => {
@@ -25,7 +44,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             <Button
                 variant="none"
                 size="sm"
-                onClick={() => onButtonClick(values[0], "down", slider_min, slider_max)}
+                onClick={() => handleButtonClick(values[0], "down")}
             >
                 <i className="bi-dash-lg"></i>
             </Button>
@@ -36,7 +55,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
                     min={slider_min}
                     max={slider_max}
                     values={values}
-                    onChange={(values) => onSliderMove(values[0])}
+                    onChange={(values) => setRule(values[0])}
                     renderTrack={({ props, children }) => (
                         <div
                             {...props}
@@ -68,7 +87,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             <Button
                 variant="none"
                 size="sm"
-                onClick={() => onButtonClick(values[0], "up", slider_min, slider_max)}
+                onClick={() => handleButtonClick(values[0], "up")}
             >
                 <i className="bi-plus-lg"></i>
             </Button>
@@ -87,7 +106,7 @@ RuleSlider.propTypes = {
     button_step: PropTypes.number,
     display_type: PropTypes.string,
     onButtonClick: PropTypes.func,
-    onSliderMove: PropTypes.func,
+    setRule: PropTypes.func,
     style: PropTypes.object
 };
 
