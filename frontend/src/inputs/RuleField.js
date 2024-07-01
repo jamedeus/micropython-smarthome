@@ -3,40 +3,11 @@ import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
-import Dropdown from 'inputs/Dropdown.js';
 import RuleSlider from 'inputs/RuleSlider';
+import StandardRuleInput from 'inputs/StandardRuleInput';
+import OnOffRuleInput from 'inputs/OnOffRuleInput';
 import { convert_temperature } from 'util/thermostat_util';
 import { get_instance_metadata } from 'util/metadata';
-
-const StandardRuleInput = ({ rule, setRule }) => {
-    return (
-        <Dropdown
-            value={rule}
-            options={["Enabled", "Disabled"]}
-            onChange={(value) => setRule(value)}
-        />
-    );
-};
-
-StandardRuleInput.propTypes = {
-    rule: PropTypes.string,
-    setRule: PropTypes.func
-};
-
-const OnOffRuleInput = ({ rule, setRule }) => {
-    return (
-        <Dropdown
-            value={rule}
-            options={["Enabled", "Disabled", "On", "Off"]}
-            onChange={(value) => setRule(value)}
-        />
-    );
-};
-
-OnOffRuleInput.propTypes = {
-    rule: PropTypes.string,
-    setRule: PropTypes.func
-};
 
 // Wrapper for slider input that adds toggle which replaces input with standard
 // rule dropdown (enabled or disabled) for instances that take either rule type

@@ -1,9 +1,9 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
-import Dropdown from './Dropdown';
+import StandardRuleInput from 'inputs/StandardRuleInput';
 
-function DefaultRuleStandard({ id }) {
+const DefaultRuleStandard = ({ id }) => {
     // Get curent state + callback functions from context
     const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
@@ -15,15 +15,14 @@ function DefaultRuleStandard({ id }) {
     };
 
     return (
-        <Dropdown
-            value={instance.default_rule}
-            options={["Enabled", "Disabled"]}
-            onChange={onChange}
+        <StandardRuleInput
+            rule={instance.default_rule}
+            setRule={onChange}
             label="Default Rule"
             isInvalid={(highlightInvalid && !instance.default_rule)}
         />
     );
-}
+};
 
 DefaultRuleStandard.propTypes = {
     id: PropTypes.string,
