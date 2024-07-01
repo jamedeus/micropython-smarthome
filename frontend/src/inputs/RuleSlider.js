@@ -25,7 +25,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             <Button
                 variant="none"
                 size="sm"
-                onClick={() => onButtonClick(button_step, "down", slider_min, slider_max)}
+                onClick={() => onButtonClick(values[0], "down", slider_min, slider_max)}
             >
                 <i className="bi-dash-lg"></i>
             </Button>
@@ -68,7 +68,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             <Button
                 variant="none"
                 size="sm"
-                onClick={() => onButtonClick(button_step, "up", slider_min, slider_max)}
+                onClick={() => onButtonClick(values[0], "up", slider_min, slider_max)}
             >
                 <i className="bi-plus-lg"></i>
             </Button>

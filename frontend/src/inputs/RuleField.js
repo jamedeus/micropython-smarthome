@@ -3,9 +3,10 @@ import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
-import RuleSlider from 'inputs/RuleSlider';
 import StandardRuleInput from 'inputs/StandardRuleInput';
 import OnOffRuleInput from 'inputs/OnOffRuleInput';
+import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
+import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 import { convert_temperature } from 'util/thermostat_util';
 import { get_instance_metadata } from 'util/metadata';
 
@@ -54,34 +55,7 @@ SliderRuleWrapper.propTypes = {
     children: PropTypes.node
 };
 
-// Handler for slider + and - buttons
-const handleButtonClick = (rule, step, direction, min_rule, max_rule) => {
-    let new_rule;
-    if (direction === "up") {
-        new_rule = parseFloat(rule) + parseFloat(step);
-    } else {
-        new_rule = parseFloat(rule) - parseFloat(step);
-    }
-
-    // Enforce rule limits
-    if (new_rule < parseFloat(min_rule)) {
-        new_rule = parseFloat(min_rule);
-    } else if (new_rule > parseFloat(max_rule)) {
-        new_rule = parseFloat(max_rule);
-    }
-
-    return new_rule;
-};
-
 const ThermostatRuleInput = ({ ruleDetails, setRuleDetails, units, limits }) => {
-    const onButtonClick = (step, direction, min_rule, max_rule) => {
-        setRuleDetails({
-            ...ruleDetails,
-            rule: handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule)
-
-        });
-    };
-
     // Default rule when changing from dropdown to slider
     let defaultRangeRule;
     switch(units) {
@@ -103,15 +77,12 @@ const ThermostatRuleInput = ({ ruleDetails, setRuleDetails, units, limits }) => 
             setRuleDetails={setRuleDetails}
             defaultRangeRule={defaultRangeRule}
         >
-            <RuleSlider
-                rule_value={ruleDetails.rule}
-                slider_min={convert_temperature(limits[0], "celsius", units)}
-                slider_max={convert_temperature(limits[1], "celsius", units)}
-                slider_step={0.1}
-                button_step={0.5}
-                display_type={"float"}
-                onButtonClick={onButtonClick}
-                onSliderMove={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+            <FloatRangeRuleInput
+                rule={ruleDetails.rule}
+                setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
+                min={convert_temperature(limits[0], "celsius", units)}
+                max={convert_temperature(limits[1], "celsius", units)}
+                sliderStep={0.1}
             />
         </SliderRuleWrapper>
     );
@@ -124,51 +95,7 @@ ThermostatRuleInput.propTypes = {
     limits: PropTypes.array
 };
 
-const FloatRangeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
-    const onButtonClick = (step, direction, min_rule, max_rule) => {
-        setRuleDetails({
-            ...ruleDetails,
-            rule: handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule)
-
-        });
-    };
-
-    return (
-        <SliderRuleWrapper
-            ruleDetails={ruleDetails}
-            setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
-            setRuleDetails={setRuleDetails}
-            defaultRangeRule={parseInt(parseInt(limits[1]) / 2)}
-        >
-            <RuleSlider
-                rule_value={ruleDetails.rule}
-                slider_min={limits[0]}
-                slider_max={limits[1]}
-                slider_step={0.5}
-                button_step={0.5}
-                display_type={"float"}
-                onButtonClick={onButtonClick}
-                onSliderMove={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
-            />
-        </SliderRuleWrapper>
-    );
-};
-
-FloatRangeRuleInput.propTypes = {
-    ruleDetails: PropTypes.object,
-    setRuleDetails: PropTypes.func,
-    limits: PropTypes.array
-};
-
 const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
-    const onButtonClick = (step, direction, min_rule, max_rule) => {
-        setRuleDetails({
-            ...ruleDetails,
-            rule: handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule)
-
-        });
-    };
-
     const setDuration = (duration) => {
         setRuleDetails({ ...ruleDetails, duration: duration});
     };
@@ -184,15 +111,11 @@ const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
             setRuleDetails={setRuleDetails}
             defaultRangeRule={parseInt(parseInt(limits[1]) / 2)}
         >
-            <RuleSlider
-                rule_value={parseInt(ruleDetails.rule)}
-                slider_min={parseInt(limits[0])}
-                slider_max={parseInt(limits[1])}
-                slider_step={1}
-                button_step={1}
-                display_type={"int"}
-                onButtonClick={onButtonClick}
-                onSliderMove={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+            <IntRangeRuleInput
+                rule={ruleDetails.rule}
+                setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
+                min={parseInt(limits[0])}
+                max={parseInt(limits[1])}
             />
 
             <div className={ruleDetails.fade_rule ? "text-center" : "d-none"}>
@@ -324,11 +247,19 @@ export const RuleField = ({ instance, timestamp }) => {
                                 );
                             case "float_range":
                                 return (
-                                    <FloatRangeRuleInput
+                                    <SliderRuleWrapper
                                         ruleDetails={ruleDetails}
+                                        setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
                                         setRuleDetails={setRuleDetails}
-                                        limits={metadata.rule_limits}
-                                    />
+                                        defaultRangeRule={parseInt(parseInt(metadata.rule_limits[1]) / 2)}
+                                    >
+                                        <FloatRangeRuleInput
+                                            rule={ruleDetails.rule}
+                                            setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
+                                            min={metadata.rule_limits[0]}
+                                            max={metadata.rule_limits[1]}
+                                        />
+                                    </SliderRuleWrapper>
                                 );
                             case "int_or_fade":
                                 return (

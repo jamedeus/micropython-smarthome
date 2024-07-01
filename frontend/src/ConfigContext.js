@@ -171,23 +171,6 @@ export const ConfigProvider = ({ children }) => {
         setConfig({ ...config, [sensor]: update });
     };
 
-    const handleSliderButton = (id, step, direction, min_rule, max_rule) => {
-        const update = { ...config[id] };
-        if (direction === "up") {
-            update.default_rule = parseFloat(update.default_rule) + parseFloat(step);
-        } else {
-            update.default_rule = parseFloat(update.default_rule) - parseFloat(step);
-        }
-
-        // Enforce rule limits
-        if (parseFloat(update.default_rule) < parseFloat(min_rule)) {
-            update.default_rule = parseFloat(min_rule);
-        } else if (parseFloat(update.default_rule) > parseFloat(max_rule)) {
-            update.default_rule = parseFloat(max_rule);
-        }
-        setConfig({ ...config, [id]: update });
-    };
-
     // Handler for IR target checkboxes
     const handleIrTargetSelect = (target, checked) => {
         const ir_blaster = { ...config.ir_blaster };
@@ -279,7 +262,6 @@ export const ConfigProvider = ({ children }) => {
                 handleInputChange,
                 handleInstanceUpdate,
                 handleSensorTargetSelect,
-                handleSliderButton,
                 handleIrTargetSelect
             }}
         >

@@ -2,14 +2,14 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import { get_instance_metadata } from 'util/metadata';
-import RuleSlider from './RuleSlider';
 import { average } from 'util/helper_functions';
 import { convert_temperature } from 'util/thermostat_util';
+import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 
 
 function DefaultRuleThermostat({ id }) {
     // Get instance section from config (state) object
-    const { config, handleSliderButton, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInputChange } = useContext(ConfigContext);
 
     // Get instance section from config (state) object
     const instance = config[id];
@@ -24,12 +24,6 @@ function DefaultRuleThermostat({ id }) {
     if (instance.default_rule === '') {
         instance.default_rule = average(min_rule, max_rule);
     }
-
-    // Handler for slider + and - buttons
-    const onButtonClick = (step, direction, min_rule, max_rule) => {
-        handleSliderButton(id, step, direction, min_rule, max_rule);
-    };
-
     // Handler for slider move events
     const onSliderMove = (value) => {
         handleInputChange(id, "default_rule", value);
@@ -39,15 +33,12 @@ function DefaultRuleThermostat({ id }) {
     return (
         <div className="mb-2">
             <label className="w-100"><b>Default Rule</b></label>
-            <RuleSlider
-                rule_value={String(instance.default_rule)}
-                slider_min={convert_temperature(min_rule, "celsius", instance.units)}
-                slider_max={convert_temperature(max_rule, "celsius", instance.units)}
-                slider_step={0.1}
-                button_step={0.5}
-                display_type={"float"}
-                onButtonClick={onButtonClick}
-                onSliderMove={onSliderMove}
+            <FloatRangeRuleInput
+                rule={String(instance.default_rule)}
+                setRule={onSliderMove}
+                min={convert_temperature(min_rule, "celsius", instance.units)}
+                max={convert_temperature(max_rule, "celsius", instance.units)}
+                sliderStep={0.1}
             />
         </div>
     );

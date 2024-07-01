@@ -5,13 +5,13 @@ import Collapse from 'react-bootstrap/Collapse';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
 import { get_instance_metadata } from 'util/metadata';
-import RuleSlider from './RuleSlider';
 import { average } from 'util/helper_functions';
+import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 
 
 function DefaultRuleIntRange({ id }) {
     // Get curent state + callback functions from context
-    const { config, handleInstanceUpdate, handleSliderButton, handleInputChange } = useContext(ConfigContext);
+    const { config, handleInstanceUpdate, handleInputChange } = useContext(ConfigContext);
 
     // Get instance section from config (state) object
     const instance = config[id];
@@ -30,11 +30,6 @@ function DefaultRuleIntRange({ id }) {
     if (instance.default_rule === '') {
         instance.default_rule = average(instance.min_rule, instance.max_rule);
     }
-
-    // Handler for slider + and - buttons
-    const onButtonClick = (step, direction, min_rule, max_rule) => {
-        handleSliderButton(id, step, direction, min_rule, max_rule);
-    };
 
     // Handler for slider move events
     const onSliderMove = (value) => {
@@ -77,15 +72,11 @@ function DefaultRuleIntRange({ id }) {
         <>
             <div className="mb-2">
                 <label className="w-100"><b>Default Rule</b></label>
-                <RuleSlider
-                    rule_value={String(instance.default_rule)}
-                    slider_min={parseInt(instance.min_rule)}
-                    slider_max={parseInt(instance.max_rule)}
-                    slider_step={1}
-                    button_step={1}
-                    display_type={"int"}
-                    onButtonClick={onButtonClick}
-                    onSliderMove={onSliderMove}
+                <IntRangeRuleInput
+                    rule={String(instance.default_rule)}
+                    setRule={onSliderMove}
+                    min={parseInt(instance.min_rule)}
+                    max={parseInt(instance.max_rule)}
                 />
             </div>
 
