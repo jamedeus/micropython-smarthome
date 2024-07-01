@@ -26,7 +26,7 @@ function DefaultRuleApiTarget({ id }) {
             <div className="mb-2 pt-3 text-center">
                 <Button
                     id={`${id}-default_rule-button`}
-                    variant={invalid ? "outline-danger" :"secondary"}
+                    variant={invalid ? "outline-danger" : "secondary"}
                     onClick={() => handleShow(id, "default_rule")}
                     disabled={!instance.ip}
                 >

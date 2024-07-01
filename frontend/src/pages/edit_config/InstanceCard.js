@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { ConfigContext, filterObject } from 'root/ConfigContext';
+import { ConfigContext } from 'root/ConfigContext';
 import NicknameInput from 'inputs/NicknameInput';
 import IPInput from 'inputs/IPInput';
 import URIInput from 'inputs/URIInput';
@@ -47,7 +47,7 @@ function InstanceCard({ id }) {
     // Used to remove si7021 option once used (can't have multiple)
     const containsSi7021 = () => {
         // Get object containing all sensors excluding this card
-        const otherSensors= Object.entries(config).reduce((acc, [key, value]) => {
+        const otherSensors = Object.entries(config).reduce((acc, [key, value]) => {
             if (key.startsWith('sensor') && key != id) {
                 acc[key] = value;
             }
@@ -56,7 +56,7 @@ function InstanceCard({ id }) {
         // Get array of sensor types (excluding this card)
         const types = Object.values(otherSensors).map(sensor => sensor._type);
         return types.includes('si7021');
-    }
+    };
 
     // Get dropdown options from metadata
     // Remove si7021 option if already used on another card
