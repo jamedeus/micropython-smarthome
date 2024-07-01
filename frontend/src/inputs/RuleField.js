@@ -135,12 +135,14 @@ IntOrFadeRuleInput.propTypes = {
     limits: PropTypes.array
 };
 
-export const RuleField = ({ instance, category, rule, handleChange }) => {
+// TODO fix inconsistent type param (config = _type, API status = type) and
+// remove arg (can get from instance once name consistent)
+export const RuleField = ({ instance, category, type, rule, handleChange }) => {
     // Create state to control popup visibility
     const [visible, setVisible] = useState(false);
 
     // Get metadata for instance type (contains rule prompt)
-    const metadata = get_instance_metadata(category, instance._type);
+    const metadata = get_instance_metadata(category, type);
 
     // Create state for rule parameters
     // - rule: Current rule value
@@ -271,6 +273,7 @@ RuleField.propTypes = {
         'device',
         'sensor'
     ]),
+    type: PropTypes.string,
     timestamp: PropTypes.string,
     rule: PropTypes.oneOfType([
         PropTypes.number,

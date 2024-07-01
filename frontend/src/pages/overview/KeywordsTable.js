@@ -6,6 +6,7 @@ import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
+import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
 import { send_post_request } from 'util/django_util';
 
 
@@ -95,30 +96,6 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
         }
     };
 
-    // Returns save/delete button or loading animation based on button state
-    const SaveButton = () => {
-        switch(button) {
-            case "delete":
-                return (
-                    <Button variant="danger" size="sm" onClick={deleteKeyword}>
-                        <i className="bi-trash"></i>
-                    </Button>
-                );
-            case "edit":
-                return (
-                    <Button variant="primary" size="sm" onClick={editKeyword}>
-                        <i className="bi-arrow-clockwise"></i>
-                    </Button>
-                );
-            case "loading":
-                return (
-                    <Button variant="primary" size="sm" onClick={deleteKeyword}>
-                        <div className="spinner-border spinner-border-sm" role="status"></div>
-                    </Button>
-                );
-        }
-    };
-
     return (
         <tr id={`${keyword}_row`}>
             <td className="align-middle">
@@ -141,7 +118,11 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
                 />
             </td>
             <td className="min align-middle">
-                <SaveButton />
+                <DeleteOrEditButton
+                    status={button}
+                    handleDelete={deleteKeyword}
+                    handleEdit={editKeyword}
+                />
             </td>
         </tr>
     );

@@ -22,6 +22,8 @@
 <body>
     <div id="root" class="container">
     {{ context|json_script:"context" }}
+    {# TODO temporary, remove after refactoring RuleField component #}
+    {{ instance_metadata|json_script:"instance_metadata" }}
     <script src="{% static 'node_configuration/api_card.js' %}"></script>
 </body>
 </html>

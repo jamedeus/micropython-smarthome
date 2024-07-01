@@ -101,6 +101,7 @@ const Page3 = () => {
                         <RuleField
                             instance={config[instance]}
                             category={instance.replace(/[0-9]/g, '')}
+                            type={config[instance]._type}
                             rule={config[instance]["schedule"][timestamp]}
                             handleChange={handleNewRule}
                         />

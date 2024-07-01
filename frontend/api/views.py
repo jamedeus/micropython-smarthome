@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
-from node_configuration.views import requires_post
+from node_configuration.views import requires_post, get_metadata_context
 from node_configuration.models import Node, ScheduleKeyword
 from node_configuration.get_api_target_menu_options import get_api_target_menu_options
 from Webrepl import Webrepl
@@ -239,7 +239,17 @@ def api(request, node, recording=False):
 
     print(json.dumps(status, indent=4))
 
-    return render(request, 'api/api_card.html', {'context': status})
+    # Add metadata context (TODO this is temporary, context already contains
+    # metadata for all configured types. Need to refactor RuleField to take
+    # arg instead of parsing from context object. Remove from template too.)
+    return render(
+        request,
+        'api/api_card.html',
+        {
+            'context': status,
+            'instance_metadata': get_metadata_context()
+        }
+    )
 
 
 # TODO unused? Climate card updates from status object
