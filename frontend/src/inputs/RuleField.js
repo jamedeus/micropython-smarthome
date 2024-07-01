@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import Form from 'react-bootstrap/Form';
@@ -41,51 +41,36 @@ OnOffRuleInput.propTypes = {
 // Wrapper for slider input that adds toggle which replaces input with standard
 // rule dropdown (enabled or disabled) for instances that take either rule type
 const SliderRuleWrapper = ({
-    rule,
+    ruleDetails,
     setRule,
-    internalRule,
-    setInternalRule,
+    toggleRangeRule,
     defaultRangeRule,
     children
 }) => {
-    const [type, setType] = useState(
-        ['enabled', 'disabled'].includes(rule) ? 'standard' : 'range'
-    );
-
+    // Set rule to enabled if switching to dropdown, number if switching to slider
     const toggle = () => {
-        if (type === 'standard') {
-            setInternalRule(defaultRangeRule);
-            setType('range');
-        } else {
-            setInternalRule('enabled');
-            setType('standard');
-        }
+        toggleRangeRule(ruleDetails.range_rule ? 'enabled' : defaultRangeRule);
     };
-
-    // Creates slight delay before re-render when setInternalRule called
-    useEffect(() => {
-        setRule(internalRule);
-    }, [internalRule]);
 
     return (
         <>
-            {/* Range or enabled/disabled */}
+            {/* Slider input or enabled/disabled dropdown */}
             <div className="d-flex mt-2">
                 <Form.Check
                     className="mb-3"
                     type="switch"
                     label="Range"
-                    checked={type === 'range'}
+                    checked={ruleDetails.range_rule}
                     onChange={toggle}
                 />
             </div>
 
-            {type === 'range' ? (
+            {ruleDetails.range_rule ? (
                 children
             ) : (
                 <StandardRuleInput
-                    rule={internalRule}
-                    setRule={setInternalRule}
+                    rule={ruleDetails.rule}
+                    setRule={setRule}
                 />
             )}
         </>
@@ -93,16 +78,9 @@ const SliderRuleWrapper = ({
 };
 
 SliderRuleWrapper.propTypes = {
-    rule: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ]),
+    ruleDetails: PropTypes.object,
     setRule: PropTypes.func,
-    internalRule: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ]),
-    setInternalRule: PropTypes.func,
+    toggleRangeRule: PropTypes.func,
     defaultRangeRule: PropTypes.number,
     children: PropTypes.node
 };
@@ -126,11 +104,9 @@ const handleButtonClick = (rule, step, direction, min_rule, max_rule) => {
     return new_rule;
 };
 
-const ThermostatRuleInput = ({ rule, units, limits, setRule }) => {
-    const [internalRule, setInternalRule] = useState(rule);
-
+const ThermostatRuleInput = ({ ruleDetails, units, limits, setRule, toggleRangeRule }) => {
     const onButtonClick = (step, direction, min_rule, max_rule) => {
-        const newRule = handleButtonClick(rule, step, direction, min_rule, max_rule);
+        const newRule = handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule);
         setRule(newRule);
     };
 
@@ -150,14 +126,13 @@ const ThermostatRuleInput = ({ rule, units, limits, setRule }) => {
 
     return (
         <SliderRuleWrapper
-            rule={rule}
+            ruleDetails={ruleDetails}
             setRule={setRule}
-            internalRule={internalRule}
-            setInternalRule={setInternalRule}
+            toggleRangeRule={toggleRangeRule}
             defaultRangeRule={defaultRangeRule}
         >
             <RuleSlider
-                rule_value={rule}
+                rule_value={ruleDetails.rule}
                 slider_min={convert_temperature(limits[0], "celsius", units)}
                 slider_max={convert_temperature(limits[1], "celsius", units)}
                 slider_step={0.1}
@@ -171,33 +146,28 @@ const ThermostatRuleInput = ({ rule, units, limits, setRule }) => {
 };
 
 ThermostatRuleInput.propTypes = {
-    rule: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ]),
+    ruleDetails: PropTypes.object,
     units: PropTypes.string,
     limits: PropTypes.array,
-    setRule: PropTypes.func
+    setRule: PropTypes.func,
+    toggleRangeRule: PropTypes.func
 };
 
-const FloatRangeRuleInput = ({ rule, limits, setRule }) => {
-    const [internalRule, setInternalRule] = useState(rule);
-
+const FloatRangeRuleInput = ({ ruleDetails, limits, setRule, toggleRangeRule }) => {
     const onButtonClick = (step, direction, min_rule, max_rule) => {
-        const newRule = handleButtonClick(rule, step, direction, min_rule, max_rule);
-        setInternalRule(newRule);
+        const newRule = handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule);
+        setRule(newRule);
     };
 
     return (
         <SliderRuleWrapper
-            rule={rule}
+            ruleDetails={ruleDetails}
             setRule={setRule}
-            internalRule={internalRule}
-            setInternalRule={setInternalRule}
+            toggleRangeRule={toggleRangeRule}
             defaultRangeRule={parseInt(parseInt(limits[1]) / 2)}
         >
             <RuleSlider
-                rule_value={rule}
+                rule_value={ruleDetails.rule}
                 slider_min={limits[0]}
                 slider_max={limits[1]}
                 slider_step={0.5}
@@ -211,52 +181,42 @@ const FloatRangeRuleInput = ({ rule, limits, setRule }) => {
 };
 
 FloatRangeRuleInput.propTypes = {
-    rule: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ]),
+    ruleDetails: PropTypes.object,
     limits: PropTypes.array,
-    setRule: PropTypes.func
+    setRule: PropTypes.func,
+    toggleRangeRule: PropTypes.func
 };
 
-const IntOrFadeRuleInput = ({ rule, fade, duration, limits, setRule, set_popup_param }) => {
-    const [internalRule, setInternalRule] = useState(rule);
-
+const IntOrFadeRuleInput = ({ ruleDetails, limits, setRule, setRuleParam, toggleRangeRule }) => {
     const onButtonClick = (step, direction, min_rule, max_rule) => {
-        const newRule = handleButtonClick(rule, step, direction, min_rule, max_rule);
-        setInternalRule(newRule);
+        const newRule = handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule);
+        setRule(newRule);
     };
-
-    // Creates slight delay before re-render when setInternalRule called
-    useEffect(() => {
-        setRule(internalRule);
-    }, [internalRule]);
 
     return (
         <SliderRuleWrapper
-            rule={rule}
+            ruleDetails={ruleDetails}
             setRule={setRule}
-            internalRule={internalRule}
-            setInternalRule={setInternalRule}
+            toggleRangeRule={toggleRangeRule}
             defaultRangeRule={parseInt(parseInt(limits[1]) / 2)}
         >
             <RuleSlider
-                rule_value={parseInt(internalRule)}
+                rule_value={parseInt(ruleDetails.rule)}
                 slider_min={parseInt(limits[0])}
                 slider_max={parseInt(limits[1])}
                 slider_step={1}
                 button_step={1}
                 display_type={"int"}
                 onButtonClick={onButtonClick}
-                onSliderMove={setInternalRule}
+                onSliderMove={setRule}
             />
 
-            <div className={fade ? "text-center" : "d-none"}>
+            <div className={ruleDetails.fade_rule ? "text-center" : "d-none"}>
                 <Form.Label className="mt-2">Duration (seconds)</Form.Label>
                 <Form.Control
                     type="text"
-                    value={duration}
-                    onChange={(e) => set_popup_param("duration", e.target.value)}
+                    value={ruleDetails.duration}
+                    onChange={(e) => setRuleParam("duration", e.target.value)}
                 />
             </div>
 
@@ -265,8 +225,8 @@ const IntOrFadeRuleInput = ({ rule, fade, duration, limits, setRule, set_popup_p
                     className="mt-3"
                     type="switch"
                     label="Fade"
-                    checked={fade}
-                    onChange={(e) => set_popup_param("fade_rule", e.target.checked)}
+                    checked={ruleDetails.fade_rule}
+                    onChange={(e) => setRuleParam("fade_rule", e.target.checked)}
                 />
             </div>
         </SliderRuleWrapper>
@@ -274,92 +234,83 @@ const IntOrFadeRuleInput = ({ rule, fade, duration, limits, setRule, set_popup_p
 };
 
 IntOrFadeRuleInput.propTypes = {
-    rule: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ]),
-    fade: PropTypes.bool,
-    duration: PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ]),
+    ruleDetails: PropTypes.object,
     limits: PropTypes.array,
     setRule: PropTypes.func,
-    set_popup_param: PropTypes.func
+    setRuleParam: PropTypes.func,
+    toggleRangeRule: PropTypes.func
 };
 
 export const RuleField = ({ instance, timestamp }) => {
     // Get curent state from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
-    // Create state for popup visibility, contents
-    const [popupContent, setPopupContent] = useState({
-        visible: false,
-        instance: '',
-        timestamp: '',
-        rule: '',
+    // Create state to control popup visibility
+    const [visible, setVisible] = useState(false);
+
+    // Get metadata for instance type (contains rule prompt)
+    const category = instance.replace(/[0-9]/g, '');
+    const metadata = get_instance_metadata(category, config[instance]["_type"]);
+
+    // Create state for rule parameters
+    // - rule: Current rule value
+    // - fade_rule: Controls duration field visibility
+    // - duration: Current value of duration field
+    // - range_rule: Show slider if true, dropdown if false
+    const [ruleDetails, setRuleDetails] = useState({
+        rule: config[instance]["schedule"][timestamp],
         fade_rule: false,
-        duration: '',
-        metadata: ''
+        duration: 60,
+        range_rule: Boolean(parseFloat(config[instance]["schedule"][timestamp]))
     });
 
-    const handleShow = (timestamp) => {
-        // Get metadata for selected instance type (contains rule prompt)
-        const category = instance.replace(/[0-9]/g, '');
-        const metadata = get_instance_metadata(category, config[instance]["_type"]);
-
-        // Replace popupContent with params for selected rule
-        let update = {
-            visible: true,
-            instance: instance,
-            timestamp: timestamp,
-            rule: config[instance]["schedule"][timestamp],
-            fade_rule: false,
-            metadata: metadata
-        };
-
-        // If editing fade rule split into params, set fade_rule flag
-        if (String(update.rule).startsWith("fade")) {
-            const [_, rule, duration] = String(update.rule).split("/");
-            update.fade_rule = true;
-            update.duration = duration;
-            update.rule = rule;
-        // Otherwise set 60 second placeholder (default if user toggles fade)
-        } else {
-            update.duration = 60;
-        }
-
-        // Set modal contents, show
-        setPopupContent(update);
-    };
+    // If editing fade rule split into params, set fade_rule flag
+    if (String(ruleDetails.rule).startsWith("fade")) {
+        const [_, rule, duration] = String(ruleDetails.rule).split("/");
+        setRuleDetails({
+            ...ruleDetails,
+            fade_rule: true,
+            rule: rule,
+            duration: duration,
+            range_rule: true
+        });
+    }
 
     const handleClose = () => {
-        // Get existing rules
-        const rules = config[popupContent.instance]["schedule"];
+        // Get existing schedule rules
+        const rules = config[instance]["schedule"];
 
-        // Get new rule from modal contents
-        let new_rule;
-        if (popupContent.fade_rule) {
+        // Add new/modified rule to existing rules
+        if (ruleDetails.range_rule && ruleDetails.fade_rule) {
             // Fade rule: Combine params into single string
-            new_rule = `fade/${popupContent.rule}/${popupContent.duration}`;
+            rules[timestamp] = `fade/${ruleDetails.rule}/${ruleDetails.duration}`;
         } else {
-            new_rule = popupContent.rule;
+            rules[timestamp] = ruleDetails.rule;
         }
 
-        // Add new rule, update state object, close modal
-        rules[popupContent.timestamp] = new_rule;
-        handleInputChange(popupContent.instance, "schedule", rules);
-        setPopupContent({ ...popupContent, ["visible"]: false});
+        // Update state, close modal
+        handleInputChange(instance, "schedule", rules);
+        setVisible(false);
     };
 
-    // Takes popupContent param name and value, updates and re-renders
-    const set_popup_param = (param, value) => {
-        setPopupContent({ ...popupContent, [param]: value});
+    // Takes ruleDetails param name and value, updates and re-renders
+    const setRuleParam = (param, value) => {
+        setRuleDetails({ ...ruleDetails, [param]: value});
     };
 
     // Handler for slider move events
     const setRule = (value) => {
-        setPopupContent({ ...popupContent, ["rule"]: value});
+        setRuleDetails({ ...ruleDetails, ["rule"]: value});
+    };
+
+    // Toggles range_rule bool and overwrites rule with arg (needs to change to
+    // enabled/disabled if toggling to false, int/float if toggling to true)
+    const toggleRangeRule = (newRule) => {
+        setRuleDetails({
+            ...ruleDetails,
+            rule: newRule,
+            range_rule: !ruleDetails.range_rule
+        });
     };
 
     // Reference to span that shows current rule, opens popup
@@ -371,64 +322,65 @@ export const RuleField = ({ instance, timestamp }) => {
             <span
                 ref={buttonRef}
                 className="form-control"
-                onClick={() => handleShow(timestamp)}
+                onClick={() => setVisible(true)}
             >
                 {config[instance]["schedule"][timestamp]}
             </span>
 
             {/* Edit rule popup */}
-            <PopupDiv show={popupContent.visible} anchorRef={buttonRef} onClose={handleClose}>
+            <PopupDiv show={visible} anchorRef={buttonRef} onClose={handleClose}>
                 <>
                     <Form.Label>Rule</Form.Label>
                     {(() => {
                         // Thermostat: Skip switch and return Float slider with temperatures converted
-                        if (popupContent.metadata && popupContent.metadata.config_template.units !== undefined) {
+                        if (metadata && metadata.config_template.units !== undefined) {
                             return (
                                 <ThermostatRuleInput
-                                    rule={popupContent.rule}
+                                    ruleDetails={ruleDetails}
                                     units={config[instance]["units"]}
-                                    limits={popupContent.metadata.rule_limits}
+                                    limits={metadata.rule_limits}
                                     setRule={setRule}
+                                    toggleRangeRule={toggleRangeRule}
                                 />
                             );
                         }
 
                         // All other types: Add correct input for rule_prompt
-                        switch(popupContent.metadata.rule_prompt) {
+                        switch(metadata.rule_prompt) {
                             case "standard":
                                 return (
                                     <StandardRuleInput
-                                        rule={popupContent.rule}
+                                        rule={ruleDetails.rule}
                                         setRule={setRule}
                                     />
                                 );
                             case "on_off":
                                 return (
                                     <OnOffRuleInput
-                                        rule={popupContent.rule}
+                                        rule={ruleDetails.rule}
                                         setRule={setRule}
                                     />
                                 );
                             case "float_range":
                                 return (
                                     <FloatRangeRuleInput
-                                        rule={popupContent.rule}
-                                        limits={popupContent.metadata.rule_limits}
+                                        ruleDetails={ruleDetails}
+                                        limits={metadata.rule_limits}
                                         setRule={setRule}
+                                        toggleRangeRule={toggleRangeRule}
                                     />
                                 );
                             case "int_or_fade":
                                 return (
                                     <IntOrFadeRuleInput
-                                        rule={popupContent.rule}
-                                        fade={popupContent.fade_rule}
-                                        duration={popupContent.duration}
+                                        ruleDetails={ruleDetails}
                                         limits={[
-                                            config[popupContent.instance]["min_rule"],
-                                            config[popupContent.instance]["max_rule"]
+                                            config[instance]["min_rule"],
+                                            config[instance]["max_rule"]
                                         ]}
                                         setRule={setRule}
-                                        set_popup_param={set_popup_param}
+                                        setRuleParam={setRuleParam}
+                                        toggleRangeRule={toggleRangeRule}
                                     />
                                 );
                         }
