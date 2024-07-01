@@ -32,65 +32,46 @@ export const TimeField = ({ instance, timestamp, schedule_keywords, highlightInv
     // Get curent state from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
-    // Create state for popup visibility, contents
-    const [popupContent, setPopupContent] = useState({
-        visible: false,
-        instance: '',
-        original_timestamp: '',
-        timestamp: '',
-        show_keyword: false
+    // Create state to control popup visibility
+    const [visible, setVisible] = useState(false);
+
+    // Create state for timestamp parameters
+    // - original_timestamp: Timestamp when popup opened
+    // - timestamp: Current timestamp (detect change)
+    // - show_keyword: Determines if timestamp input or keyword dropdown shown
+    const [timeDetails, setTimeDetails] = useState({
+        original_timestamp: timestamp,
+        timestamp: timestamp,
+        show_keyword: Object.keys(schedule_keywords).includes(timestamp)
     });
 
-    // Takes timestamp, returns true if matches existing keyword, otherwise False
-    function isKeyword(timestamp) {
-        return Object.keys(schedule_keywords).includes(timestamp);
-    }
-
-    const handleShow = () => {
-        // Replace popupContent with params for selected rule
-        let update = {
-            visible: true,
-            instance: instance,
-            original_timestamp: timestamp,
-            timestamp: timestamp,
-            show_keyword: isKeyword(timestamp)
-        };
-
-        // Set modal contents, show
-        setPopupContent(update);
-    };
-
     const handleClose = () => {
-        // Get existing rules
-        const rules = { ...config[popupContent.instance]["schedule"] };
+        // Only update state if timestamp was changed
+        if (timeDetails.timestamp !== timeDetails.original_timestamp) {
+            // Get existing rules, value of edited rule
+            const rules = { ...config[instance]["schedule"] };
+            const rule_value = rules[timeDetails.original_timestamp];
 
-        // Get value of rule being edited
-        const rule_value = rules[popupContent.original_timestamp];
-
-        // If timestamp was changed, delete original rule before adding
-        if (popupContent.timestamp !== popupContent.original_timestamp) {
-            delete rules[popupContent.original_timestamp];
+            // Delete original timestamp, add new, update state
+            delete rules[timeDetails.original_timestamp];
+            rules[timeDetails.timestamp] = rule_value;
+            handleInputChange(instance, "schedule", rules);
         }
 
-        // Add new rule, update state object, close modal
-        rules[popupContent.timestamp] = rule_value;
-        handleInputChange(popupContent.instance, "schedule", rules);
-        setPopupContent({ ...popupContent, ["visible"]: false});
+        // Close popup
+        setVisible(false);
     };
 
-    // Takes popupContent param name and value, updates and re-renders
-    const set_popup_param = (param, value) => {
-        setPopupContent({ ...popupContent, [param]: value});
+    // Takes timeDetails param name and value, updates and re-renders
+    const setParam = (param, value) => {
+        setTimeDetails({ ...timeDetails, [param]: value});
     };
 
     // Reference to span that shows current time, opens popup
     const buttonRef = useRef(null);
 
     // Add invalid highlight if timestamp is empty and highlightInvalid is true
-    let invalid = false;
-    if (highlightInvalid && !timestamp) {
-        invalid = true;
-    }
+    const invalid =  highlightInvalid && !timestamp;
 
     return (
         <div>
@@ -98,34 +79,34 @@ export const TimeField = ({ instance, timestamp, schedule_keywords, highlightInv
             <span
                 ref={buttonRef}
                 className={`form-control ${invalid ? 'is-invalid' : ''}`}
-                onClick={() => handleShow()}
+                onClick={() => setVisible(true)}
             >
                 {format12h(timestamp)}
             </span>
 
             {/* Edit timestamp popup */}
             <PopupDiv
-                show={popupContent.visible}
+                show={visible}
                 anchorRef={buttonRef}
                 onClose={handleClose}
             >
                 <>
-                    <div className={popupContent.show_keyword ? "d-none" : ""}>
+                    <div className={timeDetails.show_keyword ? "d-none" : ""}>
                         <Form.Label>Time</Form.Label>
                         <Form.Control
                             className="text-center"
                             type="time"
-                            value={popupContent.timestamp}
-                            onChange={(e) => set_popup_param("timestamp", e.target.value)}
+                            value={timeDetails.timestamp}
+                            onChange={(e) => setParam("timestamp", e.target.value)}
                             autoFocus
                         />
                     </div>
-                    <div className={popupContent.show_keyword ? "" : "d-none"}>
+                    <div className={timeDetails.show_keyword ? "" : "d-none"}>
                         <Form.Label>Keyword</Form.Label>
                         <Dropdown
-                            value={popupContent.timestamp}
+                            value={timeDetails.timestamp}
                             options={Object.keys(schedule_keywords)}
-                            onChange={(value) => set_popup_param("timestamp", value)}
+                            onChange={(value) => setParam("timestamp", value)}
                         />
                     </div>
 
@@ -134,8 +115,8 @@ export const TimeField = ({ instance, timestamp, schedule_keywords, highlightInv
                             id="keyword-switch"
                             type="switch"
                             label="Keyword"
-                            checked={popupContent.show_keyword}
-                            onChange={(e) => set_popup_param("show_keyword", e.target.checked)}
+                            checked={timeDetails.show_keyword}
+                            onChange={(e) => setParam("show_keyword", e.target.checked)}
                         />
                     </div>
                 </>

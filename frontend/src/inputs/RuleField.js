@@ -9,6 +9,7 @@ import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 import { convert_temperature } from 'util/thermostat_util';
 import { get_instance_metadata } from 'util/metadata';
+import { average } from 'util/helper_functions';
 
 // Wrapper for slider input that adds toggle which replaces input with standard
 // rule dropdown (enabled or disabled) for instances that take either rule type
@@ -56,32 +57,21 @@ SliderRuleWrapper.propTypes = {
 };
 
 const ThermostatRuleInput = ({ ruleDetails, setRuleDetails, units, limits }) => {
-    // Default rule when changing from dropdown to slider
-    let defaultRangeRule;
-    switch(units) {
-        case('celsius'):
-            defaultRangeRule = 22;
-            break;
-        case('fahrenheit'):
-            defaultRangeRule = 71;
-            break;
-        case('kelvin'):
-            defaultRangeRule = 295;
-            break;
-    }
+    const min = convert_temperature(limits[0], "celsius", units);
+    const max = convert_temperature(limits[1], "celsius", units);
 
     return (
         <SliderRuleWrapper
             ruleDetails={ruleDetails}
             setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
             setRuleDetails={setRuleDetails}
-            defaultRangeRule={defaultRangeRule}
+            defaultRangeRule={average(min, max)}
         >
             <FloatRangeRuleInput
                 rule={ruleDetails.rule}
                 setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
-                min={convert_temperature(limits[0], "celsius", units)}
-                max={convert_temperature(limits[1], "celsius", units)}
+                min={min}
+                max={max}
                 sliderStep={0.1}
             />
         </SliderRuleWrapper>
@@ -109,7 +99,7 @@ const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
             ruleDetails={ruleDetails}
             setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
             setRuleDetails={setRuleDetails}
-            defaultRangeRule={parseInt(parseInt(limits[1]) / 2)}
+            defaultRangeRule={average(limits[0], limits[1])}
         >
             <IntRangeRuleInput
                 rule={ruleDetails.rule}
@@ -251,7 +241,10 @@ export const RuleField = ({ instance, timestamp }) => {
                                         ruleDetails={ruleDetails}
                                         setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
                                         setRuleDetails={setRuleDetails}
-                                        defaultRangeRule={parseInt(parseInt(metadata.rule_limits[1]) / 2)}
+                                        defaultRangeRule={average(
+                                            metadata.rule_limits[0],
+                                            metadata.rule_limits[1])
+                                        }
                                     >
                                         <FloatRangeRuleInput
                                             rule={ruleDetails.rule}
