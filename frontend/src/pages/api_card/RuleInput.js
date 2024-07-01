@@ -1,7 +1,8 @@
 import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import { ApiCardContext } from 'root/ApiCardContext';
-import RuleSlider from 'inputs/RuleSlider';
+import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
+import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 
 
 const RuleInput = ({ id, params }) => {
@@ -19,30 +20,6 @@ const RuleInput = ({ id, params }) => {
         category = "sensors";
     }
 
-    // Handler for slider move events
-    const onSliderMove = (value) => {
-        set_rule(id, category, value);
-    };
-
-    // Handler for slider + and - buttons
-    const onButtonClick = (step, direction, min_rule, max_rule) => {
-        let new_rule;
-        if (direction === "up") {
-            new_rule = parseFloat(params.current_rule) + parseFloat(step);
-        } else {
-            new_rule = parseFloat(params.current_rule) - parseFloat(step);
-        }
-
-        // Enforce rule limits
-        if (new_rule < parseFloat(min_rule)) {
-            new_rule = parseFloat(min_rule);
-        } else if (new_rule > parseFloat(max_rule)) {
-            new_rule = parseFloat(max_rule);
-        }
-
-        set_rule(id, category, new_rule);
-    };
-
     switch(prompt) {
         case("float_range"):
             // Create local state for rule limits (not included in
@@ -51,30 +28,22 @@ const RuleInput = ({ id, params }) => {
             const [max_rule] = useState(params.max_rule);
             return (
                 <div className="my-4 pb-2">
-                    <RuleSlider
-                        rule_value={String(params.current_rule)}
-                        slider_min={min_rule}
-                        slider_max={max_rule}
-                        slider_step={0.5}
-                        button_step={0.5}
-                        display_type={"float"}
-                        onButtonClick={onButtonClick}
-                        onSliderMove={onSliderMove}
+                    <FloatRangeRuleInput
+                        rule={String(params.current_rule)}
+                        setRule={value => set_rule(id, category, value)}
+                        min={min_rule}
+                        max={max_rule}
                     />
                 </div>
             );
         case("int_or_fade"):
             return (
                 <div className="my-4 pb-2">
-                    <RuleSlider
-                        rule_value={String(params.current_rule)}
-                        slider_min={parseInt(params.min_rule)}
-                        slider_max={parseInt(params.max_rule)}
-                        slider_step={1}
-                        button_step={1}
-                        display_type={"int"}
-                        onButtonClick={onButtonClick}
-                        onSliderMove={onSliderMove}
+                    <IntRangeRuleInput
+                        rule={String(params.current_rule)}
+                        setRule={value => set_rule(id, category, value)}
+                        min={parseInt(params.min_rule)}
+                        max={parseInt(params.max_rule)}
                     />
                 </div>
             );
