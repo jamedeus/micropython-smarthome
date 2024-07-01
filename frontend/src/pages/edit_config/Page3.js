@@ -54,13 +54,42 @@ const Page3 = () => {
 
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button
-    const ScheduleRuleRow = ({ instance, rule }) => {
+    const ScheduleRuleRow = ({ instance, timestamp }) => {
+        // Called by TimeField when user changes value and closes
+        const handleNewTimestamp = (newTimestamp, oldTimestamp) => {
+            // Get existing rules, value of edited rule
+            const rules = { ...config[instance]["schedule"] };
+            const rule_value = rules[oldTimestamp];
+
+            // Delete original timestamp, add new, update state
+            delete rules[oldTimestamp];
+            rules[newTimestamp] = rule_value;
+            handleInputChange(instance, "schedule", rules);
+        };
+
+        // Called by RuleField when user changes value and closes
+        const handleNewRule = (rule, fade_rule, duration, range_rule) => {
+            // Get existing schedule rules
+            const rules = config[instance]["schedule"];
+
+            // Overwrite edited rule
+            if (range_rule && fade_rule) {
+                // Fade rule: Combine params into single string
+                rules[timestamp] = `fade/${rule}/${duration}`;
+            } else {
+                rules[timestamp] = rule;
+            }
+
+            // Update state
+            handleInputChange(instance, "schedule", rules);
+        };
+
         return (
             <tr>
                 <td>
                     <TimeField
-                        instance={instance}
-                        timestamp={rule}
+                        timestamp={timestamp}
+                        handleChange={handleNewTimestamp}
                         schedule_keywords={config.metadata.schedule_keywords}
                         highlightInvalid={highlightInvalid}
                     />
@@ -68,8 +97,13 @@ const Page3 = () => {
                 <td>
                     {/* ApiTarget: Button to open modal, otherwise RuleField */}
                     {config[instance]['_type'] === "api-target" ?
-                        <ApiTargetRuleButton instance={instance} rule={rule} /> :
-                        <RuleField instance={instance} timestamp={rule} />
+                        <ApiTargetRuleButton instance={instance} rule={timestamp} /> :
+                        <RuleField
+                            instance={config[instance]}
+                            category={instance.replace(/[0-9]/g, '')}
+                            rule={config[instance]["schedule"][timestamp]}
+                            handleChange={handleNewRule}
+                        />
                     }
                 </td>
                 <td className="min">
@@ -77,7 +111,7 @@ const Page3 = () => {
                         variant="danger"
                         size="sm"
                         className="mb-1"
-                        onClick={() => deleteRule(instance, rule)}
+                        onClick={() => deleteRule(instance, timestamp)}
                     >
                         <i className="bi bi-trash-fill"></i>
                     </Button>
@@ -88,7 +122,7 @@ const Page3 = () => {
 
     ScheduleRuleRow.propTypes = {
         instance: PropTypes.string,
-        rule: PropTypes.string,
+        timestamp: PropTypes.string,
     };
 
     const RulesTable = ({ instance }) => {
@@ -100,12 +134,12 @@ const Page3 = () => {
                         <th>Rule</th>
                         <th></th>
                     </tr>
-                    {Object.keys(config[instance]["schedule"]).map(rule => {
+                    {Object.keys(config[instance]["schedule"]).map(timestamp => {
                         return (
                             <ScheduleRuleRow
-                                key={rule}
+                                key={timestamp}
                                 instance={instance}
-                                rule={rule}
+                                timestamp={timestamp}
                             />
                         );
                     })}

@@ -1,6 +1,5 @@
-import React, { useState, useRef, useContext } from 'react';
+import React, { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { ConfigContext } from 'root/ConfigContext';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
 import Dropdown from 'inputs/Dropdown.js';
@@ -28,10 +27,7 @@ function format12h(timestamp) {
     return `${hour}:${minute} ${suffix}`;
 }
 
-export const TimeField = ({ instance, timestamp, schedule_keywords, highlightInvalid }) => {
-    // Get curent state from context
-    const { config, handleInputChange } = useContext(ConfigContext);
-
+export const TimeField = ({ timestamp, handleChange, schedule_keywords, highlightInvalid }) => {
     // Create state to control popup visibility
     const [visible, setVisible] = useState(false);
 
@@ -48,14 +44,7 @@ export const TimeField = ({ instance, timestamp, schedule_keywords, highlightInv
     const handleClose = () => {
         // Only update state if timestamp was changed
         if (timeDetails.timestamp !== timeDetails.original_timestamp) {
-            // Get existing rules, value of edited rule
-            const rules = { ...config[instance]["schedule"] };
-            const rule_value = rules[timeDetails.original_timestamp];
-
-            // Delete original timestamp, add new, update state
-            delete rules[timeDetails.original_timestamp];
-            rules[timeDetails.timestamp] = rule_value;
-            handleInputChange(instance, "schedule", rules);
+            handleChange(timeDetails.timestamp, timeDetails.original_timestamp);
         }
 
         // Close popup
@@ -90,44 +79,42 @@ export const TimeField = ({ instance, timestamp, schedule_keywords, highlightInv
                 anchorRef={buttonRef}
                 onClose={handleClose}
             >
-                <>
-                    <div className={timeDetails.show_keyword ? "d-none" : ""}>
-                        <Form.Label>Time</Form.Label>
-                        <Form.Control
-                            className="text-center"
-                            type="time"
-                            value={timeDetails.timestamp}
-                            onChange={(e) => setParam("timestamp", e.target.value)}
-                            autoFocus
-                        />
-                    </div>
-                    <div className={timeDetails.show_keyword ? "" : "d-none"}>
-                        <Form.Label>Keyword</Form.Label>
-                        <Dropdown
-                            value={timeDetails.timestamp}
-                            options={Object.keys(schedule_keywords)}
-                            onChange={(value) => setParam("timestamp", value)}
-                        />
-                    </div>
+                <div className={timeDetails.show_keyword ? "d-none" : ""}>
+                    <Form.Label>Time</Form.Label>
+                    <Form.Control
+                        className="text-center"
+                        type="time"
+                        value={timeDetails.timestamp}
+                        onChange={(e) => setParam("timestamp", e.target.value)}
+                        autoFocus
+                    />
+                </div>
+                <div className={timeDetails.show_keyword ? "" : "d-none"}>
+                    <Form.Label>Keyword</Form.Label>
+                    <Dropdown
+                        value={timeDetails.timestamp}
+                        options={Object.keys(schedule_keywords)}
+                        onChange={(value) => setParam("timestamp", value)}
+                    />
+                </div>
 
-                    <div className="d-flex mt-2">
-                        <Form.Check
-                            id="keyword-switch"
-                            type="switch"
-                            label="Keyword"
-                            checked={timeDetails.show_keyword}
-                            onChange={(e) => setParam("show_keyword", e.target.checked)}
-                        />
-                    </div>
-                </>
+                <div className="d-flex mt-2">
+                    <Form.Check
+                        id="keyword-switch"
+                        type="switch"
+                        label="Keyword"
+                        checked={timeDetails.show_keyword}
+                        onChange={(e) => setParam("show_keyword", e.target.checked)}
+                    />
+                </div>
             </PopupDiv>
         </div>
     );
 };
 
 TimeField.propTypes = {
-    instance: PropTypes.string,
     timestamp: PropTypes.string,
+    handleChange: PropTypes.func,
     schedule_keywords: PropTypes.object,
     highlightInvalid: PropTypes.bool
 };

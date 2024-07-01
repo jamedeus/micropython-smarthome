@@ -1,6 +1,5 @@
-import React, { useState, useRef, useContext } from 'react';
+import React, { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { ConfigContext } from 'root/ConfigContext';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
 import StandardRuleInput from 'inputs/StandardRuleInput';
@@ -136,16 +135,12 @@ IntOrFadeRuleInput.propTypes = {
     limits: PropTypes.array
 };
 
-export const RuleField = ({ instance, timestamp }) => {
-    // Get curent state from context
-    const { config, handleInputChange } = useContext(ConfigContext);
-
+export const RuleField = ({ instance, category, rule, handleChange }) => {
     // Create state to control popup visibility
     const [visible, setVisible] = useState(false);
 
     // Get metadata for instance type (contains rule prompt)
-    const category = instance.replace(/[0-9]/g, '');
-    const metadata = get_instance_metadata(category, config[instance]["_type"]);
+    const metadata = get_instance_metadata(category, instance._type);
 
     // Create state for rule parameters
     // - rule: Current rule value
@@ -153,10 +148,11 @@ export const RuleField = ({ instance, timestamp }) => {
     // - duration: Current value of duration field
     // - range_rule: Show slider if true, dropdown if false
     const [ruleDetails, setRuleDetails] = useState({
-        rule: config[instance]["schedule"][timestamp],
+        original_rule: rule,
+        rule: rule,
         fade_rule: false,
         duration: 60,
-        range_rule: Boolean(parseFloat(config[instance]["schedule"][timestamp]))
+        range_rule: Boolean(parseFloat(rule))
     });
 
     // If editing fade rule split into params, set fade_rule flag
@@ -172,19 +168,17 @@ export const RuleField = ({ instance, timestamp }) => {
     }
 
     const handleClose = () => {
-        // Get existing schedule rules
-        const rules = config[instance]["schedule"];
-
-        // Add new/modified rule to existing rules
-        if (ruleDetails.range_rule && ruleDetails.fade_rule) {
-            // Fade rule: Combine params into single string
-            rules[timestamp] = `fade/${ruleDetails.rule}/${ruleDetails.duration}`;
-        } else {
-            rules[timestamp] = ruleDetails.rule;
+        // Only update state if rule was changed
+        if (ruleDetails.rule !== ruleDetails.original_rule) {
+            handleChange(
+                ruleDetails.rule,
+                ruleDetails.fade_rule,
+                ruleDetails.duration,
+                ruleDetails.range_rule
+            );
         }
 
-        // Update state, close modal
-        handleInputChange(instance, "schedule", rules);
+        // Close popup
         setVisible(false);
     };
 
@@ -199,81 +193,88 @@ export const RuleField = ({ instance, timestamp }) => {
                 className="form-control"
                 onClick={() => setVisible(true)}
             >
-                {config[instance]["schedule"][timestamp]}
+                {rule}
             </span>
 
             {/* Edit rule popup */}
             <PopupDiv show={visible} anchorRef={buttonRef} onClose={handleClose}>
-                <>
-                    <Form.Label>Rule</Form.Label>
-                    {(() => {
-                        // Thermostat: Skip switch and return Float slider with temperatures converted
-                        if (metadata && metadata.config_template.units !== undefined) {
+                <Form.Label>Rule</Form.Label>
+                {(() => {
+                    // Thermostat: Skip switch and return Float slider with temperatures converted
+                    if (metadata && metadata.config_template.units !== undefined) {
+                        return (
+                            <ThermostatRuleInput
+                                ruleDetails={ruleDetails}
+                                setRuleDetails={setRuleDetails}
+                                units={instance.units}
+                                limits={metadata.rule_limits}
+                            />
+                        );
+                    }
+
+                    // All other types: Add correct input for rule_prompt
+                    switch(metadata.rule_prompt) {
+                        case "standard":
                             return (
-                                <ThermostatRuleInput
-                                    ruleDetails={ruleDetails}
-                                    setRuleDetails={setRuleDetails}
-                                    units={config[instance]["units"]}
-                                    limits={metadata.rule_limits}
+                                <StandardRuleInput
+                                    rule={ruleDetails.rule}
+                                    setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
                                 />
                             );
-                        }
-
-                        // All other types: Add correct input for rule_prompt
-                        switch(metadata.rule_prompt) {
-                            case "standard":
-                                return (
-                                    <StandardRuleInput
+                        case "on_off":
+                            return (
+                                <OnOffRuleInput
+                                    rule={ruleDetails.rule}
+                                    setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+                                />
+                            );
+                        case "float_range":
+                            return (
+                                <SliderRuleWrapper
+                                    ruleDetails={ruleDetails}
+                                    setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+                                    setRuleDetails={setRuleDetails}
+                                    defaultRangeRule={average(
+                                        metadata.rule_limits[0],
+                                        metadata.rule_limits[1])
+                                    }
+                                >
+                                    <FloatRangeRuleInput
                                         rule={ruleDetails.rule}
-                                        setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+                                        setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
+                                        min={metadata.rule_limits[0]}
+                                        max={metadata.rule_limits[1]}
                                     />
-                                );
-                            case "on_off":
-                                return (
-                                    <OnOffRuleInput
-                                        rule={ruleDetails.rule}
-                                        setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
-                                    />
-                                );
-                            case "float_range":
-                                return (
-                                    <SliderRuleWrapper
-                                        ruleDetails={ruleDetails}
-                                        setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
-                                        setRuleDetails={setRuleDetails}
-                                        defaultRangeRule={average(
-                                            metadata.rule_limits[0],
-                                            metadata.rule_limits[1])
-                                        }
-                                    >
-                                        <FloatRangeRuleInput
-                                            rule={ruleDetails.rule}
-                                            setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
-                                            min={metadata.rule_limits[0]}
-                                            max={metadata.rule_limits[1]}
-                                        />
-                                    </SliderRuleWrapper>
-                                );
-                            case "int_or_fade":
-                                return (
-                                    <IntOrFadeRuleInput
-                                        ruleDetails={ruleDetails}
-                                        setRuleDetails={setRuleDetails}
-                                        limits={[
-                                            config[instance]["min_rule"],
-                                            config[instance]["max_rule"]
-                                        ]}
-                                    />
-                                );
-                        }
-                    })()}
-                </>
+                                </SliderRuleWrapper>
+                            );
+                        case "int_or_fade":
+                            return (
+                                <IntOrFadeRuleInput
+                                    ruleDetails={ruleDetails}
+                                    setRuleDetails={setRuleDetails}
+                                    limits={[
+                                        instance.min_rule,
+                                        instance.max_rule
+                                    ]}
+                                />
+                            );
+                    }
+                })()}
             </PopupDiv>
         </div>
     );
 };
 
 RuleField.propTypes = {
-    instance: PropTypes.string,
-    timestamp: PropTypes.string
+    instance: PropTypes.object,
+    category: PropTypes.oneOf([
+        'device',
+        'sensor'
+    ]),
+    timestamp: PropTypes.string,
+    rule: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.string
+    ]),
+    handleChange: PropTypes.func
 };
