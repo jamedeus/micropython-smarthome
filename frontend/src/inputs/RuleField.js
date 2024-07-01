@@ -40,16 +40,15 @@ OnOffRuleInput.propTypes = {
 
 // Wrapper for slider input that adds toggle which replaces input with standard
 // rule dropdown (enabled or disabled) for instances that take either rule type
-const SliderRuleWrapper = ({
-    ruleDetails,
-    setRule,
-    toggleRangeRule,
-    defaultRangeRule,
-    children
-}) => {
-    // Set rule to enabled if switching to dropdown, number if switching to slider
+const SliderRuleWrapper = ({ ruleDetails, setRuleDetails, defaultRangeRule, children }) => {
+    // Toggles range_rule bool and overwrites rule with arg (needs to change to
+    // enabled/disabled if toggling to false, int/float if toggling to true)
     const toggle = () => {
-        toggleRangeRule(ruleDetails.range_rule ? 'enabled' : defaultRangeRule);
+        setRuleDetails({
+            ...ruleDetails,
+            rule: ruleDetails.range_rule ? 'enabled' : defaultRangeRule,
+            range_rule: !ruleDetails.range_rule
+        });
     };
 
     return (
@@ -70,7 +69,7 @@ const SliderRuleWrapper = ({
             ) : (
                 <StandardRuleInput
                     rule={ruleDetails.rule}
-                    setRule={setRule}
+                    setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
                 />
             )}
         </>
@@ -79,8 +78,7 @@ const SliderRuleWrapper = ({
 
 SliderRuleWrapper.propTypes = {
     ruleDetails: PropTypes.object,
-    setRule: PropTypes.func,
-    toggleRangeRule: PropTypes.func,
+    setRuleDetails: PropTypes.func,
     defaultRangeRule: PropTypes.number,
     children: PropTypes.node
 };
@@ -104,10 +102,13 @@ const handleButtonClick = (rule, step, direction, min_rule, max_rule) => {
     return new_rule;
 };
 
-const ThermostatRuleInput = ({ ruleDetails, units, limits, setRule, toggleRangeRule }) => {
+const ThermostatRuleInput = ({ ruleDetails, setRuleDetails, units, limits }) => {
     const onButtonClick = (step, direction, min_rule, max_rule) => {
-        const newRule = handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule);
-        setRule(newRule);
+        setRuleDetails({
+            ...ruleDetails,
+            rule: handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule)
+
+        });
     };
 
     // Default rule when changing from dropdown to slider
@@ -127,8 +128,8 @@ const ThermostatRuleInput = ({ ruleDetails, units, limits, setRule, toggleRangeR
     return (
         <SliderRuleWrapper
             ruleDetails={ruleDetails}
-            setRule={setRule}
-            toggleRangeRule={toggleRangeRule}
+            setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+            setRuleDetails={setRuleDetails}
             defaultRangeRule={defaultRangeRule}
         >
             <RuleSlider
@@ -139,7 +140,7 @@ const ThermostatRuleInput = ({ ruleDetails, units, limits, setRule, toggleRangeR
                 button_step={0.5}
                 display_type={"float"}
                 onButtonClick={onButtonClick}
-                onSliderMove={setRule}
+                onSliderMove={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
             />
         </SliderRuleWrapper>
     );
@@ -147,23 +148,25 @@ const ThermostatRuleInput = ({ ruleDetails, units, limits, setRule, toggleRangeR
 
 ThermostatRuleInput.propTypes = {
     ruleDetails: PropTypes.object,
+    setRuleDetails: PropTypes.func,
     units: PropTypes.string,
-    limits: PropTypes.array,
-    setRule: PropTypes.func,
-    toggleRangeRule: PropTypes.func
+    limits: PropTypes.array
 };
 
-const FloatRangeRuleInput = ({ ruleDetails, limits, setRule, toggleRangeRule }) => {
+const FloatRangeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
     const onButtonClick = (step, direction, min_rule, max_rule) => {
-        const newRule = handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule);
-        setRule(newRule);
+        setRuleDetails({
+            ...ruleDetails,
+            rule: handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule)
+
+        });
     };
 
     return (
         <SliderRuleWrapper
             ruleDetails={ruleDetails}
-            setRule={setRule}
-            toggleRangeRule={toggleRangeRule}
+            setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+            setRuleDetails={setRuleDetails}
             defaultRangeRule={parseInt(parseInt(limits[1]) / 2)}
         >
             <RuleSlider
@@ -174,7 +177,7 @@ const FloatRangeRuleInput = ({ ruleDetails, limits, setRule, toggleRangeRule }) 
                 button_step={0.5}
                 display_type={"float"}
                 onButtonClick={onButtonClick}
-                onSliderMove={setRule}
+                onSliderMove={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
             />
         </SliderRuleWrapper>
     );
@@ -182,22 +185,32 @@ const FloatRangeRuleInput = ({ ruleDetails, limits, setRule, toggleRangeRule }) 
 
 FloatRangeRuleInput.propTypes = {
     ruleDetails: PropTypes.object,
-    limits: PropTypes.array,
-    setRule: PropTypes.func,
-    toggleRangeRule: PropTypes.func
+    setRuleDetails: PropTypes.func,
+    limits: PropTypes.array
 };
 
-const IntOrFadeRuleInput = ({ ruleDetails, limits, setRule, setRuleParam, toggleRangeRule }) => {
+const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
     const onButtonClick = (step, direction, min_rule, max_rule) => {
-        const newRule = handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule);
-        setRule(newRule);
+        setRuleDetails({
+            ...ruleDetails,
+            rule: handleButtonClick(ruleDetails.rule, step, direction, min_rule, max_rule)
+
+        });
+    };
+
+    const setDuration = (duration) => {
+        setRuleDetails({ ...ruleDetails, duration: duration});
+    };
+
+    const setFadeToggle = () => {
+        setRuleDetails({ ...ruleDetails, fade_rule: !ruleDetails.fade_rule });
     };
 
     return (
         <SliderRuleWrapper
             ruleDetails={ruleDetails}
-            setRule={setRule}
-            toggleRangeRule={toggleRangeRule}
+            setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+            setRuleDetails={setRuleDetails}
             defaultRangeRule={parseInt(parseInt(limits[1]) / 2)}
         >
             <RuleSlider
@@ -208,7 +221,7 @@ const IntOrFadeRuleInput = ({ ruleDetails, limits, setRule, setRuleParam, toggle
                 button_step={1}
                 display_type={"int"}
                 onButtonClick={onButtonClick}
-                onSliderMove={setRule}
+                onSliderMove={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
             />
 
             <div className={ruleDetails.fade_rule ? "text-center" : "d-none"}>
@@ -216,7 +229,7 @@ const IntOrFadeRuleInput = ({ ruleDetails, limits, setRule, setRuleParam, toggle
                 <Form.Control
                     type="text"
                     value={ruleDetails.duration}
-                    onChange={(e) => setRuleParam("duration", e.target.value)}
+                    onChange={(e) => setDuration(e.target.value)}
                 />
             </div>
 
@@ -226,7 +239,7 @@ const IntOrFadeRuleInput = ({ ruleDetails, limits, setRule, setRuleParam, toggle
                     type="switch"
                     label="Fade"
                     checked={ruleDetails.fade_rule}
-                    onChange={(e) => setRuleParam("fade_rule", e.target.checked)}
+                    onChange={setFadeToggle}
                 />
             </div>
         </SliderRuleWrapper>
@@ -235,10 +248,8 @@ const IntOrFadeRuleInput = ({ ruleDetails, limits, setRule, setRuleParam, toggle
 
 IntOrFadeRuleInput.propTypes = {
     ruleDetails: PropTypes.object,
-    limits: PropTypes.array,
-    setRule: PropTypes.func,
-    setRuleParam: PropTypes.func,
-    toggleRangeRule: PropTypes.func
+    setRuleDetails: PropTypes.func,
+    limits: PropTypes.array
 };
 
 export const RuleField = ({ instance, timestamp }) => {
@@ -293,26 +304,6 @@ export const RuleField = ({ instance, timestamp }) => {
         setVisible(false);
     };
 
-    // Takes ruleDetails param name and value, updates and re-renders
-    const setRuleParam = (param, value) => {
-        setRuleDetails({ ...ruleDetails, [param]: value});
-    };
-
-    // Handler for slider move events
-    const setRule = (value) => {
-        setRuleDetails({ ...ruleDetails, ["rule"]: value});
-    };
-
-    // Toggles range_rule bool and overwrites rule with arg (needs to change to
-    // enabled/disabled if toggling to false, int/float if toggling to true)
-    const toggleRangeRule = (newRule) => {
-        setRuleDetails({
-            ...ruleDetails,
-            rule: newRule,
-            range_rule: !ruleDetails.range_rule
-        });
-    };
-
     // Reference to span that shows current rule, opens popup
     const buttonRef = useRef(null);
 
@@ -337,10 +328,9 @@ export const RuleField = ({ instance, timestamp }) => {
                             return (
                                 <ThermostatRuleInput
                                     ruleDetails={ruleDetails}
+                                    setRuleDetails={setRuleDetails}
                                     units={config[instance]["units"]}
                                     limits={metadata.rule_limits}
-                                    setRule={setRule}
-                                    toggleRangeRule={toggleRangeRule}
                                 />
                             );
                         }
@@ -351,36 +341,33 @@ export const RuleField = ({ instance, timestamp }) => {
                                 return (
                                     <StandardRuleInput
                                         rule={ruleDetails.rule}
-                                        setRule={setRule}
+                                        setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
                                     />
                                 );
                             case "on_off":
                                 return (
                                     <OnOffRuleInput
                                         rule={ruleDetails.rule}
-                                        setRule={setRule}
+                                        setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
                                     />
                                 );
                             case "float_range":
                                 return (
                                     <FloatRangeRuleInput
                                         ruleDetails={ruleDetails}
+                                        setRuleDetails={setRuleDetails}
                                         limits={metadata.rule_limits}
-                                        setRule={setRule}
-                                        toggleRangeRule={toggleRangeRule}
                                     />
                                 );
                             case "int_or_fade":
                                 return (
                                     <IntOrFadeRuleInput
                                         ruleDetails={ruleDetails}
+                                        setRuleDetails={setRuleDetails}
                                         limits={[
                                             config[instance]["min_rule"],
                                             config[instance]["max_rule"]
                                         ]}
-                                        setRule={setRule}
-                                        setRuleParam={setRuleParam}
-                                        toggleRangeRule={toggleRangeRule}
                                     />
                                 );
                         }
