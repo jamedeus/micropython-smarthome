@@ -57,31 +57,37 @@ const Page3 = () => {
     const ScheduleRuleRow = ({ instance, timestamp }) => {
         // Called by TimeField when user changes value and closes
         const handleNewTimestamp = (newTimestamp, oldTimestamp) => {
-            // Get existing rules, value of edited rule
-            const rules = { ...config[instance]["schedule"] };
-            const rule_value = rules[oldTimestamp];
+            // Only update state if timestamp changed
+            if (newTimestamp != oldTimestamp) {
+                // Get existing rules, value of edited rule
+                const rules = { ...config[instance]["schedule"] };
+                const rule_value = rules[oldTimestamp];
 
-            // Delete original timestamp, add new, update state
-            delete rules[oldTimestamp];
-            rules[newTimestamp] = rule_value;
-            handleInputChange(instance, "schedule", rules);
+                // Delete original timestamp, add new, update state
+                delete rules[oldTimestamp];
+                rules[newTimestamp] = rule_value;
+                handleInputChange(instance, "schedule", rules);
+            }
         };
 
         // Called by RuleField when user changes value and closes
         const handleNewRule = (rule, fade_rule, duration, range_rule) => {
-            // Get existing schedule rules
-            const rules = config[instance]["schedule"];
+            // Only update state if rule changed
+            if (rule != config[instance]["schedule"][timestamp]) {
+                // Get existing schedule rules
+                const rules = config[instance]["schedule"];
 
-            // Overwrite edited rule
-            if (range_rule && fade_rule) {
-                // Fade rule: Combine params into single string
-                rules[timestamp] = `fade/${rule}/${duration}`;
-            } else {
-                rules[timestamp] = rule;
+                // Overwrite edited rule
+                if (range_rule && fade_rule) {
+                    // Fade rule: Combine params into single string
+                    rules[timestamp] = `fade/${rule}/${duration}`;
+                } else {
+                    rules[timestamp] = rule;
+                }
+
+                // Update state
+                handleInputChange(instance, "schedule", rules);
             }
-
-            // Update state
-            handleInputChange(instance, "schedule", rules);
         };
 
         return (

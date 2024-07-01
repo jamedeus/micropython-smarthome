@@ -41,13 +41,9 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
         show_keyword: Object.keys(schedule_keywords).includes(timestamp)
     });
 
+    // Call parent handler, close popup
     const handleClose = () => {
-        // Only update state if timestamp was changed
-        if (timeDetails.timestamp !== timeDetails.original_timestamp) {
-            handleChange(timeDetails.timestamp, timeDetails.original_timestamp);
-        }
-
-        // Close popup
+        handleChange(timeDetails.timestamp, timeDetails.original_timestamp);
         setVisible(false);
     };
 

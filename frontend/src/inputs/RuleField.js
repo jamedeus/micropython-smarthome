@@ -150,7 +150,6 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
     // - duration: Current value of duration field
     // - range_rule: Show slider if true, dropdown if false
     const [ruleDetails, setRuleDetails] = useState({
-        original_rule: rule,
         rule: rule,
         fade_rule: false,
         duration: 60,
@@ -169,18 +168,14 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
         });
     }
 
+    // Call parent handler, close popup
     const handleClose = () => {
-        // Only update state if rule was changed
-        if (ruleDetails.rule !== ruleDetails.original_rule) {
-            handleChange(
-                ruleDetails.rule,
-                ruleDetails.fade_rule,
-                ruleDetails.duration,
-                ruleDetails.range_rule
-            );
-        }
-
-        // Close popup
+        handleChange(
+            ruleDetails.rule,
+            ruleDetails.fade_rule,
+            ruleDetails.duration,
+            ruleDetails.range_rule
+        );
         setVisible(false);
     };
 
