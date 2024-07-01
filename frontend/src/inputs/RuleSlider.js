@@ -3,24 +3,24 @@ import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import { Range, getTrackBackground } from 'react-range';
 
-function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_step, display_type, setRule }) {
+function RuleSlider({ rule, setRule, min, max, sliderStep, buttonStep, displayType }) {
     // Create array containing current rule, required my slider component
-    const values = [rule_value];
+    const values = [rule];
 
     // Handler for slider + and - buttons
     const handleButtonClick = (rule, direction) => {
         let new_rule;
         if (direction === "up") {
-            new_rule = parseFloat(rule) + parseFloat(button_step);
+            new_rule = parseFloat(rule) + parseFloat(buttonStep);
         } else {
-            new_rule = parseFloat(rule) - parseFloat(button_step);
+            new_rule = parseFloat(rule) - parseFloat(buttonStep);
         }
 
         // Enforce rule limits
-        if (new_rule < parseFloat(slider_min)) {
-            new_rule = parseFloat(slider_max);
-        } else if (new_rule > parseFloat(slider_max)) {
-            new_rule = parseFloat(slider_max);
+        if (new_rule < parseFloat(min)) {
+            new_rule = parseFloat(max);
+        } else if (new_rule > parseFloat(max)) {
+            new_rule = parseFloat(max);
         }
 
         setRule(new_rule);
@@ -28,13 +28,13 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
 
     // Returns value displayed on slider handle
     const getThumbValue = () => {
-        switch(display_type) {
+        switch(displayType) {
             case("int"):
-                return parseInt(values[0]);
+                return parseInt(rule);
             case("float"):
-                return parseFloat(values[0]).toFixed(1);
+                return parseFloat(rule).toFixed(1);
             default:
-                return values[0];
+                return rule;
         }
     };
 
@@ -44,16 +44,16 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             <Button
                 variant="none"
                 size="sm"
-                onClick={() => handleButtonClick(values[0], "down")}
+                onClick={() => handleButtonClick(rule, "down")}
             >
                 <i className="bi-dash-lg"></i>
             </Button>
 
             <div className="w-100 mx-3">
                 <Range
-                    step={slider_step}
-                    min={slider_min}
-                    max={slider_max}
+                    step={sliderStep}
+                    min={min}
+                    max={max}
                     values={values}
                     onChange={(values) => setRule(values[0])}
                     renderTrack={({ props, children }) => (
@@ -68,8 +68,8 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
                                         'var(--slider-track-fill)',
                                         'var(--slider-track-background)'
                                     ],
-                                    min: slider_min,
-                                    max: slider_max
+                                    min: min,
+                                    max: max
                                 }),
                             }}
                         >
@@ -87,7 +87,7 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
             <Button
                 variant="none"
                 size="sm"
-                onClick={() => handleButtonClick(values[0], "up")}
+                onClick={() => handleButtonClick(rule, "up")}
             >
                 <i className="bi-plus-lg"></i>
             </Button>
@@ -96,17 +96,17 @@ function RuleSlider({ rule_value, slider_min, slider_max, slider_step, button_st
 }
 
 RuleSlider.propTypes = {
-    rule_value: PropTypes.oneOfType([
+    rule: PropTypes.oneOfType([
         PropTypes.number,
         PropTypes.string
     ]),
-    slider_min: PropTypes.number,
-    slider_max: PropTypes.number,
-    slider_step: PropTypes.number,
-    button_step: PropTypes.number,
-    display_type: PropTypes.string,
-    onButtonClick: PropTypes.func,
     setRule: PropTypes.func,
+    min: PropTypes.number,
+    max: PropTypes.number,
+    sliderStep: PropTypes.number,
+    buttonStep: PropTypes.number,
+    displayType: PropTypes.string,
+    onButtonClick: PropTypes.func,
     style: PropTypes.object
 };
 

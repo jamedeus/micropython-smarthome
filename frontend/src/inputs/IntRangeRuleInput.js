@@ -5,13 +5,13 @@ import RuleSlider from 'inputs/RuleSlider';
 const IntRangeRuleInput = ({ rule, setRule, min, max }) => {
     return (
         <RuleSlider
-            rule_value={rule}
-            slider_min={min}
-            slider_max={max}
-            slider_step={1}
-            button_step={1}
-            display_type={"int"}
+            rule={rule}
             setRule={setRule}
+            min={min}
+            max={max}
+            sliderStep={1}
+            buttonStep={1}
+            displayType={"int"}
         />
     );
 };
