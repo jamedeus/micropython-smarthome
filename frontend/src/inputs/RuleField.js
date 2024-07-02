@@ -9,6 +9,7 @@ import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 import { convert_temperature } from 'util/thermostat_util';
 import { get_instance_metadata } from 'util/metadata';
 import { average } from 'util/helper_functions';
+import { numbersOnly } from 'util/validation';
 
 // Wrapper for slider input that adds toggle which replaces input with standard
 // rule dropdown (enabled or disabled) for instances that take either rule type
@@ -86,7 +87,10 @@ ThermostatRuleInput.propTypes = {
 
 const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
     const setDuration = (duration) => {
-        setRuleDetails({ ...ruleDetails, duration: duration});
+        // Remove non-numeric, 5 digits max (longest fade = 86400 seconds)
+        setRuleDetails({ ...ruleDetails,
+            duration: numbersOnly(duration).substring(0,5)
+        });
     };
 
     const setFadeToggle = () => {

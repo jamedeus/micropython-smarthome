@@ -6,6 +6,7 @@ import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { ApiCardContext } from 'root/ApiCardContext';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
+import { numbersOnly } from 'util/validation';
 
 
 export const FadeContext = createContext();
@@ -22,40 +23,24 @@ export const FadeContextProvider = ({ children }) => {
     const {send_command} = useContext(ApiCardContext);
 
     const handleClose = () => {
-        setFadeContent({ ...fadeModalContent, ["visible"]: false });
+        setFadeContent({ ...fadeModalContent, visible: false });
     };
 
     const showFadeModal = (id) => {
-        setFadeContent({
-            ...fadeModalContent,
-            ["visible"]: true,
-            ["target"]: id
-        });
+        setFadeContent({ ...fadeModalContent, visible: true, target: id });
     };
 
+    // Remove non-numeric characters
     const setBrightness = (value) => {
-        setFadeContent({
-            ...fadeModalContent,
-            ["brightness"]: formatField(value, fadeModalContent.brightness)
-        });
+        setFadeContent({ ...fadeModalContent, brightness: numbersOnly(value) });
     };
 
+    // Remove non-numeric, 5 digits max (longest fade = 86400 seconds)
     const setDuration = (value) => {
         setFadeContent({
             ...fadeModalContent,
-            ["duration"]: formatField(value, fadeModalContent.duration)
+            duration: numbersOnly(value).substring(0,5)
         });
-    };
-
-    // Format fields as user types, remove non-numeric characters
-    const formatField = (newDuration, oldDuration) => {
-        // Backspace and delete bypass formatting
-        if (newDuration.length < oldDuration.length) {
-            return newDuration;
-        }
-
-        // Remove non-numeric characters
-        return newDuration.replace(/[^\d.]/g, '');
     };
 
     // Close modal, send command to start fade
