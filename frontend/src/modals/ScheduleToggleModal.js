@@ -1,105 +1,59 @@
-import React, { createContext, useContext, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import InputGroup from 'react-bootstrap/InputGroup';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { ApiCardContext } from 'root/ApiCardContext';
+import { numbersOnly } from 'util/validation';
 
+export let showScheduleToggle;
 
-export const ScheduleToggleContext = createContext();
-
-export const ScheduleToggleContextProvider = ({ children }) => {
-    const [scheduleToggleContent, setScheduleToggleContent] = useState({
-        visible: false,
-        action: '',
-        delay: '15',
-        units: 'minutes',
-        target: ''
-    });
-
+const ScheduleToggleModal = () => {
     // Get function to send API call to node
-    const {send_command} = useContext(ApiCardContext);
+    const { send_command } = useContext(ApiCardContext);
 
-    const handleClose = () => {
-        setScheduleToggleContent({ ...scheduleToggleContent, ["visible"]: false });
-    };
+    // Create states for visibility, target instance, fields
+    const [visible, setVisible] = useState(false);
+    const [action, setAction] = useState('');
+    const [delay, setDelay] = useState('15');
+    const [units, setUnits] = useState('minutes');
+    const [target, setTarget] = useState('');
 
     // Takes instance ID and current enable state (bool)
     // Opens modal with opposite of current state pre-selected
-    const showScheduleToggle = (id, enabled) => {
-        const update = {
-            ...scheduleToggleContent,
-            ["visible"]: true,
-            ["target"]: id
-        };
-
-        // Set default to opposite of current state
-        if (enabled === true) {
-            update.action = "disable_in";
-        } else {
-            update.action = "enable_in";
-        }
-
-        setScheduleToggleContent(update);
-    };
-
-    const setAction = (action) => {
-        setScheduleToggleContent({
-            ...scheduleToggleContent,
-            ["action"]: action
-        });
-    };
-
-    const setDelay = (delay) => {
-        setScheduleToggleContent({
-            ...scheduleToggleContent,
-            ["delay"]: formatDelayField(delay, scheduleToggleContent.delay)
-        });
+    showScheduleToggle = (id, enabled) => {
+        setTarget(id);
+        setAction(enabled ? 'disable_in' : 'enable_in');
+        setVisible(true);
     };
 
     // Format delay field as user types (prevent non-numeric, limit length)
-    const formatDelayField = (newDelay, oldDelay) => {
-        // Backspace and delete bypass formatting
-        if (newDelay.length < oldDelay.length) {
-            return newDelay;
-        }
-
-        // Remove non-numeric characters
-        newDelay = newDelay.replace(/[^\d.]/g, '');
-
+    const formatDelayField = (newDelay) => {
         // Limit delay to (very) roughly 1 day
-        if (scheduleToggleContent.units === 'seconds') {
-            newDelay = newDelay.substring(0,5);
-        } else if (scheduleToggleContent.units === 'minutes') {
-            newDelay = newDelay.substring(0,4);
-        } else if (scheduleToggleContent.units === 'hours') {
-            newDelay = newDelay.substring(0,2);
+        switch(units) {
+            case 'seconds':
+                return numbersOnly(newDelay).substring(0,5);
+            case 'minutes':
+                return numbersOnly(newDelay).substring(0,4);
+            case 'hours':
+                return numbersOnly(newDelay).substring(0,2);
         }
-
-        return newDelay;
     };
 
-    const setUnits = (units) => {
-        setScheduleToggleContent({
-            ...scheduleToggleContent,
-            ["units"]: units
-        });
-    };
-
+    // Close modal, make API call to node with selection
     const submit = async () => {
-        handleClose();
-        let payload = {
-            'command': scheduleToggleContent.action,
-            'instance': scheduleToggleContent.target,
-            'delay': scheduleToggleContent.delay
+        setVisible(false);
+        const payload = {
+            'command': action,
+            'instance': target,
+            'delay': delay
         };
 
         // Convert delay to minutes
-        if (scheduleToggleContent.units === 'seconds') {
+        if (units === 'seconds') {
             payload.delay = String(parseInt(payload.delay) / 60);
-        } else if (scheduleToggleContent.units === 'hours') {
+        } else if (units === 'hours') {
             payload.delay = String(parseInt(payload.delay) * 60);
         }
 
@@ -109,42 +63,10 @@ export const ScheduleToggleContextProvider = ({ children }) => {
     };
 
     return (
-        <ScheduleToggleContext.Provider value={{
-            scheduleToggleContent,
-            setScheduleToggleContent,
-            handleClose,
-            showScheduleToggle,
-            setAction,
-            setDelay,
-            setUnits,
-            submit
-        }}>
-            {children}
-        </ScheduleToggleContext.Provider>
-    );
-};
-
-ScheduleToggleContextProvider.propTypes = {
-    children: PropTypes.node,
-};
-
-
-export const ScheduleToggleModal = () => {
-    // Get function used to make API call
-    const {
-        scheduleToggleContent,
-        handleClose,
-        setAction,
-        setDelay,
-        setUnits,
-        submit
-    } = useContext(ScheduleToggleContext);
-
-    return (
-        <Modal show={scheduleToggleContent.visible} onHide={handleClose} centered>
+        <Modal show={visible} onHide={() => setVisible(false)} centered>
             <HeaderWithCloseButton
                 title="Schedule Toggle"
-                onClose={handleClose}
+                onClose={() => setVisible(false)}
                 size="3"
             />
 
@@ -154,7 +76,7 @@ export const ScheduleToggleModal = () => {
 
                 <InputGroup className="mb-3 py-2">
                     <Form.Select
-                        defaultValue={scheduleToggleContent.action}
+                        defaultValue={action}
                         onChange={(e) => setAction(e.target.value)}
                         className="text-center"
                     >
@@ -163,12 +85,14 @@ export const ScheduleToggleModal = () => {
                     </Form.Select>
                     <InputGroup.Text>in</InputGroup.Text>
                     <Form.Control
-                        value={scheduleToggleContent.delay}
-                        onChange={(e) => setDelay(e.target.value)}
+                        value={delay}
+                        onChange={(e) => setDelay(
+                            formatDelayField(e.target.value)
+                        )}
                         className="text-center"
                     />
                     <Form.Select
-                        defaultValue={scheduleToggleContent.units}
+                        defaultValue={units}
                         onChange={(e) => setUnits(e.target.value)}
                         className="text-center"
                     >
@@ -181,7 +105,7 @@ export const ScheduleToggleModal = () => {
             <Modal.Footer className="mx-auto pt-0">
                 <Button
                     variant="success"
-                    disabled={scheduleToggleContent.delay.length === 0}
+                    disabled={delay.length === 0}
                     onClick={submit}
                 >
                     Schedule
@@ -190,3 +114,5 @@ export const ScheduleToggleModal = () => {
         </Modal>
     );
 };
+
+export default ScheduleToggleModal;

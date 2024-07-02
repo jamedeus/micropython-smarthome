@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { ErrorModal } from 'modals/ErrorModal';
 import DebugModal from 'modals/DebugModal';
-import { ScheduleToggleModal } from 'modals/ScheduleToggleModal';
+import ScheduleToggleModal from 'modals/ScheduleToggleModal';
 import Header from './Header';
 import Layout from './Layout';
 import FadeModal from 'modals/FadeModal';

@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { showDebugModal } from 'modals/DebugModal';
 import { ApiCardContext } from 'root/ApiCardContext';
-import { ScheduleToggleContext } from 'modals/ScheduleToggleModal';
+import { showScheduleToggle } from 'modals/ScheduleToggleModal';
 import InstanceCard from './InstanceCard';
 import 'css/TriggerButton.css';
 
@@ -31,9 +31,6 @@ const SensorCard = ({ id }) => {
     // Get status object
     const {status, enable_instance, trigger_sensor, reset_rule} = useContext(ApiCardContext);
     const params = status["sensors"][id];
-
-    // Get function to open schedule toggle modal
-    const { showScheduleToggle } = useContext(ScheduleToggleContext);
 
     // Create callback for trigger button
     const trigger = () => {
