@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { DebugModalContext } from 'modals/DebugModal';
 import { ApiCardContext } from 'root/ApiCardContext';
-import { FadeContext } from 'modals/FadeModal';
+import { showFadeModal } from 'modals/FadeModal';
 import { ScheduleToggleContext } from 'modals/ScheduleToggleModal';
 import InstanceCard from './InstanceCard';
 import 'css/PowerButton.css';
@@ -38,9 +38,6 @@ const DeviceCard = ({ id }) => {
 
     // Get function to open schedule toggle modal
     const { showScheduleToggle } = useContext(ScheduleToggleContext);
-
-    // Get function to open fade modal
-    const { showFadeModal } = useContext(FadeContext);
 
     // Create local state for prompt type (not included in
     // status updates, will remove nodes if allowed to update)

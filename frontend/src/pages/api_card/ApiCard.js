@@ -4,8 +4,8 @@ import { DebugModal } from 'modals/DebugModal';
 import { ScheduleToggleModal } from 'modals/ScheduleToggleModal';
 import Header from './Header';
 import Layout from './Layout';
+import FadeModal from 'modals/FadeModal';
 import { UpdateStatus } from './UpdateStatus';
-import { FadeModal } from 'modals/FadeModal';
 import { ApiCardContext } from 'root/ApiCardContext';
 import 'css/api_card.css';
 

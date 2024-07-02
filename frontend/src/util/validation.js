@@ -49,6 +49,6 @@ const formatIp = (oldIP, newIP) => {
 // Takes string, returns with non-numeric characters removed
 function numbersOnly(string) {
     return string.replace(/[^\d]/g, '');
-};
+}
 
 export { ipRegex, formatIp, numbersOnly };

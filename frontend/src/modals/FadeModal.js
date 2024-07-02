@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useState } from 'react';
 import Col from 'react-bootstrap/Col';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
@@ -8,123 +7,74 @@ import { ApiCardContext } from 'root/ApiCardContext';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { numbersOnly } from 'util/validation';
 
+export let showFadeModal;
 
-export const FadeContext = createContext();
-
-export const FadeContextProvider = ({ children }) => {
-    const [fadeModalContent, setFadeContent] = useState({
-        visible: false,
-        target: '',
-        brightness: '',
-        duration: ''
-    });
-
+export const FadeModal = () => {
     // Get function to send API call to node
-    const {send_command} = useContext(ApiCardContext);
+    const { send_command } = useContext(ApiCardContext);
 
-    const handleClose = () => {
-        setFadeContent({ ...fadeModalContent, visible: false });
-    };
+    // Create states for visibility, target instance, fields
+    const [visible, setVisible] = useState(false);
+    const [target, setTarget] = useState('');
+    const [brightness, setBrightness] = useState('');
+    const [duration, setDuration] = useState('');
 
-    const showFadeModal = (id) => {
-        setFadeContent({ ...fadeModalContent, visible: true, target: id });
-    };
-
-    // Remove non-numeric characters
-    const setBrightness = (value) => {
-        setFadeContent({ ...fadeModalContent, brightness: numbersOnly(value) });
-    };
-
-    // Remove non-numeric, 5 digits max (longest fade = 86400 seconds)
-    const setDuration = (value) => {
-        setFadeContent({
-            ...fadeModalContent,
-            duration: numbersOnly(value).substring(0,5)
-        });
+    showFadeModal = (id) => {
+        setTarget(id);
+        setVisible(true);
     };
 
     // Close modal, send command to start fade
     const submit = async () => {
-        handleClose();
+        setVisible(false);
         const result = await send_command({
             command: 'set_rule',
-            instance: fadeModalContent.target,
-            rule: `fade/${fadeModalContent.brightness}/${fadeModalContent.duration}`
+            instance: target,
+            rule: `fade/${brightness}/${duration}`
         });
         const response = await result.json();
         console.log(response);
     };
 
-    // Return true if both fields have value, false if either empty
-    const readyToSubmit = () => {
-        return fadeModalContent.duration !== '' && fadeModalContent.brightness !== '';
-    };
-
-    // Change IP if enter key pressed in either field
+    // Submit modal if enter key pressed and both fields have value
     const handleEnterKey = (e) => {
-        if (e.key === "Enter" && readyToSubmit()) {
+        if (e.key === "Enter" && brightness && duration) {
             submit();
         }
     };
 
     return (
-        <FadeContext.Provider value={{
-            fadeModalContent,
-            setFadeContent,
-            handleClose,
-            showFadeModal,
-            setBrightness,
-            setDuration,
-            submit,
-            readyToSubmit,
-            handleEnterKey
-        }}>
-            {children}
-        </FadeContext.Provider>
-    );
-};
-
-FadeContextProvider.propTypes = {
-    children: PropTypes.node,
-};
-
-
-export const FadeModal = () => {
-    // Get function used to make API call
-    const {
-        fadeModalContent,
-        handleClose,
-        setBrightness,
-        setDuration,
-        submit,
-        readyToSubmit,
-        handleEnterKey
-    } = useContext(FadeContext);
-
-    return (
-        <Modal show={fadeModalContent.visible} onHide={handleClose} centered>
+        <Modal show={visible} onHide={() => setVisible(false)} centered>
             <HeaderWithCloseButton
                 title="Start Fade"
-                onClose={handleClose}
+                onClose={() => setVisible(false)}
                 size="5"
             />
 
             <Modal.Body className="d-flex">
                 <Col className="text-center mx-1">
-                    <Form.Label>Target Brightness</Form.Label>
+                    <Form.Label>
+                        Target Brightness
+                    </Form.Label>
                     <Form.Control
                         type="text"
-                        value={fadeModalContent.brightness}
-                        onChange={(e) => setBrightness(e.target.value)}
+                        value={brightness}
+                        onChange={(e) => setBrightness(
+                            numbersOnly(e.target.value)
+                        )}
                         onKeyDown={handleEnterKey}
                     />
                 </Col>
                 <Col className="text-center mx-1">
-                    <Form.Label>Duration (seconds)</Form.Label>
+                    <Form.Label>
+                        Duration (seconds)
+                    </Form.Label>
                     <Form.Control
                         type="text"
-                        value={fadeModalContent.duration}
-                        onChange={(e) => setDuration(e.target.value)}
+                        value={duration}
+                        onChange={(e) => setDuration(
+                            numbersOnly(e.target.value).substring(0,5)
+                        )}
                         onKeyDown={handleEnterKey}
                     />
                 </Col>
@@ -132,7 +82,7 @@ export const FadeModal = () => {
             <Modal.Footer className="mx-auto pt-0">
                 <Button
                     variant="success"
-                    disabled={!readyToSubmit()}
+                    disabled={!(brightness && duration)}
                     onClick={submit}
                 >
                     Start
@@ -141,3 +91,5 @@ export const FadeModal = () => {
         </Modal>
     );
 };
+
+export default FadeModal;
