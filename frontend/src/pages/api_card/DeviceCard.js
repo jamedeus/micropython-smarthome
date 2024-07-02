@@ -2,7 +2,7 @@ import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { DebugModalContext } from 'modals/DebugModal';
+import { showDebugModal } from 'modals/DebugModal';
 import { ApiCardContext } from 'root/ApiCardContext';
 import { showFadeModal } from 'modals/FadeModal';
 import { ScheduleToggleContext } from 'modals/ScheduleToggleModal';
@@ -32,9 +32,6 @@ const DeviceCard = ({ id }) => {
     // Get status object
     const {status, enable_instance, turn_on, reset_rule} = useContext(ApiCardContext);
     const params = status["devices"][id];
-
-    // Get function to open debug modal
-    const { showDebugModal } = useContext(DebugModalContext);
 
     // Get function to open schedule toggle modal
     const { showScheduleToggle } = useContext(ScheduleToggleContext);

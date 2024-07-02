@@ -4,8 +4,8 @@ import 'css/LoadingSpinner.css';
 import 'css/CheckmarkAnimation.css';
 
 
-export const LoadingSpinner = ({ size }) => {
-    let classList = ["loading-animation", "m-auto"];
+export const LoadingSpinner = ({ size, classes=[] }) => {
+    let classList = ["loading-animation", "m-auto"].concat(classes);
 
     switch(size) {
         case "large":
@@ -27,7 +27,8 @@ export const LoadingSpinner = ({ size }) => {
 };
 
 LoadingSpinner.propTypes = {
-    size: PropTypes.string
+    size: PropTypes.string,
+    classes: PropTypes.array
 };
 
 

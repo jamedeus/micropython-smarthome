@@ -1,71 +1,45 @@
-import React, { createContext, useContext, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { ApiCardContext } from 'root/ApiCardContext';
+import { LoadingSpinner } from 'util/animations';
 
+export let showDebugModal;
 
-export const DebugModalContext = createContext();
-
-export const DebugModalContextProvider = ({ children }) => {
-    const [debugModalContent, setDebugModalContent] = useState({
-        visible: false,
-        attributes: {}
-    });
-
+const DebugModal = () => {
     // Get function to send API call to node
     const {send_command} = useContext(ApiCardContext);
 
-    const handleClose = () => {
-        setDebugModalContent({ ...debugModalContent, ["visible"]: false });
-    };
+    // Create visibility state
+    const [visible, setVisible] = useState(false);
+    const [attributes, setAttributes] = useState(null);
 
-    const getAttributes = async (id) => {
-        // Get instance attributes from node
-        const response = await send_command({'command': 'get_attributes', 'instance': id});
-        const attributes = await response.json();
-        return attributes;
-    };
-
-    const showDebugModal = async (id) => {
-        const attributes = await getAttributes(id);
-        setDebugModalContent({
-            ...debugModalContent,
-            ["visible"]: true,
-            ["attributes"]: attributes
+    showDebugModal = async (id) => {
+        setAttributes(null);
+        setVisible(true);
+        const response = await send_command({
+            'command': 'get_attributes',
+            'instance': id
         });
+        const attributes = await response.json();
+        setAttributes(attributes);
     };
 
     return (
-        <DebugModalContext.Provider value={{
-            debugModalContent,
-            setDebugModalContent,
-            handleClose,
-            showDebugModal
-        }}>
-            {children}
-        </DebugModalContext.Provider>
-    );
-};
-
-DebugModalContextProvider.propTypes = {
-    children: PropTypes.node,
-};
-
-
-export const DebugModal = () => {
-    // Get function used to make API call
-    const {debugModalContent, handleClose} = useContext(DebugModalContext);
-
-    return (
-        <Modal show={debugModalContent.visible} onHide={handleClose} centered>
-            <HeaderWithCloseButton title="Debug" onClose={handleClose} />
+        <Modal show={visible} onHide={() => setVisible(false)} centered>
+            <HeaderWithCloseButton title="Debug" onClose={() => setVisible(false)} />
 
             <Modal.Body className="d-flex flex-column mx-auto text-center">
-                <pre className='d-inline-block text-start section p-3' id="debug-json">
-                    {JSON.stringify(debugModalContent.attributes, null, 4)}
-                </pre>
+                {attributes ? (
+                    <pre className='d-inline-block text-start section p-3 mb-2'>
+                        {JSON.stringify(attributes, null, 4)}
+                    </pre>
+                ) : (
+                    <LoadingSpinner size="medium" classes={['my-3']} />
+                )}
             </Modal.Body>
         </Modal>
     );
 };
+
+export default DebugModal;
