@@ -4,7 +4,7 @@ import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import Collapse from 'react-bootstrap/Collapse';
-import { ScheduleRulesTable } from './ScheduleRules';
+import ScheduleRulesTable from './ScheduleRules';
 import RuleInput from './RuleInput';
 
 
@@ -47,15 +47,7 @@ const InstanceCard = ({ id, params, actionButton, dropdownOptions }) => {
                             </Button>
                         </div>
 
-                        <div className="collapse text-center" id={`${id}-schedule-rules`}>
-                            <ScheduleRulesTable id={id} schedule={params.schedule} />
-
-                            <div className="text-center mx-3 mb-3">
-                                <Button variant="secondary" size="sm">
-                                    <i className="bi-plus-lg"></i>
-                                </Button>
-                            </div>
-                        </div>
+                        <ScheduleRulesTable id={id} schedule={params.schedule} />
                     </div>
                 </Collapse>
             </Card.Body>

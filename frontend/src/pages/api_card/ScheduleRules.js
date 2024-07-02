@@ -5,9 +5,9 @@ import Table from 'react-bootstrap/Table';
 import { TimeField } from 'inputs/TimeField';
 import { RuleField } from 'inputs/RuleField';
 import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
+import Button from 'react-bootstrap/Button';
 
-
-const ScheduleRule = ({ id, time, rule }) => {
+const ScheduleRuleRow = ({ id, time, rule, getButtonState, className='' }) => {
     // Get status object for instance
     const { status } = useContext(ApiCardContext);
     const instance = status[`${id.replace(/[0-9]/g, '')}s`][id];
@@ -31,11 +31,8 @@ const ScheduleRule = ({ id, time, rule }) => {
         }
     };
 
-    // Controls button state
-    const modified = time != newTime || rule != newRule;
-
     return (
-        <tr>
+        <tr className={className}>
             <td>
                 <TimeField
                     timestamp={newTime}
@@ -55,7 +52,7 @@ const ScheduleRule = ({ id, time, rule }) => {
             </td>
             <td className="min">
                 <DeleteOrEditButton
-                    status={modified ? 'edit' : 'delete'}
+                    status={getButtonState(time, newTime, rule, newRule)}
                     handleDelete={() => console.log('delete')}
                     handleEdit={() => console.log('edit')}
                 />
@@ -64,7 +61,7 @@ const ScheduleRule = ({ id, time, rule }) => {
     );
 };
 
-ScheduleRule.propTypes = {
+ScheduleRuleRow.propTypes = {
     id: PropTypes.string,
     time: PropTypes.string,
     rule: PropTypes.oneOfType([
@@ -72,31 +69,106 @@ ScheduleRule.propTypes = {
         PropTypes.number,
         PropTypes.object,
     ]),
+    getButtonState: PropTypes.func,
+    getButtonDisabled: PropTypes.func,
+    className: PropTypes.string
 };
 
 
-const ScheduleRulesTable = ({ id, schedule }) => {
+const ExistingScheduleRule = ({ id, time, rule }) => {
+    const getButtonState = (oldTime, newTime, oldRule, newRule) => {
+        if (oldTime != newTime || oldRule != newRule) {
+            return 'edit';
+        }
+        return 'delete';
+    };
+
     return (
-        <Table borderless>
-            <thead>
-                <tr>
-                    <th className="w-50">Time</th>
-                    <th className="w-50">Rule</th>
-                </tr>
-            </thead>
-            <tbody>
-                {Object.keys(schedule).map((time, index) => {
-                    return (
-                        <ScheduleRule
-                            key={`${id}-rule-${index}`}
-                            id={id}
-                            time={time}
-                            rule={schedule[time]}
-                        />
-                    );
-                })}
-            </tbody>
-        </Table>
+        <ScheduleRuleRow
+            id={id}
+            time={time}
+            rule={rule}
+            getButtonState={getButtonState}
+        />
+    );
+};
+
+ExistingScheduleRule.propTypes = {
+    id: PropTypes.string,
+    time: PropTypes.string,
+    rule: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+        PropTypes.object,
+    ]),
+    className: PropTypes.string
+};
+
+const NewScheduleRule = ({ id, visible }) => {
+    const getButtonState = (_, newTime, __, newRule) => {
+        if (newTime && newRule) {
+            return 'edit';
+        }
+        return 'delete';
+    };
+
+    return (
+        <ScheduleRuleRow
+            id={id}
+            time={''}
+            rule={''}
+            getButtonState={getButtonState}
+            className={visible ? '' : 'd-none'}
+        />
+    );
+};
+
+NewScheduleRule.propTypes = {
+    id: PropTypes.string,
+    visible: PropTypes.bool
+};
+
+const ScheduleRulesTable = ({ id, schedule }) => {
+    const [showNewRule, setShowNewRule] = useState(false);
+
+    return (
+        <div className="collapse text-center" id={`${id}-schedule-rules`}>
+            <Table borderless>
+                <thead>
+                    <tr>
+                        <th className="w-50">Time</th>
+                        <th className="w-50">Rule</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {Object.keys(schedule).map((time, index) => {
+                        return (
+                            <ExistingScheduleRule
+                                key={time}
+                                id={id}
+                                time={time}
+                                rule={schedule[time]}
+                            />
+                        );
+                    })}
+                    <NewScheduleRule
+                        key={'new'}
+                        id={id}
+                        visible={showNewRule}
+                    />
+                </tbody>
+            </Table>
+
+            <div className="text-center mx-3 mb-3">
+                <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setShowNewRule(true)}
+                >
+                    <i className="bi-plus-lg"></i>
+                </Button>
+            </div>
+        </div>
     );
 };
 
@@ -105,5 +177,4 @@ ScheduleRulesTable.propTypes = {
     schedule: PropTypes.object
 };
 
-
-export { ScheduleRule, ScheduleRulesTable };
+export default ScheduleRulesTable;
