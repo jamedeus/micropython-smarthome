@@ -190,7 +190,7 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
                 className="form-control"
                 onClick={() => setVisible(true)}
             >
-                {rule}
+                {rule ? rule : 'Set rule'}
             </span>
 
             {/* Edit rule popup */}

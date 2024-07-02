@@ -114,8 +114,13 @@ td:last-child{
     background-color: var(--slider-track-fill);
 }
 
+/* Table cell containing schedule rule popup */
+td.schedule-rule-field {
+    position: relative;
+}
+
 /* Popup div for setting schedule rule timestamps and values */
-/* Aligns with parent with 20px margin on either side */
+/* Aligns to parent with 20px margin on either side */
 .schedule-rule-param-popup {
     position: absolute;
     border: 3px solid #1B1E1F;
@@ -123,16 +128,20 @@ td:last-child{
     padding: 20px;
     background-color: #212529;
     z-index: 99;
-    margin-left: 20px;
-    margin-right: 20px;
-    min-width: fit-content;
+    min-width: calc(100% - 40px);
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 /* Mobile: Fill screen width instead of aligning to parent */
 @media screen and (max-width: 768px) {
     .schedule-rule-param-popup {
-        min-width: calc(100% - 40px);
-        margin-left: 20px;
         left: 0;
+        transform: none;
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+    td.schedule-rule-field {
+        position: static;
     }
 }

@@ -92,7 +92,7 @@ const Page3 = () => {
 
         return (
             <tr>
-                <td>
+                <td className="schedule-rule-field">
                     <TimeField
                         timestamp={timestamp}
                         handleChange={handleNewTimestamp}
@@ -100,7 +100,7 @@ const Page3 = () => {
                         highlightInvalid={highlightInvalid}
                     />
                 </td>
-                <td>
+                <td className="schedule-rule-field">
                     {/* ApiTarget: Button to open modal, otherwise RuleField */}
                     {config[instance]['_type'] === "api-target" ?
                         <ApiTargetRuleButton instance={instance} rule={timestamp} /> :

@@ -9,11 +9,6 @@ const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
 
 // Takes 24h timestamp, returns 12h with am/pm suffix
 function format12h(timestamp) {
-    // Return placeholder string if timestamp empty
-    if (!timestamp) {
-        return 'Set time';
-    }
-
     // Return keywords unchanged
     if ( ! timestamp_regex.test(timestamp)) {
         return timestamp;
@@ -66,7 +61,7 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
                 className={`form-control ${invalid ? 'is-invalid' : ''}`}
                 onClick={() => setVisible(true)}
             >
-                {format12h(timestamp)}
+                {timestamp ? format12h(timestamp) : 'Set time'}
             </span>
 
             {/* Edit timestamp popup */}
