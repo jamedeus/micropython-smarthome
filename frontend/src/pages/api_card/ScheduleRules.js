@@ -7,168 +7,141 @@ import { RuleField } from 'inputs/RuleField';
 import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
 import Button from 'react-bootstrap/Button';
 
-const ScheduleRuleRow = ({ id, time, rule, getButtonState, handleEdit, handleDelete, className='' }) => {
-    // Get status object for instance
-    const { status } = useContext(ApiCardContext);
-    const instance = status[`${id.replace(/[0-9]/g, '')}s`][id];
-
-    // States to store modified timestamp and rule
-    const [newTime, setNewTime] = useState(time);
-    const [newRule, setNewRule] = useState(rule);
-
-    // State to show button loading animation
-    const [loading, setLoading] = useState(false);
-
-    // Called by TimeField when user changes value and closes
-    const handleNewTimestamp = (newTimestamp, _) => {
-        setNewTime(newTimestamp);
-    };
-
-    // Called by RuleField when user changes value and closes
-    const handleNewRule = (rule, fade_rule, duration, range_rule) => {
-        if (range_rule && fade_rule) {
-            // Fade rule: Combine params into single string
-            setNewRule(`fade/${rule}/${duration}`);
-        } else {
-            setNewRule(rule);
-        }
-    };
-
-    const onEdit = () => {
-        setLoading(true);
-        handleEdit(newTime, newRule);
-    };
-
-    const onDelete = () => {
-        setLoading(true);
-        handleDelete(id, time);
-    };
-
-    const loadingButtonStatus = loading ? 'loading' : getButtonState(time, newTime, rule, newRule);
-
-    return (
-        <tr className={className}>
-            <td>
-                <TimeField
-                    timestamp={newTime}
-                    handleChange={handleNewTimestamp}
-                    schedule_keywords={status.metadata.schedule_keywords}
-                    highlightInvalid={false}
-                />
-            </td>
-            <td>
-                <RuleField
-                    instance={instance}
-                    category={id.replace(/[0-9]/g, '')}
-                    type={instance.type}
-                    rule={newRule}
-                    handleChange={handleNewRule}
-                />
-            </td>
-            <td className="min">
-                <DeleteOrEditButton
-                    status={loadingButtonStatus}
-                    handleDelete={onDelete}
-                    handleEdit={onEdit}
-                />
-            </td>
-        </tr>
-    );
-};
-
-ScheduleRuleRow.propTypes = {
-    id: PropTypes.string,
-    time: PropTypes.string,
-    rule: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number,
-        PropTypes.object,
-    ]),
-    getButtonState: PropTypes.func,
-    handleEdit: PropTypes.func,
-    handleDelete: PropTypes.func,
-    className: PropTypes.string
-};
-
-
-const ExistingScheduleRule = ({ id, time, rule }) => {
-    const { edit_schedule_rule, delete_schedule_rule } = useContext(ApiCardContext);
-
-    const handlEdit = async (timestamp, rule) => {
-        await edit_schedule_rule(id, time, timestamp, String(rule));
-    }
-
-    const getButtonState = (oldTime, newTime, oldRule, newRule) => {
-        if (oldTime != newTime || oldRule != newRule) {
-            return 'edit';
-        }
-        return 'delete';
-    };
-
-    return (
-        <ScheduleRuleRow
-            id={id}
-            time={time}
-            rule={rule}
-            handleEdit={handlEdit}
-            handleDelete={delete_schedule_rule}
-            getButtonState={getButtonState}
-        />
-    );
-};
-
-ExistingScheduleRule.propTypes = {
-    id: PropTypes.string,
-    time: PropTypes.string,
-    rule: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.number,
-        PropTypes.object,
-    ])
-};
-
-const NewScheduleRule = ({ id, visible, setShowNewRule }) => {
-    const { add_schedule_rule } = useContext(ApiCardContext);
-
-    const handleAdd = async (timestamp, rule) => {
-        const result = await add_schedule_rule(id, timestamp, String(rule));
-        if (result) {
-            setShowNewRule(false);
-        };
-    };
-
-    const handleDelete = async () => {
-        setShowNewRule(false);
-    };
-
-    const getButtonState = (_, newTime, __, newRule) => {
-        if (newTime && newRule) {
-            return 'edit';
-        }
-        return 'delete';
-    };
-
-    return (
-        <ScheduleRuleRow
-            id={id}
-            time={''}
-            rule={''}
-            getButtonState={getButtonState}
-            handleEdit={handleAdd}
-            handleDelete={handleDelete}
-            className={visible ? '' : 'd-none'}
-        />
-    );
-};
-
-NewScheduleRule.propTypes = {
-    id: PropTypes.string,
-    visible: PropTypes.bool,
-    setShowNewRule: PropTypes.func
-};
-
 const ScheduleRulesTable = ({ id, schedule }) => {
     const [showNewRule, setShowNewRule] = useState(false);
+
+    // Rendered for each existing rule, pass existingRule=false for new rule row
+    const ScheduleRuleRow = ({ id, originalTime='', originalRule='', existingRule=true }) => {
+        // Get status object and API call hooks
+        const {
+            status,
+            add_schedule_rule,
+            edit_schedule_rule,
+            delete_schedule_rule
+        } = useContext(ApiCardContext);
+
+        // Get instance status section
+        const instance = status[`${id.replace(/[0-9]/g, '')}s`][id];
+
+        // Create states to store modified timestamp and rule
+        const [newTime, setNewTime] = useState(originalTime);
+        const [newRule, setNewRule] = useState(originalRule);
+
+        // Create state for DeleteOrEditButton (values: delete, edit, loading)
+        const [loadingButtonState, setLoadingButtonState] = useState('delete');
+
+        // Called after input changes, sets appropriate button state
+        const updateLoadingButton = (newTimestamp, newRuleValue) => {
+            // Existing rules: Show edit button when either input changed
+            if (existingRule) {
+                if (newTimestamp != originalTime || newRuleValue != originalRule) {
+                    setLoadingButtonState('edit');
+                } else {
+                    setLoadingButtonState('delete');
+                }
+            // New rule: Show edit button when both inputs have value
+            } else {
+                if (newTimestamp && newRuleValue) {
+                    setLoadingButtonState('edit');
+                } else {
+                    setLoadingButtonState('delete');
+                }
+            }
+        };
+
+        // Called by TimeField when user changes value and closes
+        const handleNewTimestamp = (newTimestamp, _) => {
+            setNewTime(newTimestamp);
+            updateLoadingButton(newTimestamp, newRule);
+        };
+
+        // Called by RuleField when user changes value and closes
+        const handleNewRule = (newRuleValue, fade_rule, duration, range_rule) => {
+            if (range_rule && fade_rule) {
+                // Fade rule: Combine params into single string
+                setNewRule(`fade/${newRuleValue}/${duration}`);
+            } else {
+                setNewRule(newRuleValue);
+            }
+            updateLoadingButton(newTime, newRuleValue);
+        };
+
+        // New rule field add button handler
+        const addRule = async () => {
+            // Start loading animation, post new rule to backend
+            setLoadingButtonState('loading');
+            const result = await add_schedule_rule(id, newTime, String(newRule));
+
+            // If successful hide new rule field and reset inputs
+            if (result) {
+                setShowNewRule(false);
+                setLoadingButtonState('delete');
+                setNewTime('');
+                setNewRule('');
+            }
+        };
+
+        // New rule field delete button handler
+        const hideNewRule = async () => {
+            // Hide new rule field, reset inputs
+            setShowNewRule(false);
+            setNewTime('');
+            setNewRule('');
+        };
+
+        // Existing rule field add button handler
+        const editRule = () => {
+            setLoadingButtonState('loading');
+            edit_schedule_rule(id, originalTime, newTime, String(newRule));
+        };
+
+        // Existing rule field delete button handler
+        const deleteRule = () => {
+            setLoadingButtonState('loading');
+            delete_schedule_rule(id, originalTime);
+        };
+
+        return (
+            <tr className={!existingRule && !showNewRule ? 'd-none' : ''}>
+                <td>
+                    <TimeField
+                        timestamp={newTime}
+                        handleChange={handleNewTimestamp}
+                        schedule_keywords={status.metadata.schedule_keywords}
+                        highlightInvalid={false}
+                    />
+                </td>
+                <td>
+                    <RuleField
+                        instance={instance}
+                        category={id.replace(/[0-9]/g, '')}
+                        type={instance.type}
+                        rule={newRule}
+                        handleChange={handleNewRule}
+                    />
+                </td>
+                <td className="min">
+                    <DeleteOrEditButton
+                        status={loadingButtonState}
+                        handleDelete={existingRule ? deleteRule : hideNewRule}
+                        handleEdit={existingRule ? editRule : addRule}
+                    />
+                </td>
+            </tr>
+        );
+    };
+
+    ScheduleRuleRow.propTypes = {
+        id: PropTypes.string,
+        originalTime: PropTypes.string,
+        originalRule: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.number,
+            PropTypes.object,
+        ]),
+        existingRule: PropTypes.bool
+    };
+
 
     return (
         <div className="collapse text-center" id={`${id}-schedule-rules`}>
@@ -180,21 +153,21 @@ const ScheduleRulesTable = ({ id, schedule }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {Object.keys(schedule).map((time, index) => {
+                    {Object.keys(schedule).map(time => {
                         return (
-                            <ExistingScheduleRule
+                            <ScheduleRuleRow
                                 key={time}
                                 id={id}
-                                time={time}
-                                rule={schedule[time]}
+                                originalTime={time}
+                                originalRule={schedule[time]}
                             />
                         );
                     })}
-                    <NewScheduleRule
+                    <ScheduleRuleRow
                         key={'new'}
                         id={id}
-                        visible={showNewRule}
-                        setShowNewRule={setShowNewRule}
+                        existingRule={false}
+
                     />
                 </tbody>
             </Table>

@@ -229,7 +229,7 @@ export const ApiCardContextProvider = ({ children }) => {
                     'rule': oldTimestamp
                 });
                 if (result.ok) {
-                    delete rules[oldTimestamp]
+                    delete rules[oldTimestamp];
                 }
             }
 
