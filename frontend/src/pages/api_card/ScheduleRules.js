@@ -7,7 +7,7 @@ import { RuleField } from 'inputs/RuleField';
 import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
 import Button from 'react-bootstrap/Button';
 
-const ScheduleRuleRow = ({ id, time, rule, getButtonState, className='' }) => {
+const ScheduleRuleRow = ({ id, time, rule, getButtonState, handleEdit, handleDelete, className='' }) => {
     // Get status object for instance
     const { status } = useContext(ApiCardContext);
     const instance = status[`${id.replace(/[0-9]/g, '')}s`][id];
@@ -15,6 +15,9 @@ const ScheduleRuleRow = ({ id, time, rule, getButtonState, className='' }) => {
     // States to store modified timestamp and rule
     const [newTime, setNewTime] = useState(time);
     const [newRule, setNewRule] = useState(rule);
+
+    // State to show button loading animation
+    const [loading, setLoading] = useState(false);
 
     // Called by TimeField when user changes value and closes
     const handleNewTimestamp = (newTimestamp, _) => {
@@ -30,6 +33,18 @@ const ScheduleRuleRow = ({ id, time, rule, getButtonState, className='' }) => {
             setNewRule(rule);
         }
     };
+
+    const onEdit = () => {
+        setLoading(true);
+        handleEdit(newTime, newRule);
+    };
+
+    const onDelete = () => {
+        setLoading(true);
+        handleDelete(id, time);
+    };
+
+    const loadingButtonStatus = loading ? 'loading' : getButtonState(time, newTime, rule, newRule);
 
     return (
         <tr className={className}>
@@ -52,9 +67,9 @@ const ScheduleRuleRow = ({ id, time, rule, getButtonState, className='' }) => {
             </td>
             <td className="min">
                 <DeleteOrEditButton
-                    status={getButtonState(time, newTime, rule, newRule)}
-                    handleDelete={() => console.log('delete')}
-                    handleEdit={() => console.log('edit')}
+                    status={loadingButtonStatus}
+                    handleDelete={onDelete}
+                    handleEdit={onEdit}
                 />
             </td>
         </tr>
@@ -70,12 +85,19 @@ ScheduleRuleRow.propTypes = {
         PropTypes.object,
     ]),
     getButtonState: PropTypes.func,
-    getButtonDisabled: PropTypes.func,
+    handleEdit: PropTypes.func,
+    handleDelete: PropTypes.func,
     className: PropTypes.string
 };
 
 
 const ExistingScheduleRule = ({ id, time, rule }) => {
+    const { edit_schedule_rule, delete_schedule_rule } = useContext(ApiCardContext);
+
+    const handlEdit = async (timestamp, rule) => {
+        await edit_schedule_rule(id, time, timestamp, String(rule));
+    }
+
     const getButtonState = (oldTime, newTime, oldRule, newRule) => {
         if (oldTime != newTime || oldRule != newRule) {
             return 'edit';
@@ -88,6 +110,8 @@ const ExistingScheduleRule = ({ id, time, rule }) => {
             id={id}
             time={time}
             rule={rule}
+            handleEdit={handlEdit}
+            handleDelete={delete_schedule_rule}
             getButtonState={getButtonState}
         />
     );
@@ -100,11 +124,23 @@ ExistingScheduleRule.propTypes = {
         PropTypes.string,
         PropTypes.number,
         PropTypes.object,
-    ]),
-    className: PropTypes.string
+    ])
 };
 
-const NewScheduleRule = ({ id, visible }) => {
+const NewScheduleRule = ({ id, visible, setShowNewRule }) => {
+    const { add_schedule_rule } = useContext(ApiCardContext);
+
+    const handleAdd = async (timestamp, rule) => {
+        const result = await add_schedule_rule(id, timestamp, String(rule));
+        if (result) {
+            setShowNewRule(false);
+        };
+    };
+
+    const handleDelete = async () => {
+        setShowNewRule(false);
+    };
+
     const getButtonState = (_, newTime, __, newRule) => {
         if (newTime && newRule) {
             return 'edit';
@@ -118,6 +154,8 @@ const NewScheduleRule = ({ id, visible }) => {
             time={''}
             rule={''}
             getButtonState={getButtonState}
+            handleEdit={handleAdd}
+            handleDelete={handleDelete}
             className={visible ? '' : 'd-none'}
         />
     );
@@ -125,7 +163,8 @@ const NewScheduleRule = ({ id, visible }) => {
 
 NewScheduleRule.propTypes = {
     id: PropTypes.string,
-    visible: PropTypes.bool
+    visible: PropTypes.bool,
+    setShowNewRule: PropTypes.func
 };
 
 const ScheduleRulesTable = ({ id, schedule }) => {
@@ -155,6 +194,7 @@ const ScheduleRulesTable = ({ id, schedule }) => {
                         key={'new'}
                         id={id}
                         visible={showNewRule}
+                        setShowNewRule={setShowNewRule}
                     />
                 </tbody>
             </Table>

@@ -171,10 +171,82 @@ export const ApiCardContextProvider = ({ children }) => {
         }
     }
 
+    async function add_schedule_rule(id, timestamp, rule) {
+        const result = await send_command({
+            'command': 'add_rule',
+            'instance': id,
+            'time': timestamp,
+            'rule': String(rule)
+        });
+
+        // Add new rule to state if successful
+        if (result.ok) {
+            const instance = get_instance_section(id);
+            const rules = instance.schedule;
+            rules[timestamp] = rule;
+            update_instance(id, "schedule", rules);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    async function delete_schedule_rule(id, timestamp) {
+        const result = await send_command({
+            'command': 'remove_rule',
+            'instance': id,
+            'rule': timestamp
+        });
+
+        // Add new rule to state if successful
+        if (result.ok) {
+            const instance = get_instance_section(id);
+            const rules = instance.schedule;
+            delete rules[timestamp];
+            update_instance(id, "schedule", rules);
+        }
+    }
+
+    async function edit_schedule_rule(id, oldTimestamp, newTimestamp, rule) {
+        // Add new rule (overwrite existing if timestamp not changed)
+        const result = await send_command({
+            'command': 'add_rule',
+            'instance': id,
+            'time': newTimestamp,
+            'rule': rule,
+            'overwrite': 'overwrite'
+        });
+
+        if (result.ok) {
+            const instance = get_instance_section(id);
+            const rules = instance.schedule;
+
+            // If timestamp was changed delete old rule
+            if (oldTimestamp != newTimestamp) {
+                const result = await send_command({
+                    'command': 'remove_rule',
+                    'instance': id,
+                    'rule': oldTimestamp
+                });
+                if (result.ok) {
+                    delete rules[oldTimestamp]
+                }
+            }
+
+            // Add new rule (overwrites if timestamp not changed), update state
+            rules[newTimestamp] = rule;
+            update_instance(id, "schedule", rules);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     return (
         <ApiCardContext.Provider value={{
             status,
             setStatus,
+            loading,
             overview,
             send_command,
             enable_instance,
@@ -182,7 +254,9 @@ export const ApiCardContextProvider = ({ children }) => {
             turn_on,
             set_rule,
             reset_rule,
-            loading
+            add_schedule_rule,
+            delete_schedule_rule,
+            edit_schedule_rule
         }}>
             {children}
         </ApiCardContext.Provider>
