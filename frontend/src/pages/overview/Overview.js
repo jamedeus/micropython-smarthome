@@ -12,8 +12,6 @@ import DesktopModal from 'modals/DesktopIntegrationModal';
 import RestoreModal from 'modals/RestoreModal';
 import WifiModal from 'modals/WifiModal';
 import GpsModal from 'modals/GpsModal';
-import { ModalContextProvider } from 'modals/ModalContextProvider';
-
 
 const App = () => {
     // Get django context
@@ -28,43 +26,41 @@ const App = () => {
     };
 
     return (
-        <ModalContextProvider>
-            <div className="d-flex flex-column vh-100">
-                <Header />
+        <div className="d-flex flex-column vh-100">
+            <Header />
 
-                {/* Add new config table if un-uploaded configs exist */}
-                {context.not_uploaded.length ? <NewConfigTable /> : null}
+            {/* Add new config table if un-uploaded configs exist */}
+            {context.not_uploaded.length ? <NewConfigTable /> : null}
 
-                {/* Add existing nodes table if existing nodes exist */}
-                {context.uploaded.length ? <ExistingNodesTable /> : null}
+            {/* Add existing nodes table if existing nodes exist */}
+            {context.uploaded.length ? <ExistingNodesTable /> : null}
 
-                {/* Button to create new config file */}
-                <div className="mt-2 mb-5 text-center">
-                    <Button variant="primary" onClick={new_config}>
-                        Create new config
-                    </Button>
-                </div>
-
-                {/* Add schedule keywords table */}
-                <KeywordsTable />
-
-                {/* Button redirects to API frontend */}
-                <div className="d-flex align-items-center flex-column mt-auto py-4">
-                    <Button variant="secondary" onClick={frontend}>
-                        Frontend
-                    </Button>
-                </div>
-
-                {/* Modals (hidden) */}
-                <UploadModal />
-                <ErrorModal />
-                <ChangeIpModal />
-                <DesktopModal />
-                <RestoreModal />
-                <WifiModal />
-                <GpsModal />
+            {/* Button to create new config file */}
+            <div className="mt-2 mb-5 text-center">
+                <Button variant="primary" onClick={new_config}>
+                    Create new config
+                </Button>
             </div>
-        </ModalContextProvider>
+
+            {/* Add schedule keywords table */}
+            <KeywordsTable />
+
+            {/* Button redirects to API frontend */}
+            <div className="d-flex align-items-center flex-column mt-auto py-4">
+                <Button variant="secondary" onClick={frontend}>
+                    Frontend
+                </Button>
+            </div>
+
+            {/* Modals (hidden) */}
+            <UploadModal />
+            <ErrorModal />
+            <ChangeIpModal />
+            <DesktopModal />
+            <RestoreModal />
+            <WifiModal />
+            <GpsModal />
+        </div>
     );
 };
 

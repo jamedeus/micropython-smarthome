@@ -1,7 +1,8 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import App from './EditConfig';
 import { ConfigProvider } from 'root/ConfigContext';
+import { ErrorModalContextProvider } from 'modals/ErrorModal';
+import EditConfig from './EditConfig';
 import 'css/edit_config.css';
 import 'css/dark_mode.scss';
 import 'css/style.css';
@@ -11,6 +12,8 @@ const container = document.getElementById('root');
 const root = createRoot(container);
 root.render(
     <ConfigProvider>
-        <App />
+        <ErrorModalContextProvider>
+            <EditConfig />
+        </ErrorModalContextProvider>
     </ConfigProvider>
 );
