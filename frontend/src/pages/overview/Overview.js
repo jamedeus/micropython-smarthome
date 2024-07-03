@@ -8,6 +8,10 @@ import ExistingNodesTable from './ExistingNodesTable';
 import { ErrorModal } from 'modals/ErrorModal';
 import UploadModal from 'modals/UploadModal';
 import ChangeIpModal from 'modals/ChangeIpModal';
+import DesktopModal from 'modals/DesktopIntegrationModal';
+import RestoreModal from 'modals/RestoreModal';
+import WifiModal from 'modals/WifiModal';
+import GpsModal from 'modals/GpsModal';
 import { ModalContextProvider } from 'modals/ModalContextProvider';
 
 
@@ -55,6 +59,10 @@ const App = () => {
                 <UploadModal />
                 <ErrorModal />
                 <ChangeIpModal />
+                <DesktopModal />
+                <RestoreModal />
+                <WifiModal />
+                <GpsModal />
             </div>
         </ModalContextProvider>
     );

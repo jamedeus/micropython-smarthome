@@ -4,10 +4,10 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { showUploadModal, showUploadSuccess, closeUploadModal } from 'modals/UploadModal';
 import { ErrorModalContext } from 'modals/ErrorModal';
 import { sleep } from 'util/helper_functions';
-import { DesktopModal } from 'modals/DesktopIntegrationModal';
-import { RestoreModal } from 'modals/RestoreModal';
-import { WifiModal } from 'modals/WifiModal';
-import { GpsModal } from 'modals/GpsModal';
+import { showDesktopModal } from 'modals/DesktopIntegrationModal';
+import { showRestoreModal } from 'modals/RestoreModal';
+import { showWifiModal } from 'modals/WifiModal';
+import { showGpsModal } from 'modals/GpsModal';
 
 const Header = () => {
     // Get callbacks for error modal
@@ -51,13 +51,21 @@ const Header = () => {
                     <i className="bi-gear-fill"></i>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                    <WifiModal />
-                    <GpsModal />
+                    <Dropdown.Item onClick={() => showWifiModal()}>
+                        Set WIFI credentials
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => showGpsModal()}>
+                        Set GPS coordinates
+                    </Dropdown.Item>
                     <Dropdown.Item onClick={reuploadAll}>
                         Re-upload all
                     </Dropdown.Item>
-                    <RestoreModal />
-                    <DesktopModal />
+                    <Dropdown.Item onClick={() => showRestoreModal()}>
+                        Restore config
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={() => showDesktopModal()}>
+                        Desktop integration
+                    </Dropdown.Item>
                 </Dropdown.Menu>
             </Dropdown>
         </div>

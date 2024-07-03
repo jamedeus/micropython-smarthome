@@ -2,7 +2,6 @@ import React, { useContext, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import Dropdown from 'react-bootstrap/Dropdown';
 import { sleep } from 'util/helper_functions';
 import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
@@ -10,6 +9,8 @@ import { ErrorModalContext } from 'modals/ErrorModal';
 import { OverviewContext } from 'root/OverviewContext';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
+
+export let showRestoreModal;
 
 export const RestoreModal = () => {
     // Get callback used to render new row after restoring node
@@ -24,7 +25,7 @@ export const RestoreModal = () => {
     const [ ipAddress, setipAddress ] = useState("");
 
     // Ensure stage is set to prompt when showing modal
-    const showRestoreModal = () => {
+    showRestoreModal = () => {
         setStage("prompt");
         setVisible(true);
     };
@@ -91,52 +92,48 @@ export const RestoreModal = () => {
     };
 
     return (
-        <>
-            <Dropdown.Item onClick={showRestoreModal}>
-                Restore config
-            </Dropdown.Item>
+        <Modal show={visible} onHide={() => setVisible(false)} centered>
+            <HeaderWithCloseButton
+                title="Restore Config"
+                onClose={() => setVisible(false)}
+            />
 
-            <Modal show={visible} onHide={() => setVisible(false)} centered>
-                <HeaderWithCloseButton
-                    title="Restore Config"
-                    onClose={() => setVisible(false)}
-                />
-
-                <Modal.Body className="d-flex flex-column mx-auto text-center">
-                    <p>This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
-                    {(() => {
-                        switch (stage) {
-                            case "prompt":
-                                return (
-                                    <>
-                                        <Form.Label>
-                                            <b>IP Address:</b>
-                                        </Form.Label>
-                                        <Form.Control
-                                            type="text"
-                                            value={ipAddress}
-                                            onChange={(e) => setIp(e.target.value)}
-                                            onKeyDown={handleEnterKey}
-                                        />
-                                    </>
-                                );
-                            case "loading":
-                                return <LoadingSpinner size="medium" />;
-                            case "complete":
-                                return <CheckmarkAnimation size="large" color="green" />;
-                        }
-                    })()}
-                </Modal.Body>
-                <Modal.Footer className="mx-auto pt-0">
-                    <Button
-                        variant="success"
-                        disabled={!ipRegex.test(ipAddress)}
-                        onClick={restoreConfig}
-                    >
-                        Restore
-                    </Button>
-                </Modal.Footer>
-            </Modal>
-        </>
+            <Modal.Body className="d-flex flex-column mx-auto text-center">
+                <p>This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
+                {(() => {
+                    switch (stage) {
+                        case "prompt":
+                            return (
+                                <>
+                                    <Form.Label>
+                                        <b>IP Address:</b>
+                                    </Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={ipAddress}
+                                        onChange={(e) => setIp(e.target.value)}
+                                        onKeyDown={handleEnterKey}
+                                    />
+                                </>
+                            );
+                        case "loading":
+                            return <LoadingSpinner size="medium" />;
+                        case "complete":
+                            return <CheckmarkAnimation size="large" color="green" />;
+                    }
+                })()}
+            </Modal.Body>
+            <Modal.Footer className="mx-auto pt-0">
+                <Button
+                    variant="success"
+                    disabled={!ipRegex.test(ipAddress)}
+                    onClick={restoreConfig}
+                >
+                    Restore
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };
+
+export default RestoreModal;
