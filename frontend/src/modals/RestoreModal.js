@@ -11,7 +11,6 @@ import { OverviewContext } from 'root/OverviewContext';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
-
 export const RestoreModal = () => {
     // Get callback used to render new row after restoring node
     const { addNewNode } = useContext(OverviewContext);
@@ -19,28 +18,20 @@ export const RestoreModal = () => {
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
-    // Create state object to control visibility
-    const [ show, setShow ] = useState(false);
-
-    // Create state object for stage (prompt, loading, complete)
+    // Create states for visibility, stage (prompt, loading, complete), input
+    const [ visible, setVisible ] = useState(false);
     const [ stage, setStage ] = useState("prompt");
-
-    // Create state object for IP field
     const [ ipAddress, setipAddress ] = useState("");
-
-    // Create state object for submit button enable state
-    const [ submitDisabled, setSubmitDisabled ] = useState(true);
 
     // Ensure stage is set to prompt when showing modal
     const showRestoreModal = () => {
         setStage("prompt");
-        setShow(true);
+        setVisible(true);
     };
 
     async function restoreConfig() {
-        // Start animation, disable submit button
+        // Start animation (disables submit button)
         setStage("loading");
-        setSubmitDisabled(true);
 
         // Send API call, wait for backend to download config file from target node
         const body = {'ip' : ipAddress };
@@ -55,12 +46,12 @@ export const RestoreModal = () => {
             // Render new row, close modal
             const data = await response.json();
             addNewNode(data.friendly_name, data.filename, data.ip);
-            setShow(false);
+            setVisible(false);
 
         // Unreachable
         } else if (response.status == 404) {
             // Hide upload modal, show error modal with possible connection failure reasons
-            setShow(false);
+            setVisible(false);
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
@@ -72,7 +63,7 @@ export const RestoreModal = () => {
         // Duplicate
         } else if (response.status == 409) {
             // Hide upload modal, show error modal
-            setShow(false);
+            setVisible(false);
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
@@ -85,57 +76,17 @@ export const RestoreModal = () => {
         } else {
             alert(await response.text());
         }
-
-        // Re-enable submit button
-        setSubmitDisabled(false);
     }
-
-    // Takes current value of IP field, enables upload button
-    // if passes regex, otherwise disables upload button
-    const isIpValid = (ip) => {
-        if (ipRegex.test(ip)) {
-            setSubmitDisabled(false);
-            setipAddress(ip);
-        } else {
-            setSubmitDisabled(true);
-            setipAddress(ip);
-        }
-    };
 
     // Handler for IP address field, formats IP as user types
     const setIp = (value) => {
-        // Format value entered by user
-        const newIP = formatIp(ipAddress, value);
-        // Enable upload button if IP is valid, set IP either way
-        isIpValid(newIP);
+        setipAddress(formatIp(ipAddress, value));
     };
 
     // Restore config if enter key pressed in field with valid IP
     const handleEnterKey = (e) => {
-        if (e.key === "Enter" && !submitDisabled) {
+        if (e.key === "Enter" && ipRegex.test(ipAddress)) {
             restoreConfig();
-        }
-    };
-
-    // Renders form or loading animation
-    const Contents = () => {
-        switch (stage) {
-            case "prompt":
-                return (
-                    <>
-                        <Form.Label><b>IP Address:</b></Form.Label>
-                        <Form.Control
-                            type="text"
-                            value={ipAddress}
-                            onChange={(e) => setIp(e.target.value)}
-                            onKeyDown={handleEnterKey}
-                        />
-                    </>
-                );
-            case "loading":
-                return <LoadingSpinner size="medium" />;
-            case "complete":
-                return <CheckmarkAnimation size="large" color="green" />;
         }
     };
 
@@ -145,20 +96,41 @@ export const RestoreModal = () => {
                 Restore config
             </Dropdown.Item>
 
-            <Modal show={show} onHide={() => setShow(false)} centered>
+            <Modal show={visible} onHide={() => setVisible(false)} centered>
                 <HeaderWithCloseButton
                     title="Restore Config"
-                    onClose={() => setShow(false)}
+                    onClose={() => setVisible(false)}
                 />
 
                 <Modal.Body className="d-flex flex-column mx-auto text-center">
                     <p>This menu downloads config files from existing nodes and adds them to the database + frontend. This can be useful to rebuild the database if it is lost or corrupted.</p>
-                    <Contents />
+                    {(() => {
+                        switch (stage) {
+                            case "prompt":
+                                return (
+                                    <>
+                                        <Form.Label>
+                                            <b>IP Address:</b>
+                                        </Form.Label>
+                                        <Form.Control
+                                            type="text"
+                                            value={ipAddress}
+                                            onChange={(e) => setIp(e.target.value)}
+                                            onKeyDown={handleEnterKey}
+                                        />
+                                    </>
+                                );
+                            case "loading":
+                                return <LoadingSpinner size="medium" />;
+                            case "complete":
+                                return <CheckmarkAnimation size="large" color="green" />;
+                        }
+                    })()}
                 </Modal.Body>
                 <Modal.Footer className="mx-auto pt-0">
                     <Button
                         variant="success"
-                        disabled={submitDisabled}
+                        disabled={!ipRegex.test(ipAddress)}
                         onClick={restoreConfig}
                     >
                         Restore

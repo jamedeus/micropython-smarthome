@@ -8,18 +8,18 @@ import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 export const DesktopModal = () => {
     // Create state object to set visiblity
-    const [show, setShow] = useState(false);
+    const [visible, setVisible] = useState(false);
 
     return (
         <>
-            <Dropdown.Item onClick={() => setShow(true)}>
+            <Dropdown.Item onClick={() => setVisible(true)}>
                 Desktop integration
             </Dropdown.Item>
 
-            <Modal show={show} onHide={() => setShow(false)} centered>
+            <Modal show={visible} onHide={() => setVisible(false)} centered>
                 <HeaderWithCloseButton
                     title="Install Desktop Integration"
-                    onClose={() => setShow(false)}
+                    onClose={() => setVisible(false)}
                 />
 
                 <Modal.Body>

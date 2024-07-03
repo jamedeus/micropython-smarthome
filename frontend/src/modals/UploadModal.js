@@ -10,7 +10,7 @@ export let uploadConfigFile, showUploadModal, showUploadSuccess, closeUploadModa
 
 const UploadModal = () => {
     // Create state for modal visibility, loading/success animation
-    const [showUpload, setShowUpload] = useState(false);
+    const [visible, setVisible] = useState(false);
     const [uploadComplete, setUploadComplete] = useState(false);
 
     // Get state and callback for error modal
@@ -19,7 +19,7 @@ const UploadModal = () => {
     // Show modal with loading animation
     showUploadModal = () => {
         setUploadComplete(false);
-        setShowUpload(true);
+        setVisible(true);
     };
 
     showUploadSuccess = () => {
@@ -27,7 +27,7 @@ const UploadModal = () => {
     };
 
     closeUploadModal = () => {
-        setShowUpload(false);
+        setVisible(false);
     };
 
     // Takes config filename and target IP address, uploads file to node
@@ -92,7 +92,7 @@ const UploadModal = () => {
 
     return (
         <Modal
-            show={showUpload}
+            show={visible}
             onHide={closeUploadModal}
             backdrop="static"
             keyboard={false}

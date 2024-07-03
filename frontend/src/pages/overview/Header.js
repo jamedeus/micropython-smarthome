@@ -13,14 +13,14 @@ const Header = () => {
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
-    async function reuploadAll() {
+    const reuploadAll = async () => {
         // Show upload modal with loading spinner
         showUploadModal();
 
         // Send request, receive report on which uploads succeeded/failed
-        let response = await fetch("/reupload_all");
-        response = await response.json();
-        console.log(response);
+        const response = await fetch("/reupload_all");
+        const report = await response.json();
+        console.log(report);
 
         // Change title, show success animation, close modal when complete
         showUploadSuccess();
@@ -28,16 +28,16 @@ const Header = () => {
         closeUploadModal();
 
         // If any failed, show error modal with names and failure reasons
-        if (Object.keys(response.failed).length !== 0) {
+        if (Object.keys(report.failed).length !== 0) {
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
                 ["title"]: "Failed Uploads",
                 ["error"]: "failed_upload_all",
-                ["body"]: response.failed
+                ["body"]: report.failed
             });
         }
-    }
+    };
 
     // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (

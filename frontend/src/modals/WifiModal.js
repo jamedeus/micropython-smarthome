@@ -9,14 +9,11 @@ import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 export const WifiModal = () => {
     // Create state object to control visibility
-    const [ show, setShow ] = useState(false);
+    const [ visible, setVisible ] = useState(false);
 
     // Create state objects for ssid and password
     const [ ssid, setSsid ] = useState("");
     const [ password, setPassword ] = useState("");
-
-    // Create state object for submit button enable state
-    const [ submitDisabled, setSubmitDisabled ] = useState(true);
 
     // Submit handler, post credentials to backend and close modal
     const setWifiCredentials = () => {
@@ -24,44 +21,26 @@ export const WifiModal = () => {
             "set_default_credentials",
             {"ssid": ssid, "password": password}
         );
-        setShow(false);
-    };
-
-    const updateSsid = (newSsid) => {
-        setSsid(newSsid);
-        if (newSsid !== "" && password !== "") {
-            setSubmitDisabled(false);
-        } else {
-            setSubmitDisabled(true);
-        }
-    };
-
-    const updatePassword = (newPassword) => {
-        setPassword(newPassword);
-        if (newPassword !== "" && ssid !== "") {
-            setSubmitDisabled(false);
-        } else {
-            setSubmitDisabled(true);
-        }
+        setVisible(false);
     };
 
     // Submit if enter key pressed in either field (ignore if either field empty)
     const handleEnterKey = (e) => {
-        if (e.key === "Enter" && ssid !== "" && password !== "") {
+        if (e.key === "Enter" && ssid && password) {
             setWifiCredentials();
         }
     };
 
     return (
         <>
-            <Dropdown.Item onClick={() => setShow(true)}>
+            <Dropdown.Item onClick={() => setVisible(true)}>
                 Set WIFI credentials
             </Dropdown.Item>
 
-            <Modal show={show} onHide={() => setShow(false)} centered>
+            <Modal show={visible} onHide={() => setVisible(false)} centered>
                 <HeaderWithCloseButton
                     title="Set Default Wifi"
-                    onClose={() => setShow(false)}
+                    onClose={() => setVisible(false)}
                 />
 
                 <Modal.Body className="d-flex flex-column mx-auto">
@@ -74,7 +53,7 @@ export const WifiModal = () => {
                         type="text"
                         className="mb-2"
                         value={ssid}
-                        onChange={(e) => updateSsid(e.target.value)}
+                        onChange={(e) => setSsid(e.target.value)}
                         onKeyDown={handleEnterKey}
                     />
 
@@ -82,21 +61,21 @@ export const WifiModal = () => {
                     <Form.Control
                         type="password"
                         value={password}
-                        onChange={(e) => updatePassword(e.target.value)}
+                        onChange={(e) => setPassword(e.target.value)}
                         onKeyDown={handleEnterKey}
                     />
                 </Modal.Body>
                 <Modal.Footer className="mx-auto pt-0">
                     <Button
                         variant="secondary"
-                        onClick={() => setShow(false)}
+                        onClick={() => setVisible(false)}
                     >
                         Cancel
                     </Button>
                     <Button
                         variant="success"
                         onClick={setWifiCredentials}
-                        disabled={submitDisabled}
+                        disabled={!(ssid && password)}
                     >
                         OK
                     </Button>

@@ -8,10 +8,9 @@ import { send_post_request } from 'util/django_util';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { debounce } from 'util/helper_functions';
 
-
 export const GpsModal = () => {
     // Create state object to control visibility
-    const [ show, setShow ] = useState(false);
+    const [ visible, setVisible ] = useState(false);
 
     // Create state object for location search results
     const [ locationResults, setLocationResults ] = useState([]);
@@ -39,30 +38,30 @@ export const GpsModal = () => {
             setLocationResults([]);
         // Make call and add suggestionse (debouced) when user types
         } else {
-            setLocationResults([{display_name: "Loading suggestions...", place_id: "loading"}]);
+            setLocationResults([{
+                display_name: "Loading suggestions...",
+                place_id: "loading"
+            }]);
             debounced_api_call(search);
         }
     }
 
     // Called when user clicks result, posts coordinates to backend
     async function select_location(name, lat, lon) {
-        send_post_request(
-            'set_default_location',
-            {name, lat, lon}
-        );
-        setShow(false);
+        send_post_request('set_default_location', {name, lat, lon});
+        setVisible(false);
     }
 
     return (
         <>
-            <Dropdown.Item onClick={() => setShow(true)}>
+            <Dropdown.Item onClick={() => setVisible(true)}>
                 Set GPS coordinates
             </Dropdown.Item>
 
-            <Modal show={show} onHide={() => setShow(false)} centered>
+            <Modal show={visible} onHide={() => setVisible(false)} centered>
                 <HeaderWithCloseButton
                     title="Set Default Location"
-                    onClose={() => setShow(false)}
+                    onClose={() => setVisible(false)}
                 />
 
                 <Modal.Body className="d-flex flex-column mx-auto text-center">

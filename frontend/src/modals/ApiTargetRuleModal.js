@@ -17,7 +17,7 @@ export const ApiTargetModalContextProvider = ({ children }) => {
     const { config } = useContext(ConfigContext);
 
     // Create state objects for modal visibility, contents
-    const [show, setShow] = useState(false);
+    const [visible, setVisible] = useState(false);
     const [modalContent, setModalContent] = useState({
         instance: '',
         target_node_options: '',
@@ -187,15 +187,15 @@ export const ApiTargetModalContextProvider = ({ children }) => {
 
         // Set modal contents, show
         setModalContent(update);
-        setShow(true);
+        setVisible(true);
     };
 
     const handleClose = () => {
-        setShow(false);
+        setVisible(false);
     };
 
     return (
-        <ApiTargetModalContext.Provider value={{ show, modalContent, setModalContent, handleShow, handleClose }}>
+        <ApiTargetModalContext.Provider value={{ visible, modalContent, setModalContent, handleShow, handleClose }}>
             {children}
         </ApiTargetModalContext.Provider>
     );
@@ -359,7 +359,7 @@ export const ApiTargetRuleModalContents = () => {
 
 export const ApiTargetRuleModal = () => {
     // Get context and callbacks
-    const { show, handleClose, modalContent, setModalContent } = useContext(ApiTargetModalContext);
+    const { visible, handleClose, modalContent, setModalContent } = useContext(ApiTargetModalContext);
 
     // Get curent state from global context
     const { config } = useContext(ConfigContext);
@@ -408,7 +408,7 @@ export const ApiTargetRuleModal = () => {
     };
 
     return (
-        <Modal show={show} onHide={handleClose} centered>
+        <Modal show={visible} onHide={handleClose} centered>
             <HeaderWithCloseButton title="API Target Rule" onClose={handleClose} />
 
             <Modal.Body className="d-flex flex-column mx-auto">
