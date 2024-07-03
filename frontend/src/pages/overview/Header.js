@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { UploadModalContext } from 'modals/UploadModal';
+import { showUploadModal, showUploadSuccess, closeUploadModal } from 'modals/UploadModal';
 import { ErrorModalContext } from 'modals/ErrorModal';
 import { sleep } from 'util/helper_functions';
 import { DesktopModal } from 'modals/DesktopIntegrationModal';
@@ -10,13 +10,12 @@ import { WifiModal } from 'modals/WifiModal';
 import { GpsModal } from 'modals/GpsModal';
 
 const Header = () => {
-    // Get callbacks for upload and error modals
-    const { handleShow, handleClose, setUploadComplete } = useContext(UploadModalContext);
+    // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
     async function reuploadAll() {
         // Show upload modal with loading spinner
-        handleShow();
+        showUploadModal();
 
         // Send request, receive report on which uploads succeeded/failed
         let response = await fetch("/reupload_all");
@@ -24,9 +23,9 @@ const Header = () => {
         console.log(response);
 
         // Change title, show success animation, close modal when complete
-        setUploadComplete(true);
+        showUploadSuccess();
         await sleep(1200);
-        handleClose();
+        closeUploadModal();
 
         // If any failed, show error modal with names and failure reasons
         if (Object.keys(response.failed).length !== 0) {

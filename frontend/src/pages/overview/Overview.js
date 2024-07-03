@@ -6,7 +6,7 @@ import KeywordsTable from './KeywordsTable';
 import NewConfigTable from './NewConfigTable';
 import ExistingNodesTable from './ExistingNodesTable';
 import { ErrorModal } from 'modals/ErrorModal';
-import { UploadModal } from 'modals/UploadModal';
+import UploadModal from 'modals/UploadModal';
 import { ChangeIpModal } from 'modals/ChangeIpModal';
 import { ModalContextProvider } from 'modals/ModalContextProvider';
 

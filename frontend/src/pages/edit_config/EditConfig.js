@@ -1,17 +1,14 @@
 import React from 'react';
 import PageContainer from './PageContainer';
 import { ErrorModalContextProvider } from 'modals/ErrorModal';
-import { UploadModalContextProvider } from 'modals/UploadModal';
 
 
 const App = () => {
     return (
         <div>
-            <UploadModalContextProvider>
-                <ErrorModalContextProvider>
-                    <PageContainer />
-                </ErrorModalContextProvider>
-            </UploadModalContextProvider>
+            <ErrorModalContextProvider>
+                <PageContainer />
+            </ErrorModalContextProvider>
         </div>
     );
 };

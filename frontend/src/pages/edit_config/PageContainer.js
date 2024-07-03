@@ -7,7 +7,7 @@ import Page2 from './Page2';
 import Page3 from './Page3';
 import { ApiTargetModalContextProvider, ApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
 import { ErrorModalContext, ErrorModal } from 'modals/ErrorModal';
-import { UploadModal, useUploader } from 'modals/UploadModal';
+import UploadModal, { uploadConfigFile } from 'modals/UploadModal';
 
 // Redirect back to overview page
 function returnToOverview() {
@@ -102,9 +102,6 @@ const PageContainer = () => {
         setErrorModalContent
     } = useContext(ErrorModalContext);
 
-    // Get upload function, create onComplete callback (redirects to overview)
-    const { upload } = useUploader();
-
     function prevPage() {
         // Go back to overview if current page is page 1
         if (page === 1) {
@@ -168,7 +165,7 @@ const PageContainer = () => {
             // Convert friendly name into config filename
             const target_filename = friendlyNameToFilename(config.metadata.id);
             // Show upload modal, upload, redirect to overview when complete
-            upload(target_filename, target_node_ip, true, returnToOverview);
+            uploadConfigFile(target_filename, target_node_ip, true, returnToOverview);
 
         // If config with same name already exists, show overwrite prompt
         } else if (!edit_existing && response.status == 409) {
