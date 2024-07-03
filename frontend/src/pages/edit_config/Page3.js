@@ -6,7 +6,7 @@ import Button from 'react-bootstrap/Button';
 import { ConfigContext } from 'root/ConfigContext';
 import { TimeField } from 'inputs/TimeField';
 import { RuleField } from 'inputs/RuleField';
-import { ApiTargetModalContext } from 'modals/ApiTargetRuleModal';
+import ApiTargetRuleButton from 'inputs/ApiTargetRuleButton';
 
 
 const Page3 = () => {
@@ -16,9 +16,6 @@ const Page3 = () => {
         handleInputChange,
         highlightInvalid
     } = useContext(ConfigContext);
-
-    // Get callback to open ApiTarget rule modal
-    const { handleShow } = useContext(ApiTargetModalContext);
 
     const deleteRule = (instance, timestamp) => {
         let rules = { ...config[instance]["schedule"] };
@@ -35,22 +32,6 @@ const Page3 = () => {
         rules[""] = config[instance]["default_rule"];
         handleInputChange(instance, "schedule", rules);
     }
-
-    const ApiTargetRuleButton = ({ instance, rule }) => {
-        return (
-            <span
-                className="form-control"
-                onClick={() => handleShow(instance, rule)}
-            >
-                Click to edit
-            </span>
-        );
-    };
-
-    ApiTargetRuleButton.propTypes = {
-        instance: PropTypes.string,
-        rule: PropTypes.string,
-    };
 
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button
@@ -102,8 +83,12 @@ const Page3 = () => {
                 </td>
                 <td className="schedule-rule-field">
                     {/* ApiTarget: Button to open modal, otherwise RuleField */}
-                    {config[instance]['_type'] === "api-target" ?
-                        <ApiTargetRuleButton instance={instance} rule={timestamp} /> :
+                    {config[instance]['_type'] === "api-target" ? (
+                        <ApiTargetRuleButton
+                            instance={instance}
+                            ruleKey={timestamp}
+                        />
+                    ) : (
                         <RuleField
                             instance={config[instance]}
                             category={instance.replace(/[0-9]/g, '')}
@@ -111,7 +96,7 @@ const Page3 = () => {
                             rule={config[instance]["schedule"][timestamp]}
                             handleChange={handleNewRule}
                         />
-                    }
+                    )}
                 </td>
                 <td className="min">
                     <Button

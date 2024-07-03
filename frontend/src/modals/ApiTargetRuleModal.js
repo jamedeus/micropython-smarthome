@@ -482,7 +482,9 @@ export const ApiTargetRuleModal = () => {
 
             <Modal.Footer className="mx-auto">
                 <div id="rule-buttons">
-                    <Button variant="success" className="m-1" onClick={save_rule}>Submit</Button>
+                    <Button variant="success" className="m-1" onClick={save_rule}>
+                        Submit
+                    </Button>
                 </div>
             </Modal.Footer>
         </Modal>
