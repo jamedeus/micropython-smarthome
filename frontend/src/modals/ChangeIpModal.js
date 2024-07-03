@@ -106,7 +106,9 @@ const ChangeIpModal = () => {
                         case "prompt":
                             return (
                                 <>
-                                    <Form.Label><b>New IP:</b></Form.Label>
+                                    <Form.Label className="fw-bold">
+                                        New IP:
+                                    </Form.Label>
                                     <Form.Control
                                         type="text"
                                         value={ipAddress}

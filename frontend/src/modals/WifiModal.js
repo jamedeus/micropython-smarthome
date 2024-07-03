@@ -47,7 +47,9 @@ const WifiModal = () => {
                     These credentials will be pre-filled every time a new config is created
                 </p>
 
-                <Form.Label><b>Network:</b></Form.Label>
+                <Form.Label className="fw-bold">
+                    Network:
+                </Form.Label>
                 <Form.Control
                     type="text"
                     className="mb-2"
@@ -56,7 +58,9 @@ const WifiModal = () => {
                     onKeyDown={handleEnterKey}
                 />
 
-                <Form.Label><b>Password:</b></Form.Label>
+                <Form.Label className="fw-bold">
+                    Password:
+                </Form.Label>
                 <Form.Control
                     type="password"
                     value={password}

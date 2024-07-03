@@ -105,8 +105,8 @@ export const RestoreModal = () => {
                         case "prompt":
                             return (
                                 <>
-                                    <Form.Label>
-                                        <b>IP Address:</b>
+                                    <Form.Label className="fw-bold">
+                                        IP Address:
                                     </Form.Label>
                                     <Form.Control
                                         type="text"

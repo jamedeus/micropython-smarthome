@@ -167,8 +167,8 @@ const Page3 = () => {
         return (
             <Card key={`${instance}-schedule-rules`} className="mb-4">
                 <Card.Body className="text-center">
-                    <h6>
-                        <b>{instanceNickname} ({instanceType})</b>
+                    <h6 className="fw-bold">
+                        {instanceNickname} ({instanceType})
                     </h6>
                     {Object.entries(config[instance]['schedule']).length ?
                         <RulesTable instance={instance} /> : null

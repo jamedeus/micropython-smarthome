@@ -31,7 +31,9 @@ function DefaultRuleFloatRange({ id }) {
 
     return (
         <div className="mb-2">
-            <label className="w-100"><b>Default Rule</b></label>
+            <label className="w-100 fw-bold">
+                Default Rule
+            </label>
             <FloatRangeRuleInput
                 rule={String(instance.default_rule)}
                 setRule={onSliderMove}

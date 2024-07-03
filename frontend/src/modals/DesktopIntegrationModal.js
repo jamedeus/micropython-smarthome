@@ -36,8 +36,8 @@ const DesktopModal = () => {
                 <p className="text-center">
                     Your IP address is:
                 </p>
-                <h4 className="text-center">
-                    <b>{client_ip}</b>
+                <h4 className="text-center fw-bold">
+                    {client_ip}
                 </h4>
                 <p className="text-center mt-4">
                     To install, click the download button, unzip the file, and run <b>setup.sh</b>

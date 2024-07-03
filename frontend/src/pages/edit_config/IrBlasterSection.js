@@ -61,8 +61,8 @@ function IrBlasterSection() {
                             />
 
                             <div className="mb-2">
-                                <label htmlFor="ir-remotes">
-                                    <b>Virtual remotes:</b>
+                                <label htmlFor="ir-remotes" className="fw-bold">
+                                    Virtual remotes:
                                 </label>
                                 <div id="ir-remotes">
                                     <Form.Check

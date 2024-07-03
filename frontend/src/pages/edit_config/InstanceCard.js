@@ -173,8 +173,8 @@ function InstanceCard({ id }) {
                             <i className="bi-x-lg"></i>
                         </Button>
                     </div>
-                    <label className="w-100">
-                        <b>Type:</b>
+                    <label className="w-100 fw-bold">
+                        Type:
                         <Form.Select
                             value={instance._type}
                             onChange={(event) => changeInstanceType(id, category, event)}

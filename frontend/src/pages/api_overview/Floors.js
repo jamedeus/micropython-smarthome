@@ -36,7 +36,7 @@ const Floors = () => {
     const FloorSection = ({ label, nodes }) => {
         return (
             <div className="text-center section mt-3 mb-4 p-3">
-                <h5 className="mb-3"><b>{label}</b></h5>
+                <h5 className="mb-3 fw-bold">{label}</h5>
 
                 {nodes.map((node) => {
                     return <NodeButton key={node} friendlyName={node} />;
