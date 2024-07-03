@@ -7,7 +7,7 @@ import Collapse from 'react-bootstrap/Collapse';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
-import { ChangeIpModalContext } from 'modals/ChangeIpModal';
+import { showChangeIpModal } from 'modals/ChangeIpModal';
 import { uploadConfigFile } from 'modals/UploadModal';
 
 
@@ -24,16 +24,13 @@ const ExistingNodeRow = ({ friendly_name, filename, ip, onDelete }) => {
 
     // Handler for Change IP menu option
     const changeIp = () => {
-        showChangeIpModal(friendly_name);
+        showChangeIpModal(friendly_name, ip);
     };
 
     // Handler for Delete menu option
     const handleDelete = () => {
         onDelete(friendly_name);
     };
-
-    // Get callback for change IP modal
-    const { showChangeIpModal } = useContext(ChangeIpModalContext);
 
     return (
         <tr id={friendly_name}>

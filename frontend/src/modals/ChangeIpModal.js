@@ -1,5 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useContext, useState } from 'react';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -11,125 +10,53 @@ import { OverviewContext } from 'root/OverviewContext';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 
-export const ChangeIpModalContext = createContext();
+export let showChangeIpModal;
 
-export const ChangeIpModalContextProvider = ({ children }) => {
-    const [changeIpModalContent, setChangeIpModalContent] = useState({
-        visible: false,
-        stage: 'prompt'
-    });
-
-    const handleClose = () => {
-        setChangeIpModalContent({
-            ...changeIpModalContent,
-            ["visible"]: false }
-        );
-    };
-
-    // Takes node name, shows modal with IP input
-    const showChangeIpModal = (friendly_name) => {
-        setChangeIpModalContent({
-            ...changeIpModalContent,
-            ["visible"]: true,
-            ["stage"]: "prompt",
-            ["friendly_name"]: friendly_name
-        });
-    };
-
-    // Closes modal after upload fails (sets stage to avoid visual flash)
-    const handleFailed = () => {
-        setChangeIpModalContent({
-            ...changeIpModalContent,
-            ["visible"]: false,
-            ["stage"]: "loading"
-        });
-    };
-
-    // Closes modal after upload complete (sets stage to avoid visual flash)
-    const handleComplete = () => {
-        setChangeIpModalContent({
-            ...changeIpModalContent,
-            ["visible"]: false,
-            ["stage"]: "complete"
-        });
-    };
-
-    // Takes stage (prompt, loading, or complete), triggers re-render
-    const setStage = (stage) => {
-        setChangeIpModalContent({
-            ...changeIpModalContent,
-            ["stage"]: stage }
-        );
-    };
-
-    return (
-        <ChangeIpModalContext.Provider value={{
-            changeIpModalContent,
-            setChangeIpModalContent,
-            handleClose,
-            showChangeIpModal,
-            handleFailed,
-            handleComplete,
-            setStage
-        }}>
-            {children}
-        </ChangeIpModalContext.Provider>
-    );
-};
-
-ChangeIpModalContextProvider.propTypes = {
-    children: PropTypes.node,
-};
-
-
-export const ChangeIpModal = () => {
+const ChangeIpModal = () => {
     // Get context hook used to re-render with new IP
     const { changeExistingNodeIp } = useContext(OverviewContext);
-
-    // Get state object that determines modal contents
-    const {
-        changeIpModalContent,
-        handleClose,
-        handleFailed,
-        handleComplete,
-        setStage
-    } = useContext(ChangeIpModalContext);
 
     // Get callbacks for error modal
     const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
-    // Create state object for IP field
-    const [ ipAddress, setipAddress ] = useState("");
+    // Create states for visibility, animation, input
+    const [visible, setVisible] = useState(false);
+    const [stage, setStage] = useState('prompt');
+    const [target, setTarget] = useState('');
+    const [ipAddress, setIpAddress] = useState("");
 
-    // Create state object for submit button enable state
-    const [ submitDisabled, setSubmitDisabled ] = useState(true);
+    showChangeIpModal = (friendly_name, ip) => {
+        setStage('prompt');
+        setTarget(friendly_name);
+        setIpAddress(ip);
+        setVisible(true);
+    };
 
-    async function changeIP() {
-        // Start animation, disable submit button
+    const changeIP = async () => {
+        // Start animation (disables submit button)
         setStage("loading");
-        setSubmitDisabled(true);
 
         // Send API call, wait for backend to download config file from target node
         const body = {
             'new_ip': ipAddress,
-            'friendly_name': changeIpModalContent.friendly_name
+            'friendly_name': target
         };
         const response = await send_post_request("change_node_ip", body);
 
         // Restored successfully
         if (response.ok) {
-            // Show success checkmark animation, update IP in context
+            // Show success checkmark animation, update IP in context state
             setStage("complete");
-            changeExistingNodeIp(changeIpModalContent.friendly_name, ipAddress);
+            changeExistingNodeIp(target, ipAddress);
 
             // Wait for animation to complete before hiding modal
             await sleep(1200);
-            handleComplete();
+            setVisible(false);
 
         // Unreachable
         } else if (response.status == 404) {
             // Hide modal, show error modal with possible connection failure reasons
-            handleFailed();
+            setVisible(false);
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
@@ -141,7 +68,7 @@ export const ChangeIpModal = () => {
         // Other error, show in modal
         } else {
             // Hide modal, show error modal with response from backend
-            handleFailed();
+            setVisible(false);
             setErrorModalContent({
                 ...errorModalContent,
                 ["visible"]: true,
@@ -150,73 +77,73 @@ export const ChangeIpModal = () => {
                 ["body"]: await response.text()
             });
         }
-
-        // Re-enable submit button
-        setSubmitDisabled(false);
-    }
-
-    // Takes current value of IP field, enables upload button
-    // if passes regex, otherwise disables upload button
-    const isIpValid = (ip) => {
-        setipAddress(ip);
-        if (ipRegex.test(ip)) {
-            setSubmitDisabled(false);
-        } else {
-            setSubmitDisabled(true);
-        }
     };
 
     // Handler for IP address field, formats IP as user types
     const setIp = (value) => {
-        // Format value entered by user
-        const newIP = formatIp(ipAddress, value);
-        // Enable upload button if IP is valid, set IP either way
-        isIpValid(newIP);
+        setIpAddress(formatIp(ipAddress, value));
     };
 
     // Change IP if enter key pressed in field with valid IP
     const handleEnterKey = (e) => {
-        if (e.key === "Enter" && !submitDisabled) {
+        if (e.key === "Enter" && ipRegex.test(ipAddress)) {
             changeIP();
         }
     };
 
-    // Renders form or loading animation
-    const Contents = () => {
-        switch (changeIpModalContent.stage) {
-            case "prompt":
-                return (
-                    <>
-                        <Form.Label><b>New IP:</b></Form.Label>
-                        <Form.Control
-                            type="text"
-                            value={ipAddress}
-                            onChange={(e) => setIp(e.target.value)}
-                            onKeyDown={handleEnterKey}
-                        />
-                    </>
-                );
-            case "loading":
-                return <LoadingSpinner size="medium" />;
-            case "complete":
-                return <CheckmarkAnimation size="large" color="green" />;
-        }
-    };
-
     return (
-        <Modal show={changeIpModalContent.visible} onHide={handleClose} centered>
-            <HeaderWithCloseButton title="Change IP" onClose={handleClose} />
+        <Modal show={visible} onHide={() => setVisible(false)} centered>
+            <HeaderWithCloseButton
+                title="Change IP"
+                onClose={() => setVisible(false)}
+            />
 
             <Modal.Body className="d-flex flex-column mx-auto text-center">
                 <p>Upload an existing config file to a new IP</p>
                 <p>This has no effect on the existing node, don&lsquo;t forget to upload another config or unplug it</p>
-                <Contents />
+                {(() => {
+                    switch (stage) {
+                        case "prompt":
+                            return (
+                                <>
+                                    <Form.Label><b>New IP:</b></Form.Label>
+                                    <Form.Control
+                                        type="text"
+                                        value={ipAddress}
+                                        onChange={(e) => setIp(e.target.value)}
+                                        onKeyDown={handleEnterKey}
+                                    />
+                                </>
+                            );
+                        case "loading":
+                            return (
+                                <LoadingSpinner
+                                    size="medium"
+                                    classes={["my-2"]}
+                                />
+                            );
+                        case "complete":
+                            return (
+                                <CheckmarkAnimation
+                                    size="large"
+                                    color="green"
+                                    classes={["my-2"]}
+                                />
+                            );
+                    }
+                })()}
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-0">
-                <Button variant="success" disabled={submitDisabled} onClick={changeIP}>
+                <Button
+                    variant="success"
+                    disabled={!ipRegex.test(ipAddress) && stage === 'prompt'}
+                    onClick={changeIP}
+                >
                     Change
                 </Button>
             </Modal.Footer>
         </Modal>
     );
 };
+
+export default ChangeIpModal;

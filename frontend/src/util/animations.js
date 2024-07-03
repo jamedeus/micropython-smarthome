@@ -32,8 +32,8 @@ LoadingSpinner.propTypes = {
 };
 
 
-export const CheckmarkAnimation = ({ size, color }) => {
-    let classList = ["checkmark", "m-auto"];
+export const CheckmarkAnimation = ({ size, color, classes=[] }) => {
+    let classList = ["checkmark", "m-auto"].concat(classes);
 
     switch(size) {
         case "large":
@@ -63,5 +63,6 @@ export const CheckmarkAnimation = ({ size, color }) => {
 
 CheckmarkAnimation.propTypes = {
     size: PropTypes.string,
-    color: PropTypes.string
+    color: PropTypes.string,
+    classes: PropTypes.array
 };
