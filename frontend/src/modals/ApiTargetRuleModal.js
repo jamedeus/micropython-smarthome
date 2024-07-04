@@ -169,12 +169,12 @@ const ApiTargetRuleModalContents = ({
     };
 
     return (
-        <>
+        <div className="mx-auto">
             <InstanceDropdown rule={showOnRule ? 'on' : 'off'} />
             <CommandDropdown rule={showOnRule ? 'on' : 'off'} />
             <IrKeyDropdown rule={showOnRule ? 'on' : 'off'} />
             <CommandArgInput rule={showOnRule ? 'on' : 'off'} />
-        </>
+        </div>
     );
 };
 
@@ -367,7 +367,7 @@ const ApiTargetRuleModal = () => {
                     showOnRule={showOnRule}
                 />
 
-                <ButtonGroup aria-label="Set On/Off command">
+                <ButtonGroup aria-label="Set On/Off command" className="mx-auto">
                     <Button
                         variant={showOnRule ? "dark" : "outline-dark"}
                         className="ms-auto"
