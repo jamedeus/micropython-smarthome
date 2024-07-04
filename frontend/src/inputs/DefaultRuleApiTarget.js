@@ -16,11 +16,8 @@ function DefaultRuleApiTarget({ id }) {
     // Get instance section in config
     const instance = config[id];
 
-    // Add invalid highlight to set rule button if not set after page validated
-    let invalid = false;
-    if (highlightInvalid && !instance.default_rule) {
-        invalid = true;
-    }
+    // Add invalid highlight to button if rule not set after page validated
+    const invalid = highlightInvalid && !instance.default_rule;
 
     // Receives user selection when modal closed, updates default_rule
     const handleSubmit = (newRule) => {

@@ -8,13 +8,18 @@ import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 export let showApiTargetRuleModal;
 
-// Takes modal state object and hook to set state
+// Takes dropdown state, hook to set state, target nodes, and visible page bool
 // Renders cascading dropdown with correct fields for current selection
-const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
+const ApiTargetRuleModalContents = ({
+    selectedRule,
+    setSelectedRule,
+    targetNodeOptions,
+    showOnRule
+}) => {
     // Listener for all inputs
-    // Takes on or off, param name, and value; updates modalContent state
+    // Takes on or off, param name, and value; updates selectedRule state
     const set_modal_param = (rule, param, value) => {
-        const update = { ...modalContent[rule], [param]: value};
+        const update = { ...selectedRule[rule], [param]: value};
         // Reset sub commands when main command changes
         if (param === "instance") {
             update.command = '';
@@ -24,7 +29,7 @@ const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
             update.command_arg = '';
             update.sub_command = '';
         }
-        setModalContent({ ...modalContent, [rule]: update});
+        setSelectedRule({ ...selectedRule, [rule]: update});
     };
 
     // Used for all dropdowns in modal
@@ -34,7 +39,7 @@ const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
     const ParamDropdown = ({rule, param, label, options}) => {
         return (
             <Form.Select
-                value={modalContent[rule][param]}
+                value={selectedRule[rule][param]}
                 className="mb-3 modal-dropdown api-command"
                 onChange={(e) => set_modal_param(rule, param, e.target.value)}
             >
@@ -60,7 +65,7 @@ const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
     // Renders instance select dropdown
     const InstanceDropdown = ({ rule }) => {
         // Array of objects, value is device/sensor ID, display is friendly name
-        const options = Object.entries(modalContent.target_node_options).map(option => {
+        const options = Object.entries(targetNodeOptions).map(option => {
             return {value: option[0], display: option[1].display};
         });
 
@@ -81,10 +86,10 @@ const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
     // Renders dropdown with all valid commands for target instance
     // Only renders if instance has been selected and is not "ignore"
     const CommandDropdown = ({ rule }) => {
-        const selectedInstance = modalContent[rule].instance;
+        const selectedInstance = selectedRule[rule].instance;
         if (selectedInstance && selectedInstance !== "ignore") {
             // Array of objects, both keys are command name (enable, disable, etc)
-            const options = modalContent.target_node_options[selectedInstance]['options'].map(option => {
+            const options = targetNodeOptions[selectedInstance]['options'].map(option => {
                 return {value: option, display: option};
             });
 
@@ -108,11 +113,11 @@ const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
     // Renders dropdown with all keys for selected IR target device
     // Only renders if instance is IR Blaster and target has been selected
     const IrKeyDropdown = ({ rule }) => {
-        const selectedInstance = modalContent[rule].instance;
-        const selectedIrTarget = modalContent[rule].command;
+        const selectedInstance = selectedRule[rule].instance;
+        const selectedIrTarget = selectedRule[rule].command;
         if (selectedInstance === "ir_key" && selectedIrTarget) {
             // Array of objects, both keys are IR remote key names
-            const options = modalContent.target_node_options.ir_key.keys[selectedIrTarget].map(option => {
+            const options = targetNodeOptions.ir_key.keys[selectedIrTarget].map(option => {
                 return {value: option, display: option};
             });
 
@@ -136,7 +141,7 @@ const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
     // Renders text input used to set command arg
     // Only renders if selected command requires arg
     const CommandArgInput = ({ rule }) => {
-        const selectedCommand = modalContent[rule].command;
+        const selectedCommand = selectedRule[rule].command;
 
         // Workaround to prevent losing focus on each keystroke
         const inputRef = useRef(null);
@@ -149,7 +154,7 @@ const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
                 <Form.Control
                     ref={inputRef}
                     type="text"
-                    value={modalContent[rule].command_arg}
+                    value={selectedRule[rule].command_arg}
                     className="mb-3 modal-input api-command"
                     onChange={(e) => set_modal_param(rule, 'command_arg', e.target.value)}
                 />
@@ -165,27 +170,31 @@ const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
 
     return (
         <>
-            <InstanceDropdown rule={modalContent.view_on_rule ? 'on' : 'off'} />
-            <CommandDropdown rule={modalContent.view_on_rule ? 'on' : 'off'} />
-            <IrKeyDropdown rule={modalContent.view_on_rule ? 'on' : 'off'} />
-            <CommandArgInput rule={modalContent.view_on_rule ? 'on' : 'off'} />
+            <InstanceDropdown rule={showOnRule ? 'on' : 'off'} />
+            <CommandDropdown rule={showOnRule ? 'on' : 'off'} />
+            <IrKeyDropdown rule={showOnRule ? 'on' : 'off'} />
+            <CommandArgInput rule={showOnRule ? 'on' : 'off'} />
         </>
     );
 };
 
 ApiTargetRuleModalContents.propTypes = {
-    modalContent: PropTypes.object.isRequired,
-    setModalContent: PropTypes.func.isRequired
+    selectedRule: PropTypes.object.isRequired,
+    setSelectedRule: PropTypes.func.isRequired,
+    targetNodeOptions: PropTypes.object.isRequired,
+    showOnRule: PropTypes.bool.isRequired
 };
 
 const ApiTargetRuleModal = () => {
-    // Create state objects for modal visibility, contents
+    // Create states for modal visibility, visible page
     const [visible, setVisible] = useState(false);
-    const [modalContent, setModalContent] = useState({
-        target_node_options: '',
-        show_help: false,
-        show_examples: false,
-        view_on_rule: true,
+    const [showOnRule, setShowOnRule] = useState(false);
+
+    // Create state for target node options
+    const [targetNodeOptions, setTargetNodeOptions] = useState({});
+
+    // Create state for selected dropdown values
+    const [selectedRule, setSelectedRule] = useState({
         on: {
             instance: '',
             command: '',
@@ -208,16 +217,8 @@ const ApiTargetRuleModal = () => {
     // Takes current rule object (pre-fill dropdowns), dropdown option object
     // returned by getTargetNodeOptions, and callback that receives selection
     showApiTargetRuleModal = (current_rule="", target_node_options, handleSubmit) => {
-        // Replace modalContent with params for selected rule
-        let update = { ...modalContent,
-            target_node_options: target_node_options,
-            show_help: false,
-            show_examples: false,
-            view_on_rule: true
-        };
-
-        // Save callback that receives stringified dropdown contents on submit
-        setOnSubmit(() => handleSubmit);
+        // Update state to pre-select current rule in dropdowns
+        let update = { ...selectedRule };
 
         // If editing existing rule pre-populate dropdowns
         if (current_rule) {
@@ -240,20 +241,25 @@ const ApiTargetRuleModal = () => {
             update.off = {instance: '', command: '', command_arg: '', sub_command: ''};
         }
 
-        // Set modal contents, show modal
-        setModalContent(update);
-        setVisible(true);
-    };
+        // Prefill dropdowns with current_rule
+        setSelectedRule(update);
 
-    const handleClose = () => {
-        setVisible(false);
+        // Save target node options
+        setTargetNodeOptions(target_node_options);
+
+        // Save callback that receives stringified dropdown contents on submit
+        setOnSubmit(() => handleSubmit);
+
+        // Show modal, default to on rule page
+        setShowOnRule(true);
+        setVisible(true);
     };
 
     const save_rule = () => {
         // Takes "on" or "off", returns array of rule params in correct order
         const parse_rule_params = (rule) => {
             // Get dropdown params for requested rule
-            const params = modalContent[rule];
+            const params = selectedRule[rule];
 
             // Return array of params in order sent to API:
             // - IR Blaster: ir_key, target, key
@@ -272,7 +278,7 @@ const ApiTargetRuleModal = () => {
             }
         };
 
-        // Convert modalContent param objects into arrays of params
+        // Convert selectedRule param objects into arrays of params
         const output = {
             'on': parse_rule_params('on'),
             'off': parse_rule_params('off')
@@ -280,12 +286,15 @@ const ApiTargetRuleModal = () => {
 
         // Pass stringified rule to callback function, close modal
         onSubmit(JSON.stringify(output));
-        handleClose();
+        setVisible(false);
     };
 
     return (
-        <Modal show={visible} onHide={handleClose} centered>
-            <HeaderWithCloseButton title="API Target Rule" onClose={handleClose} />
+        <Modal show={visible} onHide={() => setVisible(false)} centered>
+            <HeaderWithCloseButton
+                title="API Target Rule"
+                onClose={() => setVisible(false)}
+            />
 
             <Modal.Body className="d-flex flex-column mx-auto">
                 <Button
@@ -352,26 +361,24 @@ const ApiTargetRuleModal = () => {
 
                 {/* Cascading dropdown inputs */}
                 <ApiTargetRuleModalContents
-                    modalContent={modalContent}
-                    setModalContent={setModalContent}
+                    selectedRule={selectedRule}
+                    setSelectedRule={setSelectedRule}
+                    targetNodeOptions={targetNodeOptions}
+                    showOnRule={showOnRule}
                 />
 
                 <ButtonGroup aria-label="Set On/Off command">
                     <Button
-                        variant={modalContent.view_on_rule ? "dark" : "outline-dark"}
+                        variant={showOnRule ? "dark" : "outline-dark"}
                         className="ms-auto"
-                        onClick={() => setModalContent({
-                            ...modalContent, view_on_rule: true
-                        })}
+                        onClick={() => setShowOnRule(true)}
                     >
                         On Action
                     </Button>
                     <Button
-                        variant={modalContent.view_on_rule ? "outline-dark" : "dark"}
+                        variant={showOnRule ? "outline-dark" : "dark"}
                         className="me-auto"
-                        onClick={() => setModalContent({
-                            ...modalContent, view_on_rule: false
-                        })}
+                        onClick={() => setShowOnRule(false)}
                     >
                         Off Action
                     </Button>
