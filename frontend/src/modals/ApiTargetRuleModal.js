@@ -183,7 +183,7 @@ ApiTargetRuleModalContents.propTypes = {
 
 const ApiTargetRuleModal = () => {
     // Get curent state from global context
-    const { config } = useContext(ConfigContext);
+    const { config, handleInputChange } = useContext(ConfigContext);
 
     // Create state objects for modal visibility, contents
     const [visible, setVisible] = useState(false);
@@ -376,9 +376,12 @@ const ApiTargetRuleModal = () => {
 
         // Add rule to correct state key, close modal
         if (modalContent.schedule_rule) {
-            config[modalContent.instance]["schedule"][modalContent.rule_key] = JSON.stringify(output);
+            const newScheduleRules = { ...config[modalContent.instance]["schedule"],
+                [modalContent.rule_key]: JSON.stringify(output)
+            }
+            handleInputChange(modalContent.instance, "schedule", newScheduleRules);
         } else {
-            config[modalContent.instance][modalContent.rule_key] = JSON.stringify(output);
+            handleInputChange(modalContent.instance, "default_rule", JSON.stringify(output));
         }
         handleClose();
     };
