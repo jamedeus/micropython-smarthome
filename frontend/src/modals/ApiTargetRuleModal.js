@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { useContext, useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Button from 'react-bootstrap/Button';
@@ -9,10 +9,179 @@ import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { get_instance_metadata, ir_keys } from 'util/metadata';
 import { api_target_options, target_node_ip } from 'util/django_util';
 
+export let showApiTargetRuleModal;
 
-export const ApiTargetModalContext = createContext();
+// Takes modal state object and hook to set state
+// Renders cascading dropdown with correct fields for current selection
+const ApiTargetRuleModalContents = ({ modalContent, setModalContent }) => {
+    // Listener for all inputs
+    // Takes on or off, param name, and value; updates modalContent state
+    const set_modal_param = (rule, param, value) => {
+        const update = { ...modalContent[rule], [param]: value};
+        // Reset sub commands when main command changes
+        if (param === "instance") {
+            update.command = '';
+            update.command_arg = '';
+            update.sub_command = '';
+        } else if (param === "command") {
+            update.command_arg = '';
+            update.sub_command = '';
+        }
+        setModalContent({ ...modalContent, [rule]: update});
+    };
 
-export const ApiTargetModalContextProvider = ({ children }) => {
+    // Used for all dropdowns in modal
+    // Rule is "on" or "off", param is "instance", "command", or "sub_command"
+    // Label is shown on the default option (Select <label>)
+    // Options is an array of objects with value and display keys
+    const ParamDropdown = ({rule, param, label, options}) => {
+        return (
+            <Form.Select
+                value={modalContent[rule][param]}
+                className="mb-3 modal-dropdown api-command"
+                onChange={(e) => set_modal_param(rule, param, e.target.value)}
+            >
+                <option value="">
+                    Select {label}
+                </option>
+                {options.map(option => (
+                    <option key={option.value} value={option.value}>
+                        {option.display}
+                    </option>
+                ))}
+            </Form.Select>
+        );
+    };
+
+    ParamDropdown.propTypes = {
+        rule: PropTypes.oneOf(['on', 'off']),
+        param: PropTypes.oneOf(['instance', 'command', 'sub_command']).isRequired,
+        label: PropTypes.string.isRequired,
+        options: PropTypes.array.isRequired
+    };
+
+    // Renders instance select dropdown
+    const InstanceDropdown = ({ rule }) => {
+        // Array of objects, value is device/sensor ID, display is friendly name
+        const options = Object.entries(modalContent.target_node_options).map(option => {
+            return {value: option[0], display: option[1].display};
+        });
+
+        return (
+            <ParamDropdown
+                rule={rule}
+                param={'instance'}
+                label={'target instance'}
+                options={options}
+            />
+        );
+    };
+
+    InstanceDropdown.propTypes = {
+        rule: PropTypes.oneOf(['on', 'off']).isRequired
+    };
+
+    // Renders dropdown with all valid commands for target instance
+    // Only renders if instance has been selected and is not "ignore"
+    const CommandDropdown = ({ rule }) => {
+        const selectedInstance = modalContent[rule].instance;
+        if (selectedInstance && selectedInstance !== "ignore") {
+            // Array of objects, both keys are command name (enable, disable, etc)
+            const options = modalContent.target_node_options[selectedInstance]['options'].map(option => {
+                return {value: option, display: option};
+            });
+
+            return (
+                <ParamDropdown
+                    rule={rule}
+                    param={'command'}
+                    label={'command'}
+                    options={options}
+                />
+            );
+        } else {
+            return null;
+        }
+    };
+
+    CommandDropdown.propTypes = {
+        rule: PropTypes.oneOf(['on', 'off']).isRequired
+    };
+
+    // Renders dropdown with all keys for selected IR target device
+    // Only renders if instance is IR Blaster and target has been selected
+    const IrKeyDropdown = ({ rule }) => {
+        const selectedInstance = modalContent[rule].instance;
+        const selectedIrTarget = modalContent[rule].command;
+        if (selectedInstance === "ir_key" && selectedIrTarget) {
+            // Array of objects, both keys are IR remote key names
+            const options = modalContent.target_node_options.ir_key.keys[selectedIrTarget].map(option => {
+                return {value: option, display: option};
+            });
+
+            return (
+                <ParamDropdown
+                    rule={rule}
+                    param={'sub_command'}
+                    label={'key'}
+                    options={options}
+                />
+            );
+        } else {
+            return null;
+        }
+    };
+
+    IrKeyDropdown.propTypes = {
+        rule: PropTypes.oneOf(['on', 'off']).isRequired
+    };
+
+    // Renders text input used to set command arg
+    // Only renders if selected command requires arg
+    const CommandArgInput = ({ rule }) => {
+        const selectedCommand = modalContent[rule].command;
+
+        // Workaround to prevent losing focus on each keystroke
+        const inputRef = useRef(null);
+        useEffect(() => {
+            inputRef.current?.focus();
+        }, []);
+
+        if (["enable_in", "disable_in", "set_rule"].includes(selectedCommand)) {
+            return (
+                <Form.Control
+                    ref={inputRef}
+                    type="text"
+                    value={modalContent[rule].command_arg}
+                    className="mb-3 modal-input api-command"
+                    onChange={(e) => set_modal_param(rule, 'command_arg', e.target.value)}
+                />
+            );
+        } else {
+            return null;
+        }
+    };
+
+    CommandArgInput.propTypes = {
+        rule: PropTypes.oneOf(['on', 'off']).isRequired
+    };
+
+    return (
+        <>
+            <InstanceDropdown rule={modalContent.view_on_rule ? 'on' : 'off'} />
+            <CommandDropdown rule={modalContent.view_on_rule ? 'on' : 'off'} />
+            <IrKeyDropdown rule={modalContent.view_on_rule ? 'on' : 'off'} />
+            <CommandArgInput rule={modalContent.view_on_rule ? 'on' : 'off'} />
+        </>
+    );
+};
+
+ApiTargetRuleModalContents.propTypes = {
+    modalContent: PropTypes.object.isRequired,
+    setModalContent: PropTypes.func.isRequired
+};
+
+const ApiTargetRuleModal = () => {
     // Get curent state from global context
     const { config } = useContext(ConfigContext);
 
@@ -24,14 +193,18 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         show_help: false,
         show_examples: false,
         view_on_rule: true,
-        instance_on: '',
-        instance_off: '',
-        command_on: '',
-        command_off: '',
-        command_arg_on: '',
-        command_arg_off: '',
-        sub_command_on: '',
-        sub_command_off: '',
+        on: {
+            instance: '',
+            command: '',
+            command_arg: '',
+            sub_command: ''
+        },
+        off: {
+            instance: '',
+            command: '',
+            command_arg: '',
+            sub_command: ''
+        }
     });
 
     // Takes IP, returns object from api_target_options context
@@ -63,19 +236,22 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         const devices = filterObject(config, "device");
         const sensors = filterObject(config, "sensor");
 
+        // Supported by all devices and sensors
+        const universalOptions = [
+            'enable',
+            'disable',
+            'enable_in',
+            'disable_in',
+            'set_rule',
+            'reset_rule'
+        ];
+
         // Add options for each configured device and sensor
         for (let device in devices) {
             // Add display string and universal options
             options[device] = {
                 display: `${config[device]['nickname']} (${config[device]['_type']})`,
-                options: [
-                    'enable',
-                    'disable',
-                    'enable_in',
-                    'disable_in',
-                    'set_rule',
-                    'reset_rule'
-                ]
+                options: universalOptions
             };
 
             // Add on/off endpoints for all types except ApiTarget (prevent infinite loop)
@@ -87,14 +263,7 @@ export const ApiTargetModalContextProvider = ({ children }) => {
             // Add display string and universal options
             options[sensor] = {
                 display: `${config[sensor]['nickname']} (${config[sensor]['_type']})`,
-                options: [
-                    'enable',
-                    'disable',
-                    'enable_in',
-                    'disable_in',
-                    'set_rule',
-                    'reset_rule'
-                ]
+                options: universalOptions
             };
 
             // Add trigger_sensor endpoint for triggerable sensors
@@ -119,25 +288,24 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         return options;
     };
 
-    const handleShow = (instance, rule_key) => {
-        // Prevent crash if set rule clicked before selecting target, or if
-        // target IP is outdated (eg target node config deleted)
+    showApiTargetRuleModal = (instance, rule_key) => {
+        // Prevent crash if target IP not set or outdated (eg target node deleted)
         const ip = config[instance]["ip"];
         if (!ip || !Object.values(api_target_options.addresses).includes(ip)) {
-            // TODO highlight field red instead
             alert("Select target node first");
             return false;
         }
 
         // Replace modalContent with params for selected rule
-        let update = { ...modalContent };
-        update.instance = instance;
-        update.rule_key = rule_key;
-        update.schedule_rule = !(rule_key === "default_rule");
-        update.target_node_options = getTargetNodeOptions(ip);
-        update.show_help = false;
-        update.show_examples = false;
-        update.view_on_rule = true;
+        let update = { ...modalContent,
+            instance: instance,
+            rule_key: rule_key,
+            schedule_rule: !(rule_key === "default_rule"),
+            target_node_options: getTargetNodeOptions(ip),
+            show_help: false,
+            show_examples: false,
+            view_on_rule: true
+        };
 
         // Parse existing rule from state object if it exists
         let rule = "";
@@ -153,39 +321,24 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         if (rule) {
             // IR command uses different order
             if (rule.on[0] === "ir_key") {
-                [update.instance_on, update.command_on, update.sub_command_on] = rule.on;
-            // Other endpoints may/may not have arg
+                [update.on.instance, update.on.command, update.on.sub_command] = rule.on;
             } else {
-                update.command_on = rule.on.shift();
-                update.instance_on = rule.on.shift();
-                if (rule.on.length) {
-                    update.command_arg_on = rule.on.shift();
-                }
+                [update.on.command, update.on.instance, update.on.command_arg] = rule.on;
+            }
+            // Repeat for off rule
+            if (rule.off[0] === "ir_key") {
+                [update.off.instance, update.off.command, update.off.sub_command] = rule.off;
+            } else {
+                [update.off.command, update.off.instance, update.off.command_arg] = rule.off;
             }
 
-            // Repeat for off command
-            if (rule.off[0] === "ir_key") {
-                [update.instance_off, update.command_off, update.sub_command_off] = rule.off;
-            } else {
-                update.command_off = rule.off.shift();
-                update.instance_off = rule.off.shift();
-                if (rule.off.length) {
-                    update.command_arg_off = rule.off.shift();
-                }
-            }
         // Otherwise ensure all inputs are empty
         } else {
-            update.instance_on = '';
-            update.instance_off = '';
-            update.command_on = '';
-            update.command_off = '';
-            update.command_arg_on = '';
-            update.command_arg_off = '';
-            update.sub_command_on = '';
-            update.sub_command_off = '';
+            update.on = {instance: '', command: '', command_arg: '', sub_command: ''};
+            update.off = {instance: '', command: '', command_arg: '', sub_command: ''};
         }
 
-        // Set modal contents, show
+        // Set modal contents, show modal
         setModalContent(update);
         setVisible(true);
     };
@@ -194,204 +347,34 @@ export const ApiTargetModalContextProvider = ({ children }) => {
         setVisible(false);
     };
 
-    return (
-        <ApiTargetModalContext.Provider value={{ visible, modalContent, setModalContent, handleShow, handleClose }}>
-            {children}
-        </ApiTargetModalContext.Provider>
-    );
-};
-
-ApiTargetModalContextProvider.propTypes = {
-    children: PropTypes.node,
-};
-
-export const ApiTargetRuleModalContents = () => {
-    // Get state object that determines modal contents
-    const { modalContent, setModalContent } = useContext(ApiTargetModalContext);
-
-    // Listener for all dropdown inputs
-    // Takes modalContent param name and value, updates and re-renders
-    const set_modal_param = (param, value) => {
-        const update = { ...modalContent, [param]: value};
-        // Reset sub commands when main command changes
-        if (param === "instance_on") {
-            update.command_on = '';
-            update.command_arg_on = '';
-            update.sub_command_on = '';
-        } else if (param === "instance_off") {
-            update.command_off = '';
-            update.command_arg_off = '';
-            update.sub_command_off = '';
-        } else if (param === "command_on") {
-            update.command_arg_on = '';
-            update.sub_command_on = '';
-        } else if (param === "command_off") {
-            update.command_arg_off = '';
-            update.sub_command_off = '';
-        }
-        setModalContent(update);
-    };
-
-    // Takes "instance_on" or "instance_off"
-    // Returns instance select dropdown with current instance pre-selected
-    const get_instance_dropdown = (param) => {
-        return (
-            <Form.Select
-                value={modalContent[param]}
-                className="mb-3 modal-dropdown api-command"
-                onChange={(e) => set_modal_param(param, e.target.value)}
-            >
-                <option value="">Select target instance</option>
-                {Object.keys(modalContent.target_node_options).map(option => (
-                    <option key={option} value={option}>{modalContent.target_node_options[option]["display"]}</option>
-                ))}
-            </Form.Select>
-        );
-    };
-
-    // Takes currently-selected instance and either "command_on" or "command_off"
-    // Returns dropdown with all valid commands for target instance, current command pre-selected
-    const get_command_dropdown = (instance, param) => {
-        return (
-            <Form.Select
-                value={modalContent[param]}
-                className="mb-3 modal-dropdown api-command"
-                onChange={(e) => set_modal_param(param, e.target.value)}
-            >
-                <option value="">Select command</option>
-                {modalContent.target_node_options[instance]["options"].map(option => (
-                    <option key={option} value={option}>{option}</option>
-                ))}
-            </Form.Select>
-        );
-    };
-
-    // Takes selected IR target and either "sub_command_on" or "sub_command_off"
-    // Returns dropdown with all keys for selected target, current key pre-selected
-    const get_ir_key_dropdown = (target, param) => {
-        return (
-            <Form.Select
-                value={modalContent[param]}
-                className="mb-3 modal-input api-command"
-                onChange={(e) => set_modal_param(param, e.target.value)}
-            >
-                <option value="">Select key</option>
-                {modalContent.target_node_options.ir_key.keys[target].map(option => (
-                    <option key={option} value={option}>{option}</option>
-                ))}
-            </Form.Select>
-        );
-    };
-
-    // Takes "command_arg_on" or "command_arg_off"
-    // Returns input with current command arg pre-filled
-    const get_command_arg_input = (param) => {
-        return (
-            <Form.Control
-                type="text"
-                value={modalContent[param]}
-                className="mb-3 modal-input api-command"
-                onChange={(e) => set_modal_param(param, e.target.value)}
-            />
-        );
-    };
-
-    // Return cascading dropdown for currently-viewed action (on or off)
-    switch(modalContent.view_on_rule) {
-        case true:
-            return (
-                <>
-                    {/* Always show instance select dropdown */}
-                    {get_instance_dropdown("instance_on")}
-
-                    {/* Show command dropdown once instance selected */}
-                    {(() => {
-                        if (modalContent.instance_on && modalContent.instance_on !== "ignore") {
-                            return get_command_dropdown(modalContent.instance_on, "command_on");
-                        }
-                    })()}
-
-                    {/* Show IR target dropdown if instance is IR Blaster and target is selected */}
-                    {(() => {
-                        if (modalContent.instance_on === "ir_key" && modalContent.command_on) {
-                            return get_ir_key_dropdown(modalContent.command_on, "sub_command_on");
-                        }
-                    })()}
-
-                    {/* Show arg field if command is set_rule, enable_in, or disable_in */}
-                    {(() => {
-                        if (["enable_in", "disable_in", "set_rule"].includes(modalContent.command_on)) {
-                            return get_command_arg_input("command_arg_on");
-                        }
-                    })()}
-                </>
-            );
-        case false:
-            return (
-                <>
-                    {/* Always show instance select dropdown */}
-                    {get_instance_dropdown("instance_off")}
-
-                    {/* Show command dropdown once instance selected */}
-                    {(() => {
-                        if (modalContent.instance_off && modalContent.instance_off !== "ignore") {
-                            return get_command_dropdown(modalContent.instance_off, "command_off");
-                        }
-                    })()}
-
-                    {/* Show IR target dropdown if instance is IR Blaster and target is selected */}
-                    {(() => {
-                        if (modalContent.instance_off === "ir_key" && modalContent.command_off) {
-                            return get_ir_key_dropdown(modalContent.command_off, "sub_command_off");
-                        }
-                    })()}
-
-                    {/* Show arg field if command is set_rule, enable_in, or disable_in */}
-                    {(() => {
-                        if (["enable_in", "disable_in", "set_rule"].includes(modalContent.command_off)) {
-                            return get_command_arg_input("command_arg_off");
-                        }
-                    })()}
-                </>
-            );
-    }
-};
-
-export const ApiTargetRuleModal = () => {
-    // Get context and callbacks
-    const { visible, handleClose, modalContent, setModalContent } = useContext(ApiTargetModalContext);
-
-    // Get curent state from global context
-    const { config } = useContext(ConfigContext);
-
     const save_rule = () => {
-        let output = {'on': [], 'off': []};
+        // Takes "on" or "off", returns array of rule params in correct order
+        const parse_rule_params = (rule) => {
+            // Get dropdown params for requested rule
+            const params = modalContent[rule];
 
-        // Add params in correct order
-        // IR Blaster: ir_key followed by target and key
-        // Ignore: Add ignore keyword, skip all other params
-        // Other endpoints: Command followed by target instance (optional arg for some endpoints)
-        if (modalContent.instance_on === 'ir_key') {
-            output.on.push(modalContent.instance_on, modalContent.command_on, modalContent.sub_command_on);
-        } else if (modalContent.instance_on === 'ignore') {
-            output.on.push('ignore');
-        } else {
-            output.on.push(modalContent.command_on, modalContent.instance_on);
-            if (modalContent.command_arg_on !== "") {
-                output.on.push(modalContent.command_arg_on);
+            // Return array of params in order sent to API:
+            // - IR Blaster: ir_key, target, key
+            // - Ignore: ignore keyword
+            // - Other endpoints: command, target instance, (some endpoints) arg
+            if (params.instance === 'ir_key') {
+                return [params.instance, params.command, params.sub_command];
+            } else if (params.instance === 'ignore') {
+                return ['ignore'];
+            } else {
+                const output = [params.command, params.instance];
+                if (params.command_arg) {
+                    output.push(params.command_arg);
+                }
+                return output;
             }
-        }
-        // Repeat for off command
-        if (modalContent.instance_off === 'ir_key') {
-            output.off.push(modalContent.instance_off, modalContent.command_off, modalContent.sub_command_off);
-        } else if (modalContent.instance_off === 'ignore') {
-            output.on.push('ignore');
-        } else {
-            output.off.push(modalContent.command_off, modalContent.instance_off);
-            if (modalContent.command_arg_off !== "") {
-                output.off.push(modalContent.command_arg_off);
-            }
-        }
+        };
+
+        // Convert modalContent param objects into arrays of params
+        const output = {
+            'on': parse_rule_params('on'),
+            'off': parse_rule_params('off')
+        };
 
         // Add rule to correct state key, close modal
         if (modalContent.schedule_rule) {
@@ -400,11 +383,6 @@ export const ApiTargetRuleModal = () => {
             config[modalContent.instance][modalContent.rule_key] = JSON.stringify(output);
         }
         handleClose();
-    };
-
-    // Takes modalContent param name and value, updates and re-renders
-    const set_modal_param = (param, value) => {
-        setModalContent({ ...modalContent, [param]: value});
     };
 
     return (
@@ -423,11 +401,17 @@ export const ApiTargetRuleModal = () => {
                 </Button>
 
                 <div className="collapse" id="api-rule-modal-help">
-                    <p className="text-center">Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.</p>
+                    <p className="text-center">
+                        Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.
+                    </p>
 
-                    <p className="text-center">Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the &quot;Target Node&quot; dropdown.</p>
+                    <p className="text-center">
+                        Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the &quot;Target Node&quot; dropdown.
+                    </p>
 
-                    <p className="text-center">The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.</p>
+                    <p className="text-center">
+                        The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.
+                    </p>
 
                     <p className="text-center">
                         <Button
@@ -443,9 +427,15 @@ export const ApiTargetRuleModal = () => {
 
                     <div className="collapse" id="api-rule-modal-examples">
                         <ul>
-                            <li>Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the <b>trigger_sensor</b> option.</li>
-                            <li>The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and <b>set_rule</b> command below.</li>
-                            <li>Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an <b>Ir Blaster</b>.</li>
+                            <li>
+                                Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the <b>trigger_sensor</b> option.
+                            </li>
+                            <li>
+                                The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and <b>set_rule</b> command below.
+                            </li>
+                            <li>
+                                Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an <b>Ir Blaster</b>.
+                            </li>
                         </ul>
 
                         <p className="text-center">
@@ -461,19 +451,29 @@ export const ApiTargetRuleModal = () => {
                         </p>
                     </div>
                 </div>
-                {ApiTargetRuleModalContents()}
+
+                {/* Cascading dropdown inputs */}
+                <ApiTargetRuleModalContents
+                    modalContent={modalContent}
+                    setModalContent={setModalContent}
+                />
+
                 <ButtonGroup aria-label="Set On/Off command">
                     <Button
                         variant={modalContent.view_on_rule ? "dark" : "outline-dark"}
                         className="ms-auto"
-                        onClick={() => set_modal_param("view_on_rule", true)}
+                        onClick={() => setModalContent({
+                            ...modalContent, view_on_rule: true
+                        })}
                     >
                         On Action
                     </Button>
                     <Button
                         variant={modalContent.view_on_rule ? "outline-dark" : "dark"}
                         className="me-auto"
-                        onClick={() => set_modal_param("view_on_rule", false)}
+                        onClick={() => setModalContent({
+                            ...modalContent, view_on_rule: false
+                        })}
                     >
                         Off Action
                     </Button>
@@ -490,3 +490,5 @@ export const ApiTargetRuleModal = () => {
         </Modal>
     );
 };
+
+export default ApiTargetRuleModal;

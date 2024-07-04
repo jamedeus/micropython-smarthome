@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { ConfigContext } from 'root/ConfigContext';
-import { ApiTargetModalContext } from 'modals/ApiTargetRuleModal';
+import { showApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
 
 function DefaultRuleApiTarget({ id }) {
     // Get curent state + callback functions from context
@@ -11,9 +11,6 @@ function DefaultRuleApiTarget({ id }) {
 
     // Get instance section in config
     const instance = config[id];
-
-    // Get callback to open rule modal
-    const { handleShow } = useContext(ApiTargetModalContext);
 
     // Add invalid highlight to set rule button if not set after page validated
     let invalid = false;
@@ -27,7 +24,7 @@ function DefaultRuleApiTarget({ id }) {
                 <Button
                     id={`${id}-default_rule-button`}
                     variant={invalid ? "outline-danger" : "secondary"}
-                    onClick={() => handleShow(id, "default_rule")}
+                    onClick={() => showApiTargetRuleModal(id, "default_rule")}
                     disabled={!instance.ip}
                 >
                     Set rule

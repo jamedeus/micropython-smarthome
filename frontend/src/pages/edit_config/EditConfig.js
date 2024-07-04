@@ -5,7 +5,7 @@ import { send_post_request, edit_existing, target_node_ip } from 'util/django_ut
 import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
-import { ApiTargetModalContextProvider, ApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
+import ApiTargetRuleModal from 'modals/ApiTargetRuleModal';
 import { ErrorModalContext, ErrorModal } from 'modals/ErrorModal';
 import UploadModal, { uploadConfigFile } from 'modals/UploadModal';
 
@@ -225,7 +225,7 @@ const EditConfig = () => {
     };
 
     return (
-        <ApiTargetModalContextProvider>
+        <>
             <div className="d-flex flex-column vh-100">
                 <h1 className="text-center pt-3 pb-4">{document.title}</h1>
                 {(() => {
@@ -247,7 +247,7 @@ const EditConfig = () => {
             <ApiTargetRuleModal />
             <UploadModal />
             <ErrorModal />
-        </ApiTargetModalContextProvider>
+        </>
     );
 };
 
