@@ -7,11 +7,11 @@ import InputWrapper from './InputWrapper';
 function PinSelectDropdown({id, config, selected, onChange, options, isInvalid}) {
     // Get array of all pins used by other instances
     let usedPins = [];
-    for (const section in config) {
-        if (section !== id && config[section]["pin"] !== undefined) {
-            usedPins.push(String(config[section]["pin"]));
+    Object.entries(config).forEach(([instance, params]) => {
+        if (instance !== id && params.pin !== undefined) {
+            usedPins.push(String(params.pin));
         }
-    }
+    });
 
     // Return dropdown with correct pin selected, used pins disabled
     return (

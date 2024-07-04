@@ -35,16 +35,16 @@ function ThermostatParamInputs({ id }) {
         // Convert default_rule to new units
         const newRule = convert_temperature(instance.default_rule, oldUnits, newUnits);
 
-        // Copy state object, add new rule + new units
-        const update = { ...instance, ["default_rule"]: newRule, ["units"]: newUnits};
+        // Convert default_rule to new units, add new units
+        const update = { ...instance, default_rule: newRule, units: newUnits };
 
         // Convert all schedule rules to new units
-        for (let rule in instance.schedule) {
-            if (/^-?\d+(\.\d+)?$/.test(instance.schedule[rule])) {
-                const newRule = convert_temperature(instance.schedule[rule], oldUnits, newUnits);
-                instance.schedule[rule] = newRule;
+        Object.entries(instance.schedule).forEach(([timestamp, rule]) => {
+            if (/^-?\d+(\.\d+)?$/.test(rule)) {
+                const newRule = convert_temperature(rule, oldUnits, newUnits);
+                instance.schedule[timestamp] = newRule;
             }
-        }
+        });
 
         // Update units and rules in state object
         handleInstanceUpdate(id, update);

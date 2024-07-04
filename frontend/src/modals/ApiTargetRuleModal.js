@@ -232,10 +232,6 @@ const ApiTargetRuleModal = () => {
     const getSelfTargetOptions = () => {
         const options = {};
 
-        // Get all devices and sensors
-        const devices = filterObject(config, "device");
-        const sensors = filterObject(config, "sensor");
-
         // Supported by all devices and sensors
         const universalOptions = [
             'enable',
@@ -247,31 +243,33 @@ const ApiTargetRuleModal = () => {
         ];
 
         // Add options for each configured device and sensor
-        for (let device in devices) {
+        const devices = filterObject(config, "device");
+        Object.entries(devices).forEach(([device, params]) => {
             // Add display string and universal options
             options[device] = {
-                display: `${config[device]['nickname']} (${config[device]['_type']})`,
+                display: `${params.nickname} (${params._type})`,
                 options: [ ...universalOptions ]
             };
 
-            // Add on/off endpoints for all types except ApiTarget (prevent infinite loop)
-            if (config[device]['_type'] !== "api-target") {
+            // Add on/off for all types except ApiTarget (prevent infinite loop)
+            if (params._type !== 'api-target') {
                 options[device]['options'].push('turn_on', 'turn_off');
             }
-        }
-        for (let sensor in sensors) {
+        });
+        const sensors = filterObject(config, "sensor");
+        Object.entries(sensors).forEach(([sensor, params]) => {
             // Add display string and universal options
             options[sensor] = {
-                display: `${config[sensor]['nickname']} (${config[sensor]['_type']})`,
+                display: `${params.nickname} (${params._type})`,
                 options: [ ...universalOptions ]
             };
 
             // Add trigger_sensor endpoint for triggerable sensors
-            const metadata = get_instance_metadata('sensor', config[sensor]['_type']);
+            const metadata = get_instance_metadata('sensor', params._type);
             if (metadata.triggerable) {
                 options[sensor]['options'].push('trigger_sensor');
             }
-        }
+        });
 
         // If IR Blaster with at least 1 target configured, add options for each target
         if (Object.keys(config).includes("ir_blaster") && config.ir_blaster.target.length) {
