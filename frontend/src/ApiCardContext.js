@@ -12,6 +12,11 @@ export const ApiCardContextProvider = ({ children }) => {
         return parse_dom_context("context");
     });
 
+    // Save api_target_options key if present (only sent on initial status)
+    const [apiTargetOptions, _] = useState(
+        status.api_target_options || {}
+    );
+
     // Create local state for IP address (not included in
     // status updates, will disappear if allowed to update)
     const [targetIP] = useState(status.metadata.ip);
@@ -247,6 +252,7 @@ export const ApiCardContextProvider = ({ children }) => {
             status,
             setStatus,
             loading,
+            apiTargetOptions,
             overview,
             send_command,
             enable_instance,

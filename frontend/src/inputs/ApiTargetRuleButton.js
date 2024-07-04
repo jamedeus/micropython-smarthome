@@ -18,7 +18,10 @@ const ApiTargetRuleButton = ({ currentRule, targetNodeOptions, handleSubmit }) =
 };
 
 ApiTargetRuleButton.propTypes = {
-    currentRule: PropTypes.object.isRequired,
+    currentRule: PropTypes.oneOfType([
+        PropTypes.object,
+        PropTypes.string
+    ]).isRequired,
     targetNodeOptions: PropTypes.object.isRequired,
     handleSubmit: PropTypes.func.isRequired
 };

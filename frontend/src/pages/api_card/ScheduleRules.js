@@ -5,6 +5,7 @@ import Table from 'react-bootstrap/Table';
 import { TimeField } from 'inputs/TimeField';
 import { RuleField } from 'inputs/RuleField';
 import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
+import ApiTargetRuleButton from 'inputs/ApiTargetRuleButton';
 import Button from 'react-bootstrap/Button';
 
 const ScheduleRulesTable = ({ id, schedule }) => {
@@ -17,7 +18,8 @@ const ScheduleRulesTable = ({ id, schedule }) => {
             status,
             add_schedule_rule,
             edit_schedule_rule,
-            delete_schedule_rule
+            delete_schedule_rule,
+            apiTargetOptions
         } = useContext(ApiCardContext);
 
         // Get instance status section
@@ -101,6 +103,22 @@ const ScheduleRulesTable = ({ id, schedule }) => {
             delete_schedule_rule(id, originalTime);
         };
 
+        // Renders button that opens ApiTarget rule modal
+        const ApiTargetRuleField = () => {
+            // Receives stringified dropdown selection when modal submitted
+            const handleSubmit = (newRule) => {
+                handleNewRule(newRule, false, '', false);
+            };
+
+            return (
+                <ApiTargetRuleButton
+                    currentRule={newRule ? JSON.parse(newRule) : ''}
+                    targetNodeOptions={apiTargetOptions[id]}
+                    handleSubmit={handleSubmit}
+                />
+            );
+        };
+
         return (
             <tr className={!existingRule && !showNewRule ? 'd-none' : ''}>
                 <td>
@@ -112,13 +130,17 @@ const ScheduleRulesTable = ({ id, schedule }) => {
                     />
                 </td>
                 <td>
-                    <RuleField
-                        instance={instance}
-                        category={id.replace(/[0-9]/g, '')}
-                        type={instance.type}
-                        rule={newRule}
-                        handleChange={handleNewRule}
-                    />
+                    {instance.type === 'api-target' ? (
+                        <ApiTargetRuleField />
+                    ) : (
+                        <RuleField
+                            instance={instance}
+                            category={id.replace(/[0-9]/g, '')}
+                            type={instance.type}
+                            rule={newRule}
+                            handleChange={handleNewRule}
+                        />
+                    )}
                 </td>
                 <td className="min">
                     <DeleteOrEditButton

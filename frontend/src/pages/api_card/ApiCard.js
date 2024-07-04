@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { ErrorModal } from 'modals/ErrorModal';
 import DebugModal from 'modals/DebugModal';
+import ApiTargetRuleModal from 'modals/ApiTargetRuleModal';
 import ScheduleToggleModal from 'modals/ScheduleToggleModal';
 import Header from './Header';
 import Layout from './Layout';
@@ -25,6 +26,7 @@ const App = () => {
             <ErrorModal />
             <DebugModal />
             <ScheduleToggleModal />
+            <ApiTargetRuleModal />
         </div>
     );
 };
