@@ -251,7 +251,7 @@ const ApiTargetRuleModal = () => {
             // Add display string and universal options
             options[device] = {
                 display: `${config[device]['nickname']} (${config[device]['_type']})`,
-                options: universalOptions
+                options: [ ...universalOptions ]
             };
 
             // Add on/off endpoints for all types except ApiTarget (prevent infinite loop)
@@ -263,7 +263,7 @@ const ApiTargetRuleModal = () => {
             // Add display string and universal options
             options[sensor] = {
                 display: `${config[sensor]['nickname']} (${config[sensor]['_type']})`,
-                options: universalOptions
+                options: [ ...universalOptions ]
             };
 
             // Add trigger_sensor endpoint for triggerable sensors
