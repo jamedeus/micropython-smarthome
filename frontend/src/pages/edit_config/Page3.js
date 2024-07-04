@@ -14,6 +14,7 @@ const Page3 = () => {
     const {
         config,
         handleInputChange,
+        getTargetNodeOptions,
         highlightInvalid
     } = useContext(ConfigContext);
 
@@ -71,6 +72,34 @@ const Page3 = () => {
             }
         };
 
+        // Renders button that opens ApiTargetRuleModal
+        const ApiTargetRuleField = () => {
+            // Get rule to pre-fill in dropdowns (or empty string if no rule)
+            let currentRule = '';
+            if (config[instance]['schedule'][timestamp]) {
+                currentRule = JSON.parse(config[instance]['schedule'][timestamp]);
+            }
+
+            // Get dropdown options for current target IP
+            const options = getTargetNodeOptions(config[instance]['ip']);
+
+            // Receives stringified dropdown selection when modal submitted
+            const handleSubmit = (newRule) => {
+                const newScheduleRules = { ...config[instance]["schedule"],
+                    [timestamp]: newRule
+                };
+                handleInputChange(instance, "schedule", newScheduleRules);
+            };
+
+            return (
+                <ApiTargetRuleButton
+                    currentRule={currentRule}
+                    targetNodeOptions={options}
+                    handleSubmit={handleSubmit}
+                />
+            );
+        };
+
         return (
             <tr>
                 <td className="schedule-rule-field">
@@ -84,10 +113,7 @@ const Page3 = () => {
                 <td className="schedule-rule-field">
                     {/* ApiTarget: Button to open modal, otherwise RuleField */}
                     {config[instance]['_type'] === "api-target" ? (
-                        <ApiTargetRuleButton
-                            instance={instance}
-                            ruleKey={timestamp}
-                        />
+                        <ApiTargetRuleField />
                     ) : (
                         <RuleField
                             instance={config[instance]}

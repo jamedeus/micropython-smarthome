@@ -2,13 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { showApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
 
-// Takes id (device1, sensor3, etc) and rule key (either default_rule or
-// schedule rule timestamp/keyword)
-const ApiTargetRuleButton = ({ instance, ruleKey }) => {
+// Takes current rule, object returned by getTargetNodeOptions, and callback
+// that receives user selection when modal submitted
+const ApiTargetRuleButton = ({ currentRule, targetNodeOptions, handleSubmit }) => {
     return (
         <span
             className="form-control"
-            onClick={() => showApiTargetRuleModal(instance, ruleKey)}
+            onClick={() => showApiTargetRuleModal(
+                currentRule, targetNodeOptions, handleSubmit
+            )}
         >
             Click to edit
         </span>
@@ -16,8 +18,9 @@ const ApiTargetRuleButton = ({ instance, ruleKey }) => {
 };
 
 ApiTargetRuleButton.propTypes = {
-    instance: PropTypes.string,
-    ruleKey: PropTypes.string,
+    currentRule: PropTypes.object.isRequired,
+    targetNodeOptions: PropTypes.object.isRequired,
+    handleSubmit: PropTypes.func.isRequired
 };
 
 export default ApiTargetRuleButton;

@@ -1,13 +1,10 @@
-import React, { useContext, useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
-import { ConfigContext, filterObject } from 'root/ConfigContext';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
-import { get_instance_metadata, ir_keys } from 'util/metadata';
-import { api_target_options, target_node_ip } from 'util/django_util';
 
 export let showApiTargetRuleModal;
 
@@ -182,13 +179,9 @@ ApiTargetRuleModalContents.propTypes = {
 };
 
 const ApiTargetRuleModal = () => {
-    // Get curent state from global context
-    const { config, handleInputChange } = useContext(ConfigContext);
-
     // Create state objects for modal visibility, contents
     const [visible, setVisible] = useState(false);
     const [modalContent, setModalContent] = useState({
-        instance: '',
         target_node_options: '',
         show_help: false,
         show_examples: false,
@@ -207,127 +200,38 @@ const ApiTargetRuleModal = () => {
         }
     });
 
-    // Takes IP, returns object from api_target_options context
-    const getTargetNodeOptions = (ip) => {
-        // Generate options from current state if self-targeting
-        if (ip === '127.0.0.1' || ip === target_node_ip) {
-            return getSelfTargetOptions();
-        }
+    // Receives stringified dropdown contents when modal submitted
+    // Set by showApiTargetRuleModal (function passed as handleSubmit arg)
+    // TODO there must be a better way to do this
+    const [onSubmit, setOnSubmit] = useState(() => () => {});
 
-        // Find target node options in object if not self-targeting
-        const friendly_name = Object.keys(api_target_options.addresses).find(key =>
-            api_target_options.addresses[key] === ip
-        );
-        // Throw error if not found (prevent crash when opening modal)
-        if (!friendly_name) {
-            throw new Error(
-                'getTargetNodeOptions received an IP that does not match an existing node'
-            );
-        }
-
-        return api_target_options[friendly_name];
-    };
-
-    // Builds ApiTarget options for all currently configured devices and sensors
-    const getSelfTargetOptions = () => {
-        const options = {};
-
-        // Supported by all devices and sensors
-        const universalOptions = [
-            'enable',
-            'disable',
-            'enable_in',
-            'disable_in',
-            'set_rule',
-            'reset_rule'
-        ];
-
-        // Add options for each configured device and sensor
-        const devices = filterObject(config, "device");
-        Object.entries(devices).forEach(([device, params]) => {
-            // Add display string and universal options
-            options[device] = {
-                display: `${params.nickname} (${params._type})`,
-                options: [ ...universalOptions ]
-            };
-
-            // Add on/off for all types except ApiTarget (prevent infinite loop)
-            if (params._type !== 'api-target') {
-                options[device]['options'].push('turn_on', 'turn_off');
-            }
-        });
-        const sensors = filterObject(config, "sensor");
-        Object.entries(sensors).forEach(([sensor, params]) => {
-            // Add display string and universal options
-            options[sensor] = {
-                display: `${params.nickname} (${params._type})`,
-                options: [ ...universalOptions ]
-            };
-
-            // Add trigger_sensor endpoint for triggerable sensors
-            const metadata = get_instance_metadata('sensor', params._type);
-            if (metadata.triggerable) {
-                options[sensor]['options'].push('trigger_sensor');
-            }
-        });
-
-        // If IR Blaster with at least 1 target configured, add options for each target
-        if (Object.keys(config).includes("ir_blaster") && config.ir_blaster.target.length) {
-            options['ir_key'] = {
-                display: "Ir Blaster",
-                options: [ ...config.ir_blaster.target ],
-                keys: {}
-            };
-            config.ir_blaster.target.forEach(target => {
-                options.ir_key.keys[target] = ir_keys[target];
-            });
-        }
-
-        return options;
-    };
-
-    showApiTargetRuleModal = (instance, rule_key) => {
-        // Prevent crash if target IP not set or outdated (eg target node deleted)
-        const ip = config[instance]["ip"];
-        if (!ip || !Object.values(api_target_options.addresses).includes(ip)) {
-            alert("Select target node first");
-            return false;
-        }
-
+    // Takes current rule object (pre-fill dropdowns), dropdown option object
+    // returned by getTargetNodeOptions, and callback that receives selection
+    showApiTargetRuleModal = (current_rule="", target_node_options, handleSubmit) => {
         // Replace modalContent with params for selected rule
         let update = { ...modalContent,
-            instance: instance,
-            rule_key: rule_key,
-            schedule_rule: !(rule_key === "default_rule"),
-            target_node_options: getTargetNodeOptions(ip),
+            target_node_options: target_node_options,
             show_help: false,
             show_examples: false,
             view_on_rule: true
         };
 
-        // Parse existing rule from state object if it exists
-        let rule = "";
-        try {
-            if (update.schedule_rule) {
-                rule = JSON.parse(config[instance]["schedule"][rule_key]);
-            } else {
-                rule = JSON.parse(config[instance][rule_key]);
-            }
-        } catch(e) {}
+        // Save callback that receives stringified dropdown contents on submit
+        setOnSubmit(() => handleSubmit);
 
         // If editing existing rule pre-populate dropdowns
-        if (rule) {
+        if (current_rule) {
             // IR command uses different order
-            if (rule.on[0] === "ir_key") {
-                [update.on.instance, update.on.command, update.on.sub_command] = rule.on;
+            if (current_rule.on[0] === "ir_key") {
+                [update.on.instance, update.on.command, update.on.sub_command] = current_rule.on;
             } else {
-                [update.on.command, update.on.instance, update.on.command_arg] = rule.on;
+                [update.on.command, update.on.instance, update.on.command_arg] = current_rule.on;
             }
             // Repeat for off rule
-            if (rule.off[0] === "ir_key") {
-                [update.off.instance, update.off.command, update.off.sub_command] = rule.off;
+            if (current_rule.off[0] === "ir_key") {
+                [update.off.instance, update.off.command, update.off.sub_command] = current_rule.off;
             } else {
-                [update.off.command, update.off.instance, update.off.command_arg] = rule.off;
+                [update.off.command, update.off.instance, update.off.command_arg] = current_rule.off;
             }
 
         // Otherwise ensure all inputs are empty
@@ -374,15 +278,8 @@ const ApiTargetRuleModal = () => {
             'off': parse_rule_params('off')
         };
 
-        // Add rule to correct state key, close modal
-        if (modalContent.schedule_rule) {
-            const newScheduleRules = { ...config[modalContent.instance]["schedule"],
-                [modalContent.rule_key]: JSON.stringify(output)
-            }
-            handleInputChange(modalContent.instance, "schedule", newScheduleRules);
-        } else {
-            handleInputChange(modalContent.instance, "default_rule", JSON.stringify(output));
-        }
+        // Pass stringified rule to callback function, close modal
+        onSubmit(JSON.stringify(output));
         handleClose();
     };
 

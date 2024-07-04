@@ -3,7 +3,8 @@ import PropTypes from 'prop-types';
 import { get_config_template } from 'util/metadata';
 import { sleep } from 'util/helper_functions';
 import { v4 as uuid } from 'uuid';
-import { api_target_options } from 'util/django_util';
+import { get_instance_metadata, ir_keys } from 'util/metadata';
+import { api_target_options, target_node_ip } from 'util/django_util';
 
 
 // Takes object and key prefix, returns object with all keys that begin with prefix
@@ -248,6 +249,86 @@ export const ConfigProvider = ({ children }) => {
         return state;
     }
 
+    // Takes ApiTarget target node IP, returns object containing all valid
+    // options for target (used to populate ApiTargetRuleModal dropdowns)
+    const getTargetNodeOptions = (ip) => {
+        // Generate options from current state if self-targeting
+        if (ip === '127.0.0.1' || ip === target_node_ip) {
+            return getSelfTargetOptions();
+        }
+
+        // Find target node options in object if not self-targeting
+        const friendly_name = Object.keys(api_target_options.addresses).find(key =>
+            api_target_options.addresses[key] === ip
+        );
+        // Throw error if not found (prevent crash when opening modal)
+        if (!friendly_name) {
+            throw new Error(
+                'getTargetNodeOptions received an IP that does not match an existing node'
+            );
+        }
+
+        return api_target_options[friendly_name];
+    };
+
+    // Returns ApiTargetRuleModal options for all devices and sensors in config
+    const getSelfTargetOptions = () => {
+        const options = {};
+
+        // Supported by all devices and sensors
+        const universalOptions = [
+            'enable',
+            'disable',
+            'enable_in',
+            'disable_in',
+            'set_rule',
+            'reset_rule'
+        ];
+
+        // Add options for each configured device and sensor
+        const devices = filterObject(config, "device");
+        Object.entries(devices).forEach(([device, params]) => {
+            // Add display string and universal options
+            options[device] = {
+                display: `${params.nickname} (${params._type})`,
+                options: [ ...universalOptions ]
+            };
+
+            // Add on/off for all types except ApiTarget (prevent infinite loop)
+            if (params._type !== 'api-target') {
+                options[device]['options'].push('turn_on', 'turn_off');
+            }
+        });
+        const sensors = filterObject(config, "sensor");
+        Object.entries(sensors).forEach(([sensor, params]) => {
+            // Add display string and universal options
+            options[sensor] = {
+                display: `${params.nickname} (${params._type})`,
+                options: [ ...universalOptions ]
+            };
+
+            // Add trigger_sensor endpoint for triggerable sensors
+            const metadata = get_instance_metadata('sensor', params._type);
+            if (metadata.triggerable) {
+                options[sensor]['options'].push('trigger_sensor');
+            }
+        });
+
+        // If IR Blaster with at least 1 target configured, add options for each target
+        if (Object.keys(config).includes("ir_blaster") && config.ir_blaster.target.length) {
+            options['ir_key'] = {
+                display: "Ir Blaster",
+                options: [ ...config.ir_blaster.target ],
+                keys: {}
+            };
+            config.ir_blaster.target.forEach(target => {
+                options.ir_key.keys[target] = ir_keys[target];
+            });
+        }
+
+        return options;
+    };
+
     return (
         <ConfigContext.Provider value=
             {{
@@ -262,7 +343,8 @@ export const ConfigProvider = ({ children }) => {
                 handleInputChange,
                 handleInstanceUpdate,
                 handleSensorTargetSelect,
-                handleIrTargetSelect
+                handleIrTargetSelect,
+                getTargetNodeOptions
             }}
         >
             {children}
