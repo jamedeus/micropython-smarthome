@@ -8,7 +8,6 @@ import { TimeField } from 'inputs/TimeField';
 import { RuleField } from 'inputs/RuleField';
 import ApiTargetRuleButton from 'inputs/ApiTargetRuleButton';
 
-
 const Page3 = () => {
     // Get curent state + callback functions from context
     const {
@@ -36,7 +35,7 @@ const Page3 = () => {
 
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button
-    const ScheduleRuleRow = ({ instance, timestamp }) => {
+    const ScheduleRuleRow = ({ instance, timestamp, rule }) => {
         // Called by TimeField when user changes value and closes
         const handleNewTimestamp = (newTimestamp, oldTimestamp) => {
             // Only update state if timestamp changed
@@ -53,18 +52,18 @@ const Page3 = () => {
         };
 
         // Called by RuleField when user changes value and closes
-        const handleNewRule = (rule, fade_rule, duration, range_rule) => {
+        const handleNewRule = (newRule, fade_rule, duration, range_rule) => {
             // Only update state if rule changed
-            if (rule != config[instance]["schedule"][timestamp]) {
+            if (newRule != rule) {
                 // Get existing schedule rules
                 const rules = config[instance]["schedule"];
 
                 // Overwrite edited rule
                 if (range_rule && fade_rule) {
                     // Fade rule: Combine params into single string
-                    rules[timestamp] = `fade/${rule}/${duration}`;
+                    rules[timestamp] = `fade/${newRule}/${duration}`;
                 } else {
-                    rules[timestamp] = rule;
+                    rules[timestamp] = newRule;
                 }
 
                 // Update state
@@ -74,12 +73,6 @@ const Page3 = () => {
 
         // Renders button that opens ApiTargetRuleModal
         const ApiTargetRuleField = () => {
-            // Get rule to pre-fill in dropdowns (or empty string if no rule)
-            let currentRule = '';
-            if (config[instance]['schedule'][timestamp]) {
-                currentRule = JSON.parse(config[instance]['schedule'][timestamp]);
-            }
-
             // Get dropdown options for current target IP
             const options = getTargetNodeOptions(config[instance]['ip']);
 
@@ -93,7 +86,7 @@ const Page3 = () => {
 
             return (
                 <ApiTargetRuleButton
-                    currentRule={currentRule}
+                    currentRule={rule ? JSON.parse(rule) : ''}
                     targetNodeOptions={options}
                     handleSubmit={handleSubmit}
                 />
@@ -119,7 +112,7 @@ const Page3 = () => {
                             instance={config[instance]}
                             category={instance.replace(/[0-9]/g, '')}
                             type={config[instance]._type}
-                            rule={config[instance]["schedule"][timestamp]}
+                            rule={rule}
                             handleChange={handleNewRule}
                         />
                     )}
@@ -141,9 +134,15 @@ const Page3 = () => {
     ScheduleRuleRow.propTypes = {
         instance: PropTypes.string,
         timestamp: PropTypes.string,
+        rule: PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.number
+        ])
     };
 
     const RulesTable = ({ instance }) => {
+        const rules = config[instance]["schedule"];
+
         return (
             <Table className="table-borderless">
                 <thead>
@@ -152,12 +151,13 @@ const Page3 = () => {
                         <th>Rule</th>
                         <th></th>
                     </tr>
-                    {Object.keys(config[instance]["schedule"]).map(timestamp => {
+                    {Object.entries(rules).map(([timestamp, rule]) => {
                         return (
                             <ScheduleRuleRow
                                 key={timestamp}
                                 instance={instance}
                                 timestamp={timestamp}
+                                rule={rule}
                             />
                         );
                     })}
