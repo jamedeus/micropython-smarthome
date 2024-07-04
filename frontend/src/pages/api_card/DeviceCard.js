@@ -7,6 +7,7 @@ import { ApiCardContext } from 'root/ApiCardContext';
 import { showFadeModal } from 'modals/FadeModal';
 import { showScheduleToggle } from 'modals/ScheduleToggleModal';
 import InstanceCard from './InstanceCard';
+import ChangeApiTargetRule from './ChangeApiTargetRule';
 import 'css/PowerButton.css';
 
 
@@ -42,6 +43,7 @@ const DeviceCard = ({ id }) => {
         turn_on(id, !params.turned_on);
     };
 
+
     const ActionButton = <PowerButton on={params.turned_on} onClick={turn_on_off} />;
     const DropdownOptions = (
         <>
@@ -59,15 +61,14 @@ const DeviceCard = ({ id }) => {
             >
                 Reset rule
             </Dropdown.Item>
-            {(() => {
-                if (prompt === "int_or_fade") {
-                    return (
-                        <Dropdown.Item onClick={() => showFadeModal(id)}>
-                            Start Fade
-                        </Dropdown.Item>
-                    );
-                }
-            })()}
+            {prompt === "int_or_fade" ? (
+                <Dropdown.Item onClick={() => showFadeModal(id)}>
+                    Start Fade
+                </Dropdown.Item>
+            ) : ( null )}
+            {params.type === "api-target" ? (
+                <ChangeApiTargetRule id={id} rule={params.current_rule} />
+            ) : (null) }
             <Dropdown.Item onClick={() => showDebugModal(id)}>
                 Debug
             </Dropdown.Item>

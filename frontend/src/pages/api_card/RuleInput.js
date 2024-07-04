@@ -47,8 +47,6 @@ const RuleInput = ({ id, params }) => {
                     />
                 </div>
             );
-        case("api_target"):
-            return <input type="text" value={params.current_rule} className="d-none" />;
     }
 };
 
