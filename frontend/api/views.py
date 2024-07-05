@@ -344,14 +344,23 @@ def send_command(data):
         except Node.DoesNotExist:
             return JsonResponse({"Error": f"Node named {data['target']} not found"}, safe=False, status=404)
 
+    # Get API endpoint, must be first item in list
     cmd = data["command"]
     del data["target"], data["command"]
     args = [cmd]
 
-    for i in data:
-        args.append(data[i].strip())
+    # Add remaining args to list
+    for param in data.values():
+        # Remove extra whitespace from strings
+        if type(param) is str:
+            args.append(param.strip())
+        # Stringify objects (eg api-target rule)
+        elif type(param) in (dict, list):
+            args.append(json.dumps(param))
+        else:
+            args.append(param)
 
-    print("\n" + ip + "\n" + str(args) + "\n")
+    print(f"\nsend_command: {ip}: {str(args)}")
 
     try:
         response = parse_command(ip, args)

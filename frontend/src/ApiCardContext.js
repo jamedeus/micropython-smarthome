@@ -156,7 +156,7 @@ export const ApiCardContextProvider = ({ children }) => {
         const payload = {
             'command': 'set_rule',
             'instance': id,
-            'rule': String(rule)
+            'rule': rule
         };
         const result = await send_command(payload);
         console.log(result);
@@ -218,7 +218,7 @@ export const ApiCardContextProvider = ({ children }) => {
             'command': 'add_rule',
             'instance': id,
             'time': newTimestamp,
-            'rule': rule,
+            'rule': String(rule),
             'overwrite': 'overwrite'
         });
 

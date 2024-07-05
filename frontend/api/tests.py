@@ -167,6 +167,52 @@ class SendCommandTests(TestCaseBackupRestore):
         # Remove test configs from disk
         clean_up_test_nodes()
 
+    def test_send_command_with_extra_whitespace(self):
+        # Mock parse_command to check args
+        with patch('api.views.parse_command', return_value='mock') as mock_parse_command:
+            # Create payload with extra whitespace around target instance
+            payload = {
+                "command": "set_rule",
+                "instance": "   device1 ",
+                "target": "192.168.1.123",
+                "rule": 50
+            }
+            self.client.post('/send_command', payload)
+
+            # Confirm extra whitespace was removed, int rule was not modified
+            self.assertEqual(
+                mock_parse_command.call_args_list[0],
+                call('192.168.1.123', ['set_rule', 'device1', 50])
+            )
+
+    def test_send_command_containing_dict(self):
+        # Mock parse_command to check args
+        with patch('api.views.parse_command', return_value='mock') as mock_parse_command:
+            # Simulate user setting api-target rule
+            payload = {
+                "command": "set_rule",
+                "instance": "device1",
+                "target": "192.168.1.123",
+                "rule": {
+                    "on": ["turn_on", "device1"],
+                    "off": ["turn_off", "device1"]
+                }
+            }
+            self.client.post('/send_command', payload)
+
+            # Confirm dict rule was stringified (node can't receive objects over API)
+            self.assertEqual(
+                mock_parse_command.call_args_list[0],
+                call(
+                    '192.168.1.123',
+                    [
+                        'set_rule',
+                        'device1',
+                        '{"on": ["turn_on", "device1"], "off": ["turn_off", "device1"]}'
+                    ]
+                )
+            )
+
     def test_send_command_invalid_method(self):
         # Make get request (requires post)
         response = self.client.get('/send_command')
