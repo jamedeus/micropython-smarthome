@@ -59,12 +59,11 @@ const ScheduleRulesTable = ({ id, schedule }) => {
 
         // Called by RuleField when user changes value and closes
         const handleNewRule = (newRuleValue, fade_rule, duration, range_rule) => {
+            // Fade rule: Combine params into single string
             if (range_rule && fade_rule) {
-                // Fade rule: Combine params into single string
-                setNewRule(`fade/${newRuleValue}/${duration}`);
-            } else {
-                setNewRule(newRuleValue);
+                newRuleValue = `fade/${newRuleValue}/${duration}`
             }
+            setNewRule(newRuleValue);
             updateLoadingButton(newTime, newRuleValue);
         };
 
