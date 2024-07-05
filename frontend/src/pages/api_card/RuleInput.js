@@ -13,13 +13,6 @@ const RuleInput = ({ id, params }) => {
     // status updates, will remove input if allowed to update)
     const [prompt] = useState(params.prompt);
 
-    let category;
-    if (id.startsWith("device")) {
-        category = "devices";
-    } else {
-        category = "sensors";
-    }
-
     switch(prompt) {
         case("float_range"):
             // Create local state for rule limits (not included in
@@ -30,7 +23,7 @@ const RuleInput = ({ id, params }) => {
                 <div className="my-4 pb-2">
                     <FloatRangeRuleInput
                         rule={String(params.current_rule)}
-                        setRule={value => set_rule(id, category, value)}
+                        setRule={value => set_rule(id, value)}
                         min={min_rule}
                         max={max_rule}
                     />
@@ -41,7 +34,7 @@ const RuleInput = ({ id, params }) => {
                 <div className="my-4 pb-2">
                     <IntRangeRuleInput
                         rule={String(params.current_rule)}
-                        setRule={value => set_rule(id, category, value)}
+                        setRule={value => set_rule(id, value)}
                         min={parseInt(params.min_rule)}
                         max={parseInt(params.max_rule)}
                     />

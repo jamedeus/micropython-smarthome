@@ -10,7 +10,7 @@ const ChangeApiTargetRule = ({id, rule}) => {
 
     // Receives stringified dropdown selection when modal submitted
     const handleSubmit = (newRule) => {
-        set_rule(id, 'device', newRule);
+        set_rule(id, newRule);
     };
 
     return (

@@ -145,7 +145,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
     // Handler for rule sliders and buttons, updates local state immediately, calls
     // debounced function to send API call to node when user stops moving slider
-    async function set_rule(id, category, value) {
+    async function set_rule(id, value) {
         update_instance(id, "current_rule", value);
         debounced_set_rule(id, value);
     }
