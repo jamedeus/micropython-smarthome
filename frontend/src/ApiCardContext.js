@@ -181,7 +181,7 @@ export const ApiCardContextProvider = ({ children }) => {
             'command': 'add_rule',
             'instance': id,
             'time': timestamp,
-            'rule': String(rule)
+            'rule': rule
         });
 
         // Add new rule to state if successful
@@ -218,7 +218,7 @@ export const ApiCardContextProvider = ({ children }) => {
             'command': 'add_rule',
             'instance': id,
             'time': newTimestamp,
-            'rule': String(rule),
+            'rule': rule,
             'overwrite': 'overwrite'
         });
 

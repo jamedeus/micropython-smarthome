@@ -209,7 +209,7 @@ const ApiTargetRuleModal = () => {
         }
     });
 
-    // Receives stringified dropdown contents when modal submitted
+    // Receives dropdown contents object when modal submitted
     // Set by showApiTargetRuleModal (function passed as handleSubmit arg)
     // TODO there must be a better way to do this
     const [onSubmit, setOnSubmit] = useState(() => () => {});
@@ -247,7 +247,7 @@ const ApiTargetRuleModal = () => {
         // Save target node options
         setTargetNodeOptions(target_node_options);
 
-        // Save callback that receives stringified dropdown contents on submit
+        // Save callback that receives dropdown contents object on submit
         setOnSubmit(() => handleSubmit);
 
         // Show modal, default to on rule page
@@ -284,8 +284,8 @@ const ApiTargetRuleModal = () => {
             'off': parse_rule_params('off')
         };
 
-        // Pass stringified rule to callback function, close modal
-        onSubmit(JSON.stringify(output));
+        // Pass rule object to callback function, close modal
+        onSubmit(output);
         setVisible(false);
     };
 

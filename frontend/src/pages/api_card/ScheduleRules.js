@@ -72,7 +72,7 @@ const ScheduleRulesTable = ({ id, schedule }) => {
         const addRule = async () => {
             // Start loading animation, post new rule to backend
             setLoadingButtonState('loading');
-            const result = await add_schedule_rule(id, newTime, String(newRule));
+            const result = await add_schedule_rule(id, newTime, newRule);
 
             // If successful hide new rule field and reset inputs
             if (result) {
@@ -94,7 +94,7 @@ const ScheduleRulesTable = ({ id, schedule }) => {
         // Existing rule field add button handler
         const editRule = () => {
             setLoadingButtonState('loading');
-            edit_schedule_rule(id, originalTime, newTime, String(newRule));
+            edit_schedule_rule(id, originalTime, newTime, newRule);
         };
 
         // Existing rule field delete button handler
@@ -112,7 +112,7 @@ const ScheduleRulesTable = ({ id, schedule }) => {
 
             return (
                 <ApiTargetRuleButton
-                    currentRule={newRule ? JSON.parse(newRule) : ''}
+                    currentRule={newRule ? newRule : ''}
                     targetNodeOptions={apiTargetOptions[id]}
                     handleSubmit={handleSubmit}
                 />

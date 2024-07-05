@@ -268,14 +268,6 @@ def edit_config(request, name):
     # Load device and sensor metadata
     metadata = get_metadata_context()
 
-    # Correct ApiTarget rule syntax
-    for i in config:
-        if is_device(i) and config[i]["_type"] == "api-target":
-            config[i]["default_rule"] = json.dumps(config[i]["default_rule"])
-
-            for rule in config[i]["schedule"]:
-                config[i]["schedule"][rule] = json.dumps(config[i]["schedule"][rule])
-
     # Build context object:
     # - IP and FILENAME: Used to reupload config
     # - NAME and TITLE: Used by django template
@@ -357,13 +349,6 @@ def generate_config_file(data, edit_existing=False):
     if len(GpsCoordinates.objects.all()) > 0:
         location = GpsCoordinates.objects.all()[0]
         data["metadata"]["gps"] = {"lat": str(location.lat), "lon": str(location.lon)}
-
-    # If config contains ApiTarget, convert string rules to dict
-    for i in [i for i in data.keys() if is_device(i)]:
-        if data[i]['_type'] == 'api-target':
-            data[i]['default_rule'] = json.loads(data[i]['default_rule'])
-            for rule in data[i]['schedule']:
-                data[i]['schedule'][rule] = json.loads(data[i]['schedule'][rule])
 
     print("Output:")
     print(json.dumps(data, indent=4))

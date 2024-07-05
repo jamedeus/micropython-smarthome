@@ -267,9 +267,15 @@ request_payload = {
         "_type": "api-target",
         "nickname": "Remote Control",
         "ip": "127.0.0.1",
-        "default_rule": "{\"on\":[\"ir_key\",\"tv\",\"power\"],\"off\":[\"ir_key\",\"tv\",\"power\"]}",
+        "default_rule": {
+            "on": ["ir_key", "tv", "power"],
+            "off": ["ir_key", "tv", "power"]
+        },
         "schedule": {
-            "22:00": "{\"on\":[\"ir_key\",\"tv\",\"power\"],\"off\":[\"ir_key\",\"tv\",\"power\"]}"
+            "22:00": {
+                "on": ["ir_key", "tv", "power"],
+                "off": ["ir_key", "tv", "power"]
+            }
         }
     },
     "sensor1": {
@@ -804,10 +810,19 @@ test_config_2_edit_context = {
             "nickname": "Air Conditioner",
             "_type": "api-target",
             "ip": "192.168.1.124",
-            "default_rule": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
+            "default_rule": {
+                "on": ["ir_key", "ac", "start"],
+                "off": ["ir_key", "ac", "stop"]
+            },
             "schedule": {
-                "10:00": "{\"on\": [\"ir_key\", \"ac\", \"start\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}",
-                "00:00": "{\"on\": [\"ir_key\", \"ac\", \"stop\"], \"off\": [\"ir_key\", \"ac\", \"stop\"]}"
+                "10:00": {
+                    "on": ["ir_key", "ac", "start"],
+                    "off": ["ir_key", "ac", "stop"]
+                },
+                "00:00": {
+                    "on": ["ir_key", "ac", "stop"],
+                    "off": ["ir_key", "ac", "stop"]
+                }
             }
         },
         "sensor1": {

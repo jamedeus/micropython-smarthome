@@ -86,7 +86,7 @@ const Page3 = () => {
 
             return (
                 <ApiTargetRuleButton
-                    currentRule={rule ? JSON.parse(rule) : ''}
+                    currentRule={rule}
                     targetNodeOptions={options}
                     handleSubmit={handleSubmit}
                 />
@@ -136,7 +136,8 @@ const Page3 = () => {
         timestamp: PropTypes.string,
         rule: PropTypes.oneOfType([
             PropTypes.string,
-            PropTypes.number
+            PropTypes.number,
+            PropTypes.object,
         ])
     };
 

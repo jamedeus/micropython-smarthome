@@ -28,7 +28,7 @@ function DefaultRuleApiTarget({ id }) {
         // Takes current rule to pre-fill in dropdowns, object with valid
         // options for the current target IP, and handleSubmit callback
         showApiTargetRuleModal(
-            instance.default_rule ? JSON.parse(instance.default_rule) : '',
+            instance.default_rule,
             getTargetNodeOptions(instance.ip),
             handleSubmit
         );

@@ -8,18 +8,14 @@ import { showApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
 const ChangeApiTargetRule = ({id, rule}) => {
     const {set_rule, apiTargetOptions} = useContext(ApiCardContext);
 
-    // Receives stringified dropdown selection when modal submitted
+    // Receives dropdown selection object when modal submitted
     const handleSubmit = (newRule) => {
         set_rule(id, newRule);
     };
 
     return (
         <Dropdown.Item onClick={() => {
-            showApiTargetRuleModal(
-                JSON.parse(rule),
-                apiTargetOptions[id],
-                handleSubmit
-            );
+            showApiTargetRuleModal(rule, apiTargetOptions[id], handleSubmit);
         }}>
             Change rule
         </Dropdown.Item>
