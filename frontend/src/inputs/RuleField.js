@@ -6,6 +6,7 @@ import StandardRuleInput from 'inputs/StandardRuleInput';
 import OnOffRuleInput from 'inputs/OnOffRuleInput';
 import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
+import ThermostatRuleInput from 'inputs/ThermostatRuleInput';
 import { convert_temperature } from 'util/thermostat_util';
 import { get_instance_metadata } from 'util/metadata';
 import { average } from 'util/helper_functions';
@@ -54,35 +55,6 @@ SliderRuleWrapper.propTypes = {
     setRuleDetails: PropTypes.func,
     defaultRangeRule: PropTypes.number,
     children: PropTypes.node
-};
-
-const ThermostatRuleInput = ({ ruleDetails, setRuleDetails, units, limits }) => {
-    const min = convert_temperature(limits[0], "celsius", units);
-    const max = convert_temperature(limits[1], "celsius", units);
-
-    return (
-        <SliderRuleWrapper
-            ruleDetails={ruleDetails}
-            setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
-            setRuleDetails={setRuleDetails}
-            defaultRangeRule={average(min, max)}
-        >
-            <FloatRangeRuleInput
-                rule={ruleDetails.rule}
-                setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
-                min={min}
-                max={max}
-                sliderStep={0.1}
-            />
-        </SliderRuleWrapper>
-    );
-};
-
-ThermostatRuleInput.propTypes = {
-    ruleDetails: PropTypes.object,
-    setRuleDetails: PropTypes.func,
-    units: PropTypes.string,
-    limits: PropTypes.array
 };
 
 const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
@@ -203,13 +175,25 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
                 {(() => {
                     // Thermostat: Skip switch and return Float slider with temperatures converted
                     if (metadata && metadata.config_template.units !== undefined) {
+                        const defaultRangeRule = average(
+                            convert_temperature(metadata.rule_limits[0], 'celsius', instance.units),
+                            convert_temperature(metadata.rule_limits[1], 'celsius', instance.units)
+                        );
                         return (
-                            <ThermostatRuleInput
+                            <SliderRuleWrapper
                                 ruleDetails={ruleDetails}
+                                setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
                                 setRuleDetails={setRuleDetails}
-                                units={instance.units}
-                                limits={metadata.rule_limits}
-                            />
+                                defaultRangeRule={defaultRangeRule}
+                            >
+                                <ThermostatRuleInput
+                                    rule={ruleDetails.rule}
+                                    setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
+                                    min={metadata.rule_limits[0]}
+                                    max={metadata.rule_limits[1]}
+                                    units={instance.units}
+                                />
+                            </SliderRuleWrapper>
                         );
                     }
 
