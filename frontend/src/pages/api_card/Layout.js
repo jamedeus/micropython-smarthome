@@ -4,7 +4,7 @@ import Col from 'react-bootstrap/Col';
 import { ApiCardContext } from 'root/ApiCardContext';
 import SensorCard from './SensorCard';
 import DeviceCard from './DeviceCard';
-
+import IrRemotes from './IrRemotes';
 
 const Layout = () => {
     // Get status object, function to make API calls
@@ -21,10 +21,10 @@ const Layout = () => {
                 {Object.keys(status.devices).map((device) => {
                     return <DeviceCard key={device} id={device} />;
                 })}
+                <IrRemotes />
             </Col>
         </Row>
     );
 };
-
 
 export default Layout;
