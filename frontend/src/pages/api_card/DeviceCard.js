@@ -8,6 +8,7 @@ import { showFadeModal } from 'modals/FadeModal';
 import { showScheduleToggle } from 'modals/ScheduleToggleModal';
 import InstanceCard from './InstanceCard';
 import ChangeApiTargetRule from './ChangeApiTargetRule';
+import { get_instance_metadata } from 'util/metadata';
 import 'css/PowerButton.css';
 
 
@@ -34,9 +35,11 @@ const DeviceCard = ({ id }) => {
     const {status, enable_instance, turn_on, reset_rule} = useContext(ApiCardContext);
     const params = status["devices"][id];
 
-    // Create local state for prompt type (not included in
-    // status updates, will remove nodes if allowed to update)
-    const [prompt] = useState(params.prompt);
+    // Get metadata containing rule_prompt
+    const [metadata] = useState(get_instance_metadata(
+        id.startsWith("device") ? "device" : "sensor",
+        params.type
+    ));
 
     // Create callback for power button
     const turn_on_off = () => {
@@ -61,7 +64,7 @@ const DeviceCard = ({ id }) => {
             >
                 Reset rule
             </Dropdown.Item>
-            {prompt === "int_or_fade" ? (
+            {metadata.rule_prompt === "int_or_fade" ? (
                 <Dropdown.Item onClick={() => showFadeModal(id)}>
                     Start Fade
                 </Dropdown.Item>

@@ -216,25 +216,9 @@ def api(request, node, recording=False):
     # Get dict with instance types as keys, dict of relevant metadata as values
     metadata_map = get_metadata_map()
 
-    # Add prompt type from metadata to all devices
-    for i in status['devices']:
-        device_type = status['devices'][i]['type']
-        status['devices'][i]['prompt'] = metadata_map[device_type]['prompt']
-
-    # Add prompt type, triggerable bool, and limits (if range rule) to all sensors
+    # Add triggerable bool to all sensors (disables trigger button if false)
     for i in status['sensors']:
         sensor_type = status['sensors'][i]['type']
-        status['sensors'][i]['prompt'] = metadata_map[sensor_type]['prompt']
-        # Add limits if range rule
-        if status['sensors'][i]['prompt'] == "float_range":
-            status['sensors'][i]['min_rule'] = metadata_map[sensor_type]['limits'][0]
-            status['sensors'][i]['max_rule'] = metadata_map[sensor_type]['limits'][1]
-        # Thermostat: Convert limits to configured units
-        if 'units' in status['sensors'][i].keys():
-            units = status['sensors'][i]['units']
-            status['sensors'][i]['min_rule'] = int(convert_celsius_temperature(status['sensors'][i]['min_rule'], units))
-            status['sensors'][i]['max_rule'] = int(convert_celsius_temperature(status['sensors'][i]['max_rule'], units))
-        # Add triggerable param (disables trigger button if false)
         status['sensors'][i]['triggerable'] = metadata_map[sensor_type]['triggerable']
 
     print(json.dumps(status, indent=4))
