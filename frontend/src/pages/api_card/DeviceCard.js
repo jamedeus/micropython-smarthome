@@ -11,7 +11,6 @@ import ChangeApiTargetRule from './ChangeApiTargetRule';
 import { get_instance_metadata } from 'util/metadata';
 import 'css/PowerButton.css';
 
-
 const PowerButton = ({ on, onClick }) => {
     return (
         <Button
@@ -29,17 +28,13 @@ PowerButton.propTypes = {
     onClick: PropTypes.func
 };
 
-
 const DeviceCard = ({ id }) => {
     // Get status object
     const {status, enable_instance, turn_on, reset_rule} = useContext(ApiCardContext);
     const params = status["devices"][id];
 
     // Get metadata containing rule_prompt
-    const [metadata] = useState(get_instance_metadata(
-        id.startsWith("device") ? "device" : "sensor",
-        params.type
-    ));
+    const [metadata] = useState(get_instance_metadata("device", params.type));
 
     // Create callback for power button
     const turn_on_off = () => {
@@ -91,6 +86,5 @@ const DeviceCard = ({ id }) => {
 DeviceCard.propTypes = {
     id: PropTypes.string
 };
-
 
 export default DeviceCard;

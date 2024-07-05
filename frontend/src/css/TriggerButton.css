@@ -81,7 +81,7 @@
             border: 1px solid #dee2e617 !important;
         }
 
-        .trigger-button {
+        .trigger-button, .trigger-button:disabled {
             background-image: radial-gradient(circle, #0550B8 5%, transparent 55%);
 
             /* Add border for visibility when not filled in (device turned off) */

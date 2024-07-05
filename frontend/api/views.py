@@ -213,14 +213,6 @@ def api(request, node, recording=False):
     if recording:
         status["metadata"]["recording"] = recording
 
-    # Get dict with instance types as keys, dict of relevant metadata as values
-    metadata_map = get_metadata_map()
-
-    # Add triggerable bool to all sensors (disables trigger button if false)
-    for i in status['sensors']:
-        sensor_type = status['sensors'][i]['type']
-        status['sensors'][i]['triggerable'] = metadata_map[sensor_type]['triggerable']
-
     print(json.dumps(status, indent=4))
 
     # Add metadata context (TODO this is temporary, context already contains

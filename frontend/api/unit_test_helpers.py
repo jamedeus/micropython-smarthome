@@ -89,8 +89,7 @@ config1_api_context = {
             },
             'scheduled_rule': 2.0,
             'nickname': 'Motion Sensor',
-            'condition_met': True,
-            'triggerable': True
+            'condition_met': True
         }
     },
     'devices': {
@@ -263,8 +262,7 @@ config2_api_context = {
             'current_rule': 74.0,
             'temp': -52.32999,
             'type': 'si7021',
-            'units': 'fahrenheit',
-            'triggerable': False
+            'units': 'fahrenheit'
         }
     },
     'devices': {
@@ -466,8 +464,7 @@ config3_api_context = {
             },
             'scheduled_rule': 2.0,
             'nickname': 'Motion Sensor (Bath)',
-            'condition_met': True,
-            'triggerable': True
+            'condition_met': True
         },
         'sensor2': {
             'current_rule': 1.0,
@@ -481,8 +478,7 @@ config3_api_context = {
             },
             'scheduled_rule': 1.0,
             'nickname': 'Motion Sensor (Entry)',
-            'condition_met': False,
-            'triggerable': True
+            'condition_met': False
         }
     },
     'devices': {
