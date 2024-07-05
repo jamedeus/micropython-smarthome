@@ -43,6 +43,12 @@ IrButton.propTypes = {
 };
 
 const AcRemote = () => {
+    const { send_command } = useContext(ApiCardContext);
+
+    const HandleKey = (key) => {
+        send_command({'command': 'ir', 'ir_target': 'ac', 'key': key});
+    };
+
     return (
         <div className="d-flex flex-column remote mx-auto mb-4">
             <div className="row text-center">
@@ -52,17 +58,17 @@ const AcRemote = () => {
                 <IrButton
                     title="Stop cooling"
                     icon="bi-wind"
-                    onClick={() => console.log('stop cooling')}
+                    onClick={() => HandleKey('stop')}
                 />
                 <IrButton
                     title="Turn off fan"
                     icon="bi-x-octagon-fill"
-                    onClick={() => console.log('turn off fan')}
+                    onClick={() => HandleKey('off')}
                 />
                 <IrButton
                     title="Start cooling"
                     icon="bi-snow"
-                    onClick={() => console.log('start cooling')}
+                    onClick={() => HandleKey('start')}
                 />
             </div>
         </div>
@@ -70,6 +76,12 @@ const AcRemote = () => {
 };
 
 const TvRemote = () => {
+    const { send_command } = useContext(ApiCardContext);
+
+    const HandleKey = (key) => {
+        send_command({'command': 'ir', 'ir_target': 'tv', 'key': key});
+    };
+
     return (
         <div className="d-flex flex-column remote mx-auto mb-4">
             <div className="row text-center">
@@ -79,13 +91,13 @@ const TvRemote = () => {
                 <IrButton
                     title="Power"
                     icon="bi-power"
-                    onClick={() => console.log('power button')}
+                    onClick={() => HandleKey('power')}
                 />
                 <SpacerButton />
                 <IrButton
                     title="Source"
                     icon="bi-upload"
-                    onClick={() => console.log('source button')}
+                    onClick={() => HandleKey('source')}
                 />
             </div>
             <div className="d-flex flex-row mx-auto">
@@ -93,7 +105,7 @@ const TvRemote = () => {
                 <IrButton
                     title="Up"
                     icon="bi-arrow-up"
-                    onClick={() => console.log('Up')}
+                    onClick={() => HandleKey('up')}
                 />
                 <SpacerButton />
             </div>
@@ -101,17 +113,17 @@ const TvRemote = () => {
                 <IrButton
                     title="Left"
                     icon="bi-arrow-left"
-                    onClick={() => console.log('Left')}
+                    onClick={() => HandleKey('left')}
                 />
                 <IrButton
                     title="Enter"
                     icon="bi-app"
-                    onClick={() => console.log('Enter')}
+                    onClick={() => HandleKey('enter')}
                 />
                 <IrButton
                     title="Right"
                     icon="bi-arrow-right"
-                    onClick={() => console.log('Right')}
+                    onClick={() => HandleKey('right')}
                 />
             </div>
             <div className="d-flex flex-row pb-3 mx-auto">
@@ -119,7 +131,7 @@ const TvRemote = () => {
                 <IrButton
                     title="Down"
                     icon="bi-arrow-down"
-                    onClick={() => console.log('Down')}
+                    onClick={() => HandleKey('down')}
                 />
                 <SpacerButton />
             </div>
@@ -127,17 +139,17 @@ const TvRemote = () => {
                 <IrButton
                     title="Volume Down"
                     icon="bi-volume-down-fill"
-                    onClick={() => console.log('volume down')}
+                    onClick={() => HandleKey('vol_down')}
                 />
                 <IrButton
                     title="Mute"
                     icon="bi-volume-mute-fill"
-                    onClick={() => console.log('mute')}
+                    onClick={() => HandleKey('mute')}
                 />
                 <IrButton
                     title="Volume Up"
                     icon="bi-volume-up-fill"
-                    onClick={() => console.log('volume up')}
+                    onClick={() => HandleKey('vol_up')}
                 />
             </div>
             <div className="d-flex flex-row mx-auto">
@@ -145,14 +157,14 @@ const TvRemote = () => {
                     title="Settings"
                     icon="bi-gear-fill"
                     variant="secondary"
-                    onClick={() => console.log('settings')}
+                    onClick={() => HandleKey('settings')}
                 />
                 <SpacerButton />
                 <IrButton
                     title="Exit"
                     icon="bi-arrow-return-left"
                     variant="secondary"
-                    onClick={() => console.log('exit')}
+                    onClick={() => HandleKey('exit')}
                 />
             </div>
         </div>
@@ -160,7 +172,7 @@ const TvRemote = () => {
 };
 
 const IrRemotes = () => {
-    const {status} = useContext(ApiCardContext);
+    const { status } = useContext(ApiCardContext);
 
     if (status.metadata.ir_blaster) {
         return (
