@@ -148,29 +148,25 @@ def api_overview(request, recording=False):
 
 
 # Takes Node, returns options for all api-target instances
-def get_api_target_instance_options(node, status):
+def get_api_target_options(node):
     # Get object containing all valid options for all nodes
     options = get_api_target_menu_options(node.friendly_name)
 
-    # Get target IP(s) of each api-target instance from config file
-    # Used as keys in options['addresses'] (above)
-    config = node.config.config
+    # Output will contain ApiTarget device IDs as keys, options as values
+    output = {}
 
-    # Find all api-target instances, find same instance in options object, add options to output
+    # Find all api-target instances and add options for their target IP to output
+    config = node.config.config
     for i in config:
         if is_device(i) and config[i]['_type'] == 'api-target':
-            # Find section in options object with matching IP, add to context
-            for node in options['addresses']:
-                if options['addresses'][node] == config[i]['ip']:
-                    status["api_target_options"][i] = options[node]
-                    break
+            # Look up node matching api-target target IP
+            target = Node.objects.get(ip=config[i]['ip'])
+            if target == node:
+                output[i] = options['self-target']
+            else:
+                output[i] = options[target.friendly_name]
 
-            # JSON-encode rule dicts
-            status['devices'][i]['current_rule'] = json.dumps(status['devices'][i]['current_rule'])
-            for rule in status['devices'][i]['schedule']:
-                status['devices'][i]['schedule'][rule] = json.dumps(status['devices'][i]['schedule'][rule])
-
-    return status
+    return output
 
 
 @ensure_csrf_cookie
@@ -194,10 +190,9 @@ def api(request, node, recording=False):
     # Add IP, parsed into target_node var on frontend
     status["metadata"]["ip"] = node.ip
 
-    # If ApiTarget configured, add options for all valid API commands for current target IP
+    # If ApiTarget configured, add options for ApiTargetRuleModal dropdowns
     if "api-target" in str(status):
-        status["api_target_options"] = {}
-        status = get_api_target_instance_options(node, status)
+        status["api_target_options"] = get_api_target_options(node)
 
     # Add temp history chart to frontend if temp sensor present
     for i in status["sensors"]:

@@ -267,12 +267,21 @@ config2_api_context = {
     },
     'devices': {
         'device1': {
-            'current_rule': '{"on": ["ir_key", "ac", "start"], "off": ["ir_key", "ac", "stop"]}',
+            'current_rule': {
+                "on": ["ir_key", "ac", "start"],
+                "off": ["ir_key", "ac", "stop"]
+            },
             'enabled': True,
             'type': 'api-target',
             'schedule': {
-                '10:00': '{"on": ["ir_key", "ac", "start"], "off": ["ir_key", "ac", "stop"]}',
-                '00:00': '{"on": ["ir_key", "ac", "stop"], "off": ["ir_key", "ac", "stop"]}'
+                '10:00': {
+                    "on": ["ir_key", "ac", "start"],
+                    "off": ["ir_key", "ac", "stop"]
+                },
+                '00:00': {
+                    "on": ["ir_key", "ac", "stop"],
+                    "off": ["ir_key", "ac", "stop"]
+                }
             },
             'scheduled_rule': {
                 'on': [
