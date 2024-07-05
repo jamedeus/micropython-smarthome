@@ -139,8 +139,7 @@ class SendCommandTests(TestCaseBackupRestore):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
 
-    # Simulate send_command call from new Api frontend
-    def test_send_command_api_cards(self):
+    def test_send_command(self):
         payload = {"command": "turn_off", "instance": "device1", "target": "192.168.1.123"}
 
         # Mock parse_command to do nothing
@@ -150,22 +149,6 @@ class SendCommandTests(TestCaseBackupRestore):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(response.json(), {"On": "device1"})
             self.assertEqual(mock_parse_command.call_count, 1)
-
-    # Simulate send_command call from original Api frontend
-    def test_send_command_legacy_api(self):
-        create_test_nodes()
-        payload = {"command": "turn_off", "instance": "device1", "target": "Test1"}
-
-        # Mock parse_command to do nothing
-        with patch('api.views.parse_command', return_value={"On": "device1"}) as mock_parse_command:
-            # Make API call, confirm response, confirm parse_command called once
-            response = self.client.post('/send_command', payload)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {"On": "device1"})
-            self.assertEqual(mock_parse_command.call_count, 1)
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
     def test_send_command_with_extra_whitespace(self):
         # Mock parse_command to check args
@@ -229,37 +212,6 @@ class SendCommandTests(TestCaseBackupRestore):
             self.assertEqual(response.status_code, 502)
             self.assertEqual(response.json(), "Error: Unable to connect.")
             self.assertEqual(mock_parse_command.call_count, 1)
-
-    # Test legacy frontend enable_for/disable_for function
-    def test_legacy_api_delay_input(self):
-        create_test_nodes()
-        payload_disable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'disable'}
-        payload_enable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'enable'}
-
-        # Mock parse_command to do nothing
-        with patch('api.views.parse_command', return_value={'Disabled': 'device1'}) as mock_parse_command:
-            # Make API call, confirm response, confirm parse_command called twice
-            response = self.client.post('/send_command', payload_disable)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'Disabled': 'device1'})
-            self.assertEqual(mock_parse_command.call_count, 2)
-
-        # Mock parse_command to do nothing
-        with patch('api.views.parse_command', return_value={'Enabled': 'device1'}) as mock_parse_command:
-            # Make API call, confirm response, confirm parse_command called twice
-            response = self.client.post('/send_command', payload_enable)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'Enabled': 'device1'})
-            self.assertEqual(mock_parse_command.call_count, 2)
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
-    def test_legacy_api_target_does_not_exist(self):
-        payload_disable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'disable'}
-        response = self.client.post('/send_command', payload_disable)
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Node named Test1 not found'})
 
 
 # Test HTTP endpoints that make API requests to nodes and return the response
@@ -1185,38 +1137,6 @@ class SkipInstructionsTests(TestCaseBackupRestore):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('skip_instructions' in response.cookies)
         self.assertEqual(response.cookies['skip_instructions'].value, 'true')
-
-
-# Test legacy api page
-class LegacyApiTests(TestCaseBackupRestore):
-    def test_legacy_api_page(self):
-        # Create 3 test nodes
-        create_test_nodes()
-
-        # Request page, confirm correct template used
-        response = self.client.get('/legacy_api')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'api/legacy_api.html')
-
-        # Confirm context contains correct number of nodes
-        self.assertEqual(len(response.context['context']), 3)
-
-        # Confirm one button for each node
-        self.assertContains(
-            response,
-            '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test1">Test1'
-        )
-        self.assertContains(
-            response,
-            '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test2">Test2'
-        )
-        self.assertContains(
-            response,
-            '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test3">Test3'
-        )
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
 
 # Test api overview page

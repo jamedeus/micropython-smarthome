@@ -99,11 +99,6 @@ def edit_rule(request):
     return render(request, 'api/rule_modal.html', data)
 
 
-def legacy_api(request):
-    context = [node for node in Node.objects.all()]
-    return render(request, 'api/legacy_api.html', {'context': context})
-
-
 @get_target_node
 def get_status(request, node):
     # Query status object
@@ -334,22 +329,13 @@ def sync_schedule_rules(data):
 
 @requires_post
 def send_command(data):
-    if valid_ip(data["target"]):
-        # New API Card interface
-        ip = data["target"]
-    else:
-        # Legacy API
-        try:
-            ip = Node.objects.get(friendly_name=data["target"]).ip
-        except Node.DoesNotExist:
-            return JsonResponse({"Error": f"Node named {data['target']} not found"}, safe=False, status=404)
-
-    # Get API endpoint, must be first item in list
+    # Get target node IP and API endpoint
+    ip = data["target"]
     cmd = data["command"]
     del data["target"], data["command"]
-    args = [cmd]
 
-    # Add remaining args to list
+    # Add endpoint (must be first) followed by remaining args
+    args = [cmd]
     for param in data.values():
         # Remove extra whitespace from strings
         if type(param) is str:
@@ -366,15 +352,6 @@ def send_command(data):
         response = parse_command(ip, args)
     except OSError:
         return JsonResponse("Error: Unable to connect.", safe=False, status=502)
-
-    if cmd == "disable" and len(data["delay_input"]) > 0:
-        args.insert(0, "enable_in")
-        print(ip + "\n" + str(args) + "\n")
-        parse_command(ip, args)
-    elif cmd == "enable" and len(data["delay_input"]) > 0:
-        args.insert(0, "disable_in")
-        print(ip + "\n" + str(args) + "\n")
-        parse_command(ip, args)
 
     return JsonResponse(response, safe=False, status=200)
 
