@@ -59,46 +59,6 @@ def get_metadata_map():
     return context
 
 
-# Receives schedule params in post, renders rule_modal template
-def edit_rule(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return render(request, 'api/rule_modal.html')
-
-    # Fade rule: Split into separate params for each field
-    if data['rule'].startswith('fade'):
-        data['fade'] = True
-        data['duration'] = data['rule'].split('/')[2]
-        data['rule'] = data['rule'].split('/')[1]
-
-    # Show timestamp field by default (unless editing existing rule with keyword)
-    if len(data['timestamp']) == 0 or valid_timestamp(data['timestamp']):
-        data['show_timestamp'] = True
-    else:
-        data['show_timestamp'] = False
-
-    # Add options for schedule keyword dropdown
-    data['schedule_keywords'] = get_schedule_keywords_dict()
-
-    # Get dict with instance types as keys, dict of relevant metadata as values
-    metadata_map = get_metadata_map()
-
-    # Add prompt type, add limits if range rule
-    data['prompt'] = metadata_map[data['type']]['prompt']
-    if 'limits' in metadata_map[data['type']].keys():
-        data['limits'] = metadata_map[data['type']]['limits']
-
-    # Thermostat: Convert limits to configured units
-    if 'units' in data['params'].keys():
-        data['limits'][0] = int(convert_celsius_temperature(data['limits'][0], data['params']['units']))
-        data['limits'][1] = int(convert_celsius_temperature(data['limits'][1], data['params']['units']))
-
-    print(json.dumps(data, indent=4))
-
-    return render(request, 'api/rule_modal.html', data)
-
-
 @get_target_node
 def get_status(request, node):
     # Query status object

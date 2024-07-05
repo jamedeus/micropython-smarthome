@@ -31,6 +31,5 @@ urlpatterns = [
     path('api', views.api_overview, name='api_overview'),
     path('api/recording/<str:recording>', views.api_overview, name='api_overview'),
     path('api/<str:node>', views.api, name='api'),
-    path('api/<str:node>/<str:recording>', views.api, name='api'),
-    path('edit_rule', views.edit_rule, name='edit_rule')
+    path('api/<str:node>/<str:recording>', views.api, name='api')
 ]
