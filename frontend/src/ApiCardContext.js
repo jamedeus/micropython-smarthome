@@ -7,16 +7,18 @@ import { debounce } from 'util/helper_functions';
 export const ApiCardContext = createContext();
 
 export const ApiCardContextProvider = ({ children }) => {
-    // Load context set by django template
+    // Load contexts set by django template
     const [status, setStatus] = useState(() => {
         return parse_dom_context("context");
     });
+    const [targetIP] = useState(() => {
+        return parse_dom_context("target_ip");
+    });
+    const [apiTargetOptions, _] = useState(() => {
+        return parse_dom_context("api_target_options")
+    });
 
-    // Save api_target_options key if present (only sent on initial status)
-    const [apiTargetOptions, _] = useState(
-        status.api_target_options || {}
-    );
-
+    // Save IR Macros if present (only sent on first status update)
     const [irMacros, setIrMacros] = useState(() => {
         if (status.metadata.ir_blaster) {
             return status.metadata.ir_macros;
@@ -24,10 +26,6 @@ export const ApiCardContextProvider = ({ children }) => {
             return {};
         }
     });
-
-    // Create local state for IP address (not included in
-    // status updates, will disappear if allowed to update)
-    const [targetIP] = useState(status.metadata.ip);
 
     // Create state to control fade in/fade out animation
     // Fades in when true, fades out when false (both persist)

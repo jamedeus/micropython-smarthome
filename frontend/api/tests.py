@@ -11,6 +11,7 @@ from .unit_test_helpers import (
     config1_api_context,
     config2_status_object,
     config2_api_context,
+    config2_api_target_options,
     config2_existing_macros
 )
 from node_configuration.models import ScheduleKeyword, Node
@@ -1277,10 +1278,7 @@ class ApiCardTests(TestCaseBackupRestore):
             self.assertEqual(response.context['context']['metadata'], config2_api_context['metadata'])
             self.assertEqual(response.context['context']['sensors'], config2_api_context['sensors'])
             self.assertEqual(response.context['context']['devices'], config2_api_context['devices'])
-            self.assertEqual(
-                response.context['context']['api_target_options'],
-                config2_api_context['api_target_options']
-            )
+            self.assertEqual(response.context['api_target_options'], config2_api_target_options)
 
     def test_failed_connection(self):
         # Mock request to simulate offline target node
@@ -1317,7 +1315,7 @@ class ApiCardTests(TestCaseBackupRestore):
             self.assertTemplateUsed(response, 'api/api_card.html')
 
             # Confirm context contains macro name
-            self.assertEqual(response.context['context']['metadata']['recording'], 'macro-name')
+            self.assertEqual(response.context['recording'], 'macro-name')
 
     def test_node_does_not_exist(self):
         # Request page, confirm correct template used

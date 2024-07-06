@@ -68,7 +68,6 @@ config1_api_context = {
         'floor': '1',
         'location': 'Inside cabinet above microwave',
         'ir_blaster': False,
-        'ip': '192.168.1.123',
         "schedule_keywords": {
             "sunrise": "06:00",
             "sunset": "18:00"
@@ -239,8 +238,6 @@ config2_api_context = {
                 'ac ON 0 1'
             ]
         },
-        'ip': '192.168.1.124',
-        'thermostat': True,
         "schedule_keywords": {
             "sunrise": "06:00",
             "sunset": "18:00"
@@ -298,47 +295,49 @@ config2_api_context = {
             'nickname': 'Air Conditioner',
             'turned_on': False
         }
-    },
-    'api_target_options': {
+    }
+}
+
+
+config2_api_target_options = {
+    "device1": {
         "device1": {
-            "device1": {
-                "display": "Air Conditioner (api-target)",
-                "options": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule"
+            "display": "Air Conditioner (api-target)",
+            "options": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
+            ]
+        },
+        "sensor1": {
+            "display": "Thermostat (si7021)",
+            "options": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
+            ]
+        },
+        "ir_key": {
+            "display": "Ir Blaster",
+            "options": [
+                "ac"
+            ],
+            "keys": {
+                "ac": [
+                    "start",
+                    "stop",
+                    "off"
                 ]
-            },
-            "sensor1": {
-                "display": "Thermostat (si7021)",
-                "options": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule"
-                ]
-            },
-            "ir_key": {
-                "display": "Ir Blaster",
-                "options": [
-                    "ac"
-                ],
-                "keys": {
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
-                    ]
-                }
-            },
-            "ignore": {
-                "display": "Ignore action"
             }
+        },
+        "ignore": {
+            "display": "Ignore action"
         }
     }
 }
@@ -452,7 +451,6 @@ config3_api_context = {
         'floor': '1',
         'location': 'Inside cabinet under sink',
         'ir_blaster': False,
-        'ip': '192.168.1.215',
         "schedule_keywords": {
             "sunrise": "06:00",
             "sunset": "18:00"

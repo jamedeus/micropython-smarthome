@@ -147,21 +147,11 @@ def api(request, node, recording=False):
         context = {"ip": node.ip, "id": node.friendly_name}
         return render(request, 'api/unable_to_connect.html', {'context': context})
 
-    # Add IP, parsed into target_node var on frontend
-    status["metadata"]["ip"] = node.ip
-
     # If ApiTarget configured, add options for ApiTargetRuleModal dropdowns
     if "api-target" in str(status):
-        status["api_target_options"] = get_api_target_options(node)
-
-    # Add temp history chart to frontend if temp sensor present
-    for i in status["sensors"]:
-        if status["sensors"][i]['type'] == 'si7021':
-            status["metadata"]["thermostat"] = True
-            break
-
-    if recording:
-        status["metadata"]["recording"] = recording
+        api_target_options = get_api_target_options(node)
+    else:
+        api_target_options = {}
 
     print(json.dumps(status, indent=4))
 
@@ -173,7 +163,10 @@ def api(request, node, recording=False):
         'api/api_card.html',
         {
             'context': status,
-            'instance_metadata': get_metadata_context()
+            'target_ip': node.ip,
+            'instance_metadata': get_metadata_context(),
+            'api_target_options': api_target_options,
+            'recording': recording
         }
     )
 
