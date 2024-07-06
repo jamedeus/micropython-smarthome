@@ -209,11 +209,58 @@ TvRemote.propTypes = {
     addMacroAction: PropTypes.func.isRequired
 };
 
-const NewMacroInput = ({ recording, name, setName, startRecording, finishRecording }) => {
+const IrMacros = ({ recording, setRecording, newMacroActions }) => {
+    const { irMacros, send_command, add_ir_macro } = useContext(ApiCardContext);
+
     const [showNewMacro, setShowNewMacro] = useState(false);
+    const [newMacroName, setNewMacroName] = useState('');
+
+    const runMacro = (name) => {
+        send_command({'command': 'ir_run_macro', 'macro_name': name});
+    };
+
+    const startRecording = () => {
+        setRecording(true);
+    };
+
+    const finishRecording = () => {
+        setRecording(false);
+        add_ir_macro(newMacroName, newMacroActions);
+    };
 
     return (
-        <>
+        <div className="d-flex flex-column remote mx-auto mb-4">
+            <div className="row text-center">
+                <h4 className="my-2">
+                    IR Macros
+                </h4>
+            </div>
+
+            {Object.entries(irMacros).map(([name, actions]) => {
+                return (
+                    <div key={name} className="d-flex flex-row my-2">
+                        <ButtonGroup className="w-100 mx-3">
+                            <Button
+                                variant="primary"
+                                size="lg"
+                                className="w-100"
+                                onClick={() => runMacro(name)}
+
+                            >
+                                {name}
+                            </Button>
+                            <Button
+                                variant="success"
+                                size="lg"
+                                onClick={() => console.log(name, actions)}
+                            >
+                                <i className="bi-pencil"></i>
+                            </Button>
+                        </ButtonGroup>
+                    </div>
+                );
+            })}
+
             <Button
                 variant="secondary"
                 className="my-3 mx-auto"
@@ -234,8 +281,8 @@ const NewMacroInput = ({ recording, name, setName, startRecording, finishRecordi
                                 type="text"
                                 className="mb-3"
                                 placeholder="New macro name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
+                                value={newMacroName}
+                                onChange={(e) => setNewMacroName(e.target.value)}
                                 disabled={recording}
                             />
                         </FloatingLabel>
@@ -249,81 +296,24 @@ const NewMacroInput = ({ recording, name, setName, startRecording, finishRecordi
                     </div>
                 </div>
             </Collapse>
-        </>
+        </div>
     );
 };
 
-NewMacroInput.propTypes = {
+IrMacros.propTypes = {
     recording: PropTypes.bool.isRequired,
-    name: PropTypes.string.isRequired,
-    setName: PropTypes.func.isRequired,
-    startRecording: PropTypes.func.isRequired,
-    finishRecording: PropTypes.func.isRequired
+    setRecording: PropTypes.func.isRequired,
+    newMacroActions: PropTypes.array.isRequired
 };
 
 const IrRemotes = () => {
-    const { status, irMacros, send_command, add_ir_macro } = useContext(ApiCardContext);
+    const { status } = useContext(ApiCardContext);
 
     const [recordingMacro, setRecordingMacro] = useState(false);
     const [newMacroActions, setNewMacroActions] = useState([]);
-    const [newMacroName, setNewMacroName] = useState('');
 
     const addMacroAction = (action) => {
         setNewMacroActions([ ...newMacroActions, action]);
-    };
-
-    const runMacro = (name) => {
-        send_command({'command': 'ir_run_macro', 'macro_name': name});
-    };
-
-    const finishRecording = () => {
-        setRecordingMacro(false);
-        add_ir_macro(newMacroName, newMacroActions);
-    };
-
-    const IrMacros = () => {
-        return (
-            <div className="d-flex flex-column remote mx-auto mb-4">
-                <div className="row text-center">
-                    <h4 className="my-2">
-                        IR Macros
-                    </h4>
-                </div>
-
-                {Object.entries(irMacros).map(([name, actions]) => {
-                    return (
-                        <div key={name} className="d-flex flex-row my-2">
-                            <ButtonGroup className="w-100 mx-3">
-                                <Button
-                                    variant="primary"
-                                    size="lg"
-                                    className="w-100"
-                                    onClick={() => runMacro(name)}
-
-                                >
-                                    {name}
-                                </Button>
-                                <Button
-                                    variant="success"
-                                    size="lg"
-                                    onClick={() => console.log(name, actions)}
-                                >
-                                    <i className="bi-pencil"></i>
-                                </Button>
-                            </ButtonGroup>
-                        </div>
-                    );
-                })}
-
-                <NewMacroInput
-                    recording={recordingMacro}
-                    name={newMacroName}
-                    setName={setNewMacroName}
-                    startRecording={() => setRecordingMacro(true)}
-                    finishRecording={finishRecording}
-                />
-            </div>
-        );
     };
 
     if (status.metadata.ir_blaster) {
@@ -335,7 +325,11 @@ const IrRemotes = () => {
                 {status.metadata.ir_targets.includes('ac') ? (
                     <AcRemote recording={recordingMacro} addMacroAction={addMacroAction} />
                 ) : null }
-                <IrMacros />
+                <IrMacros
+                    recording={recordingMacro}
+                    setRecording={setRecordingMacro}
+                    newMacroActions={newMacroActions}
+                />
             </>
         );
     } else {
