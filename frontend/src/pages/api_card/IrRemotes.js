@@ -1,15 +1,19 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
+import Form from 'react-bootstrap/Form';
+import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Button from 'react-bootstrap/Button';
+import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Collapse from 'react-bootstrap/Collapse';
 import { ApiCardContext } from 'root/ApiCardContext';
 import 'css/remote.css';
 
-const IrButton = ({title, icon, variant='primary', onClick}) => {
+const IrButton = ({title, icon, variant='primary', recording=false, onClick}) => {
     return (
         <Button
             variant={variant}
             size="lg"
-            className="m-3 ir-btn"
+            className={`m-3 ir-btn ${recording ? 'blue-glow' : null}`}
             onClick={onClick}
             title={title}
         >
@@ -39,14 +43,19 @@ IrButton.propTypes = {
         'primary',
         'secondary'
     ]),
+    recording: PropTypes.bool,
     onClick: PropTypes.func.isRequired
 };
 
-const AcRemote = () => {
+const AcRemote = ({ recording=false, addMacroAction={addMacroAction} }) => {
     const { send_command } = useContext(ApiCardContext);
 
     const HandleKey = (key) => {
-        send_command({'command': 'ir', 'ir_target': 'ac', 'key': key});
+        if (recording) {
+            addMacroAction(`ac ${key} 100 1`);
+        } else {
+            send_command({'command': 'ir', 'ir_target': 'ac', 'key': key});
+        }
     };
 
     return (
@@ -58,16 +67,19 @@ const AcRemote = () => {
                 <IrButton
                     title="Stop cooling"
                     icon="bi-wind"
+                    recording={recording}
                     onClick={() => HandleKey('stop')}
                 />
                 <IrButton
                     title="Turn off fan"
                     icon="bi-x-octagon-fill"
+                    recording={recording}
                     onClick={() => HandleKey('off')}
                 />
                 <IrButton
                     title="Start cooling"
                     icon="bi-snow"
+                    recording={recording}
                     onClick={() => HandleKey('start')}
                 />
             </div>
@@ -75,11 +87,20 @@ const AcRemote = () => {
     );
 };
 
-const TvRemote = () => {
+AcRemote.propTypes = {
+    recording: PropTypes.bool,
+    addMacroAction: PropTypes.func.isRequired
+};
+
+const TvRemote = ({ recording=false, addMacroAction={addMacroAction} }) => {
     const { send_command } = useContext(ApiCardContext);
 
     const HandleKey = (key) => {
-        send_command({'command': 'ir', 'ir_target': 'tv', 'key': key});
+        if (recording) {
+            addMacroAction(`tv ${key} 100 1`);
+        } else {
+            send_command({'command': 'ir', 'ir_target': 'tv', 'key': key});
+        }
     };
 
     return (
@@ -91,12 +112,14 @@ const TvRemote = () => {
                 <IrButton
                     title="Power"
                     icon="bi-power"
+                    recording={recording}
                     onClick={() => HandleKey('power')}
                 />
                 <SpacerButton />
                 <IrButton
                     title="Source"
                     icon="bi-upload"
+                    recording={recording}
                     onClick={() => HandleKey('source')}
                 />
             </div>
@@ -105,6 +128,7 @@ const TvRemote = () => {
                 <IrButton
                     title="Up"
                     icon="bi-arrow-up"
+                    recording={recording}
                     onClick={() => HandleKey('up')}
                 />
                 <SpacerButton />
@@ -113,16 +137,19 @@ const TvRemote = () => {
                 <IrButton
                     title="Left"
                     icon="bi-arrow-left"
+                    recording={recording}
                     onClick={() => HandleKey('left')}
                 />
                 <IrButton
                     title="Enter"
                     icon="bi-app"
+                    recording={recording}
                     onClick={() => HandleKey('enter')}
                 />
                 <IrButton
                     title="Right"
                     icon="bi-arrow-right"
+                    recording={recording}
                     onClick={() => HandleKey('right')}
                 />
             </div>
@@ -131,6 +158,7 @@ const TvRemote = () => {
                 <IrButton
                     title="Down"
                     icon="bi-arrow-down"
+                    recording={recording}
                     onClick={() => HandleKey('down')}
                 />
                 <SpacerButton />
@@ -139,16 +167,19 @@ const TvRemote = () => {
                 <IrButton
                     title="Volume Down"
                     icon="bi-volume-down-fill"
+                    recording={recording}
                     onClick={() => HandleKey('vol_down')}
                 />
                 <IrButton
                     title="Mute"
                     icon="bi-volume-mute-fill"
+                    recording={recording}
                     onClick={() => HandleKey('mute')}
                 />
                 <IrButton
                     title="Volume Up"
                     icon="bi-volume-up-fill"
+                    recording={recording}
                     onClick={() => HandleKey('vol_up')}
                 />
             </div>
@@ -157,6 +188,7 @@ const TvRemote = () => {
                     title="Settings"
                     icon="bi-gear-fill"
                     variant="secondary"
+                    recording={recording}
                     onClick={() => HandleKey('settings')}
                 />
                 <SpacerButton />
@@ -164,6 +196,7 @@ const TvRemote = () => {
                     title="Exit"
                     icon="bi-arrow-return-left"
                     variant="secondary"
+                    recording={recording}
                     onClick={() => HandleKey('exit')}
                 />
             </div>
@@ -171,14 +204,138 @@ const TvRemote = () => {
     );
 };
 
+TvRemote.propTypes = {
+    recording: PropTypes.bool,
+    addMacroAction: PropTypes.func.isRequired
+};
+
+const NewMacroInput = ({ recording, name, setName, startRecording, finishRecording }) => {
+    const [showNewMacro, setShowNewMacro] = useState(false);
+
+    return (
+        <>
+            <Button
+                variant="secondary"
+                className="my-3 mx-auto"
+                onClick={() => setShowNewMacro(!showNewMacro)}
+            >
+                <i className="bi-plus-lg"></i>
+            </Button>
+
+            <Collapse in={showNewMacro}>
+                <div>
+                    <div className="d-flex flex-column">
+                        <FloatingLabel
+                            label="New macro name"
+                            className="px-3 pb-3"
+                        >
+                            <Form.Control
+                                id="new-macro-name"
+                                type="text"
+                                className="mb-3"
+                                placeholder="New macro name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                disabled={recording}
+                            />
+                        </FloatingLabel>
+                        <Button
+                            variant="success"
+                            className="mx-auto"
+                            onClick={recording ? finishRecording : startRecording}
+                        >
+                            {recording ? 'Save Macro' : 'Start Recording'}
+                        </Button>
+                    </div>
+                </div>
+            </Collapse>
+        </>
+    );
+};
+
+NewMacroInput.propTypes = {
+    recording: PropTypes.bool.isRequired,
+    name: PropTypes.string.isRequired,
+    setName: PropTypes.func.isRequired,
+    startRecording: PropTypes.func.isRequired,
+    finishRecording: PropTypes.func.isRequired
+};
+
 const IrRemotes = () => {
-    const { status } = useContext(ApiCardContext);
+    const { status, irMacros, send_command, add_ir_macro } = useContext(ApiCardContext);
+
+    const [recordingMacro, setRecordingMacro] = useState(false);
+    const [newMacroActions, setNewMacroActions] = useState([]);
+    const [newMacroName, setNewMacroName] = useState('');
+
+    const addMacroAction = (action) => {
+        setNewMacroActions([ ...newMacroActions, action]);
+    };
+
+    const runMacro = (name) => {
+        send_command({'command': 'ir_run_macro', 'macro_name': name});
+    };
+
+    const finishRecording = () => {
+        setRecordingMacro(false);
+        add_ir_macro(newMacroName, newMacroActions);
+    };
+
+    const IrMacros = () => {
+        return (
+            <div className="d-flex flex-column remote mx-auto mb-4">
+                <div className="row text-center">
+                    <h4 className="my-2">
+                        IR Macros
+                    </h4>
+                </div>
+
+                {Object.entries(irMacros).map(([name, actions]) => {
+                    return (
+                        <div key={name} className="d-flex flex-row my-2">
+                            <ButtonGroup className="w-100 mx-3">
+                                <Button
+                                    variant="primary"
+                                    size="lg"
+                                    className="w-100"
+                                    onClick={() => runMacro(name)}
+
+                                >
+                                    {name}
+                                </Button>
+                                <Button
+                                    variant="success"
+                                    size="lg"
+                                    onClick={() => console.log(name, actions)}
+                                >
+                                    <i className="bi-pencil"></i>
+                                </Button>
+                            </ButtonGroup>
+                        </div>
+                    );
+                })}
+
+                <NewMacroInput
+                    recording={recordingMacro}
+                    name={newMacroName}
+                    setName={setNewMacroName}
+                    startRecording={() => setRecordingMacro(true)}
+                    finishRecording={finishRecording}
+                />
+            </div>
+        );
+    };
 
     if (status.metadata.ir_blaster) {
         return (
             <>
-                {status.metadata.ir_targets.includes('tv') ? <TvRemote /> : null }
-                {status.metadata.ir_targets.includes('ac') ? <AcRemote /> : null }
+                {status.metadata.ir_targets.includes('tv') ? (
+                    <TvRemote recording={recordingMacro} addMacroAction={addMacroAction} />
+                ) : null }
+                {status.metadata.ir_targets.includes('ac') ? (
+                    <AcRemote recording={recordingMacro} addMacroAction={addMacroAction} />
+                ) : null }
+                <IrMacros />
             </>
         );
     } else {

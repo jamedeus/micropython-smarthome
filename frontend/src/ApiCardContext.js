@@ -17,6 +17,14 @@ export const ApiCardContextProvider = ({ children }) => {
         status.api_target_options || {}
     );
 
+    const [irMacros, setIrMacros] = useState(() => {
+        if (status.metadata.ir_blaster) {
+            return status.metadata.ir_macros;
+        } else {
+            return {};
+        }
+    });
+
     // Create local state for IP address (not included in
     // status updates, will disappear if allowed to update)
     const [targetIP] = useState(status.metadata.ip);
@@ -247,12 +255,33 @@ export const ApiCardContextProvider = ({ children }) => {
         }
     }
 
+    async function add_ir_macro(name, actions) {
+        console.log(actions)
+        const result = await fetch('/add_ir_macro', {
+            method: 'POST',
+            body: JSON.stringify({
+                ip: targetIP,
+                name: name,
+                actions: actions
+            }),
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                "X-CSRFToken": getCookie('csrftoken')
+            }
+        });
+        if (result.ok) {
+            setIrMacros({ ...irMacros, [name]: actions});
+        }
+    }
+
     return (
         <ApiCardContext.Provider value={{
             status,
             setStatus,
             loading,
             apiTargetOptions,
+            irMacros,
             overview,
             send_command,
             enable_instance,
@@ -262,7 +291,8 @@ export const ApiCardContextProvider = ({ children }) => {
             reset_rule,
             add_schedule_rule,
             delete_schedule_rule,
-            edit_schedule_rule
+            edit_schedule_rule,
+            add_ir_macro
         }}>
             {children}
         </ApiCardContext.Provider>
