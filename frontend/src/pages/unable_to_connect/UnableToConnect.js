@@ -1,27 +1,20 @@
 import React, { useEffect } from 'react';
 import Button from 'react-bootstrap/Button';
 import { LoadingSpinner } from 'util/animations';
-import { parse_dom_context, getCookie } from 'util/django_util';
+import { parse_dom_context } from 'util/django_util';
 
 const App = () => {
-    const target_ip = parse_dom_context('target_ip');
+    const target_node = parse_dom_context('target_node');
 
-    async function retryConnection() {
-        const payload = {'command': 'status', 'target': target_ip};
-
-        const response= await fetch('/send_command', {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: { 'Accept': 'application/json, text/plain, */*',
-                'Content-Type': 'application/json',
-                "X-CSRFToken": getCookie('csrftoken') }
-        });
-        const data = await response.json();
-
-        if (data != "Error: Unable to connect.") {
+    const retryConnection = async () => {
+        const response = await fetch(`/get_status/${target_node}`);
+        if (response.ok) {
             location.reload();
+        } else {
+            const error = await response.json();
+            console.log('Failed to connect:', error);
         }
-    }
+    };
 
     // Retry every 5 seconds
     useEffect(() => {

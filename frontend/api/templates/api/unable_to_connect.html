@@ -19,7 +19,7 @@
 </head>
 <body>
     <div id="root" class="container">
-    {{ context.ip|json_script:"target_ip" }}
+    {{ context.id|json_script:"target_node" }}
     <script src="{% static 'node_configuration/unable_to_connect.js' %}"></script>
 </body>
 </html>
