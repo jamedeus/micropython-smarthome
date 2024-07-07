@@ -10,6 +10,7 @@ const config = {
         overview: './src/pages/overview/index.js',
         api_overview: './src/pages/api_overview/index.js',
         api_card: './src/pages/api_card/index.js',
+        unable_to_connect: './src/pages/unable_to_connect/index.js',
     },
     output: {
         path: path.resolve(__dirname, 'node_configuration/static/node_configuration/'),

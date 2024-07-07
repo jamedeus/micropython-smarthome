@@ -10,129 +10,16 @@
     {% progressive_web_app_meta %}
     <link rel="stylesheet" href="{% static 'bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'bootstrap-icons.css' %}">
-    <link rel="stylesheet" href="{% static 'node_configuration/style.css' %}">
-    <link rel="stylesheet" href="{% static 'api/animations.css' %}">
     <script src="{% static 'bootstrap.min.js' %}"></script>
-    <script>
-        function getCookie(name) {
-            var cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                var cookies = document.cookie.split(';');
-                for (var i = 0; i < cookies.length; i++) {
-                    var cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        };
-    </script>
-    <style>
-        /* Limit width for readability on large screen sizes */
-        @media (min-width: 1200px) {
-            .container {
-                width: 960px;
-            }
-        }
-
-        /* Block double tap zoom on mobile, allows pressing buttons quickly */
-        body {
-            touch-action: manipulation;
-        }
-    </style>
+    <script src="{% static 'smoothscroll.min.js' %}"></script>
+    <script src="{% static 'react.development.js' %}"></script>
+    <script src="{% static 'react-dom.development.js' %}"></script>
+    <script src="{% static 'react-transition-group.min.js' %}"></script>
+    <script src="{% static 'react-bootstrap.min.js' %}"></script>
 </head>
 <body>
-    <div class="container d-flex flex-column vh-100">
-
-        <div class="d-flex justify-content-between">
-            <button type="button" class="btn my-auto" id="back_button" onclick="window.location.href = '/api'"><i class="bi-chevron-left"></i></button>
-            <h1 class="my-3">Connection Failed</h1>
-            <div class="dropdown my-auto">
-                <button type="button" class="btn" id="more_options_button" data-bs-toggle="dropdown" aria-expanded="false" disabled><i class="bi-list"></i></button>
-            </div>
-        </div>
-
-        <!-- Check if user is in dark mode, change theme (runs here to prevent visual flash) -->
-        <script>
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.body.classList.add("dark");
-                document.getElementById("back_button").classList.add("btn-dark");
-                document.getElementById("more_options_button").classList.add("btn-dark");
-                console.log("Dark mode");
-            } else {
-                document.getElementById("back_button").classList.add("btn-light");
-                document.getElementById("more_options_button").classList.add("btn-light");
-            };
-        </script>
-
-        <div class="d-flex flex-column h-100">
-            <div class="mt-auto">
-                <p class="text-center mb-0">This page will reload automatically when the node is available</p>
-                <div class="d-flex justify-content-center">
-                    <div id="spinner" class="loading-animation loading-animation-show my-2"><div></div><div></div><div></div><div></div></div>
-                </div>
-            </div>
-
-            <div class="d-flex flex-column my-auto">
-                <h2 class="text-center mt-auto mb-3">Troubleshooting</h2>
-                <ul class="mx-auto">
-                    <li>Unplug the node, plug back in, make sure the red light is on</li>
-                    <li>If the blue light stays on 30+ seconds there is a network issue</li>
-                    <ul>
-                        <li>Is your 2.4 GHz network available?</li>
-                        <li>Can you connect to the internet?</li>
-                        <li>Did the SSID or password change?</li>
-                    </ul>
-                </ul>
-            </div>
-
-            <div class="d-flex justify-content-center mt-auto mb-3">
-                <button type="button" class="btn btn-success" onclick="window.location.href = '/api'">Back to Overview</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const target_node = "{{ context.ip }}";
-
-        /* Attempt to reconnect every 5 seconds, reload when available */
-        async function retryConnection() {
-            const data = {'command': 'status', 'target': target_node}
-
-            var retry = await fetch('/send_command', {
-                method: 'POST',
-                body: JSON.stringify(data),
-                headers: { 'Accept': 'application/json, text/plain, */*',
-                    'Content-Type': 'application/json',
-                    "X-CSRFToken": getCookie('csrftoken') }
-            });
-            retry = await retry.json();
-
-            if (retry != "Error: Unable to connect.") {
-                location.reload();
-            };
-        };
-        retryTimer = setInterval(retryConnection, 5000);
-
-        // Listen for system theme changes, switch to dark/light mode to reflect (responsive)
-        window.matchMedia('(prefers-color-scheme: dark)').addListener(function (e) {
-            if (e.matches) { // Returns True for dark mode, False otherwise
-                document.body.classList.add("dark");
-                document.getElementById("back_button").classList.remove("btn-light");
-                document.getElementById("back_button").classList.add("btn-dark");
-                document.getElementById("more_options_button").classList.remove("btn-light");
-                document.getElementById("more_options_button").classList.add("btn-dark");
-
-            } else {
-                document.body.classList.remove("dark");
-                document.getElementById("back_button").classList.remove("btn-dark");
-                document.getElementById("back_button").classList.add("btn-light");
-                document.getElementById("more_options_button").classList.remove("btn-dark");
-                document.getElementById("more_options_button").classList.add("btn-light");
-            }
-        });
-    </script>
+    <div id="root" class="container">
+    {{ context.ip|json_script:"target_ip" }}
+    <script src="{% static 'node_configuration/unable_to_connect.js' %}"></script>
 </body>
 </html>
