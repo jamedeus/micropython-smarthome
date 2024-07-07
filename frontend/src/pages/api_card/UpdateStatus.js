@@ -48,8 +48,10 @@ export const UpdateStatus = () => {
                 targetOffline = false;
             }
         } catch (error) {
-            show_connection_error();
-            targetOffline = true;
+            if (!targetOffline) {
+                show_connection_error();
+                targetOffline = true;
+            }
             console.error('Failed to update status:', error);
         }
     }
