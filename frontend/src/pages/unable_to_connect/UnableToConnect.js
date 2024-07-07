@@ -27,7 +27,7 @@ const App = () => {
             <div className="d-flex justify-content-between">
                 <Button
                     className="my-auto"
-                    variant="dark"
+                    variant="adaptive"
                     onClick={() => window.location.href = '/api'}
                 >
                     <i className="bi-chevron-left"></i>
@@ -37,25 +37,22 @@ const App = () => {
                 </h1>
                 <Button
                     className="my-auto"
-                    variant="dark"
+                    variant="adaptive"
                     disabled
                 >
                     <i className="bi-list"></i>
                 </Button>
             </div>
 
-            <div className="d-flex flex-column h-100">
-                <div className="mt-auto">
-                    <p className="text-center mb-0">
-                        This page will reload automatically when the node is available
-                    </p>
-                    <div className="d-flex justify-content-center">
-                        <LoadingSpinner size="medium" classes={['my-2']} />
-                    </div>
-                </div>
+            <div className="d-flex flex-column h-100 justify-content-evenly my-auto">
+                <p className="text-center my-3">
+                    This page will reload automatically when the node is available
+                </p>
 
-                <div className="d-flex flex-column my-auto">
-                    <h2 className="text-center mt-auto mb-3">
+                <LoadingSpinner size="large" classes={['my-3']} />
+
+                <div className="d-flex flex-column">
+                    <h2 className="text-center mb-3">
                         Troubleshooting
                     </h2>
                     <ul className="mx-auto">
@@ -73,7 +70,7 @@ const App = () => {
                     </ul>
                 </div>
 
-                <div className="d-flex justify-content-center mt-auto mb-3">
+                <div className="d-flex mx-auto mb-3">
                     <Button
                         variant="success"
                         onClick={() => window.location.href = '/api'}

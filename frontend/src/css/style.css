@@ -145,3 +145,13 @@ td.schedule-rule-field {
         position: static;
     }
 }
+
+/* Only used on unable to connect page */
+.btn-adaptive {
+    background-color: #cccccc !important;
+}
+@media (prefers-color-scheme: dark) {
+    .btn-adaptive {
+        background-color: #212529 !important;
+    }
+}
