@@ -69,6 +69,20 @@ export const ApiCardContextProvider = ({ children }) => {
         });
     }
 
+    // Takes instance ID and object with param:newValue pairs
+    // Updates all params in state object
+    function update_instance_multi(id, params) {
+        const category = get_instance_category(id);
+        setStatus({
+            ...status, [category]: {
+                ...status[category], [id]: {
+                    ...status[category][id], ...params
+                }
+            }
+        });
+
+    }
+
     // Takes command params, posts to backend, backend makes API
     // call to esp32 using faster non-http compliant protocol
     async function send_command(value) {
@@ -90,7 +104,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
     async function enable_instance(id, enable) {
         // Build payload from args
-        const payload = {'command': '', 'instance': id, 'delay_input': ''};
+        const payload = {'command': '', 'instance': id};
         if (enable === true) {
             payload.command = 'enable';
         } else {
@@ -100,9 +114,26 @@ export const ApiCardContextProvider = ({ children }) => {
         // Send API call to node
         const result = await send_command(payload);
 
-        // If successful make same change in state (re-render immediately)
+        // If successful update state (re-render immediately, not after update)
         if (result.ok) {
             update_instance(id, "enabled", enable);
+            if (enable) {
+                // Ensure current_rule is not string (avoid NaN on slider)
+                // May be incorrect until next update for non-slider rules, but
+                // no other rule types are displayed on the frontend anyway
+                let rule;
+                const section = get_instance_section(id);
+                if (parseInt(section.current_rule)) {
+                    rule = section.current_rule;
+                } else if (parseInt(section.scheduled_rule)) {
+                    rule = section.scheduled_rule;
+                } else {
+                    rule = section.default_rule;
+                }
+                update_instance_multi(id, {enabled: true, current_rule: rule});
+            } else {
+                update_instance(id, "enabled", enable);
+            }
         } else {
             console.log("Failed to enable:", id);
             console.log(result);
