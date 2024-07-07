@@ -113,6 +113,7 @@ config1_status = {
     'sensors': {
         'sensor1': {
             'current_rule': 2.0,
+            'default_rule': 2.0,
             'enabled': True,
             'type': 'pir',
             'targets': [
@@ -131,6 +132,7 @@ config1_status = {
     'devices': {
         'device1': {
             'current_rule': 'disabled',
+            'default_rule': 512,
             'enabled': False,
             'type': 'pwm',
             'schedule': {
@@ -147,6 +149,7 @@ config1_status = {
         },
         'device2': {
             'current_rule': 'enabled',
+            'default_rule': 'enabled',
             'enabled': True,
             'type': 'tasmota-relay',
             'schedule': {
@@ -189,6 +192,7 @@ config2_status = {
             'condition_met': False,
             'schedule': {},
             'current_rule': 74,
+            'default_rule': 74,
             'temp': -52.32999,
             'type': 'si7021',
             'units': 'fahrenheit'
@@ -197,6 +201,18 @@ config2_status = {
     'devices': {
         'device1': {
             'current_rule': {
+                'on': [
+                    'ir_key',
+                    'ac',
+                    'start'
+                ],
+                'off': [
+                    'ir_key',
+                    'ac',
+                    'stop'
+                ]
+            },
+            'default_rule': {
                 'on': [
                     'ir_key',
                     'ac',
@@ -337,6 +353,7 @@ config3_status = {
     'sensors': {
         'sensor1': {
             'current_rule': 2,
+            'default_rule': 2,
             'enabled': True,
             'type': 'pir',
             'targets': [
@@ -353,6 +370,7 @@ config3_status = {
         },
         'sensor2': {
             'current_rule': 1,
+            'default_rule': 1,
             'enabled': True,
             'type': 'pir',
             'targets': [
@@ -369,6 +387,7 @@ config3_status = {
     'devices': {
         'device1': {
             'current_rule': 256,
+            'default_rule': 1023,
             'enabled': True,
             'type': 'pwm',
             'schedule': {
@@ -385,6 +404,7 @@ config3_status = {
         },
         'device3': {
             'current_rule': 'disabled',
+            'default_rule': 'enabled',
             'enabled': False,
             'type': 'tasmota-relay',
             'schedule': {
@@ -397,6 +417,7 @@ config3_status = {
         },
         'device2': {
             'current_rule': 'disabled',
+            'default_rule': 'disabled',
             'enabled': False,
             'type': 'tasmota-relay',
             'schedule': {

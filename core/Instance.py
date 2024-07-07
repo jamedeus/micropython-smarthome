@@ -118,7 +118,8 @@ class Instance():
             'type': self._type,
             'enabled': self.enabled,
             'current_rule': self.current_rule,
-            'scheduled_rule': self.scheduled_rule
+            'scheduled_rule': self.scheduled_rule,
+            'default_rule': self.default_rule
         }
 
     # Takes string, prints with prepended timestamp and instance name
