@@ -56,22 +56,9 @@ export const ApiCardContextProvider = ({ children }) => {
         return { ...status[category][id] };
     }
 
-    // Takes instance ID, param to update, and new value
-    // Overwrites param in state object (trigger re-render)
-    function update_instance(id, param, value) {
-        const category = get_instance_category(id);
-        setStatus({
-            ...status, [category]: {
-                ...status[category], [id]: {
-                    ...status[category][id], [param]: value
-                }
-            }
-        });
-    }
-
     // Takes instance ID and object with param:newValue pairs
     // Updates all params in state object
-    function update_instance_multi(id, params) {
+    function update_instance(id, params) {
         const category = get_instance_category(id);
         setStatus({
             ...status, [category]: {
@@ -130,9 +117,9 @@ export const ApiCardContextProvider = ({ children }) => {
                 } else {
                     rule = section.default_rule;
                 }
-                update_instance_multi(id, {enabled: true, current_rule: rule});
+                update_instance(id, {enabled: true, current_rule: rule});
             } else {
-                update_instance(id, "enabled", enable);
+                update_instance(id, {enabled: false});
             }
         } else {
             console.log("Failed to enable:", id);
@@ -147,7 +134,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
         // If successful make same change in state (re-render immediately)
         if (result.ok) {
-            update_instance(id, "condition_met", true);
+            update_instance(id, {condition_met: true});
         } else {
             console.log("Failed to trigger:", id);
             console.log(result);
@@ -167,7 +154,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
         // If successful make same change in state (re-render immediately)
         if (result.ok) {
-            update_instance(id, "turned_on", state);
+            update_instance(id, {turned_on: state});
         } else {
             console.log("Failed to set power state:", id);
             console.log(result);
@@ -177,7 +164,7 @@ export const ApiCardContextProvider = ({ children }) => {
     // Handler for rule sliders and buttons, updates local state immediately, calls
     // debounced function to send API call to node when user stops moving slider
     async function set_rule(id, value) {
-        update_instance(id, "current_rule", value);
+        update_instance(id, {current_rule: value});
         debounced_set_rule(id, value);
     }
 
@@ -201,7 +188,7 @@ export const ApiCardContextProvider = ({ children }) => {
         // If successful make same change in state (re-render immediately)
         if (result.ok) {
             const instance = get_instance_section(id);
-            update_instance(id, "current_rule", instance.scheduled_rule);
+            update_instance(id, {current_rule: instance.scheduled_rule});
         } else {
             console.log("Failed to reset rule:", id);
         }
@@ -220,7 +207,7 @@ export const ApiCardContextProvider = ({ children }) => {
             const instance = get_instance_section(id);
             const rules = instance.schedule;
             rules[timestamp] = rule;
-            update_instance(id, "schedule", rules);
+            update_instance(id, {schedule: rules});
             return true;
         } else {
             return false;
@@ -239,7 +226,7 @@ export const ApiCardContextProvider = ({ children }) => {
             const instance = get_instance_section(id);
             const rules = instance.schedule;
             delete rules[timestamp];
-            update_instance(id, "schedule", rules);
+            update_instance(id, {schedule: rules});
         }
     }
 
@@ -271,7 +258,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
             // Add new rule (overwrites if timestamp not changed), update state
             rules[newTimestamp] = rule;
-            update_instance(id, "schedule", rules);
+            update_instance(id, {schedule: rules});
             return true;
         } else {
             return false;
