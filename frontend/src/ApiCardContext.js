@@ -17,14 +17,8 @@ export const ApiCardContextProvider = ({ children }) => {
     const [apiTargetOptions, _] = useState(() => {
         return parse_dom_context("api_target_options")
     });
-
-    // Save IR Macros if present (only sent on first status update)
     const [irMacros, setIrMacros] = useState(() => {
-        if (status.metadata.ir_blaster) {
-            return status.metadata.ir_macros;
-        } else {
-            return {};
-        }
+        return parse_dom_context("ir_macros")
     });
 
     // Create state to control fade in/fade out animation

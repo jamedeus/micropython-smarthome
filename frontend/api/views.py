@@ -142,20 +142,10 @@ def api(request, node, recording=False):
         if str(status).startswith("Error: "):
             raise OSError
 
-        # Get IR macros if IR Blaster configured
-        if status['metadata']['ir_blaster']:
-            status['metadata']['ir_macros'] = parse_command(node.ip, ["ir_get_existing_macros"])
-
     # Render connection failed page
     except OSError:
         context = {"ip": node.ip, "id": node.friendly_name}
         return render(request, 'api/unable_to_connect.html', {'context': context})
-
-    # If ApiTarget configured, get options for ApiTargetRuleModal dropdowns
-    if "api-target" in str(status):
-        api_target_options = get_api_target_options(node)
-    else:
-        api_target_options = {}
 
     # Add target IP (used to send API calls to node)
     # Add name of macro being recorded (False if not recording)
@@ -164,9 +154,16 @@ def api(request, node, recording=False):
         'status': status,
         'target_ip': node.ip,
         'recording': recording,
-        'instance_metadata': get_metadata_map(),
-        'api_target_options': api_target_options
+        'instance_metadata': get_metadata_map()
     }
+
+    # If ApiTarget configured get options for ApiTargetRuleModal dropdowns
+    if "api-target" in str(status):
+        context['api_target_options'] = get_api_target_options(node)
+
+    # If IR Blaster configured get IR macros
+    if status['metadata']['ir_blaster']:
+        context['ir_macros'] = parse_command(node.ip, ["ir_get_existing_macros"])
 
     print(json.dumps(context, indent=4))
     return render(request, 'api/api_card.html', context)

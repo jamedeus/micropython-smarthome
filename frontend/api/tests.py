@@ -7,11 +7,11 @@ from .models import Macro
 from .views import parse_command
 from api_endpoints import request, ir_commands
 from .unit_test_helpers import (
-    config1_status_object,
-    config1_api_context,
-    config2_status_object,
-    config2_api_context,
+    instance_metadata,
+    config1_status,
+    config2_status,
     config2_api_target_options,
+    config2_ir_macros,
     config2_existing_macros
 )
 from node_configuration.models import ScheduleKeyword, Node
@@ -245,10 +245,10 @@ class HTTPEndpointTests(TestCaseBackupRestore):
 
     def test_get_status(self):
         # Mock request to return status object
-        with patch('api_endpoints.request', return_value=config1_status_object):
+        with patch('api_endpoints.request', return_value=config1_status):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), config1_status_object)
+            self.assertEqual(response.json(), config1_status)
 
     def test_get_status_offline(self):
         # Mock request to simulate offline target node
@@ -678,10 +678,10 @@ class TestEndpoints(TestCaseBackupRestore):
 
     def test_status(self):
         # Mock request to return status object
-        with patch('api_endpoints.request', return_value=config1_status_object):
+        with patch('api_endpoints.request', return_value=config1_status):
             # Request status, should receive expected object
             response = parse_command('192.168.1.123', ['status'])
-            self.assertEqual(response, config1_status_object)
+            self.assertEqual(response, config1_status)
 
     def test_reboot(self):
         # Mock request to return expected response
@@ -1254,31 +1254,44 @@ class ApiCardTests(TestCaseBackupRestore):
 
     def test_api_frontend(self):
         # Mock request to return the expected status object
-        with patch('api_endpoints.request', return_value=config1_status_object):
+        with patch('api_endpoints.request', return_value=config1_status):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test1')
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'api/api_card.html')
 
-            # Confirm all context keys
-            self.assertEqual(response.context['status']['metadata'], config1_api_context['metadata'])
-            self.assertEqual(response.context['status']['sensors'], config1_api_context['sensors'])
-            self.assertEqual(response.context['status']['devices'], config1_api_context['devices'])
+            # Confirm context contains status object, target IP, and metadata
+            self.assertEqual(response.context['status'], config1_status)
+            self.assertEqual(response.context['target_ip'], '192.168.1.123')
+            self.assertEqual(response.context['instance_metadata'], instance_metadata)
+
+            # Confirm not recording macro
+            self.assertFalse(response.context['recording'])
+
+            # Confirm no api_target_options or ir_macros contexts
+            self.assertFalse('api_target_options' in response.context.keys())
+            self.assertFalse('ir_macros' in response.context.keys())
 
     # Repeat test above with a node containing ApiTarget and Thermostat
     def test_api_target_and_thermostat(self):
         # Mock request to return the expected status object followed by existing_macros object
-        with patch('api_endpoints.request', side_effect=[config2_status_object, config2_existing_macros]):
+        with patch('api_endpoints.request', side_effect=[config2_status, config2_existing_macros]):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test2')
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'api/api_card.html')
 
-            # Confirm all context keys
-            self.assertEqual(response.context['status']['metadata'], config2_api_context['metadata'])
-            self.assertEqual(response.context['status']['sensors'], config2_api_context['sensors'])
-            self.assertEqual(response.context['status']['devices'], config2_api_context['devices'])
+            # Confirm context contains status object, target IP, and metadata
+            self.assertEqual(response.context['status'], config2_status)
+            self.assertEqual(response.context['target_ip'], '192.168.1.124')
+            self.assertEqual(response.context['instance_metadata'], instance_metadata)
+
+            # Confirm not recording macro
+            self.assertFalse(response.context['recording'])
+
+            # Confirm expected api_target_options and ir_macros contexts
             self.assertEqual(response.context['api_target_options'], config2_api_target_options)
+            self.assertEqual(response.context['ir_macros'], config2_ir_macros)
 
     def test_failed_connection(self):
         # Mock request to simulate offline target node
@@ -1289,8 +1302,10 @@ class ApiCardTests(TestCaseBackupRestore):
             self.assertTemplateUsed(response, 'api/unable_to_connect.html')
 
             # Confirm context
-            self.assertEqual(response.context['context']['ip'], '192.168.1.123')
-            self.assertEqual(response.context['context']['id'], 'Test1')
+            self.assertEqual(
+                response.context['context'],
+                {'ip': '192.168.1.123', 'id': 'Test1'}
+            )
 
         # Mock parse_command to simulate timed out request
         with patch('api_endpoints.request', return_value='Error: Request timed out'):
@@ -1308,7 +1323,7 @@ class ApiCardTests(TestCaseBackupRestore):
 
     def test_recording_mode(self):
         # Mock request to return the expected status object
-        with patch('api_endpoints.request', return_value=config1_status_object):
+        with patch('api_endpoints.request', return_value=config1_status):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test1/macro-name')
             self.assertEqual(response.status_code, 200)

@@ -27,6 +27,7 @@
     {{ api_target_options|json_script:"api_target_options" }}
     {# TODO temporary, remove after refactoring RuleField component #}
     {{ instance_metadata|json_script:"instance_metadata" }}
+    {{ ir_macros|json_script:"ir_macros" }}
     <script src="{% static 'node_configuration/api_card.js' %}"></script>
 </body>
 </html>
