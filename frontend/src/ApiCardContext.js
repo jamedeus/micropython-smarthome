@@ -9,7 +9,7 @@ export const ApiCardContext = createContext();
 export const ApiCardContextProvider = ({ children }) => {
     // Load contexts set by django template
     const [status, setStatus] = useState(() => {
-        return parse_dom_context("context");
+        return parse_dom_context("status");
     });
     const [targetIP] = useState(() => {
         return parse_dom_context("target_ip");

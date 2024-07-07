@@ -1261,9 +1261,9 @@ class ApiCardTests(TestCaseBackupRestore):
             self.assertTemplateUsed(response, 'api/api_card.html')
 
             # Confirm all context keys
-            self.assertEqual(response.context['context']['metadata'], config1_api_context['metadata'])
-            self.assertEqual(response.context['context']['sensors'], config1_api_context['sensors'])
-            self.assertEqual(response.context['context']['devices'], config1_api_context['devices'])
+            self.assertEqual(response.context['status']['metadata'], config1_api_context['metadata'])
+            self.assertEqual(response.context['status']['sensors'], config1_api_context['sensors'])
+            self.assertEqual(response.context['status']['devices'], config1_api_context['devices'])
 
     # Repeat test above with a node containing ApiTarget and Thermostat
     def test_api_target_and_thermostat(self):
@@ -1275,9 +1275,9 @@ class ApiCardTests(TestCaseBackupRestore):
             self.assertTemplateUsed(response, 'api/api_card.html')
 
             # Confirm all context keys
-            self.assertEqual(response.context['context']['metadata'], config2_api_context['metadata'])
-            self.assertEqual(response.context['context']['sensors'], config2_api_context['sensors'])
-            self.assertEqual(response.context['context']['devices'], config2_api_context['devices'])
+            self.assertEqual(response.context['status']['metadata'], config2_api_context['metadata'])
+            self.assertEqual(response.context['status']['sensors'], config2_api_context['sensors'])
+            self.assertEqual(response.context['status']['devices'], config2_api_context['devices'])
             self.assertEqual(response.context['api_target_options'], config2_api_target_options)
 
     def test_failed_connection(self):

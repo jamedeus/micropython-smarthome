@@ -174,7 +174,7 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
                 <Form.Label>Rule</Form.Label>
                 {(() => {
                     // Thermostat: Skip switch and return Float slider with temperatures converted
-                    if (metadata && metadata.config_template.units !== undefined) {
+                    if (instance.units !== undefined) {
                         const defaultRangeRule = average(
                             convert_temperature(metadata.rule_limits[0], 'celsius', instance.units),
                             convert_temperature(metadata.rule_limits[1], 'celsius', instance.units)

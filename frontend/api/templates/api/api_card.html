@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>{{ context.metadata.id }} - Micropython Smarthome API</title>
+    <title>{{ status.metadata.id }} - Micropython Smarthome API</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% progressive_web_app_meta %}
@@ -21,7 +21,7 @@
 
 <body>
     <div id="root" class="container">
-    {{ context|json_script:"context" }}
+    {{ status|json_script:"status" }}
     {{ target_ip|json_script:"target_ip" }}
     {{ recording|json_script:"recording" }}
     {{ api_target_options|json_script:"api_target_options" }}

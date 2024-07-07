@@ -5,7 +5,7 @@ from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
-from node_configuration.views import requires_post, get_metadata_context
+from node_configuration.views import requires_post
 from node_configuration.models import Node, ScheduleKeyword
 from node_configuration.get_api_target_menu_options import get_api_target_menu_options
 from Webrepl import Webrepl
@@ -34,29 +34,33 @@ def get_target_node(func):
     return wrapper
 
 
-# Returns mapping dict with device/sensor types as key, metadata dict as value
-# Dynamically generated from json metadata files for each instance type
+# Returns mapping dict with devices and sensors subdicts (types as keys)
+# containing all relevant metadata (prompts, limits, triggerable sensors)
 def get_metadata_map():
     # Get object containing metadata for all device and sensor types
     metadata = get_device_and_sensor_metadata()
-    # Combine into single list
-    metadata = metadata['devices'] + metadata['sensors']
 
-    # Build mapping dict with types as keys, dict of relevant metadata params as values
-    context = {}
-    for i in metadata:
+    output = {'devices': {}, 'sensors': {}}
+
+    # Add device config_name, rule_prompt, and rule_limits
+    for i in metadata['devices']:
         name = i["config_name"]
-        # Add rule prompt
-        context[name] = {}
-        context[name]['prompt'] = i["rule_prompt"]
-        # Add rule limits for instances which support numeric rule
+        output['devices'][name] = {}
+        output['devices'][name]['rule_prompt'] = i["rule_prompt"]
         if "rule_limits" in i.keys():
-            context[name]['limits'] = i["rule_limits"]
-        # Add triggerable param for all sensors
-        if "triggerable" in i.keys():
-            context[name]['triggerable'] = i["triggerable"]
+            output['devices'][name]['rule_limits'] = i["rule_limits"]
 
-    return context
+    # Add sensor config_name, rule_prompt, rule_limits, and triggerable bool
+    for i in metadata['sensors']:
+        name = i["config_name"]
+        output['sensors'][name] = {}
+        output['sensors'][name]['rule_prompt'] = i["rule_prompt"]
+        if "rule_limits" in i.keys():
+            output['sensors'][name]['rule_limits'] = i["rule_limits"]
+        if "triggerable" in i.keys():
+            output['sensors'][name]['triggerable'] = i["triggerable"]
+
+    return output
 
 
 @get_target_node
@@ -147,28 +151,25 @@ def api(request, node, recording=False):
         context = {"ip": node.ip, "id": node.friendly_name}
         return render(request, 'api/unable_to_connect.html', {'context': context})
 
-    # If ApiTarget configured, add options for ApiTargetRuleModal dropdowns
+    # If ApiTarget configured, get options for ApiTargetRuleModal dropdowns
     if "api-target" in str(status):
         api_target_options = get_api_target_options(node)
     else:
         api_target_options = {}
 
-    print(json.dumps(status, indent=4))
+    # Add target IP (used to send API calls to node)
+    # Add name of macro being recorded (False if not recording)
+    # Add metadata mapping dict (contains rule_prompt, limits, etc)
+    context = {
+        'status': status,
+        'target_ip': node.ip,
+        'recording': recording,
+        'instance_metadata': get_metadata_map(),
+        'api_target_options': api_target_options
+    }
 
-    # Add metadata context (TODO this is temporary, context already contains
-    # metadata for all configured types. Need to refactor RuleField to take
-    # arg instead of parsing from context object. Remove from template too.)
-    return render(
-        request,
-        'api/api_card.html',
-        {
-            'context': status,
-            'target_ip': node.ip,
-            'instance_metadata': get_metadata_context(),
-            'api_target_options': api_target_options,
-            'recording': recording
-        }
-    )
+    print(json.dumps(context, indent=4))
+    return render(request, 'api/api_card.html', context)
 
 
 # TODO unused? Climate card updates from status object
