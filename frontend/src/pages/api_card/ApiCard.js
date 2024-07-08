@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
 import ErrorModal from 'modals/ErrorModal';
-import DebugModal from 'modals/DebugModal';
+import DebugModal from './DebugModal';
 import ApiTargetRuleModal from 'modals/ApiTargetRuleModal';
-import ScheduleToggleModal from 'modals/ScheduleToggleModal';
+import ScheduleToggleModal from './ScheduleToggleModal';
 import Header from './Header';
 import Layout from './Layout';
-import FadeModal from 'modals/FadeModal';
+import FadeModal from './FadeModal';
 import { UpdateStatus } from './UpdateStatus';
 import { ApiCardContext } from 'root/ApiCardContext';
 import 'css/api_card.css';

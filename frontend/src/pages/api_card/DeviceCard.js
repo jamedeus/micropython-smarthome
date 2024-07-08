@@ -2,10 +2,10 @@ import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
-import { showDebugModal } from 'modals/DebugModal';
+import { showDebugModal } from './DebugModal';
 import { ApiCardContext } from 'root/ApiCardContext';
-import { showFadeModal } from 'modals/FadeModal';
-import { showScheduleToggle } from 'modals/ScheduleToggleModal';
+import { showFadeModal } from './FadeModal';
+import { showScheduleToggle } from './ScheduleToggleModal';
 import InstanceCard from './InstanceCard';
 import ChangeApiTargetRule from './ChangeApiTargetRule';
 import { get_instance_metadata } from 'util/metadata';
@@ -40,7 +40,6 @@ const DeviceCard = ({ id }) => {
     const turn_on_off = () => {
         turn_on(id, !params.turned_on);
     };
-
 
     const ActionButton = <PowerButton on={params.turned_on} onClick={turn_on_off} />;
     const DropdownOptions = (

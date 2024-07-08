@@ -27,7 +27,10 @@ const DebugModal = () => {
 
     return (
         <Modal show={visible} onHide={() => setVisible(false)} centered>
-            <HeaderWithCloseButton title="Debug" onClose={() => setVisible(false)} />
+            <HeaderWithCloseButton
+                title="Debug"
+                onClose={() => setVisible(false)}
+            />
 
             <Modal.Body className="d-flex flex-column mx-auto text-center">
                 {attributes ? (
