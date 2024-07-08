@@ -4,7 +4,7 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { showUploadModal, showUploadSuccess, closeUploadModal } from 'modals/UploadModal';
 import { ErrorModalContext } from 'modals/ErrorModal';
 import { sleep } from 'util/helper_functions';
-import { showDesktopModal } from 'modals/DesktopIntegrationModal';
+import { showDesktopModal } from './DesktopIntegrationModal';
 import { showRestoreModal } from 'modals/RestoreModal';
 import { showWifiModal } from 'modals/WifiModal';
 import { showGpsModal } from 'modals/GpsModal';

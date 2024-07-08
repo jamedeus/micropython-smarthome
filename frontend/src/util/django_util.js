@@ -26,13 +26,6 @@ if (orig_name) {
 // Contains valid API commands for each instance (device/sensor) of all existing nodes
 const api_target_options = parse_dom_context("api_target_options");
 
-// Parse client_ip string from element created by django template
-// Displayed in desktop integration instructions
-const client_ip = parse_dom_context("client_ip");
-
-// Parse link to desktop_integration_modal installer zip
-const desktop_integration_link = parse_dom_context("desktop_integration_link");
-
 // Takes name of cookie, returns cookie
 function getCookie(name) {
     let cookieValue = null;
@@ -73,7 +66,5 @@ export {
     edit_existing,
     orig_name,
     target_node_ip,
-    api_target_options,
-    client_ip,
-    desktop_integration_link
+    api_target_options
 };

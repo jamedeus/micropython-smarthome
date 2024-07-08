@@ -10,8 +10,7 @@ export const OverviewContextProvider = ({ children }) => {
     const [context, setContext] = useState(() => {
         return {
             not_uploaded: parse_dom_context("not_uploaded"),
-            uploaded: parse_dom_context("uploaded"),
-            client_ip: parse_dom_context("client_ip")
+            uploaded: parse_dom_context("uploaded")
         };
     });
 

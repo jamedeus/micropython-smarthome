@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
-import { client_ip, desktop_integration_link } from 'util/django_util';
+import { parse_dom_context } from 'util/django_util';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 
 export let showDesktopModal;
@@ -9,6 +9,15 @@ export let showDesktopModal;
 const DesktopModal = () => {
     // Create state object to set visiblity
     const [visible, setVisible] = useState(false);
+
+    // Parse client IP (displayed in modal instructions) and link to installer
+    // zip from elements created by django template
+    const [client_ip] = useState(() => {
+        return parse_dom_context("client_ip")
+    });
+    const [desktop_integration_link] = useState(() => {
+        return parse_dom_context("desktop_integration_link")
+    });
 
     showDesktopModal = () => {
         setVisible(true);
