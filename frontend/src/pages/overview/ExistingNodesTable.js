@@ -6,7 +6,7 @@ import Table from 'react-bootstrap/Table';
 import Collapse from 'react-bootstrap/Collapse';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { send_post_request } from 'util/django_util';
-import { ErrorModalContext } from 'modals/ErrorModal';
+import { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 import { showChangeIpModal } from './ChangeIpModal';
 import { uploadConfigFile } from 'modals/UploadModal';
 
@@ -84,17 +84,12 @@ const ExistingNodesTable = () => {
     // Get django context (contains existing nodes) and callback to delete node
     const { context, deleteExistingNode } = useContext(OverviewContext);
 
-    // Get callbacks for error modal
-    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
-
     // Takes node friendly name, opens modal to confirm deletion
     function show_delete_modal(friendly_name) {
-        setErrorModalContent({
-            ...errorModalContent,
-            ["visible"]: true,
-            ["title"]: "Confirm Delete",
-            ["error"]: "confirm_delete",
-            ["handleConfirm"]: () => delete_node(friendly_name)
+        showErrorModal({
+            title: "Confirm Delete",
+            error: "confirm_delete",
+            handleConfirm: () => delete_node(friendly_name)
         });
     }
 
@@ -105,18 +100,15 @@ const ExistingNodesTable = () => {
         // If successful close modal and update context (rerender without this row)
         if (result.ok) {
             deleteExistingNode(friendly_name);
-            setErrorModalContent({ ...errorModalContent, ["visible"]: false });
+            hideErrorModal();
 
         // Show error if failed
         } else {
             const error = await result.text();
-
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Error",
-                ["error"]: "failed",
-                ["body"]: error
+            showErrorModal({
+                title: "Error",
+                error: "failed",
+                body: error
             });
         }
     }

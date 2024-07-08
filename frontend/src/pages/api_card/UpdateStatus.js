@@ -1,33 +1,19 @@
 import { useContext, useEffect } from 'react';
 import { ApiCardContext } from 'root/ApiCardContext';
-import { ErrorModalContext } from 'modals/ErrorModal';
+import { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 
 
 export const UpdateStatus = () => {
     const {status, setStatus, overview} = useContext(ApiCardContext);
 
-    // Get state and callback for error modal
-    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
-
     // Track if error modal is open, close modal when connection reestablished
     let targetOffline = false;
 
     function show_connection_error() {
-        setErrorModalContent({
-            ...errorModalContent,
-            ["visible"]: true,
-            ["title"]: "Connection Error",
-            ["error"]: "connection_error",
-            ["handleConfirm"]: overview
-        });
-    }
-
-    function hide_connection_error() {
-        setErrorModalContent({
-            ...errorModalContent,
-            ["visible"]: false,
-            ["title"]: "Connection Error",
-            ["error"]: "connection_error"
+        showErrorModal({
+            title: "Connection Error",
+            error: "connection_error",
+            handleConfirm: overview
         });
     }
 
@@ -44,7 +30,7 @@ export const UpdateStatus = () => {
             setStatus(data);
             console.log("update", data);
             if (targetOffline) {
-                hide_connection_error();
+                hideErrorModal();
                 targetOffline = false;
             }
         } catch (error) {

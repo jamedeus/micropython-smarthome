@@ -1,8 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { sleep } from 'util/helper_functions';
 import { send_post_request } from 'util/django_util';
-import { ErrorModalContext } from 'modals/ErrorModal';
+import { showErrorModal } from 'modals/ErrorModal';
 import { HeaderStaticBackdrop } from 'modals/HeaderComponents';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 
@@ -12,9 +12,6 @@ const UploadModal = () => {
     // Create state for modal visibility, loading/success animation
     const [visible, setVisible] = useState(false);
     const [uploadComplete, setUploadComplete] = useState(false);
-
-    // Get state and callback for error modal
-    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
     // Show modal with loading animation
     showUploadModal = () => {
@@ -63,24 +60,20 @@ const UploadModal = () => {
             const error = await response.text();
             // Hide upload modal, show response in error modal
             closeUploadModal();
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Upload Failed",
-                ["error"]: "failed",
-                ["body"]: error
+            showErrorModal({
+                title: "Upload Failed",
+                error: "failed",
+                body: error
             });
 
         // Unable to upload because node is unreachable
         } else if (response.status == 404) {
             // Hide upload modal, show error modal
             closeUploadModal();
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Connection Error",
-                ["error"]: "unreachable",
-                ["body"]: targetIP
+            showErrorModal({
+                title: "Connection Error",
+                error: "unreachable",
+                body: targetIP
             });
 
         // Other error: show in alert, close modal

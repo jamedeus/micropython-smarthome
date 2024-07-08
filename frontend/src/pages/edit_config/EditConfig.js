@@ -6,7 +6,7 @@ import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
 import ApiTargetRuleModal from 'modals/ApiTargetRuleModal';
-import { ErrorModalContext, ErrorModal } from 'modals/ErrorModal';
+import ErrorModal, { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 import UploadModal, { uploadConfigFile } from 'modals/UploadModal';
 
 // Redirect back to overview page
@@ -96,23 +96,15 @@ const EditConfig = () => {
     // Get full config (state object)
     const { config, setHighlightInvalid } = useContext(ConfigContext);
 
-    // Get state and callback for error modal
-    const {
-        errorModalContent,
-        setErrorModalContent
-    } = useContext(ErrorModalContext);
-
     function prevPage() {
         // Go back to overview if current page is page 1
         if (page === 1) {
             // Show unsaved changes warning if user modified any inputs
             if (configModified(config)) {
-                setErrorModalContent({
-                    ...errorModalContent,
-                    ["visible"]: true,
-                    ["title"]: "Warning",
-                    ["error"]: "unsaved_changes",
-                    ["handleConfirm"]: returnToOverview
+                showErrorModal({
+                    title: "Warning",
+                    error: "unsaved_changes",
+                    handleConfirm: returnToOverview
                 });
             // Go directly to overview if no unsaved changes
             } else {
@@ -169,13 +161,11 @@ const EditConfig = () => {
 
         // If config with same name already exists, show overwrite prompt
         } else if (!edit_existing && response.status == 409) {
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Duplicate Warning",
-                ["error"]: "duplicate",
-                ["body"]: config.metadata.id,
-                ["handleConfirm"]: confirmOverwriteDuplicate
+            showErrorModal({
+                title: "Duplicate Warning",
+                error: "duplicate",
+                body: config.metadata.id,
+                handleConfirm: confirmOverwriteDuplicate
             });
 
         // If other error, display in alert
@@ -190,7 +180,7 @@ const EditConfig = () => {
         // Convert friendly name into config filename
         const target_filename = friendlyNameToFilename(config.metadata.id);
         // Close error modal, delete existing file, resubmit
-        setErrorModalContent({ ...errorModalContent, ["visible"]: false });
+        hideErrorModal();
         await send_post_request("delete_config", `${target_filename}.json`);
         await submitButton();
     }

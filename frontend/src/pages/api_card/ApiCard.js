@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { ErrorModal } from 'modals/ErrorModal';
+import ErrorModal from 'modals/ErrorModal';
 import DebugModal from 'modals/DebugModal';
 import ApiTargetRuleModal from 'modals/ApiTargetRuleModal';
 import ScheduleToggleModal from 'modals/ScheduleToggleModal';

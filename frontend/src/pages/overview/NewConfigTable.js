@@ -7,19 +7,12 @@ import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import { send_post_request } from 'util/django_util';
-import { ErrorModalContext } from 'modals/ErrorModal';
+import { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 import { formatIp, ipRegex } from 'util/validation';
 import { uploadConfigFile } from 'modals/UploadModal';
 
 
 const NewConfigRow = ({ filename, friendlyName }) => {
-    // Get callbacks for error modal
-    const {
-        errorModalContent,
-        setErrorModalContent,
-        handleClose
-    } = useContext(ErrorModalContext);
-
     const { handleNewConfigUpload, deleteNewConfig } = useContext(OverviewContext);
 
     // Create state objects for IP field, submit button
@@ -36,12 +29,10 @@ const NewConfigRow = ({ filename, friendlyName }) => {
 
     // Takes config filename, opens modal to confirm deletion
     function show_delete_modal(filename) {
-        setErrorModalContent({
-            ...errorModalContent,
-            ["visible"]: true,
-            ["title"]: "Confirm Delete",
-            ["error"]: "confirm_delete",
-            ["handleConfirm"]: () => delete_config(filename)
+        showErrorModal({
+            title: "Confirm Delete",
+            error: "confirm_delete",
+            handleConfirm: () => delete_config(filename)
         });
     }
 
@@ -51,19 +42,16 @@ const NewConfigRow = ({ filename, friendlyName }) => {
 
         // Remove filename from state if successfully deleted
         if (result.ok) {
-            handleClose();
+            hideErrorModal();
             deleteNewConfig(filename);
 
         // Show error if failed
         } else {
             const error = await result.text();
-
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Error",
-                ["error"]: "failed",
-                ["body"]: error
+            showErrorModal({
+                title: "Error",
+                error: "failed",
+                body: error
             });
         }
     }

@@ -1,8 +1,8 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { showUploadModal, showUploadSuccess, closeUploadModal } from 'modals/UploadModal';
-import { ErrorModalContext } from 'modals/ErrorModal';
+import { showErrorModal } from 'modals/ErrorModal';
 import { sleep } from 'util/helper_functions';
 import { showDesktopModal } from './DesktopIntegrationModal';
 import { showRestoreModal } from './RestoreModal';
@@ -10,9 +10,6 @@ import { showWifiModal } from './WifiModal';
 import { showGpsModal } from './GpsModal';
 
 const Header = () => {
-    // Get callbacks for error modal
-    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
-
     const reuploadAll = async () => {
         // Show upload modal with loading spinner
         showUploadModal();
@@ -29,12 +26,10 @@ const Header = () => {
 
         // If any failed, show error modal with names and failure reasons
         if (Object.keys(report.failed).length !== 0) {
-            setErrorModalContent({
-                ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Failed Uploads",
-                ["error"]: "failed_upload_all",
-                ["body"]: report.failed
+            showErrorModal({
+                title: "Failed Uploads",
+                error: "failed_upload_all",
+                body: report.failed
             });
         }
     };

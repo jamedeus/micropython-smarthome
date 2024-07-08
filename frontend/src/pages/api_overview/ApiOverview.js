@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import Button from 'react-bootstrap/Button';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
-import { ErrorModal } from 'modals/ErrorModal';
+import ErrorModal from 'modals/ErrorModal';
 import { EditMacroModal } from 'modals/EditMacroModal';
 import Header from './Header';
 import Floors from './Floors';

@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import { sleep } from 'util/helper_functions';
 import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
-import { ErrorModalContext } from 'modals/ErrorModal';
+import { showErrorModal } from 'modals/ErrorModal';
 import { OverviewContext } from 'root/OverviewContext';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
@@ -15,9 +15,6 @@ export let showChangeIpModal;
 const ChangeIpModal = () => {
     // Get context hook used to re-render with new IP
     const { changeExistingNodeIp } = useContext(OverviewContext);
-
-    // Get callbacks for error modal
-    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
     // Create states for visibility, animation, input
     const [visible, setVisible] = useState(false);
@@ -57,9 +54,7 @@ const ChangeIpModal = () => {
         } else if (response.status == 404) {
             // Hide modal, show error modal with possible connection failure reasons
             setVisible(false);
-            setErrorModalContent({
-                ...errorModalContent,
-                visible: true,
+            showErrorModal({
                 title: "Connection Error",
                 error: "unreachable",
                 body: ipAddress
@@ -69,9 +64,7 @@ const ChangeIpModal = () => {
         } else {
             // Hide modal, show error modal with response from backend
             setVisible(false);
-            setErrorModalContent({
-                ...errorModalContent,
-                visible: true,
+            showErrorModal({
                 title: "Error",
                 error: "",
                 body: await response.text()

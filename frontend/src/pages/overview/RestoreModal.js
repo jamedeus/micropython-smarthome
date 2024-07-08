@@ -5,7 +5,7 @@ import Button from 'react-bootstrap/Button';
 import { sleep } from 'util/helper_functions';
 import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
-import { ErrorModalContext } from 'modals/ErrorModal';
+import { showErrorModal } from 'modals/ErrorModal';
 import { OverviewContext } from 'root/OverviewContext';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
@@ -15,9 +15,6 @@ export let showRestoreModal;
 export const RestoreModal = () => {
     // Get callback used to render new row after restoring node
     const { addNewNode } = useContext(OverviewContext);
-
-    // Get callbacks for error modal
-    const { errorModalContent, setErrorModalContent } = useContext(ErrorModalContext);
 
     // Create states for visibility, stage (prompt, loading, complete), input
     const [ visible, setVisible ] = useState(false);
@@ -53,9 +50,7 @@ export const RestoreModal = () => {
         } else if (response.status == 404) {
             // Hide upload modal, show error modal with possible connection failure reasons
             setVisible(false);
-            setErrorModalContent({
-                ...errorModalContent,
-                visible: true,
+            showErrorModal({
                 title: "Connection Error",
                 error: "unreachable",
                 body: ipAddress
@@ -65,9 +60,7 @@ export const RestoreModal = () => {
         } else if (response.status == 409) {
             // Hide upload modal, show error modal
             setVisible(false);
-            setErrorModalContent({
-                ...errorModalContent,
-                visible: true,
+            showErrorModal({
                 title: "Duplicate",
                 error: "",
                 body: "A node with the same name or filename already exists"

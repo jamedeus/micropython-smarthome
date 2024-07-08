@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import { HeaderStaticBackdrop } from 'modals/HeaderComponents';
 import { LoadingSpinner } from 'util/animations';
 
-export const ErrorModalContext = createContext();
+export let showErrorModal;
 
-export const ErrorModalContextProvider = ({ children }) => {
+export let hideErrorModal;
+
+const ErrorModal = () => {
     const [errorModalContent, setErrorModalContent] = useState({
         visible: false,
         title: '',
@@ -16,28 +17,17 @@ export const ErrorModalContextProvider = ({ children }) => {
         handleConfirm: ''
     });
 
-    const handleClose = () => {
-        setErrorModalContent({ ...errorModalContent, ["visible"]: false });
+    hideErrorModal = () => {
+        setErrorModalContent({ ...errorModalContent, visible: false });
     };
 
-    return (
-        <ErrorModalContext.Provider value={{
-            errorModalContent,
-            setErrorModalContent,
-            handleClose
-        }}>
-            {children}
-        </ErrorModalContext.Provider>
-    );
-};
-
-ErrorModalContextProvider.propTypes = {
-    children: PropTypes.node,
-};
-
-export const ErrorModal = () => {
-    // Get state object that determines modal contents
-    const { errorModalContent, handleClose } = useContext(ErrorModalContext);
+    // Takes partial or full list or params, concatenates with existing state
+    showErrorModal = (errorModalParams) => {
+        setErrorModalContent({ ...errorModalContent,
+            visible: true,
+            ...errorModalParams
+        });
+    };
 
     const Contents = () => {
         switch (errorModalContent.error) {
@@ -98,7 +88,7 @@ export const ErrorModal = () => {
                         <Button
                             variant="secondary"
                             className="m-1"
-                            onClick={handleClose}
+                            onClick={hideErrorModal}
                         >
                             Cancel
                         </Button>
@@ -124,7 +114,7 @@ export const ErrorModal = () => {
                         <Button
                             variant="secondary"
                             className="m-1"
-                            onClick={handleClose}
+                            onClick={hideErrorModal}
                         >
                             Keep Editing
                         </Button>
@@ -136,7 +126,7 @@ export const ErrorModal = () => {
                         <Button
                             variant="secondary"
                             className="m-1"
-                            onClick={handleClose}
+                            onClick={hideErrorModal}
                         >
                             Cancel
                         </Button>
@@ -164,7 +154,7 @@ export const ErrorModal = () => {
                     <Button
                         variant="success"
                         className="m-1"
-                        onClick={handleClose}
+                        onClick={hideErrorModal}
                     >
                         OK
                     </Button>
@@ -175,7 +165,7 @@ export const ErrorModal = () => {
     return (
         <Modal
             show={errorModalContent.visible}
-            onHide={handleClose}
+            onHide={hideErrorModal}
             backdrop="static"
             keyboard={false}
             centered
@@ -191,3 +181,5 @@ export const ErrorModal = () => {
         </Modal>
     );
 };
+
+export default ErrorModal;
