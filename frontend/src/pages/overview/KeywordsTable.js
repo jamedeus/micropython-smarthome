@@ -1,19 +1,15 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { OverviewContext } from 'root/OverviewContext';
 import Row from 'react-bootstrap/Row';
 import Form from 'react-bootstrap/Form';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
-import { send_post_request } from 'util/django_util';
+import { send_post_request, parse_dom_context } from 'util/django_util';
+import { v4 as uuid } from 'uuid';
 
-
-const KeywordRow = ({initKeyword, initTimestamp}) => {
-    // Get callbacks used to modify keywords
-    const { editScheduleKeyword, deleteScheduleKeyword } = useContext(OverviewContext);
-
+const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) => {
     // Create state objects for both inputs
     const [keyword, setKeyword] = useState(initKeyword);
     const [timestamp, setTimestamp] = useState(initTimestamp);
@@ -45,7 +41,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
         }
     };
 
-    const editKeyword = async () => {
+    const handleEdit = async () => {
         const payload = {
             "keyword_old": initKeyword,
             "keyword_new": keyword,
@@ -61,7 +57,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
 
         // If successful update context (re-renders this row) and reset button
         if (result.ok) {
-            editScheduleKeyword(initKeyword, keyword, timestamp);
+            editKeyword(initKeyword, keyword, timestamp);
             setButton("delete");
         // Show error in alert if failed, stop loading animation
         } else {
@@ -70,7 +66,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
         }
     };
 
-    const deleteKeyword = async () => {
+    const handleDelete = async () => {
         // Change delete button to loading animation, make API call
         setButton("loading");
         const result = await send_post_request(
@@ -80,7 +76,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
 
         // If successful delete from context and re-render (removes this row)
         if (result.ok) {
-            deleteScheduleKeyword(keyword);
+            deleteKeyword(keyword);
         // Show error in alert if failed, stop loading animation
         } else {
             alert(await result.text());
@@ -92,7 +88,7 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
     // Ignored if fields not modified or currently loading
     const handleEnterKey = (e) => {
         if (e.key === "Enter" && button === "edit") {
-            editKeyword();
+            handleEdit();
         }
     };
 
@@ -120,8 +116,8 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
             <td className="min align-middle">
                 <DeleteOrEditButton
                     status={button}
-                    handleDelete={deleteKeyword}
-                    handleEdit={editKeyword}
+                    handleDelete={handleDelete}
+                    handleEdit={handleEdit}
                 />
             </td>
         </tr>
@@ -129,15 +125,13 @@ const KeywordRow = ({initKeyword, initTimestamp}) => {
 };
 
 KeywordRow.propTypes = {
-    initKeyword: PropTypes.string,
-    initTimestamp: PropTypes.string
+    initKeyword: PropTypes.string.isRequired,
+    initTimestamp: PropTypes.string.isRequired,
+    editKeyword: PropTypes.func.isRequired,
+    deleteKeyword: PropTypes.func.isRequired
 };
 
-
-const NewKeywordRow = () => {
-    // Get context and callback (used to add new row)
-    const { addScheduleKeyword } = useContext(OverviewContext);
-
+const NewKeywordRow = ({ addKeyword }) => {
     // Create state objects for both inputs
     const [keyword, setKeyword] = useState("");
     const [timestamp, setTimestamp] = useState("");
@@ -170,7 +164,7 @@ const NewKeywordRow = () => {
         }
     };
 
-    const addKeyword = async () => {
+    const handleAdd = async () => {
         setButtonLoading(true);
         const payload = {
             "keyword": keyword,
@@ -180,7 +174,7 @@ const NewKeywordRow = () => {
 
         // If successful add to context (renders new row) + reset new keyword row
         if (result.ok) {
-            addScheduleKeyword(keyword, timestamp);
+            addKeyword(keyword, timestamp);
             setKeyword("");
             setTimestamp("");
             setButtonDisabled(true);
@@ -196,7 +190,7 @@ const NewKeywordRow = () => {
     // Ignored if fields not complete or currently loading
     const handleEnterKey = (e) => {
         if (e.key === "Enter" && !buttonLoading && !buttonDisabled) {
-            addKeyword();
+            handleAdd();
         }
     };
 
@@ -206,7 +200,7 @@ const NewKeywordRow = () => {
                 variant="primary"
                 size="sm"
                 disabled={buttonDisabled}
-                onClick={addKeyword}
+                onClick={handleAdd}
             >
                 <i className="bi-plus"></i>
             </Button>
@@ -249,10 +243,32 @@ const NewKeywordRow = () => {
     );
 };
 
+NewKeywordRow.propTypes = {
+    addKeyword: PropTypes.func.isRequired
+};
 
 const KeywordsTable = () => {
-    // Get django context
-    const { context } = useContext(OverviewContext);
+    // Load existing keyword context set by django template
+    const [keywords, setKeywords] = useState(() => {
+        return parse_dom_context("schedule_keywords");
+    });
+
+    const addKeyword = (keyword, timestamp) => {
+        setKeywords([
+            ...keywords,
+            {id: uuid(), keyword: keyword, timestamp: timestamp}
+        ]);
+    };
+
+    const editKeyword = (keyword_old, keyword_new, timestamp_new) => {
+        setKeywords(keywords.map(item =>
+            item.keyword === keyword_old ? { ...item, keyword: keyword_new, timestamp: timestamp_new} : item
+        ));
+    };
+
+    const deleteKeyword = (keyword) => {
+        setKeywords(keywords.filter(item => item.keyword !== keyword));
+    };
 
     // Set default collapse state
     const [open, setOpen] = useState(true);
@@ -274,14 +290,16 @@ const KeywordsTable = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {context.schedule_keywords.map(item =>
+                            {keywords.map(item =>
                                 <KeywordRow
                                     key={item.id}
                                     initKeyword={item.keyword}
                                     initTimestamp={item.timestamp}
+                                    editKeyword={editKeyword}
+                                    deleteKeyword={deleteKeyword}
                                 />
                             )}
-                            <NewKeywordRow />
+                            <NewKeywordRow addKeyword={addKeyword} />
                         </tbody>
                     </Table>
                 </div>
@@ -289,6 +307,5 @@ const KeywordsTable = () => {
         </Row>
     );
 };
-
 
 export default KeywordsTable;

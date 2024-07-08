@@ -1,6 +1,5 @@
 import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
-import { v4 as uuid } from 'uuid';
 import { parse_dom_context } from 'util/django_util';
 
 
@@ -12,30 +11,9 @@ export const OverviewContextProvider = ({ children }) => {
         return {
             not_uploaded: parse_dom_context("not_uploaded"),
             uploaded: parse_dom_context("uploaded"),
-            schedule_keywords: parse_dom_context("schedule_keywords"),
             client_ip: parse_dom_context("client_ip")
         };
     });
-
-    const addScheduleKeyword = (keyword, timestamp) => {
-        let update = [ ...context.schedule_keywords ];
-        update.push({id: uuid(), keyword: keyword, timestamp: timestamp});
-        setContext({ ...context, ["schedule_keywords"]: update});
-    };
-
-    const editScheduleKeyword = (keyword_old, keyword_new, timestamp_new) => {
-        let update = [ ...context.schedule_keywords ];
-        update = update.map(item =>
-            item.keyword === keyword_old ? { ...item, keyword: keyword_new, timestamp: timestamp_new} : item
-        );
-        setContext({ ...context, ["schedule_keywords"]: update});
-    };
-
-    const deleteScheduleKeyword = (keyword) => {
-        let update = [ ...context.schedule_keywords ];
-        update = update.filter(item => item.keyword !== keyword);
-        setContext({ ...context, ["schedule_keywords"]: update});
-    };
 
     const addNewNode = (friendly_name, filename, ip) => {
         let update = [ ...context.uploaded ];
@@ -84,9 +62,6 @@ export const OverviewContextProvider = ({ children }) => {
         <OverviewContext.Provider value={{
             context,
             setContext,
-            addScheduleKeyword,
-            editScheduleKeyword,
-            deleteScheduleKeyword,
             addNewNode,
             deleteExistingNode,
             changeExistingNodeIp,
