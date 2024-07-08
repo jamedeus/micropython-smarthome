@@ -55,10 +55,10 @@ export const RestoreModal = () => {
             setVisible(false);
             setErrorModalContent({
                 ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Connection Error",
-                ["error"]: "unreachable",
-                ["body"]: ipAddress
+                visible: true,
+                title: "Connection Error",
+                error: "unreachable",
+                body: ipAddress
             });
 
         // Duplicate
@@ -67,10 +67,10 @@ export const RestoreModal = () => {
             setVisible(false);
             setErrorModalContent({
                 ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Duplicate",
-                ["error"]: "",
-                ["body"]: "A node with the same name or filename already exists"
+                visible: true,
+                title: "Duplicate",
+                error: "",
+                body: "A node with the same name or filename already exists"
             });
 
         // Other error, show in alert

@@ -7,7 +7,7 @@ import Collapse from 'react-bootstrap/Collapse';
 import Dropdown from 'react-bootstrap/Dropdown';
 import { send_post_request } from 'util/django_util';
 import { ErrorModalContext } from 'modals/ErrorModal';
-import { showChangeIpModal } from 'modals/ChangeIpModal';
+import { showChangeIpModal } from './ChangeIpModal';
 import { uploadConfigFile } from 'modals/UploadModal';
 
 

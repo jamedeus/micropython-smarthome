@@ -5,9 +5,9 @@ import { showUploadModal, showUploadSuccess, closeUploadModal } from 'modals/Upl
 import { ErrorModalContext } from 'modals/ErrorModal';
 import { sleep } from 'util/helper_functions';
 import { showDesktopModal } from './DesktopIntegrationModal';
-import { showRestoreModal } from 'modals/RestoreModal';
-import { showWifiModal } from 'modals/WifiModal';
-import { showGpsModal } from 'modals/GpsModal';
+import { showRestoreModal } from './RestoreModal';
+import { showWifiModal } from './WifiModal';
+import { showGpsModal } from './GpsModal';
 
 const Header = () => {
     // Get callbacks for error modal

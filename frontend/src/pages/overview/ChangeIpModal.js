@@ -59,10 +59,10 @@ const ChangeIpModal = () => {
             setVisible(false);
             setErrorModalContent({
                 ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Connection Error",
-                ["error"]: "unreachable",
-                ["body"]: ipAddress
+                visible: true,
+                title: "Connection Error",
+                error: "unreachable",
+                body: ipAddress
             });
 
         // Other error, show in modal
@@ -71,10 +71,10 @@ const ChangeIpModal = () => {
             setVisible(false);
             setErrorModalContent({
                 ...errorModalContent,
-                ["visible"]: true,
-                ["title"]: "Error",
-                ["error"]: "",
-                ["body"]: await response.text()
+                visible: true,
+                title: "Error",
+                error: "",
+                body: await response.text()
             });
         }
     };

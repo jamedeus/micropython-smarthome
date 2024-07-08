@@ -7,11 +7,11 @@ import NewConfigTable from './NewConfigTable';
 import ExistingNodesTable from './ExistingNodesTable';
 import { ErrorModal } from 'modals/ErrorModal';
 import UploadModal from 'modals/UploadModal';
-import ChangeIpModal from 'modals/ChangeIpModal';
+import ChangeIpModal from './ChangeIpModal';
 import DesktopModal from './DesktopIntegrationModal';
-import RestoreModal from 'modals/RestoreModal';
-import WifiModal from 'modals/WifiModal';
-import GpsModal from 'modals/GpsModal';
+import RestoreModal from './RestoreModal';
+import WifiModal from './WifiModal';
+import GpsModal from './GpsModal';
 
 const App = () => {
     // Get django context

@@ -23,7 +23,7 @@ const WifiModal = () => {
     const setWifiCredentials = () => {
         send_post_request(
             "set_default_credentials",
-            {"ssid": ssid, "password": password}
+            {ssid: ssid, password: password}
         );
         setVisible(false);
     };
