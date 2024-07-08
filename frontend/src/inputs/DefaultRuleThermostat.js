@@ -6,8 +6,7 @@ import { average } from 'util/helper_functions';
 import { convert_temperature } from 'util/thermostat_util';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 
-
-function DefaultRuleThermostat({ id }) {
+const DefaultRuleThermostat = ({ id }) => {
     // Get instance section from config (state) object
     const { config, handleInputChange } = useContext(ConfigContext);
 
@@ -44,7 +43,7 @@ function DefaultRuleThermostat({ id }) {
             />
         </div>
     );
-}
+};
 
 DefaultRuleThermostat.propTypes = {
     id: PropTypes.string,

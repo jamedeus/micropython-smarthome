@@ -8,7 +8,7 @@ import { api_target_options } from 'util/django_util';
 // Get object containing friendly_name: IP pairs for all existing nodes
 const addresses = api_target_options.addresses;
 
-function TargetNodeDropdown({ id }) {
+const TargetNodeDropdown = ({ id }) => {
     // Get curent state + callback functions from context
     const { config, handleInstanceUpdate, highlightInvalid } = useContext(ConfigContext);
 
@@ -34,7 +34,7 @@ function TargetNodeDropdown({ id }) {
             </Form.Select>
         </InputWrapper>
     );
-}
+};
 
 TargetNodeDropdown.propTypes = {
     id: PropTypes.string

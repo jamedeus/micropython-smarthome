@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-function InputWrapper({ children, label }) {
+const InputWrapper = ({ children, label }) => {
     return (
         <div className="mb-2">
             <label className="w-100 fw-bold">
@@ -10,7 +10,7 @@ function InputWrapper({ children, label }) {
             </label>
         </div>
     );
-}
+};
 
 InputWrapper.propTypes = {
     children: PropTypes.node,

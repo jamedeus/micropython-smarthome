@@ -10,7 +10,6 @@ import { UpdateStatus } from './UpdateStatus';
 import { ApiCardContext } from 'root/ApiCardContext';
 import 'css/api_card.css';
 
-
 const App = () => {
     // Get state bool for loading animation
     const { loading } = useContext(ApiCardContext);
@@ -30,6 +29,5 @@ const App = () => {
         </div>
     );
 };
-
 
 export default App;

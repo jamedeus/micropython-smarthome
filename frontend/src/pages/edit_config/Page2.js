@@ -4,7 +4,6 @@ import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext, filterObject } from 'root/ConfigContext';
 
-
 const Page2 = () => {
     // Get curent state + callback functions from context
     const { config, handleSensorTargetSelect } = useContext(ConfigContext);
@@ -72,6 +71,5 @@ const Page2 = () => {
         </>
     );
 };
-
 
 export default Page2;

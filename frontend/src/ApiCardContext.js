@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { parse_dom_context, getCookie } from 'util/django_util';
 import { debounce } from 'util/helper_functions';
 
-
 export const ApiCardContext = createContext();
 
 export const ApiCardContextProvider = ({ children }) => {
@@ -15,10 +14,10 @@ export const ApiCardContextProvider = ({ children }) => {
         return parse_dom_context("target_ip");
     });
     const [apiTargetOptions, _] = useState(() => {
-        return parse_dom_context("api_target_options")
+        return parse_dom_context("api_target_options");
     });
     const [irMacros, setIrMacros] = useState(() => {
-        return parse_dom_context("ir_macros")
+        return parse_dom_context("ir_macros");
     });
 
     // Create state to control fade in/fade out animation
@@ -266,7 +265,6 @@ export const ApiCardContextProvider = ({ children }) => {
     }
 
     async function add_ir_macro(name, actions) {
-        console.log(actions)
         const result = await fetch('/add_ir_macro', {
             method: 'POST',
             body: JSON.stringify({

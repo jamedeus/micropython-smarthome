@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
 
-function URIInput({ id }) {
+const URIInput = ({ id }) => {
     const input = useRef(null);
 
     // Get curent state + callback functions from context
@@ -43,7 +43,7 @@ function URIInput({ id }) {
             />
         </InputWrapper>
     );
-}
+};
 
 URIInput.propTypes = {
     id: PropTypes.string

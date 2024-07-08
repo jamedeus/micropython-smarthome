@@ -11,7 +11,6 @@ import { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 import { formatIp, ipRegex } from 'util/validation';
 import { uploadConfigFile } from 'modals/UploadModal';
 
-
 const NewConfigRow = ({ filename, friendlyName }) => {
     const { handleNewConfigUpload, deleteNewConfig } = useContext(OverviewContext);
 
@@ -128,7 +127,6 @@ NewConfigRow.propTypes = {
     friendlyName: PropTypes.string
 };
 
-
 const NewConfigTable = () => {
     // Get django context
     const { context } = useContext(OverviewContext);
@@ -170,6 +168,5 @@ const NewConfigTable = () => {
         </Row>
     );
 };
-
 
 export default NewConfigTable;

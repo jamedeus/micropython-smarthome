@@ -15,7 +15,7 @@ const PowerButton = ({ on, onClick }) => {
     return (
         <Button
             variant="outline-primary"
-            className={on ? "power-button my-auto me-auto toggle-on" : "power-button my-auto me-auto"}
+            className={`power-button my-auto me-auto ${on ? 'toggle-on' : ''}`}
             onClick={onClick}
         >
             <i className="bi-lightbulb"></i>

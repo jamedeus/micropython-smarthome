@@ -6,7 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import DevicePinSelect from 'inputs/DevicePinSelect';
 
-function IrBlasterSection() {
+const IrBlasterSection = () => {
     // Get curent state + callbacks from context
     const { config, updateConfig, handleIrTargetSelect } = useContext(ConfigContext);
 
@@ -87,6 +87,6 @@ function IrBlasterSection() {
             </Collapse>
         </div>
     );
-}
+};
 
 export default IrBlasterSection;

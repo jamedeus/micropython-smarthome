@@ -5,8 +5,7 @@ import { get_instance_metadata } from 'util/metadata';
 import { average } from 'util/helper_functions';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 
-
-function DefaultRuleFloatRange({ id }) {
+const DefaultRuleFloatRange = ({ id }) => {
     // Get curent state + callback functions from context
     const { config, handleInputChange } = useContext(ConfigContext);
 
@@ -42,7 +41,7 @@ function DefaultRuleFloatRange({ id }) {
             />
         </div>
     );
-}
+};
 
 DefaultRuleFloatRange.propTypes = {
     id: PropTypes.string,

@@ -61,7 +61,7 @@ const ScheduleRulesTable = ({ id, schedule }) => {
         const handleNewRule = (newRuleValue, fade_rule, duration, range_rule) => {
             // Fade rule: Combine params into single string
             if (range_rule && fade_rule) {
-                newRuleValue = `fade/${newRuleValue}/${duration}`
+                newRuleValue = `fade/${newRuleValue}/${duration}`;
             }
             setNewRule(newRuleValue);
             updateLoadingButton(newTime, newRuleValue);
@@ -162,7 +162,6 @@ const ScheduleRulesTable = ({ id, schedule }) => {
         ]),
         existingRule: PropTypes.bool
     };
-
 
     return (
         <div className="collapse text-center" id={`${id}-schedule-rules`}>

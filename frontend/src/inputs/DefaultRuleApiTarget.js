@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import { ConfigContext } from 'root/ConfigContext';
 import { showApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
 
-function DefaultRuleApiTarget({ id }) {
+const DefaultRuleApiTarget = ({ id }) => {
     // Get curent state + callback functions from context
     const {
         config,
@@ -48,7 +48,7 @@ function DefaultRuleApiTarget({ id }) {
             </div>
         </>
     );
-}
+};
 
 DefaultRuleApiTarget.propTypes = {
     id: PropTypes.string,

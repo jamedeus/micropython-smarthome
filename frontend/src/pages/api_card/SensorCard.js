@@ -13,7 +13,7 @@ const TriggerButton = ({ on, onClick, disabled }) => {
     return (
         <Button
             variant="outline-primary"
-            className={on ? "trigger-button my-auto me-auto trigger-on" : "trigger-button my-auto me-auto"}
+            className={`trigger-button my-auto me-auto ${on ? 'trigger-on' : ''}`}
             onClick={onClick}
             disabled={disabled}
         >

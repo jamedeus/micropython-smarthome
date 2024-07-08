@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import PinSelectDropdown from './PinSelectDropdown';
 
-function SensorPinSelect({ id }) {
+const SensorPinSelect = ({ id }) => {
     // Get curent state + callback functions from context
     const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
@@ -46,7 +46,7 @@ function SensorPinSelect({ id }) {
             isInvalid={(highlightInvalid && !config[id]["pin"])}
         />
     );
-}
+};
 
 SensorPinSelect.propTypes = {
     id: PropTypes.string,

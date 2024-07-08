@@ -7,7 +7,6 @@ import Collapse from 'react-bootstrap/Collapse';
 import ScheduleRulesTable from './ScheduleRules';
 import RuleInput from './RuleInput';
 
-
 const InstanceCard = ({ id, params, actionButton, dropdownOptions }) => {
     return (
         <Card className="mb-4">
@@ -31,8 +30,6 @@ const InstanceCard = ({ id, params, actionButton, dropdownOptions }) => {
 
                 <Collapse in={params.enabled}>
                     <div>
-                        {/* BUG if device is disabled this will pass string to rule slider current_rule */}
-                        {/* Renders slider with NaN, broken until next status update after enabling card */}
                         <RuleInput id={id} params={params} />
 
                         <div className="text-center my-3">
@@ -61,6 +58,5 @@ InstanceCard.propTypes = {
     actionButton: PropTypes.node,
     dropdownOptions: PropTypes.node
 };
-
 
 export default InstanceCard;

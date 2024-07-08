@@ -5,7 +5,7 @@ import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
 import { formatIp } from 'util/validation';
 
-function IPInput({ id }) {
+const IPInput = ({ id }) => {
     // Get curent state + callback functions from context
     const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
@@ -29,7 +29,7 @@ function IPInput({ id }) {
             />
         </InputWrapper>
     );
-}
+};
 
 IPInput.propTypes = {
     id: PropTypes.string,

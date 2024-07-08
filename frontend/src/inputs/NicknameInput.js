@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
 
-function NicknameInput({ id }) {
+const NicknameInput = ({ id }) => {
     // Get curent state + callback functions from context
     const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
@@ -40,7 +40,7 @@ function NicknameInput({ id }) {
             />
         </InputWrapper>
     );
-}
+};
 
 NicknameInput.propTypes = {
     id: PropTypes.string,

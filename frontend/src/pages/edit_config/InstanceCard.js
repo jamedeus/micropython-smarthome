@@ -21,8 +21,7 @@ import DefaultRuleApiTarget from 'inputs/DefaultRuleApiTarget';
 import { get_instance_metadata, get_type_dropdown_options } from 'util/metadata';
 import { v4 as uuid } from 'uuid';
 
-
-function InstanceCard({ id }) {
+const InstanceCard = ({ id }) => {
     // Get curent state + callback functions from context
     const {
         config,
@@ -191,7 +190,7 @@ function InstanceCard({ id }) {
             </Card>
         </div>
     );
-}
+};
 
 InstanceCard.propTypes = {
     id: PropTypes.string

@@ -5,7 +5,6 @@ import { OverviewContextProvider } from 'root/OverviewContext';
 import 'css/dark_mode.scss';
 import 'css/style.css';
 
-
 const container = document.getElementById('root');
 const root = createRoot(container);
 root.render(

@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
 
-function HttpGetPathInputs({ id }) {
+const HttpGetPathInputs = ({ id }) => {
     // Get curent state + callback functions from context
     const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
@@ -34,7 +34,7 @@ function HttpGetPathInputs({ id }) {
             </InputWrapper>
         </>
     );
-}
+};
 
 HttpGetPathInputs.propTypes = {
     id: PropTypes.string

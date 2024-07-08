@@ -6,7 +6,6 @@ import 'css/edit_config.css';
 import 'css/dark_mode.scss';
 import 'css/style.css';
 
-
 const container = document.getElementById('root');
 const root = createRoot(container);
 root.render(

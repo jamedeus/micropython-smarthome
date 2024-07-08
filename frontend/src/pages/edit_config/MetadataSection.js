@@ -5,8 +5,7 @@ import InputWrapper from 'inputs/InputWrapper';
 import { numbersOnly } from 'util/validation';
 import { send_post_request, edit_existing, orig_name } from 'util/django_util';
 
-
-function MetadataSection() {
+const MetadataSection = () => {
     // Get curent state + callback functions from context
     const {
         config,
@@ -104,6 +103,6 @@ function MetadataSection() {
             </div>
         </div>
     );
-}
+};
 
 export default MetadataSection;

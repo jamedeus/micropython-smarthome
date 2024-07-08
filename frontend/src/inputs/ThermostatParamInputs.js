@@ -6,7 +6,7 @@ import InputWrapper from './InputWrapper';
 import { convert_temperature } from 'util/thermostat_util';
 import Dropdown from './Dropdown';
 
-function ThermostatParamInputs({ id }) {
+const ThermostatParamInputs = ({ id }) => {
     // Get curent state + callback functions from context
     const { config, highlightInvalid, handleInputChange, handleInstanceUpdate } = useContext(ConfigContext);
 
@@ -95,7 +95,7 @@ function ThermostatParamInputs({ id }) {
             </InputWrapper>
         </>
     );
-}
+};
 
 ThermostatParamInputs.propTypes = {
     id: PropTypes.string

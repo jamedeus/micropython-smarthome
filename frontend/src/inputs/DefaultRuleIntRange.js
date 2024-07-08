@@ -8,8 +8,7 @@ import { get_instance_metadata } from 'util/metadata';
 import { average } from 'util/helper_functions';
 import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 
-
-function DefaultRuleIntRange({ id }) {
+const DefaultRuleIntRange = ({ id }) => {
     // Get curent state + callback functions from context
     const { config, handleInstanceUpdate, handleInputChange } = useContext(ConfigContext);
 
@@ -109,7 +108,7 @@ function DefaultRuleIntRange({ id }) {
             </Collapse>
         </>
     );
-}
+};
 
 DefaultRuleIntRange.propTypes = {
     id: PropTypes.string,

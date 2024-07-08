@@ -10,7 +10,6 @@ import { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 import { showChangeIpModal } from './ChangeIpModal';
 import { uploadConfigFile } from 'modals/UploadModal';
 
-
 const ExistingNodeRow = ({ friendly_name, filename, ip, onDelete }) => {
     // Handler for Re-upload menu option
     const reupload = () => {
@@ -75,7 +74,6 @@ ExistingNodeRow.propTypes = {
     ip: PropTypes.string,
     onDelete: PropTypes.func
 };
-
 
 const ExistingNodesTable = () => {
     // Set default collapse state
@@ -146,6 +144,5 @@ const ExistingNodesTable = () => {
         </Row>
     );
 };
-
 
 export default ExistingNodesTable;

@@ -6,7 +6,6 @@ import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 import ThermostatRuleInput from 'inputs/ThermostatRuleInput';
 
-
 const RuleInput = ({ id, params }) => {
     // Get callback to change rule in status context
     const {set_rule} = useContext(ApiCardContext);

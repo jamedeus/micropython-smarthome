@@ -13,10 +13,10 @@ const DesktopModal = () => {
     // Parse client IP (displayed in modal instructions) and link to installer
     // zip from elements created by django template
     const [client_ip] = useState(() => {
-        return parse_dom_context("client_ip")
+        return parse_dom_context("client_ip");
     });
     const [desktop_integration_link] = useState(() => {
-        return parse_dom_context("desktop_integration_link")
+        return parse_dom_context("desktop_integration_link");
     });
 
     showDesktopModal = () => {

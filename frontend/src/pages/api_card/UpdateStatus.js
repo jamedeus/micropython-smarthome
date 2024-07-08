@@ -2,7 +2,6 @@ import { useContext, useEffect } from 'react';
 import { ApiCardContext } from 'root/ApiCardContext';
 import { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 
-
 export const UpdateStatus = () => {
     const {status, setStatus, overview} = useContext(ApiCardContext);
 
