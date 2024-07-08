@@ -15,46 +15,47 @@ export const OverviewContextProvider = ({ children }) => {
         };
     });
 
+    // Adds node to ExistingNodesTable (only used by RestoreModal)
     const addNewNode = (friendly_name, filename, ip) => {
-        let update = [ ...context.uploaded ];
-        update.push({friendly_name: friendly_name, filename: filename, ip: ip});
-        setContext({ ...context, ["uploaded"]: update});
+        setContext({ ...context, uploaded: [
+            ...context.uploaded,
+            {friendly_name: friendly_name, filename: filename, ip: ip}
+        ]});
     };
 
+    // Deletes node from ExistingNodesTable
     const deleteExistingNode = (friendly_name) => {
-        let update = [ ...context.uploaded ];
-        update = update.filter(node => node.friendly_name !== friendly_name);
-        setContext({ ...context, ["uploaded"]: update});
+        setContext({ ...context, uploaded: context.uploaded.filter(
+            node => node.friendly_name !== friendly_name
+        )});
     };
 
+    // Changes IP of node on ExistingNodesTable
     const changeExistingNodeIp = (friendly_name, newIp) => {
-        let update = [ ...context.uploaded ];
-        update = update.map(node => {
-            if (node.friendly_name === friendly_name) {
-                return { ...node, ip: newIp };
-            }
-            return node;
-        });
-        setContext({ ...context, ["uploaded"]: update});
+        setContext({ ...context, uploaded: context.uploaded.map(node =>
+            node.friendly_name === friendly_name ? { ...node, ip: newIp} : node
+        )});
     };
 
-    // Delete a config that has not been uploaded yet
+    // Delete config from NewConfigTable
     const deleteNewConfig = (filename) => {
-        let update = [ ...context.not_uploaded ];
-        update = update.filter(config => config.filename !== filename);
-        setContext({ ...context, ["not_uploaded"]: update });
+        setContext({ ...context, not_uploaded: context.not_uploaded.filter(
+            config => config.filename !== filename
+        )});
     };
 
-    // Adds new config to uploaded, removes from not_uploaded
+    // Adds new node to ExistingNodesTable, removes config from NewConfigTable
     const handleNewConfigUpload = (friendly_name, filename, ip) => {
-        let uploaded = [ ...context.uploaded ];
-        uploaded.push({friendly_name: friendly_name, filename: filename, ip: ip});
-        let not_uploaded = [ ...context.not_uploaded ];
-        not_uploaded = not_uploaded.filter(config => config.filename !== filename);
-        setContext({
-            ...context,
-            ["uploaded"]: uploaded,
-            ["not_uploaded"]: not_uploaded
+        const uploaded = [
+            ...context.uploaded,
+            {friendly_name: friendly_name, filename: filename, ip: ip}
+        ];
+        const not_uploaded = context.not_uploaded.filter(
+            config => config.filename !== filename
+        );
+        setContext({ ...context,
+            uploaded: uploaded,
+            not_uploaded: not_uploaded
         });
     };
 
