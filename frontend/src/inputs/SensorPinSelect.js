@@ -49,7 +49,7 @@ const SensorPinSelect = ({ id }) => {
 };
 
 SensorPinSelect.propTypes = {
-    id: PropTypes.string,
+    id: PropTypes.string.isRequired
 };
 
 export default SensorPinSelect;

@@ -37,7 +37,7 @@ const HttpGetPathInputs = ({ id }) => {
 };
 
 HttpGetPathInputs.propTypes = {
-    id: PropTypes.string
+    id: PropTypes.string.isRequired
 };
 
 export default HttpGetPathInputs;

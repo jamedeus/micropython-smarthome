@@ -47,7 +47,7 @@ export const EditMacroModalContextProvider = ({ children }) => {
 };
 
 EditMacroModalContextProvider.propTypes = {
-    children: PropTypes.node,
+    children: PropTypes.node.isRequired,
 };
 
 
@@ -110,8 +110,8 @@ export const EditMacroModal = () => {
     };
 
     TableRow.propTypes = {
-        action: PropTypes.object,
-        actionID: PropTypes.number
+        action: PropTypes.object.isRequired,
+        actionID: PropTypes.number.isRequired
     };
 
     return (

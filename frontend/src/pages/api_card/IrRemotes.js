@@ -47,7 +47,7 @@ IrButton.propTypes = {
     onClick: PropTypes.func.isRequired
 };
 
-const AcRemote = ({ recording=false, addMacroAction={addMacroAction} }) => {
+const AcRemote = ({ recording=false, addMacroAction }) => {
     const { send_command } = useContext(ApiCardContext);
 
     const HandleKey = (key) => {
@@ -92,7 +92,7 @@ AcRemote.propTypes = {
     addMacroAction: PropTypes.func.isRequired
 };
 
-const TvRemote = ({ recording=false, addMacroAction={addMacroAction} }) => {
+const TvRemote = ({ recording=false, addMacroAction }) => {
     const { send_command } = useContext(ApiCardContext);
 
     const HandleKey = (key) => {

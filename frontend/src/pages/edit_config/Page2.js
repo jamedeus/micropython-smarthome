@@ -30,8 +30,8 @@ const Page2 = () => {
     };
 
     TargetCheckbox.propTypes = {
-        sensor: PropTypes.string,
-        device: PropTypes.string
+        sensor: PropTypes.string.isRequired,
+        device: PropTypes.string.isRequired
     };
 
     const TargetSection = ({ sensor }) => {
@@ -59,7 +59,7 @@ const Page2 = () => {
     };
 
     TargetSection.propTypes = {
-        sensor: PropTypes.string
+        sensor: PropTypes.string.isRequired
     };
 
     return (

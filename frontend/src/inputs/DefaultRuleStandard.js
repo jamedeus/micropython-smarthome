@@ -25,7 +25,7 @@ const DefaultRuleStandard = ({ id }) => {
 };
 
 DefaultRuleStandard.propTypes = {
-    id: PropTypes.string,
+    id: PropTypes.string.isRequired
 };
 
 export default DefaultRuleStandard;

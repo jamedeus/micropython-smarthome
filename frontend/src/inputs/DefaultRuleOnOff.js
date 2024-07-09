@@ -26,7 +26,7 @@ const DefaultRuleOnOff = ({ id }) => {
 };
 
 DefaultRuleOnOff.propTypes = {
-    id: PropTypes.string,
+    id: PropTypes.string.isRequired
 };
 
 export default DefaultRuleOnOff;

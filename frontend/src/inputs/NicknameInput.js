@@ -43,7 +43,7 @@ const NicknameInput = ({ id }) => {
 };
 
 NicknameInput.propTypes = {
-    id: PropTypes.string,
+    id: PropTypes.string.isRequired
 };
 
 export default NicknameInput;

@@ -25,7 +25,7 @@ const SensorCards = ({instances}) => {
 };
 
 SensorCards.propTypes = {
-    instances: PropTypes.array,
+    instances: PropTypes.array.isRequired
 };
 
 export default SensorCards;

@@ -46,7 +46,7 @@ const DefaultRuleThermostat = ({ id }) => {
 };
 
 DefaultRuleThermostat.propTypes = {
-    id: PropTypes.string,
+    id: PropTypes.string.isRequired
 };
 
 export default DefaultRuleThermostat;

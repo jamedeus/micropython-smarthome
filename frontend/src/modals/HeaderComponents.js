@@ -20,8 +20,8 @@ const HeaderText = ({ title, size }) => {
 };
 
 HeaderText.propTypes = {
-    title: PropTypes.string,
-    size: PropTypes.string
+    title: PropTypes.string.isRequired,
+    size: PropTypes.string.isRequired
 };
 
 
@@ -36,8 +36,8 @@ export const HeaderWithCloseButton = ({ title, onClose, size="5" }) => {
 };
 
 HeaderWithCloseButton.propTypes = {
-    title: PropTypes.string,
-    onClose: PropTypes.func,
+    title: PropTypes.string.isRequired,
+    onClose: PropTypes.func.isRequired,
     size: PropTypes.string
 };
 
@@ -51,6 +51,6 @@ export const HeaderStaticBackdrop = ({ title, size="3" }) => {
 };
 
 HeaderStaticBackdrop.propTypes = {
-    title: PropTypes.string,
+    title: PropTypes.string.isRequired,
     size: PropTypes.string
 };

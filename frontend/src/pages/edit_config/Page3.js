@@ -132,13 +132,13 @@ const Page3 = () => {
     };
 
     ScheduleRuleRow.propTypes = {
-        instance: PropTypes.string,
-        timestamp: PropTypes.string,
+        instance: PropTypes.string.isRequired,
+        timestamp: PropTypes.string.isRequired,
         rule: PropTypes.oneOfType([
             PropTypes.string,
             PropTypes.number,
             PropTypes.object,
-        ])
+        ]).isRequired
     };
 
     const RulesTable = ({ instance }) => {
@@ -168,7 +168,7 @@ const Page3 = () => {
     };
 
     RulesTable.propTypes = {
-        instance: PropTypes.string
+        instance: PropTypes.string.isRequired
     };
 
     // Takes instance ID (device1, sensor3, etc), returns schedule rule card
@@ -197,7 +197,7 @@ const Page3 = () => {
     };
 
     ScheduleRuleSection.propTypes = {
-        instance: PropTypes.string
+        instance: PropTypes.string.isRequired
     };
 
     return (

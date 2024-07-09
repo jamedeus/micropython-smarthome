@@ -32,7 +32,7 @@ const IPInput = ({ id }) => {
 };
 
 IPInput.propTypes = {
-    id: PropTypes.string,
+    id: PropTypes.string.isRequired
 };
 
 export default IPInput;

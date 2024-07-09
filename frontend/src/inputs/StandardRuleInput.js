@@ -15,8 +15,8 @@ const StandardRuleInput = ({ rule, setRule, label="", isInvalid=false }) => {
 };
 
 StandardRuleInput.propTypes = {
-    rule: PropTypes.string,
-    setRule: PropTypes.func,
+    rule: PropTypes.string.isRequired,
+    setRule: PropTypes.func.isRequired,
     label: PropTypes.string,
     isInvalid: PropTypes.bool
 };

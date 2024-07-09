@@ -45,10 +45,10 @@ const PopupDiv = ({ children, show, anchorRef, onClose }) => {
 };
 
 PopupDiv.propTypes = {
-    children: PropTypes.node,
-    show: PropTypes.bool,
-    anchorRef: PropTypes.object,
-    onClose: PropTypes.func
+    children: PropTypes.node.isRequired,
+    show: PropTypes.bool.isRequired,
+    anchorRef: PropTypes.object.isRequired,
+    onClose: PropTypes.func.isRequired
 };
 
 export default PopupDiv;

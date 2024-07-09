@@ -123,8 +123,8 @@ const NewConfigRow = ({ filename, friendlyName }) => {
 };
 
 NewConfigRow.propTypes = {
-    filename: PropTypes.string,
-    friendlyName: PropTypes.string
+    filename: PropTypes.string.isRequired,
+    friendlyName: PropTypes.string.isRequired
 };
 
 const NewConfigTable = () => {

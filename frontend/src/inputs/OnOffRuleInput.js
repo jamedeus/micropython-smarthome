@@ -18,8 +18,8 @@ const OnOffRuleInput = ({ rule, setRule, label="", isInvalid=false, includeStand
 };
 
 OnOffRuleInput.propTypes = {
-    rule: PropTypes.string,
-    setRule: PropTypes.func,
+    rule: PropTypes.string.isRequired,
+    setRule: PropTypes.func.isRequired,
     label: PropTypes.string,
     isInvalid: PropTypes.bool,
     includeStandardRules: PropTypes.bool

@@ -196,8 +196,8 @@ const ScheduleRulesTable = ({ id, instance }) => {
 };
 
 ScheduleRulesTable.propTypes = {
-    id: PropTypes.string,
-    instance: PropTypes.object
+    id: PropTypes.string.isRequired,
+    instance: PropTypes.object.isRequired
 };
 
 export default ScheduleRulesTable;

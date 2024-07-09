@@ -46,7 +46,7 @@ const URIInput = ({ id }) => {
 };
 
 URIInput.propTypes = {
-    id: PropTypes.string
+    id: PropTypes.string.isRequired
 };
 
 export default URIInput;

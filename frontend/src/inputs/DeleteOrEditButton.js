@@ -30,9 +30,9 @@ DeleteOrEditButton.propTypes = {
         'delete',
         'edit',
         'loading'
-    ]),
-    handleDelete: PropTypes.func,
-    handleEdit: PropTypes.func
+    ]).isRequired,
+    handleDelete: PropTypes.func.isRequired,
+    handleEdit: PropTypes.func.isRequired
 };
 
 export default DeleteOrEditButton;

@@ -69,10 +69,10 @@ const ExistingNodeRow = ({ friendly_name, filename, ip, onDelete }) => {
 };
 
 ExistingNodeRow.propTypes = {
-    friendly_name: PropTypes.string,
-    filename: PropTypes.string,
-    ip: PropTypes.string,
-    onDelete: PropTypes.func
+    friendly_name: PropTypes.string.isRequired,
+    filename: PropTypes.string.isRequired,
+    ip: PropTypes.string.isRequired,
+    onDelete: PropTypes.func.isRequired
 };
 
 const ExistingNodesTable = () => {

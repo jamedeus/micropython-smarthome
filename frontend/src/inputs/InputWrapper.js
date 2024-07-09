@@ -13,8 +13,8 @@ const InputWrapper = ({ children, label }) => {
 };
 
 InputWrapper.propTypes = {
-    children: PropTypes.node,
-    label: PropTypes.string
+    children: PropTypes.node.isRequired,
+    label: PropTypes.string.isRequired
 };
 
 export default InputWrapper;

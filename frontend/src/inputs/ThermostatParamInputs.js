@@ -98,7 +98,7 @@ const ThermostatParamInputs = ({ id }) => {
 };
 
 ThermostatParamInputs.propTypes = {
-    id: PropTypes.string
+    id: PropTypes.string.isRequired
 };
 
 export default ThermostatParamInputs;

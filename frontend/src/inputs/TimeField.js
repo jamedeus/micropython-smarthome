@@ -104,8 +104,8 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
 };
 
 TimeField.propTypes = {
-    timestamp: PropTypes.string,
-    handleChange: PropTypes.func,
-    schedule_keywords: PropTypes.object,
+    timestamp: PropTypes.string.isRequired,
+    handleChange: PropTypes.func.isRequired,
+    schedule_keywords: PropTypes.object.isRequired,
     highlightInvalid: PropTypes.bool
 };

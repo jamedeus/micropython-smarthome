@@ -25,7 +25,7 @@ const DeviceCards = ({instances}) => {
 };
 
 DeviceCards.propTypes = {
-    instances: PropTypes.array,
+    instances: PropTypes.array.isRequired
 };
 
 export default DeviceCards;

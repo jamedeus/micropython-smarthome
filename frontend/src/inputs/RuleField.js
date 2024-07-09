@@ -51,10 +51,10 @@ const SliderRuleWrapper = ({ ruleDetails, setRuleDetails, defaultRangeRule, chil
 };
 
 SliderRuleWrapper.propTypes = {
-    ruleDetails: PropTypes.object,
-    setRuleDetails: PropTypes.func,
-    defaultRangeRule: PropTypes.number,
-    children: PropTypes.node
+    ruleDetails: PropTypes.object.isRequired,
+    setRuleDetails: PropTypes.func.isRequired,
+    defaultRangeRule: PropTypes.number.isRequired,
+    children: PropTypes.node.isRequired
 };
 
 const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
@@ -106,9 +106,9 @@ const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
 };
 
 IntOrFadeRuleInput.propTypes = {
-    ruleDetails: PropTypes.object,
-    setRuleDetails: PropTypes.func,
-    limits: PropTypes.array
+    ruleDetails: PropTypes.object.isRequired,
+    setRuleDetails: PropTypes.func.isRequired,
+    limits: PropTypes.array.isRequired
 };
 
 // TODO fix inconsistent type param (config = _type, API status = type) and
@@ -251,16 +251,15 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
 };
 
 RuleField.propTypes = {
-    instance: PropTypes.object,
+    instance: PropTypes.object.isRequired,
     category: PropTypes.oneOf([
         'device',
         'sensor'
-    ]),
-    type: PropTypes.string,
-    timestamp: PropTypes.string,
+    ]).isRequired,
+    type: PropTypes.string.isRequired,
     rule: PropTypes.oneOfType([
         PropTypes.number,
         PropTypes.string
-    ]),
-    handleChange: PropTypes.func
+    ]).isRequired,
+    handleChange: PropTypes.func.isRequired
 };

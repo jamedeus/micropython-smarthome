@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import InputWrapper from './InputWrapper';
 
 // Used by SensorPinSelect and DevicePinSelect components
-const PinSelectDropdown = ({id, config, selected, onChange, options, isInvalid}) => {
+const PinSelectDropdown = ({id, config, selected, onChange, options, isInvalid=false}) => {
     // Get array of all pins used by other instances
     let usedPins = [];
     Object.entries(config).forEach(([instance, params]) => {
@@ -37,14 +37,14 @@ const PinSelectDropdown = ({id, config, selected, onChange, options, isInvalid})
 };
 
 PinSelectDropdown.propTypes = {
-    id: PropTypes.string,
-    config: PropTypes.object,
+    id: PropTypes.string.isRequired,
+    config: PropTypes.object.isRequired,
     selected: PropTypes.PropTypes.oneOfType([
         PropTypes.number,
         PropTypes.string
-    ]),
-    onChange: PropTypes.func,
-    options: PropTypes.array,
+    ]).isRequired,
+    onChange: PropTypes.func.isRequired,
+    options: PropTypes.array.isRequired,
     isInvalid: PropTypes.bool
 };
 

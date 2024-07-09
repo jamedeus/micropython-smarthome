@@ -44,7 +44,7 @@ const DefaultRuleFloatRange = ({ id }) => {
 };
 
 DefaultRuleFloatRange.propTypes = {
-    id: PropTypes.string,
+    id: PropTypes.string.isRequired
 };
 
 export default DefaultRuleFloatRange;

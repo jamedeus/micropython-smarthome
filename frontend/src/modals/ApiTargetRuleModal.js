@@ -56,7 +56,7 @@ const ApiTargetRuleModalContents = ({
     };
 
     ParamDropdown.propTypes = {
-        rule: PropTypes.oneOf(['on', 'off']),
+        rule: PropTypes.oneOf(['on', 'off']).isRequired,
         param: PropTypes.oneOf(['instance', 'command', 'sub_command']).isRequired,
         label: PropTypes.string.isRequired,
         options: PropTypes.array.isRequired

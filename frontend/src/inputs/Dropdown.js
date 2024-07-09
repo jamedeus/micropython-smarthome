@@ -45,9 +45,9 @@ const Dropdown = ({ value, options, onChange, label="", isInvalid=false }) => {
 };
 
 Dropdown.propTypes = {
-    value: PropTypes.string,
-    options: PropTypes.array,
-    onChange: PropTypes.func,
+    value: PropTypes.string.isRequired,
+    options: PropTypes.array.isRequired,
+    onChange: PropTypes.func.isRequired,
     label: PropTypes.string,
     isInvalid: PropTypes.bool
 };
