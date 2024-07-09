@@ -27,7 +27,8 @@ const PowerButton = ({ id, params }) => {
     return (
         <Button
             variant="outline-primary"
-            className={`power-button my-auto me-auto ${params.turned_on ? 'toggle-on' : ''}`}
+            className={`power-button my-auto me-auto
+                        ${params.turned_on ? 'toggle-on' : ''}`}
             onClick={turn_on_off}
         >
             <i className="bi-lightbulb"></i>
@@ -47,7 +48,8 @@ const TriggerButton = ({ id, params, disabled }) => {
     return (
         <Button
             variant="outline-primary"
-            className={`trigger-button my-auto me-auto ${params.condition_met ? 'trigger-on' : ''}`}
+            className={`trigger-button my-auto me-auto
+                        ${params.condition_met ? 'trigger-on' : ''}`}
             onClick={() => trigger_sensor(id)}
             disabled={disabled}
         >
@@ -63,24 +65,8 @@ TriggerButton.propTypes = {
 };
 
 const DeviceDropdownOptions = ({ id, params, rule_prompt }) => {
-    const { enable_instance, reset_rule } = useContext(ApiCardContext);
-
     return (
         <>
-            <Dropdown.Item
-                onClick={() => enable_instance(id, !params.enabled)}
-            >
-                {params.enabled ? "Disable" : "Enable"}
-            </Dropdown.Item>
-            <Dropdown.Item onClick={() => showScheduleToggle(id, params.enabled)}>
-                Schedule Toggle
-            </Dropdown.Item>
-            <Dropdown.Item
-                disabled={params.current_rule === params.scheduled_rule}
-                onClick={() => reset_rule(id)}
-            >
-                Reset rule
-            </Dropdown.Item>
             {rule_prompt === "int_or_fade" ? (
                 <Dropdown.Item onClick={() => showFadeModal(id)}>
                     Start Fade
@@ -89,9 +75,6 @@ const DeviceDropdownOptions = ({ id, params, rule_prompt }) => {
             {params.type === "api-target" ? (
                 <ChangeApiTargetRule id={id} rule={params.current_rule} />
             ) : (null) }
-            <Dropdown.Item onClick={() => showDebugModal(id)}>
-                Debug
-            </Dropdown.Item>
         </>
     );
 };
@@ -102,41 +85,18 @@ DeviceDropdownOptions.propTypes = {
     rule_prompt: PropTypes.string.isRequired
 };
 
-const SensorDropdownOptions = ({ id, params }) => {
-    const { enable_instance, reset_rule } = useContext(ApiCardContext);
-
-    return (
-        <>
-            <Dropdown.Item
-                onClick={() => enable_instance(id, !params.enabled)}
-            >
-                {params.enabled ? "Disable" : "Enable"}
-            </Dropdown.Item>
-            <Dropdown.Item onClick={() => showScheduleToggle(id, params.enabled)}>
-                Schedule Toggle
-            </Dropdown.Item>
-            <Dropdown.Item
-                disabled={params.current_rule === params.scheduled_rule}
-                onClick={() => reset_rule(id)}
-            >
-                Reset rule
-            </Dropdown.Item>
-            <Dropdown.Item>Show targets</Dropdown.Item>
-            <Dropdown.Item onClick={() => showDebugModal(id)}>
-                Debug
-            </Dropdown.Item>
-        </>
-    );
-};
-
-SensorDropdownOptions.propTypes = {
-    id: PropTypes.string.isRequired,
-    params: PropTypes.object.isRequired
+const SensorDropdownOptions = () => {
+    return <Dropdown.Item>Show targets</Dropdown.Item>;
 };
 
 const InstanceCard = ({ id }) => {
-    // Get function that returns status params, set_rule hook
-    const { get_instance_section, set_rule } = useContext(ApiCardContext);
+    // Get function that returns status params, hooks to send API calls
+    const {
+        get_instance_section,
+        set_rule,
+        enable_instance,
+        reset_rule
+    } = useContext(ApiCardContext);
 
     // Get device/sensor status params, create local state
     const params = get_instance_section(id);
@@ -174,11 +134,21 @@ const InstanceCard = ({ id }) => {
         setEditing(false);
     };
 
+    // Enable/Disable dropdown option handler
+    const enable = () => {
+        enable_instance(id, !params.enabled);
+    };
+
+    // Schedule toggle dropdown option handler
+    const scheduleToggle = () => {
+        showScheduleToggle(id, params.enabled);
+    };
+
     return (
         <Card className="mb-4">
             <Card.Body className="d-flex flex-column">
                 <div className="d-flex justify-content-between">
-                    {/* Power button for devices, Trigger button for sensors */}
+                    {/* Top left corner button */}
                     {category === 'device' ? (
                         <PowerButton id={id} params={params} />
                     ) : (
@@ -189,15 +159,32 @@ const InstanceCard = ({ id }) => {
                         />
                     )}
 
+                    {/* Title */}
                     <h4 className="card-title text-center m-auto">
                         {params.nickname}
                     </h4>
 
+                    {/* Top right corner dropdown menu */}
                     <Dropdown align="end" className="ms-auto my-auto">
-                        <Dropdown.Toggle variant="outline-secondary" className="menu-button">
+                        <Dropdown.Toggle
+                            variant="outline-secondary"
+                            className="menu-button"
+                        >
                             <i className="bi-list"></i>
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
+                            <Dropdown.Item onClick={enable}>
+                                {params.enabled ? "Disable" : "Enable"}
+                            </Dropdown.Item>
+                            <Dropdown.Item onClick={scheduleToggle}>
+                                Schedule Toggle
+                            </Dropdown.Item>
+                            <Dropdown.Item
+                                disabled={params.current_rule === params.scheduled_rule}
+                                onClick={() => reset_rule(id)}
+                            >
+                                Reset rule
+                            </Dropdown.Item>
                             {category === 'device' ? (
                                 <DeviceDropdownOptions
                                     id={id}
@@ -205,15 +192,16 @@ const InstanceCard = ({ id }) => {
                                     rule_prompt={metadata.rule_prompt}
                                 />
                             ) : (
-                                <SensorDropdownOptions
-                                    id={id}
-                                    params={params}
-                                />
+                                <SensorDropdownOptions />
                             )}
+                            <Dropdown.Item onClick={() => showDebugModal(id)}>
+                                Debug
+                            </Dropdown.Item>
                         </Dropdown.Menu>
                     </Dropdown>
                 </div>
 
+                {/* Card body (collapses while disabled */}
                 <Collapse in={params.enabled}>
                     <div>
                         <RuleInput
@@ -235,7 +223,10 @@ const InstanceCard = ({ id }) => {
                             </Button>
                         </div>
 
-                        <ScheduleRulesTable id={id} schedule={params.schedule} />
+                        <ScheduleRulesTable
+                            id={id}
+                            schedule={params.schedule}
+                        />
                     </div>
                 </Collapse>
             </Card.Body>
