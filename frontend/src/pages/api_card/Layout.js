@@ -2,8 +2,7 @@ import React, { useContext } from 'react';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { ApiCardContext } from 'root/ApiCardContext';
-import SensorCard from './SensorCard';
-import DeviceCard from './DeviceCard';
+import InstanceCard from './InstanceCard';
 import IrRemotes from './IrRemotes';
 
 const Layout = () => {
@@ -14,12 +13,12 @@ const Layout = () => {
         <Row>
             <Col id="sensor-cards" className="col-sm">
                 {Object.keys(status.sensors).map((sensor) => {
-                    return <SensorCard key={sensor} id={sensor} />;
+                    return <InstanceCard key={sensor} id={sensor} />;
                 })}
             </Col>
             <Col id="device-cards" className="col-sm">
                 {Object.keys(status.devices).map((device) => {
-                    return <DeviceCard key={device} id={device} />;
+                    return <InstanceCard key={device} id={device} />;
                 })}
                 <IrRemotes />
             </Col>
