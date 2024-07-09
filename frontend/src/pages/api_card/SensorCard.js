@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -29,12 +29,47 @@ TriggerButton.propTypes = {
 };
 
 const SensorCard = ({ id }) => {
-    // Get status object
-    const {status, enable_instance, trigger_sensor, reset_rule} = useContext(ApiCardContext);
-    const params = status["sensors"][id];
+    // Get status object, hooks to update status
+    const {
+        status,
+        enable_instance,
+        trigger_sensor,
+        set_rule,
+        reset_rule
+    } = useContext(ApiCardContext);
+
+    // Get sensor params, create local state
+    const params = status.sensors[id];
+    const [localState, setlocalState] = useState(params);
+
+    // Create state that blocks automatic status updates while true
+    const [editing, setEditing] = useState(false);
+
+    // Update local state when upstream status changes unless user is modifying
+    // inputs (apply updates immediately when editing switches back to false)
+    useEffect(() => {
+        if (!editing) {
+            setlocalState(params);
+        }
+    }, [params, editing]);
 
     // Get metadata containing triggerable bool
     const [metadata] = useState(get_instance_metadata("sensor", params.type));
+
+    // Rule slider handler
+    const setRule = (newRule) => {
+        // Prevent slider jumping if status updates while moving
+        setEditing(true);
+        // Set local state (move slider)
+        setlocalState({ ...localState, current_rule: newRule });
+        // Set upstream state (sends debounced API call to node)
+        set_rule(id, newRule);
+    };
+
+    // Called when user releases click on slider, resumes status updates
+    const onBlur = () => {
+        setEditing(false);
+    };
 
     const ActionButton = (
         <TriggerButton
@@ -69,9 +104,11 @@ const SensorCard = ({ id }) => {
     return (
         <InstanceCard
             id={id}
-            params={params}
+            params={localState}
             actionButton={ActionButton}
             dropdownOptions={DropdownOptions}
+            setRule={setRule}
+            onBlur={onBlur}
         />
     );
 };

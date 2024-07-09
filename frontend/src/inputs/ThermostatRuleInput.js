@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import RuleSlider from 'inputs/RuleSlider';
 import { convert_temperature } from 'util/thermostat_util';
 
-const ThermostatRuleInput = ({ rule, setRule, min, max, units, sliderStep=0.1 }) => {
+const ThermostatRuleInput = ({ rule, setRule, min, max, units, sliderStep=0.1, onBlur=() => {} }) => {
     return (
         <RuleSlider
             rule={rule}
@@ -13,6 +13,7 @@ const ThermostatRuleInput = ({ rule, setRule, min, max, units, sliderStep=0.1 })
             sliderStep={sliderStep}
             buttonStep={0.5}
             displayType={"float"}
+            onBlur={onBlur}
         />
     );
 };
@@ -30,7 +31,8 @@ ThermostatRuleInput.propTypes = {
         'fahrenheit',
         'kelvin'
     ]).isRequired,
-    sliderStep: PropTypes.number
+    sliderStep: PropTypes.number,
+    onBlur: PropTypes.func
 };
 
 export default ThermostatRuleInput;

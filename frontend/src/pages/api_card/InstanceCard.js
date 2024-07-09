@@ -7,7 +7,7 @@ import Collapse from 'react-bootstrap/Collapse';
 import ScheduleRulesTable from './ScheduleRules';
 import RuleInput from './RuleInput';
 
-const InstanceCard = ({ id, params, actionButton, dropdownOptions }) => {
+const InstanceCard = ({ id, params, actionButton, dropdownOptions, setRule, onBlur=() => {} }) => {
     return (
         <Card className="mb-4">
             <Card.Body className="d-flex flex-column">
@@ -30,7 +30,7 @@ const InstanceCard = ({ id, params, actionButton, dropdownOptions }) => {
 
                 <Collapse in={params.enabled}>
                     <div>
-                        <RuleInput id={id} params={params} />
+                        <RuleInput id={id} params={params} setRule={setRule} onBlur={onBlur} />
 
                         <div className="text-center my-3">
                             <Button
@@ -53,10 +53,11 @@ const InstanceCard = ({ id, params, actionButton, dropdownOptions }) => {
 };
 
 InstanceCard.propTypes = {
-    id: PropTypes.string,
-    params: PropTypes.object,
-    actionButton: PropTypes.node,
-    dropdownOptions: PropTypes.node
+    id: PropTypes.string.isRequired,
+    params: PropTypes.object.isRequired,
+    actionButton: PropTypes.node.isRequired,
+    dropdownOptions: PropTypes.node.isRequired,
+    onBlur: PropTypes.func
 };
 
 export default InstanceCard;

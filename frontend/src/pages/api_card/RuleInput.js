@@ -1,15 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { ApiCardContext } from 'root/ApiCardContext';
 import { get_instance_metadata } from 'util/metadata';
 import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 import ThermostatRuleInput from 'inputs/ThermostatRuleInput';
 
-const RuleInput = ({ id, params }) => {
-    // Get callback to change rule in status context
-    const {set_rule} = useContext(ApiCardContext);
-
+const RuleInput = ({ id, params, setRule, onBlur=() => {} }) => {
     // Get metadata containing rule_prompt and slider range limits
     const [metadata] = useState(get_instance_metadata(
         id.startsWith("device") ? "device" : "sensor",
@@ -21,10 +17,11 @@ const RuleInput = ({ id, params }) => {
         return (
             <ThermostatRuleInput
                 rule={String(params.current_rule)}
-                setRule={value => set_rule(id, value)}
+                setRule={setRule}
                 min={metadata.rule_limits[0]}
                 max={metadata.rule_limits[1]}
                 units={params.units}
+                onBlur={onBlur}
             />
         );
     }
@@ -35,9 +32,10 @@ const RuleInput = ({ id, params }) => {
                 <div className="my-4 pb-2">
                     <FloatRangeRuleInput
                         rule={String(params.current_rule)}
-                        setRule={value => set_rule(id, value)}
+                        setRule={setRule}
                         min={metadata.rule_limits[0]}
                         max={metadata.rule_limits[1]}
+                        onBlur={onBlur}
                     />
                 </div>
             );
@@ -46,9 +44,10 @@ const RuleInput = ({ id, params }) => {
                 <div className="my-4 pb-2">
                     <IntRangeRuleInput
                         rule={String(params.current_rule)}
-                        setRule={value => set_rule(id, value)}
+                        setRule={setRule}
                         min={parseInt(params.min_rule)}
                         max={parseInt(params.max_rule)}
+                        onBlur={onBlur}
                     />
                 </div>
             );
@@ -56,8 +55,10 @@ const RuleInput = ({ id, params }) => {
 };
 
 RuleInput.propTypes = {
-    id: PropTypes.string,
-    params: PropTypes.object
+    id: PropTypes.string.isRequired,
+    params: PropTypes.object.isRequired,
+    setRule: PropTypes.func.isRequired,
+    onBlur: PropTypes.func
 };
 
 export default RuleInput;

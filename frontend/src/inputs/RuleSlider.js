@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import { Range, getTrackBackground } from 'react-range';
 
-const RuleSlider = ({ rule, setRule, min, max, sliderStep, buttonStep, displayType }) => {
+const RuleSlider = ({ rule, setRule, min, max, sliderStep, buttonStep, displayType, onBlur=() => {} }) => {
     // Create array containing current rule, required my slider component
     const values = [rule];
 
@@ -23,7 +23,10 @@ const RuleSlider = ({ rule, setRule, min, max, sliderStep, buttonStep, displayTy
             new_rule = parseFloat(max);
         }
 
+        // Pass new rule to callback, call onBlur to prevent getting stuck in
+        // edit mode (blocks status updates on ApiCard page)
         setRule(new_rule);
+        onBlur();
     };
 
     // Returns value displayed on slider handle
@@ -56,6 +59,7 @@ const RuleSlider = ({ rule, setRule, min, max, sliderStep, buttonStep, displayTy
                     max={max}
                     values={values}
                     onChange={(values) => setRule(values[0])}
+                    onFinalChange={onBlur}
                     renderTrack={({ props, children }) => (
                         <div
                             {...props}
@@ -99,15 +103,15 @@ RuleSlider.propTypes = {
     rule: PropTypes.oneOfType([
         PropTypes.number,
         PropTypes.string
-    ]),
-    setRule: PropTypes.func,
-    min: PropTypes.number,
-    max: PropTypes.number,
-    sliderStep: PropTypes.number,
-    buttonStep: PropTypes.number,
-    displayType: PropTypes.string,
-    onButtonClick: PropTypes.func,
-    style: PropTypes.object
+    ]).isRequired,
+    setRule: PropTypes.func.isRequired,
+    min: PropTypes.number.isRequired,
+    max: PropTypes.number.isRequired,
+    sliderStep: PropTypes.number.isRequired,
+    buttonStep: PropTypes.number.isRequired,
+    displayType: PropTypes.string.isRequired,
+    style: PropTypes.object,
+    onBlur: PropTypes.func
 };
 
 export default RuleSlider;
