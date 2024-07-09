@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
@@ -155,14 +155,10 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
         setVisible(false);
     };
 
-    // Reference to span that shows current rule, opens popup
-    const buttonRef = useRef(null);
-
     return (
         <div>
             {/* Display current rule, open edit popup when clicked */}
             <span
-                ref={buttonRef}
                 className="form-control"
                 onClick={() => setVisible(true)}
             >
@@ -170,7 +166,7 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
             </span>
 
             {/* Edit rule popup */}
-            <PopupDiv show={visible} anchorRef={buttonRef} onClose={handleClose}>
+            <PopupDiv show={visible} onClose={handleClose}>
                 <Form.Label>Rule</Form.Label>
                 {(() => {
                     // Thermostat: Skip switch and return Float slider with temperatures converted

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
@@ -47,9 +47,6 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
         setTimeDetails({ ...timeDetails, [param]: value});
     };
 
-    // Reference to span that shows current time, opens popup
-    const buttonRef = useRef(null);
-
     // Add invalid highlight if timestamp is empty and highlightInvalid is true
     const invalid =  highlightInvalid && !timestamp;
 
@@ -57,7 +54,6 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
         <div>
             {/* Display current timestamp, open edit popup when clicked */}
             <span
-                ref={buttonRef}
                 className={`form-control ${invalid ? 'is-invalid' : ''}`}
                 onClick={() => setVisible(true)}
             >
@@ -67,7 +63,6 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
             {/* Edit timestamp popup */}
             <PopupDiv
                 show={visible}
-                anchorRef={buttonRef}
                 onClose={handleClose}
             >
                 <div className={timeDetails.show_keyword ? "d-none" : ""}>
