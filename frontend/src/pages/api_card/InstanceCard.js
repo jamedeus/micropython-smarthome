@@ -136,12 +136,12 @@ const InstanceCard = ({ id }) => {
 
     // Enable/Disable dropdown option handler
     const enable = () => {
-        enable_instance(id, !params.enabled);
+        enable_instance(id, !localState.enabled);
     };
 
     // Schedule toggle dropdown option handler
     const scheduleToggle = () => {
-        showScheduleToggle(id, params.enabled);
+        showScheduleToggle(id, localState.enabled);
     };
 
     return (
@@ -150,18 +150,18 @@ const InstanceCard = ({ id }) => {
                 <div className="d-flex justify-content-between">
                     {/* Top left corner button */}
                     {category === 'device' ? (
-                        <PowerButton id={id} params={params} />
+                        <PowerButton id={id} params={localState} />
                     ) : (
                         <TriggerButton
                             id={id}
-                            params={params}
+                            params={localState}
                             disabled={!metadata.triggerable}
                         />
                     )}
 
                     {/* Title */}
                     <h4 className="card-title text-center m-auto">
-                        {params.nickname}
+                        {localState.nickname}
                     </h4>
 
                     {/* Top right corner dropdown menu */}
@@ -174,13 +174,13 @@ const InstanceCard = ({ id }) => {
                         </Dropdown.Toggle>
                         <Dropdown.Menu>
                             <Dropdown.Item onClick={enable}>
-                                {params.enabled ? "Disable" : "Enable"}
+                                {localState.enabled ? "Disable" : "Enable"}
                             </Dropdown.Item>
                             <Dropdown.Item onClick={scheduleToggle}>
                                 Schedule Toggle
                             </Dropdown.Item>
                             <Dropdown.Item
-                                disabled={params.current_rule === params.scheduled_rule}
+                                disabled={localState.current_rule === localState.scheduled_rule}
                                 onClick={() => reset_rule(id)}
                             >
                                 Reset rule
@@ -188,7 +188,7 @@ const InstanceCard = ({ id }) => {
                             {category === 'device' ? (
                                 <DeviceDropdownOptions
                                     id={id}
-                                    params={params}
+                                    params={localState}
                                     rule_prompt={metadata.rule_prompt}
                                 />
                             ) : (
@@ -202,11 +202,11 @@ const InstanceCard = ({ id }) => {
                 </div>
 
                 {/* Card body (collapses while disabled */}
-                <Collapse in={params.enabled}>
+                <Collapse in={localState.enabled}>
                     <div>
                         <RuleInput
                             id={id}
-                            params={params}
+                            params={localState}
                             setRule={setRule}
                             onBlur={onBlur}
                         />
@@ -225,7 +225,7 @@ const InstanceCard = ({ id }) => {
 
                         <ScheduleRulesTable
                             id={id}
-                            schedule={params.schedule}
+                            schedule={localState.schedule}
                         />
                     </div>
                 </Collapse>
