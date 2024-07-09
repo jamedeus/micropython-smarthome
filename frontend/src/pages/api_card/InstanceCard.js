@@ -225,7 +225,7 @@ const InstanceCard = ({ id }) => {
 
                         <ScheduleRulesTable
                             id={id}
-                            schedule={localState.schedule}
+                            instance={localState}
                         />
                     </div>
                 </Collapse>

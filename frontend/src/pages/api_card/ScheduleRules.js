@@ -8,12 +8,12 @@ import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
 import ApiTargetRuleButton from 'inputs/ApiTargetRuleButton';
 import Button from 'react-bootstrap/Button';
 
-const ScheduleRulesTable = ({ id, schedule }) => {
+const ScheduleRulesTable = ({ id, instance }) => {
     const [showNewRule, setShowNewRule] = useState(false);
 
     // Rendered for each existing rule, pass existingRule=false for new rule row
-    const ScheduleRuleRow = ({ id, originalTime='', originalRule='', existingRule=true }) => {
-        // Get status object and API call hooks
+    const ScheduleRuleRow = ({ originalTime='', originalRule='', existingRule=true }) => {
+        // Get API call hooks
         const {
             status,
             add_schedule_rule,
@@ -21,9 +21,6 @@ const ScheduleRulesTable = ({ id, schedule }) => {
             delete_schedule_rule,
             apiTargetOptions
         } = useContext(ApiCardContext);
-
-        // Get instance status section
-        const instance = status[`${id.replace(/[0-9]/g, '')}s`][id];
 
         // Create states to store modified timestamp and rule
         const [newTime, setNewTime] = useState(originalTime);
@@ -153,7 +150,6 @@ const ScheduleRulesTable = ({ id, schedule }) => {
     };
 
     ScheduleRuleRow.propTypes = {
-        id: PropTypes.string,
         originalTime: PropTypes.string,
         originalRule: PropTypes.oneOfType([
             PropTypes.string,
@@ -173,22 +169,16 @@ const ScheduleRulesTable = ({ id, schedule }) => {
                     </tr>
                 </thead>
                 <tbody>
-                    {Object.keys(schedule).map(time => {
+                    {Object.entries(instance.schedule).map(([time, rule]) => {
                         return (
                             <ScheduleRuleRow
                                 key={time}
-                                id={id}
                                 originalTime={time}
-                                originalRule={schedule[time]}
+                                originalRule={rule}
                             />
                         );
                     })}
-                    <ScheduleRuleRow
-                        key={'new'}
-                        id={id}
-                        existingRule={false}
-
-                    />
+                    <ScheduleRuleRow key={'new'} existingRule={false} />
                 </tbody>
             </Table>
 
@@ -207,7 +197,7 @@ const ScheduleRulesTable = ({ id, schedule }) => {
 
 ScheduleRulesTable.propTypes = {
     id: PropTypes.string,
-    schedule: PropTypes.object
+    instance: PropTypes.object
 };
 
 export default ScheduleRulesTable;
