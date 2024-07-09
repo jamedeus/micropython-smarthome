@@ -29,18 +29,18 @@ TriggerButton.propTypes = {
 };
 
 const SensorCard = ({ id }) => {
-    // Get status object, hooks to update status
+    // Get function that returns status params, hooks to update status
     const {
-        status,
+        get_instance_section,
         enable_instance,
         trigger_sensor,
         set_rule,
         reset_rule
     } = useContext(ApiCardContext);
 
-    // Get sensor params, create local state
-    const params = status.sensors[id];
-    const [localState, setlocalState] = useState(params);
+    // Get sensor status params, create local state
+    const params = get_instance_section(id);
+    const [localState, setlocalState] = useState({ ...params });
 
     // Create state that blocks automatic status updates while true
     const [editing, setEditing] = useState(false);

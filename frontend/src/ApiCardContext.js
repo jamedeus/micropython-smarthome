@@ -52,7 +52,7 @@ export const ApiCardContextProvider = ({ children }) => {
     // Takes instance ID, returns corresponding state object section
     function get_instance_section(id) {
         const category = get_instance_category(id);
-        return { ...status[category][id] };
+        return status[category][id];
     }
 
     // Takes instance ID and object with param:newValue pairs
@@ -204,7 +204,7 @@ export const ApiCardContextProvider = ({ children }) => {
         // Add new rule to state if successful
         if (result.ok) {
             const instance = get_instance_section(id);
-            const rules = instance.schedule;
+            const rules = { ...instance.schedule };
             rules[timestamp] = rule;
             update_instance(id, {schedule: rules});
             return true;
@@ -223,7 +223,7 @@ export const ApiCardContextProvider = ({ children }) => {
         // Add new rule to state if successful
         if (result.ok) {
             const instance = get_instance_section(id);
-            const rules = instance.schedule;
+            const rules = { ...instance.schedule };
             delete rules[timestamp];
             update_instance(id, {schedule: rules});
         }
@@ -241,7 +241,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
         if (result.ok) {
             const instance = get_instance_section(id);
-            const rules = instance.schedule;
+            const rules = { ...instance.schedule };
 
             // If timestamp was changed delete old rule
             if (oldTimestamp != newTimestamp) {
@@ -288,6 +288,7 @@ export const ApiCardContextProvider = ({ children }) => {
             status,
             setStatus,
             loading,
+            get_instance_section,
             apiTargetOptions,
             irMacros,
             overview,

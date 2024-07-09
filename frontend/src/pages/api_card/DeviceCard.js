@@ -29,18 +29,18 @@ PowerButton.propTypes = {
 };
 
 const DeviceCard = ({ id }) => {
-    // Get status object, hooks to update status
+    // Get function that returns status params, hooks to update status
     const {
-        status,
+        get_instance_section,
         enable_instance,
         turn_on,
         set_rule,
         reset_rule
     } = useContext(ApiCardContext);
 
-    // Get device params, create local state
-    const params = status.devices[id];
-    const [localState, setlocalState] = useState(params);
+    // Get device status params, create local state
+    const params = get_instance_section(id);
+    const [localState, setlocalState] = useState({ ...params });
 
     // Create state that blocks automatic status updates while true
     const [editing, setEditing] = useState(false);
