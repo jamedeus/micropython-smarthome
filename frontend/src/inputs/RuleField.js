@@ -126,7 +126,7 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
     // - duration: Current value of duration field
     // - range_rule: Show slider if true, dropdown if false
     const [ruleDetails, setRuleDetails] = useState({
-        rule: rule,
+        rule: rule || 'enabled',
         fade_rule: false,
         duration: 60,
         range_rule: Boolean(parseFloat(rule))
