@@ -185,7 +185,7 @@ const ScheduleRulesTable = ({ id, instance }) => {
                     {Object.entries(instance.schedule).map(([time, rule]) => {
                         return (
                             <ScheduleRuleRow
-                                key={time}
+                                key={`${time}-${rule}`}
                                 id={id}
                                 instance={instance}
                                 originalTime={time}
