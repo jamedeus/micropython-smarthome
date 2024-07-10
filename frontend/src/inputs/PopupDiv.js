@@ -7,7 +7,6 @@ const PopupDiv = ({ children, show, onClose }) => {
     // Closes popup if user clicks outside popup div
     const handleClickOutside = (event) => {
         if (popupRef.current && !popupRef.current.contains(event.target)) {
-            console.log("Clicked outside, closing");
             onClose();
         }
     };
@@ -15,14 +14,12 @@ const PopupDiv = ({ children, show, onClose }) => {
     useEffect(() => {
         // Add listener when popup shown
         if (show) {
-            console.log("Adding listener");
             // Add listener to close popup if user clicks outside div
             document.addEventListener("mousedown", handleClickOutside);
         }
 
         // Remove listener when closed
         return () => {
-            console.log("Removing listener");
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [show, onClose]);
