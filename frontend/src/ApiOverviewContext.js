@@ -2,7 +2,6 @@ import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
 import { parse_dom_context } from 'util/django_util';
 
-
 export const ApiOverviewContext = createContext();
 
 export const ApiOverviewContextProvider = ({ children }) => {

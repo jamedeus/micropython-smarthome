@@ -22,7 +22,9 @@ const App = () => {
             <div className="d-flex flex-column vh-100">
                 <Header />
                 <Floors />
-                <h1 className="text-center mt-5">Macros</h1>
+                <h1 className="text-center mt-5">
+                    Macros
+                </h1>
                 <Macros />
 
                 {/* Button redirects to Node configuration overview */}

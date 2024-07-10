@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 
-
 const Floors = () => {
     // Get django context, recording mode state, callback to show loading overlay
     const { context, recording, setLoading } = useContext(ApiOverviewContext);
@@ -20,8 +19,9 @@ const Floors = () => {
 
     // Takes node friendly name, returns button
     const NodeButton = ({ friendlyName }) => {
+        const openNode = () => open(friendlyName);
         return (
-            <Button variant="primary" className="m-1" onClick={() => open(friendlyName)}>
+            <Button variant="primary" className="m-1" onClick={openNode}>
                 {friendlyName}
             </Button>
         );

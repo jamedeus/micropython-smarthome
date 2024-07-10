@@ -14,7 +14,6 @@ import { toTitle, sleep } from 'util/helper_functions';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import 'css/macros.css';
 
-
 const MacroRow = ({ name, actions }) => {
     // Get callback to delete macro context
     const { deleteMacro } = useContext(ApiOverviewContext);
@@ -25,20 +24,19 @@ const MacroRow = ({ name, actions }) => {
     // Create state objects for button animations
     const [runAnimation, setRunAnimation] = useState("false");
 
-    const edit = () => {
+    const editMacro = () => {
         openEditMacroModal(name, actions);
     };
 
-    const run = async () => {
+    const runMacro = async () => {
         // Start loading animation
         setRunAnimation("loading");
 
         // Run macro
         const result = await fetch(`/run_macro/${name}`);
-        const status = await result.status;
 
         // TODO handle failure
-        if (status === 200) {
+        if (result.status === 200) {
             // Start checkmark animation, wait until complete
             setRunAnimation("complete");
             await sleep(2000);
@@ -49,16 +47,15 @@ const MacroRow = ({ name, actions }) => {
         }
     };
 
-    const del = async () => {
+    const delMacro = async () => {
         // Start loading animation
         setRunAnimation("loading");
 
         // Delete macro
         const result = await fetch(`/delete_macro/${name}`);
-        const status = await result.status;
 
         // TODO handle failure
-        if (status === 200) {
+        if (result.status === 200) {
             // Fade row out, wait for animation to complete
             document.getElementById(name).classList.add('fade-out');
             await sleep(200);
@@ -74,7 +71,7 @@ const MacroRow = ({ name, actions }) => {
     return (
         <div id={name} className="d-flex mb-3">
             <ButtonGroup className="macro-row">
-                <Button onClick={run} className="macro-button">
+                <Button onClick={runMacro} className="macro-button">
                     <h3 className="macro-name">
                         {(() => {
                             switch(runAnimation) {
@@ -89,9 +86,18 @@ const MacroRow = ({ name, actions }) => {
                     </h3>
                 </Button>
 
-                <DropdownButton as={ButtonGroup} title={<i className="bi-gear-fill"></i>} align="end" className="macro-options">
-                    <Dropdown.Item onClick={edit}><i className="bi-pencil"></i> Edit</Dropdown.Item>
-                    <Dropdown.Item onClick={del}><i className="bi-trash"></i> Delete</Dropdown.Item>
+                <DropdownButton
+                    as={ButtonGroup}
+                    title={<i className="bi-gear-fill"></i>}
+                    align="end"
+                    className="macro-options"
+                >
+                    <Dropdown.Item onClick={editMacro}>
+                        <i className="bi-pencil"></i> Edit
+                    </Dropdown.Item>
+                    <Dropdown.Item onClick={delMacro}>
+                        <i className="bi-trash"></i> Delete
+                    </Dropdown.Item>
                 </DropdownButton>
             </ButtonGroup>
         </div>
@@ -116,10 +122,9 @@ const NewMacroField = () => {
     const handleStart = async () => {
         // Check if name is available
         const response = await fetch(`/macro_name_available/${newMacroName}`);
-        const status = await response.status;
 
         // If name is available start recording
-        if (status === 200) {
+        if (response.status === 200) {
             startRecording(newMacroName);
             history.pushState({}, '', `/api/recording/${newMacroName}`);
         // If name is taken show invalid highlight
@@ -169,7 +174,6 @@ const NewMacroField = () => {
         </>
     );
 };
-
 
 const Macros = () => {
     // Get django context, state object for name of macro being recorded, callback to finish recording
@@ -256,6 +260,5 @@ const Macros = () => {
             );
     }
 };
-
 
 export default Macros;
