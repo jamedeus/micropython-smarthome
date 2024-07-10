@@ -57,7 +57,7 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
                 show_keyword: false
             });
         }
-    }
+    };
 
     // Call parent handler, close popup
     const handleClose = () => {

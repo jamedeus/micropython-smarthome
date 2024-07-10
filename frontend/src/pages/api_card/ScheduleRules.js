@@ -149,6 +149,7 @@ const ScheduleRuleRow = ({
                     status={loadingButtonState}
                     handleDelete={existingRule ? deleteRule : hideNewRule}
                     handleEdit={existingRule ? editRule : addRule}
+                    disabled={existingRule && !newTime}
                 />
             </td>
         </tr>
