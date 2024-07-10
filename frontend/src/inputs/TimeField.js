@@ -65,24 +65,28 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
                 show={visible}
                 onClose={handleClose}
             >
-                <div className={timeDetails.show_keyword ? "d-none" : ""}>
-                    <Form.Label>Time</Form.Label>
-                    <Form.Control
-                        className="text-center"
-                        type="time"
-                        value={timeDetails.timestamp}
-                        onChange={(e) => setParam("timestamp", e.target.value)}
-                        autoFocus
-                    />
-                </div>
-                <div className={timeDetails.show_keyword ? "" : "d-none"}>
-                    <Form.Label>Keyword</Form.Label>
-                    <Dropdown
-                        value={timeDetails.timestamp}
-                        options={Object.keys(schedule_keywords)}
-                        onChange={(value) => setParam("timestamp", value)}
-                    />
-                </div>
+                {timeDetails.show_keyword ? (
+                    <div>
+                        <Form.Label>Keyword</Form.Label>
+                        <Dropdown
+                            value={timeDetails.timestamp}
+                            options={Object.keys(schedule_keywords)}
+                            onChange={(value) => setParam("timestamp", value)}
+                            focus={true}
+                        />
+                    </div>
+                ) : (
+                    <div>
+                        <Form.Label>Time</Form.Label>
+                        <Form.Control
+                            className="text-center"
+                            type="time"
+                            value={timeDetails.timestamp}
+                            onChange={(e) => setParam("timestamp", e.target.value)}
+                            autoFocus
+                        />
+                    </div>
+                )}
 
                 <div className="d-flex mt-2">
                     <Form.Check

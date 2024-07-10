@@ -4,7 +4,7 @@ import Form from 'react-bootstrap/Form';
 import InputWrapper from './InputWrapper';
 import { toTitle } from 'util/helper_functions';
 
-const Dropdown = ({ value, options, onChange, label="", isInvalid=false }) => {
+const Dropdown = ({ value, options, onChange, label="", isInvalid=false, focus=false }) => {
     switch(true) {
         // Add InputWrapper if label given
         case label.length > 0:
@@ -14,6 +14,7 @@ const Dropdown = ({ value, options, onChange, label="", isInvalid=false }) => {
                         value={value}
                         onChange={(e) => onChange(e.target.value)}
                         isInvalid={isInvalid}
+                        autoFocus={focus}
                     >
                         <option value="">
                             Select {label.toLowerCase()}
@@ -33,6 +34,7 @@ const Dropdown = ({ value, options, onChange, label="", isInvalid=false }) => {
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
                     isInvalid={isInvalid}
+                    autoFocus={focus}
                 >
                     {options.map(option => (
                         <option key={option} value={option.toLowerCase()}>
@@ -49,7 +51,8 @@ Dropdown.propTypes = {
     options: PropTypes.array.isRequired,
     onChange: PropTypes.func.isRequired,
     label: PropTypes.string,
-    isInvalid: PropTypes.bool
+    isInvalid: PropTypes.bool,
+    focus: PropTypes.bool
 };
 
 export default Dropdown;

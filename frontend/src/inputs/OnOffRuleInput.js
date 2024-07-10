@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Dropdown from './Dropdown';
 
-const OnOffRuleInput = ({ rule, setRule, label="", isInvalid=false, includeStandardRules=true }) => {
+const OnOffRuleInput = ({ rule, setRule, label="", isInvalid=false, includeStandardRules=true, focus=false }) => {
     return (
         <Dropdown
             value={rule}
@@ -13,6 +13,7 @@ const OnOffRuleInput = ({ rule, setRule, label="", isInvalid=false, includeStand
             onChange={(value) => setRule(value)}
             label={label}
             isInvalid={isInvalid}
+            focus={focus}
         />
     );
 };
@@ -22,7 +23,8 @@ OnOffRuleInput.propTypes = {
     setRule: PropTypes.func.isRequired,
     label: PropTypes.string,
     isInvalid: PropTypes.bool,
-    includeStandardRules: PropTypes.bool
+    includeStandardRules: PropTypes.bool,
+    focus: PropTypes.bool
 };
 
 export default OnOffRuleInput;

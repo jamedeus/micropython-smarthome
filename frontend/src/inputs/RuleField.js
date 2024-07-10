@@ -44,6 +44,7 @@ const SliderRuleWrapper = ({ ruleDetails, setRuleDetails, defaultRangeRule, chil
                 <StandardRuleInput
                     rule={ruleDetails.rule}
                     setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+                    focus={true}
                 />
             )}
         </>
@@ -83,14 +84,17 @@ const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
                 max={parseInt(limits[1])}
             />
 
-            <div className={ruleDetails.fade_rule ? "text-center" : "d-none"}>
-                <Form.Label className="mt-2">Duration (seconds)</Form.Label>
-                <Form.Control
-                    type="text"
-                    value={ruleDetails.duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                />
-            </div>
+            {ruleDetails.fade_rule ? (
+                <div className={"text-center"}>
+                    <Form.Label className="mt-2">Duration (seconds)</Form.Label>
+                    <Form.Control
+                        type="text"
+                        value={ruleDetails.duration}
+                        onChange={(e) => setDuration(e.target.value)}
+                        autoFocus
+                    />
+                </div>
+            ) : null}
 
             <div className="d-flex mt-2">
                 <Form.Check
@@ -200,6 +204,7 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
                                 <StandardRuleInput
                                     rule={ruleDetails.rule}
                                     setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+                                    focus={true}
                                 />
                             );
                         case "on_off":
@@ -207,6 +212,7 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
                                 <OnOffRuleInput
                                     rule={ruleDetails.rule}
                                     setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
+                                    focus={true}
                                 />
                             );
                         case "float_range":
