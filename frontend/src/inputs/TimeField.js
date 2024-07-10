@@ -22,53 +22,37 @@ function format12h(timestamp) {
     return `${hour}:${minute} ${suffix}`;
 }
 
-export const TimeField = ({ timestamp, handleChange, schedule_keywords, highlightInvalid }) => {
+export const TimeField = ({ timestamp, setTimestamp, schedule_keywords, highlightInvalid, handleClose=() => {} }) => {
     // Create state to control popup visibility
     const [visible, setVisible] = useState(false);
 
-    // Create state for timestamp parameters
-    // - original_timestamp: Timestamp when popup opened
-    // - timestamp: Current timestamp (detect change)
-    // - show_keyword: Determines if timestamp input or keyword dropdown shown
-    const [timeDetails, setTimeDetails] = useState({
-        original_timestamp: timestamp,
-        timestamp: timestamp,
-        show_keyword: Object.keys(schedule_keywords).includes(timestamp)
-    });
+    // Create state to control if timestamp input or keyword dropdown shown
+    const [showKeyword, setShowKeyword] = useState(
+        Object.keys(schedule_keywords).includes(timestamp)
+    );
 
-    // Handler for timestamp input and keyword dropdown
-    const setTimestamp = (newTimestamp) => {
-        setTimeDetails({ ...timeDetails, timestamp: newTimestamp});
-    };
-
-    // Handler for keyword switch, takes bool
-    const showKeyword = (show) => {
-        if (show) {
-            // Set timestamp to first keyword option (first can't be selected
-            // otherwise, timestamp only updates when user changes dropdown
-            setTimeDetails({ ...timeDetails,
-                timestamp: Object.keys(schedule_keywords)[0],
-                show_keyword: true
-            });
+    // Handler for keyword switch
+    const toggleKeyword = () => {
+        // Clear timestamp when switching from keyword to time input
+        if (showKeyword) {
+            setTimestamp('');
+        // Set timestamp to first option when switching to dropdown (can't be
+        // selected otherwise, timestamp only updates when selection changes)
         } else {
-            // Clear timestamp when switching back to time input
-            setTimeDetails({ ...timeDetails,
-                timestamp: '',
-                show_keyword: false
-            });
+            setTimestamp(Object.keys(schedule_keywords)[0]);
         }
+        setShowKeyword(!showKeyword);
     };
 
-    // Call parent handler, close popup
-    const handleClose = () => {
-        handleChange(timeDetails.timestamp, timeDetails.original_timestamp);
+    const closePopup = () => {
         setVisible(false);
+        handleClose();
     };
 
-    // Call parent handler, close popup if enter key pressed
+    // Close popup if enter key pressed
     const handleEnterKey = (e) => {
         if (e.key === "Enter") {
-            handleClose();
+            closePopup();
         }
     };
 
@@ -88,13 +72,13 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
             {/* Edit timestamp popup */}
             <PopupDiv
                 show={visible}
-                onClose={handleClose}
+                onClose={closePopup}
             >
-                {timeDetails.show_keyword ? (
+                {showKeyword ? (
                     <div>
                         <Form.Label>Keyword</Form.Label>
                         <Dropdown
-                            value={timeDetails.timestamp}
+                            value={timestamp}
                             options={Object.keys(schedule_keywords)}
                             onChange={(value) => setTimestamp(value)}
                             focus={true}
@@ -106,7 +90,7 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
                         <Form.Control
                             className="text-center"
                             type="time"
-                            value={timeDetails.timestamp}
+                            value={timestamp}
                             onChange={(e) => setTimestamp(e.target.value)}
                             autoFocus
                         />
@@ -118,8 +102,8 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
                         id="keyword-switch"
                         type="switch"
                         label="Keyword"
-                        checked={timeDetails.show_keyword}
-                        onChange={(e) => showKeyword(e.target.checked)}
+                        checked={showKeyword}
+                        onChange={(e) => toggleKeyword(e.target.checked)}
                     />
                 </div>
             </PopupDiv>
@@ -129,7 +113,8 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
 
 TimeField.propTypes = {
     timestamp: PropTypes.string.isRequired,
-    handleChange: PropTypes.func.isRequired,
+    setTimestamp: PropTypes.func.isRequired,
     schedule_keywords: PropTypes.object.isRequired,
-    highlightInvalid: PropTypes.bool
+    highlightInvalid: PropTypes.bool,
+    handleClose: PropTypes.func
 };

@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
@@ -36,38 +36,34 @@ const Page3 = () => {
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button
     const ScheduleRuleRow = ({ instance, timestamp, rule }) => {
-        // Called by TimeField when user changes value and closes
-        const handleNewTimestamp = (newTimestamp, oldTimestamp) => {
+        // Create local states for popup inputs (also shown on table cells)
+        // Prevents full page re-render (closes popup) on each keystroke
+        const [localTimestamp, setLocalTimestamp] = useState(timestamp);
+        const [localRule, setLocalRule] = useState(rule);
+
+        // Called when timestamp popup closes, updates main state (re-render)
+        const handleCloseTime = () => {
             // Only update state if timestamp changed
-            if (newTimestamp != oldTimestamp) {
+            if (localTimestamp != timestamp) {
                 // Get existing rules, value of edited rule
                 const rules = { ...config[instance]["schedule"] };
-                const rule_value = rules[oldTimestamp];
+                const rule_value = rules[timestamp];
 
                 // Delete original timestamp, add new, update state
-                delete rules[oldTimestamp];
-                rules[newTimestamp] = rule_value;
+                delete rules[timestamp];
+                rules[localTimestamp] = rule_value;
                 handleInputChange(instance, "schedule", rules);
             }
         };
 
-        // Called by RuleField when user changes value and closes
-        const handleNewRule = (newRule, fade_rule, duration, range_rule) => {
+        // Called when rule popup closes, updates main state (re-render)
+        const handleCloseRule = () => {
             // Only update state if rule changed
-            if (newRule != rule) {
-                // Get existing schedule rules
-                const rules = config[instance]["schedule"];
-
-                // Overwrite edited rule
-                if (range_rule && fade_rule) {
-                    // Fade rule: Combine params into single string
-                    rules[timestamp] = `fade/${newRule}/${duration}`;
-                } else {
-                    rules[timestamp] = newRule;
-                }
-
-                // Update state
-                handleInputChange(instance, "schedule", rules);
+            if (localRule != rule) {
+                const newRules = { ...config[instance]["schedule"],
+                    [timestamp]: localRule
+                };
+                handleInputChange(instance, "schedule", newRules);
             }
         };
 
@@ -97,10 +93,11 @@ const Page3 = () => {
             <tr>
                 <td className="schedule-rule-field">
                     <TimeField
-                        timestamp={timestamp}
-                        handleChange={handleNewTimestamp}
+                        timestamp={localTimestamp}
+                        setTimestamp={setLocalTimestamp}
                         schedule_keywords={config.metadata.schedule_keywords}
                         highlightInvalid={highlightInvalid}
+                        handleClose={handleCloseTime}
                     />
                 </td>
                 <td className="schedule-rule-field">
@@ -112,8 +109,9 @@ const Page3 = () => {
                             instance={config[instance]}
                             category={instance.replace(/[0-9]/g, '')}
                             type={config[instance]._type}
-                            rule={rule}
-                            handleChange={handleNewRule}
+                            rule={localRule}
+                            setRule={setLocalRule}
+                            handleClose={handleCloseRule}
                         />
                     )}
                 </td>

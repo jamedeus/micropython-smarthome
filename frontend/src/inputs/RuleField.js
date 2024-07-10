@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
@@ -117,7 +117,7 @@ IntOrFadeRuleInput.propTypes = {
 
 // TODO fix inconsistent type param (config = _type, API status = type) and
 // remove arg (can get from instance once name consistent)
-export const RuleField = ({ instance, category, type, rule, handleChange }) => {
+export const RuleField = ({ instance, category, type, rule, setRule, handleClose=() => {} }) => {
     // Create state to control popup visibility
     const [visible, setVisible] = useState(false);
 
@@ -148,21 +148,25 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
         });
     }
 
-    // Call parent handler, close popup
-    const handleClose = () => {
-        handleChange(
-            ruleDetails.rule,
-            ruleDetails.fade_rule,
-            ruleDetails.duration,
-            ruleDetails.range_rule
-        );
+    // Pass current rule to callback when local state changes
+    useEffect(() => {
+        // Fade rule: Combine params into single string
+        if (ruleDetails.range_rule && ruleDetails.fade_rule) {
+            setRule(`fade/${ruleDetails.rule}/${ruleDetails.duration}`);
+        } else {
+            setRule(ruleDetails.rule);
+        }
+    }, [ruleDetails]);
+
+    const closePopup = () => {
         setVisible(false);
+        handleClose();
     };
 
-    // Call parent handler, close popup if enter key pressed
+    // Close popup if enter key pressed
     const handleEnterKey = (e) => {
         if (e.key === "Enter") {
-            handleClose();
+            closePopup();
         }
     };
 
@@ -177,7 +181,7 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
             </span>
 
             {/* Edit rule popup */}
-            <PopupDiv show={visible} onClose={handleClose}>
+            <PopupDiv show={visible} onClose={closePopup}>
                 <Form.Label>Rule</Form.Label>
                 {(() => {
                     // Thermostat: Skip switch and return Float slider with temperatures converted
@@ -270,5 +274,6 @@ RuleField.propTypes = {
         PropTypes.number,
         PropTypes.string
     ]).isRequired,
-    handleChange: PropTypes.func.isRequired
+    setRule: PropTypes.func.isRequired,
+    handleClose: PropTypes.func
 };

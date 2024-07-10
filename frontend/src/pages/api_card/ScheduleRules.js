@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { ApiCardContext } from 'root/ApiCardContext';
 import Table from 'react-bootstrap/Table';
@@ -53,21 +53,10 @@ const ScheduleRuleRow = ({
         }
     };
 
-    // Called by TimeField when user changes value and closes
-    const handleNewTimestamp = (newTimestamp, _) => {
-        setNewTime(newTimestamp);
-        updateLoadingButton(newTimestamp, newRule);
-    };
-
-    // Called by RuleField when user changes value and closes
-    const handleNewRule = (newRuleValue, fade_rule, duration, range_rule) => {
-        // Fade rule: Combine params into single string
-        if (range_rule && fade_rule) {
-            newRuleValue = `fade/${newRuleValue}/${duration}`;
-        }
-        setNewRule(newRuleValue);
-        updateLoadingButton(newTime, newRuleValue);
-    };
+    // Update loading button state when inputs change
+    useEffect(() => {
+        updateLoadingButton(newTime, newRule);
+    }, [newTime, newRule]);
 
     // New rule field add button handler
     const addRule = async () => {
@@ -107,16 +96,11 @@ const ScheduleRuleRow = ({
 
     // Renders button that opens ApiTarget rule modal
     const ApiTargetRuleField = () => {
-        // Receives stringified dropdown selection when modal submitted
-        const handleSubmit = (newRule) => {
-            handleNewRule(newRule, false, '', false);
-        };
-
         return (
             <ApiTargetRuleButton
                 currentRule={newRule ? newRule : ''}
                 targetNodeOptions={apiTargetOptions[id]}
-                handleSubmit={handleSubmit}
+                handleSubmit={setNewRule}
             />
         );
     };
@@ -126,7 +110,7 @@ const ScheduleRuleRow = ({
             <td>
                 <TimeField
                     timestamp={newTime}
-                    handleChange={handleNewTimestamp}
+                    setTimestamp={setNewTime}
                     schedule_keywords={status.metadata.schedule_keywords}
                     highlightInvalid={false}
                 />
@@ -140,7 +124,7 @@ const ScheduleRuleRow = ({
                         category={id.replace(/[0-9]/g, '')}
                         type={instance.type}
                         rule={newRule}
-                        handleChange={handleNewRule}
+                        setRule={setNewRule}
                     />
                 )}
             </td>
