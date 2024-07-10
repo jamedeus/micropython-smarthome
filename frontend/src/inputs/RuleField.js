@@ -214,16 +214,22 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
     // Get metadata for instance type (contains rule prompt)
     const metadata = get_instance_metadata(category, type);
 
+    // Returns true if rule is null, undefined, or empty string
+    // Returns false if rule is any value including 0 or 0.0
+    const ruleIsUnset = (rule) => {
+        return rule === null || rule === undefined || rule === '';
+    };
+
     // Create state for rule parameters
     // - rule: Current rule value
     // - fade_rule: Controls duration field visibility
     // - duration: Current value of duration field
     // - range_rule: Show slider if true, dropdown if false
     const [ruleDetails, setRuleDetails] = useState({
-        rule: rule || 'enabled',
+        rule: ruleIsUnset(rule) ? 'enabled' : rule,
         fade_rule: false,
         duration: 60,
-        range_rule: Boolean(parseFloat(rule))
+        range_rule: !isNaN(parseFloat(rule))
     });
 
     // If editing fade rule split into params, set fade_rule flag
@@ -267,7 +273,7 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
                 className="form-control"
                 onClick={() => setVisible(true)}
             >
-                {rule ? rule : 'Set rule'}
+                {ruleIsUnset(rule) ? 'Set rule' : rule}
             </span>
 
             {/* Edit rule popup */}
