@@ -86,7 +86,9 @@ const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
 
             {ruleDetails.fade_rule ? (
                 <div className={"text-center"}>
-                    <Form.Label className="mt-2">Duration (seconds)</Form.Label>
+                    <Form.Label className="mt-2">
+                        Duration (seconds)
+                    </Form.Label>
                     <Form.Control
                         type="text"
                         value={ruleDetails.duration}
@@ -113,6 +115,94 @@ IntOrFadeRuleInput.propTypes = {
     ruleDetails: PropTypes.object.isRequired,
     setRuleDetails: PropTypes.func.isRequired,
     limits: PropTypes.array.isRequired
+};
+
+// Renders correct input inside popup
+const RuleInput = ({ ruleDetails, setRuleDetails, instance, metadata }) => {
+    const setRule = (rule) => {
+        setRuleDetails({ ...ruleDetails, rule: rule });
+    };
+
+    // Thermostat: Skip switch and return Float slider with temperatures converted
+    if (instance.units !== undefined) {
+        const defaultRangeRule = average(
+            convert_temperature(metadata.rule_limits[0], 'celsius', instance.units),
+            convert_temperature(metadata.rule_limits[1], 'celsius', instance.units)
+        );
+        return (
+            <SliderRuleWrapper
+                ruleDetails={ruleDetails}
+                setRule={setRule}
+                setRuleDetails={setRuleDetails}
+                defaultRangeRule={defaultRangeRule}
+            >
+                <ThermostatRuleInput
+                    rule={ruleDetails.rule}
+                    setRule={setRule}
+                    min={metadata.rule_limits[0]}
+                    max={metadata.rule_limits[1]}
+                    units={instance.units}
+                />
+            </SliderRuleWrapper>
+        );
+    }
+
+    // All other types: Add correct input for rule_prompt
+    switch(metadata.rule_prompt) {
+        case "standard":
+            return (
+                <StandardRuleInput
+                    rule={ruleDetails.rule}
+                    setRule={setRule}
+                    focus={true}
+                />
+            );
+        case "on_off":
+            return (
+                <OnOffRuleInput
+                    rule={ruleDetails.rule}
+                    setRule={setRule}
+                    focus={true}
+                />
+            );
+        case "float_range":
+            return (
+                <SliderRuleWrapper
+                    ruleDetails={ruleDetails}
+                    setRule={setRule}
+                    setRuleDetails={setRuleDetails}
+                    defaultRangeRule={average(
+                        metadata.rule_limits[0],
+                        metadata.rule_limits[1])
+                    }
+                >
+                    <FloatRangeRuleInput
+                        rule={ruleDetails.rule}
+                        setRule={setRule}
+                        min={metadata.rule_limits[0]}
+                        max={metadata.rule_limits[1]}
+                    />
+                </SliderRuleWrapper>
+            );
+        case "int_or_fade":
+            return (
+                <IntOrFadeRuleInput
+                    ruleDetails={ruleDetails}
+                    setRuleDetails={setRuleDetails}
+                    limits={[
+                        instance.min_rule,
+                        instance.max_rule
+                    ]}
+                />
+            );
+    }
+};
+
+RuleInput.propTypes = {
+    ruleDetails: PropTypes.object.isRequired,
+    setRuleDetails: PropTypes.func.isRequired,
+    instance: PropTypes.object.isRequired,
+    metadata: PropTypes.object
 };
 
 // TODO fix inconsistent type param (config = _type, API status = type) and
@@ -183,81 +273,12 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
             {/* Edit rule popup */}
             <PopupDiv show={visible} onClose={closePopup}>
                 <Form.Label>Rule</Form.Label>
-                {(() => {
-                    // Thermostat: Skip switch and return Float slider with temperatures converted
-                    if (instance.units !== undefined) {
-                        const defaultRangeRule = average(
-                            convert_temperature(metadata.rule_limits[0], 'celsius', instance.units),
-                            convert_temperature(metadata.rule_limits[1], 'celsius', instance.units)
-                        );
-                        return (
-                            <SliderRuleWrapper
-                                ruleDetails={ruleDetails}
-                                setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
-                                setRuleDetails={setRuleDetails}
-                                defaultRangeRule={defaultRangeRule}
-                            >
-                                <ThermostatRuleInput
-                                    rule={ruleDetails.rule}
-                                    setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
-                                    min={metadata.rule_limits[0]}
-                                    max={metadata.rule_limits[1]}
-                                    units={instance.units}
-                                />
-                            </SliderRuleWrapper>
-                        );
-                    }
-
-                    // All other types: Add correct input for rule_prompt
-                    switch(metadata.rule_prompt) {
-                        case "standard":
-                            return (
-                                <StandardRuleInput
-                                    rule={ruleDetails.rule}
-                                    setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
-                                    focus={true}
-                                />
-                            );
-                        case "on_off":
-                            return (
-                                <OnOffRuleInput
-                                    rule={ruleDetails.rule}
-                                    setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
-                                    focus={true}
-                                />
-                            );
-                        case "float_range":
-                            return (
-                                <SliderRuleWrapper
-                                    ruleDetails={ruleDetails}
-                                    setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
-                                    setRuleDetails={setRuleDetails}
-                                    defaultRangeRule={average(
-                                        metadata.rule_limits[0],
-                                        metadata.rule_limits[1])
-                                    }
-                                >
-                                    <FloatRangeRuleInput
-                                        rule={ruleDetails.rule}
-                                        setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
-                                        min={metadata.rule_limits[0]}
-                                        max={metadata.rule_limits[1]}
-                                    />
-                                </SliderRuleWrapper>
-                            );
-                        case "int_or_fade":
-                            return (
-                                <IntOrFadeRuleInput
-                                    ruleDetails={ruleDetails}
-                                    setRuleDetails={setRuleDetails}
-                                    limits={[
-                                        instance.min_rule,
-                                        instance.max_rule
-                                    ]}
-                                />
-                            );
-                    }
-                })()}
+                <RuleInput
+                    ruleDetails={ruleDetails}
+                    setRuleDetails={setRuleDetails}
+                    instance={instance}
+                    metadata={metadata}
+                />
             </PopupDiv>
         </div>
     );
