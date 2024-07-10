@@ -65,11 +65,18 @@ export const TimeField = ({ timestamp, handleChange, schedule_keywords, highligh
         setVisible(false);
     };
 
+    // Call parent handler, close popup if enter key pressed
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter") {
+            handleClose();
+        }
+    };
+
     // Add invalid highlight if timestamp is empty and highlightInvalid is true
     const invalid =  highlightInvalid && !timestamp;
 
     return (
-        <div>
+        <div onKeyDown={handleEnterKey}>
             {/* Display current timestamp, open edit popup when clicked */}
             <span
                 className={`form-control ${invalid ? 'is-invalid' : ''}`}

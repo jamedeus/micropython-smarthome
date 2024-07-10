@@ -159,8 +159,15 @@ export const RuleField = ({ instance, category, type, rule, handleChange }) => {
         setVisible(false);
     };
 
+    // Call parent handler, close popup if enter key pressed
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter") {
+            handleClose();
+        }
+    };
+
     return (
-        <div>
+        <div onKeyDown={handleEnterKey}>
             {/* Display current rule, open edit popup when clicked */}
             <span
                 className="form-control"
