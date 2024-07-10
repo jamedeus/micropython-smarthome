@@ -93,9 +93,10 @@ const ScheduleRuleRow = ({
     };
 
     // Existing rule field add button handler
-    const editRule = () => {
+    const editRule = async () => {
         setLoadingButtonState('loading');
-        edit_schedule_rule(id, originalTime, newTime, newRule);
+        await edit_schedule_rule(id, originalTime, newTime, newRule);
+        setLoadingButtonState('delete');
     };
 
     // Existing rule field delete button handler
