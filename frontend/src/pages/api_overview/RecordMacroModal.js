@@ -54,6 +54,7 @@ const RecordMacroModal = () => {
                 </div>
                 <div className="d-flex flex-column pt-3 pb-2">
                     <Form.Check
+                        id="dontShowAgain"
                         type="checkbox"
                         label="Don't show again"
                         checked={checked}
