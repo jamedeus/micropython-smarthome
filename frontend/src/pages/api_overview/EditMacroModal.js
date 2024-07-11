@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
@@ -7,85 +7,48 @@ import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { sleep, toTitle } from 'util/helper_functions';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 
+export let openEditMacroModal;
 
-export const EditMacroModalContext = createContext();
+const EditMacroModal = () => {
+    // Create state for modal visibility, name of macro being edited
+    const [visible, setVisible] = useState(false);
+    const [macroName, setMacroName] = useState('');
 
+    // Get context (contains macro actions), hooks to delete and record actions
+    const { context, deleteMacroAction, startRecording } = useContext(ApiOverviewContext);
 
-export const EditMacroModalContextProvider = ({ children }) => {
-    const [editMacroContent, setEditMacroContent] = useState({
-        visible: false,
-        name: '',
-        actions: []
-    });
-
-    const openEditMacroModal = (name, actions) => {
-        setEditMacroContent({
-            ...editMacroContent,
-            ["visible"]: true,
-            ["name"]: name,
-            ["actions"]: actions
-        });
+    openEditMacroModal = (name) => {
+        setMacroName(name);
+        setVisible(true);
     };
-
-    const handleClose = () => {
-        setEditMacroContent({
-            ...editMacroContent,
-            ["visible"]: false
-        });
-    };
-
-    return (
-        <EditMacroModalContext.Provider value={{
-            editMacroContent,
-            setEditMacroContent,
-            openEditMacroModal,
-            handleClose
-        }}>
-            {children}
-        </EditMacroModalContext.Provider>
-    );
-};
-
-EditMacroModalContextProvider.propTypes = {
-    children: PropTypes.node.isRequired,
-};
-
-
-export const EditMacroModal = () => {
-    // Get state object that determines modal contents
-    const { editMacroContent, handleClose } = useContext(EditMacroModalContext);
-
-    // Get callbacks to remove macro action, resume recording actions
-    const { deleteMacroAction, startRecording } = useContext(ApiOverviewContext);
 
     // Handler for record more button: set record name, close modal, change URL
     const resumeRecording = () => {
-        startRecording(editMacroContent.name);
-        handleClose();
-        history.pushState({}, '', `/api/recording/${editMacroContent.name}`);
+        startRecording(macroName);
+        setVisible(false);
+        history.pushState({}, '', `/api/recording/${macroName}`);
     };
 
     const TableRow = ({action, actionID}) => {
         // Create callback for delete button
         const del = async () => {
             // Delete macro action
-            const result = await fetch(`/delete_macro_action/${editMacroContent.name}/${actionID}`);
-            const status = await result.status;
+            const result = await fetch(`/delete_macro_action/${macroName}/${actionID}`);
 
             // Fade row out if successful
             // TODO handle failure
-            if (status === 200) {
+            if (result.status === 200) {
                 // Fade out row
                 const row = document.getElementById(`macro-action-${actionID}`);
                 row.classList.add('fade-out');
                 await sleep(200);
 
                 // Remove from context (re-renders without this row)
-                deleteMacroAction(editMacroContent.name, actionID);
+                deleteMacroAction(macroName, actionID);
 
                 // Close modal if last action deleted (context deletes whole macro)
-                if (editMacroContent.actions.every(item => item === null)) {
-                    handleClose();
+                if (context.macros[macroName].every(item => item === null)) {
+                    setVisible(false);
                 }
             }
         };
@@ -115,10 +78,10 @@ export const EditMacroModal = () => {
     };
 
     return (
-        <Modal show={editMacroContent.visible} onHide={handleClose} centered>
+        <Modal show={visible} onHide={() => setVisible(false)} centered>
             <HeaderWithCloseButton
-                title={`Edit ${toTitle(editMacroContent.name)} Macro`}
-                onClose={handleClose}
+                title={`Edit ${toTitle(macroName)} Macro`}
+                onClose={() => setVisible(false)}
                 size="3"
             />
 
@@ -134,9 +97,11 @@ export const EditMacroModal = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {editMacroContent.actions.map((action, index) => {
-                            return <TableRow key={index} action={action} actionID={index} />;
-                        })}
+                        {context["macros"][macroName] ? (
+                            context["macros"][macroName].map((action, index) => {
+                                return <TableRow key={index} action={action} actionID={index} />;
+                            })
+                        ) : null}
                     </tbody>
                 </Table>
             </Modal.Body>
@@ -148,3 +113,5 @@ export const EditMacroModal = () => {
         </Modal>
     );
 };
+
+export default EditMacroModal;

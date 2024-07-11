@@ -9,24 +9,17 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 import Collapse from 'react-bootstrap/Collapse';
 import { RecordMacroModal } from 'modals/RecordMacroModal';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
-import { EditMacroModalContext } from 'modals/EditMacroModal';
+import { openEditMacroModal } from './EditMacroModal';
 import { toTitle, sleep } from 'util/helper_functions';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import 'css/macros.css';
 
-const MacroRow = ({ name, actions }) => {
+const MacroRow = ({ name }) => {
     // Get callback to delete macro context
     const { deleteMacro } = useContext(ApiOverviewContext);
 
-    // Get callback to open edit macro modal
-    const { openEditMacroModal } = useContext(EditMacroModalContext);
-
     // Create state objects for button animations
     const [runAnimation, setRunAnimation] = useState("false");
-
-    const editMacro = () => {
-        openEditMacroModal(name, actions);
-    };
 
     const runMacro = async () => {
         // Start loading animation
@@ -92,7 +85,7 @@ const MacroRow = ({ name, actions }) => {
                     align="end"
                     className="macro-options"
                 >
-                    <Dropdown.Item onClick={editMacro}>
+                    <Dropdown.Item onClick={() => openEditMacroModal(name)}>
                         <i className="bi-pencil"></i> Edit
                     </Dropdown.Item>
                     <Dropdown.Item onClick={delMacro}>
@@ -105,8 +98,7 @@ const MacroRow = ({ name, actions }) => {
 };
 
 MacroRow.propTypes = {
-    name: PropTypes.string,
-    actions: PropTypes.array
+    name: PropTypes.string.isRequired
 };
 
 
@@ -211,13 +203,7 @@ const Macros = () => {
                                 return (
                                     <>
                                         {Object.keys(context.macros).map((name) => {
-                                            return (
-                                                <MacroRow
-                                                    key={name}
-                                                    name={name}
-                                                    actions={context.macros[name]}
-                                                />
-                                            );
+                                            return <MacroRow key={name} name={name} />;
                                         })}
 
                                         <div className="text-center mt-3">
