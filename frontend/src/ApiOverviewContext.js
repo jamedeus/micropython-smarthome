@@ -30,20 +30,21 @@ export const ApiOverviewContextProvider = ({ children }) => {
     };
 
     const deleteMacro = (name) => {
-        let update = { ...context.macros };
+        const update = { ...context.macros };
         delete update[name];
-        setContext({ ...context, ["macros"]: update});
+        setContext({ ...context, macros: update });
     };
 
     const deleteMacroAction = (name, index) => {
-        let update = { ...context.macros };
-        delete update[name][index];
+        const update = { ...context.macros,
+            [name]: context.macros[name].filter((_, idx) => idx !== index)
+        };
         // If last action deleted remove whole macro
-        if (update[name].every(item => item === null)) {
+        if (!update[name].length) {
             deleteMacro(name);
         // If actions remain update macro
         } else {
-            setContext({ ...context, ["macros"]: update});
+            setContext({ ...context, macros: update });
         }
     };
 
@@ -51,7 +52,7 @@ export const ApiOverviewContextProvider = ({ children }) => {
     // that opens instruction modal if "don't show again" cookie not set
     const startRecording = (name) => {
         setRecording(name);
-        setContext({ ...context, ["start_recording"]: true});
+        setContext({ ...context, start_recording: true});
     };
 
     return (

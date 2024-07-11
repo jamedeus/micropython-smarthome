@@ -47,7 +47,7 @@ const EditMacroModal = () => {
                 deleteMacroAction(macroName, actionID);
 
                 // Close modal if last action deleted (context deletes whole macro)
-                if (context.macros[macroName].every(item => item === null)) {
+                if (context.macros[macroName].length === 1) {
                     setVisible(false);
                 }
             }
