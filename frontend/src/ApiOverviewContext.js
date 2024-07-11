@@ -29,10 +29,19 @@ export const ApiOverviewContextProvider = ({ children }) => {
         }
     };
 
-    const deleteMacro = (name) => {
-        const update = { ...context.macros };
-        delete update[name];
-        setContext({ ...context, macros: update });
+    const deleteMacro = async (name) => {
+        // Delete macro
+        const result = await fetch(`/delete_macro/${name}`);
+
+        // Remove from state if successful
+        if (result.ok) {
+            const update = { ...context.macros };
+            delete update[name];
+            setContext({ ...context, macros: update });
+        } else {
+            // TODO improve failure handling
+            alert('Failed to delete macro');
+        }
     };
 
     const deleteMacroAction = async (name, index) => {

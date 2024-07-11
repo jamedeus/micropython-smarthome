@@ -12,6 +12,7 @@ import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { openEditMacroModal } from './EditMacroModal';
 import { toTitle, sleep } from 'util/helper_functions';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
+import { TransitionGroup, CSSTransition } from "react-transition-group";
 import 'css/macros.css';
 
 const MacroRow = ({ name }) => {
@@ -43,22 +44,7 @@ const MacroRow = ({ name }) => {
     const delMacro = async () => {
         // Start loading animation
         setRunAnimation("loading");
-
-        // Delete macro
-        const result = await fetch(`/delete_macro/${name}`);
-
-        // TODO handle failure
-        if (result.status === 200) {
-            // Fade row out, wait for animation to complete
-            document.getElementById(name).classList.add('fade-out');
-            await sleep(200);
-
-            // Remove from context (re-renders without this row)
-            deleteMacro(name);
-        } else {
-            // Cancel loading animation
-            setRunAnimation("false");
-        }
+        deleteMacro(name);
     };
 
     return (
@@ -192,42 +178,56 @@ const Macros = () => {
 
     console.log(recording);
 
+    const ExistingMacros = () => {
+        return (
+            <div className="text-center section p-3 mx-auto macro-container">
+                <TransitionGroup>
+                    {Object.keys(context.macros).map((name) => {
+                        return (
+                            <CSSTransition
+                                key={name}
+                                timeout={200}
+                                classNames='fade'
+                            >
+                                <MacroRow name={name} />
+                            </CSSTransition>
+                        );
+                    })}
+                </TransitionGroup>
+
+                <div className="text-center mt-3">
+                    <Button
+                        variant="secondary"
+                        className="mt-3 mx-auto"
+                        onClick={openNewMacro}
+                    >
+                        <i className="bi-plus-lg"></i>
+                    </Button>
+                </div>
+                <Collapse in={show}>
+                    <div className="p-3">
+                        <NewMacroField />
+                    </div>
+                </Collapse>
+            </div>
+        );
+    };
+
     switch(recording.length) {
         case(0):
             return (
-                <div className="text-center section p-3 mx-auto macro-container">
+                <>
                     {(() => {
                         switch(true) {
                             // If macros exist render row for each, hide new macro field in collapse
                             case(Object.keys(context.macros).length > 0):
-                                return (
-                                    <>
-                                        {Object.keys(context.macros).map((name) => {
-                                            return <MacroRow key={name} name={name} />;
-                                        })}
-
-                                        <div className="text-center mt-3">
-                                            <Button
-                                                variant="secondary"
-                                                className="mt-3 mx-auto"
-                                                onClick={openNewMacro}
-                                            >
-                                                <i className="bi-plus-lg"></i>
-                                            </Button>
-                                        </div>
-                                        <Collapse in={show}>
-                                            <div className="p-3">
-                                                <NewMacroField />
-                                            </div>
-                                        </Collapse>
-                                    </>
-                                );
+                                return <ExistingMacros />;
                             // If no macros exist show new macro field, no collapse
                             default:
                                 return <NewMacroField />;
                         }
                     })()}
-                </div>
+                </>
 
             );
         default:
