@@ -7,7 +7,6 @@ import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { toTitle } from 'util/helper_functions';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { TransitionGroup, CSSTransition } from "react-transition-group";
-import 'css/macros.css';
 
 export let openEditMacroModal;
 

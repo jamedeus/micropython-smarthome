@@ -11,7 +11,7 @@ import { LoadingSpinner } from 'util/animations';
 import 'css/loadingOverlay.css';
 
 const App = () => {
-    // Get state bool for loading overlay
+    // Get state bools for loading overlay, macro recording mode
     const { loading, recording } = useContext(ApiOverviewContext);
 
     const configuration = () => {
@@ -29,7 +29,7 @@ const App = () => {
                 {recording ? <FinishRecordingButton /> : <Macros />}
 
                 {/* Button redirects to Node configuration overview */}
-                <div className="d-flex align-items-center flex-column mt-auto py-4">
+                <div className="d-flex mx-auto flex-column mt-auto py-4">
                     <Button variant="secondary" onClick={configuration}>
                         Manage
                     </Button>
@@ -41,10 +41,12 @@ const App = () => {
                 <RecordMacroModal />
             </div>
 
-            {/* Loading overlay (hidden) */}
-            <div id="loading_overlay" className={loading ? "d-flex" : "d-none"}>
-                <LoadingSpinner size="large" />
-            </div>
+            {/* Loading overlay (shown after clicking node button) */}
+            {loading ? (
+                <div id="loading_overlay">
+                    <LoadingSpinner size="large" />
+                </div>
+            ) : null}
         </>
     );
 };

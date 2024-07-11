@@ -1,6 +1,7 @@
 /* Full-screen overlay shown on ApiOverview while loading ApiCard page */
 #loading_overlay {
     position: fixed;
+    display: flex;
     top: 0;
     left: 0;
     width: 100%;

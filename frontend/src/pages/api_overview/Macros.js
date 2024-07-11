@@ -12,7 +12,6 @@ import { openEditMacroModal } from './EditMacroModal';
 import { toTitle, sleep } from 'util/helper_functions';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import { TransitionGroup, CSSTransition } from "react-transition-group";
-import 'css/macros.css';
 
 const MacroRow = ({ name }) => {
     // Get callback to delete macro from context state
@@ -203,7 +202,7 @@ const NewMacroField = () => {
 };
 
 export const FinishRecordingButton = () => {
-    const { recording, setRecording } = useContext(ApiOverviewContext);
+    const { setRecording } = useContext(ApiOverviewContext);
 
     // Reset state, remove name from URL (prevent resuming if page refreshed)
     const finishRecording = () => {
@@ -214,7 +213,7 @@ export const FinishRecordingButton = () => {
     return (
         <Button
             variant="danger"
-            className={ recording ? "mb-5 mx-auto" : "d-none" }
+            className="mb-5 mx-auto"
             onClick={finishRecording}
         >
             Finish Recording

@@ -20,7 +20,7 @@ const Header = () => {
             <Button style={{visibility: "hidden"}}>
                 <i className="bi-list"></i>
             </Button>
-            <h1 className={ recording ? "my-3 glow" : "my-3"}>
+            <h1 className={`my-3 ${recording ? "glow" : ""}`}>
                 Api Overview
             </h1>
             <Dropdown align="end" className="my-auto">
