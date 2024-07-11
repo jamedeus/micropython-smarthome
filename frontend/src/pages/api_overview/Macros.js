@@ -7,7 +7,7 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Collapse from 'react-bootstrap/Collapse';
-import { RecordMacroModal } from 'modals/RecordMacroModal';
+import RecordMacroModal from './RecordMacroModal';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { openEditMacroModal } from './EditMacroModal';
 import { toTitle, sleep } from 'util/helper_functions';

@@ -1,40 +1,45 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { getCookie } from 'util/django_util';
 
-
-export const RecordMacroModal = () => {
+const RecordMacroModal = () => {
     // Get context object, start_recording key contains bool that toggles to true
     // when recording started (but not when returning to overview from node page)
     const { context } = useContext(ApiOverviewContext);
 
-    // Show modal if start_recording is true and skip instructions cookie not set
-    let visible = false;
-    if (context.start_recording && !getCookie("skip_instructions")) {
-        visible = true;
-    }
+    // Create states for modal visibility, don't show again checkbox
+    const [visible, setVisible] = useState(false);
+    const [checked, setChecked] = useState(false);
 
-    // Create state object to control visibility
-    const [ show, setShow ] = useState(visible);
-
-    // Create state object for checkbox
-    const [ checked, setChecked ] = useState(false);
+    // Show modal if start_recording is true and skip_instructions cookie not set
+    useEffect(() => {
+        if (context.start_recording && !getCookie("skip_instructions")) {
+            setVisible(true);
+        }
+    }, [context.start_recording]);
 
     // Hide modal, set skip_instructions cookie if box was checked
     const handleClose = () => {
-        setShow(false);
+        setVisible(false);
         if (checked) {
             fetch('/skip_instructions');
         }
     };
 
     return (
-        <Modal show={show} onHide={handleClose} centered className="modal-fit-contents">
+        <Modal
+            show={visible}
+            onHide={handleClose}
+            centered
+            className="modal-fit-contents"
+        >
             <Modal.Header className="justify-content-between pb-0">
-                <h3 className="modal-title mx-auto mb-0">Macro Instructions</h3>
+                <h3 className="modal-title mx-auto mb-0">
+                    Macro Instructions
+                </h3>
             </Modal.Header>
 
             <Modal.Body className="pb-0">
@@ -50,7 +55,6 @@ export const RecordMacroModal = () => {
                 </div>
                 <div className="d-flex flex-column pt-3 pb-2">
                     <Form.Check
-                        id="dontShowAgain"
                         type="checkbox"
                         label="Don't show again"
                         checked={checked}
@@ -66,3 +70,5 @@ export const RecordMacroModal = () => {
         </Modal>
     );
 };
+
+export default RecordMacroModal;
