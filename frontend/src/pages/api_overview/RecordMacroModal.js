@@ -3,23 +3,22 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
-import { getCookie } from 'util/django_util';
 
 const RecordMacroModal = () => {
-    // Get context object, start_recording key contains bool that toggles to true
-    // when recording started (but not when returning to overview from node page)
-    const { context } = useContext(ApiOverviewContext);
+    // Get showInstructions bool from context (toggles to true when recording
+    // started, but not when returning to overview from node page)
+    const { showInstructions } = useContext(ApiOverviewContext);
 
     // Create states for modal visibility, don't show again checkbox
     const [visible, setVisible] = useState(false);
     const [checked, setChecked] = useState(false);
 
-    // Show modal if start_recording is true and skip_instructions cookie not set
+    // Show modal when showInstructions state changes to true
     useEffect(() => {
-        if (context.start_recording && !getCookie("skip_instructions")) {
+        if (showInstructions) {
             setVisible(true);
         }
-    }, [context.start_recording]);
+    }, [showInstructions]);
 
     // Hide modal, set skip_instructions cookie if box was checked
     const handleClose = () => {

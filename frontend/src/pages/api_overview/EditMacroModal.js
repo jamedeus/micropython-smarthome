@@ -15,15 +15,19 @@ const EditMacroModal = () => {
     const [visible, setVisible] = useState(false);
     const [macroName, setMacroName] = useState('');
 
-    // Get context (contains macro actions), hooks to delete and record actions
-    const { context, deleteMacroAction, startRecording } = useContext(ApiOverviewContext);
+    // Get macros, hooks to delete macro actions, hook to start recording
+    const {
+        macros,
+        deleteMacroAction,
+        startRecording
+    } = useContext(ApiOverviewContext);
 
     // Close modal if macro is deleted (happens when last action deleted)
     useEffect(() => {
-        if (!Object.keys(context.macros).includes(macroName)) {
+        if (!Object.keys(macros).includes(macroName)) {
             setVisible(false);
         }
-    }, [context.macros])
+    }, [macros]);
 
     openEditMacroModal = (name) => {
         setMacroName(name);
@@ -82,15 +86,18 @@ const EditMacroModal = () => {
                         </tr>
                     </thead>
                     <TransitionGroup component="tbody">
-                        {context["macros"][macroName] ? (
-                            context["macros"][macroName].map((action, index) => {
+                        {macros[macroName] ? (
+                            macros[macroName].map((action, index) => {
                                 return (
                                     <CSSTransition
                                         key={JSON.stringify(action)}
                                         timeout={200}
                                         classNames='fade'
                                     >
-                                        <TableRow action={action} actionID={index} />
+                                        <TableRow
+                                            action={action}
+                                            actionID={index}
+                                        />
                                     </CSSTransition>
                                 );
                             })
@@ -99,7 +106,11 @@ const EditMacroModal = () => {
                 </Table>
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-2">
-                <Button variant="success" className="mx-auto mb-3" onClick={resumeRecording}>
+                <Button
+                    variant="success"
+                    className="mx-auto mb-3"
+                    onClick={resumeRecording}
+                >
                     Record More
                 </Button>
             </Modal.Footer>

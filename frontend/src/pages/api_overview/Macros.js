@@ -14,7 +14,7 @@ import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import { TransitionGroup, CSSTransition } from "react-transition-group";
 
 const MacroRow = ({ name }) => {
-    // Get callback to delete macro from context state
+    // Get callback to delete macro
     const { deleteMacro } = useContext(ApiOverviewContext);
 
     // Create state that determines whether button shows text or animation
@@ -87,7 +87,7 @@ MacroRow.propTypes = {
 };
 
 const ExistingMacros = () => {
-    const { context } = useContext(ApiOverviewContext);
+    const { macros } = useContext(ApiOverviewContext);
 
     // Create state object to set collapse visibility
     const [show, setShow] = useState(false);
@@ -105,7 +105,7 @@ const ExistingMacros = () => {
     return (
         <div className="text-center section p-3 mx-auto macro-container">
             <TransitionGroup>
-                {Object.keys(context.macros).map((name) => {
+                {Object.keys(macros).map((name) => {
                     return (
                         <CSSTransition
                             key={name}
@@ -202,13 +202,7 @@ const NewMacroField = () => {
 };
 
 export const FinishRecordingButton = () => {
-    const { setRecording } = useContext(ApiOverviewContext);
-
-    // Reset state, remove name from URL (prevent resuming if page refreshed)
-    const finishRecording = () => {
-        setRecording("");
-        history.pushState({}, '', '/api');
-    };
+    const { finishRecording } = useContext(ApiOverviewContext);
 
     return (
         <Button
@@ -222,11 +216,10 @@ export const FinishRecordingButton = () => {
 };
 
 const Macros = () => {
-    // Get django context, state object for name of macro being recorded
-    const { context } = useContext(ApiOverviewContext);
+    const { macros } = useContext(ApiOverviewContext);
 
     // If macros exist render row for each, hide new macro field in collapse
-    if (Object.keys(context.macros).length > 0) {
+    if (Object.keys(macros).length > 0) {
         return <ExistingMacros />;
 
     // If no macros exist show new macro field (no collapse)
