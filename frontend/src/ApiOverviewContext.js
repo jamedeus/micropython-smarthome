@@ -35,16 +35,24 @@ export const ApiOverviewContextProvider = ({ children }) => {
         setContext({ ...context, macros: update });
     };
 
-    const deleteMacroAction = (name, index) => {
-        const update = { ...context.macros,
-            [name]: context.macros[name].filter((_, idx) => idx !== index)
-        };
-        // If last action deleted remove whole macro
-        if (!update[name].length) {
-            deleteMacro(name);
-        // If actions remain update macro
-        } else {
+    const deleteMacroAction = async (name, index) => {
+        // Delete macro action
+        const result = await fetch(`/delete_macro_action/${name}/${index}`);
+
+        // Remove action from state if successful
+        if (result.ok) {
+            const update = { ...context.macros,
+                [name]: context.macros[name].filter((_, idx) => idx !== index)
+            };
             setContext({ ...context, macros: update });
+
+            // If last action deleted remove whole macro
+            if (!update[name].length) {
+                deleteMacro(name);
+            }
+        } else {
+            // TODO improve failure handling
+            alert('Failed to delete macro action');
         }
     };
 

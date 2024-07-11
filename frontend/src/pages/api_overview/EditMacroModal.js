@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
@@ -19,6 +19,13 @@ const EditMacroModal = () => {
     // Get context (contains macro actions), hooks to delete and record actions
     const { context, deleteMacroAction, startRecording } = useContext(ApiOverviewContext);
 
+    // Close modal if macro is deleted (happens when last action deleted)
+    useEffect(() => {
+        if (!Object.keys(context.macros).includes(macroName)) {
+            setVisible(false);
+        }
+    }, [context.macros])
+
     openEditMacroModal = (name) => {
         setMacroName(name);
         setVisible(true);
@@ -32,24 +39,6 @@ const EditMacroModal = () => {
     };
 
     const TableRow = ({action, actionID}) => {
-        // Create callback for delete button
-        const del = async () => {
-            // Delete macro action
-            const result = await fetch(`/delete_macro_action/${macroName}/${actionID}`);
-
-            // Fade row out if successful
-            // TODO handle failure
-            if (result.status === 200) {
-                // Remove from context (row fades out before unmounting)
-                deleteMacroAction(macroName, actionID);
-
-                // Close modal if last action deleted (context deletes whole macro)
-                if (context.macros[macroName].length === 1) {
-                    setVisible(false);
-                }
-            }
-        };
-
         return (
             <tr>
                 <td style={{width: "auto"}}>{action.node_name}</td>
@@ -60,7 +49,7 @@ const EditMacroModal = () => {
                         variant="danger"
                         size="sm"
                         className="my-auto"
-                        onClick={del}
+                        onClick={() => deleteMacroAction(macroName, actionID)}
                     >
                         <i className="bi-trash"></i>
                     </Button>
