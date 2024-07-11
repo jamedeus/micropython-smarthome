@@ -4,8 +4,10 @@ import Modal from 'react-bootstrap/Modal';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
-import { sleep, toTitle } from 'util/helper_functions';
+import { toTitle } from 'util/helper_functions';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
+import { TransitionGroup, CSSTransition } from "react-transition-group";
+import 'css/macros.css';
 
 export let openEditMacroModal;
 
@@ -38,12 +40,7 @@ const EditMacroModal = () => {
             // Fade row out if successful
             // TODO handle failure
             if (result.status === 200) {
-                // Fade out row
-                const row = document.getElementById(`macro-action-${actionID}`);
-                row.classList.add('fade-out');
-                await sleep(200);
-
-                // Remove from context (re-renders without this row)
+                // Remove from context (row fades out before unmounting)
                 deleteMacroAction(macroName, actionID);
 
                 // Close modal if last action deleted (context deletes whole macro)
@@ -54,7 +51,7 @@ const EditMacroModal = () => {
         };
 
         return (
-            <tr id={`macro-action-${actionID}`}>
+            <tr>
                 <td style={{width: "auto"}}>{action.node_name}</td>
                 <td style={{width: "auto"}}>{action.target_name}</td>
                 <td style={{width: "auto"}}>{action.action_name}</td>
@@ -96,13 +93,21 @@ const EditMacroModal = () => {
                             <th className="text-center">Delete</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <TransitionGroup component="tbody">
                         {context["macros"][macroName] ? (
                             context["macros"][macroName].map((action, index) => {
-                                return <TableRow key={index} action={action} actionID={index} />;
+                                return (
+                                    <CSSTransition
+                                        key={JSON.stringify(action)}
+                                        timeout={200}
+                                        classNames='fade'
+                                    >
+                                        <TableRow action={action} actionID={index} />
+                                    </CSSTransition>
+                                );
                             })
                         ) : null}
-                    </tbody>
+                    </TransitionGroup>
                 </Table>
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-2">
