@@ -3,15 +3,16 @@ import Button from 'react-bootstrap/Button';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import ErrorModal from 'modals/ErrorModal';
 import EditMacroModal from './EditMacroModal';
+import RecordMacroModal from './RecordMacroModal';
 import Header from './Header';
 import Floors from './Floors';
-import Macros from './Macros';
+import Macros, { FinishRecordingButton } from './Macros';
 import { LoadingSpinner } from 'util/animations';
 import 'css/loadingOverlay.css';
 
 const App = () => {
     // Get state bool for loading overlay
-    const { loading } = useContext(ApiOverviewContext);
+    const { loading, recording } = useContext(ApiOverviewContext);
 
     const configuration = () => {
         window.location.href = "/config_overview";
@@ -25,7 +26,7 @@ const App = () => {
                 <h1 className="text-center mt-5">
                     Macros
                 </h1>
-                <Macros />
+                {recording ? <FinishRecordingButton /> : <Macros />}
 
                 {/* Button redirects to Node configuration overview */}
                 <div className="d-flex align-items-center flex-column mt-auto py-4">
@@ -37,6 +38,7 @@ const App = () => {
                 {/* Modals (hidden) */}
                 <ErrorModal />
                 <EditMacroModal />
+                <RecordMacroModal />
             </div>
 
             {/* Loading overlay (hidden) */}

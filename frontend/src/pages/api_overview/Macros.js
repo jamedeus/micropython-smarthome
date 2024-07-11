@@ -7,7 +7,6 @@ import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Dropdown from 'react-bootstrap/Dropdown';
 import DropdownButton from 'react-bootstrap/DropdownButton';
 import Collapse from 'react-bootstrap/Collapse';
-import RecordMacroModal from './RecordMacroModal';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { openEditMacroModal } from './EditMacroModal';
 import { toTitle, sleep } from 'util/helper_functions';
@@ -87,6 +86,55 @@ MacroRow.propTypes = {
     name: PropTypes.string.isRequired
 };
 
+const ExistingMacros = () => {
+    const { context } = useContext(ApiOverviewContext);
+
+    // Create state object to set collapse visibility
+    const [show, setShow] = useState(false);
+
+    const openNewMacro = async () => {
+        // Toggle collapse visibility
+        setShow(!show);
+        // If collapse was previously closed focus input after opening
+        if (!show) {
+            await sleep(1);
+            document.getElementById('new-macro-name').focus();
+        }
+    };
+
+    return (
+        <div className="text-center section p-3 mx-auto macro-container">
+            <TransitionGroup>
+                {Object.keys(context.macros).map((name) => {
+                    return (
+                        <CSSTransition
+                            key={name}
+                            timeout={200}
+                            classNames='fade'
+                        >
+                            <MacroRow name={name} />
+                        </CSSTransition>
+                    );
+                })}
+            </TransitionGroup>
+
+            <div className="text-center mt-3">
+                <Button
+                    variant="secondary"
+                    className="mt-3 mx-auto"
+                    onClick={openNewMacro}
+                >
+                    <i className="bi-plus-lg"></i>
+                </Button>
+            </div>
+            <Collapse in={show}>
+                <div className="p-3">
+                    <NewMacroField />
+                </div>
+            </Collapse>
+        </div>
+    );
+};
 
 const NewMacroField = () => {
     // Get callback to start recording macro
@@ -153,97 +201,41 @@ const NewMacroField = () => {
     );
 };
 
-const Macros = () => {
-    // Get django context, state object for name of macro being recorded, callback to finish recording
-    const { context, recording, setRecording } = useContext(ApiOverviewContext);
+export const FinishRecordingButton = () => {
+    const { recording, setRecording } = useContext(ApiOverviewContext);
 
-    // Create state object to set collapse visibility
-    const [show, setShow] = useState(false);
-
+    // Reset state, remove name from URL (prevent resuming if page refreshed)
     const finishRecording = () => {
         setRecording("");
-        // Remove URL params (prevents page refresh from resuming recording)
         history.pushState({}, '', '/api');
     };
 
-    const openNewMacro = async () => {
-        // Toggle collapse visibility
-        setShow(!show);
-        // If collapse was previously closed focus input after opening
-        if (!show) {
-            await sleep(1);
-            document.getElementById('new-macro-name').focus();
-        }
-    };
+    return (
+        <Button
+            variant="danger"
+            className={ recording ? "mb-5 mx-auto" : "d-none" }
+            onClick={finishRecording}
+        >
+            Finish Recording
+        </Button>
+    );
+};
 
-    console.log(recording);
+const Macros = () => {
+    // Get django context, state object for name of macro being recorded
+    const { context } = useContext(ApiOverviewContext);
 
-    const ExistingMacros = () => {
+    // If macros exist render row for each, hide new macro field in collapse
+    if (Object.keys(context.macros).length > 0) {
+        return <ExistingMacros />;
+
+    // If no macros exist show new macro field (no collapse)
+    } else {
         return (
             <div className="text-center section p-3 mx-auto macro-container">
-                <TransitionGroup>
-                    {Object.keys(context.macros).map((name) => {
-                        return (
-                            <CSSTransition
-                                key={name}
-                                timeout={200}
-                                classNames='fade'
-                            >
-                                <MacroRow name={name} />
-                            </CSSTransition>
-                        );
-                    })}
-                </TransitionGroup>
-
-                <div className="text-center mt-3">
-                    <Button
-                        variant="secondary"
-                        className="mt-3 mx-auto"
-                        onClick={openNewMacro}
-                    >
-                        <i className="bi-plus-lg"></i>
-                    </Button>
-                </div>
-                <Collapse in={show}>
-                    <div className="p-3">
-                        <NewMacroField />
-                    </div>
-                </Collapse>
+                <NewMacroField />
             </div>
         );
-    };
-
-    switch(recording.length) {
-        case(0):
-            return (
-                <>
-                    {(() => {
-                        switch(true) {
-                            // If macros exist render row for each, hide new macro field in collapse
-                            case(Object.keys(context.macros).length > 0):
-                                return <ExistingMacros />;
-                            // If no macros exist show new macro field, no collapse
-                            default:
-                                return <NewMacroField />;
-                        }
-                    })()}
-                </>
-
-            );
-        default:
-            return (
-                <>
-                    <Button
-                        variant="danger"
-                        className={ recording ? "mb-5 mx-auto" : "d-none" }
-                        onClick={finishRecording}
-                    >
-                        Finish Recording
-                    </Button>
-
-                    <RecordMacroModal />
-                </>
-            );
     }
 };
 
