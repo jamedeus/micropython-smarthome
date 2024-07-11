@@ -15,35 +15,45 @@ import { TransitionGroup, CSSTransition } from "react-transition-group";
 import 'css/macros.css';
 
 const MacroRow = ({ name }) => {
-    // Get callback to delete macro context
+    // Get callback to delete macro from context state
     const { deleteMacro } = useContext(ApiOverviewContext);
 
-    // Create state objects for button animations
-    const [runAnimation, setRunAnimation] = useState("false");
+    // Create state that determines whether button shows text or animation
+    const [buttonContents, setButtonContents] = useState("");
 
     const runMacro = async () => {
-        // Start loading animation
-        setRunAnimation("loading");
-
-        // Run macro
+        // Start loading animation, make API call
+        setButtonContents("loading");
         const result = await fetch(`/run_macro/${name}`);
 
-        // TODO handle failure
         if (result.status === 200) {
-            // Start checkmark animation, wait until complete
-            setRunAnimation("complete");
+            // Start checkmark animation, wait until complete, revert to name
+            setButtonContents("complete");
             await sleep(2000);
-
-            // Return to original text
-            // TODO fade out (handle in CSS)
-            setRunAnimation("false");
+            setButtonContents("title");
+        } else {
+            setButtonContents("title");
+            alert(`failed to run ${name} macro`);
         }
     };
 
-    const delMacro = async () => {
+    const handleDelete = () => {
         // Start loading animation
-        setRunAnimation("loading");
+        setButtonContents("loading");
         deleteMacro(name);
+    };
+
+    const ButtonText = () => {
+        switch(buttonContents) {
+            case("loading"):
+                return <LoadingSpinner size="small" />;
+            case("complete"):
+                return <CheckmarkAnimation size="small" color="white" />;
+            case("title"):
+                return <span className="fade-in">{toTitle(name)}</span>;
+            default:
+                return toTitle(name);
+        }
     };
 
     return (
@@ -51,16 +61,7 @@ const MacroRow = ({ name }) => {
             <ButtonGroup className="macro-row">
                 <Button onClick={runMacro} className="macro-button">
                     <h3 className="macro-name">
-                        {(() => {
-                            switch(runAnimation) {
-                                case("loading"):
-                                    return <LoadingSpinner size="small" />;
-                                case("complete"):
-                                    return <CheckmarkAnimation size="small" color="white" />;
-                                default:
-                                    return toTitle(name);
-                            }
-                        })()}
+                        <ButtonText />
                     </h3>
                 </Button>
 
@@ -73,7 +74,7 @@ const MacroRow = ({ name }) => {
                     <Dropdown.Item onClick={() => openEditMacroModal(name)}>
                         <i className="bi-pencil"></i> Edit
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={delMacro}>
+                    <Dropdown.Item onClick={handleDelete}>
                         <i className="bi-trash"></i> Delete
                     </Dropdown.Item>
                 </DropdownButton>
