@@ -8,16 +8,16 @@ export const ApiOverviewContextProvider = ({ children }) => {
     // Load context set by django template
     const [context, setContext] = useState(() => {
         return {
-            nodes: parse_dom_context("nodes"),
             macros: parse_dom_context("macros"),
-            recording: parse_dom_context("recording"),
             start_recording: false
         };
     });
 
     // Create state for macro record mode, contains name of macro
     // being recorded (default loaded from django template context)
-    const [recording, setRecording] = useState(context.recording);
+    const [recording, setRecording] = useState(() => {
+        return parse_dom_context("recording");
+    });
 
     // Create state to show loading overlay
     const [loading, setLoading] = useState(false);

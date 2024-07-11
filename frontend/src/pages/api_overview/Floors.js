@@ -1,11 +1,17 @@
-import React, { useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
+import { parse_dom_context } from 'util/django_util';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 
 const Floors = () => {
-    // Get django context, recording mode state, callback to show loading overlay
-    const { context, recording, setLoading } = useContext(ApiOverviewContext);
+    // Get recording mode state, callback to show loading overlay
+    const { recording, setLoading } = useContext(ApiOverviewContext);
+
+    // Parse nodes context set by django template
+    const [nodes] = useState(() => {
+        return parse_dom_context("nodes");
+    });
 
     // Takes node friendly name, redirects to card interface
     function open(friendlyName) {
@@ -28,17 +34,17 @@ const Floors = () => {
     };
 
     NodeButton.propTypes = {
-        friendlyName: PropTypes.string,
+        friendlyName: PropTypes.string.isRequired,
     };
 
     // Takes section label and array of friendly names on floor
     // Returns section with button for each friendly name
-    const FloorSection = ({ label, nodes }) => {
+    const FloorSection = ({ label, nodeList }) => {
         return (
             <div className="text-center section mt-3 mb-4 p-3">
                 <h5 className="mb-3 fw-bold">{label}</h5>
 
-                {nodes.map((node) => {
+                {nodeList.map((node) => {
                     return <NodeButton key={node} friendlyName={node} />;
                 })}
             </div>
@@ -46,40 +52,35 @@ const Floors = () => {
     };
 
     FloorSection.propTypes = {
-        label: PropTypes.string,
-        nodes: PropTypes.array
+        label: PropTypes.string.isRequired,
+        nodeList: PropTypes.array.isRequired
     };
 
-    // Get array of floor numbers (used to determine layout)
-    const floorNumbers = Object.keys(context.nodes);
-
-    // Exactly 2 floors: Label sections "Upstairs" and "Downstairs", switch order
+    // Exactly 2 floors: Label sections "Upstairs" and "Downstairs", swap order
     // Default: Sequential "Floor #" labels, lowest to highest
-    switch(floorNumbers.length) {
+    switch(Object.keys(nodes).length) {
         case(2):
             return (
                 <>
                     <FloorSection
-                        key={floorNumbers[1]}
                         label="Upstairs"
-                        nodes={context.nodes[floorNumbers[1]]}
+                        nodeList={nodes[Object.keys(nodes)[1]]}
                     />
                     <FloorSection
-                        key={floorNumbers[0]}
                         label="Downstairs"
-                        nodes={context.nodes[floorNumbers[0]]}
+                        nodeList={nodes[Object.keys(nodes)[0]]}
                     />
                 </>
             );
         default:
             return (
                 <>
-                    {floorNumbers.map((floor) => {
+                    {Object.entries(nodes).map(([floor, nodeList]) => {
                         return (
                             <FloorSection
-                                key={context.nodes[floor]}
+                                key={floor}
                                 label={`Floor ${floor}`}
-                                nodes={context.nodes[floor]}
+                                nodeList={nodeList}
                             />
                         );
                     })}
@@ -87,6 +88,5 @@ const Floors = () => {
             );
     }
 };
-
 
 export default Floors;
