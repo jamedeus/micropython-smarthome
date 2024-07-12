@@ -92,6 +92,7 @@ const SensorDropdownOptions = () => {
 const InstanceCard = ({ id }) => {
     // Get function that returns status params, hooks to send API calls
     const {
+        recording,
         get_instance_section,
         set_rule,
         enable_instance,
@@ -218,6 +219,7 @@ const InstanceCard = ({ id }) => {
                                 className="open-rules"
                                 data-bs-toggle="collapse"
                                 data-bs-target={`#${id}-schedule-rules`}
+                                disabled={recording ? true : false}
                             >
                                 Schedule rules
                             </Button>

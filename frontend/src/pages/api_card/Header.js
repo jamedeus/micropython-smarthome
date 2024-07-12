@@ -5,7 +5,12 @@ import { ApiCardContext } from 'root/ApiCardContext';
 
 const Header = () => {
     // Get status object, function to make API calls
-    const {status, send_command, overview} = useContext(ApiCardContext);
+    const {
+        status,
+        recording,
+        send_command,
+        overview
+    } = useContext(ApiCardContext);
 
     // Dropdown menu callbacks, send API commands
     const reboot = () => {
@@ -25,7 +30,9 @@ const Header = () => {
             <Button variant="dark" className="my-auto" onClick={overview}>
                 <i className="bi-chevron-left"></i>
             </Button>
-            <h1 className="my-3">{status.metadata.id}</h1>
+            <h1 className={`my-3 ${recording ? "glow" : ""}`}>
+                {status.metadata.id}
+            </h1>
             <Dropdown align="end" className="my-auto">
                 <Dropdown.Toggle variant="light" id="settings-button">
                     <i className="bi-list"></i>

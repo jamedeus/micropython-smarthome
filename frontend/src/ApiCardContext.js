@@ -19,6 +19,9 @@ export const ApiCardContextProvider = ({ children }) => {
     const [irMacros, setIrMacros] = useState(() => {
         return parse_dom_context("ir_macros");
     });
+    const [recording] = useState(() => {
+        return parse_dom_context("recording");
+    });
 
     // Create state to control fade in/fade out animation
     // Fades in when true, fades out when false (both persist)
@@ -27,7 +30,11 @@ export const ApiCardContextProvider = ({ children }) => {
     // Button callback, fade out and redirect to overview
     function overview() {
         setLoading(false);
-        window.location.href = "/api";
+        if (recording) {
+            window.location.href = `/api/recording/${recording}`;
+        } else {
+            window.location.href = "/api";
+        }
     }
 
     // Reset loading animation when navigated to with browser back button
@@ -288,6 +295,7 @@ export const ApiCardContextProvider = ({ children }) => {
             status,
             setStatus,
             loading,
+            recording,
             get_instance_section,
             apiTargetOptions,
             irMacros,
