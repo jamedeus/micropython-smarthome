@@ -234,7 +234,7 @@ export const ConfigProvider = ({ children }) => {
             // Decrement device index in sensor targets lists to match above
             if (category === 'device') {
                 for (const sensor in sensors) {
-                    if (state[sensor]['targets'].includes(old_id)) {
+                    if (state[sensor]['targets'] && state[sensor]['targets'].includes(old_id)) {
                         state[sensor]['targets'] = state[sensor]['targets'].filter(
                             item => item !== old_id
                         );
