@@ -134,6 +134,7 @@ const ScheduleRuleRow = ({
                     handleDelete={existingRule ? deleteRule : hideNewRule}
                     handleEdit={existingRule ? editRule : addRule}
                     disabled={existingRule && !newTime}
+                    editIcon={existingRule ? "bi-pencil" : "bi-plus-lg"}
                 />
             </td>
         </tr>

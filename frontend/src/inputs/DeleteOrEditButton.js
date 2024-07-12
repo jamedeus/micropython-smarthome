@@ -2,7 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 
-const DeleteOrEditButton = ({ status, handleDelete, handleEdit, disabled=false }) => {
+const DeleteOrEditButton = ({
+    status,
+    handleDelete,
+    handleEdit,
+    disabled=false ,
+    deleteIcon="bi-trash",
+    editIcon="bi-arrow-clockwise"
+}) => {
     switch(status) {
         case "delete":
             return (
@@ -12,7 +19,7 @@ const DeleteOrEditButton = ({ status, handleDelete, handleEdit, disabled=false }
                     onClick={handleDelete}
                     disabled={disabled}
                 >
-                    <i className="bi-trash"></i>
+                    <i className={deleteIcon}></i>
                 </Button>
             );
         case "edit":
@@ -23,7 +30,7 @@ const DeleteOrEditButton = ({ status, handleDelete, handleEdit, disabled=false }
                     onClick={handleEdit}
                     disabled={disabled}
                 >
-                    <i className="bi-arrow-clockwise"></i>
+                    <i className={editIcon}></i>
                 </Button>
             );
         case "loading":
@@ -50,7 +57,9 @@ DeleteOrEditButton.propTypes = {
     ]).isRequired,
     handleDelete: PropTypes.func.isRequired,
     handleEdit: PropTypes.func.isRequired,
-    disabled: PropTypes.bool
+    disabled: PropTypes.bool,
+    deleteIcon: PropTypes.string,
+    editIcon: PropTypes.string
 };
 
 export default DeleteOrEditButton;
