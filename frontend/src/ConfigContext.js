@@ -224,7 +224,7 @@ export const ConfigProvider = ({ children }) => {
             // Removed index now available, decrement next index by 1
             const new_id = `${category}${i}`;
             const old_id = `${category}${i+1}`;
-            state[new_id] = JSON.parse(JSON.stringify(state[old_id]));
+            state[new_id] = { ...state[old_id] };
             delete state[old_id];
 
             // Decrement UUID index to keep associated with correct card
