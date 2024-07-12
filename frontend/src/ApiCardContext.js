@@ -27,6 +27,23 @@ export const ApiCardContextProvider = ({ children }) => {
     // Fades in when true, fades out when false (both persist)
     const [loading, setLoading] = useState(true);
 
+    // Create state to control which cards are highlighted when sensor card
+    // "Show targets" dropdown option clicked
+    const [highlightCards, setHighlightCards] = useState([]);
+
+    // Handler for "Show targets" option in sensor card dropdown
+    function show_targets(id) {
+        // Add target device IDs to state that controls glow effect
+        const params = get_instance_section(id);
+        setHighlightCards(params.targets);
+        // Add listener to remove highlight on next click
+        setTimeout(() => {
+            document.addEventListener("click", () => {
+                setHighlightCards([]);
+            }, {once : true});
+        }, 1);
+    }
+
     // Button callback, fade out and redirect to overview
     function overview() {
         setLoading(false);
@@ -122,7 +139,7 @@ export const ApiCardContextProvider = ({ children }) => {
                 "X-CSRFToken": getCookie('csrftoken')
             }
         });
-        return result
+        return result;
     }
 
     async function enable_instance(id, enable) {
@@ -326,6 +343,8 @@ export const ApiCardContextProvider = ({ children }) => {
             setStatus,
             loading,
             recording,
+            highlightCards,
+            show_targets,
             get_instance_section,
             apiTargetOptions,
             irMacros,
