@@ -82,6 +82,12 @@ export const ApiCardContextProvider = ({ children }) => {
         // Add IP of target node
         value["target"] = targetIP;
 
+        // Send to different endpoint if recording macro
+        if (recording) {
+            return add_macro_action(value);
+        }
+
+        // Send to endpoint that forwards payload to ESP32 if not recording
         const result = await fetch('/send_command', {
             method: 'POST',
             body: JSON.stringify(value),
@@ -91,8 +97,32 @@ export const ApiCardContextProvider = ({ children }) => {
                 "X-CSRFToken": getCookie('csrftoken')
             }
         });
-
         return result;
+    }
+
+    async function add_macro_action(value) {
+        // Add friendly name for all instances except IR Blaster
+        if (value.instance) {
+            const instanceStatus = get_instance_section(value.instance);
+            value["friendly_name"] = instanceStatus.nickname;
+        }
+
+        // Add macro name
+        const payload = {
+            name: recording,
+            action: value
+        };
+
+        const result = await fetch('/add_macro_action', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+            headers: {
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                "X-CSRFToken": getCookie('csrftoken')
+            }
+        });
+        return result
     }
 
     async function enable_instance(id, enable) {
