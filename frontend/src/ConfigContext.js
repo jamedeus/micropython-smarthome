@@ -77,10 +77,10 @@ export const ConfigProvider = ({ children }) => {
     // Pre-populate with id-UUID pairs for existing instances (if editing)
     const [UUIDs, setUUIDs] = useState(
         {
-            devices: Object.fromEntries(
+            device: Object.fromEntries(
                 filterObjectKeys(config, "device").map((id) => [id, uuid()])
             ),
-            sensors: Object.fromEntries(
+            sensor: Object.fromEntries(
                 filterObjectKeys(config, "sensor").map((id) => [id, uuid()])
             )
         }
@@ -105,8 +105,8 @@ export const ConfigProvider = ({ children }) => {
         setConfig({ ...config, [`${category}${index}`]: {'_type': undefined} });
 
         // Create UUID for new instance
-        setUUIDs({ ...UUIDs, [`${category}s`]: {
-            ...UUIDs[`${category}s`], [`${category}${index}`]: uuid()
+        setUUIDs({ ...UUIDs, [category]: {
+            ...UUIDs[category], [`${category}${index}`]: uuid()
         }});
     };
 
@@ -202,7 +202,7 @@ export const ConfigProvider = ({ children }) => {
         const instances = filterObject(state, category);
 
         // Get UUIDs of all instances in same category
-        const newUUIDs = { ...UUIDs[`${category}s`] };
+        const newUUIDs = { ...UUIDs[category] };
 
         // Get list of all sensors (used to update target IDs)
         const sensors = filterObject(state, 'sensor');
@@ -245,7 +245,7 @@ export const ConfigProvider = ({ children }) => {
         }
 
         // Update UUIDs
-        setUUIDs({ ...UUIDs, [`${category}s`]: {
+        setUUIDs({ ...UUIDs, [category]: {
             ...newUUIDs
         }});
 
