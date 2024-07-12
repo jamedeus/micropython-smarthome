@@ -7,7 +7,10 @@ import InstanceCard from './InstanceCard';
 
 const SensorCards = ({instances}) => {
     // Get curent state + callback functions from context
-    const { addInstance, getKey } = useContext(ConfigContext);
+    const { addInstance, getKey, deleteing } = useContext(ConfigContext);
+
+    // Slide add button up if sensor card delete animation in progress
+    const buttonClass = deleteing.category === 'sensor' ? 'slide-up' : '';
 
     return (
         <Col sm id="sensors">
@@ -15,7 +18,7 @@ const SensorCards = ({instances}) => {
             {instances.map((id) => (
                 <InstanceCard key={getKey(id, "sensors")} id={id} />
             ))}
-            <div id="add_sensor" className="text-center position-relative mb-3">
+            <div className={`text-center position-relative mb-3 ${buttonClass}`}>
                 <Button variant="secondary" onClick={() => addInstance('sensor')}>
                     Add Sensor
                 </Button>

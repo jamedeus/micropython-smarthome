@@ -65,6 +65,10 @@ export const ConfigProvider = ({ children }) => {
         return config;
     });
 
+    // Create state to control card delete animations
+    // Card matching ID fades out, cards in category with higher index slide up
+    const [deleteing, setDeleteing] = useState({id: '', category: '', index: ''});
+
     const updateConfig = newConfig => {
         setConfig(newConfig);
     };
@@ -107,34 +111,34 @@ export const ConfigProvider = ({ children }) => {
     };
 
     // Handler for delete button on device and sensor cards
-    const startDeletingInstance = async (id) => {
-        // Get category (device or sensor) and index of deleted card
-        const category = id.replace(/[0-9]/g, '');
-        const index = id.replace(/[a-zA-z]/g, '');
-
-        // Get reference to deleted card, array of cards in category, and category add button
+    const deleteInstance = async (id) => {
+        // Get height of deleted card + 1.5rem (margin between cards)
         const card = document.getElementById(`${id}-card`);
-        const cards = Array.from(document.getElementById(`${category}s`).children);
-        const button = document.getElementById(`add_${category}`);
-
-        // Get animation height (card height + 1.5rem spacing), set CSS var used in animation
         const remPx = parseFloat(getComputedStyle(document.documentElement).fontSize);
         const animation_height = card.clientHeight / remPx + 1.5;
+
+        // Set CSS var used in delete animation
         document.documentElement.style.setProperty(
             '--animation-height',
             `${animation_height}rem`
         );
 
-        // Wait for animation to complete before removing from state object
-        await delete_animation(cards, index, button);
-        deleteInstance(id);
-    };
+        // Start animation, card being deleted will fade out, all cards below
+        // will slide up to fill empty space (uses --animation-height)
+        setDeleteing({
+            id: id,
+            category: id.replace(/[0-9]/g, ''),
+            index: parseInt(id.replace(/[a-zA-z]/g, ''))
+        });
 
-    // Called from delete button handler after animation completes
-    const deleteInstance = (id) => {
+        // Wait for animation to complete
+        await sleep(800);
+
+        // Remove instance from config state, reset animation state
         const newConfig = { ...config };
         delete newConfig[id];
         setConfig(update_ids(id, newConfig));
+        setDeleteing({id: '', category: '', index: ''});
     };
 
     // Handler for type select dropdown in device and sensor cards
@@ -338,13 +342,14 @@ export const ConfigProvider = ({ children }) => {
                 highlightInvalid,
                 setHighlightInvalid,
                 addInstance,
-                startDeletingInstance,
+                deleteInstance,
                 changeInstanceType,
                 handleInputChange,
                 handleInstanceUpdate,
                 handleSensorTargetSelect,
                 handleIrTargetSelect,
-                getTargetNodeOptions
+                getTargetNodeOptions,
+                deleteing
             }}
         >
             {children}
@@ -355,28 +360,5 @@ export const ConfigProvider = ({ children }) => {
 ConfigProvider.propTypes = {
     children: PropTypes.node,
 };
-
-// Delete instance card animation
-// Takes array of card divs, index of card to delete, add instance button
-// Fades out card to delete, slides up all cards below + add button
-async function delete_animation(cards, index, button) {
-    // Fade out card to be deleted
-    cards[index].classList.add('fade-out-card');
-
-    // Slide up all cards below, wait for animation to complete
-    for (let i=parseInt(index)+1; i<cards.length; i++) {
-        cards[i].children[0].classList.add('slide-up');
-    }
-    button.classList.add('slide-up');
-    await sleep(800);
-
-    // Prevent cards jumping higher when hidden card is actually deleted
-    for (let i=parseInt(index)+1; i<cards.length; i++) {
-        cards[i].children[0].classList.remove('slide-up');
-    }
-    button.classList.remove('slide-up');
-    // Prevent incorrect card being hidden after react re-render
-    cards[index].classList.remove('fade-out-card');
-}
 
 export { filterObject };

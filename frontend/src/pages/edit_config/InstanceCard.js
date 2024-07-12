@@ -25,7 +25,8 @@ const InstanceCard = ({ id }) => {
     // Get curent state + callback functions from context
     const {
         config,
-        startDeletingInstance,
+        deleteing,
+        deleteInstance,
         changeInstanceType,
         highlightInvalid
     } = useContext(ConfigContext);
@@ -155,9 +156,23 @@ const InstanceCard = ({ id }) => {
         }
     };
 
+    // Returns fade out class if this card is being deleted
+    const fadeOutClass = deleteing.id === id ? 'fade-out-card' : '';
+
+    // Returns slide-up class if a card above this one is being deleted
+    const slideUpClass = (() => {
+        if (deleteing.category === category) {
+            // Card being deleted is above this card if it has lower index
+            if (parseInt(id.replace(/[a-z]/g, '')) > deleteing.index) {
+                return 'slide-up';
+            }
+        }
+        return '';
+    })();
+
     return (
-        <div id={`${id}-card`} className="mb-4 instance-card">
-            <Card>
+        <div id={`${id}-card`} className={`mb-4 instance-card ${fadeOutClass}`}>
+            <Card className={slideUpClass}>
                 <Card.Body>
                     <div className="d-flex justify-content-between">
                         <Button className="ps-2" style={{ visibility: 'hidden' }}>
@@ -167,7 +182,7 @@ const InstanceCard = ({ id }) => {
                         <Button
                             variant="link"
                             className="my-auto pe-2 delete"
-                            onClick={() => startDeletingInstance(id)}
+                            onClick={() => deleteInstance(id)}
                         >
                             <i className="bi-x-lg"></i>
                         </Button>
