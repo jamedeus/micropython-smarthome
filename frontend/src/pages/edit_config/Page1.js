@@ -19,15 +19,25 @@ const Page1 = () => {
 
             <div id="page1" className="d-flex flex-column">
                 <Row className="mt-3">
-                    <SensorCards instances={Object.entries(config)
-                        .filter(([id]) => id.startsWith('sensor'))
-                        .sort()
-                        .map((id) => id[0])}
+                    <SensorCards instances={Object.keys(config)
+                        .filter(id => id.startsWith('sensor'))
+                        .sort((a, b) => {
+                            // Sort by index (avoids 1, 10, 11, 2, 3, etc)
+                            const indexA = parseInt(a.replace(/[a-zA-z]/g, ''));
+                            const indexB = parseInt(b.replace(/[a-zA-z]/g, ''));
+                            return indexA - indexB;
+                        })
+                    }
                     />
-                    <DeviceCards instances={Object.entries(config)
-                        .filter(([id]) => id.startsWith('device'))
-                        .sort()
-                        .map((id) => id[0])}
+                    <DeviceCards instances={Object.keys(config)
+                        .filter(id => id.startsWith('device'))
+                        .sort((a, b) => {
+                            // Sort by index (avoids 1, 10, 11, 2, 3, etc)
+                            const indexA = parseInt(a.replace(/[a-zA-z]/g, ''));
+                            const indexB = parseInt(b.replace(/[a-zA-z]/g, ''));
+                            return indexA - indexB;
+                        })
+                    }
                     />
                 </Row>
             </div>
