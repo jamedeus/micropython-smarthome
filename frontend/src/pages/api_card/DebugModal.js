@@ -18,8 +18,8 @@ const DebugModal = () => {
         setAttributes(null);
         setVisible(true);
         const response = await send_command({
-            'command': 'get_attributes',
-            'instance': id
+            command: 'get_attributes',
+            instance: id
         });
         const attributes = await response.json();
         setAttributes(attributes);

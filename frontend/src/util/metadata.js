@@ -3,8 +3,8 @@ import React from 'react';
 // Map IR Blaster targets to list of key options
 // TODO remove once IR Blaster metadata added
 const ir_keys = {
-    'tv': ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'],
-    'ac': ['start', 'stop', 'off']
+    tv: ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'],
+    ac: ['start', 'stop', 'off']
 };
 
 // Valid ESP32 sensor pins (input/output and input only)

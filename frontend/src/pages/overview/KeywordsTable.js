@@ -43,9 +43,9 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
 
     const handleEdit = async () => {
         const payload = {
-            "keyword_old": initKeyword,
-            "keyword_new": keyword,
-            "timestamp_new": timestamp
+            keyword_old: initKeyword,
+            keyword_new: keyword,
+            timestamp_new: timestamp
         };
 
         // Change delete button to loading animation, make API call
@@ -71,7 +71,7 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
         setButton("loading");
         const result = await send_post_request(
             "delete_schedule_keyword",
-            {"keyword": keyword}
+            {keyword: keyword}
         );
 
         // If successful delete from context and re-render (removes this row)
@@ -167,8 +167,8 @@ const NewKeywordRow = ({ addKeyword }) => {
     const handleAdd = async () => {
         setButtonLoading(true);
         const payload = {
-            "keyword": keyword,
-            "timestamp": timestamp
+            keyword: keyword,
+            timestamp: timestamp
         };
         const result = await send_post_request("add_schedule_keyword", payload);
 

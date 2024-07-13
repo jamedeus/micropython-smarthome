@@ -280,8 +280,8 @@ const ApiTargetRuleModal = () => {
 
         // Convert selectedRule param objects into arrays of params
         const output = {
-            'on': parse_rule_params('on'),
-            'off': parse_rule_params('off')
+            on: parse_rule_params('on'),
+            off: parse_rule_params('off')
         };
 
         // Pass rule object to callback function, close modal

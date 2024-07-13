@@ -45,9 +45,9 @@ const ScheduleToggleModal = () => {
     const submit = async () => {
         setVisible(false);
         const payload = {
-            'command': action,
-            'instance': target,
-            'delay': delay
+            command: action,
+            instance: target,
+            delay: delay
         };
 
         // Convert delay to minutes

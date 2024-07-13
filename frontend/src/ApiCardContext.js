@@ -97,7 +97,7 @@ export const ApiCardContextProvider = ({ children }) => {
     // call to esp32 using faster non-http compliant protocol
     async function send_command(value) {
         // Add IP of target node
-        value["target"] = targetIP;
+        value.target = targetIP;
 
         // Send to different endpoint if recording macro
         if (recording) {
@@ -121,7 +121,7 @@ export const ApiCardContextProvider = ({ children }) => {
         // Add friendly name for all instances except IR Blaster
         if (value.instance) {
             const instanceStatus = get_instance_section(value.instance);
-            value["friendly_name"] = instanceStatus.nickname;
+            value.friendly_name = instanceStatus.nickname;
         }
 
         // Add macro name
@@ -144,7 +144,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
     async function enable_instance(id, enable) {
         // Build payload from args
-        const payload = {'command': '', 'instance': id};
+        const payload = {command: '', instance: id};
         if (enable === true) {
             payload.command = 'enable';
         } else {
@@ -182,7 +182,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
     async function trigger_sensor(id) {
         // Send API call to node
-        const payload = {'command': 'trigger_sensor', 'instance': id};
+        const payload = {command: 'trigger_sensor', instance: id};
         const result = await send_command(payload);
 
         // If successful make same change in state (re-render immediately)
@@ -195,7 +195,7 @@ export const ApiCardContextProvider = ({ children }) => {
     }
 
     async function turn_on(id, state) {
-        const payload = {'command': '', 'instance': id};
+        const payload = {command: '', instance: id};
         if (state) {
             payload.command = 'turn_on';
         } else {
@@ -225,9 +225,9 @@ export const ApiCardContextProvider = ({ children }) => {
     // 150ms (prevents constant API calls saturating ESP32 bandwidth)
     const debounced_set_rule = useCallback(debounce(async (id, rule) => {
         const payload = {
-            'command': 'set_rule',
-            'instance': id,
-            'rule': rule
+            command: 'set_rule',
+            instance: id,
+            rule: rule
         };
         const result = await send_command(payload);
         console.log(result);
@@ -236,7 +236,7 @@ export const ApiCardContextProvider = ({ children }) => {
     // Called by reset option in dropdown, replaces current_rule with scheduled_rule
     async function reset_rule(id) {
         // Send API call to node
-        const result = await send_command({'command': 'reset_rule', 'instance': id});
+        const result = await send_command({command: 'reset_rule', instance: id});
 
         // If successful make same change in state (re-render immediately)
         if (result.ok) {
@@ -249,10 +249,10 @@ export const ApiCardContextProvider = ({ children }) => {
 
     async function add_schedule_rule(id, timestamp, rule) {
         const result = await send_command({
-            'command': 'add_rule',
-            'instance': id,
-            'time': timestamp,
-            'rule': rule
+            command: 'add_rule',
+            instance: id,
+            time: timestamp,
+            rule: rule
         });
 
         // Add new rule to state if successful
@@ -269,9 +269,9 @@ export const ApiCardContextProvider = ({ children }) => {
 
     async function delete_schedule_rule(id, timestamp) {
         const result = await send_command({
-            'command': 'remove_rule',
-            'instance': id,
-            'rule': timestamp
+            command: 'remove_rule',
+            instance: id,
+            rule: timestamp
         });
 
         // Add new rule to state if successful
@@ -286,11 +286,11 @@ export const ApiCardContextProvider = ({ children }) => {
     async function edit_schedule_rule(id, oldTimestamp, newTimestamp, rule) {
         // Add new rule (overwrite existing if timestamp not changed)
         const result = await send_command({
-            'command': 'add_rule',
-            'instance': id,
-            'time': newTimestamp,
-            'rule': rule,
-            'overwrite': 'overwrite'
+            command: 'add_rule',
+            instance: id,
+            time: newTimestamp,
+            rule: rule,
+            overwrite: 'overwrite'
         });
 
         if (result.ok) {
@@ -300,9 +300,9 @@ export const ApiCardContextProvider = ({ children }) => {
             // If timestamp was changed delete old rule
             if (oldTimestamp != newTimestamp) {
                 const result = await send_command({
-                    'command': 'remove_rule',
-                    'instance': id,
-                    'rule': oldTimestamp
+                    command: 'remove_rule',
+                    instance: id,
+                    rule: oldTimestamp
                 });
                 if (result.ok) {
                     delete rules[oldTimestamp];

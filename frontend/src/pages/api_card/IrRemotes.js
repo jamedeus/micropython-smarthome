@@ -54,7 +54,7 @@ const AcRemote = ({ recording=false, addMacroAction }) => {
         if (recording) {
             addMacroAction(`ac ${key} 100 1`);
         } else {
-            send_command({'command': 'ir', 'ir_target': 'ac', 'key': key});
+            send_command({command: 'ir', ir_target: 'ac', key: key});
         }
     };
 
@@ -99,7 +99,7 @@ const TvRemote = ({ recording=false, addMacroAction }) => {
         if (recording) {
             addMacroAction(`tv ${key} 100 1`);
         } else {
-            send_command({'command': 'ir', 'ir_target': 'tv', 'key': key});
+            send_command({command: 'ir', ir_target: 'tv', key: key});
         }
     };
 
@@ -216,7 +216,7 @@ const IrMacros = ({ recording, setRecording, newMacroActions }) => {
     const [newMacroName, setNewMacroName] = useState('');
 
     const runMacro = (name) => {
-        send_command({'command': 'ir_run_macro', 'macro_name': name});
+        send_command({command: 'ir_run_macro', macro_name: name});
     };
 
     const startRecording = () => {
