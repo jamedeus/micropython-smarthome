@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
-import InputWrapper from './InputWrapper';
+import InputWrapper from 'inputs/InputWrapper';
 import { formatIp } from 'util/validation';
 
 const IPInput = ({ id }) => {

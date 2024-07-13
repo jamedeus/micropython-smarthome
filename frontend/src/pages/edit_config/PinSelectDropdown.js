@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
-import InputWrapper from './InputWrapper';
+import InputWrapper from 'inputs/InputWrapper';
 import { ConfigContext } from 'root/ConfigContext';
 
 const PinSelectDropdown = ({ id, options }) => {

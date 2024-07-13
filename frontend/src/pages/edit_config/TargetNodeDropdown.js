@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
-import InputWrapper from './InputWrapper';
+import InputWrapper from 'inputs/InputWrapper';
 import { api_target_options } from 'util/django_util';
 
 // Get object containing friendly_name: IP pairs for all existing nodes

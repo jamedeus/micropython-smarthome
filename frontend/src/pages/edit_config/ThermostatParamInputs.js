@@ -2,9 +2,9 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
-import InputWrapper from './InputWrapper';
+import InputWrapper from 'inputs/InputWrapper';
 import { convert_temperature } from 'util/thermostat_util';
-import Dropdown from './Dropdown';
+import Dropdown from 'inputs/Dropdown';
 
 const ThermostatParamInputs = ({ id }) => {
     // Get curent state + callback functions from context

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
 import { ConfigContext } from 'root/ConfigContext';
-import InputWrapper from './InputWrapper';
+import InputWrapper from 'inputs/InputWrapper';
 import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 
 const DefaultRuleIntRange = ({ id, instance, metadata }) => {

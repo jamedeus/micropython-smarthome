@@ -4,19 +4,19 @@ import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { ConfigContext } from 'root/ConfigContext';
-import NicknameInput from 'inputs/NicknameInput';
-import IPInput from 'inputs/IPInput';
-import URIInput from 'inputs/URIInput';
-import HttpGetPathInputs from 'inputs/HttpGetPathInputs';
-import ThermostatParamInputs from 'inputs/ThermostatParamInputs';
-import TargetNodeDropdown from 'inputs/TargetNodeDropdown';
-import PinSelectDropdown from 'inputs/PinSelectDropdown';
-import DefaultRuleStandard from 'inputs/DefaultRuleStandard';
-import DefaultRuleFloatRange from 'inputs/DefaultRuleFloatRange';
-import DefaultRuleThermostat from 'inputs/DefaultRuleThermostat';
-import DefaultRuleIntRange from 'inputs/DefaultRuleIntRange';
-import DefaultRuleOnOff from 'inputs/DefaultRuleOnOff';
-import DefaultRuleApiTarget from 'inputs/DefaultRuleApiTarget';
+import NicknameInput from './NicknameInput';
+import IPInput from './IPInput';
+import URIInput from './URIInput';
+import HttpGetPathInputs from './HttpGetPathInputs';
+import ThermostatParamInputs from './ThermostatParamInputs';
+import TargetNodeDropdown from './TargetNodeDropdown';
+import PinSelectDropdown from './PinSelectDropdown';
+import DefaultRuleStandard from './DefaultRuleStandard';
+import DefaultRuleFloatRange from './DefaultRuleFloatRange';
+import DefaultRuleThermostat from './DefaultRuleThermostat';
+import DefaultRuleIntRange from './DefaultRuleIntRange';
+import DefaultRuleOnOff from './DefaultRuleOnOff';
+import DefaultRuleApiTarget from './DefaultRuleApiTarget';
 import {
     sensorPins,
     devicePins,

@@ -4,7 +4,7 @@ import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
-import PinSelectDropdown from 'inputs/PinSelectDropdown';
+import PinSelectDropdown from './PinSelectDropdown';
 import { devicePins } from 'util/metadata';
 
 const IrBlasterSection = () => {
