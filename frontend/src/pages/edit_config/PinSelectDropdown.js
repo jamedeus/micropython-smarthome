@@ -16,14 +16,21 @@ const PinSelectDropdown = ({ id, options }) => {
         }
     });
 
+    // Set value to empty string if config section missing (ir_blaster removed)
+    const value = config[id] ? config[id]["pin"] : '';
+
+    // Add invalid highlight if state is true, config section exists, and pin
+    // is missing from config section
+    const invalid = highlightInvalid && config[id] && !config[id]["pin"];
+
     // Return dropdown with correct pin selected, used pins disabled
     // Add red highlight if highlightInvalid is true and pin not selected
     return (
         <InputWrapper label="Pin">
             <Form.Select
-                value={config[id]["pin"]}
+                value={value}
                 onChange={(e) => handleInputChange(id, "pin", e.target.value)}
-                isInvalid={(highlightInvalid && !config[id]["pin"])}
+                isInvalid={invalid}
             >
                 <option value="">Select pin</option>
                 {options.map(option => (

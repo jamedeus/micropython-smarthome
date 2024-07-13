@@ -59,12 +59,10 @@ const IrBlasterSection = () => {
                         <Card.Body className="mx-auto">
                             <h2>IR Blaster</h2>
 
-                            {show ? (
-                                <PinSelectDropdown
-                                    id="ir_blaster"
-                                    options={devicePins}
-                                />
-                            ) : null}
+                            <PinSelectDropdown
+                                id="ir_blaster"
+                                options={devicePins}
+                            />
 
                             <div className="mb-2">
                                 <label htmlFor="ir-remotes" className="fw-bold">
