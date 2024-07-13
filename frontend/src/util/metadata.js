@@ -35,14 +35,22 @@ for (let sensor in metadata.sensors) {
 
 
 // Takes category ("device" or "sensor") and type, returns full metadata object
+// Creates deep copy so modifying object does not affect other components
 function get_instance_metadata(category, type) {
-    return metadata[`${category}s`][type];
+    return { ...metadata[`${category}s`][type],
+        config_template: get_config_template(category, type)
+    };
 }
 
 
 // Takes category ("device" or "sensor") and type, returns config template
+// Creates copy so modifying template does not affect other components
 function get_config_template(category, type) {
-    return metadata[`${category}s`][type]['config_template'];
+    if (category && type) {
+        return { ...metadata[`${category}s`][type]['config_template'] };
+    } else {
+        return null;
+    }
 }
 
 
