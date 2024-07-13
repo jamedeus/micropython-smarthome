@@ -24,7 +24,7 @@ const MetadataSection = () => {
             // Send new name to backend
             const response = await send_post_request(
                 '/check_duplicate',
-                {'name': new_name}
+                {name: new_name}
             );
 
             // If name is duplicate add invalid highlight, otherwise remove

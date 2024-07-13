@@ -101,7 +101,7 @@ export const ConfigProvider = ({ children }) => {
         // Add key to state object with empty config
         // Will be populated with metadata template when user selects type
         // _type = undefined used to detect empty and add invalid highlight
-        setConfig({ ...config, [`${category}${index}`]: {'_type': undefined} });
+        setConfig({ ...config, [`${category}${index}`]: {_type: undefined} });
 
         // Create UUID for new instance
         setUUIDs({ ...UUIDs, [category]: {
@@ -186,12 +186,12 @@ export const ConfigProvider = ({ children }) => {
         const update = { ... config[sensor] };
         // Add target if not already present
         if (checked) {
-            if (update["targets"].indexOf(target) === -1) {
-                update["targets"].push(target);
+            if (update.targets.indexOf(target) === -1) {
+                update.targets.push(target);
             }
         // Remove existing target if present
         } else {
-            update["targets"] = update["targets"].filter(existing => existing !== target);
+            update.targets = update.targets.filter(existing => existing !== target);
         }
         setConfig({ ...config, [sensor]: update });
     };
@@ -208,7 +208,7 @@ export const ConfigProvider = ({ children }) => {
         } else {
             ir_blaster.target = ir_blaster.target.filter(existing => existing !== target);
         }
-        setConfig({ ...config, ['ir_blaster']: ir_blaster });
+        setConfig({ ...config, ir_blaster: ir_blaster });
     };
 
     // Called by deleteInstance, decrements IDs of all subsequent instances to prevent gaps

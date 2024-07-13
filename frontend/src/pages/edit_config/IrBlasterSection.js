@@ -1,4 +1,5 @@
 import React, { useState, useContext } from 'react';
+import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
@@ -36,13 +37,27 @@ const IrBlasterSection = () => {
     };
 
     // Set target array for template below
-    let target = [];
-    if (config.ir_blaster !== undefined) {
-        target = config.ir_blaster.target;
-    }
+    const targets = config.ir_blaster ? config.ir_blaster.target : [];
+
+    const TargetCheckbox = ({ target, label }) => {
+        return (
+            <Form.Check
+                type="checkbox"
+                id={`${target}-codes`}
+                label={label}
+                checked={targets.includes(target)}
+                onChange={(e) => handleIrTargetSelect(target, e.target.checked)}
+            />
+        );
+    };
+
+    TargetCheckbox.propTypes = {
+        target: PropTypes.oneOf(["ac", "tv"]).isRequired,
+        label: PropTypes.string.isRequired
+    };
 
     return (
-        <div id="ir_blaster_row" className="max-width-md-50 w-100 mx-auto text-center">
+        <div className="max-width-md-50 w-100 mx-auto text-center">
             <p className="text-center mt-3">
                 <Button
                     variant="secondary"
@@ -69,19 +84,13 @@ const IrBlasterSection = () => {
                                     Virtual remotes:
                                 </label>
                                 <div id="ir-remotes">
-                                    <Form.Check
-                                        type="checkbox"
-                                        id="tv-codes"
-                                        label="TV (Samsung)"
-                                        checked={target.includes("tv")}
-                                        onChange={(e) => handleIrTargetSelect("tv", e.target.checked)}
+                                    <TargetCheckbox
+                                        target={"tv"}
+                                        label={"TV (Samsung)"}
                                     />
-                                    <Form.Check
-                                        type="checkbox"
-                                        id="ac-codes"
-                                        label="AC (Whynter)"
-                                        checked={target.includes("ac")}
-                                        onChange={(e) => handleIrTargetSelect("ac", e.target.checked)}
+                                    <TargetCheckbox
+                                        target={"ac"}
+                                        label={"AC (Whynter)"}
                                     />
                                 </div>
                             </div>

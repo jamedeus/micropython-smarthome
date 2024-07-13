@@ -63,7 +63,11 @@ const DefaultRuleIntRange = ({ id, instance, metadata }) => {
             </div>
 
             <div className="mt-3 text-center">
-                <a className="text-decoration-none text-dim" role="button" onClick={() => setOpen(!open)}>
+                <a
+                    className="text-decoration-none text-dim"
+                    role="button"
+                    onClick={() => setOpen(!open)}
+                >
                     Advanced
                 </a>
             </div>

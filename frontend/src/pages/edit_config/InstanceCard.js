@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
@@ -185,7 +185,9 @@ const InstanceCard = ({ id }) => {
                         <Button className="ps-2" style={{ visibility: 'hidden' }}>
                             <i className="bi-x-lg"></i>
                         </Button>
-                        <h4 className="card-title mx-auto my-auto">{`${id}`}</h4>
+                        <h4 className="card-title mx-auto my-auto">
+                            {`${id}`}
+                        </h4>
                         <Button
                             variant="link"
                             className="my-auto pe-2 delete"
