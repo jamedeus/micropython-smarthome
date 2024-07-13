@@ -19,7 +19,69 @@ import DefaultRuleIntRange from 'inputs/DefaultRuleIntRange';
 import DefaultRuleOnOff from 'inputs/DefaultRuleOnOff';
 import DefaultRuleApiTarget from 'inputs/DefaultRuleApiTarget';
 import { get_instance_metadata, get_type_dropdown_options } from 'util/metadata';
-import { v4 as uuid } from 'uuid';
+
+// Takes instance ID, key from config template, and metadata object
+// Renders correct input for config template key
+const ConfigParamInput = ({ id, configKey, metadata }) => {
+    switch(configKey) {
+        case('nickname'):
+            return <NicknameInput id={id} />;
+        case('pin'):
+            if (id.startsWith('device')) {
+                return <DevicePinSelect id={id} />;
+            } else {
+                return <SensorPinSelect id={id} />;
+            }
+        case('ip'):
+            if (metadata.rule_prompt !== "api_target") {
+                return <IPInput id={id} />;
+            } else {
+                return <TargetNodeDropdown id={id} />;
+            }
+        case('uri'):
+            return <URIInput id={id} />;
+        case('on_path'):
+            return <HttpGetPathInputs id={id}/>;
+        default:
+            return null;
+    }
+};
+
+ConfigParamInput.propTypes = {
+    id: PropTypes.string.isRequired,
+    configKey: PropTypes.string.isRequired,
+    metadata: PropTypes.object.isRequired
+};
+
+// Takes instance ID, instance config section, and metadata object
+// Renders correct default_rule input based on metadata and config section
+const DefaultRuleInput = ({ id, instance, metadata }) => {
+    // If instance has units key return thermostat input
+    if (instance.units !== undefined) {
+        return <DefaultRuleThermostat id={id} />;
+    }
+
+    switch (metadata.rule_prompt) {
+        case 'standard':
+            return <DefaultRuleStandard id={id} />;
+        case 'on_off':
+            return <DefaultRuleOnOff id={id} />;
+        case 'float_range':
+            return <DefaultRuleFloatRange id={id} />;
+        case 'int_or_fade':
+            return <DefaultRuleIntRange id={id} />;
+        case 'api_target':
+            return <DefaultRuleApiTarget id={id} />;
+        default:
+            return null;
+    }
+};
+
+DefaultRuleInput.propTypes = {
+    id: PropTypes.string.isRequired,
+    instance: PropTypes.object.isRequired,
+    metadata: PropTypes.object.isRequired
+};
 
 const InstanceCard = ({ id }) => {
     // Get curent state + callback functions from context
@@ -37,9 +99,6 @@ const InstanceCard = ({ id }) => {
 
     // Get metadata object for selected type
     const instanceMetadata = get_instance_metadata(category, instance._type);
-
-    // Create stable UUID for input field keys
-    const [key] = useState(uuid());
 
     console.log(`Rendering ${id}`);
 
@@ -66,95 +125,6 @@ const InstanceCard = ({ id }) => {
     } else {
         dropdownOptions = get_type_dropdown_options(category);
     }
-
-    // Returns list of nodes with input element for each parameter in config section
-    // Must use random UUID keys, all other values can change (even device/sensor ID)
-    const renderInputs = () => {
-        let inputs = [];
-
-        if (instance.nickname !== undefined) {
-            inputs.push(
-                <NicknameInput key={key + '-nickname'} id={id} />
-            );
-        }
-
-        if (instance.pin !== undefined) {
-            // Is device if no targets key
-            if (instance.targets === undefined) {
-                inputs.push(
-                    <DevicePinSelect key={key + '-pin'} id={id} />
-                );
-            // Otherwise is sensor
-            } else {
-                inputs.push(
-                    <SensorPinSelect key={key + '-pin'} id={id} />
-                );
-            }
-        }
-
-        if (instance.ip !== undefined) {
-            if (instanceMetadata.rule_prompt !== "api_target") {
-                inputs.push(
-                    <IPInput key={key + '-ip'} id={id} />
-                );
-            } else {
-                inputs.push(
-                    <TargetNodeDropdown key={key + '-ip'} id={id} />
-                );
-            }
-        }
-
-        if (instance.uri !== undefined) {
-            inputs.push(
-                <URIInput key={key + '-uri'} id={id} />
-            );
-        }
-
-        if (instance.on_path !== undefined && instance.off_path !== undefined) {
-            inputs.push(
-                <HttpGetPathInputs key={key + '-paths'} id={id}/>
-            );
-        }
-
-        // Add correct default rule input based on metadata rule_prompt
-        inputs.push(renderRuleInput());
-
-        // Thermostat mode, units, tolerance inputs
-        if (instance.mode !== undefined && instance.units !== undefined) {
-            inputs.push(
-                <ThermostatParamInputs key={key + '-params'} id={id} />
-            );
-        }
-
-        return inputs;
-    };
-
-    const renderRuleInput = () => {
-        // New card: skip
-        if (instance._type === undefined) {
-            return null;
-        }
-
-        // If instance has units key return thermostat input
-        if (instance.units !== undefined) {
-            return <DefaultRuleThermostat key={key + '-default_rule'} id={id} />;
-        }
-
-        switch (instanceMetadata.rule_prompt) {
-            case 'standard':
-                return <DefaultRuleStandard key={key + '-default_rule'} id={id} />;
-            case 'on_off':
-                return <DefaultRuleOnOff key={key + '-default_rule'} id={id} />;
-            case 'float_range':
-                return <DefaultRuleFloatRange key={key + '-default_rule'} id={id} />;
-            case 'int_or_fade':
-                return <DefaultRuleIntRange key={key + '-default_rule'} id={id} />;
-            case 'api_target':
-                return <DefaultRuleApiTarget key={key + '-default_rule'} id={id} />;
-            default:
-                return null;
-        }
-    };
 
     // Returns fade out class if this card is being deleted
     const fadeOutClass = deleteing.id === id ? 'fade-out-card' : '';
@@ -199,7 +169,26 @@ const InstanceCard = ({ id }) => {
                         </Form.Select>
                     </label>
                     <Card.Body id={`${id}-params`}>
-                        {renderInputs()}
+                        {/* Render correct input for each key in config template */}
+                        {Object.keys(instance).map(key =>
+                            <ConfigParamInput
+                                key={key}
+                                id={id}
+                                configKey={key}
+                                metadata={instanceMetadata}
+                            />
+                        )}
+
+                        <DefaultRuleInput
+                            id={id}
+                            instance={instance}
+                            metadata={instanceMetadata}
+                        />
+
+                        {/* Thermostat: add units, tolerance inputs */}
+                        {instance.units !== undefined ? (
+                            <ThermostatParamInputs id={id} />
+                        ) : null}
                     </Card.Body>
                 </Card.Body>
             </Card>
