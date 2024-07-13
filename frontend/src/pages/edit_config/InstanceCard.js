@@ -21,7 +21,7 @@ import {
     sensorPins,
     devicePins,
     get_instance_metadata,
-    get_type_dropdown_options
+    TypeDropdownOptions
 } from 'util/metadata';
 
 // Takes instance ID, key from config template, and metadata object
@@ -154,15 +154,6 @@ const InstanceCard = ({ id }) => {
         return types.includes('si7021');
     };
 
-    // Get dropdown options from metadata
-    // Remove si7021 option if already used on another card
-    let dropdownOptions;
-    if (category === 'sensor' && containsSi7021(config)) {
-        dropdownOptions = get_type_dropdown_options(category, ['si7021']);
-    } else {
-        dropdownOptions = get_type_dropdown_options(category);
-    }
-
     // Returns fade out class if this card is being deleted
     const fadeOutClass = deleteing.id === id ? 'fade-out-card' : '';
 
@@ -204,7 +195,10 @@ const InstanceCard = ({ id }) => {
                             isInvalid={(highlightInvalid && !instance._type)}
                         >
                             <option value="clear">Select {category} type</option>
-                            {dropdownOptions}
+                            <TypeDropdownOptions
+                                category={category}
+                                exclude={containsSi7021(config) ? ['si7021'] : []}
+                            />
                         </Form.Select>
                     </label>
                     <Card.Body id={`${id}-params`}>

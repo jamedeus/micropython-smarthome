@@ -1,4 +1,5 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 
 // Map IR Blaster targets to list of key options
 // TODO remove once IR Blaster metadata added
@@ -100,15 +101,23 @@ function get_config_template(category, type) {
 // Takes category ("device" or "sensor"), returns array of dropdown options
 // containing every driver type in category.
 // Optional exclude array can contain config_names that should be skipped.
-function get_type_dropdown_options(category, exclude=[]) {
-    return Object.entries(metadata[`${category}s`])
-        .filter(([key, _]) =>
-            !exclude.includes(key)
-        ).map(([key, type]) => (
-            <option key={key} value={type.config_name}>{type.class_name}</option>
-        ));
-}
+const TypeDropdownOptions = ({ category, exclude=[] }) => {
+    return (
+        Object.entries(metadata[`${category}s`])
+            .filter(([key, _]) =>
+                !exclude.includes(key)
+            ).map(([key, type]) => (
+                <option key={key} value={type.config_name}>
+                    {type.class_name}
+                </option>
+            ))
+    );
+};
 
+TypeDropdownOptions.propTypes = {
+    category: PropTypes.oneOf(['device', 'sensor']).isRequired,
+    exclude: PropTypes.array
+};
 
 export {
     ir_keys,
@@ -116,5 +125,5 @@ export {
     devicePins,
     get_instance_metadata,
     get_config_template,
-    get_type_dropdown_options
+    TypeDropdownOptions
 };
