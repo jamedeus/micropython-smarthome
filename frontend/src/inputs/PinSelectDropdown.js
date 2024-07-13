@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import InputWrapper from './InputWrapper';
+import { ConfigContext } from 'root/ConfigContext';
 
-// Used by SensorPinSelect and DevicePinSelect components
-const PinSelectDropdown = ({id, config, selected, onChange, options, isInvalid=false}) => {
+const PinSelectDropdown = ({ id, options }) => {
+    // Get current config state, callback to change pin, highlightInvalid bool
+    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
+
     // Get array of all pins used by other instances
     let usedPins = [];
     Object.entries(config).forEach(([instance, params]) => {
@@ -14,12 +17,13 @@ const PinSelectDropdown = ({id, config, selected, onChange, options, isInvalid=f
     });
 
     // Return dropdown with correct pin selected, used pins disabled
+    // Add red highlight if highlightInvalid is true and pin not selected
     return (
         <InputWrapper label="Pin">
             <Form.Select
-                value={selected}
-                onChange={(e) => onChange(e.target.value)}
-                isInvalid={isInvalid}
+                value={config[id]["pin"]}
+                onChange={(e) => handleInputChange(id, "pin", e.target.value)}
+                isInvalid={(highlightInvalid && !config[id]["pin"])}
             >
                 <option value="">Select pin</option>
                 {options.map(option => (
@@ -38,14 +42,7 @@ const PinSelectDropdown = ({id, config, selected, onChange, options, isInvalid=f
 
 PinSelectDropdown.propTypes = {
     id: PropTypes.string.isRequired,
-    config: PropTypes.object.isRequired,
-    selected: PropTypes.PropTypes.oneOfType([
-        PropTypes.number,
-        PropTypes.string
-    ]).isRequired,
-    onChange: PropTypes.func.isRequired,
-    options: PropTypes.array.isRequired,
-    isInvalid: PropTypes.bool
+    options: PropTypes.array.isRequired
 };
 
 export default PinSelectDropdown;

@@ -7,6 +7,49 @@ const ir_keys = {
     'ac': ['start', 'stop', 'off']
 };
 
+// Valid ESP32 sensor pins (input/output and input only)
+const sensorPins = [
+    '4',
+    '5',
+    '13',
+    '14',
+    '15',
+    '16',
+    '17',
+    '18',
+    '19',
+    '21',
+    '22',
+    '23',
+    '25',
+    '26',
+    '27',
+    '32',
+    '33',
+    '34',
+    '35',
+    '36',
+    '39'
+];
+
+// Valid ESP32 device pins (input/output)
+const devicePins = [
+    '4',
+    '13',
+    '16',
+    '17',
+    '18',
+    '19',
+    '21',
+    '22',
+    '23',
+    '25',
+    '26',
+    '27',
+    '32',
+    '33'
+];
+
 // Get device/sensor metadata object, used to determine input elements for each type
 // Contains config templates for each device/sensor, added to output object when selected
 let metadata = JSON.parse(document.getElementById("instance_metadata").textContent);
@@ -67,4 +110,11 @@ function get_type_dropdown_options(category, exclude=[]) {
 }
 
 
-export { ir_keys, get_instance_metadata, get_config_template, get_type_dropdown_options };
+export {
+    ir_keys,
+    sensorPins,
+    devicePins,
+    get_instance_metadata,
+    get_config_template,
+    get_type_dropdown_options
+};

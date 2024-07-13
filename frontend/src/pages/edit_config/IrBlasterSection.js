@@ -4,7 +4,8 @@ import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
-import DevicePinSelect from 'inputs/DevicePinSelect';
+import PinSelectDropdown from 'inputs/PinSelectDropdown';
+import { devicePins } from 'util/metadata';
 
 const IrBlasterSection = () => {
     // Get curent state + callbacks from context
@@ -56,9 +57,12 @@ const IrBlasterSection = () => {
                         <Card.Body className="mx-auto">
                             <h2>IR Blaster</h2>
 
-                            <DevicePinSelect
-                                id="ir_blaster"
-                            />
+                            {show ? (
+                                <PinSelectDropdown
+                                    id="ir_blaster"
+                                    options={devicePins}
+                                />
+                            ) : null}
 
                             <div className="mb-2">
                                 <label htmlFor="ir-remotes" className="fw-bold">

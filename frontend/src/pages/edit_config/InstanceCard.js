@@ -10,15 +10,19 @@ import URIInput from 'inputs/URIInput';
 import HttpGetPathInputs from 'inputs/HttpGetPathInputs';
 import ThermostatParamInputs from 'inputs/ThermostatParamInputs';
 import TargetNodeDropdown from 'inputs/TargetNodeDropdown';
-import SensorPinSelect from 'inputs/SensorPinSelect';
-import DevicePinSelect from 'inputs/DevicePinSelect';
+import PinSelectDropdown from 'inputs/PinSelectDropdown';
 import DefaultRuleStandard from 'inputs/DefaultRuleStandard';
 import DefaultRuleFloatRange from 'inputs/DefaultRuleFloatRange';
 import DefaultRuleThermostat from 'inputs/DefaultRuleThermostat';
 import DefaultRuleIntRange from 'inputs/DefaultRuleIntRange';
 import DefaultRuleOnOff from 'inputs/DefaultRuleOnOff';
 import DefaultRuleApiTarget from 'inputs/DefaultRuleApiTarget';
-import { get_instance_metadata, get_type_dropdown_options } from 'util/metadata';
+import {
+    sensorPins,
+    devicePins,
+    get_instance_metadata,
+    get_type_dropdown_options
+} from 'util/metadata';
 
 // Takes instance ID, key from config template, and metadata object
 // Renders correct input for config template key
@@ -28,9 +32,9 @@ const ConfigParamInput = ({ id, configKey, metadata }) => {
             return <NicknameInput id={id} />;
         case('pin'):
             if (id.startsWith('device')) {
-                return <DevicePinSelect id={id} />;
+                return <PinSelectDropdown id={id} options={devicePins} />;
             } else {
-                return <SensorPinSelect id={id} />;
+                return <PinSelectDropdown id={id} options={sensorPins} />;
             }
         case('ip'):
             if (metadata.rule_prompt !== "api_target") {
