@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import { get_instance_metadata } from 'util/metadata';
-import { average } from 'util/helper_functions';
 import { convert_temperature } from 'util/thermostat_util';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 
@@ -19,10 +18,6 @@ const DefaultRuleThermostat = ({ id }) => {
     const min_rule = parseFloat(instanceMetadata.rule_limits[0], 10);
     const max_rule = parseFloat(instanceMetadata.rule_limits[1], 10);
 
-    // Replace empty default_rule when new card added (causes NaN on slider)
-    if (instance.default_rule === '') {
-        instance.default_rule = average(min_rule, max_rule);
-    }
     // Handler for slider move events
     const onSliderMove = (value) => {
         handleInputChange(id, "default_rule", value);

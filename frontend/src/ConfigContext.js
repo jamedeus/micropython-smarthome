@@ -1,7 +1,6 @@
 import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
-import { get_config_template } from 'util/metadata';
-import { sleep } from 'util/helper_functions';
+import { sleep, average } from 'util/helper_functions';
 import { v4 as uuid } from 'uuid';
 import { get_instance_metadata, ir_keys } from 'util/metadata';
 import { api_target_options, target_node_ip } from 'util/django_util';
@@ -143,8 +142,29 @@ export const ConfigProvider = ({ children }) => {
 
     // Handler for type select dropdown in device and sensor cards
     const changeInstanceType = (id, category, event) => {
-        const template = get_config_template(category, event.target.value);
-        setConfig({ ...config, [id]: template});
+        // Get instance metadata (contains config template and prompt type)
+        const metadata = get_instance_metadata(category, event.target.value);
+
+        // Add initial default_rule for float range (avoid NaN on slider)
+        if (metadata.rule_prompt === 'float_range') {
+            const min_rule = parseInt(metadata.rule_limits[0], 10);
+            const max_rule = parseInt(metadata.rule_limits[1], 10);
+            metadata.config_template.default_rule = average(min_rule, max_rule);
+            setConfig({ ...config, [id]: metadata.config_template});
+
+        // Set initial default_rule and limits for int range slider
+        } else if (metadata.rule_prompt === 'int_or_fade') {
+            const min_rule = parseInt(metadata.rule_limits[0], 10);
+            const max_rule = parseInt(metadata.rule_limits[1], 10);
+            metadata.config_template.min_rule = min_rule;
+            metadata.config_template.max_rule = max_rule;
+            metadata.config_template.default_rule = average(min_rule, max_rule);
+            setConfig({ ...config, [id]: metadata.config_template});
+
+        // No changes needed for other rule types
+        } else {
+            setConfig({ ...config, [id]: metadata.config_template});
+        }
     };
 
     // Handler for all inputs inside device and sensor cards

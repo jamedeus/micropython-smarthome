@@ -2,7 +2,6 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import { get_instance_metadata } from 'util/metadata';
-import { average } from 'util/helper_functions';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 
 const DefaultRuleFloatRange = ({ id }) => {
@@ -17,11 +16,6 @@ const DefaultRuleFloatRange = ({ id }) => {
     const instanceMetadata = get_instance_metadata(category, instance._type);
     const min_rule = parseInt(instanceMetadata.rule_limits[0], 10);
     const max_rule = parseInt(instanceMetadata.rule_limits[1], 10);
-
-    // Replace empty default_rule when new card added (causes NaN on slider)
-    if (instance.default_rule === '') {
-        instance.default_rule = average(min_rule, max_rule);
-    }
 
     // Handler for slider move events
     const onSliderMove = (value) => {

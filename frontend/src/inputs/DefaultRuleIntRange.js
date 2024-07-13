@@ -5,7 +5,6 @@ import Collapse from 'react-bootstrap/Collapse';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
 import { get_instance_metadata } from 'util/metadata';
-import { average } from 'util/helper_functions';
 import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 
 const DefaultRuleIntRange = ({ id }) => {
@@ -18,17 +17,6 @@ const DefaultRuleIntRange = ({ id }) => {
     // Get metadata object for selected type (contains slider min/max)
     const category = id.replace(/[0-9]/g, '');
     const instanceMetadata = get_instance_metadata(category, instance._type);
-
-    // Replace empty params with defaults (slider component requires all)
-    if (!instance.min_rule) {
-        instance.min_rule = instanceMetadata.rule_limits[0];
-    }
-    if (!instance.max_rule) {
-        instance.max_rule = instanceMetadata.rule_limits[1];
-    }
-    if (instance.default_rule === '') {
-        instance.default_rule = average(instance.min_rule, instance.max_rule);
-    }
 
     // Handler for slider move events
     const onSliderMove = (value) => {
