@@ -68,10 +68,6 @@ export const ConfigProvider = ({ children }) => {
     // Card matching ID fades out, cards in category with higher index slide up
     const [deleteing, setDeleteing] = useState({id: '', category: '', index: ''});
 
-    const updateConfig = newConfig => {
-        setConfig(newConfig);
-    };
-
     // Create state for device and sensor UUIDs (used as react key)
     // Pre-populate with id-UUID pairs for existing instances (if editing)
     const [UUIDs, setUUIDs] = useState(
@@ -194,6 +190,19 @@ export const ConfigProvider = ({ children }) => {
             update.targets = update.targets.filter(existing => existing !== target);
         }
         setConfig({ ...config, [sensor]: update });
+    };
+
+    // Add ir_blaster section to state object if arg true, remove if false
+    const addIrBlasterSection = (add) => {
+        if (add) {
+            setConfig({ ...config,
+                ir_blaster: { pin: '', target: []} }
+            );
+        } else {
+            let update = { ...config };
+            delete update.ir_blaster;
+            setConfig(update);
+        }
     };
 
     // Handler for IR target checkboxes
@@ -357,7 +366,6 @@ export const ConfigProvider = ({ children }) => {
         <ConfigContext.Provider value=
             {{
                 config,
-                updateConfig,
                 getKey,
                 highlightInvalid,
                 setHighlightInvalid,
@@ -367,6 +375,7 @@ export const ConfigProvider = ({ children }) => {
                 handleInputChange,
                 handleInstanceUpdate,
                 handleSensorTargetSelect,
+                addIrBlasterSection,
                 handleIrTargetSelect,
                 getTargetNodeOptions,
                 deleteing

@@ -10,7 +10,7 @@ import { devicePins } from 'util/metadata';
 
 const IrBlasterSection = () => {
     // Get curent state + callbacks from context
-    const { config, updateConfig, handleIrTargetSelect } = useContext(ConfigContext);
+    const { config, addIrBlasterSection, handleIrTargetSelect } = useContext(ConfigContext);
 
     // Create state object to set visibility
     // Default to visible if config contains ir_blaster key
@@ -18,22 +18,9 @@ const IrBlasterSection = () => {
 
     // Handler for Add IR Blaster button
     // Toggles collapse and adds/removes ir_blaster config section
-    const toggleState = (visible) => {
-        if (visible) {
-            // Open collapse
-            setShow(true);
-            // Add ir_blaster section to state object
-            let update = { ...config };
-            update.ir_blaster = { pin: '', target: []};
-            updateConfig(update);
-        } else {
-            // Close collapse
-            setShow(false);
-            // Remove ir_blaster section from state object
-            let update = { ...config };
-            delete update.ir_blaster;
-            updateConfig(update);
-        }
+    const toggleState = () => {
+        addIrBlasterSection(!show);
+        setShow(!show);
     };
 
     // Set target array for template below
@@ -61,7 +48,7 @@ const IrBlasterSection = () => {
             <p className="text-center mt-3">
                 <Button
                     variant="secondary"
-                    onClick={() => toggleState(!show)}
+                    onClick={() => toggleState()}
                 >
                     Add IR Blaster
                 </Button>
