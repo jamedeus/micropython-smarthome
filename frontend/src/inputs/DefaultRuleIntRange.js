@@ -4,19 +4,14 @@ import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from './InputWrapper';
-import { get_instance_metadata } from 'util/metadata';
 import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 
-const DefaultRuleIntRange = ({ id }) => {
-    // Get curent state + callback functions from context
-    const { config, handleInstanceUpdate, handleInputChange } = useContext(ConfigContext);
+const DefaultRuleIntRange = ({ id, instance, metadata }) => {
+    const { handleInstanceUpdate, handleInputChange } = useContext(ConfigContext);
 
-    // Get instance section from config (state) object
-    const instance = config[id];
-
-    // Get metadata object for selected type (contains slider min/max)
-    const category = id.replace(/[0-9]/g, '');
-    const instanceMetadata = get_instance_metadata(category, instance._type);
+    // Get slider limits from metadata object
+    const metadata_min = parseInt(metadata.rule_limits[0], 10);
+    const metadata_max = parseInt(metadata.rule_limits[1], 10);
 
     // Handler for slider move events
     const onSliderMove = (value) => {
@@ -33,8 +28,6 @@ const DefaultRuleIntRange = ({ id }) => {
         }
 
         // Enforce absolute rule limits
-        const metadata_min = parseInt(instanceMetadata.rule_limits[0], 10);
-        const metadata_max = parseInt(instanceMetadata.rule_limits[1], 10);
         value = Math.max(metadata_min, Math.min(value, metadata_max));
 
         // Copy state object, add new limit
@@ -99,7 +92,9 @@ const DefaultRuleIntRange = ({ id }) => {
 };
 
 DefaultRuleIntRange.propTypes = {
-    id: PropTypes.string.isRequired
+    id: PropTypes.string.isRequired,
+    instance: PropTypes.object.isRequired,
+    metadata: PropTypes.object.isRequired
 };
 
 export default DefaultRuleIntRange;

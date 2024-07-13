@@ -3,12 +3,8 @@ import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import StandardRuleInput from 'inputs/StandardRuleInput';
 
-const DefaultRuleStandard = ({ id }) => {
-    // Get curent state + callback functions from context
-    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
-
-    // Get instance section in config
-    const instance = config[id];
+const DefaultRuleStandard = ({ id, instance }) => {
+    const { handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     const onChange = (value) => {
         handleInputChange(id, "default_rule", value);
@@ -25,7 +21,8 @@ const DefaultRuleStandard = ({ id }) => {
 };
 
 DefaultRuleStandard.propTypes = {
-    id: PropTypes.string.isRequired
+    id: PropTypes.string.isRequired,
+    instance: PropTypes.object.isRequired
 };
 
 export default DefaultRuleStandard;

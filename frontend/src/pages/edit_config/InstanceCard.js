@@ -58,20 +58,53 @@ ConfigParamInput.propTypes = {
 const DefaultRuleInput = ({ id, instance, metadata }) => {
     // If instance has units key return thermostat input
     if (instance.units !== undefined) {
-        return <DefaultRuleThermostat id={id} />;
+        return (
+            <DefaultRuleThermostat
+                id={id}
+                instance={instance}
+                metadata={metadata}
+            />
+        );
     }
 
     switch (metadata.rule_prompt) {
         case 'standard':
-            return <DefaultRuleStandard id={id} />;
+            return (
+                <DefaultRuleStandard
+                    id={id}
+                    instance={instance}
+                />
+            );
         case 'on_off':
-            return <DefaultRuleOnOff id={id} />;
+            return (
+                <DefaultRuleOnOff
+                    id={id}
+                    instance={instance}
+                />
+            );
         case 'float_range':
-            return <DefaultRuleFloatRange id={id} />;
+            return (
+                <DefaultRuleFloatRange
+                    id={id}
+                    instance={instance}
+                    metadata={metadata}
+                />
+            );
         case 'int_or_fade':
-            return <DefaultRuleIntRange id={id} />;
+            return (
+                <DefaultRuleIntRange
+                    id={id}
+                    instance={instance}
+                    metadata={metadata}
+                />
+            );
         case 'api_target':
-            return <DefaultRuleApiTarget id={id} />;
+            return (
+                <DefaultRuleApiTarget
+                    id={id}
+                    instance={instance}
+                />
+            );
         default:
             return null;
     }

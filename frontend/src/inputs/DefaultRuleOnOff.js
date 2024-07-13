@@ -3,12 +3,8 @@ import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
 import OnOffRuleInput from 'inputs/OnOffRuleInput';
 
-const DefaultRuleOnOff = ({ id }) => {
-    // Get curent state + callback functions from context
-    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
-
-    // Get instance section in config
-    const instance = config[id];
+const DefaultRuleOnOff = ({ id, instance }) => {
+    const { handleInputChange, highlightInvalid } = useContext(ConfigContext);
 
     const onChange = (value) => {
         handleInputChange(id, "default_rule", value);
@@ -26,7 +22,8 @@ const DefaultRuleOnOff = ({ id }) => {
 };
 
 DefaultRuleOnOff.propTypes = {
-    id: PropTypes.string.isRequired
+    id: PropTypes.string.isRequired,
+    instance: PropTypes.object.isRequired
 };
 
 export default DefaultRuleOnOff;

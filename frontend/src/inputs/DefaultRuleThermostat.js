@@ -1,22 +1,15 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
-import { get_instance_metadata } from 'util/metadata';
 import { convert_temperature } from 'util/thermostat_util';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 
-const DefaultRuleThermostat = ({ id }) => {
-    // Get instance section from config (state) object
-    const { config, handleInputChange } = useContext(ConfigContext);
+const DefaultRuleThermostat = ({ id, instance, metadata }) => {
+    const { handleInputChange } = useContext(ConfigContext);
 
-    // Get instance section from config (state) object
-    const instance = config[id];
-
-    // Get metadata object for selected type (contains slider min/max)
-    const category = id.replace(/[0-9]/g, '');
-    const instanceMetadata = get_instance_metadata(category, instance._type);
-    const min_rule = parseFloat(instanceMetadata.rule_limits[0], 10);
-    const max_rule = parseFloat(instanceMetadata.rule_limits[1], 10);
+    // Get slider limits from metadata object
+    const min_rule = parseFloat(metadata.rule_limits[0], 10);
+    const max_rule = parseFloat(metadata.rule_limits[1], 10);
 
     // Handler for slider move events
     const onSliderMove = (value) => {
@@ -41,7 +34,9 @@ const DefaultRuleThermostat = ({ id }) => {
 };
 
 DefaultRuleThermostat.propTypes = {
-    id: PropTypes.string.isRequired
+    id: PropTypes.string.isRequired,
+    instance: PropTypes.object.isRequired,
+    metadata: PropTypes.object.isRequired
 };
 
 export default DefaultRuleThermostat;

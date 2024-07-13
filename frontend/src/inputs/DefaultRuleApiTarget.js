@@ -4,17 +4,12 @@ import Button from 'react-bootstrap/Button';
 import { ConfigContext } from 'root/ConfigContext';
 import { showApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
 
-const DefaultRuleApiTarget = ({ id }) => {
-    // Get curent state + callback functions from context
+const DefaultRuleApiTarget = ({ id, instance }) => {
     const {
-        config,
         handleInputChange,
         getTargetNodeOptions,
         highlightInvalid
     } = useContext(ConfigContext);
-
-    // Get instance section in config
-    const instance = config[id];
 
     // Add invalid highlight to button if rule not set after page validated
     const invalid = highlightInvalid && !instance.default_rule;
@@ -51,7 +46,8 @@ const DefaultRuleApiTarget = ({ id }) => {
 };
 
 DefaultRuleApiTarget.propTypes = {
-    id: PropTypes.string.isRequired
+    id: PropTypes.string.isRequired,
+    instance: PropTypes.object.isRequired
 };
 
 export default DefaultRuleApiTarget;
