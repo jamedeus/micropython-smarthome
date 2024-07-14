@@ -261,6 +261,12 @@ const IrMacros = ({ recording, setRecording, newMacroActions, setNewMacroActions
         setNewMacroName('');
     };
 
+    const handleEnterKey = (e) => {
+        if (e.key === "Enter" && newMacroName.length) {
+            startRecording();
+        }
+    };
+
     return (
         <div className="d-flex flex-column remote mx-auto mb-4">
             <div className="row text-center">
@@ -290,6 +296,7 @@ const IrMacros = ({ recording, setRecording, newMacroActions, setNewMacroActions
                                 title={<i className="bi-pencil"></i>}
                                 align="end"
                                 className="macro-options"
+                                disabled={recording}
                             >
                                 <Dropdown.Item
                                     onClick={() => openEditIrMacroModal(name)}
@@ -334,6 +341,7 @@ const IrMacros = ({ recording, setRecording, newMacroActions, setNewMacroActions
                                 placeholder="New macro name"
                                 value={newMacroName}
                                 onChange={(e) => setNewMacroName(e.target.value)}
+                                onKeyDown={handleEnterKey}
                                 disabled={recording}
                             />
                         </FloatingLabel>
@@ -341,6 +349,7 @@ const IrMacros = ({ recording, setRecording, newMacroActions, setNewMacroActions
                             variant="success"
                             className="mx-auto"
                             onClick={recording ? finishRecording : startRecording}
+                            disabled={!newMacroName.length}
                         >
                             {recording ? 'Save Macro' : 'Start Recording'}
                         </Button>
