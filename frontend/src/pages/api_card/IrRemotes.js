@@ -212,11 +212,12 @@ TvRemote.propTypes = {
     addMacroAction: PropTypes.func.isRequired
 };
 
-const IrMacros = ({ recording, setRecording, newMacroActions }) => {
+const IrMacros = ({ recording, setRecording, newMacroActions, setNewMacroActions }) => {
     const {
         irMacros,
         send_command,
         add_ir_macro,
+        edit_ir_macro,
         delete_ir_macro
     } = useContext(ApiCardContext);
 
@@ -228,12 +229,33 @@ const IrMacros = ({ recording, setRecording, newMacroActions }) => {
     };
 
     const startRecording = () => {
+        if (Object.keys(irMacros).includes(newMacroName)) {
+            // Add existing actions to state before starting
+            resumeRecording(newMacroName);
+        } else {
+            setRecording(true);
+        }
+    };
+
+    const resumeRecording = (name) => {
+        // Populate state with existing name and actions
+        setNewMacroName(name);
+        setNewMacroActions(irMacros[name]);
+        // Open collapse to show save button, start recording
+        setShowNewMacro(true);
         setRecording(true);
     };
 
     const finishRecording = () => {
         setRecording(false);
-        add_ir_macro(newMacroName, newMacroActions);
+        // Call edit endpoint if adding more actions to existing macro
+        if (Object.keys(irMacros).includes(newMacroName)) {
+            edit_ir_macro(newMacroName, newMacroActions);
+        // Call add endpoint if recording new macro
+        } else {
+            add_ir_macro(newMacroName, newMacroActions);
+        }
+        setNewMacroName('');
     };
 
     return (
@@ -270,6 +292,11 @@ const IrMacros = ({ recording, setRecording, newMacroActions }) => {
                                     onClick={() => openEditIrMacroModal(name)}
                                 >
                                     <i className="bi-pencil"></i> Edit
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                    onClick={() => resumeRecording(name)}
+                                >
+                                    <i className="bi-record-circle-fill"></i> Record
                                 </Dropdown.Item>
                                 <Dropdown.Item
                                     onClick={() => delete_ir_macro(name)}
@@ -324,7 +351,8 @@ const IrMacros = ({ recording, setRecording, newMacroActions }) => {
 IrMacros.propTypes = {
     recording: PropTypes.bool.isRequired,
     setRecording: PropTypes.func.isRequired,
-    newMacroActions: PropTypes.array.isRequired
+    newMacroActions: PropTypes.array.isRequired,
+    setNewMacroActions: PropTypes.func.isRequired
 };
 
 const IrRemotes = () => {
@@ -350,6 +378,7 @@ const IrRemotes = () => {
                     recording={recordingMacro}
                     setRecording={setRecordingMacro}
                     newMacroActions={newMacroActions}
+                    setNewMacroActions={setNewMacroActions}
                 />
                 <EditIrMacroModal />
             </>
