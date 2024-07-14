@@ -233,6 +233,9 @@ const IrMacros = ({ recording, setRecording, newMacroActions, setNewMacroActions
             // Add existing actions to state before starting
             resumeRecording(newMacroName);
         } else {
+            // Ensure actions state is empty (prevent actions from last
+            // recorded macro being duplicated in next macro)
+            setNewMacroActions([]);
             setRecording(true);
         }
     };
