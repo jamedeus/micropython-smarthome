@@ -11,6 +11,7 @@ import { showDebugModal } from './DebugModal';
 import { showFadeModal } from './FadeModal';
 import { showScheduleToggle } from './ScheduleToggleModal';
 import ChangeApiTargetRule from './ChangeApiTargetRule';
+import ClimateDataCard from './ClimateDataCard';
 import { get_instance_metadata } from 'util/metadata';
 import { CSSTransition } from "react-transition-group";
 import 'css/PowerButton.css';
@@ -158,99 +159,110 @@ const InstanceCard = ({ id }) => {
     };
 
     return (
-        <CSSTransition
-            in={highlightCards.includes(id)}
-            timeout={1000}
-            classNames='highlight'
-        >
-            <Card className="mb-4">
-                <Card.Body className="d-flex flex-column">
-                    <div className="d-flex justify-content-between">
-                        {/* Top left corner button */}
-                        {category === 'device' ? (
-                            <PowerButton id={id} params={localState} />
-                        ) : (
-                            <TriggerButton
-                                id={id}
-                                params={localState}
-                                disabled={!metadata.triggerable}
-                            />
-                        )}
+        <>
+            {/* Add separate climate data card for temperature sensors */}
+            {["si7021", "dht22"].includes(params.type) ? (
+                <ClimateDataCard
+                    temperature={parseFloat(params.temp).toFixed(2)}
+                    humidity={parseFloat(params.humid).toFixed(2)}
+                />
+            ) : null}
 
-                        {/* Title */}
-                        <h4 className="card-title text-center m-auto">
-                            {localState.nickname}
-                        </h4>
+            <CSSTransition
+                in={highlightCards.includes(id)}
+                timeout={1000}
+                classNames='highlight'
+            >
 
-                        {/* Top right corner dropdown menu */}
-                        <Dropdown align="end" className="ms-auto my-auto">
-                            <Dropdown.Toggle
-                                variant="outline-secondary"
-                                className="menu-button"
-                            >
-                                <i className="bi-list"></i>
-                            </Dropdown.Toggle>
-                            <Dropdown.Menu>
-                                <Dropdown.Item onClick={enable}>
-                                    {localState.enabled ? "Disable" : "Enable"}
-                                </Dropdown.Item>
-                                <Dropdown.Item onClick={scheduleToggle}>
-                                    Schedule Toggle
-                                </Dropdown.Item>
-                                <Dropdown.Item
-                                    disabled={localState.current_rule === localState.scheduled_rule}
-                                    onClick={() => reset_rule(id)}
+                <Card className="mb-4">
+                    <Card.Body className="d-flex flex-column">
+                        <div className="d-flex justify-content-between">
+                            {/* Top left corner button */}
+                            {category === 'device' ? (
+                                <PowerButton id={id} params={localState} />
+                            ) : (
+                                <TriggerButton
+                                    id={id}
+                                    params={localState}
+                                    disabled={!metadata.triggerable}
+                                />
+                            )}
+
+                            {/* Title */}
+                            <h4 className="card-title text-center m-auto">
+                                {localState.nickname}
+                            </h4>
+
+                            {/* Top right corner dropdown menu */}
+                            <Dropdown align="end" className="ms-auto my-auto">
+                                <Dropdown.Toggle
+                                    variant="outline-secondary"
+                                    className="menu-button"
                                 >
-                                    Reset rule
-                                </Dropdown.Item>
-                                {category === 'device' ? (
-                                    <DeviceDropdownOptions
-                                        id={id}
-                                        params={localState}
-                                        rule_prompt={metadata.rule_prompt}
-                                    />
-                                ) : (
-                                    <SensorDropdownOptions id={id} />
-                                )}
-                                <Dropdown.Item onClick={() => showDebugModal(id)}>
-                                    Debug
-                                </Dropdown.Item>
-                            </Dropdown.Menu>
-                        </Dropdown>
-                    </div>
-
-                    {/* Card body (collapses while disabled */}
-                    <Collapse in={localState.enabled}>
-                        <div>
-                            <RuleInput
-                                id={id}
-                                params={localState}
-                                setRule={setRule}
-                                onBlur={onBlur}
-                            />
-
-                            <div className="text-center my-3">
-                                <Button
-                                    size="sm"
-                                    variant="primary"
-                                    className="open-rules"
-                                    data-bs-toggle="collapse"
-                                    data-bs-target={`#${id}-schedule-rules`}
-                                    disabled={recording ? true : false}
-                                >
-                                    Schedule rules
-                                </Button>
-                            </div>
-
-                            <ScheduleRulesTable
-                                id={id}
-                                instance={localState}
-                            />
+                                    <i className="bi-list"></i>
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item onClick={enable}>
+                                        {localState.enabled ? "Disable" : "Enable"}
+                                    </Dropdown.Item>
+                                    <Dropdown.Item onClick={scheduleToggle}>
+                                        Schedule Toggle
+                                    </Dropdown.Item>
+                                    <Dropdown.Item
+                                        disabled={localState.current_rule === localState.scheduled_rule}
+                                        onClick={() => reset_rule(id)}
+                                    >
+                                        Reset rule
+                                    </Dropdown.Item>
+                                    {category === 'device' ? (
+                                        <DeviceDropdownOptions
+                                            id={id}
+                                            params={localState}
+                                            rule_prompt={metadata.rule_prompt}
+                                        />
+                                    ) : (
+                                        <SensorDropdownOptions id={id} />
+                                    )}
+                                    <Dropdown.Item onClick={() => showDebugModal(id)}>
+                                        Debug
+                                    </Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
                         </div>
-                    </Collapse>
-                </Card.Body>
-            </Card>
-        </CSSTransition>
+
+                        {/* Card body (collapses while disabled */}
+                        <Collapse in={localState.enabled}>
+                            <div>
+                                <RuleInput
+                                    id={id}
+                                    params={localState}
+                                    setRule={setRule}
+                                    onBlur={onBlur}
+                                />
+
+                                <div className="text-center my-3">
+                                    <Button
+                                        size="sm"
+                                        variant="primary"
+                                        className="open-rules"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target={`#${id}-schedule-rules`}
+                                        disabled={recording ? true : false}
+                                    >
+                                        Schedule rules
+                                    </Button>
+                                </div>
+
+                                <ScheduleRulesTable
+                                    id={id}
+                                    instance={localState}
+                                />
+                            </div>
+                        </Collapse>
+                    </Card.Body>
+                </Card>
+            </CSSTransition>
+        </>
     );
 };
 
