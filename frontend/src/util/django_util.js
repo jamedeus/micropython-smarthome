@@ -18,7 +18,7 @@ const target_node_ip = parse_dom_context("target_node_ip");
 // Parse original friendly name of config being edited (prevent duplicate detection from rejecting)
 const config = parse_dom_context("config");
 let orig_name;
-if (orig_name) {
+if (config) {
     orig_name = config.metadata.id.toLowerCase();
 }
 
