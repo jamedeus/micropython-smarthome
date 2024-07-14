@@ -4,6 +4,8 @@ import Form from 'react-bootstrap/Form';
 import FloatingLabel from 'react-bootstrap/FloatingLabel';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import Dropdown from 'react-bootstrap/Dropdown';
+import DropdownButton from 'react-bootstrap/DropdownButton';
 import Collapse from 'react-bootstrap/Collapse';
 import { ApiCardContext } from 'root/ApiCardContext';
 import EditIrMacroModal, { openEditIrMacroModal } from './EditIrMacroModal';
@@ -211,7 +213,12 @@ TvRemote.propTypes = {
 };
 
 const IrMacros = ({ recording, setRecording, newMacroActions }) => {
-    const { irMacros, send_command, add_ir_macro } = useContext(ApiCardContext);
+    const {
+        irMacros,
+        send_command,
+        add_ir_macro,
+        delete_ir_macro
+    } = useContext(ApiCardContext);
 
     const [showNewMacro, setShowNewMacro] = useState(false);
     const [newMacroName, setNewMacroName] = useState('');
@@ -237,7 +244,7 @@ const IrMacros = ({ recording, setRecording, newMacroActions }) => {
                 </h4>
             </div>
 
-            {Object.entries(irMacros).map(([name, actions]) => {
+            {Object.entries(irMacros).map(([name, _]) => {
                 return (
                     <div key={name} className="d-flex flex-row my-2">
                         <ButtonGroup className="w-100 mx-3">
@@ -250,13 +257,26 @@ const IrMacros = ({ recording, setRecording, newMacroActions }) => {
                             >
                                 {name}
                             </Button>
-                            <Button
-                                variant="success"
+
+                            <DropdownButton
+                                as={ButtonGroup}
                                 size="lg"
-                                onClick={() => openEditIrMacroModal(name)}
+                                variant="success"
+                                title={<i className="bi-pencil"></i>}
+                                align="end"
+                                className="macro-options"
                             >
-                                <i className="bi-pencil"></i>
-                            </Button>
+                                <Dropdown.Item
+                                    onClick={() => openEditIrMacroModal(name)}
+                                >
+                                    <i className="bi-pencil"></i> Edit
+                                </Dropdown.Item>
+                                <Dropdown.Item
+                                    onClick={() => delete_ir_macro(name)}
+                                >
+                                    <i className="bi-trash"></i> Delete
+                                </Dropdown.Item>
+                            </DropdownButton>
                         </ButtonGroup>
                     </div>
                 );
