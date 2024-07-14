@@ -10,6 +10,53 @@ import 'css/remote.css';
 
 export let openEditIrMacroModal;
 
+// Renders table row with inputs for a single action
+const ActionRow = ({ action, index, setDelay, setRepeat, deleteAction }) => {
+    const [target, key, delay, repeat] = action.split(' ');
+
+    return (
+        <tr>
+            <td style={{width: "auto"}}>
+                {target} {key}
+            </td>
+            <td className="edit-ir-macro-cell">
+                <Form.Control
+                    className="text-center"
+                    type="text"
+                    value={delay}
+                    onChange={(e) => setDelay(index, e.target.value)}
+                />
+            </td>
+            <td className="edit-ir-macro-cell">
+                <Form.Control
+                    className="text-center"
+                    type="text"
+                    value={repeat}
+                    onChange={(e) => setRepeat(index, e.target.value)}
+                />
+            </td>
+            <td className="min">
+                <Button
+                    variant="danger"
+                    size="sm"
+                    className="my-auto"
+                    onClick={() => deleteAction(index)}
+                >
+                    <i className="bi-trash"></i>
+                </Button>
+            </td>
+        </tr>
+    );
+};
+
+ActionRow.propTypes = {
+    action: PropTypes.string.isRequired,
+    index: PropTypes.number.isRequired,
+    setDelay: PropTypes.func.isRequired,
+    setRepeat: PropTypes.func.isRequired,
+    deleteAction: PropTypes.func.isRequired
+};
+
 const EditIrMacroModal = () => {
     // Get existing macros state, hook to update macro actions
     const { irMacros, edit_ir_macro, delete_ir_macro } = useContext(ApiCardContext);
@@ -25,11 +72,6 @@ const EditIrMacroModal = () => {
         setMacroName(name);
         setMacroActions(irMacros[name]);
         setVisible(true);
-    };
-
-    const submit = () => {
-        edit_ir_macro(macroName, macroActions);
-        setVisible(false);
     };
 
     // Handler for delay field, takes row number and new value
@@ -59,47 +101,9 @@ const EditIrMacroModal = () => {
         }
     };
 
-    const TableRow = ({ action, index }) => {
-        const [target, key, delay, repeat] = action.split(' ');
-
-        return (
-            <tr>
-                <td style={{width: "auto"}}>
-                    {target} {key}
-                </td>
-                <td className="edit-ir-macro-cell">
-                    <Form.Control
-                        className="text-center"
-                        type="text"
-                        value={delay}
-                        onChange={(e) => setDelayField(index, e.target.value)}
-                    />
-                </td>
-                <td className="edit-ir-macro-cell">
-                    <Form.Control
-                        className="text-center"
-                        type="text"
-                        value={repeat}
-                        onChange={(e) => setRepeatField(index, e.target.value)}
-                    />
-                </td>
-                <td className="min">
-                    <Button
-                        variant="danger"
-                        size="sm"
-                        className="my-auto"
-                        onClick={() => deleteMacroAction(index)}
-                    >
-                        <i className="bi-trash"></i>
-                    </Button>
-                </td>
-            </tr>
-        );
-    };
-
-    TableRow.propTypes = {
-        action: PropTypes.string.isRequired,
-        index: PropTypes.number.isRequired
+    const submit = () => {
+        edit_ir_macro(macroName, macroActions);
+        setVisible(false);
     };
 
     return (
@@ -124,10 +128,13 @@ const EditIrMacroModal = () => {
                         {macroActions.length ? (
                             macroActions.map((action, index) => {
                                 return (
-                                    <TableRow
+                                    <ActionRow
                                         key={index}
                                         action={action}
                                         index={index}
+                                        setDelay={setDelayField}
+                                        setRepeat={setRepeatField}
+                                        deleteAction={deleteMacroAction}
                                     />
                                 );
                             })
