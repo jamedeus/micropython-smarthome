@@ -3,12 +3,14 @@ import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from 'inputs/InputWrapper';
 import { numbersOnly } from 'util/validation';
-import { send_post_request, edit_existing, orig_name } from 'util/django_util';
+import { send_post_request } from 'util/django_util';
 
 const MetadataSection = () => {
     // Get curent state + callback functions from context
     const {
         config,
+        original_name,
+        edit_existing,
         handleInputChange,
         highlightInvalid
     } = useContext(ConfigContext);
@@ -20,7 +22,7 @@ const MetadataSection = () => {
         const new_name = event.target.value;
 
         // Skip API call if editing and new name matches original name
-        if (!edit_existing || new_name.toLowerCase() != orig_name) {
+        if (!edit_existing || new_name.toLowerCase() != original_name) {
             // Send new name to backend
             const response = await send_post_request(
                 '/check_duplicate',

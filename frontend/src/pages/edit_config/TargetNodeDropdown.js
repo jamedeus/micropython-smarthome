@@ -3,14 +3,15 @@ import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import { ConfigContext } from 'root/ConfigContext';
 import InputWrapper from 'inputs/InputWrapper';
-import { api_target_options } from 'util/django_util';
-
-// Get object containing friendly_name: IP pairs for all existing nodes
-const addresses = api_target_options.addresses;
 
 const TargetNodeDropdown = ({ id }) => {
     // Get curent state + callback functions from context
-    const { config, handleInstanceUpdate, highlightInvalid } = useContext(ConfigContext);
+    const {
+        config,
+        api_target_options,
+        handleInstanceUpdate,
+        highlightInvalid
+    } = useContext(ConfigContext);
 
     // Get instance section in config
     const instance = config[id];
@@ -28,7 +29,7 @@ const TargetNodeDropdown = ({ id }) => {
                 isInvalid={(highlightInvalid && !instance.ip)}
             >
                 <option value="">Select target node</option>
-                {Object.entries(addresses).map(option => (
+                {Object.entries(api_target_options.addresses).map(option => (
                     <option key={option[1]} value={option[1]}>{option[0]}</option>
                 ))}
             </Form.Select>

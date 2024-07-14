@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { sleep, average } from 'util/helper_functions';
 import { v4 as uuid } from 'uuid';
 import { get_instance_metadata, ir_keys } from 'util/metadata';
-import { api_target_options, target_node_ip } from 'util/django_util';
+import { parse_dom_context } from 'util/django_util';
 
 
 // Takes object and key prefix, returns object with all keys that begin with prefix
@@ -24,29 +24,15 @@ function filterObjectKeys(obj, prefix) {
 export const ConfigContext = createContext();
 
 export const ConfigProvider = ({ children }) => {
+    // Parse ApiTarget options object set by django template
+    // Contains valid API commands for each device/sensor of all existing nodes
+    const [api_target_options] = useState(() => {
+        return parse_dom_context("api_target_options");
+    });
+
     // Load config context set by django template
     const [config, setConfig] = useState(() => {
-        // Context element created with json_script django filter
-        const element = document.getElementById("config");
-
-        let config;
-        // Use context if present, otherwise use blank template
-        if (element) {
-            config = JSON.parse(element.textContent);
-        } else {
-            config = {
-                metadata: {
-                    id: '',
-                    floor: '',
-                    location: '',
-                    schedule_keywords: {}
-                },
-                wifi: {
-                    ssid: '',
-                    password: ''
-                }
-            };
-        }
+        const config = parse_dom_context("config");
 
         // Check for api-target with invalid target IP (doesn't match any node)
         // If found, clear ip, default_rule, and schedule rules fields
@@ -62,6 +48,20 @@ export const ConfigProvider = ({ children }) => {
         });
 
         return config;
+    });
+
+    // Save original friendly name of config being edited (used to prevent
+    // rejecting as duplicate if name changed and then changed back)
+    const [original_name] = useState(config.metadata.id.toLowerCase());
+
+    // Parse IP of target node (used to reupload after editing
+    const [target_node_ip] = useState(() => {
+        return parse_dom_context("target_node_ip");
+    });
+
+    // Parse bool that determines whether config is re-uploaded when saved
+    const [edit_existing] = useState(() => {
+        return parse_dom_context("edit_existing");
     });
 
     // Create state to control card delete animations
@@ -366,6 +366,10 @@ export const ConfigProvider = ({ children }) => {
         <ConfigContext.Provider value=
             {{
                 config,
+                original_name,
+                target_node_ip,
+                edit_existing,
+                api_target_options,
                 getKey,
                 highlightInvalid,
                 setHighlightInvalid,

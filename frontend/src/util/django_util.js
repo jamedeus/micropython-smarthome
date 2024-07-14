@@ -9,23 +9,6 @@ function parse_dom_context(name) {
     }
 }
 
-// Parse bool that determines whether editing config (re-upload on submit) or creating new
-const edit_existing = parse_dom_context("edit_existing");
-
-// Parse IP of target node if editing existing config
-const target_node_ip = parse_dom_context("target_node_ip");
-
-// Parse original friendly name of config being edited (prevent duplicate detection from rejecting)
-const config = parse_dom_context("config");
-let orig_name;
-if (config) {
-    orig_name = config.metadata.id.toLowerCase();
-}
-
-// Parse ApiTarget options object set by django template
-// Contains valid API commands for each instance (device/sensor) of all existing nodes
-const api_target_options = parse_dom_context("api_target_options");
-
 // Takes name of cookie, returns cookie
 function getCookie(name) {
     let cookieValue = null;
@@ -62,9 +45,5 @@ async function send_post_request(url, body) {
 export {
     parse_dom_context,
     getCookie,
-    send_post_request,
-    edit_existing,
-    orig_name,
-    target_node_ip,
-    api_target_options
+    send_post_request
 };

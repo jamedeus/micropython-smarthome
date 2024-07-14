@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { ConfigContext } from 'root/ConfigContext';
 import Button from 'react-bootstrap/Button';
-import { send_post_request, edit_existing, target_node_ip } from 'util/django_util';
+import { send_post_request } from 'util/django_util';
 import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
@@ -94,7 +94,12 @@ const EditConfig = () => {
     const [page, setPage] = useState(1);
 
     // Get full config (state object)
-    const { config, setHighlightInvalid } = useContext(ConfigContext);
+    const {
+        config,
+        target_node_ip,
+        edit_existing,
+        setHighlightInvalid
+    } = useContext(ConfigContext);
 
     function prevPage() {
         // Go back to overview if current page is page 1
