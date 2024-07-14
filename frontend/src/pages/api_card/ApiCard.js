@@ -6,6 +6,7 @@ import ScheduleToggleModal from './ScheduleToggleModal';
 import Header from './Header';
 import Layout from './Layout';
 import FadeModal from './FadeModal';
+import SaveRulesToast from './SaveRulesToast';
 import { UpdateStatus } from './UpdateStatus';
 import { ApiCardContext } from 'root/ApiCardContext';
 import 'css/api_card.css';
@@ -26,6 +27,7 @@ const App = () => {
             <DebugModal />
             <ScheduleToggleModal />
             <ApiTargetRuleModal />
+            <SaveRulesToast />
         </div>
     );
 };

@@ -2,11 +2,11 @@ import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { ApiCardContext } from 'root/ApiCardContext';
 import Table from 'react-bootstrap/Table';
+import Button from 'react-bootstrap/Button';
 import { TimeField } from 'inputs/TimeField';
 import { RuleField } from 'inputs/RuleField';
 import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
 import ApiTargetRuleButton from 'inputs/ApiTargetRuleButton';
-import Button from 'react-bootstrap/Button';
 
 // Rendered for each existing rule, pass existingRule=false for new rule row
 const ScheduleRuleRow = ({

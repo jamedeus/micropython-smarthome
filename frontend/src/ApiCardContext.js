@@ -27,6 +27,9 @@ export const ApiCardContextProvider = ({ children }) => {
     // Fades in when true, fades out when false (both persist)
     const [loading, setLoading] = useState(true);
 
+    // Create state to control SaveRulesToast visibility
+    const [showRulesToast, setShowRulesToast] = useState(false);
+
     // Create state to control which cards are highlighted when sensor card
     // "Show targets" dropdown option clicked
     const [highlightCards, setHighlightCards] = useState([]);
@@ -243,6 +246,7 @@ export const ApiCardContextProvider = ({ children }) => {
             const rules = { ...instance.schedule };
             rules[timestamp] = rule;
             update_instance(id, {schedule: rules});
+            setShowRulesToast(true);
             return true;
         } else {
             return false;
@@ -262,6 +266,7 @@ export const ApiCardContextProvider = ({ children }) => {
             const rules = { ...instance.schedule };
             delete rules[timestamp];
             update_instance(id, {schedule: rules});
+            setShowRulesToast(true);
         }
     };
 
@@ -294,9 +299,22 @@ export const ApiCardContextProvider = ({ children }) => {
             // Add new rule (overwrites if timestamp not changed), update state
             rules[newTimestamp] = rule;
             update_instance(id, {schedule: rules});
+            setShowRulesToast(true);
             return true;
         } else {
             return false;
+        }
+    };
+
+    // Called when user clicks yes on SaveRulesToast
+    const sync_schedule_rules = async () => {
+        const result = await send_post_request(
+            '/sync_schedule_rules',
+            {ip: targetIP}
+        );
+        if (!result.ok) {
+            const error = await result.json();
+            console.error('Failed to sync schedule rules', error);
         }
     };
 
@@ -346,6 +364,8 @@ export const ApiCardContextProvider = ({ children }) => {
             status,
             setStatus,
             loading,
+            showRulesToast,
+            setShowRulesToast,
             recording,
             highlightCards,
             show_targets,
@@ -362,6 +382,7 @@ export const ApiCardContextProvider = ({ children }) => {
             add_schedule_rule,
             delete_schedule_rule,
             edit_schedule_rule,
+            sync_schedule_rules,
             add_ir_macro,
             edit_ir_macro,
             delete_ir_macro
