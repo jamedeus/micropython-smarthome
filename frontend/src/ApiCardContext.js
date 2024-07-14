@@ -1,6 +1,6 @@
 import React, { useState, createContext, useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { parse_dom_context, getCookie } from 'util/django_util';
+import { parse_dom_context, send_post_request } from 'util/django_util';
 import { debounce } from 'util/helper_functions';
 
 export const ApiCardContext = createContext();
@@ -104,17 +104,8 @@ export const ApiCardContextProvider = ({ children }) => {
             return add_macro_action(value);
         }
 
-        // Send to endpoint that forwards payload to ESP32 if not recording
-        const result = await fetch('/send_command', {
-            method: 'POST',
-            body: JSON.stringify(value),
-            headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'Content-Type': 'application/json',
-                "X-CSRFToken": getCookie('csrftoken')
-            }
-        });
-        return result;
+        const response = await send_post_request('/send_command', value);
+        return response;
     }
 
     async function add_macro_action(value) {
@@ -130,16 +121,8 @@ export const ApiCardContextProvider = ({ children }) => {
             action: value
         };
 
-        const result = await fetch('/add_macro_action', {
-            method: 'POST',
-            body: JSON.stringify(payload),
-            headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'Content-Type': 'application/json',
-                "X-CSRFToken": getCookie('csrftoken')
-            }
-        });
-        return result;
+        const response = await send_post_request('/add_macro_action', payload);
+        return response;
     }
 
     async function enable_instance(id, enable) {
@@ -319,20 +302,13 @@ export const ApiCardContextProvider = ({ children }) => {
     }
 
     async function add_ir_macro(name, actions) {
-        const result = await fetch('/add_ir_macro', {
-            method: 'POST',
-            body: JSON.stringify({
-                ip: targetIP,
-                name: name,
-                actions: actions
-            }),
-            headers: {
-                'Accept': 'application/json, text/plain, */*',
-                'Content-Type': 'application/json',
-                "X-CSRFToken": getCookie('csrftoken')
-            }
-        });
-        if (result.ok) {
+        const payload = {
+            ip: targetIP,
+            name: name,
+            actions: actions
+        };
+        const response = await send_post_request('/add_ir_macro', payload)
+        if (response.ok) {
             setIrMacros({ ...irMacros, [name]: actions});
         }
     }

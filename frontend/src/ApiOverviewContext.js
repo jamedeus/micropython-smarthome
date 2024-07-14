@@ -1,6 +1,7 @@
 import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
-import { parse_dom_context, getCookie } from 'util/django_util';
+import Cookies from 'js-cookie';
+import { parse_dom_context } from 'util/django_util';
 
 export const ApiOverviewContext = createContext();
 
@@ -68,7 +69,7 @@ export const ApiOverviewContextProvider = ({ children }) => {
     // instructions modal if skip_instructions cookie is not set
     const startRecording = (name) => {
         setRecording(name);
-        if (!getCookie("skip_instructions")) {
+        if (!Cookies.get("skip_instructions")) {
             setShowInstructions(true);
         }
     };
