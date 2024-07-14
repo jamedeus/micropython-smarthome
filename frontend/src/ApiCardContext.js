@@ -300,6 +300,8 @@ export const ApiCardContextProvider = ({ children }) => {
         }
     };
 
+    // Takes new macro name and array of action strings
+    // Sends API call to create macro, adds to state if successful
     const add_ir_macro = async (name, actions) => {
         const payload = {
             ip: targetIP,
@@ -312,6 +314,8 @@ export const ApiCardContextProvider = ({ children }) => {
         }
     };
 
+    // Takes existing macro name and modified actions
+    // Sends API call to overwrite actions, updates state if successful
     const edit_ir_macro = async (name, actions) => {
         const payload = {
             ip: targetIP,
@@ -321,6 +325,19 @@ export const ApiCardContextProvider = ({ children }) => {
         const response = await send_post_request('/edit_ir_macro', payload);
         if (response.ok) {
             setIrMacros({ ...irMacros, [name]: actions });
+        }
+    };
+
+    // Takes name of existing IR macro, sends API call to delete, updates state
+    const delete_ir_macro = async (name) => {
+        const response = await send_command({
+            command: 'ir_delete_macro',
+            macro_name: name}
+        );
+        if (response.ok) {
+            const update = { ...irMacros };
+            delete update[name];
+            setIrMacros(update);
         }
     };
 
@@ -346,7 +363,8 @@ export const ApiCardContextProvider = ({ children }) => {
             delete_schedule_rule,
             edit_schedule_rule,
             add_ir_macro,
-            edit_ir_macro
+            edit_ir_macro,
+            delete_ir_macro
         }}>
             {children}
         </ApiCardContext.Provider>

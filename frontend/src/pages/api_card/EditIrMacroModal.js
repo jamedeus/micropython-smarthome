@@ -12,17 +12,18 @@ export let openEditIrMacroModal;
 
 const EditIrMacroModal = () => {
     // Get existing macros state, hook to update macro actions
-    const { irMacros, edit_ir_macro } = useContext(ApiCardContext);
+    const { irMacros, edit_ir_macro, delete_ir_macro } = useContext(ApiCardContext);
 
-    // Create state for modal visibility, name of macro being edited
+    // Create state for modal visibility
     const [visible, setVisible] = useState(false);
+
+    // Create states for name of macro and actions of macro being edited
     const [macroName, setMacroName] = useState('');
     const [macroActions, setMacroActions] = useState([]);
 
     openEditIrMacroModal = (name) => {
         setMacroName(name);
         setMacroActions(irMacros[name]);
-        console.log('editing:', irMacros[name]);
         setVisible(true);
     };
 
@@ -31,6 +32,7 @@ const EditIrMacroModal = () => {
         setVisible(false);
     };
 
+    // Handler for delay field, takes row number and new value
     const setDelayField = (index, value) => {
         const actions = [ ...macroActions ];
         const [target, key, _, repeat] = actions[index].split(' ');
@@ -38,6 +40,7 @@ const EditIrMacroModal = () => {
         setMacroActions(actions);
     };
 
+    // Handler for repeat field, takes row number and new value
     const setRepeatField = (index, value) => {
         const actions = [ ...macroActions ];
         const [target, key, delay, _] = actions[index].split(' ');
@@ -45,8 +48,15 @@ const EditIrMacroModal = () => {
         setMacroActions(actions);
     };
 
+    // Handler for delete button, takes row number
     const deleteMacroAction = (index) => {
         setMacroActions(macroActions.filter((_, idx) => idx !== index));
+
+        // Delete macro and close modal if last action removed
+        if (macroActions.length === 1) {
+            delete_ir_macro(macroName);
+            setVisible(false);
+        }
     };
 
     const TableRow = ({ action, index }) => {
