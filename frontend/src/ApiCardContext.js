@@ -307,7 +307,7 @@ export const ApiCardContextProvider = ({ children }) => {
             name: name,
             actions: actions
         };
-        const response = await send_post_request('/add_ir_macro', payload)
+        const response = await send_post_request('/add_ir_macro', payload);
         if (response.ok) {
             setIrMacros({ ...irMacros, [name]: actions});
         }

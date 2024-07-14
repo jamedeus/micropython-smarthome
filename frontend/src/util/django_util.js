@@ -2,17 +2,17 @@ import Cookies from 'js-cookie';
 
 // Takes name of context element created with json_script django tag
 // Parses JSON contents if it exists and returns, otherwise returns null
-function parse_dom_context(name) {
+const parse_dom_context = (name) => {
     const element = document.getElementById(name);
     if (element) {
         return JSON.parse(element.textContent);
     } else {
         return null;
     }
-}
+};
 
 // Takes endpoint and POST body, makes backend request, returns response
-async function send_post_request(url, body) {
+const send_post_request = async (url, body) => {
     const response = await fetch(url, {
         method: 'POST',
         body: JSON.stringify(body),
@@ -23,7 +23,7 @@ async function send_post_request(url, body) {
         }
     });
     return response;
-}
+};
 
 export {
     parse_dom_context,

@@ -3,9 +3,8 @@ import PropTypes from 'prop-types';
 import 'css/LoadingSpinner.css';
 import 'css/CheckmarkAnimation.css';
 
-
 export const LoadingSpinner = ({ size, classes=[] }) => {
-    let classList = ["loading-animation", "m-auto"].concat(classes);
+    const classList = ["loading-animation", "m-auto"].concat(classes);
 
     switch(size) {
         case "large":
@@ -27,13 +26,12 @@ export const LoadingSpinner = ({ size, classes=[] }) => {
 };
 
 LoadingSpinner.propTypes = {
-    size: PropTypes.string,
+    size: PropTypes.string.isRequired,
     classes: PropTypes.array
 };
 
-
-export const CheckmarkAnimation = ({ size, color, classes=[] }) => {
-    let classList = ["checkmark", "m-auto"].concat(classes);
+export const CheckmarkAnimation = ({ size, color="white", classes=[] }) => {
+    const classList = ["checkmark", "m-auto"].concat(classes);
 
     switch(size) {
         case "large":
@@ -62,7 +60,7 @@ export const CheckmarkAnimation = ({ size, color, classes=[] }) => {
 };
 
 CheckmarkAnimation.propTypes = {
-    size: PropTypes.string,
+    size: PropTypes.string.isRequired,
     color: PropTypes.string,
     classes: PropTypes.array
 };

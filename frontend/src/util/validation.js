@@ -24,7 +24,7 @@ const formatIp = (oldIP, newIP) => {
                 block = '';
             }
 
-            // Numeric character handling
+        // Numeric character handling
         } else {
             // Add to current block
             block += char;
@@ -47,8 +47,8 @@ const formatIp = (oldIP, newIP) => {
 };
 
 // Takes string, returns with non-numeric characters removed
-function numbersOnly(string) {
+const numbersOnly = (string) => {
     return string.replace(/[^\d]/g, '');
-}
+};
 
 export { ipRegex, formatIp, numbersOnly };
