@@ -83,16 +83,16 @@ const ExistingNodesTable = () => {
     const { context, deleteExistingNode } = useContext(OverviewContext);
 
     // Takes node friendly name, opens modal to confirm deletion
-    function show_delete_modal(friendly_name) {
+    const show_delete_modal = (friendly_name) => {
         showErrorModal({
             title: "Confirm Delete",
             error: "confirm_delete",
             handleConfirm: () => delete_node(friendly_name)
         });
-    }
+    };
 
     // Handler for confirm delete button in modal
-    async function delete_node(friendly_name) {
+    const delete_node = async (friendly_name) => {
         let result = await send_post_request("delete_node", friendly_name);
 
         // If successful close modal and update context (rerender without this row)
@@ -109,7 +109,7 @@ const ExistingNodesTable = () => {
                 body: error
             });
         }
-    }
+    };
 
     // Render table with row for each existing node
     return (

@@ -24,14 +24,14 @@ const Page3 = () => {
     };
 
     // Handler for add rule button, creates new row
-    function addNewRuleRow(instance) {
+    const addNewRuleRow = (instance) => {
         // Get existing rules
         const rules = { ...config[instance]["schedule"] };
 
         // Add rule with blank timestamp, default_rule value
         rules[""] = config[instance]["default_rule"];
         handleInputChange(instance, "schedule", rules);
-    }
+    };
 
     // Takes instance ID (device1, sensor3, etc) and rule timestamp
     // Returns table row with timestamp and rule columns + edit button

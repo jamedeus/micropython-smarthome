@@ -16,7 +16,7 @@ const MetadataSection = () => {
     } = useContext(ConfigContext);
 
     // Add invalid highlight when duplicate name entered
-    async function prevent_duplicate_friendly_name(event) {
+    const prevent_duplicate_friendly_name = async (event) => {
         // Get reference to input, current value
         const el = event.target;
         const new_name = event.target.value;
@@ -39,16 +39,16 @@ const MetadataSection = () => {
 
         // Update state + contents of input regardless of validity
         handleInputChange("metadata", "id", new_name);
-    }
+    };
 
     // Floor must be positive or negative integer, 3 digits max
-    function set_floor(value) {
+    const set_floor = (value) => {
         let input = numbersOnly(value).substring(0,3);
         if (value[0] === '-') {
             input = '-' + input;
         }
         handleInputChange("metadata", "floor", input);
-    }
+    };
 
     return (
         <div id="metadata">

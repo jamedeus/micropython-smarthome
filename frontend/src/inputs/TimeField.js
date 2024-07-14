@@ -8,7 +8,7 @@ import Dropdown from 'inputs/Dropdown.js';
 const timestamp_regex = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
 
 // Takes 24h timestamp, returns 12h with am/pm suffix
-function format12h(timestamp) {
+const format12h = (timestamp) => {
     // Return keywords unchanged
     if ( ! timestamp_regex.test(timestamp)) {
         return timestamp;
@@ -20,7 +20,7 @@ function format12h(timestamp) {
     hour = parseInt(hour) % 12;
     hour = hour === 0 ? 12 : hour;
     return `${hour}:${minute} ${suffix}`;
-}
+};
 
 export const TimeField = ({ timestamp, setTimestamp, schedule_keywords, highlightInvalid, handleClose=() => {} }) => {
     // Create state to control popup visibility

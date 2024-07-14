@@ -27,16 +27,16 @@ const NewConfigRow = ({ filename, friendlyName }) => {
     };
 
     // Takes config filename, opens modal to confirm deletion
-    function show_delete_modal(filename) {
+    const show_delete_modal = (filename) => {
         showErrorModal({
             title: "Confirm Delete",
             error: "confirm_delete",
             handleConfirm: () => delete_config(filename)
         });
-    }
+    };
 
     // Handler for confirm delete button in modal
-    async function delete_config(filename) {
+    const delete_config = async (filename) => {
         let result = await send_post_request("delete_config", filename);
 
         // Remove filename from state if successfully deleted
@@ -53,7 +53,7 @@ const NewConfigRow = ({ filename, friendlyName }) => {
                 body: error
             });
         }
-    }
+    };
 
     // Takes current value of IP field, enables upload button
     // if passes regex, otherwise disables upload button

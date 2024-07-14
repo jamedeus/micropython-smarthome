@@ -10,23 +10,23 @@ import ErrorModal, { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 import UploadModal, { uploadConfigFile } from 'modals/UploadModal';
 
 // Redirect back to overview page
-function returnToOverview() {
+const returnToOverview = () => {
     window.location.replace("/config_overview");
-}
+};
 
 // Takes current config (state) object, compares with original from django
 // context, returns True if changes have been made, false if no changes
-function configModified(config) {
+const configModified = (config) => {
     // Get original config, compare with
     const original_config = JSON.parse(
         document.getElementById("config").textContent
     );
     return !areObjectsEqual(config, original_config);
-}
+};
 
 // Takes 2 objects, recursively compares all subkeys, returns True if identical
 // Used to detect unsaved changes, show warning before returning to overview
-function areObjectsEqual(obj1, obj2) {
+const areObjectsEqual = (obj1, obj2) => {
     // Direct comparison for sub-keys on recursive calls
     if (obj1 === obj2) {
         return true;
@@ -54,11 +54,11 @@ function areObjectsEqual(obj1, obj2) {
     }
 
     return true;
-}
+};
 
 // Takes config (state) object, returns true if any keys are empty strings
 // Used to detect empty fields before changing page
-function hasEmptyFields(config) {
+const hasEmptyFields = (config) => {
     for (let key in config) {
         if (typeof(config[key]) === 'object') {
             if (hasEmptyFields(config[key])) {
@@ -71,11 +71,11 @@ function hasEmptyFields(config) {
         }
     }
     return false;
-}
+};
 
 // Takes config object, returns true if any keys are null or empty strings
 // Used to detect unset schedule rule time before submitting
-function hasEmptyKeys(config) {
+const hasEmptyKeys = (config) => {
     for (let key in config) {
         if ([null, '', undefined].includes(key)) {
             console.log('Config contains empty key');
@@ -87,7 +87,7 @@ function hasEmptyKeys(config) {
             }
         }
     }
-}
+};
 
 const EditConfig = () => {
     // Set default page, get callback to change visible page
@@ -101,7 +101,7 @@ const EditConfig = () => {
         setHighlightInvalid
     } = useContext(ConfigContext);
 
-    function prevPage() {
+    const prevPage = () => {
         // Go back to overview if current page is page 1
         if (page === 1) {
             // Show unsaved changes warning if user modified any inputs
@@ -119,9 +119,9 @@ const EditConfig = () => {
         } else {
             setPage(page - 1);
         }
-    }
+    };
 
-    function nextPage() {
+    const nextPage = () => {
         // Don't go to page2 if empty inputs exist on page1
         if (page === 1 && hasEmptyFields(config)) {
             setHighlightInvalid(true);
@@ -130,14 +130,14 @@ const EditConfig = () => {
         // Clear highlight, go to next page
         setHighlightInvalid(false);
         setPage(page + 1);
-    }
+    };
 
-    function friendlyNameToFilename(friendlyName) {
+    const friendlyNameToFilename = (friendlyName) => {
         return `${friendlyName.toLowerCase().replaceAll(' ', '-')}.json`;
-    }
+    };
 
     // Post full config (state object) to backend when submit clicked
-    async function submitButton() {
+    const submitButton = async () => {
         console.log(config);
 
         // Don't submit if config has empty keys (schedule rule time not set)
@@ -178,17 +178,17 @@ const EditConfig = () => {
             alert(await response.text());
             setHighlightInvalid(true);
         }
-    }
+    };
 
     // Handler for error modal overwrite button when showing duplicate error
-    async function confirmOverwriteDuplicate() {
+    const confirmOverwriteDuplicate = async () => {
         // Convert friendly name into config filename
         const target_filename = friendlyNameToFilename(config.metadata.id);
         // Close error modal, delete existing file, resubmit
         hideErrorModal();
         await send_post_request("delete_config", `${target_filename}.json`);
         await submitButton();
-    }
+    };
 
     const PrevPageButton = () => {
         return (

@@ -7,19 +7,19 @@ import { parse_dom_context } from 'util/django_util';
 
 
 // Takes object and key prefix, returns object with all keys that begin with prefix
-function filterObject(obj, prefix) {
+const filterObject = (obj, prefix) => {
     return Object.entries(obj).reduce((acc, [key, value]) => {
         if (key.startsWith(prefix)) {
             acc[key] = value;
         }
         return acc;
     }, {});
-}
+};
 
 // Takes object and key prefix, returns array of keys that begin with prefix
-function filterObjectKeys(obj, prefix) {
+const filterObjectKeys = (obj, prefix) => {
     return Object.keys(filterObject(obj, prefix));
-}
+};
 
 export const ConfigContext = createContext();
 
@@ -222,7 +222,7 @@ export const ConfigProvider = ({ children }) => {
 
     // Called by deleteInstance, decrements IDs of all subsequent instances to prevent gaps
     // Example: If device2 is deleted, device3 becomes device2, device4 becomes device3, etc
-    function update_ids(target, state) {
+    const update_ids = (target, state) => {
         // Get category (device or sensor) and index of removed instance
         const category = target.replace(/[0-9]/g, '');
         const index = target.replace(/[a-zA-Z]/g, '');
@@ -280,7 +280,7 @@ export const ConfigProvider = ({ children }) => {
 
         // Return state (calling function updates)
         return state;
-    }
+    };
 
     // Takes ApiTarget target node IP, returns object containing all valid
     // options for target (used to populate ApiTargetRuleModal dropdowns)

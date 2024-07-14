@@ -8,17 +8,17 @@ export const UpdateStatus = () => {
     // Track if error modal is open, close modal when connection reestablished
     let targetOffline = false;
 
-    function show_connection_error() {
+    const show_connection_error = () => {
         showErrorModal({
             title: "Connection Error",
             error: "connection_error",
             handleConfirm: overview
         });
-    }
+    };
 
     // Get current status object, overwrite state, update cards
     // Called every 5 seconds by effect below
-    async function get_new_status() {
+    const get_new_status = async () => {
         try {
             const response = await fetch(`/get_status/${status.metadata.id}`);
             if (response.status !== 200) {
@@ -39,7 +39,7 @@ export const UpdateStatus = () => {
             }
             console.error('Failed to update status:', error);
         }
-    }
+    };
 
     // Update state every 5 seconds
     useEffect(() => {

@@ -14,14 +14,14 @@ const Floors = () => {
     });
 
     // Takes node friendly name, redirects to card interface
-    function open(friendlyName) {
+    const open = (friendlyName) => {
         setLoading(true);
         if (recording === "") {
             window.location.href = `/api/${friendlyName}`;
         } else {
             window.location.href = `/api/${friendlyName}/${recording}`;
         }
-    }
+    };
 
     // Takes node friendly name, returns button
     const NodeButton = ({ friendlyName }) => {

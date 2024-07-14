@@ -21,13 +21,13 @@ const GpsModal = () => {
     };
 
     // API returns array of up to 10 possible matches
-    async function api_call(search) {
+    const api_call = async (search) => {
         const response = await fetch(
             `https://geocode.maps.co/search?q=${encodeURIComponent(search)}`
         );
         const data = await response.json();
         return data;
-    }
+    };
 
     // Debounced API call, writes results to state object
     // Triggers re-render with list item for each search result
@@ -37,7 +37,7 @@ const GpsModal = () => {
     }, 2000), []);
 
     // Listener for search field, makes API call and adds suggestion for each result
-    async function get_suggestions(search) {
+    const get_suggestions = async (search) => {
         // Clear suggestions when field emptied
         if (search.length === 0) {
             setLocationResults([]);
@@ -49,13 +49,13 @@ const GpsModal = () => {
             }]);
             debounced_api_call(search);
         }
-    }
+    };
 
     // Called when user clicks result, posts coordinates to backend
-    async function select_location(name, lat, lon) {
+    const select_location = async (name, lat, lon) => {
         send_post_request('set_default_location', {name, lat, lon});
         setVisible(false);
-    }
+    };
 
     return (
         <Modal show={visible} onHide={() => setVisible(false)} centered>

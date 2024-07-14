@@ -32,7 +32,7 @@ export const ApiCardContextProvider = ({ children }) => {
     const [highlightCards, setHighlightCards] = useState([]);
 
     // Handler for "Show targets" option in sensor card dropdown
-    function show_targets(id) {
+    const show_targets = (id) => {
         // Add target device IDs to state that controls glow effect
         const params = get_instance_section(id);
         setHighlightCards(params.targets);
@@ -42,20 +42,20 @@ export const ApiCardContextProvider = ({ children }) => {
                 setHighlightCards([]);
             }, {once : true});
         }, 1);
-    }
+    };
 
     // Button callback, fade out and redirect to overview
-    function overview() {
+    const overview = () => {
         setLoading(false);
         if (recording) {
             window.location.href = `/api/recording/${recording}`;
         } else {
             window.location.href = "/api";
         }
-    }
+    };
 
     // Reset loading animation when navigated to with browser back button
-    window.onpageshow = function(event) {
+    window.onpageshow = (event) => {
         if (event.persisted) {
             setLoading(true);
         }
@@ -63,7 +63,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
     // Takes instance ID (device1, sensor2, etc), returns category
     // string (used to look up instance in state object)
-    function get_instance_category(id) {
+    const get_instance_category = (id) => {
         if (id.startsWith('device')) {
             return 'devices';
         } else if (id.startsWith('sensor')) {
@@ -71,17 +71,17 @@ export const ApiCardContextProvider = ({ children }) => {
         } else {
             throw new Error('Received invalid instance id:', id);
         }
-    }
+    };
 
     // Takes instance ID, returns corresponding state object section
-    function get_instance_section(id) {
+    const get_instance_section = (id) => {
         const category = get_instance_category(id);
         return status[category][id];
-    }
+    };
 
     // Takes instance ID and object with param:newValue pairs
     // Updates all params in state object
-    function update_instance(id, params) {
+    const update_instance = (id, params) => {
         const category = get_instance_category(id);
         setStatus({
             ...status, [category]: {
@@ -90,12 +90,11 @@ export const ApiCardContextProvider = ({ children }) => {
                 }
             }
         });
-
-    }
+    };
 
     // Takes command params, posts to backend, backend makes API
     // call to esp32 using faster non-http compliant protocol
-    async function send_command(value) {
+    const send_command = async (value) => {
         // Add IP of target node
         value.target = targetIP;
 
@@ -106,9 +105,9 @@ export const ApiCardContextProvider = ({ children }) => {
 
         const response = await send_post_request('/send_command', value);
         return response;
-    }
+    };
 
-    async function add_macro_action(value) {
+    const add_macro_action = async (value) => {
         // Add friendly name for all instances except IR Blaster
         if (value.instance) {
             const instanceStatus = get_instance_section(value.instance);
@@ -123,9 +122,9 @@ export const ApiCardContextProvider = ({ children }) => {
 
         const response = await send_post_request('/add_macro_action', payload);
         return response;
-    }
+    };
 
-    async function enable_instance(id, enable) {
+    const enable_instance = async (id, enable) => {
         // Build payload from args
         const payload = {command: '', instance: id};
         if (enable === true) {
@@ -161,9 +160,9 @@ export const ApiCardContextProvider = ({ children }) => {
             console.log("Failed to enable:", id);
             console.log(result);
         }
-    }
+    };
 
-    async function trigger_sensor(id) {
+    const trigger_sensor = async (id) => {
         // Send API call to node
         const payload = {command: 'trigger_sensor', instance: id};
         const result = await send_command(payload);
@@ -175,9 +174,9 @@ export const ApiCardContextProvider = ({ children }) => {
             console.log("Failed to trigger:", id);
             console.log(result);
         }
-    }
+    };
 
-    async function turn_on(id, state) {
+    const turn_on = async (id, state) => {
         const payload = {command: '', instance: id};
         if (state) {
             payload.command = 'turn_on';
@@ -195,14 +194,14 @@ export const ApiCardContextProvider = ({ children }) => {
             console.log("Failed to set power state:", id);
             console.log(result);
         }
-    }
+    };
 
     // Handler for rule sliders and buttons, updates local state immediately, calls
     // debounced function to send API call to node when user stops moving slider
-    async function set_rule(id, value) {
+    const set_rule = (id, value) => {
         update_instance(id, {current_rule: value});
         debounced_set_rule(id, value);
-    }
+    };
 
     // Called by set_rule, sends API call to node once user stops moving slider for
     // 150ms (prevents constant API calls saturating ESP32 bandwidth)
@@ -217,7 +216,7 @@ export const ApiCardContextProvider = ({ children }) => {
     }, 150), []);
 
     // Called by reset option in dropdown, replaces current_rule with scheduled_rule
-    async function reset_rule(id) {
+    const reset_rule = async (id) => {
         // Send API call to node
         const result = await send_command({command: 'reset_rule', instance: id});
 
@@ -228,9 +227,9 @@ export const ApiCardContextProvider = ({ children }) => {
         } else {
             console.log("Failed to reset rule:", id);
         }
-    }
+    };
 
-    async function add_schedule_rule(id, timestamp, rule) {
+    const add_schedule_rule = async (id, timestamp, rule) => {
         const result = await send_command({
             command: 'add_rule',
             instance: id,
@@ -248,9 +247,9 @@ export const ApiCardContextProvider = ({ children }) => {
         } else {
             return false;
         }
-    }
+    };
 
-    async function delete_schedule_rule(id, timestamp) {
+    const delete_schedule_rule = async (id, timestamp) => {
         const result = await send_command({
             command: 'remove_rule',
             instance: id,
@@ -264,9 +263,9 @@ export const ApiCardContextProvider = ({ children }) => {
             delete rules[timestamp];
             update_instance(id, {schedule: rules});
         }
-    }
+    };
 
-    async function edit_schedule_rule(id, oldTimestamp, newTimestamp, rule) {
+    const edit_schedule_rule = async (id, oldTimestamp, newTimestamp, rule) => {
         // Add new rule (overwrite existing if timestamp not changed)
         const result = await send_command({
             command: 'add_rule',
@@ -299,9 +298,9 @@ export const ApiCardContextProvider = ({ children }) => {
         } else {
             return false;
         }
-    }
+    };
 
-    async function add_ir_macro(name, actions) {
+    const add_ir_macro = async (name, actions) => {
         const payload = {
             ip: targetIP,
             name: name,
@@ -311,7 +310,7 @@ export const ApiCardContextProvider = ({ children }) => {
         if (response.ok) {
             setIrMacros({ ...irMacros, [name]: actions});
         }
-    }
+    };
 
     return (
         <ApiCardContext.Provider value={{

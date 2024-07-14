@@ -27,7 +27,7 @@ export const RestoreModal = () => {
         setVisible(true);
     };
 
-    async function restoreConfig() {
+    const restoreConfig = async () => {
         // Start animation (disables submit button)
         setStage("loading");
 
@@ -70,7 +70,7 @@ export const RestoreModal = () => {
         } else {
             alert(await response.text());
         }
-    }
+    };
 
     // Handler for IP address field, formats IP as user types
     const setIp = (value) => {
