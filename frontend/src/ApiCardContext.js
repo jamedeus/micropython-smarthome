@@ -308,7 +308,19 @@ export const ApiCardContextProvider = ({ children }) => {
         };
         const response = await send_post_request('/add_ir_macro', payload);
         if (response.ok) {
-            setIrMacros({ ...irMacros, [name]: actions});
+            setIrMacros({ ...irMacros, [name]: actions });
+        }
+    };
+
+    const edit_ir_macro = async (name, actions) => {
+        const payload = {
+            ip: targetIP,
+            name: name,
+            actions: actions
+        };
+        const response = await send_post_request('/edit_ir_macro', payload);
+        if (response.ok) {
+            setIrMacros({ ...irMacros, [name]: actions });
         }
     };
 
@@ -333,7 +345,8 @@ export const ApiCardContextProvider = ({ children }) => {
             add_schedule_rule,
             delete_schedule_rule,
             edit_schedule_rule,
-            add_ir_macro
+            add_ir_macro,
+            edit_ir_macro
         }}>
             {children}
         </ApiCardContext.Provider>

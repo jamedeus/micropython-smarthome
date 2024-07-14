@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import Collapse from 'react-bootstrap/Collapse';
 import { ApiCardContext } from 'root/ApiCardContext';
+import EditIrMacroModal, { openEditIrMacroModal } from './EditIrMacroModal';
 import 'css/remote.css';
 
 const IrButton = ({title, icon, variant='primary', recording=false, onClick}) => {
@@ -252,7 +253,7 @@ const IrMacros = ({ recording, setRecording, newMacroActions }) => {
                             <Button
                                 variant="success"
                                 size="lg"
-                                onClick={() => console.log(name, actions)}
+                                onClick={() => openEditIrMacroModal(name)}
                             >
                                 <i className="bi-pencil"></i>
                             </Button>
@@ -330,6 +331,7 @@ const IrRemotes = () => {
                     setRecording={setRecordingMacro}
                     newMacroActions={newMacroActions}
                 />
+                <EditIrMacroModal />
             </>
         );
     } else {
