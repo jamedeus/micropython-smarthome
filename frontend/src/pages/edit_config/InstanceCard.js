@@ -154,8 +154,8 @@ const InstanceCard = ({ id }) => {
         return types.includes('si7021');
     };
 
-    // Returns fade out class if this card is being deleted
-    const fadeOutClass = deleteing.id === id ? 'fade-out-card' : '';
+    // Returns fade out class if this card is being deleted, fade in otherwise
+    const fadeClass = deleteing.id === id ? 'fade-out-card' : 'fade-in-card';
 
     // Returns slide-up class if a card above this one is being deleted
     const slideUpClass = (() => {
@@ -169,7 +169,7 @@ const InstanceCard = ({ id }) => {
     })();
 
     return (
-        <div id={`${id}-card`} className={`mb-4 instance-card ${fadeOutClass}`}>
+        <div id={`${id}-card`} className={`mb-4 ${fadeClass}`}>
             <Card className={slideUpClass}>
                 <Card.Body>
                     <div className="d-flex justify-content-between">

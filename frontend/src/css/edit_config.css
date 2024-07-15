@@ -21,6 +21,14 @@
     }
 }
 
+/* Fade cards in when first added */
+.fade-in-card {
+    animation-name: fade-in;
+    animation-duration: 0.4s;
+    animation-timing-function: ease;
+    animation-fill-mode: forwards;
+}
+
 /* Applied to deleted card, fades out before being removed */
 .fade-out-card {
     animation-name: fade-out;
