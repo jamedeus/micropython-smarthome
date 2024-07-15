@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
+import ToggleButton from 'react-bootstrap/ToggleButton';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
@@ -368,20 +369,26 @@ const ApiTargetRuleModal = () => {
                 />
 
                 <ButtonGroup aria-label="Set On/Off command" className="mx-auto">
-                    <Button
-                        variant={showOnRule ? "dark" : "outline-dark"}
-                        className="ms-auto"
-                        onClick={() => setShowOnRule(true)}
+                    <ToggleButton
+                        id="show-on-rule"
+                        type="radio"
+                        variant="secondary"
+                        name="radio"
+                        checked={showOnRule}
+                        onChange={() => setShowOnRule(true)}
                     >
                         On Action
-                    </Button>
-                    <Button
-                        variant={showOnRule ? "outline-dark" : "dark"}
-                        className="me-auto"
-                        onClick={() => setShowOnRule(false)}
+                    </ToggleButton>
+                    <ToggleButton
+                        id="show-off-rule"
+                        type="radio"
+                        variant="secondary"
+                        name="radio"
+                        checked={!showOnRule}
+                        onChange={() => setShowOnRule(false)}
                     >
                         Off Action
-                    </Button>
+                    </ToggleButton>
                 </ButtonGroup>
             </Modal.Body>
 

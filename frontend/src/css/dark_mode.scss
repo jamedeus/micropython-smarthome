@@ -142,17 +142,17 @@
         }
 
         /* ApiTarget rule modal On/Off toggle */
-        .btn-check + .btn-dark {
+        .btn-group input[type="radio"] + .btn-secondary {
             background-color: #282d32;
             border-color: #282d32;
         }
-        .btn-check:active + .btn-dark, .btn-check:checked + .btn-dark {
+        .btn-group input[type="radio"]:checked + .btn-secondary {
             background-color: #1B1E1F;
             border-color: #1B1E1F;
         }
 
         /* Prevent color change on focus (not enough contrast with body bg) */
-        .btn-dark:hover, .btn-dark:focus, .btn-dark:active {
+        .btn-group input[type="radio"] + .btn-secondary:hover {
             background-color: #212529 !important;
             border-color: #212529 !important;
         }
