@@ -3,8 +3,6 @@ import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
 import TempHistoryChart from './TempHistoryChart';
-import 'css/PowerButton.css';
-import 'css/TriggerButton.css';
 
 const ClimateDataCard = ({ temperature, humidity }) => {
     // Create states to store temperature readings and timestamps shown in

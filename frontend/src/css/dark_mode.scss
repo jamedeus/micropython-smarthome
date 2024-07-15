@@ -4,40 +4,6 @@
 @import "node_modules/bootstrap/scss/_mixins";
 @import "node_modules/bootstrap/scss/_close";
 
-/* Remove border around disabled buttons */
-.btn:disabled, .btn:active {
-    border-color: transparent !important
-}
-
-/* Fade animations (api frontend) */
-.fade-out {
-    opacity: 100%;
-    animation: fade-out 0.2s forwards;
-}
-
-.fade-in {
-    opacity: 0%;
-    animation: fade-in 0.2s forwards;
-}
-
-@keyframes fade-out {
-    0% {
-        opacity: 100%
-    }
-    100% {
-        opacity: 0%
-    }
-}
-
-@keyframes fade-in {
-    0% {
-        opacity: 0%
-    }
-    100% {
-        opacity: 100%
-    }
-}
-
 @media (prefers-color-scheme: dark) {
     :root {
         /* redefine theme colors for dark theme */
@@ -193,16 +159,6 @@
 
         /* Toasts */
         $toast-background-color: #394047cc;
-
-        /* Section background color override */
-        .section {
-            border: 0px;
-            background-color: #212529;
-        }
-
-        .text-dim {
-            color: #FFFFFF;
-        }
 
         /* Spinkit dark mode */
         --sk-color: #fff;

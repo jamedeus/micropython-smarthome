@@ -12,6 +12,16 @@
     }
 }
 
+/* Grey out disabled buttons */
+.btn-primary:disabled {
+    background-color: #4b5157;
+}
+
+/* Remove border around disabled buttons */
+.btn:disabled, .btn:active {
+    border-color: transparent !important
+}
+
 /* Section backgrounds (existing nodes, schedule keywords) */
 .section {
     background-color: #eee;
@@ -21,10 +31,23 @@
     margin: 0.1rem;
 }
 
+@media (prefers-color-scheme: dark) {
+    .section {
+        border: 0px;
+        background-color: #212529;
+    }
+}
+
 /* Used for slider advanced settings collapse */
 .text-dim {
     color: #000000;
     opacity: 50%;
+}
+
+@media (prefers-color-scheme: dark) {
+    .text-dim {
+        color: #FFFFFF;
+    }
 }
 
 /* Remove dropdown down arrow */
@@ -78,9 +101,9 @@ td:last-child{
 }
 /* --- */
 
-/* Grey out disabled buttons */
-.btn-primary:disabled {
-    background-color: #4b5157;
+/* Table cell containing schedule rule popup */
+td.schedule-rule-field {
+    position: relative;
 }
 
 /* Range sliders */
@@ -112,11 +135,6 @@ td:last-child{
     color: #fff;
     font-weight: bold;
     background-color: var(--slider-track-fill);
-}
-
-/* Table cell containing schedule rule popup */
-td.schedule-rule-field {
-    position: relative;
 }
 
 /* Popup div for setting schedule rule timestamps and values */
@@ -153,5 +171,24 @@ td.schedule-rule-field {
 @media (prefers-color-scheme: dark) {
     .btn-adaptive {
         background-color: #212529 !important;
+    }
+}
+
+/* Transitions (used in multiple other CSS files) */
+@keyframes fade-in {
+    0% {
+        opacity: 0%
+    }
+    100% {
+        opacity: 100%
+    }
+}
+
+@keyframes fade-out {
+    0% {
+        opacity: 100%
+    }
+    100% {
+        opacity: 0%
     }
 }
