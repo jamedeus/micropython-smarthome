@@ -26,7 +26,10 @@ const PopupDiv = ({ children, show, onClose }) => {
 
     if (show) {
         return (
-            <div ref={popupRef} className="schedule-rule-param-popup">
+            <div
+                ref={popupRef}
+                className="schedule-rule-param-popup border border-3"
+            >
                 {children}
             </div>
         );

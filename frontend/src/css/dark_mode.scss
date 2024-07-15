@@ -129,6 +129,18 @@
             }
         }
 
+        /* ApiCard back button */
+        .btn-light {
+            color: $light !important;
+            border-color: $dark !important;
+            background-color: $dark !important;
+        }
+
+        .api-target-rule-btn .btn-secondary {
+            border-color: $dark !important;
+            background-color: $dark !important;
+        }
+
         /* Increase contrast for disabled items */
         $dropdown-link-disabled-color: #737578 !important;
 

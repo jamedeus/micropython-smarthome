@@ -141,14 +141,20 @@ td.schedule-rule-field {
 /* Aligns to parent with 20px margin on either side */
 .schedule-rule-param-popup {
     position: absolute;
-    border: 3px solid #1B1E1F;
     border-radius: 8px;
     padding: 20px;
-    background-color: #212529;
+    background-color: #fff;
     z-index: 99;
     min-width: calc(100% - 40px);
     left: 50%;
     transform: translateX(-50%);
+}
+
+@media (prefers-color-scheme: dark) {
+    .schedule-rule-param-popup {
+        border-color: #1B1E1F !important;
+        background-color: #212529;
+    }
 }
 
 /* Mobile: Fill screen width instead of aligning to parent */

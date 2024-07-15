@@ -27,7 +27,7 @@ const Header = () => {
 
     return (
         <div className="d-flex justify-content-between">
-            <Button variant="dark" className="my-auto" onClick={overview}>
+            <Button variant="light" className="my-auto" onClick={overview}>
                 <i className="bi-chevron-left"></i>
             </Button>
             <h1 className={`my-3 ${recording ? "glow" : ""}`}>
