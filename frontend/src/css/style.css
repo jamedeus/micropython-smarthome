@@ -24,8 +24,8 @@
 
 /* Section backgrounds (existing nodes, schedule keywords) */
 .section {
+    --bs-table-bg: transparent;
     background-color: #eee;
-    border: 1px solid #c8c8c8;
     border-radius: 15px;
     padding: 0.5rem;
     margin: 0.1rem;
@@ -33,7 +33,6 @@
 
 @media (prefers-color-scheme: dark) {
     .section {
-        border: 0px;
         background-color: #212529;
     }
 }
@@ -77,6 +76,20 @@ td.min {
 /* Vertically center contents of table row */
 tr {
     vertical-align: middle;
+}
+
+/* Table rounded corners */
+.table thead th:first-child {
+    border-top-left-radius: 10px;
+}
+.table thead th:last-child {
+    border-top-right-radius: 10px;
+}
+.table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+.table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
 }
 
 /* Table hover highlight rounded corners */
