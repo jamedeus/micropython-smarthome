@@ -18,8 +18,11 @@ const ClimateDataCard = ({ temperature, humidity }) => {
     }, [temperature]);
 
     return (
-        <Card className="mb-4" onClick={() => setHistoryVisible(true)}>
-            <Card.Body className="d-flex flex-column">
+        <Card className="mb-4">
+            <Card.Body
+                className="d-flex flex-column"
+                onClick={() => setHistoryVisible(true)}
+            >
                 <div className="d-flex justify-content-between">
                     <h4 className="card-title mx-auto my-auto">
                         Climate Data
