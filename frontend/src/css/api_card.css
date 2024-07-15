@@ -27,3 +27,9 @@ body {
         --chart-tick-color: #eee;
     }
 }
+
+@media (prefers-color-scheme: dark) {
+    #ir-macro-modal {
+        --bs-table-bg: transparent;
+    }
+}

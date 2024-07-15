@@ -115,7 +115,7 @@ const EditIrMacroModal = () => {
             />
 
             <Modal.Body className="d-flex flex-column align-items-center mt-3 px-3">
-                <Table borderless className="text-center">
+                <Table id="ir-macro-modal" borderless className="text-center">
                     <thead>
                         <tr>
                             <th className="text-center">Key</th>
