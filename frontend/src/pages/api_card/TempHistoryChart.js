@@ -54,14 +54,15 @@ const TempHistoryChart = ({ visible, setVisible, tempHistory, tempHistoryLabels 
             x: {
                 type: 'time',
                 time: {
-                    unit: 'minute',
+                    unit: 'second',
                     displayFormats: {
-                        minute: 'H:mm:ss'
+                        second: 'hh:mm a'
                     }
                 },
                 ticks: {
                     source: 'data',
-                    color: getCssVariable('--chart-tick-color')
+                    color: getCssVariable('--chart-tick-color'),
+                    maxTicksLimit: 10
                 },
             },
             y: {
