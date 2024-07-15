@@ -103,6 +103,12 @@ export const ConfigProvider = ({ children }) => {
         setUUIDs({ ...UUIDs, [category]: {
             ...UUIDs[category], [`${category}${index}`]: uuid()
         }});
+
+        // Scroll new card into view after it renders
+        setTimeout(() => {
+            const card = document.getElementById(`${category}${index}-card`);
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 1);
     };
 
     // Handler for delete button on device and sensor cards
