@@ -9,7 +9,6 @@ import FadeModal from './FadeModal';
 import SaveRulesToast from './SaveRulesToast';
 import { UpdateStatus } from './UpdateStatus';
 import { ApiCardContext } from 'root/ApiCardContext';
-import 'css/api_card.css';
 
 const App = () => {
     // Get state bool for loading animation

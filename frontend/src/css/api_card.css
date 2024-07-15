@@ -12,3 +12,18 @@ body {
 .fade-out {
     animation: fade-out 0.8s ease-in forwards;
 }
+
+/* TempHistoryChart colors */
+:root {
+    --chart-line-color: #000;
+    --chart-point-color: #000;
+    --chart-tick-color: #000;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --chart-line-color: #eee;
+        --chart-point-color: #eee;
+        --chart-tick-color: #eee;
+    }
+}

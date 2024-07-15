@@ -25,6 +25,11 @@ ChartJS.register(
     Legend
 );
 
+// Used to read CSS variables into options object below
+const getCssVariable = (cssVar) => {
+    return getComputedStyle(document.documentElement).getPropertyValue(cssVar);
+};
+
 const TempHistoryChart = ({ visible, setVisible, tempHistory, tempHistoryLabels }) => {
     const chartRef = useRef(null);
 
@@ -33,8 +38,8 @@ const TempHistoryChart = ({ visible, setVisible, tempHistory, tempHistoryLabels 
         datasets: [{
             data: tempHistory,
             label: "Temp",
-            borderColor: '#eee',
-            backgroundColor: 'rgba(238, 238, 238, 0.5)',
+            borderColor: getCssVariable('--chart-line-color'),
+            backgroundColor: getCssVariable('--chart-point-color'),
             fill: true
         }]
     };
@@ -56,14 +61,14 @@ const TempHistoryChart = ({ visible, setVisible, tempHistory, tempHistoryLabels 
                 },
                 ticks: {
                     source: 'data',
-                    color: "#eee"
+                    color: getCssVariable('--chart-tick-color')
                 },
             },
             y: {
                 suggestedMin: 70,
                 suggestedMax: 75,
                 ticks: {
-                    color: "#eee",
+                    color: getCssVariable('--chart-tick-color'),
                     stepSize: 1,
                 }
             }
