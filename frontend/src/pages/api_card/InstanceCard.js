@@ -13,9 +13,8 @@ import { showScheduleToggle } from './ScheduleToggleModal';
 import ChangeApiTargetRule from './ChangeApiTargetRule';
 import ClimateDataCard from './ClimateDataCard';
 import { get_instance_metadata } from 'util/metadata';
-import { CSSTransition } from "react-transition-group";
-import 'css/PowerButton.css';
-import 'css/TriggerButton.css';
+import { CSSTransition } from 'react-transition-group';
+import 'css/api_card_buttons.css';
 
 // Top left corner of device cards
 const PowerButton = ({ id, params }) => {
@@ -27,14 +26,20 @@ const PowerButton = ({ id, params }) => {
     };
 
     return (
-        <Button
-            variant="outline-primary"
-            className={`power-button my-auto me-auto
-                        ${params.turned_on ? 'toggle-on' : ''}`}
-            onClick={turn_on_off}
+        <CSSTransition
+            in={params.turned_on && params.enabled}
+            timeout={1200}
+            classNames='btn-active'
+            appear
         >
-            <i className="bi-lightbulb"></i>
-        </Button>
+            <Button
+                variant="outline-secondary"
+                className="power-button my-auto me-auto"
+                onClick={turn_on_off}
+            >
+                <i className="bi-lightbulb"></i>
+            </Button>
+        </CSSTransition>
     );
 };
 
@@ -48,15 +53,21 @@ const TriggerButton = ({ id, params, disabled }) => {
     const { trigger_sensor } = useContext(ApiCardContext);
 
     return (
-        <Button
-            variant="outline-primary"
-            className={`trigger-button my-auto me-auto
-                        ${params.condition_met ? 'trigger-on' : ''}`}
-            onClick={() => trigger_sensor(id)}
-            disabled={disabled}
+        <CSSTransition
+            in={params.condition_met && params.enabled}
+            timeout={1200}
+            classNames='btn-active'
+            appear
         >
-            <i className="bi-exclamation-lg"></i>
-        </Button>
+            <Button
+                variant="outline-secondary"
+                className="trigger-button my-auto me-auto"
+                onClick={() => trigger_sensor(id)}
+                disabled={disabled}
+            >
+                <i className="bi-exclamation-lg"></i>
+            </Button>
+        </CSSTransition>
     );
 };
 
