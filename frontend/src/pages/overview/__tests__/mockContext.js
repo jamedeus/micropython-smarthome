@@ -25,6 +25,11 @@ export const mockContext = {
             "friendly_name": "Bedroom",
             "ip": "192.168.1.103",
             "filename": "bedroom.json"
+        },
+        {
+            "friendly_name": "Thermostat",
+            "ip": "192.168.1.104",
+            "filename": "thermostat.json"
         }
     ],
     "schedule_keywords": [
@@ -46,4 +51,4 @@ export const mockContext = {
     ],
     "desktop_integration_link": "/static/node_configuration/micropython-smarthome-integration.zip",
     "client_ip": "127.0.0.1"
-}
+};
