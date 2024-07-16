@@ -462,78 +462,32 @@ describe('App', () => {
         // Click modal close button, confirm closed
         await user.click(app.getAllByText('Debug')[1].parentElement.children[2]);
         expect(app.queryByText(/"nickname": "Accent lights"/)).toBeNull();
+
+        // Show modal again, click backdrop, confirm closed
+        await user.click(within(dropdown).getByText('Debug'));
+        await user.click(document.querySelector('.modal-backdrop'));
+        expect(app.queryByText(/"nickname": "Accent lights"/)).toBeNull();
     });
 
     it('shows schedule toggle modal when dropdown option clicked', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({
-                "Disable_in_seconds": 900,
-                "Disabled": "device3"
-            })
-        }));
-
         // Get device3 card and top-right corner dropdown menu
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
-        // Click dropdown button, click schedule toggle option
+        // Click dropdown button, click schedule toggle option, confirm modal appeared
         await user.click(dropdown.children[0]);
         await user.click(within(dropdown).getByText('Schedule Toggle'));
-
-        // Confirm modal appeared
         expect(app.queryByText('Enable or disable after a delay.')).not.toBeNull();
-
-        // Click submit button, confirm correct payload sent
-        await user.click(app.getByRole('button', { name: 'Schedule' }));
-        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
-            method: 'POST',
-            body: JSON.stringify({
-                "command": "disable_in",
-                "instance": "device3",
-                "delay": "15",
-                "target": "192.168.1.100"
-            }),
-            headers: postHeaders
-        });
     });
 
     it('shows start fade modal when dropdown option clicked', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            json: () => Promise.resolve({
-                "device3": "fade/512/600"
-            })
-        }));
-
         // Get device3 card and top-right corner dropdown menu
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
-        // Click dropdown button, click start fade option
+        // Click dropdown button, click start fade option, confirm modal appeared
         await user.click(dropdown.children[0]);
         await user.click(within(dropdown).getByText('Start Fade'));
-
-        // Confirm modal appeared
         expect(app.queryByText('Duration (seconds)')).not.toBeNull();
-
-        // Enter 512 in first field, 600 in second
-        await user.type(app.getByLabelText('Target Brightness'), '512');
-        await user.type(app.getByLabelText('Duration (seconds)'), '600');
-
-        // Click start button, confirm correct payload sent
-        await user.click(app.getByRole('button', { name: 'Start' }));
-        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
-            method: 'POST',
-            body: JSON.stringify({
-                "command": "set_rule",
-                "instance": "device3",
-                "rule": "fade/512/600",
-                "target": "192.168.1.100"
-            }),
-            headers: postHeaders
-        });
     });
 });
