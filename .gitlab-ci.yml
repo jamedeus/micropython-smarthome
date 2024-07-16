@@ -45,6 +45,24 @@ test_frontend:
       when: never
     - when: always
 
+# Run react unit tests
+test_react:
+  stage: test
+  image: node:22-bookworm-slim
+  tags:
+    - nas
+    - docker
+  before_script:
+    - cd frontend
+    - npm install -D
+  script:
+    - npm test -- --coverage
+  coverage: '/All files[^\|]*\|[^\|]*\s+([\d\.]+)/'
+  rules:
+    - if: '$GITLAB_USER_NAME == "Firmware Release"'
+      when: never
+    - when: always
+
 # Run CLI tool unit tests
 test_cli:
   stage: test
