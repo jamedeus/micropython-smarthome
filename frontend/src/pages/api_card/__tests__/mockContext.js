@@ -365,3 +365,49 @@ export const mockContext = {
         }
     }
 };
+
+export const mockContextIrRemotes = {
+    "status": {
+        "metadata": {
+            "next_reload": "3:46",
+            "ir_blaster": true,
+            "ir_targets": [
+                "tv",
+                "ac"
+            ],
+            "location": "Bedroom",
+            "floor": 2,
+            "id": "Thermostat",
+            "schedule_keywords": {
+                "sleep": "23:00",
+                "morning": "08:00",
+                "sunset": "20:56",
+                "relax": "20:00",
+                "sunrise": "05:36"
+            }
+        },
+        "devices": {},
+        "sensors": {}
+    },
+    "target_ip": "192.168.1.100",
+    "recording": false,
+    "ir_macros": {
+        "backlight_off": [
+            "tv settings 1500 1",
+            "tv right 500 1",
+            "tv down 500 1",
+            "tv enter 150 1",
+            "tv left 150 14",
+            "tv exit 1 1"
+        ],
+        "backlight_on": [
+            "tv settings 1500 1",
+            "tv right 500 1",
+            "tv down 500 1",
+            "tv enter 150 1",
+            "tv right 150 14",
+            "tv exit 1 1",
+            "tv mute 100 1"
+        ]
+    }
+}

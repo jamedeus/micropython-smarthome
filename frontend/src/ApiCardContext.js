@@ -350,8 +350,8 @@ export const ApiCardContextProvider = ({ children }) => {
     const delete_ir_macro = async (name) => {
         const response = await send_command({
             command: 'ir_delete_macro',
-            macro_name: name}
-        );
+            macro_name: name
+        });
         if (response.ok) {
             const update = { ...irMacros };
             delete update[name];
