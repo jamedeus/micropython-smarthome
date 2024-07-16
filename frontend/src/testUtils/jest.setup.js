@@ -13,6 +13,13 @@ beforeAll(() => {
     global.userEvent = userEvent;
     global.act = act;
     global.waitFor = waitFor;
+
+    // Mock method called when window.location.href set
+    Object.defineProperty(window, 'location', {
+        value: {
+            assign: jest.fn(),
+        },
+    });
 });
 
 beforeEach(() => {
