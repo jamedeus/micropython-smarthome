@@ -362,3 +362,100 @@ export const edit_config_metadata = {
         }
     }
 }
+
+export const api_card_metadata = {
+    "devices": {
+        "mosfet": {
+            "rule_prompt": "standard"
+        },
+        "http-get": {
+            "rule_prompt": "standard"
+        },
+        "pwm": {
+            "rule_prompt": "int_or_fade",
+            "rule_limits": [
+                0,
+                1023
+            ]
+        },
+        "desktop": {
+            "rule_prompt": "standard"
+        },
+        "tasmota-relay": {
+            "rule_prompt": "standard"
+        },
+        "dimmer": {
+            "rule_prompt": "int_or_fade",
+            "rule_limits": [
+                1,
+                100
+            ]
+        },
+        "api-target": {
+            "rule_prompt": "api_target"
+        },
+        "dumb-relay": {
+            "rule_prompt": "standard"
+        },
+        "bulb": {
+            "rule_prompt": "int_or_fade",
+            "rule_limits": [
+                1,
+                100
+            ]
+        },
+        "wled": {
+            "rule_prompt": "int_or_fade",
+            "rule_limits": [
+                1,
+                255
+            ]
+        }
+    },
+    "sensors": {
+        "switch": {
+            "rule_prompt": "standard",
+            "triggerable": false
+        },
+        "dht22": {
+            "rule_prompt": "float_range",
+            "rule_limits": [
+                18,
+                27
+            ],
+            "triggerable": false
+        },
+        "si7021": {
+            "rule_prompt": "float_range",
+            "rule_limits": [
+                18,
+                27
+            ],
+            "triggerable": false
+        },
+        "desktop": {
+            "rule_prompt": "standard",
+            "triggerable": true
+        },
+        "pir": {
+            "rule_prompt": "float_range",
+            "rule_limits": [
+                0,
+                60
+            ],
+            "triggerable": true
+        },
+        "load-cell": {
+            "rule_prompt": "float_range",
+            "rule_limits": [
+                0,
+                10000000
+            ],
+            "triggerable": false
+        },
+        "dummy": {
+            "rule_prompt": "on_off",
+            "triggerable": true
+        }
+    }
+}
