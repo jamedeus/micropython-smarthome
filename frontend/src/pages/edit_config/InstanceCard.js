@@ -4,6 +4,7 @@ import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import { ConfigContext } from 'root/ConfigContext';
+import { MetadataContext } from 'root/MetadataContext';
 import NicknameInput from './NicknameInput';
 import IPInput from './IPInput';
 import URIInput from './URIInput';
@@ -17,12 +18,31 @@ import DefaultRuleThermostat from './DefaultRuleThermostat';
 import DefaultRuleIntRange from './DefaultRuleIntRange';
 import DefaultRuleOnOff from './DefaultRuleOnOff';
 import DefaultRuleApiTarget from './DefaultRuleApiTarget';
-import {
-    sensorPins,
-    devicePins,
-    get_instance_metadata,
-    TypeDropdownOptions
-} from 'util/metadata';
+import { sensorPins, devicePins } from 'util/metadata';
+
+// Takes category ("device" or "sensor"), returns array of dropdown options
+// containing every driver type in category.
+// Optional exclude array can contain config_names that should be skipped.
+const TypeDropdownOptions = ({ category, exclude=[] }) => {
+    // Get metadata for all devices and sensors
+    const { metadata } = useContext(MetadataContext);
+
+    return (
+        Object.entries(metadata[`${category}s`])
+            .filter(([key, _]) =>
+                !exclude.includes(key)
+            ).map(([key, type]) => (
+                <option key={key} value={type.config_name}>
+                    {type.class_name}
+                </option>
+            ))
+    );
+};
+
+TypeDropdownOptions.propTypes = {
+    category: PropTypes.oneOf(['device', 'sensor']).isRequired,
+    exclude: PropTypes.array
+};
 
 // Takes instance ID, key from config template, and metadata object
 // Renders correct input for config template key
@@ -135,6 +155,7 @@ const InstanceCard = ({ id }) => {
     const category = id.replace(/[0-9]/g, '');
 
     // Get metadata object for selected type
+    const { get_instance_metadata } = useContext(MetadataContext);
     const instanceMetadata = get_instance_metadata(category, instance._type);
 
     console.log(`Rendering ${id}`);

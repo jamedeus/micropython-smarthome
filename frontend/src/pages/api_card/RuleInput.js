@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { get_instance_metadata } from 'util/metadata';
+import { MetadataContext } from 'root/MetadataContext';
 import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 import ThermostatRuleInput from 'inputs/ThermostatRuleInput';
 
 const RuleInput = ({ id, params, setRule, onBlur=() => {} }) => {
     // Get metadata containing rule_prompt and slider range limits
+    const { get_instance_metadata } = useContext(MetadataContext);
     const [metadata] = useState(get_instance_metadata(
         id.startsWith("device") ? "device" : "sensor",
         params.type

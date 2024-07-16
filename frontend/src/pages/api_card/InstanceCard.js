@@ -1,6 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { ApiCardContext } from 'root/ApiCardContext';
+import { MetadataContext } from 'root/MetadataContext';
 import Card from 'react-bootstrap/Card';
 import Button from 'react-bootstrap/Button';
 import Dropdown from 'react-bootstrap/Dropdown';
@@ -12,7 +13,6 @@ import { showFadeModal } from './FadeModal';
 import { showScheduleToggle } from './ScheduleToggleModal';
 import ChangeApiTargetRule from './ChangeApiTargetRule';
 import ClimateDataCard from './ClimateDataCard';
-import { get_instance_metadata } from 'util/metadata';
 import { CSSTransition } from 'react-transition-group';
 import 'css/api_card_buttons.css';
 
@@ -140,6 +140,7 @@ const InstanceCard = ({ id }) => {
 
     // Get metadata containing rule_prompt
     const category = id.replace(/[0-9]/g, '');
+    const { get_instance_metadata } = useContext(MetadataContext);
     const [metadata] = useState(
         get_instance_metadata(category, params.type)
     );

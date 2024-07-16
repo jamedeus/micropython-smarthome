@@ -1,8 +1,9 @@
-import React, { useState, createContext } from 'react';
+import React, { useState, createContext, useContext } from 'react';
 import PropTypes from 'prop-types';
 import { sleep, average } from 'util/helper_functions';
 import { v4 as uuid } from 'uuid';
-import { get_instance_metadata, ir_keys } from 'util/metadata';
+import { ir_keys } from 'util/metadata';
+import { MetadataContext } from 'root/MetadataContext';
 import { parse_dom_context } from 'util/django_util';
 
 
@@ -63,6 +64,9 @@ export const ConfigProvider = ({ children }) => {
     const [edit_existing] = useState(() => {
         return parse_dom_context("edit_existing");
     });
+
+    // Get function that returns metadata for a given device/sensor type
+    const { get_instance_metadata } = useContext(MetadataContext);
 
     // Create state to control card delete animations
     // Card matching ID fades out, cards in category with higher index slide up

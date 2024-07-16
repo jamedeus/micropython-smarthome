@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import PopupDiv from './PopupDiv';
@@ -8,7 +8,7 @@ import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 import ThermostatRuleInput from 'inputs/ThermostatRuleInput';
 import { convert_temperature } from 'util/thermostat_util';
-import { get_instance_metadata } from 'util/metadata';
+import { MetadataContext } from 'root/MetadataContext';
 import { average } from 'util/helper_functions';
 import { numbersOnly } from 'util/validation';
 
@@ -212,6 +212,7 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
     const [visible, setVisible] = useState(false);
 
     // Get metadata for instance type (contains rule prompt)
+    const { get_instance_metadata } = useContext(MetadataContext);
     const metadata = get_instance_metadata(category, type);
 
     // Returns true if rule is null, undefined, or empty string
