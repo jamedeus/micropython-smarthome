@@ -46,7 +46,7 @@ export const mockContext = {
                     "relax": "fade/512/1800",
                     "sleep": "disabled"
                 },
-                "scheduled_rule": "enabled",
+                "scheduled_rule": 1023,
                 "min_rule": 0,
                 "nickname": "Accent lights",
                 "max_rule": 1023,

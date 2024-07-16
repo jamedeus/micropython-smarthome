@@ -75,7 +75,7 @@ export const TimeField = ({ timestamp, setTimestamp, schedule_keywords, highligh
                 onClose={closePopup}
             >
                 {showKeyword ? (
-                    <div>
+                    <Form.Group controlId="keyword-input">
                         <Form.Label>Keyword</Form.Label>
                         <Dropdown
                             value={timestamp}
@@ -83,9 +83,9 @@ export const TimeField = ({ timestamp, setTimestamp, schedule_keywords, highligh
                             onChange={(value) => setTimestamp(value)}
                             focus={true}
                         />
-                    </div>
+                    </Form.Group>
                 ) : (
-                    <div>
+                    <Form.Group controlId="time-input">
                         <Form.Label>Time</Form.Label>
                         <Form.Control
                             className="text-center"
@@ -94,7 +94,7 @@ export const TimeField = ({ timestamp, setTimestamp, schedule_keywords, highligh
                             onChange={(e) => setTimestamp(e.target.value)}
                             autoFocus
                         />
-                    </div>
+                    </Form.Group>
                 )}
 
                 <div className="d-flex mt-2">
