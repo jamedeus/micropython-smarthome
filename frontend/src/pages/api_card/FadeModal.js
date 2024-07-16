@@ -53,30 +53,34 @@ export const FadeModal = () => {
 
             <Modal.Body className="d-flex">
                 <Col className="text-center mx-1">
-                    <Form.Label>
-                        Target Brightness
-                    </Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={brightness}
-                        onChange={(e) => setBrightness(
-                            numbersOnly(e.target.value)
-                        )}
-                        onKeyDown={handleEnterKey}
-                    />
+                    <Form.Group controlId="target-brightness">
+                        <Form.Label>
+                            Target Brightness
+                        </Form.Label>
+                        <Form.Control
+                            type="text"
+                            value={brightness}
+                            onChange={(e) => setBrightness(
+                                numbersOnly(e.target.value)
+                            )}
+                            onKeyDown={handleEnterKey}
+                        />
+                    </Form.Group>
                 </Col>
                 <Col className="text-center mx-1">
-                    <Form.Label>
-                        Duration (seconds)
-                    </Form.Label>
-                    <Form.Control
-                        type="text"
-                        value={duration}
-                        onChange={(e) => setDuration(
-                            numbersOnly(e.target.value).substring(0,5)
-                        )}
-                        onKeyDown={handleEnterKey}
-                    />
+                    <Form.Group controlId="fade-duration">
+                        <Form.Label>
+                            Duration (seconds)
+                        </Form.Label>
+                        <Form.Control
+                            type="text"
+                            value={duration}
+                            onChange={(e) => setDuration(
+                                numbersOnly(e.target.value).substring(0,5)
+                            )}
+                            onKeyDown={handleEnterKey}
+                        />
+                    </Form.Group>
                 </Col>
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-0">

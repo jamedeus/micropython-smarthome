@@ -370,13 +370,168 @@ describe('App', () => {
         await user.click(scheduleRulesButton);
         await user.click(firstRule.children[2].children[0]);
 
-        // Get toast, click yet, confirm correct payload sent
+        // Get toast, click yes, confirm correct payload sent
         const toast = app.getByText('Should this rule change persist after reboot?').parentElement;
         await user.click(within(toast).getByText('Yes'));
         expect(global.fetch).toHaveBeenCalledWith('/sync_schedule_rules', {
             method: 'POST',
             body: JSON.stringify({
                 "ip": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+    });
+
+    it('does not make API call when user clicks no in save rules toast', async () => {
+        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        const card = app.getByText('Computer screen').parentElement.parentElement;
+        const scheduleRulesButton = within(card).getByText('Schedule rules');
+        const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
+        const firstRule = rulesTable.children[1].children[0];
+
+        // Open schedule rules table, click delete button on first row
+        await user.click(scheduleRulesButton);
+        await user.click(firstRule.children[2].children[0]);
+        jest.clearAllMocks();
+
+        // Get toast, click no, confirm no request was made
+        const toast = app.getByText('Should this rule change persist after reboot?').parentElement;
+        await user.click(within(toast).getByText('No'));
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it('shows temperature history chart modal when climate data card clicked', async () => {
+        // Confirm chart modal is not mounted
+        expect(app.queryByText('Temperature History')).toBeNull();
+
+        // Click climate data card, confirm chart modal appears
+        await user.click(app.getAllByText('Climate Data')[0]);
+        expect(app.queryByText('Temperature History')).not.toBeNull();
+    });
+
+    it('shows debug modal when debug dropdown option clicked', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+                "group": "group1",
+                "nickname": "Accent lights",
+                "_type": "pwm",
+                "current_rule": 767,
+                "scheduled_rule": 1023,
+                "max_rule": 1023,
+                "enabled": true,
+                "rule_queue": [
+                    "fade/512/1800",
+                    "disabled",
+                    1023
+                ],
+                "min_rule": 0,
+                "state": false,
+                "triggered_by": [
+                    "sensor1",
+                    "sensor5"
+                ],
+                "default_rule": 1023,
+                "name": "device3",
+                "bright": 0,
+                "fading": false
+            })
+        }));
+
+        // Get device3 card and top-right corner dropdown menu
+        const card = app.getByText('Accent lights').parentElement.parentElement;
+        const dropdown = card.children[0].children[2];
+
+        // Click dropdown button, click debug option, confirm correct request made
+        await user.click(dropdown.children[0]);
+        await user.click(within(dropdown).getByText('Debug'));
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "get_attributes",
+                "instance": "device3",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+
+        // Confirm debug modal appeared with mock response text
+        expect(app.queryByText(/"nickname": "Accent lights"/)).not.toBeNull();
+
+        // Click modal close button, confirm closed
+        await user.click(app.getAllByText('Debug')[1].parentElement.children[2]);
+        expect(app.queryByText(/"nickname": "Accent lights"/)).toBeNull();
+    });
+
+    it('shows schedule toggle modal when dropdown option clicked', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+                "Disable_in_seconds": 900,
+                "Disabled": "device3"
+            })
+        }));
+
+        // Get device3 card and top-right corner dropdown menu
+        const card = app.getByText('Accent lights').parentElement.parentElement;
+        const dropdown = card.children[0].children[2];
+
+        // Click dropdown button, click schedule toggle option
+        await user.click(dropdown.children[0]);
+        await user.click(within(dropdown).getByText('Schedule Toggle'));
+
+        // Confirm modal appeared
+        expect(app.queryByText('Enable or disable after a delay.')).not.toBeNull();
+
+        // Click submit button, confirm correct payload sent
+        await user.click(app.getByRole('button', { name: 'Schedule' }));
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "disable_in",
+                "instance": "device3",
+                "delay": "15",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+    });
+
+    it('shows start fade modal when dropdown option clicked', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+                "device3": "fade/512/600"
+            })
+        }));
+
+        // Get device3 card and top-right corner dropdown menu
+        const card = app.getByText('Accent lights').parentElement.parentElement;
+        const dropdown = card.children[0].children[2];
+
+        // Click dropdown button, click start fade option
+        await user.click(dropdown.children[0]);
+        await user.click(within(dropdown).getByText('Start Fade'));
+
+        // Confirm modal appeared
+        expect(app.queryByText('Duration (seconds)')).not.toBeNull();
+
+        // Enter 512 in first field, 600 in second
+        await user.type(app.getByLabelText('Target Brightness'), '512');
+        await user.type(app.getByLabelText('Duration (seconds)'), '600');
+
+        // Click start button, confirm correct payload sent
+        await user.click(app.getByRole('button', { name: 'Start' }));
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "set_rule",
+                "instance": "device3",
+                "rule": "fade/512/600",
+                "target": "192.168.1.100"
             }),
             headers: postHeaders
         });
