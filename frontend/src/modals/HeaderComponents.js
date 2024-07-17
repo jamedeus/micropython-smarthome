@@ -5,14 +5,8 @@ import Button from 'react-bootstrap/Button';
 
 const HeaderText = ({ title, size }) => {
     switch(size) {
-        case("1"):
-            return <h1 className="modal-title mx-auto">{title}</h1>;
-        case("2"):
-            return <h2 className="modal-title mx-auto">{title}</h2>;
         case("3"):
             return <h3 className="modal-title mx-auto">{title}</h3>;
-        case("4"):
-            return <h4 className="modal-title mx-auto">{title}</h4>;
         case("5"):
             return <h5 className="modal-title mx-auto">{title}</h5>;
     }
@@ -20,7 +14,10 @@ const HeaderText = ({ title, size }) => {
 
 HeaderText.propTypes = {
     title: PropTypes.string.isRequired,
-    size: PropTypes.string.isRequired
+    size: PropTypes.oneOf([
+        "3",
+        "5"
+    ]).isRequired
 };
 
 export const HeaderWithCloseButton = ({ title, onClose, size="5" }) => {
