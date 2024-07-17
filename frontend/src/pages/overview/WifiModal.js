@@ -47,26 +47,30 @@ const WifiModal = () => {
                     These credentials will be pre-filled every time a new config is created
                 </p>
 
-                <Form.Label className="fw-bold">
-                    Network:
-                </Form.Label>
-                <Form.Control
-                    type="text"
-                    className="mb-2"
-                    value={ssid}
-                    onChange={(e) => setSsid(e.target.value)}
-                    onKeyDown={handleEnterKey}
-                />
+                <Form.Group controlId="ssid-input">
+                    <Form.Label className="fw-bold">
+                        Network:
+                    </Form.Label>
+                    <Form.Control
+                        type="text"
+                        className="mb-2"
+                        value={ssid}
+                        onChange={(e) => setSsid(e.target.value)}
+                        onKeyDown={handleEnterKey}
+                    />
+                </Form.Group>
 
-                <Form.Label className="fw-bold">
-                    Password:
-                </Form.Label>
-                <Form.Control
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    onKeyDown={handleEnterKey}
-                />
+                <Form.Group controlId="password-input">
+                    <Form.Label className="fw-bold">
+                        Password:
+                    </Form.Label>
+                    <Form.Control
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        onKeyDown={handleEnterKey}
+                    />
+                </Form.Group>
             </Modal.Body>
             <Modal.Footer className="mx-auto pt-0">
                 <Button
