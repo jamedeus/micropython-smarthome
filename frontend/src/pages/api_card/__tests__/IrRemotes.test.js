@@ -401,7 +401,7 @@ describe('App', () => {
     it('resumes recording when record option in existing macro dropdown is clicked', async () => {
         // Get TV remote, confirm not recording
         const remote = app.getByText('TV Remote').parentElement.parentElement;
-        expect(within(remote).getAllByRole('button')[0].classList).not.toContain('blue-glow')
+        expect(within(remote).getAllByRole('button')[0].classList).not.toContain('blue-glow');
 
         // Get macros div, click record option in backlight_off dropdown
         const macros = app.getByText('IR Macros').parentElement.parentElement;
@@ -410,7 +410,7 @@ describe('App', () => {
         await user.click(within(macros).getByText('Record'));
 
         // Confirm remote buttons have blue glow, button text changed to Save Macro
-        expect(within(remote).getAllByRole('button')[0].classList).toContain('blue-glow')
+        expect(within(remote).getAllByRole('button')[0].classList).toContain('blue-glow');
         expect(within(macros).queryByText('Start Recording')).toBeNull();
         expect(within(macros).queryByText('Save Macro')).not.toBeNull();
     });
@@ -418,7 +418,7 @@ describe('App', () => {
     it('starts recording macro when new name entered and button pressed', async () => {
         // Get TV remote, confirm not recording
         const remote = app.getByText('TV Remote').parentElement.parentElement;
-        expect(within(remote).getAllByRole('button')[0].classList).not.toContain('blue-glow')
+        expect(within(remote).getAllByRole('button')[0].classList).not.toContain('blue-glow');
 
         // Get macros div, open collapse
         const macros = app.getByText('IR Macros').parentElement.parentElement;
@@ -429,7 +429,7 @@ describe('App', () => {
         await user.click(app.getByRole('button', { name: 'Start Recording' }));
 
         // Confirm remote buttons have blue glow, button text changed to Save Macro
-        expect(within(remote).getAllByRole('button')[0].classList).toContain('blue-glow')
+        expect(within(remote).getAllByRole('button')[0].classList).toContain('blue-glow');
         expect(within(macros).queryByText('Start Recording')).toBeNull();
         expect(within(macros).queryByText('Save Macro')).not.toBeNull();
     });

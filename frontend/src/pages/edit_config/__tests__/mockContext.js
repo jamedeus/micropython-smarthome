@@ -269,7 +269,7 @@ export const existingConfigContext = {
             ]
         }
     }
-}
+};
 
 // Shared by all mock configs
 export const apiTargetOptionsContext = {
@@ -520,4 +520,4 @@ export const apiTargetOptionsContext = {
             "display": "Ignore action"
         }
     },
-}
+};

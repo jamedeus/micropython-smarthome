@@ -361,7 +361,7 @@ export const edit_config_metadata = {
             "triggerable": true
         }
     }
-}
+};
 
 export const api_card_metadata = {
     "devices": {
@@ -458,4 +458,4 @@ export const api_card_metadata = {
             "triggerable": true
         }
     }
-}
+};

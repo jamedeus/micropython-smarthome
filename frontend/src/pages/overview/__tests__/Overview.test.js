@@ -112,7 +112,7 @@ describe('App', () => {
         }));
 
         // Get new config table, enter IP in first input
-        const newConfigs = app.getByText('Configs Ready to Upload').parentElement
+        const newConfigs = app.getByText('Configs Ready to Upload').parentElement;
         await user.type(within(newConfigs).getAllByRole('textbox')[0], '192.168.1.105');
 
         // Click upload button, confirm correct request sent
@@ -154,7 +154,7 @@ describe('App', () => {
         }));
 
         // Get new config table, enter IP in first input and then press enter
-        const newConfigs = app.getByText('Configs Ready to Upload').parentElement
+        const newConfigs = app.getByText('Configs Ready to Upload').parentElement;
         await user.type(within(newConfigs).getAllByRole('textbox')[0], '192.168.1.105');
         await user.type(within(newConfigs).getAllByRole('textbox')[0], '{enter}');
 
@@ -177,7 +177,7 @@ describe('App', () => {
         }));
 
         // Get new config table, click first delete button
-        const newConfigs = app.getByText('Configs Ready to Upload').parentElement
+        const newConfigs = app.getByText('Configs Ready to Upload').parentElement;
         await user.click(within(newConfigs).getAllByRole('button')[1]);
 
         // Confirm modal opened with confirmation prompt, click delete button
@@ -264,7 +264,7 @@ describe('App', () => {
         await waitFor(() => {
             expect(within(existingNodes).queryByText('192.168.1.100')).toBeNull();
             expect(within(existingNodes).queryByText('123.123.123.123')).not.toBeNull();
-        })
+        });
     });
 
     it('sends correct request when existing node is deleted', async () => {
@@ -378,5 +378,5 @@ describe('App', () => {
             }),
             headers: postHeaders
         });
-    })
+    });
 });

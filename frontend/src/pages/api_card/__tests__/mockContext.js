@@ -410,4 +410,4 @@ export const mockContextIrRemotes = {
             "tv mute 100 1"
         ]
     }
-}
+};
