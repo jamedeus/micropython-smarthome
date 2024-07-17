@@ -46,8 +46,10 @@ describe('App', () => {
 
         // Click power button, confirm has turn on class + correct payload sent
         await user.click(powerButton);
-        expect(powerButton.classList).toContain('btn-active-enter');
-        expect(powerButton.classList).not.toContain('btn-active-exit');
+        await waitFor(() => {
+            expect(powerButton.classList).toContain('btn-active-enter');
+            expect(powerButton.classList).not.toContain('btn-active-exit');
+        });
         expect(global.fetch).toHaveBeenCalledWith('/send_command', {
             method: 'POST',
             body: JSON.stringify({
@@ -60,8 +62,10 @@ describe('App', () => {
 
         // Click button again, confirm has turn off class + correct payload sent
         await user.click(powerButton);
-        expect(powerButton.classList).not.toContain('btn-active-enter');
-        expect(powerButton.classList).toContain('btn-active-exit');
+        await waitFor(() => {
+            expect(powerButton.classList).not.toContain('btn-active-enter');
+            expect(powerButton.classList).toContain('btn-active-exit');
+        });
         expect(global.fetch).toHaveBeenCalledWith('/send_command', {
             method: 'POST',
             body: JSON.stringify({
@@ -87,8 +91,10 @@ describe('App', () => {
 
         // Click trigger button, confirm has on class + correct payload sent
         await user.click(triggerButton);
-        expect(triggerButton.classList).toContain('btn-active-enter');
-        expect(triggerButton.classList).not.toContain('btn-active-exit');
+        await waitFor(() => {
+            expect(triggerButton.classList).toContain('btn-active-enter');
+            expect(triggerButton.classList).not.toContain('btn-active-exit');
+        });
         expect(global.fetch).toHaveBeenCalledWith('/send_command', {
             method: 'POST',
             body: JSON.stringify({
