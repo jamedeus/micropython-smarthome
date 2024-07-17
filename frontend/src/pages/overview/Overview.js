@@ -18,7 +18,7 @@ const App = () => {
     const { context } = useContext(OverviewContext);
 
     const new_config = () => {
-        window.location.href = "new_config";
+        window.location.href = "/new_config";
     };
 
     const frontend = () => {
