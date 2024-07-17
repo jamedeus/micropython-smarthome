@@ -99,8 +99,17 @@ describe('App', () => {
         await user.click(within(header).getAllByRole('button')[0]);
         await user.click(app.getByText('Desktop integration'));
 
-        // Confirm DesktopIntegrationModal.js appeared
+        // Confirm DesktopIntegrationModal appeared
         expect(app.queryByText('Install Desktop Integration')).not.toBeNull();
+
+        // Click close button, confirm modal closes
+        await user.click(app.getByText('Install Desktop Integration').parentElement.children[2]);
+        expect(app.queryByText('Install Desktop Integration')).toBeNull();
+
+        // Open modal again, click backdrop, confirm modal closes
+        await user.click(app.getByText('Desktop integration'));
+        await user.click(document.querySelector('.modal-backdrop'));
+        expect(app.queryByText('Install Desktop Integration')).toBeNull();
     });
 
     it('sends the correct request when a new config is uploaded', async () => {
