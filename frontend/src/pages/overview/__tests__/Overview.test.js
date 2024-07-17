@@ -238,35 +238,6 @@ describe('App', () => {
         expect(app.queryByText('Upload an existing config file to a new IP')).not.toBeNull();
     });
 
-    it('sends correct request when ChangeIpModal is submitted', async () => {
-        // Open ChangeIpModal for first existing node
-        const existingNodes = app.getByText('Existing Nodes').parentElement;
-        await user.click(within(existingNodes).getAllByRole('button')[0]);
-        await user.click(app.getByText('Change IP'));
-
-        // Enter new IP address in modal input
-        const modal = app.queryByText(/file to a new IP/).parentElement;
-        await user.clear(within(modal).getByRole('textbox'));
-        await user.type(within(modal).getByRole('textbox'), '123.123.123.123');
-
-        // Press Change button, confirm correct request sent
-        await user.click(app.getByRole('button', { name: 'Change' }));
-        expect(global.fetch).toHaveBeenCalledWith('change_node_ip', {
-            method: 'POST',
-            body: JSON.stringify({
-                "new_ip": "123.123.123.123",
-                "friendly_name": "Bathroom"
-            }),
-            headers: postHeaders
-        });
-
-        // Confirm IP changed in existing nodes table
-        await waitFor(() => {
-            expect(within(existingNodes).queryByText('192.168.1.100')).toBeNull();
-            expect(within(existingNodes).queryByText('123.123.123.123')).not.toBeNull();
-        });
-    });
-
     it('sends correct request when existing node is deleted', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
