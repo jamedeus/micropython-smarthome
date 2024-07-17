@@ -20,6 +20,8 @@ beforeAll(() => {
             assign: jest.fn(),
         },
     });
+
+    global.history.pushState = jest.fn();
 });
 
 beforeEach(() => {
