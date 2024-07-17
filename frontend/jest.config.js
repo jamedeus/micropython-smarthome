@@ -16,6 +16,7 @@ module.exports = {
         '^node_modules/(.*)$': '<rootDir>/node_modules/$1'
     },
     coveragePathIgnorePatterns: [
+        'src/css/',
         'src/testUtils/',
         'mockContext.js'
     ],
