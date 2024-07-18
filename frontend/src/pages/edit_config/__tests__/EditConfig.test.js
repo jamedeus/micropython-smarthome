@@ -114,6 +114,49 @@ describe('App', () => {
         expect(device2Nickname.classList).toContain('is-invalid');
     });
 
+    it('clears card inputs when device type is changed', async () => {
+        // Get device1 card, type select dropdown
+        const device1Card = document.getElementById('device1-card');
+        const typeSelect = within(device1Card).getByLabelText('Type:');
+
+        // Confirm nickname field has expected value
+        expect(within(device1Card).getByLabelText('Nickname:').value).toBe('Humidifier');
+
+        // Change type to pwm, confirm nickname field was cleared
+        await user.selectOptions(typeSelect, 'pwm');
+        expect(within(device1Card).getByLabelText('Nickname:').value).toBe('');
+    });
+
+    it('clears card inputs when sensor type is changed', async () => {
+        // Get sensor1 card, type select dropdown
+        const sensor1Card = document.getElementById('sensor1-card');
+        const typeSelect = within(sensor1Card).getByLabelText('Type:');
+
+        // Confirm nickname field has expected value
+        expect(within(sensor1Card).getByLabelText('Nickname:').value).toBe('Door switch');
+
+        // Change type to pir, confirm nickname field was cleared
+        await user.selectOptions(typeSelect, 'pir');
+        expect(within(sensor1Card).getByLabelText('Nickname:').value).toBe('');
+    });
+
+    it('disables pin dropdown options that are already used by other cards', async () => {
+        // Get device1 pin select dropdown, sensor1 pin select dropdown
+        const device1Pin = within(document.getElementById('device1-card')).getByLabelText('Pin:');
+        const sensor1Pin = within(document.getElementById('sensor1-card')).getByLabelText('Pin:');
+
+        // Confirm pin 21 (used by sensor1) is disabled in device1 dropdown, 22 is not
+        expect(within(device1Pin).getByText('21').disabled).toBe(true);
+        expect(within(device1Pin).getByText('22').disabled).toBe(false);
+
+        // Select pin 22 in sensor1 dropdown
+        await user.selectOptions(sensor1Pin, '22');
+
+        // Confirm pin 22 is now disabled, pin 21 is enabled in device1 pin dropdown
+        expect(within(device1Pin).getByText('21').disabled).toBe(false);
+        expect(within(device1Pin).getByText('22').disabled).toBe(true);
+    });
+
     it('adds cards when "Add Device" and "Add Sensor" buttons are clicked', async () => {
         // Confirm device11 and sensor7 don't exist
         expect(app.queryByText('device11')).toBeNull();
