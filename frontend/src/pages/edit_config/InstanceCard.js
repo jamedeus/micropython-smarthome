@@ -158,8 +158,6 @@ const InstanceCard = ({ id }) => {
     const { get_instance_metadata } = useContext(MetadataContext);
     const instanceMetadata = get_instance_metadata(category, instance._type);
 
-    console.log(`Rendering ${id}`);
-
     // Returns true if any sensor (except this card) has type si7021
     // Used to remove si7021 option once used (can't have multiple)
     const containsSi7021 = () => {
