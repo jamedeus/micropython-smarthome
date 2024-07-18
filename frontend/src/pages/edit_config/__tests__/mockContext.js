@@ -461,6 +461,34 @@ export const apiTargetOptionsContext = {
                 "reset_rule"
             ]
         },
+        "ir_key": {
+            "display": "Ir Blaster",
+            "options": [
+                "tv",
+                "ac"
+            ],
+            "keys": {
+                "tv": [
+                    "power",
+                    "vol_up",
+                    "vol_down",
+                    "mute",
+                    "up",
+                    "down",
+                    "left",
+                    "right",
+                    "enter",
+                    "settings",
+                    "exit",
+                    "source"
+                ],
+                "ac": [
+                    "start",
+                    "stop",
+                    "off"
+                ]
+            }
+        },
         "ignore": {
             "display": "Ignore action"
         }

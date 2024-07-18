@@ -1,0 +1,484 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`App matches snapshot when existing rule targets IR Blaster 1`] = `
+<div
+  class="modal-content"
+>
+  <div
+    class="justify-content-between pb-0 modal-header"
+  >
+    <button
+      class="btn-close  btn btn-link"
+      style="visibility: hidden;"
+      type="button"
+    />
+    <h5
+      class="modal-title mx-auto"
+    >
+      API Target Rule
+    </h5>
+    <button
+      class="btn-close  btn btn-link"
+      type="button"
+    />
+  </div>
+  <div
+    class="d-flex flex-column mx-auto modal-body"
+  >
+    <button
+      class="mx-auto mb-3 btn btn-secondary btn-sm"
+      data-bs-target="#api-rule-modal-help"
+      data-bs-toggle="collapse"
+      type="button"
+    >
+      Help
+    </button>
+    <div
+      class="collapse"
+      id="api-rule-modal-help"
+    >
+      <p
+        class="text-center"
+      >
+        Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.
+      </p>
+      <p
+        class="text-center"
+      >
+        Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the "Target Node" dropdown.
+      </p>
+      <p
+        class="text-center"
+      >
+        The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.
+      </p>
+      <p
+        class="text-center"
+      >
+        <button
+          class="mx-auto mb-3 btn btn-secondary btn-sm"
+          data-bs-target="#api-rule-modal-examples"
+          data-bs-toggle="collapse"
+          type="button"
+        >
+          Examples
+        </button>
+      </p>
+      <div
+        class="collapse"
+        id="api-rule-modal-examples"
+      >
+        <ul>
+          <li>
+            Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the 
+            <b>
+              trigger_sensor
+            </b>
+             option.
+          </li>
+          <li>
+            The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and 
+            <b>
+              set_rule
+            </b>
+             command below.
+          </li>
+          <li>
+            Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an 
+            <b>
+              Ir Blaster
+            </b>
+            .
+          </li>
+        </ul>
+        <p
+          class="text-center"
+        >
+          <button
+            class="mx-auto mb-3 btn btn-secondary btn-sm"
+            data-bs-target="#api-rule-modal-help"
+            data-bs-toggle="collapse"
+            type="button"
+          >
+            Close
+          </button>
+        </p>
+      </div>
+    </div>
+    <div
+      class="mx-auto"
+    >
+      <select
+        class="mb-3 modal-dropdown api-command form-select"
+      >
+        <option
+          value=""
+        >
+          Select 
+          target instance
+        </option>
+        <option
+          value="device1"
+        >
+          Air Conditioner (api-target)
+        </option>
+        <option
+          value="sensor1"
+        >
+          Thermostat (si7021)
+        </option>
+        <option
+          value="ir_key"
+        >
+          Ir Blaster
+        </option>
+        <option
+          value="ignore"
+        >
+          Ignore action
+        </option>
+      </select>
+      <select
+        class="mb-3 modal-dropdown api-command form-select"
+      >
+        <option
+          value=""
+        >
+          Select 
+          command
+        </option>
+        <option
+          value="tv"
+        >
+          tv
+        </option>
+        <option
+          value="ac"
+        >
+          ac
+        </option>
+      </select>
+      <select
+        class="mb-3 modal-dropdown api-command form-select"
+      >
+        <option
+          value=""
+        >
+          Select 
+          key
+        </option>
+        <option
+          value="start"
+        >
+          start
+        </option>
+        <option
+          value="stop"
+        >
+          stop
+        </option>
+        <option
+          value="off"
+        >
+          off
+        </option>
+      </select>
+    </div>
+    <div
+      aria-label="Set On/Off command"
+      class="mx-auto btn-group"
+      role="group"
+    >
+      <input
+        autocomplete="off"
+        checked=""
+        class="btn-check"
+        id="show-on-rule"
+        name="radio"
+        type="radio"
+        value=""
+      />
+      <label
+        class="btn btn-secondary"
+        for="show-on-rule"
+        tabindex="0"
+      >
+        On Action
+      </label>
+      <input
+        autocomplete="off"
+        class="btn-check"
+        id="show-off-rule"
+        name="radio"
+        type="radio"
+        value=""
+      />
+      <label
+        class="btn btn-secondary"
+        for="show-off-rule"
+        tabindex="0"
+      >
+        Off Action
+      </label>
+    </div>
+  </div>
+  <div
+    class="mx-auto modal-footer"
+  >
+    <div
+      id="rule-buttons"
+    >
+      <button
+        class="m-1 btn btn-success"
+        type="button"
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`App matches snapshot when existing rule targets device 1`] = `
+<div
+  class="modal-content"
+>
+  <div
+    class="justify-content-between pb-0 modal-header"
+  >
+    <button
+      class="btn-close  btn btn-link"
+      style="visibility: hidden;"
+      type="button"
+    />
+    <h5
+      class="modal-title mx-auto"
+    >
+      API Target Rule
+    </h5>
+    <button
+      class="btn-close  btn btn-link"
+      type="button"
+    />
+  </div>
+  <div
+    class="d-flex flex-column mx-auto modal-body"
+  >
+    <button
+      class="mx-auto mb-3 btn btn-secondary btn-sm"
+      data-bs-target="#api-rule-modal-help"
+      data-bs-toggle="collapse"
+      type="button"
+    >
+      Help
+    </button>
+    <div
+      class="collapse"
+      id="api-rule-modal-help"
+    >
+      <p
+        class="text-center"
+      >
+        Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.
+      </p>
+      <p
+        class="text-center"
+      >
+        Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the "Target Node" dropdown.
+      </p>
+      <p
+        class="text-center"
+      >
+        The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.
+      </p>
+      <p
+        class="text-center"
+      >
+        <button
+          class="mx-auto mb-3 btn btn-secondary btn-sm"
+          data-bs-target="#api-rule-modal-examples"
+          data-bs-toggle="collapse"
+          type="button"
+        >
+          Examples
+        </button>
+      </p>
+      <div
+        class="collapse"
+        id="api-rule-modal-examples"
+      >
+        <ul>
+          <li>
+            Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the 
+            <b>
+              trigger_sensor
+            </b>
+             option.
+          </li>
+          <li>
+            The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and 
+            <b>
+              set_rule
+            </b>
+             command below.
+          </li>
+          <li>
+            Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an 
+            <b>
+              Ir Blaster
+            </b>
+            .
+          </li>
+        </ul>
+        <p
+          class="text-center"
+        >
+          <button
+            class="mx-auto mb-3 btn btn-secondary btn-sm"
+            data-bs-target="#api-rule-modal-help"
+            data-bs-toggle="collapse"
+            type="button"
+          >
+            Close
+          </button>
+        </p>
+      </div>
+    </div>
+    <div
+      class="mx-auto"
+    >
+      <select
+        class="mb-3 modal-dropdown api-command form-select"
+      >
+        <option
+          value=""
+        >
+          Select 
+          target instance
+        </option>
+        <option
+          value="device1"
+        >
+          Air Conditioner (api-target)
+        </option>
+        <option
+          value="sensor1"
+        >
+          Thermostat (si7021)
+        </option>
+        <option
+          value="ir_key"
+        >
+          Ir Blaster
+        </option>
+        <option
+          value="ignore"
+        >
+          Ignore action
+        </option>
+      </select>
+      <select
+        class="mb-3 modal-dropdown api-command form-select"
+      >
+        <option
+          value=""
+        >
+          Select 
+          command
+        </option>
+        <option
+          value="enable"
+        >
+          enable
+        </option>
+        <option
+          value="disable"
+        >
+          disable
+        </option>
+        <option
+          value="enable_in"
+        >
+          enable_in
+        </option>
+        <option
+          value="disable_in"
+        >
+          disable_in
+        </option>
+        <option
+          value="set_rule"
+        >
+          set_rule
+        </option>
+        <option
+          value="reset_rule"
+        >
+          reset_rule
+        </option>
+        <option
+          value="turn_on"
+        >
+          turn_on
+        </option>
+        <option
+          value="turn_off"
+        >
+          turn_off
+        </option>
+      </select>
+    </div>
+    <div
+      aria-label="Set On/Off command"
+      class="mx-auto btn-group"
+      role="group"
+    >
+      <input
+        autocomplete="off"
+        checked=""
+        class="btn-check"
+        id="show-on-rule"
+        name="radio"
+        type="radio"
+        value=""
+      />
+      <label
+        class="btn btn-secondary"
+        for="show-on-rule"
+        tabindex="0"
+      >
+        On Action
+      </label>
+      <input
+        autocomplete="off"
+        class="btn-check"
+        id="show-off-rule"
+        name="radio"
+        type="radio"
+        value=""
+      />
+      <label
+        class="btn btn-secondary"
+        for="show-off-rule"
+        tabindex="0"
+      >
+        Off Action
+      </label>
+    </div>
+  </div>
+  <div
+    class="mx-auto modal-footer"
+  >
+    <div
+      id="rule-buttons"
+    >
+      <button
+        class="m-1 btn btn-success"
+        type="button"
+      >
+        Submit
+      </button>
+    </div>
+  </div>
+</div>
+`;
