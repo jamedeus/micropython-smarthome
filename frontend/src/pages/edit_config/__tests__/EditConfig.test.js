@@ -97,9 +97,9 @@ describe('App', () => {
     it('highlights nickname field red if user enters duplicate', async () => {
         // Get device1 and device2 cards and nickname fields
         const device1Card = app.getByText('device1').parentElement.parentElement;
-        const device1Nickname = within(device1Card).getAllByRole('textbox')[0];
+        const device1Nickname = within(device1Card).getByLabelText('Nickname:');
         const device2Card = app.getByText('device1').parentElement.parentElement;
-        const device2Nickname = within(device2Card).getAllByRole('textbox')[0];
+        const device2Nickname = within(device2Card).getByLabelText('Nickname:');
 
         // Confirm neither nickname field has red highlight
         expect(device1Nickname.classList).not.toContain('is-invalid');
@@ -130,8 +130,8 @@ describe('App', () => {
 
     it('fades out device and sensor cards when they are deleted', async () => {
         // Get first device and sensor cards, confirm both start with fade-in class
-        const device1Card = app.getByText('device1').parentElement.parentElement.parentElement.parentElement;
-        const sensor1Card = app.getByText('sensor1').parentElement.parentElement.parentElement.parentElement;
+        const device1Card = document.getElementById('device1-card');
+        const sensor1Card = document.getElementById('sensor1-card');
         expect(device1Card.classList).toContain('fade-in-card');
         expect(sensor1Card.classList).toContain('fade-in-card');
 
@@ -146,17 +146,18 @@ describe('App', () => {
         expect(sensor1Card.classList).toContain('fade-out-card');
     });
 
-    // TODO refactor InputWrapper to allow targeting by label
     it('updates device IDs to keep them sequential when cards are deleted', async () => {
+        const getNicknameInput = (id) => {
+            return within(
+                document.getElementById(`${id}-params`)
+            ).getByLabelText('Nickname:');
+        };
+
         // Confirm nicknames of first 4 devices
-        let device1NicknameDiv = within(document.getElementById('device1-params')).getByText('Nickname:').parentElement;
-        expect(within(device1NicknameDiv).getByRole('textbox').value).toBe('Humidifier');
-        let device2NicknameDiv = within(document.getElementById('device2-params')).getByText('Nickname:').parentElement;
-        expect(within(device2NicknameDiv).getByRole('textbox').value).toBe('Heater');
-        let device3NicknameDiv = within(document.getElementById('device3-params')).getByText('Nickname:').parentElement;
-        expect(within(device3NicknameDiv).getByRole('textbox').value).toBe('Accent lights');
-        let device4NicknameDiv = within(document.getElementById('device4-params')).getByText('Nickname:').parentElement;
-        expect(within(device4NicknameDiv).getByRole('textbox').value).toBe('Computer screen');
+        expect(getNicknameInput('device1').value).toBe('Humidifier');
+        expect(getNicknameInput('device2').value).toBe('Heater');
+        expect(getNicknameInput('device3').value).toBe('Accent lights');
+        expect(getNicknameInput('device4').value).toBe('Computer screen');
 
         // Delete device2, wait for card to unmount
         await user.click(app.getByText('device2').parentElement.children[2]);
@@ -165,40 +166,36 @@ describe('App', () => {
         });
 
         // Confirm device1 nickname did not change
-        device1NicknameDiv = within(document.getElementById('device1-params')).getByText('Nickname:').parentElement;
-        expect(within(device1NicknameDiv).getByRole('textbox').value).toBe('Humidifier');
+        expect(getNicknameInput('device1').value).toBe('Humidifier');
         // Confirm device3 is now device2, device4 is now device3
-        device2NicknameDiv = within(document.getElementById('device2-params')).getByText('Nickname:').parentElement;
-        expect(within(device2NicknameDiv).getByRole('textbox').value).toBe('Accent lights');
-        device3NicknameDiv = within(document.getElementById('device3-params')).getByText('Nickname:').parentElement;
-        expect(within(device3NicknameDiv).getByRole('textbox').value).toBe('Computer screen');
+        expect(getNicknameInput('device2').value).toBe('Accent lights');
+        expect(getNicknameInput('device3').value).toBe('Computer screen');
     });
 
     it('updates sensor IDs to keep them sequential when cards are deleted', async () => {
-        // Confirm nicknames of first 4 sensors
-        let sensor1NicknameDiv = within(document.getElementById('sensor1-params')).getByText('Nickname:').parentElement;
-        expect(within(sensor1NicknameDiv).getByRole('textbox').value).toBe('Door switch');
-        let sensor2NicknameDiv = within(document.getElementById('sensor2-params')).getByText('Nickname:').parentElement;
-        expect(within(sensor2NicknameDiv).getByRole('textbox').value).toBe('Temp sensor');
-        let sensor3NicknameDiv = within(document.getElementById('sensor3-params')).getByText('Nickname:').parentElement;
-        expect(within(sensor3NicknameDiv).getByRole('textbox').value).toBe('Thermostat');
-        let sensor4NicknameDiv = within(document.getElementById('sensor4-params')).getByText('Nickname:').parentElement;
-        expect(within(sensor4NicknameDiv).getByRole('textbox').value).toBe('Computer activity');
+        const getNicknameInput = (id) => {
+            return within(
+                document.getElementById(`${id}-params`)
+            ).getByLabelText('Nickname:');
+        };
 
-        // Delete device2, wait for card to unmount
+        // Confirm nicknames of first 4 sensors
+        expect(getNicknameInput('sensor1').value).toBe('Door switch');
+        expect(getNicknameInput('sensor2').value).toBe('Temp sensor');
+        expect(getNicknameInput('sensor3').value).toBe('Thermostat');
+        expect(getNicknameInput('sensor4').value).toBe('Computer activity');
+
+        // Delete sensor2, wait for card to unmount
         await user.click(app.getByText('sensor2').parentElement.children[2]);
         await waitFor(() => {
             expect(app.queryByText('sensor6')).toBeNull();
         });
 
         // Confirm device1 nickname did not change
-        sensor1NicknameDiv = within(document.getElementById('sensor1-params')).getByText('Nickname:').parentElement;
-        expect(within(sensor1NicknameDiv).getByRole('textbox').value).toBe('Door switch');
+        expect(getNicknameInput('sensor1').value).toBe('Door switch');
         // Confirm sensor3 is now sensor2, sensor4 is now sensor3
-        sensor2NicknameDiv = within(document.getElementById('sensor2-params')).getByText('Nickname:').parentElement;
-        expect(within(sensor2NicknameDiv).getByRole('textbox').value).toBe('Thermostat');
-        sensor3NicknameDiv = within(document.getElementById('sensor3-params')).getByText('Nickname:').parentElement;
-        expect(within(sensor3NicknameDiv).getByRole('textbox').value).toBe('Computer activity');
+        expect(getNicknameInput('sensor2').value).toBe('Thermostat');
+        expect(getNicknameInput('sensor3').value).toBe('Computer activity');
     });
 
     it('changes pages when next and back buttons are clicked', async () => {
