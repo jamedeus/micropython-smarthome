@@ -11,7 +11,7 @@ import UploadModal, { uploadConfigFile } from 'modals/UploadModal';
 
 // Redirect back to overview page
 const returnToOverview = () => {
-    window.location.replace("/config_overview");
+    window.location.href = "/config_overview";
 };
 
 // Takes current config (state) object, compares with original from django

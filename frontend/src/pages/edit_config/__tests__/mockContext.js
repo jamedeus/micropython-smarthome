@@ -195,7 +195,7 @@ export const existingConfigContext = {
         "device7": {
             "_type": "api-target",
             "nickname": "Air conditioner",
-            "ip": "192.168.1.132",
+            "ip": "192.168.1.104",
             "default_rule": {
                 "on": [
                     "ir_key",
