@@ -217,7 +217,7 @@ const ApiTargetRuleModal = () => {
 
     // Takes current rule object (pre-fill dropdowns), dropdown option object
     // returned by getTargetNodeOptions, and callback that receives selection
-    showApiTargetRuleModal = (current_rule="", target_node_options, handleSubmit) => {
+    showApiTargetRuleModal = (current_rule, target_node_options, handleSubmit) => {
         // Update state to pre-select current rule in dropdowns
         let update = { ...selectedRule };
 
