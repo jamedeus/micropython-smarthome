@@ -11,6 +11,7 @@ const MetadataSection = () => {
         config,
         original_name,
         edit_existing,
+        setShowWifiToast,
         handleInputChange,
         highlightInvalid
     } = useContext(ConfigContext);
@@ -48,6 +49,12 @@ const MetadataSection = () => {
             input = '-' + input;
         }
         handleInputChange("metadata", "floor", input);
+    };
+
+    const saveWifiPrompt = () => {
+        if (config.wifi.ssid && config.wifi.password) {
+            setShowWifiToast(true);
+        }
     };
 
     return (
@@ -90,6 +97,7 @@ const MetadataSection = () => {
                         id="ssid"
                         value={config.wifi.ssid}
                         onChange={(e) => handleInputChange("wifi", "ssid", e.target.value)}
+                        onBlur={saveWifiPrompt}
                         isInvalid={(highlightInvalid && !config.wifi.ssid)}
                     />
                 </InputWrapper>
@@ -99,6 +107,7 @@ const MetadataSection = () => {
                         id="password"
                         value={config.wifi.password}
                         onChange={(e) => handleInputChange("wifi", "password", e.target.value)}
+                        onBlur={saveWifiPrompt}
                         isInvalid={(highlightInvalid && !config.wifi.password)}
                     />
                 </InputWrapper>

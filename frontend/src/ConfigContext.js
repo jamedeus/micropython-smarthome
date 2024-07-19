@@ -68,6 +68,9 @@ export const ConfigProvider = ({ children }) => {
     // Get function that returns metadata for a given device/sensor type
     const { get_instance_metadata } = useContext(MetadataContext);
 
+    // Create state to control SaveRulesToast visibility
+    const [showWifiToast, setShowWifiToast] = useState(false);
+
     // Create state to control card delete animations
     // Card matching ID fades out, cards in category with higher index slide up
     const [deleteing, setDeleteing] = useState({id: '', category: '', index: ''});
@@ -380,6 +383,8 @@ export const ConfigProvider = ({ children }) => {
                 target_node_ip,
                 edit_existing,
                 api_target_options,
+                showWifiToast,
+                setShowWifiToast,
                 getKey,
                 highlightInvalid,
                 setHighlightInvalid,
