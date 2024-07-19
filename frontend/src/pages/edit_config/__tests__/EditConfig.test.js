@@ -402,4 +402,68 @@ describe('EditConfig', () => {
             headers: postHeaders
         });
     });
+
+    it('converts thermostat schedule rules when units change', async () => {
+        // Change sensor2 (dht22) units to celsius
+        const sensor2Card = app.getByText('sensor2').parentElement.parentElement;
+        await user.selectOptions(within(sensor2Card).getByLabelText('Units:'), 'celsius');
+
+        // Go to page3, click submit, confirm schedule rules in payload were converted
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByText('Submit'));
+        expect(global.fetch).toHaveBeenCalledWith('generate_config_file/True', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...existingConfigContext.config,
+                sensor2: {
+                    ...existingConfigContext.config.sensor2,
+                    units: 'celsius',
+                    default_rule: 23.3,
+                    schedule: {
+                        morning: 20,
+                        relax: 22.2
+                    }
+                }
+            }),
+            headers: postHeaders
+        });
+    });
+
+    it('removes targets from config file when boxes are unchecked', async () => {
+        // Uncheck IR Blaster TV target, check AC target
+        await user.click(app.getByText('TV (Samsung)'));
+        await user.click(app.getByText('AC (Whynter)'));
+
+        // Go to page2, uncheck first target
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        const sensor1Targets = app.container.querySelectorAll('.card-body')[0];
+        await user.click(within(sensor1Targets).getByText('Bias lights'));
+
+        // Go to page3, click submit, confirm payload contains correct config
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByText('Submit'));
+        expect(global.fetch).toHaveBeenCalledWith('generate_config_file/True', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...existingConfigContext.config,
+                ir_blaster: {
+                    ...existingConfigContext.config.ir_blaster,
+                    target: [
+                        'ac'
+                    ]
+                },
+                sensor1: {
+                    ...existingConfigContext.config.sensor1,
+                    targets: [
+                        'device3',
+                        'device4',
+                        'device6',
+                        'device9'
+                    ]
+                }
+            }),
+            headers: postHeaders
+        });
+    });
 });
