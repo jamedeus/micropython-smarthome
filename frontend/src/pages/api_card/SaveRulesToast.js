@@ -15,10 +15,14 @@ const SaveRulesToast = () => {
         setShowRulesToast(false);
     };
 
+    const closeToast = () => {
+        setShowRulesToast(false);
+    };
+
     return (
         <Toast
             show={showRulesToast}
-            onClose={() => setShowRulesToast(false)}
+            onClose={closeToast}
             autohide
             delay={10000}
             className="fixed-bottom text-center mx-auto mb-3"
@@ -37,7 +41,7 @@ const SaveRulesToast = () => {
                     variant="secondary"
                     size="sm"
                     className="mx-2 mt-2"
-                    onClick={() => setShowRulesToast(false)}
+                    onClick={closeToast}
                 >
                     No
                 </Button>

@@ -20,12 +20,16 @@ const SaveWifiToast = () => {
         setShowWifiToast(false);
     };
 
+    const closeToast = () => {
+        setShowWifiToast(false);
+    };
+
     return (
         <Toast
             show={showWifiToast}
-            onClose={() => setShowWifiToast(false)}
+            onClose={closeToast}
             autohide
-            delay={10000}
+            delay={60000}
             className="fixed-bottom text-center mx-auto mb-3"
         >
             <Toast.Body>
@@ -43,7 +47,7 @@ const SaveWifiToast = () => {
                     variant="secondary"
                     size="sm"
                     className="mx-2 mt-2"
-                    onClick={() => setShowWifiToast(false)}
+                    onClick={closeToast}
                 >
                     No
                 </Button>

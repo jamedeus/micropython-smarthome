@@ -33,6 +33,57 @@ describe('NewConfig', () => {
         window.location.href = '/new_config';
     });
 
+    it('opens SaveWifiToast when wifi credentials are entered', async () => {
+        // Clear ssid and password fields, confirm toast not shown
+        await user.clear(app.getByLabelText('SSID:'));
+        await user.clear(app.getByLabelText('Password:'));
+        expect(app.queryByText(/Save default wifi credentials?/)).toBeNull();
+
+        // Enter ssid, remove focus from input, confirm not shown
+        await user.type(app.getByLabelText('SSID:'), 'mywifi');
+        await user.click(app.getByText('Wifi'));
+        expect(app.queryByText(/Save default wifi credentials?/)).toBeNull();
+
+        // Enter password, remove focus from input, confirm toast appeared
+        await user.type(app.getByLabelText('Password:'), 'hunter2');
+        await user.click(app.getByText('Wifi'));
+        expect(app.queryByText(/Save default wifi credentials?/)).not.toBeNull();
+
+        // Click "No" button, confirm toast disappears
+        await user.click(app.getByRole('button', { name: 'No' }));
+        expect(app.queryByText(/Save default wifi credentials?/)).toBeNull();
+    });
+
+    it('sends correct request when user clicks SaveWifiToast Yes button', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve('Default credentials set')
+        }));
+
+        // Fill out wifi section
+        await user.clear(app.getByLabelText('SSID:'));
+        await user.type(app.getByLabelText('SSID:'), 'mywifi');
+        await user.clear(app.getByLabelText('Password:'));
+        await user.type(app.getByLabelText('Password:'), 'hunter2');
+
+        // Remove focus from input, confirm SaveWifiToast appeared
+        await user.click(app.getByText('Wifi'));
+        expect(app.queryByText(/Save default wifi credentials?/)).not.toBeNull();
+
+        // Click Yes button, confirm toast closed + correct request sent
+        await user.click(app.getByRole('button', { name: 'Yes' }));
+        expect(app.queryByText(/Save default wifi credentials?/)).toBeNull();
+        expect(global.fetch).toHaveBeenCalledWith('/set_default_credentials', {
+            method: 'POST',
+            body: JSON.stringify({
+                "ssid": "mywifi",
+                "password": "hunter2"
+            }),
+            headers: postHeaders
+        });
+    });
+
     it('sends correct request when a new config is created', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({

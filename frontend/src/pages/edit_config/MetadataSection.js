@@ -51,6 +51,7 @@ const MetadataSection = () => {
         handleInputChange("metadata", "floor", input);
     };
 
+    // Show SaveWifiToast if both fields are populated when focus leaves
     const saveWifiPrompt = () => {
         if (config.wifi.ssid && config.wifi.password) {
             setShowWifiToast(true);
