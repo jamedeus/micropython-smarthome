@@ -73,7 +73,6 @@ const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
     return (
         <SliderRuleWrapper
             ruleDetails={ruleDetails}
-            setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule})}
             setRuleDetails={setRuleDetails}
             defaultRangeRule={average(limits[0], limits[1])}
         >
@@ -132,7 +131,6 @@ const RuleInput = ({ ruleDetails, setRuleDetails, instance, metadata }) => {
         return (
             <SliderRuleWrapper
                 ruleDetails={ruleDetails}
-                setRule={setRule}
                 setRuleDetails={setRuleDetails}
                 defaultRangeRule={defaultRangeRule}
             >
@@ -169,7 +167,6 @@ const RuleInput = ({ ruleDetails, setRuleDetails, instance, metadata }) => {
             return (
                 <SliderRuleWrapper
                     ruleDetails={ruleDetails}
-                    setRule={setRule}
                     setRuleDetails={setRuleDetails}
                     defaultRangeRule={average(
                         metadata.rule_limits[0],

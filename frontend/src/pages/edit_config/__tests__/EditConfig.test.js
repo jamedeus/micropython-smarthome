@@ -336,4 +336,70 @@ describe('EditConfig', () => {
         expect(global.fetch).not.toHaveBeenCalled();
         expect(app.container.querySelector('.is-invalid')).not.toBeNull();
     });
+
+    it('generates the correct config when schedule rule are modified', async () => {
+        // Click next twice, confirm page3 is visible
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        expect(app.queryByText('Add schedule rules (optional)')).not.toBeNull();
+
+        // Change sensor5 (motion sensor) first rule to enabled
+        const sensor5Rules = app.getByText('Motion (pir)').parentElement;
+        await user.click(within(sensor5Rules).getByText('10'));
+        // await user.click(app.container.querySelectorAll('.form-control')[1]);
+        await user.click(app.getAllByRole('checkbox')[0]);
+        await user.selectOptions(app.getByRole('combobox'), 'enabled');
+        await user.type(app.getByRole('combobox'), '{enter}');
+
+        // Open device7 (Api Target) rule modal
+        await user.click(app.getByText('Click to edit'));
+        // Change on and off actions to ignore, click submit
+        await user.selectOptions(app.getAllByRole('combobox')[0], 'ignore');
+        await user.click(app.getByText('Off Action'));
+        await user.selectOptions(app.getAllByRole('combobox')[0], 'ignore');
+        await user.click(within(
+            app.getByText('API Target Rule').parentElement.parentElement
+        ).getByRole('button', { name: 'Submit' }));
+
+        // Delete device9 (TP Link bulb) second rule (relax keyword)
+        const device9Rules = app.getByText('Lamp (bulb)').parentElement;
+        await user.click(within(device9Rules).getAllByRole('button')[1]);
+
+        // Click submit button, confirm payload contains modified rules
+        await user.click(app.getByText('Submit'));
+        expect(global.fetch).toHaveBeenCalledWith('generate_config_file/True', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...existingConfigContext.config,
+                sensor5: {
+                    ...existingConfigContext.config.sensor5,
+                    schedule: {
+                        morning: 'enabled',
+                        sleep: 1
+                    }
+                },
+                device7: {
+                    ...existingConfigContext.config.device7,
+                    schedule: {
+                        morning: {
+                            "on": [
+                                "ignore"
+                            ],
+                            "off": [
+                                "ignore"
+                            ]
+                        }
+                    }
+                },
+                device9: {
+                    ...existingConfigContext.config.device9,
+                    schedule: {
+                        morning: "fade/100/900",
+                        sleep: "disabled"
+                    }
+                }
+            }),
+            headers: postHeaders
+        });
+    });
 });
