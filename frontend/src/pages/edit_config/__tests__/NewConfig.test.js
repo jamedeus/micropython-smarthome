@@ -54,6 +54,48 @@ describe('NewConfig', () => {
         expect(app.queryByText(/Save default wifi credentials?/)).toBeNull();
     });
 
+    it('formats IP address field as user types', async () => {
+        // Add Wled device
+        await user.click(app.getByRole('button', { name: 'Add Device' }));
+        const device1Card = app.getByText('device1').parentElement.parentElement;
+        await user.selectOptions(within(device1Card).getByRole('combobox'), 'wled');
+
+        // Type an IP address with no periods into IP field, confirm formatted
+        await user.type(app.getByLabelText('IP:'), '123123123123');
+        expect(app.getByLabelText('IP:').value).toBe('123.123.123.123');
+    });
+
+    it('validates URI field when focus leaves', async () => {
+        // Add HttpGet device
+        await user.click(app.getByRole('button', { name: 'Add Device' }));
+        const device1Card = app.getByText('device1').parentElement.parentElement;
+        await user.selectOptions(within(device1Card).getByRole('combobox'), 'http-get');
+
+        // Type invalid URI in URI field, remove focus, confirm highlighted red
+        await user.type(app.getByLabelText('URI:'), 'hostname');
+        await user.click(app.getByText('device1'));
+        expect(app.getByLabelText('URI:').classList).toContain('is-invalid');
+
+        // Add extension to URI field, confirm red highlight removed
+        await user.type(app.getByLabelText('URI:'), '.local');
+        expect(app.getByLabelText('URI:').classList).not.toContain('is-invalid');
+    });
+
+    it('validates thermostat tolerance field as user types', async () => {
+        // Add si7021 temperature sensor
+        await user.click(app.getByRole('button', { name: 'Add Sensor' }));
+        const sensor1Card = app.getByText('sensor1').parentElement.parentElement;
+        await user.selectOptions(within(sensor1Card).getByRole('combobox'), 'si7021');
+
+        // Type a non-integer value into tolerance field, confirm still empty
+        await user.type(app.getByLabelText('Tolerance:'), 'low');
+        expect(app.getByLabelText('Tolerance:').value).toBe('');
+
+        // Type a value ending with period, confirm red highlight added
+        await user.type(app.getByLabelText('Tolerance:'), '1.');
+        expect(app.getByLabelText('Tolerance:').classList).toContain('is-invalid');
+    });
+
     it('sends correct request when user clicks SaveWifiToast Yes button', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
@@ -116,6 +158,8 @@ describe('NewConfig', () => {
         await user.selectOptions(within(sensor1Card).getByLabelText('Mode:'), 'cool');
         await user.selectOptions(within(sensor1Card).getByLabelText('Units:'), 'fahrenheit');
         await user.type(within(sensor1Card).getByLabelText('Tolerance:'), '1');
+        // Set default_rule to 71.1 by clicking minus button (can't move slider)
+        user.click(app.container.querySelector('.bi-dash-lg'));
 
         // Add HttpGet device
         await user.click(app.getByRole('button', { name: 'Add Device' }));
@@ -154,7 +198,7 @@ describe('NewConfig', () => {
         await user.selectOptions(app.getAllByLabelText('Keyword')[0], 'sleep');
         await user.type(app.getAllByLabelText('Keyword')[0], '{enter}');
 
-        // Add a keyword rule for sensor1 (sleep: 70.6)
+        // Add a keyword rule for sensor1 (sleep: 70.1)
         await user.click(within(
             app.getByText('Thermostat (si7021)').parentElement
         ).getByRole('button', { name: 'Add Rule' }));
@@ -163,7 +207,7 @@ describe('NewConfig', () => {
         await user.selectOptions(app.getAllByLabelText('Keyword')[0], 'sleep');
         await user.type(app.getAllByLabelText('Keyword')[0], '{enter}');
         // Open rule field, press minus button next to slider twice
-        await user.click(app.getByText('71.6'));
+        await user.click(app.getByText('71.1'));
         await user.click(within(
             document.querySelector('.schedule-rule-param-popup')
         ).getAllByRole('button')[0]);
@@ -204,11 +248,11 @@ describe('NewConfig', () => {
                     "_type": "si7021",
                     "nickname": "Thermostat",
                     "units": "fahrenheit",
-                    "default_rule": 71.6,
+                    "default_rule": 71.1,
                     "mode": "cool",
                     "tolerance": 1,
                     "schedule": {
-                        "sleep": 70.6
+                        "sleep": 70.1
                     },
                     "targets": [
                         "device1"

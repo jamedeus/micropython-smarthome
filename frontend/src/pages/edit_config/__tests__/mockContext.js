@@ -87,7 +87,8 @@ export const existingConfigContext = {
             "pin": "27",
             "schedule": {
                 "morning": 68,
-                "relax": 72
+                "relax": 72,
+                "12:00": "disabled"
             },
             "targets": [
                 "device7",

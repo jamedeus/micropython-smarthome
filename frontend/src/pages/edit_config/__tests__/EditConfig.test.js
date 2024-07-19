@@ -54,6 +54,20 @@ describe('EditConfig', () => {
         expect(window.location.href).toBe('/config_overview');
     });
 
+    it('warns user before redirecting to overview if schedule rules were changed', async () => {
+        // Go to page3, delete a schedule rule
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.container.querySelectorAll('.btn-danger')[0]);
+
+        // Click back button, confirm warning modal appeared, confirm did not redirect
+        await user.click(app.getByRole('button', { name: 'Back' }));
+        await user.click(app.getByRole('button', { name: 'Back' }));
+        await user.click(app.getByRole('button', { name: 'Back' }));
+        expect(app.queryByText(/Your changes will be lost/)).not.toBeNull();
+        expect(window.location.href).not.toBe('/config_overview');
+    });
+
     it('shows/hides IR blaster section when "Add IR Blaster" button is clicked', async () => {
         // Get IR Blaster section, confirm collapse is open
         const irBlaster = app.getByText('IR Blaster').parentElement.parentElement.parentElement;
@@ -337,6 +351,97 @@ describe('EditConfig', () => {
         expect(app.container.querySelector('.is-invalid')).not.toBeNull();
     });
 
+    it('shows an alert when submit button is clicked if unexpected error received', async () => {
+        // Mock fetch function to simulate unexpected error, mock alert function
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 418,
+            text: () => Promise.resolve("Unexpected error")
+        }));
+        global.alert = jest.fn();
+
+        // Click next twice, confirm page3 is visible
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        expect(app.queryByText('Add schedule rules (optional)')).not.toBeNull();
+
+        // Click submit, confirm alert was shown with text from response
+        await user.click(app.getByRole('button', { name: 'Submit' }));
+        expect(global.alert).toHaveBeenCalledWith("Unexpected error");
+
+        // Confirm did NOT redirect to overview
+        expect(window.location.href).not.toBe('/config_overview');
+    });
+
+    it('generates the correct config when default rules are modified', async () => {
+        // Change sensor1 default_rule to disabled
+        await user.selectOptions(within(
+            app.getByText('sensor1').parentElement.parentElement
+        ).getByLabelText('Default Rule:'), 'disabled');
+
+        // Change sensor2 default_rule to 73.5
+        await user.click(app.getByText('sensor2').parentElement.parentElement
+            .querySelector('.bi-dash-lg'));
+
+        // Change sensor5 default_rule to 9.5
+        await user.click(app.getByText('sensor5').parentElement.parentElement
+            .querySelector('.bi-dash-lg'));
+
+        // Change device3 default_rule to 766
+        await user.click(app.getByText('device3').parentElement.parentElement
+            .querySelector('.bi-dash-lg'));
+
+        // Change device7 (api-target) default_rule to ignore (both actions)
+        await user.click(app.getByText('Set rule'));
+        // Change on and off actions to ignore, click submit
+        const modal = app.getByText('API Target Rule').parentElement.parentElement
+        await user.selectOptions(within(modal).getAllByRole('combobox')[0], 'ignore');
+        await user.click(app.getByText('Off Action'));
+        await user.selectOptions(within(modal).getAllByRole('combobox')[0], 'ignore');
+        await user.click(within(modal).getByRole('button', { name: 'Submit' }));
+
+        // Go to page3, click submit button
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Submit' }));
+
+        // Confirm correct config was submitted
+        expect(global.fetch).toHaveBeenCalledWith('generate_config_file/True', {
+            method: 'POST',
+            body: JSON.stringify({
+                ...existingConfigContext.config,
+                sensor1: {
+                    ...existingConfigContext.config.sensor1,
+                    default_rule: 'disabled'
+                },
+                sensor2: {
+                    ...existingConfigContext.config.sensor2,
+                    default_rule: 73.5
+                },
+                sensor5: {
+                    ...existingConfigContext.config.sensor5,
+                    default_rule: 9.5
+                },
+                device3: {
+                    ...existingConfigContext.config.device3,
+                    default_rule: 766
+                },
+                device7: {
+                    ...existingConfigContext.config.device7,
+                    default_rule: {
+                        "on": [
+                            "ignore"
+                        ],
+                        "off": [
+                            "ignore"
+                        ]
+                    }
+                }
+            }),
+            headers: postHeaders
+        });
+    });
+
     it('generates the correct config when schedule rule are modified', async () => {
         // Click next twice, confirm page3 is visible
         await user.click(app.getByRole('button', { name: 'Next' }));
@@ -422,7 +527,8 @@ describe('EditConfig', () => {
                     default_rule: 23.3,
                     schedule: {
                         morning: 20,
-                        relax: 22.2
+                        relax: 22.2,
+                        '12:00': 'disabled'
                     }
                 }
             }),
