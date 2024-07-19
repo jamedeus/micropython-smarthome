@@ -48,7 +48,7 @@ test_frontend:
 # Run react unit tests
 test_react:
   stage: test
-  image: node:22-bullseye-slim
+  image: node:22.4.0-bookworm-slim
   tags:
     - nas
     - docker
