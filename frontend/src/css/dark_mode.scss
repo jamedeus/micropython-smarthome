@@ -169,6 +169,11 @@
             border-color: #212529 !important;
         }
 
+        /* ApiCard card buttons (trigger, power, dropdown) */
+        .btn-outline-secondary {
+            border: 1px solid #dee2e617 !important;
+        }
+
         /* Toasts */
         $toast-background-color: #394047cc;
 

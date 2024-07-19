@@ -50,11 +50,6 @@
     box-shadow: none !important;
 }
 
-/* Don't remove outline from disabled trigger button */
-button.trigger-button, button.trigger-button:disabled {
-    border: 1px solid #6c757d !important;
-}
-
 /* Device card top-left corner button */
 .power-button {
     background-image: radial-gradient(circle, #ffc107 5%, white 55%);
@@ -72,23 +67,13 @@ button.trigger-button, button.trigger-button:disabled {
 /* Dark mode button colors */
 @media (prefers-color-scheme: dark) {
     :root {
-        .menu-button {
-            border: 1px solid #dee2e617 !important;
-        }
-
         .trigger-button, .trigger-button:disabled {
             background-image: radial-gradient(circle, #0550B8 5%, transparent 55%);
-
-            /* Add border for visibility when not filled in (condition not met) */
-            border: 1px solid #dee2e617 !important;
         }
 
         .power-button {
             background-image: radial-gradient(circle, #ffc107 5%, transparent 55%);
             /*     border: 2px solid #2B2E2F !important; */
-
-            /* Add border for visibility when not filled in (device turned off) */
-            border: 1px solid #dee2e617 !important;
         }
 
         .bi-lightbulb, .bi-exclamation-lg {

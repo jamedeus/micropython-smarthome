@@ -15,11 +15,7 @@
 /* Grey out disabled buttons */
 .btn-primary:disabled {
     background-color: #4b5157;
-}
-
-/* Remove border around disabled buttons */
-.btn:disabled, .btn:active {
-    border-color: transparent !important
+    border-color: transparent !important;
 }
 
 /* Section backgrounds (existing nodes, schedule keywords) */
@@ -186,6 +182,9 @@ td.schedule-rule-field {
 /* Only used on unable to connect page */
 .btn-adaptive {
     background-color: #cccccc !important;
+}
+.btn-adaptive:disabled {
+    border-color: transparent !important;
 }
 @media (prefers-color-scheme: dark) {
     .btn-adaptive {
