@@ -279,13 +279,15 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
 
             {/* Edit rule popup */}
             <PopupDiv show={visible} onClose={closePopup}>
-                <Form.Label>Rule</Form.Label>
-                <RuleInput
-                    ruleDetails={ruleDetails}
-                    setRuleDetails={setRuleDetails}
-                    instance={instance}
-                    metadata={metadata}
-                />
+                <Form.Group controlId="rule-input">
+                    <Form.Label>Rule</Form.Label>
+                    <RuleInput
+                        ruleDetails={ruleDetails}
+                        setRuleDetails={setRuleDetails}
+                        instance={instance}
+                        metadata={metadata}
+                    />
+                </Form.Group>
             </PopupDiv>
         </div>
     );
