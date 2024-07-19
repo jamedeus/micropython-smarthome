@@ -496,4 +496,64 @@ describe('App', () => {
         await user.click(within(dropdown).getByText('Start Fade'));
         expect(app.queryByText('Duration (seconds)')).not.toBeNull();
     });
+
+    it('requests a status update every 5 seconds', async () => {
+        // Mock fetch function to return simulated status update
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockContext.status)
+        }));
+
+        // Confirm fetch has not been called
+        expect(global.fetch).not.toHaveBeenCalled();
+
+        // Wait 5 seconds, confirm fetched status update
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith('/get_status/Thermostat');
+        }, { timeout: 5500 });
+    });
+
+    it('shows error modal if status update fails', async () => {
+        // Mock fetch function to simulate offline node
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 502,
+            json: () => Promise.resolve("Error: Unable to connect.")
+        }));
+
+        // Wait 5 seconds, confirm fetched status update
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith('/get_status/Thermostat');
+        }, { timeout: 5500 });
+
+        // Confirm error modal is visible
+        expect(app.queryByText('Attempting to reestablish connection...')).not.toBeNull();
+    });
+
+    it('hides error modal once able to update status', async () => {
+        // Mock fetch function to simulate offline node
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 502,
+            json: () => Promise.resolve("Error: Unable to connect.")
+        }));
+
+        // Wait 5 seconds, confirm error modal is visible
+        await waitFor(() => {
+            expect(app.queryByText('Attempting to reestablish connection...')).not.toBeNull();
+        }, { timeout: 5500 });
+
+        // Mock fetch function to simualte node coming back online
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(mockContext.status)
+        }));
+
+        // Wait 5 seconds, confirm error modal disappeared
+        await waitFor(() => {
+            expect(app.queryByText('Attempting to reestablish connection...')).toBeNull();
+        }, { timeout: 5500 });
+    });
 });

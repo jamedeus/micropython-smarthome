@@ -22,7 +22,7 @@ export const UpdateStatus = () => {
         try {
             const response = await fetch(`/get_status/${status.metadata.id}`);
             if (response.status !== 200) {
-                const error = await response.text();
+                const error = await response.json();
                 throw new Error(`${error} (status ${response.status})`);
             }
             const data = await response.json();
