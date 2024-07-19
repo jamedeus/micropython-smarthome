@@ -76,11 +76,15 @@ const TempHistoryChart = ({ visible, setVisible, tempHistory, tempHistoryLabels 
         }
     };
 
+    const closeModal = () => {
+        setVisible(false);
+    };
+
     return (
-        <Modal show={visible} onHide={() => setVisible(false)} centered size="lg">
+        <Modal show={visible} onHide={closeModal} centered size="lg">
             <HeaderWithCloseButton
                 title="Temperature History"
-                onClose={() => setVisible(false)}
+                onClose={closeModal}
                 size="3"
             />
 

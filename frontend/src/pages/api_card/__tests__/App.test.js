@@ -363,6 +363,24 @@ describe('App', () => {
         });
     });
 
+    it('hides new rule field when delete button is clicked', async () => {
+        const card = app.getByText('Accent lights').parentElement.parentElement;
+        const scheduleRulesButton = within(card).getByText('Schedule rules');
+        const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
+        const addRule = rulesTable.parentElement.children[1].children[0];
+
+        // Open schedule rules table, click add rule button
+        await user.click(scheduleRulesButton);
+        await user.click(addRule);
+        const newRuleRow = rulesTable.children[1].children[3];
+        expect(newRuleRow.classList).not.toContain('d-none');
+
+        // Click delete button, confirm new rule row is hidden, request not made
+        await user.click(within(newRuleRow).getByRole('button'));
+        expect(newRuleRow.classList).toContain('d-none');
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
     it('sends correct payload when user clicks yes in save rules toast', async () => {
         global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
 
@@ -495,6 +513,47 @@ describe('App', () => {
         await user.click(dropdown.children[0]);
         await user.click(within(dropdown).getByText('Start Fade'));
         expect(app.queryByText('Duration (seconds)')).not.toBeNull();
+    });
+
+    it('highlights correct devices when sensor Show triggers option clicked', async () => {
+        // Get sensor2 card, device7 card, device8 card
+        const sensor2 = app.getByText('Temp sensor').parentElement.parentElement;
+        const device7 = app.getByText('Air Conditioner').parentElement.parentElement;
+        const device8 = app.getByText('Fan').parentElement.parentElement;
+
+        // Confirm device cards do not have highlight class
+        expect(device7.parentElement.classList).not.toContain('highlight-enter');
+        expect(device8.parentElement.classList).not.toContain('highlight-enter');
+        expect(app.container.querySelectorAll('.highlight-enter').length).toBe(0);
+
+        // Click sensor2 "Show targets" dropdown option
+        const dropdown = sensor2.children[0].children[2];
+        await user.click(dropdown.children[0]);
+        await user.click(within(dropdown).getByText('Show targets'));
+
+        // Confirm both target devices have highlight class, but no other cards
+        await waitFor(() => {
+            expect(device7.parentElement.classList).toContain('highlight-enter');
+            expect(device8.parentElement.classList).toContain('highlight-enter');
+            expect(app.container.querySelectorAll('.highlight-enter').length).toBe(2);
+            expect(app.container.querySelectorAll('.highlight-enter-done').length).toBe(0);
+        });
+
+        // Wait for highlight animation to complete
+        await waitFor(() => {
+            expect(device7.parentElement.classList).toContain('highlight-enter-done');
+            expect(device8.parentElement.classList).toContain('highlight-enter-done');
+            expect(app.container.querySelectorAll('.highlight-enter').length).toBe(0);
+            expect(app.container.querySelectorAll('.highlight-enter-done').length).toBe(2);
+        });
+
+        // Click anywhere in page, confirm highlight fades out
+        await user.click(app.getByText('Motion'));
+        expect(device7.parentElement.classList).not.toContain('highlight-enter');
+        expect(device8.parentElement.classList).not.toContain('highlight-enter');
+        expect(device7.parentElement.classList).toContain('highlight-exit');
+        expect(device8.parentElement.classList).toContain('highlight-exit');
+        expect(app.container.querySelectorAll('.highlight-exit').length).toBe(2);
     });
 
     it('shows ApiTargetRuleModal when "Change rule" dropdown option clicked', async () => {

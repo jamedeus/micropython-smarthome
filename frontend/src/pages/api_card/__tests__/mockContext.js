@@ -205,7 +205,7 @@ export const mockContext = {
                     "device7",
                     "device8"
                 ],
-                "nickname": "Motion",
+                "nickname": "Temp sensor",
                 "condition_met": true,
                 "default_rule": 74,
                 "current_rule": 70,
@@ -225,7 +225,7 @@ export const mockContext = {
                     "device2",
                     "device1"
                 ],
-                "nickname": "Motion",
+                "nickname": "Thermostat",
                 "condition_met": false,
                 "default_rule": 20,
                 "current_rule": 20,
