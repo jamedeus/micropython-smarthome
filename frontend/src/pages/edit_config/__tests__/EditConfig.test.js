@@ -7,7 +7,7 @@ import { existingConfigContext, apiTargetOptionsContext } from './mockContext';
 import { edit_config_metadata } from 'src/testUtils/mockMetadataContext';
 import { postHeaders } from 'src/testUtils/headers';
 
-describe('App', () => {
+describe('EditConfig', () => {
     let app, user;
 
     beforeAll(() => {
@@ -317,5 +317,23 @@ describe('App', () => {
         await waitFor(() => {
             expect(window.location.href).toBe('/config_overview');
         }, { timeout: 1500 });
+    });
+
+    it('refuses to create config with blank schedule rules', async () => {
+        // Click next twice, confirm page3 is visible
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        expect(app.queryByText('Add schedule rules (optional)')).not.toBeNull();
+
+        // Confirm invalid highlight is not present
+        expect(app.container.querySelector('.is-invalid')).toBeNull();
+
+        // Add a schedule rule but don't enter timestamp
+        await user.click(app.getAllByRole('button', { name: 'Add Rule'})[0]);
+
+        // Click submit, confirm no request was made, invalid highlight was added
+        await user.click(app.getByRole('button', { name: 'Submit' }));
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(app.container.querySelector('.is-invalid')).not.toBeNull();
     });
 });

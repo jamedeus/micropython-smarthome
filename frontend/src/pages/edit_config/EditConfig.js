@@ -186,7 +186,7 @@ const EditConfig = () => {
         const target_filename = friendlyNameToFilename(config.metadata.id);
         // Close error modal, delete existing file, resubmit
         hideErrorModal();
-        await send_post_request("delete_config", `${target_filename}.json`);
+        await send_post_request("delete_config", target_filename);
         await submitButton();
     };
 

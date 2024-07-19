@@ -7,7 +7,7 @@ import { newConfigContext, apiTargetOptionsContext } from './mockContext';
 import { edit_config_metadata } from 'src/testUtils/mockMetadataContext';
 import { postHeaders } from 'src/testUtils/headers';
 
-describe('App', () => {
+describe('NewConfig', () => {
     let app, user;
 
     beforeAll(() => {
@@ -342,5 +342,96 @@ describe('App', () => {
 
         // Confirm redirected to overview page
         expect(window.location.href).toBe('/config_overview');
+    });
+
+    it('warns user before overwriting an existing config with the same name', async () => {
+        // Mock fetch function to simulate an existing config with the same name
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 409
+        }));
+
+        // Fill out first page
+        await user.type(app.getAllByRole('textbox')[0], 'Basement');
+        await user.type(app.getByLabelText('Location:'), 'Under staircase');
+        await user.type(app.getByLabelText('Floor:'), '-1');
+        await user.clear(app.getByLabelText('SSID:'));
+        await user.type(app.getByLabelText('SSID:'), 'mywifi');
+        await user.clear(app.getByLabelText('Password:'));
+        await user.type(app.getByLabelText('Password:'), 'hunter2');
+        jest.clearAllMocks();
+
+        // Go to page 3, click submit
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Submit' }));
+
+        // Confirm correct request was went
+        expect(global.fetch).toHaveBeenCalledWith('generate_config_file', {
+            method: 'POST',
+            body: JSON.stringify({
+                "metadata": {
+                    "id": "Basement",
+                    "floor": "-1",
+                    "location": "Under staircase",
+                    "schedule_keywords": {
+                        "morning": "08:00",
+                        "sleep": "23:00",
+                        "sunrise": "06:00",
+                        "sunset": "18:00",
+                        "relax": "20:00"
+                    }
+                },
+                "wifi": {
+                    "ssid": "mywifi",
+                    "password": "hunter2"
+                }
+            }),
+            headers: postHeaders
+        });
+
+        // Confirm did NOT redirect to overview, duplicate warning modal visible
+        expect(window.location.href).not.toBe('/config_overview');
+        expect(app.queryByText('Duplicate Warning')).not.toBeNull();
+
+        // Reset, mock fetch function to simulate successful request
+        jest.clearAllMocks();
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200
+        }));
+
+        // Click overwrite button, confirm delete_config request was sent
+        await user.click(app.getByRole('button', { name: 'Overwrite' }));
+        expect(global.fetch).toHaveBeenCalledWith('delete_config', {
+            method: 'POST',
+            body: JSON.stringify('basement.json'),
+            headers: postHeaders
+        });
+
+        // Confirm config was submitted again, page redirected to overview
+        expect(global.fetch).toHaveBeenCalledWith('generate_config_file', {
+            method: 'POST',
+            body: JSON.stringify({
+                "metadata": {
+                    "id": "Basement",
+                    "floor": "-1",
+                    "location": "Under staircase",
+                    "schedule_keywords": {
+                        "morning": "08:00",
+                        "sleep": "23:00",
+                        "sunrise": "06:00",
+                        "sunset": "18:00",
+                        "relax": "20:00"
+                    }
+                },
+                "wifi": {
+                    "ssid": "mywifi",
+                    "password": "hunter2"
+                }
+            }),
+            headers: postHeaders
+        });
+        expect(app.queryByText('Duplicate Warning')).toBeNull();
     });
 });
