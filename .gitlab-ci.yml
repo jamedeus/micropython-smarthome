@@ -54,7 +54,7 @@ test_react:
     - docker
   before_script:
     - cd frontend
-    - npm install -D
+    - npm ci
     - cp /root/.npm/_logs/* .
     - cat /root/.npm/_logs/*
   script:
