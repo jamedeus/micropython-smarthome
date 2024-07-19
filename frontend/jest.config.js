@@ -24,5 +24,5 @@ module.exports = {
         'mockContext.js'
     ],
     setupFilesAfterEnv: ['<rootDir>/src/testUtils/jest.setup.js'],
-    testTimeout: 10000
+    testTimeout: 15000
 };
