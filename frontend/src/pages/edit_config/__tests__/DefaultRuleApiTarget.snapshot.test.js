@@ -59,7 +59,7 @@ describe('App', () => {
 
     it('matches snapshot when self targetting', async () => {
         // Change target node to self
-        await user.selectOptions(app.getByLabelText('Target Node:'), '127.0.0.1')
+        await user.selectOptions(app.getByLabelText('Target Node:'), '127.0.0.1');
 
         // Click button to open ApiTargetRuleModal
         await user.click(app.getByRole('button', { name: 'Set rule' }));
