@@ -32,7 +32,7 @@ exports[`App matches snapshot 1`] = `
     <div
       id="api_target_options"
     >
-      {"device1":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["tv","ac"],"keys":{"tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
+      {"device7":{"device1":{"display":"Bias Lights (wled)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"sensor1":{"display":"HTPC (desktop)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","trigger_sensor"]},"ir_key":{"display":"Ir Blaster","options":["tv","ac"],"keys":{"tv":["power","vol_up","vol_down","mute","up","down","left","right","enter","settings","exit","source"],"ac":["start","stop","off"]}},"device2":{"display":"TV (api-target)","options":["enable","disable","enable_in","disable_in","set_rule","reset_rule","turn_on","turn_off"]},"ignore":{"display":"Ignore action"}}}
     </div>
     <div>
       <div

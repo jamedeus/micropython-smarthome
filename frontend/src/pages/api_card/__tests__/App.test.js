@@ -497,6 +497,53 @@ describe('App', () => {
         expect(app.queryByText('Duration (seconds)')).not.toBeNull();
     });
 
+    it('shows ApiTargetRuleModal when "Change rule" dropdown option clicked', async () => {
+        // Get device7 card and top-right corner dropdown menu
+        const card = app.getByText('Air Conditioner').parentElement.parentElement;
+        const dropdown = card.children[0].children[2];
+
+        // Click dropdown button, click Change rule option, confirm modal appeared
+        await user.click(dropdown.children[0]);
+        await user.click(within(dropdown).getByText('Change rule'));
+        expect(app.queryByText('API Target Rule')).not.toBeNull();
+    });
+
+    it('sends the correct payload when ApiTarget rule is changed', async () => {
+        // Get device7 card, open change rule modal
+        const card = app.getByText('Air Conditioner').parentElement.parentElement;
+        const dropdown = card.children[0].children[2];
+        await user.click(dropdown.children[0]);
+        await user.click(within(dropdown).getByText('Change rule'));
+
+        // Change both actions to ignore
+        const modal = app.getByText('API Target Rule').parentElement.parentElement;
+        await user.selectOptions(within(modal).getAllByRole('combobox')[0], 'ignore');
+        await user.click(app.getByText('Off Action'));
+        await user.selectOptions(within(modal).getAllByRole('combobox')[0], 'ignore');
+
+        // Click Submit button, confirm correct payload sent
+        await user.click(app.getByRole('button', { name: 'Submit' }));
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+                method: 'POST',
+                body: JSON.stringify({
+                    "command": "set_rule",
+                    "instance": "device7",
+                    "rule": {
+                        "on": [
+                            "ignore"
+                        ],
+                        "off": [
+                            "ignore"
+                        ]
+                    },
+                    "target": "192.168.1.100"
+                }),
+                headers: postHeaders
+            });
+        });
+    });
+
     it('requests a status update every 5 seconds', async () => {
         // Mock fetch function to return simulated status update
         global.fetch = jest.fn(() => Promise.resolve({

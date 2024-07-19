@@ -292,7 +292,7 @@ export const mockContext = {
     "target_ip": "192.168.1.100",
     "recording": false,
     "api_target_options": {
-        "device1": {
+        "device7": {
             "device1": {
                 "display": "Bias Lights (wled)",
                 "options": [
