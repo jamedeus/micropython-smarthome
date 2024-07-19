@@ -42,7 +42,7 @@ const ThermostatParamInputs = ({ id }) => {
         Object.entries(instance.schedule).forEach(([timestamp, rule]) => {
             if (/^-?\d+(\.\d+)?$/.test(rule)) {
                 const newRule = convert_temperature(rule, oldUnits, newUnits);
-                instance.schedule[timestamp] = newRule;
+                update.schedule[timestamp] = newRule;
             }
         });
 
