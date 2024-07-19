@@ -55,8 +55,6 @@ test_react:
   before_script:
     - cd frontend
     - npm ci
-    - cp /root/.npm/_logs/* .
-    - cat /root/.npm/_logs/*
   script:
     - npm test -- --coverage
   coverage: '/All files[^\|]*\|[^\|]*\s+([\d\.]+)/'
@@ -64,10 +62,6 @@ test_react:
     - if: '$GITLAB_USER_NAME == "Firmware Release"'
       when: never
     - when: always
-  artifacts:
-    paths:
-      - "*.log"
-    when: on_failure
 
 # Run CLI tool unit tests
 test_cli:
