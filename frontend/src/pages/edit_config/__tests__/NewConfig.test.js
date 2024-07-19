@@ -286,9 +286,9 @@ describe('NewConfig', () => {
         }));
 
         // Fill out metadata section
-        await user.type(app.getAllByRole('textbox')[0], 'Basement');
-        await user.type(app.getByLabelText('Location:'), 'Under staircase');
-        await user.type(app.getByLabelText('Floor:'), '-1');
+        await user.type(app.getAllByRole('textbox')[0], 'Den');
+        await user.type(app.getByLabelText('Location:'), 'Behind TV');
+        await user.type(app.getByLabelText('Floor:'), '1');
 
         // Fill out wifi section
         await user.clear(app.getByLabelText('SSID:'));
@@ -392,9 +392,9 @@ describe('NewConfig', () => {
             method: 'POST',
             body: JSON.stringify({
                 "metadata": {
-                    "id": "Basement",
-                    "floor": "-1",
-                    "location": "Under staircase",
+                    "id": "Den",
+                    "floor": "1",
+                    "location": "Behind TV",
                     "schedule_keywords": {
                         "morning": "08:00",
                         "sleep": "23:00",

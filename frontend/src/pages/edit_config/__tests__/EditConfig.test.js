@@ -86,10 +86,11 @@ describe('EditConfig', () => {
         // Mock fetch function to simulate duplicate friendly name
         global.fetch = jest.fn(() => Promise.resolve({ ok: false }));
 
-        // Get metadata section, enter name in friendly name field
+        // Get metadata section, friendly name field, enter name
         const metadata = app.getByText('Metadata').parentElement;
-        await user.clear(within(metadata).getAllByRole('textbox')[0]);
-        await user.type(within(metadata).getAllByRole('textbox')[0], 'Bathroom');
+        const nameField = within(metadata).getAllByRole('textbox')[0];
+        await user.clear(nameField);
+        await user.type(nameField, 'Bathroom');
 
         // Confirm correct request sent, field was marked invalid
         expect(global.fetch).toHaveBeenCalledWith('/check_duplicate', {
@@ -97,15 +98,24 @@ describe('EditConfig', () => {
             body: JSON.stringify({ name: "Bathroom" }),
             headers: postHeaders
         });
-        expect(within(metadata).getAllByRole('textbox')[0].classList).toContain('is-invalid');
+        expect(nameField.classList).toContain('is-invalid');
 
         // Mock fetch function to simulate available friendly name
         global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
 
         // Enter name in friendly name field, confirm invalid highlight disappeared
-        await user.clear(within(metadata).getAllByRole('textbox')[0]);
-        await user.type(within(metadata).getAllByRole('textbox')[0], 'Other Bathroom');
-        expect(within(metadata).getAllByRole('textbox')[0].classList).not.toContain('is-invalid');
+        await user.clear(nameField);
+        await user.type(nameField, 'Other Bathroom');
+        expect(nameField.classList).not.toContain('is-invalid');
+
+        // Enter existing name (except for last character)
+        await user.clear(nameField);
+        await user.type(nameField, 'All devices and sensor');
+        // Enter last character, confirm request was NOT sent (don't mark existing as duplicate)
+        jest.clearAllMocks();
+        await user.type(nameField, 's');
+        expect(global.fetch).not.toHaveBeenCalled();
+        expect(nameField.classList).not.toContain('is-invalid');
     });
 
     it('highlights nickname field red if user enters duplicate', async () => {
@@ -342,8 +352,12 @@ describe('EditConfig', () => {
         // Confirm invalid highlight is not present
         expect(app.container.querySelector('.is-invalid')).toBeNull();
 
-        // Add a schedule rule but don't enter timestamp
+        // Add a schedule rule, open time/rule popups and close without entering value
         await user.click(app.getAllByRole('button', { name: 'Add Rule'})[0]);
+        await user.click(app.getAllByText('Set time')[0]);
+        await user.type(app.getByLabelText('Time'), '{enter}');
+        await user.click(app.container.querySelectorAll('.form-control')[1]);
+        await user.type(app.getByRole('combobox'), '{enter}');
 
         // Click submit, confirm no request was made, invalid highlight was added
         await user.click(app.getByRole('button', { name: 'Submit' }));

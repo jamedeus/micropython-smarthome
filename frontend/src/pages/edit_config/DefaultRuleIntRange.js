@@ -37,7 +37,7 @@ const DefaultRuleIntRange = ({ id, instance, metadata }) => {
         if (param === "min_rule") {
             update.max_rule = Math.max(update.max_rule, value);
             update.default_rule = Math.max(update.default_rule, value);
-        } else if (param === "max_rule") {
+        } else {
             update.min_rule = Math.min(update.min_rule, value);
             update.default_rule = Math.min(update.default_rule, value);
         }

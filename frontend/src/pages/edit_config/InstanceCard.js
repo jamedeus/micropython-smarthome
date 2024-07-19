@@ -23,7 +23,7 @@ import { sensorPins, devicePins } from 'util/metadata';
 // Takes category ("device" or "sensor"), returns array of dropdown options
 // containing every driver type in category.
 // Optional exclude array can contain config_names that should be skipped.
-const TypeDropdownOptions = ({ category, exclude=[] }) => {
+const TypeDropdownOptions = ({ category, exclude }) => {
     // Get metadata for all devices and sensors
     const { metadata } = useContext(MetadataContext);
 
