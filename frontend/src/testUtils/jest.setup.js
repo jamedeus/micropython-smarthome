@@ -14,6 +14,9 @@ beforeAll(() => {
     global.act = act;
     global.waitFor = waitFor;
 
+    // Mock fetch function (called by ApiCardContext on render)
+    global.fetch = jest.fn();
+
     // Mock method called when window.location.href set
     Object.defineProperty(window, 'location', {
         value: {

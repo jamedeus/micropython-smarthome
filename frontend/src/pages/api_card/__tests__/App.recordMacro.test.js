@@ -30,6 +30,9 @@ describe('App in record mode', () => {
                 </ApiCardContextProvider>
             </MetadataContextProvider>
         );
+
+        // Reset mock fetch calls (ApiCardContext makes request when rendered)
+        jest.clearAllMocks();
     });
 
     it('redirects to overview with macro name in URL when back button is clicked', async () => {

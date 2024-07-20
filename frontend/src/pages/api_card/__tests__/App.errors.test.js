@@ -29,6 +29,9 @@ describe('App', () => {
                 </ApiCardContextProvider>
             </MetadataContextProvider>
         );
+
+        // Reset mock fetch calls (ApiCardContext makes request when rendered)
+        jest.clearAllMocks();
     });
 
     it('does not change power button class when turn_on API call fails', async () => {

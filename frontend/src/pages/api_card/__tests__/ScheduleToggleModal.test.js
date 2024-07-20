@@ -44,6 +44,9 @@ describe('ScheduleToggleModal', () => {
                 </ApiCardContextProvider>
             </MetadataContextProvider>
         );
+
+        // Reset mock fetch calls (ApiCardContext makes request when rendered)
+        jest.clearAllMocks();
     });
 
     it('sends correct payload when ScheduleToggleModal is submitted', async () => {

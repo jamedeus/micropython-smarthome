@@ -30,6 +30,9 @@ describe('App', () => {
                 </ApiCardContextProvider>
             </MetadataContextProvider>
         );
+
+        // Reset mock fetch calls (ApiCardContext makes request when rendered)
+        jest.clearAllMocks();
     });
 
     it('sends correct payload when device are turned on and off', async () => {

@@ -30,6 +30,9 @@ describe('IrRemotes', () => {
                 </ApiCardContextProvider>
             </MetadataContextProvider>
         );
+
+        // Reset mock fetch calls (ApiCardContext makes request when rendered)
+        jest.clearAllMocks();
     });
 
     it('sends correct payload when TV remote buttons are pressed', async () => {

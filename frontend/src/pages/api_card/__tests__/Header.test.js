@@ -30,6 +30,9 @@ describe('Header', () => {
                 </ApiCardContextProvider>
             </MetadataContextProvider>
         );
+
+        // Reset mock fetch calls (ApiCardContext makes request when rendered)
+        jest.clearAllMocks();
     });
 
     it('redirects to overview when back button is clicked', async () => {

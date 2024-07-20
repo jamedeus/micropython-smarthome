@@ -1,4 +1,4 @@
-import React, { useState, createContext, useCallback } from 'react';
+import React, { useState, createContext, useCallback, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { parse_dom_context, send_post_request } from 'util/django_util';
 import { debounce } from 'util/helper_functions';
@@ -29,6 +29,16 @@ export const ApiCardContextProvider = ({ children }) => {
     // Create state to control which cards are highlighted when sensor card
     // "Show targets" dropdown option clicked
     const [highlightCards, setHighlightCards] = useState([]);
+
+    // Sync backend schedule keywords to target node when page loads
+    // Ensures node keyword timestamps match backend, otherwise user may add a
+    // schedule rule that runs at unexpected time (can't see node's timestamps)
+    useEffect(() => {
+        send_post_request('/sync_schedule_keywords', {
+            ip: targetIP,
+            existing_keywords: status.metadata.schedule_keywords
+        });
+    }, []);
 
     // Handler for "Show targets" option in sensor card dropdown
     const show_targets = (id) => {
