@@ -215,6 +215,46 @@ const ApiTargetRuleModal = () => {
     // TODO there must be a better way to do this
     const [onSubmit, setOnSubmit] = useState(() => () => {});
 
+    // Disable submit button until a valid rule is selected
+    const [submitDisabled, setSubmitDisabled] = useState(true);
+
+    // Returns true if selectedRule state contains valid rule
+    const ruleIsComplete = () => {
+        if (subRuleIsComplete(selectedRule.on) && subRuleIsComplete(selectedRule.off)) {
+            return true;
+        } else {
+            return false;
+        }
+    };
+
+    // Takes on or off key from selectedRule state
+    const subRuleIsComplete = (subRule) => {
+        if (subRule.instance === 'ignore') {
+            return true;
+        } else if (!subRule.instance || !subRule.command) {
+            return false;
+        } else if (subRule.instance === 'ir_key') {
+            if (subRule.command && subRule.sub_command) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (['enable_in', 'disable_in', 'set_rule'].includes(subRule.command)) {
+            if (subRule.command_arg) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return true;
+        }
+    };
+
+    // Update submit button enable state when rule changes
+    useEffect(() => {
+        setSubmitDisabled(!ruleIsComplete());
+    }, [selectedRule]);
+
     // Takes current rule object (pre-fill dropdowns), dropdown option object
     // returned by getTargetNodeOptions, and callback that receives selection
     showApiTargetRuleModal = (current_rule, target_node_options, handleSubmit) => {
@@ -394,7 +434,12 @@ const ApiTargetRuleModal = () => {
 
             <Modal.Footer className="mx-auto">
                 <div id="rule-buttons">
-                    <Button variant="success" className="m-1" onClick={save_rule}>
+                    <Button
+                        variant="success"
+                        className="m-1"
+                        onClick={save_rule}
+                        disabled={submitDisabled}
+                    >
                         Submit
                     </Button>
                 </div>
