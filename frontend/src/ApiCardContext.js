@@ -205,9 +205,15 @@ export const ApiCardContextProvider = ({ children }) => {
         console.log(result);
     };
 
-    // Handler for rule sliders and buttons, updates local state immediately, makes
-    // API call after 150ms delay (prevents contant calls saturating ESP32 bandwidth)
-    const debounced_set_rule = useCallback(debounce(async (id, rule) => {
+    // Handler for rule sliders and buttons, updates context state immediately,
+    // makes API call after 150ms delay (avoid ESP32 DOS from too many calls)
+    const debounced_set_rule = async (id, rule) => {
+        update_instance(id, {current_rule: rule});
+        debounced_set_rule_callback(id, rule);
+    };
+
+    // Resets timer if called again within 150ms
+    const debounced_set_rule_callback = useCallback(debounce(async (id, rule) => {
         const payload = {
             command: 'set_rule',
             instance: id,
