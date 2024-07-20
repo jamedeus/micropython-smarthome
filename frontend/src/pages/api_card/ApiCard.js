@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import ErrorModal from 'modals/ErrorModal';
 import DebugModal from './DebugModal';
 import ApiTargetRuleModal from 'modals/ApiTargetRuleModal';
@@ -8,14 +8,10 @@ import Layout from './Layout';
 import FadeModal from './FadeModal';
 import SaveRulesToast from './SaveRulesToast';
 import { UpdateStatus } from './UpdateStatus';
-import { ApiCardContext } from 'root/ApiCardContext';
 
 const App = () => {
-    // Get state bool for loading animation
-    const { loading } = useContext(ApiCardContext);
-
     return (
-        <div className={loading ? "fade-in" : "fade-out"}>
+        <div>
             <Header />
             <Layout />
             <UpdateStatus />

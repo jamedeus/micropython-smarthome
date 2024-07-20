@@ -3,16 +3,6 @@ body {
     touch-action: manipulation;
 }
 
-/* Transition shown when api_card.html loads */
-.fade-in {
-    animation: fade-in 0.2s ease-out forwards;
-}
-
-/* Transition shown when api_card.html back button clicked */
-.fade-out {
-    animation: fade-out 0.8s ease-in forwards;
-}
-
 /* Show sensor targets highlight animation */
 .highlight-enter {
     box-shadow: 0px 0px 20px -25px #37eb5c;

@@ -23,10 +23,6 @@ export const ApiCardContextProvider = ({ children }) => {
         return parse_dom_context("recording");
     });
 
-    // Create state to control fade in/fade out animation
-    // Fades in when true, fades out when false (both persist)
-    const [loading, setLoading] = useState(true);
-
     // Create state to control SaveRulesToast visibility
     const [showRulesToast, setShowRulesToast] = useState(false);
 
@@ -47,20 +43,12 @@ export const ApiCardContextProvider = ({ children }) => {
         }, 1);
     };
 
-    // Button callback, fade out and redirect to overview
+    // Button callback, redirect to overview
     const overview = () => {
-        setLoading(false);
         if (recording) {
             window.location.href = `/api/recording/${recording}`;
         } else {
             window.location.href = "/api";
-        }
-    };
-
-    // Reset loading animation when navigated to with browser back button
-    window.onpageshow = (event) => {
-        if (event.persisted) {
-            setLoading(true);
         }
     };
 
@@ -377,7 +365,6 @@ export const ApiCardContextProvider = ({ children }) => {
         <ApiCardContext.Provider value={{
             status,
             setStatus,
-            loading,
             showRulesToast,
             setShowRulesToast,
             recording,
