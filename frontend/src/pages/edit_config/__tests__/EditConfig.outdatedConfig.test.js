@@ -20,7 +20,7 @@ describe('EditConfig', () => {
                 ...existingConfigContext.config.device7,
                 ip: '10.0.0.69'
             }
-        })
+        });
 
         // Create user, render app
         const user = userEvent.setup();

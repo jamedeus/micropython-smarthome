@@ -5,7 +5,6 @@ import { MetadataContextProvider } from 'root/MetadataContext';
 import createMockContext from 'src/testUtils/createMockContext';
 import { mockContext } from './mockContext';
 import { api_card_metadata } from 'src/testUtils/mockMetadataContext';
-import { postHeaders } from 'src/testUtils/headers';
 
 describe('App', () => {
     let app, user;

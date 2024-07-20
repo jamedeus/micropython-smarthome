@@ -22,6 +22,9 @@ beforeAll(() => {
     });
 
     global.history.pushState = jest.fn();
+
+    // Silence error (maybe from chart.js?)
+    HTMLCanvasElement.prototype.getContext = jest.fn();
 });
 
 beforeEach(() => {

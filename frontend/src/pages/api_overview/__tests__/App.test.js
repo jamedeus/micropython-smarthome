@@ -42,11 +42,13 @@ describe('App', () => {
         expect(document.getElementById('loading_overlay')).toBeInTheDocument();
 
         // Simulate user returning to overview by pressing back button
-        const event = new Event('pageshow');
-        Object.defineProperty(event, 'persisted', {
-            get: () => true,
+        act(() => {
+            const event = new Event('pageshow');
+            Object.defineProperty(event, 'persisted', {
+                get: () => true,
+            });
+            window.dispatchEvent(event);
         });
-        window.dispatchEvent(event);
 
         // Confirm loading overlay is hidden automatically
         await waitFor(() => {
@@ -308,7 +310,7 @@ describe('App', () => {
         for (let i = 1; i < 8; i++) {
             await user.click(actions.querySelectorAll('.btn-danger')[0]);
             await waitFor(() => {
-                expect(actions.children.length).toBe(8 - i)
+                expect(actions.children.length).toBe(8 - i);
             });
         }
 

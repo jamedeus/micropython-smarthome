@@ -462,7 +462,7 @@ describe('EditConfig', () => {
         // Change device7 (api-target) default_rule to ignore (both actions)
         await user.click(app.getByText('Set rule'));
         // Change on and off actions to ignore, click submit
-        const modal = app.getByText('API Target Rule').parentElement.parentElement
+        const modal = app.getByText('API Target Rule').parentElement.parentElement;
         await user.selectOptions(within(modal).getAllByRole('combobox')[0], 'ignore');
         await user.click(app.getByText('Off Action'));
         await user.selectOptions(within(modal).getAllByRole('combobox')[0], 'ignore');
@@ -608,10 +608,10 @@ describe('EditConfig', () => {
                     ...existingConfigContext.config.sensor3,
                     units: 'fahrenheit',
                     default_rule: 68.1,
-                        schedule: {
-                            morning: 73.5,
-                            sleep: 68.1
-                        }
+                    schedule: {
+                        morning: 73.5,
+                        sleep: 68.1
+                    }
                 }
             }),
             headers: postHeaders
