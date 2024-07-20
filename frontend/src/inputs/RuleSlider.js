@@ -18,7 +18,7 @@ const RuleSlider = ({ rule, setRule, min, max, sliderStep, buttonStep, displayTy
 
         // Enforce rule limits
         if (new_rule < parseFloat(min)) {
-            new_rule = parseFloat(max);
+            new_rule = parseFloat(min);
         } else if (new_rule > parseFloat(max)) {
             new_rule = parseFloat(max);
         }

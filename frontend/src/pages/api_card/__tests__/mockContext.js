@@ -6,7 +6,7 @@ export const mockContext = {
             "ir_blaster": false,
             "location": "Bedroom",
             "floor": 2,
-            "id": "Thermostat",
+            "id": "Test Node",
             "schedule_keywords": {
                 "sleep": "23:00",
                 "morning": "08:00",

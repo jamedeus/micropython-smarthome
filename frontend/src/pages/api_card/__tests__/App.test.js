@@ -206,6 +206,34 @@ describe('App', () => {
         });
     });
 
+    it('enforces rule slider limits when increment/decrement buttons are clicked', async () => {
+        // Mock fetch function to simulate successful enable API call
+        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+
+        // Get sensor3 card, confirm current rule is 20
+        const card = app.getByText('Thermostat').parentElement.parentElement;
+        const sliderHandle = card.querySelector('.sliderHandle');
+        expect(sliderHandle.innerHTML).toBe('20.0');
+
+        // Click slider minus button 10 times (decreases by 0.5 each time, would
+        // reach 15.0 but limits should stop at 18.0)
+        for (let i = 0; i < 10; i++) {
+            await user.click(card.querySelector('.bi-dash-lg'));
+        }
+
+        // Confirm current rule is 18
+        expect(sliderHandle.innerHTML).toBe('18.0');
+
+        // Click slider plus button 20 times (increases by 0.5 each time, would
+        // reach 28.0 but limits should stop at 27.0)
+        for (let i = 0; i < 20; i++) {
+            await user.click(card.querySelector('.bi-plus-lg'));
+        }
+
+        // Confirm current rule is 27.0
+        expect(sliderHandle.innerHTML).toBe('27.0');
+    });
+
     it('sends correct payload when rule is changed', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
@@ -735,7 +763,7 @@ describe('App', () => {
 
         // Wait 5 seconds, confirm fetched status update
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('/get_status/Thermostat');
+            expect(global.fetch).toHaveBeenCalledWith('/get_status/Test Node');
         }, { timeout: 5500 });
     });
 
@@ -749,7 +777,7 @@ describe('App', () => {
 
         // Wait 5 seconds, confirm fetched status update
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('/get_status/Thermostat');
+            expect(global.fetch).toHaveBeenCalledWith('/get_status/Test Node');
         }, { timeout: 5500 });
 
         // Confirm error modal is visible
