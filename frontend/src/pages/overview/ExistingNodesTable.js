@@ -102,7 +102,7 @@ const ExistingNodesTable = () => {
 
         // Show error if failed
         } else {
-            const error = await result.text();
+            const error = await result.json();
             showErrorModal({
                 title: "Error",
                 error: "failed",

@@ -27,6 +27,31 @@ describe('App', () => {
         );
     });
 
+    it('collapses sections when titles are clicked', async () => {
+        // Get collapses that wrap each section
+        const newConfigCollapse = app.getByText(/Ready to Upload/).parentElement.children[1];
+        const existingNodeCollapse = app.getByText('Existing Nodes').parentElement.children[1];
+        const KeywordsCollapse = app.getByText('Schedule Keywords').parentElement.children[1];
+
+        // Confirm NewConfigTable collapse is open
+        expect(newConfigCollapse.classList).toContain('show');
+        // Click NewConfigTable title, confirm collapses
+        await user.click(app.getByText('Configs Ready to Upload'));
+        expect(newConfigCollapse.classList).not.toContain('show');
+
+        // Confirm ExistingNodesTable collapse is open
+        expect(existingNodeCollapse.classList).toContain('show');
+        // Click ExistingNodesTable title, confirm collapses
+        await user.click(app.getByText('Existing Nodes'));
+        expect(existingNodeCollapse.classList).not.toContain('show');
+
+        // Confirm KeywordsTable collapse is open
+        expect(KeywordsCollapse.classList).toContain('show');
+        // Click KeywordsTable title, confirm collapses
+        await user.click(app.getByText('Schedule Keywords'));
+        expect(KeywordsCollapse.classList).not.toContain('show');
+    });
+
     it('redirects to api overview when "Frontend" button is clicked', async () => {
         // Click frontend button at bottom of page, confirm redirected
         await user.click(app.getByRole('button', { name: 'Frontend' }));
@@ -67,16 +92,50 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({'success': [], 'failed': {}})
+            json: () => Promise.resolve({'success': [
+                'Bathroom',
+                'Kitchen',
+                'Living Room',
+                'Bedroom',
+                'Thermostat'
+            ], 'failed': {}})
         }));
 
-        // Click "Reboot all" dropdown option in top-right corner menu
+        // Click "Re-upload" dropdown option in top-right corner menu
         const header = app.getByText('Configure Nodes').parentElement;
         await user.click(within(header).getAllByRole('button')[0]);
         await user.click(app.getByText('Re-upload all'));
 
         // Confirm correct request was sent
         expect(global.fetch).toHaveBeenCalledWith('/reupload_all');
+    });
+
+    it('shows error modal when "Re-upload all" fails to upload some nodes', async () => {
+        // Mock fetch function to return report with some failures
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({'success': [
+                'Living Room',
+                'Bedroom',
+            ], 'failed': {
+                Bathroom: 'Offline',
+                Kitchen: 'Connection timed out',
+                Thermostat: 'Filesystem error'
+            }})
+        }));
+
+        // Click "Re-upload" dropdown option in top-right corner menu
+        const header = app.getByText('Configure Nodes').parentElement;
+        await user.click(within(header).getAllByRole('button')[0]);
+        await user.click(app.getByText('Re-upload all'));
+
+        // Confirm error modal appeared with failure reasons
+        await waitFor(() => {
+            expect(app.getByText('Failed Uploads')).toBeInTheDocument();
+            expect(app.getByText('Bathroom: Offline')).toBeInTheDocument();
+            expect(app.getByText('Kitchen: Connection timed out')).toBeInTheDocument();
+            expect(app.getByText('Thermostat: Filesystem error')).toBeInTheDocument();
+        }, { timeout: 1500 });
     });
 
     it('opens RestoreModal when "Restore config" option is clicked', async () => {
@@ -138,12 +197,12 @@ describe('App', () => {
         // Confirm upload complete animation appears in modal
         await waitFor(() => {
             expect(app.queryByText('Upload Complete')).not.toBeNull();
-        });
+        }, { timeout: 1500 });
 
         // Confirm upload complete modal closes automatically
         await waitFor(() => {
             expect(app.queryByText('Upload Complete')).toBeNull();
-        });
+        }, { timeout: 1500 });
 
         // Confirm new config table is removed from page (last new config uploaded)
         // Confirm new config appeared in the existing nodes table
@@ -151,7 +210,7 @@ describe('App', () => {
             expect(app.queryByText('Configs Ready to Upload')).toBeNull();
             const existingNodes = app.getByText('Existing Nodes').parentElement;
             expect(within(existingNodes).queryByText('192.168.1.105')).not.toBeNull();
-        }, { timeout: 2000 });
+        }, { timeout: 1500 });
     });
 
     it('uploads new config when enter key is pressed in IP field', async () => {
@@ -199,6 +258,23 @@ describe('App', () => {
             body: JSON.stringify('new-config.json'),
             headers: postHeaders
         });
+    });
+
+    it('shows error in modal after failing to delete new config', async () => {
+        // Mock fetch function to simulate backend failing to delete
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 404,
+            json: () => Promise.resolve('Failed to delete new-config.json, does not exist')
+        }));
+
+        // Delete first new config, click delete in confirmation prompt
+        const newConfigs = app.getByText('Configs Ready to Upload').parentElement;
+        await user.click(within(newConfigs).getAllByRole('button')[1]);
+        await user.click(app.getByRole('button', { name: 'Delete' }));
+
+        // Confirm error modal appeared with API response
+        expect(app.getByText('Failed to delete new-config.json, does not exist')).toBeInTheDocument();
     });
 
     it('redirects to edit page when existing node edit option clicked', async () => {
@@ -276,6 +352,27 @@ describe('App', () => {
         expect(within(existingNodes).queryByText('Bathroom')).toBeNull();
     });
 
+    it('shows error in modal after failing to delete existing node', async () => {
+        // Mock fetch function to simulate backend failing to delete
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 404,
+            json: () => Promise.resolve('Failed to delete Bathroom, does not exist')
+        }));
+
+        // Get existing nodes table, click button on first row, click "Delete" option
+        const existingNodes = app.getByText('Existing Nodes').parentElement;
+        await user.click(within(existingNodes).getAllByRole('button')[0]);
+        await user.click(app.getByText('Delete'));
+
+        // Click delete in confirmation prompt
+        const modal = app.getByText('Confirm Delete').parentElement.parentElement;
+        await user.click(within(modal).getByRole('button', { name: 'Delete' }));
+
+        // Confirm error modal appeared with API response
+        expect(app.getByText('Failed to delete Bathroom, does not exist')).toBeInTheDocument();
+    });
+
     it('sends correct request when a schedule keyword is added', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
@@ -303,6 +400,112 @@ describe('App', () => {
             }),
             headers: postHeaders
         });
+    });
+
+    it('disables add keyword button until both inputs have value', async () => {
+        // Get keywords section, keywords table (tbody tag), new keyword row
+        const keywords = app.getByText('Schedule Keywords').parentElement;
+        const table = keywords.children[1].children[0].children[1];
+        const newKeywordRow = table.children[3];
+
+        // Confirm new keyword button is disabled
+        expect(within(newKeywordRow).getByRole('button')).toHaveAttribute('disabled');
+
+        // Enter timestamp, confirm button still disabled
+        await user.type(newKeywordRow.children[1].children[0], '12:34');
+        expect(within(newKeywordRow).getByRole('button')).toHaveAttribute('disabled');
+
+        // Enter keyword name, confirm button is enabled
+        await user.type(newKeywordRow.children[0].children[0], 'New Keyword');
+        expect(within(newKeywordRow).getByRole('button')).not.toHaveAttribute('disabled');
+    });
+
+    it('sends add keyword request when enter key is pressed in either field', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve('Keyword created')
+        }));
+
+        // Get keywords section, keywords table (tbody tag), new keyword row
+        const keywords = app.getByText('Schedule Keywords').parentElement;
+        const table = keywords.children[1].children[0].children[1];
+        const newKeywordRow = table.children[3];
+
+        // Enter keyword and timestamp, press enter key
+        await user.type(newKeywordRow.children[0].children[0], 'New Keyword');
+        await user.type(newKeywordRow.children[1].children[0], '12:34');
+        await user.type(newKeywordRow.children[1].children[0], '{enter}');
+
+        // Confirm correct request was sent
+        await user.click(within(newKeywordRow).getByRole('button'));
+        expect(global.fetch).toHaveBeenCalledWith('add_schedule_keyword', {
+            method: 'POST',
+            body: JSON.stringify({
+                keyword: 'New Keyword',
+                timestamp: '12:34'
+            }),
+            headers: postHeaders
+        });
+    });
+
+    it('shows alert after failing to add a new schedule keyword', async () => {
+        // Mock fetch function to simulate backend failing to delete, mock alert function
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 400,
+            json: () => Promise.resolve({'Error': 'Unexpected error'})
+        }));
+        global.alert = jest.fn();
+
+        // Get keywords section, keywords table (tbody tag), new keyword row
+        const keywords = app.getByText('Schedule Keywords').parentElement;
+        const table = keywords.children[1].children[0].children[1];
+        const newKeywordRow = table.children[3];
+
+        // Enter keyword and timestamp
+        await user.type(newKeywordRow.children[0].children[0], 'New Keyword');
+        await user.type(newKeywordRow.children[1].children[0], '12:34');
+
+        // Press enter key to submit, confirm alert appears with response from API
+        await user.type(newKeywordRow.children[0].children[0], '{enter}');
+        expect(global.alert).toHaveBeenCalledWith('{"Error":"Unexpected error"}');
+    });
+
+    it('changes keyword table button when inputs are modified', async () => {
+        // Get keywords section, table (tbody tag), first row
+        const keywords = app.getByText('Schedule Keywords').parentElement;
+        const table = keywords.children[1].children[0].children[1];
+        const firstRow = table.children[0];
+
+        // Confirm first row contains delete button
+        expect(within(firstRow).getByRole('button').classList).toContain('btn-danger');
+        expect(within(firstRow).getByRole('button').classList).not.toContain('btn-primary');
+
+        // Change keyword name, confirm button changes to edit button
+        await user.clear(firstRow.children[0].children[0]);
+        await user.type(firstRow.children[0].children[0], 'New Name');
+        expect(within(firstRow).getByRole('button').classList).not.toContain('btn-danger');
+        expect(within(firstRow).getByRole('button').classList).toContain('btn-primary');
+
+        // Change keyword name back, confirm button reverts to delete button
+        await user.clear(firstRow.children[0].children[0]);
+        await user.type(firstRow.children[0].children[0], 'morning');
+        expect(within(firstRow).getByRole('button').classList).toContain('btn-danger');
+        expect(within(firstRow).getByRole('button').classList).not.toContain('btn-primary');
+
+        // Change timestamp, confirm button still shows edit button
+        await user.clear(firstRow.children[1].children[0]);
+        await user.type(firstRow.children[1].children[0], '12:34');
+        expect(within(firstRow).getByRole('button').classList).not.toContain('btn-danger');
+        expect(within(firstRow).getByRole('button').classList).toContain('btn-primary');
+
+        // Change timestamp back, confirm button reverts to delete button
+        await user.clear(firstRow.children[1].children[0]);
+        await user.type(firstRow.children[1].children[0], '08:00');
+        expect(within(firstRow).getByRole('button').classList).toContain('btn-danger');
+        expect(within(firstRow).getByRole('button').classList).not.toContain('btn-primary');
     });
 
     it('sends correct request when existing schedule keyword is modified', async () => {
@@ -337,6 +540,72 @@ describe('App', () => {
         });
     });
 
+    it('sends edit request when enter key is pressed in either field', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve('Keyword updated')
+        }));
+
+        // Get keywords section, keywords table (tbody tag)
+        const keywords = app.getByText('Schedule Keywords').parentElement;
+        const table = keywords.children[1].children[0].children[1];
+
+        // Get first keyword, change name, press enter key
+        const firstRow = table.children[0];
+        await user.clear(firstRow.children[0].children[0]);
+        await user.type(firstRow.children[0].children[0], 'New Name');
+        await user.type(firstRow.children[0].children[0], '{enter}');
+
+        // Confirm edit request was sent
+        expect(global.fetch).toHaveBeenCalledWith('edit_schedule_keyword', {
+            method: 'POST',
+            body: JSON.stringify({
+                keyword_old: 'morning',
+                keyword_new: 'New Name',
+                timestamp_new: '08:00'
+            }),
+            headers: postHeaders
+        });
+        jest.clearAllMocks();
+
+        // Change timestamp, press enter key, confirm edit request sent
+        await user.clear(firstRow.children[1].children[0]);
+        await user.type(firstRow.children[1].children[0], '12:34');
+        await user.type(firstRow.children[1].children[0], '{enter}');
+        expect(global.fetch).toHaveBeenCalledWith('edit_schedule_keyword', {
+            method: 'POST',
+            body: JSON.stringify({
+                keyword_old: 'New Name',
+                keyword_new: 'New Name',
+                timestamp_new: '12:34'
+            }),
+            headers: postHeaders
+        });
+    });
+
+    it('shows alert after failing to edit a schedule keyword', async () => {
+        // Mock fetch function to simulate backend failing to delete, mock alert function
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 404,
+            json: () => Promise.resolve({'Error': 'Keyword not found'})
+        }));
+        global.alert = jest.fn();
+
+        // Get keywords section, keywords table. change first keyword name
+        const keywords = app.getByText('Schedule Keywords').parentElement;
+        const table = keywords.children[1].children[0].children[1];
+        const firstRow = table.children[0];
+        await user.clear(firstRow.children[0].children[0]);
+        await user.type(firstRow.children[0].children[0], 'New Name');
+
+        // Click edit button, confirm alert appears with response from API
+        await user.click(within(firstRow).getByRole('button'));
+        expect(global.alert).toHaveBeenCalledWith('{"Error":"Keyword not found"}');
+    });
+
     it('sends correct request when existing schedule keyword is deleted', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
@@ -358,5 +627,23 @@ describe('App', () => {
             }),
             headers: postHeaders
         });
+    });
+
+    it('shows alert after failing to delete a schedule keyword', async () => {
+        // Mock fetch function to simulate backend failing to delete, mock alert function
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 404,
+            json: () => Promise.resolve({'Error': 'Keyword not found'})
+        }));
+        global.alert = jest.fn();
+
+        // Get keywords section, click delete button on first row
+        const keywords = app.getByText('Schedule Keywords').parentElement;
+        const table = keywords.children[1].children[0].children[1];
+        await user.click(within(table.children[0]).getByRole('button'));
+
+        // Confirm alert appears with response from API
+        expect(global.alert).toHaveBeenCalledWith('{"Error":"Keyword not found"}');
     });
 });

@@ -61,7 +61,8 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
             setButton("delete");
         // Show error in alert if failed, stop loading animation
         } else {
-            alert(await result.text());
+            const error = await result.json();
+            alert(JSON.stringify(error));
             setButton("edit");
         }
     };
@@ -79,7 +80,8 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
             deleteKeyword(keyword);
         // Show error in alert if failed, stop loading animation
         } else {
-            alert(await result.text());
+            const error = await result.json();
+            alert(JSON.stringify(error));
             setButton("delete");
         }
     };
@@ -143,10 +145,10 @@ const NewKeywordRow = ({ addKeyword }) => {
     const updateKeyword = (newKeyword) => {
         setKeyword(newKeyword);
 
-        // Change delete button to edit if either input modified
+        // Enable add button if both inputs have value
         if (newKeyword !== "" && timestamp !== "") {
             setButtonDisabled(false);
-        // Change edit back to delete if returned to original value
+        // Disable add button until both inputs have value
         } else {
             setButtonDisabled(true);
         }
@@ -155,10 +157,10 @@ const NewKeywordRow = ({ addKeyword }) => {
     const updateTimestamp = (newTimestamp) => {
         setTimestamp(newTimestamp);
 
-        // Change delete button to edit if either input modified
+        // Enable add button if both inputs have value
         if (newTimestamp !== "" && keyword !== "") {
             setButtonDisabled(false);
-            // Change edit back to delete if returned to original value
+        // Disable add button until both inputs have value
         } else {
             setButtonDisabled(true);
         }
@@ -181,7 +183,8 @@ const NewKeywordRow = ({ addKeyword }) => {
             setButtonLoading(false);
         // Show error in alert if failed, stop loading animation
         } else {
-            alert(await result.text());
+            const error = await result.json();
+            alert(JSON.stringify(error));
             setButtonLoading(false);
         }
     };
