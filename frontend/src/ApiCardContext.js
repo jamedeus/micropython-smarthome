@@ -199,15 +199,19 @@ export const ApiCardContextProvider = ({ children }) => {
         }
     };
 
-    // Handler for rule sliders and buttons, updates local state immediately, calls
-    // debounced function to send API call to node when user stops moving slider
-    const set_rule = (id, value) => {
-        update_instance(id, {current_rule: value});
-        debounced_set_rule(id, value);
+    const set_rule = async (id, rule) => {
+        update_instance(id, {current_rule: rule});
+        const payload = {
+            command: 'set_rule',
+            instance: id,
+            rule: rule
+        };
+        const result = await send_command(payload);
+        console.log(result);
     };
 
-    // Called by set_rule, sends API call to node once user stops moving slider for
-    // 150ms (prevents constant API calls saturating ESP32 bandwidth)
+    // Handler for rule sliders and buttons, updates local state immediately, makes
+    // API call after 150ms delay (prevents contant calls saturating ESP32 bandwidth)
     const debounced_set_rule = useCallback(debounce(async (id, rule) => {
         const payload = {
             command: 'set_rule',
@@ -382,6 +386,7 @@ export const ApiCardContextProvider = ({ children }) => {
             trigger_sensor,
             turn_on,
             set_rule,
+            debounced_set_rule,
             reset_rule,
             add_schedule_rule,
             delete_schedule_rule,

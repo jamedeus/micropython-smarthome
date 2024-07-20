@@ -610,24 +610,22 @@ describe('App', () => {
 
         // Click Submit button, confirm correct payload sent
         await user.click(app.getByRole('button', { name: 'Submit' }));
-        await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('/send_command', {
-                method: 'POST',
-                body: JSON.stringify({
-                    "command": "set_rule",
-                    "instance": "device7",
-                    "rule": {
-                        "on": [
-                            "ignore"
-                        ],
-                        "off": [
-                            "ignore"
-                        ]
-                    },
-                    "target": "192.168.1.100"
-                }),
-                headers: postHeaders
-            });
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "set_rule",
+                "instance": "device7",
+                "rule": {
+                    "on": [
+                        "ignore"
+                    ],
+                    "off": [
+                        "ignore"
+                    ]
+                },
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
         });
     });
 

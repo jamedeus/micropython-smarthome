@@ -117,7 +117,7 @@ const InstanceCard = ({ id }) => {
     const {
         recording,
         get_instance_section,
-        set_rule,
+        debounced_set_rule,
         enable_instance,
         reset_rule,
         highlightCards
@@ -152,7 +152,7 @@ const InstanceCard = ({ id }) => {
         // Set local state (move slider)
         setlocalState({ ...localState, current_rule: newRule });
         // Set upstream state (sends debounced API call to node)
-        set_rule(id, newRule);
+        debounced_set_rule(id, newRule);
     };
 
     // Called when user releases click on slider, resumes status updates
