@@ -268,7 +268,10 @@ const IrMacros = ({ recording, setRecording, newMacroActions, setNewMacroActions
     };
 
     return (
-        <div className="d-flex flex-column remote mx-auto mb-4">
+        <div
+            className="d-flex flex-column remote mx-auto mb-4"
+            style={{ minWidth: '60%' }}
+        >
             <div className="row text-center">
                 <h4 className="my-2">
                     IR Macros
