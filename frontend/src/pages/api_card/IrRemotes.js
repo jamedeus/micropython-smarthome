@@ -11,7 +11,7 @@ import { ApiCardContext } from 'root/ApiCardContext';
 import EditIrMacroModal, { openEditIrMacroModal } from './EditIrMacroModal';
 import 'css/remote.css';
 
-const IrButton = ({title, icon, variant='primary', recording=false, onClick}) => {
+const IrButton = ({title, icon, variant='primary', recording, onClick}) => {
     return (
         <Button
             variant={variant}
@@ -50,7 +50,7 @@ IrButton.propTypes = {
     onClick: PropTypes.func.isRequired
 };
 
-const AcRemote = ({ recording=false, addMacroAction }) => {
+const AcRemote = ({ recording, addMacroAction }) => {
     const { send_command } = useContext(ApiCardContext);
 
     const HandleKey = (key) => {
@@ -95,7 +95,7 @@ AcRemote.propTypes = {
     addMacroAction: PropTypes.func.isRequired
 };
 
-const TvRemote = ({ recording=false, addMacroAction }) => {
+const TvRemote = ({ recording, addMacroAction }) => {
     const { send_command } = useContext(ApiCardContext);
 
     const HandleKey = (key) => {

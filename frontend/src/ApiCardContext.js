@@ -60,6 +60,7 @@ export const ApiCardContextProvider = ({ children }) => {
         } else if (id.startsWith('sensor')) {
             return 'sensors';
         } else {
+            /* istanbul ignore next */
             throw new Error('Received invalid instance id:', id);
         }
     };

@@ -332,7 +332,50 @@ describe('App', () => {
         });
     });
 
-    it('sends correct payload when a schedule rule is edited', async () => {
+    it('sends correct payload when schedule rule value is edited', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+                "time": "sunrise",
+                "Rule added": "enabled"
+            })
+        }));
+
+        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        const card = app.getByText('Computer screen').parentElement.parentElement;
+        const scheduleRulesButton = within(card).getByText('Schedule rules');
+        const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
+        const firstRule = rulesTable.children[1].children[0];
+
+        // Open schedule rules table, click rule field on first row
+        await user.click(scheduleRulesButton);
+        await user.click(firstRule.children[1].children[0].children[0]);
+        const rulePopup = firstRule.children[1].children[0].children[1];
+
+        // Change keyword dropdown to sunrise
+        await user.selectOptions(within(rulePopup).getByLabelText('Rule'), 'disabled');
+
+        // Click add rule button
+        await user.click(firstRule.children[2].children[0]);
+
+        // Confirm a single API call was made to overwrite rule with new value
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+            method: 'POST',
+            body: JSON.stringify({
+                "command": "add_rule",
+                "instance": "device4",
+                "time": "morning",
+                "rule": "disabled",
+                "overwrite": "overwrite",
+                "target": "192.168.1.100"
+            }),
+            headers: postHeaders
+        });
+    });
+
+    it('sends correct payload when schedule rule timestamp is edited', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
