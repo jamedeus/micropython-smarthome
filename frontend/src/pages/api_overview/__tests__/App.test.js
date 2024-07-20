@@ -36,6 +36,24 @@ describe('App', () => {
         expect(window.location.href).toBe('/api/Bedroom');
     });
 
+    it('hides the loading overlay when navigated to with back button', async () => {
+        // Click node button, confirm loading overlay appears
+        await user.click(app.getByRole('button', { name: 'Bedroom' }));
+        expect(document.getElementById('loading_overlay')).toBeInTheDocument();
+
+        // Simulate user returning to overview by pressing back button
+        const event = new Event('pageshow');
+        Object.defineProperty(event, 'persisted', {
+            get: () => true,
+        });
+        window.dispatchEvent(event);
+
+        // Confirm loading overlay is hidden automatically
+        await waitFor(() => {
+            expect(document.getElementById('loading_overlay')).not.toBeInTheDocument();
+        });
+    });
+
     it('sends the correct request when "Reboot all" option is clicked', async () => {
         global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
 
@@ -87,6 +105,19 @@ describe('App', () => {
         expect(global.fetch).toHaveBeenCalledWith('/delete_macro/late');
     });
 
+    it('focuses new macro name field when collapse is opened', async () => {
+        // Get macro section, open collapse, confirm field is focused
+        const macros = app.container.querySelector('.macro-container');
+        await user.click(macros.querySelector('.bi-plus-lg'));
+        await waitFor(() => {
+            expect(app.getByPlaceholderText('New macro name')).toHaveFocus();
+        }, { timeout: 1500 });
+
+        // Close collapse, confirm field is not focused
+        await user.click(macros.querySelector('.bi-plus-lg'));
+        expect(app.getByPlaceholderText('New macro name')).not.toHaveFocus();
+    });
+
     it('starts recording macro when a new name is entered', async () => {
         global.fetch = jest.fn(() => Promise.resolve({ status: 200 }));
 
@@ -94,7 +125,7 @@ describe('App', () => {
         const macros = app.container.querySelector('.macro-container');
 
         // Open collapse, enter new name, click start
-        await user.click(within(macros).getAllByRole('button')[5]);
+        await user.click(macros.querySelector('.bi-plus-lg'));
         await user.type(app.getByPlaceholderText('New macro name'), 'New macro');
         await user.click(app.getByText('Start Recording'));
 
@@ -260,30 +291,34 @@ describe('App', () => {
         expect(global.fetch).toHaveBeenCalledWith('/delete_macro_action/late/0');
     });
 
-    // it('deletes macro when last action is deleted in edit modal', async () => {
-    //     global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
-    //
-    //     // Open EditMacroModal for "Bright" macro, get modal and actions table
-    //     const macroButton = app.getByText('Bright').parentElement;
-    //     await user.click(macroButton.parentElement.children[1].children[0]);
-    //     await user.click(app.getByText('Edit'));
-    //     const modal = app.getByText('Edit Bright Macro').parentElement.parentElement;
-    //     const actions = modal.children[1];
-    //
-    //     // Click delete button next to every row
-    //     await user.click(actions.querySelectorAll('.btn-danger')[0]);
-    //     await user.click(actions.querySelectorAll('.btn-danger')[0]);
-    //     await user.click(actions.querySelectorAll('.btn-danger')[0]);
-    //     await user.click(actions.querySelectorAll('.btn-danger')[0]);
-    //     await user.click(actions.querySelectorAll('.btn-danger')[0]);
-    //     await user.click(actions.querySelectorAll('.btn-danger')[0]);
-    //     await user.click(actions.querySelectorAll('.btn-danger')[0]);
-    //     await user.click(actions.querySelectorAll('.btn-danger')[0]);
-    //
-    //     // Confirm modal closed automatically, request to delete macro was sent
-    //     expect(app.queryByText('Edit Bright Macro')).toBeNull();
-    //     expect(global.fetch).toHaveBeenNthCalledWith(11, '/delete_macro/bright');
-    // });
+    it('deletes macro when last action is deleted in edit modal', async () => {
+        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+
+        // Open EditMacroModal for "Bright" macro, get modal and actions table
+        const macroButton = app.getByText('Bright').parentElement;
+        await user.click(macroButton.parentElement.children[1].children[0]);
+        await user.click(app.getByText('Edit'));
+        const modal = app.getByText('Edit Bright Macro').parentElement.parentElement;
+        const actions = modal.children[1].children[1].children[1];
+
+        // Confirm 8 actions exist
+        expect(actions.children.length).toBe(8);
+
+        // Delete first 7 actions, wait for each row to fade out before next click
+        for (let i = 1; i < 8; i++) {
+            await user.click(actions.querySelectorAll('.btn-danger')[0]);
+            await waitFor(() => {
+                expect(actions.children.length).toBe(8 - i)
+            });
+        }
+
+        // Delete last action, confirm modal closes and request to delete macro is sent
+        await user.click(actions.querySelectorAll('.btn-danger')[0]);
+        await waitFor(() => {
+            expect(app.queryByText('Edit Bright Macro')).toBeNull();
+            expect(global.fetch).toHaveBeenCalledWith('/delete_macro/bright');
+        });
+    });
 
     it('resumes recording when "Record More" button is clicked', async () => {
         // Get "Late" macro button, open dropdown next to it
@@ -300,5 +335,37 @@ describe('App', () => {
         expect(global.history.pushState).toHaveBeenCalledWith(
             {}, '', '/api/recording/late'
         );
+    });
+
+    it('shows an alert when macro API calls fail', async () => {
+        // Mock fetch function to simulate failed API call, mock alert function
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 404
+        }));
+        global.alert = jest.fn();
+
+        // Click the "Bright" macro button, confirm alert was shown
+        await user.click(app.getByText('Bright'));
+        expect(global.alert).toHaveBeenCalledWith('failed to run bright macro');
+        jest.clearAllMocks();
+
+        // Get "Late" macro button, open dropdown next to it
+        const macroButton = app.getByText('Late').parentElement;
+        await user.click(macroButton.parentElement.children[1].children[0]);
+
+        // Click Delete option in dropdown, confirm alert was shown
+        await user.click(app.getByText('Delete'));
+        expect(global.alert).toHaveBeenCalledWith('Failed to delete macro');
+        jest.clearAllMocks();
+
+        // Click Edit option in dropdown, confirm EditMacroModal appeared
+        await user.click(app.getByText('Edit'));
+        const modal = app.getByText('Edit Late Macro').parentElement.parentElement;
+        const actions = modal.children[1];
+
+        // Click delete button next to first action, confirm alert was shown
+        await user.click(within(actions).getAllByRole('button')[0]);
+        expect(global.alert).toHaveBeenCalledWith('Failed to delete macro action');
     });
 });
