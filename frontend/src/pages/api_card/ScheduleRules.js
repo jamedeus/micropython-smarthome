@@ -70,6 +70,9 @@ const ScheduleRuleRow = ({
             setLoadingButtonState('delete');
             setNewTime('');
             setNewRule('');
+        } else {
+            alert('Failed to add schedule rule');
+            setLoadingButtonState('edit');
         }
     };
 
@@ -84,14 +87,23 @@ const ScheduleRuleRow = ({
     // Existing rule field add button handler
     const editRule = async () => {
         setLoadingButtonState('loading');
-        await edit_schedule_rule(id, originalTime, newTime, newRule);
-        setLoadingButtonState('delete');
+        const result = await edit_schedule_rule(id, originalTime, newTime, newRule);
+        if (result) {
+            setLoadingButtonState('delete');
+        } else {
+            alert('Failed to edit schedule rule');
+            setLoadingButtonState('edit');
+        }
     };
 
     // Existing rule field delete button handler
-    const deleteRule = () => {
+    const deleteRule = async () => {
         setLoadingButtonState('loading');
-        delete_schedule_rule(id, originalTime);
+        const result = await delete_schedule_rule(id, originalTime);
+        if (!result) {
+            alert('Failed to delete schedule rule');
+            setLoadingButtonState('delete');
+        }
     };
 
     // Renders button that opens ApiTarget rule modal

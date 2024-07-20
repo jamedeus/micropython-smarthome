@@ -268,6 +268,9 @@ export const ApiCardContextProvider = ({ children }) => {
             delete rules[timestamp];
             update_instance(id, {schedule: rules});
             setShowRulesToast(true);
+            return true;
+        } else {
+            return false;
         }
     };
 

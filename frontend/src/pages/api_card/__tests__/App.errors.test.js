@@ -174,4 +174,120 @@ describe('App', () => {
         // Confirm current rule did not change
         expect(sliderHandle.innerHTML).toBe('767');
     });
+
+    it('shows alert and resets loading animation if add_rule API call fails', async () => {
+        // Mock fetch function to simulate failed API call, mock alert function
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 502,
+            json: () => Promise.resolve('Error: Unable to connect.')
+        }));
+        global.alert = jest.fn();
+
+        // Get device3 card, schedule rules button, schedule rules table, new rule button
+        const card = app.getByText('Accent lights').parentElement.parentElement;
+        const scheduleRulesButton = within(card).getByText('Schedule rules');
+        const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
+        const addRule = rulesTable.parentElement.children[1].children[0];
+
+        // Open schedule rules table, click add rule button
+        await user.click(scheduleRulesButton);
+        await user.click(addRule);
+        const newRuleRow = rulesTable.children[1].children[3];
+
+        // Click timestamp field, get PopupDiv, type 10:00 into timestamp field
+        await user.click(newRuleRow.children[0].children[0].children[0]);
+        const timePopup = newRuleRow.children[0].children[0].children[1];
+        await user.type(within(timePopup).getByLabelText('Time'), '10:00');
+
+        // Click add rule button, confirm request was made
+        await user.click(newRuleRow.children[2].children[0]);
+        expect(global.fetch).toHaveBeenCalled();
+
+        // Confirm alert appeared, button loading animation reset
+        expect(global.alert).toHaveBeenCalledWith('Failed to add schedule rule');
+        expect(newRuleRow.children[2].children[0].querySelector('.bi-plus-lg')).not.toBeNull();
+    });
+
+    it('shows alert and resets loading animation if edit rule API call fails', async () => {
+        // Mock fetch function to simulate failed API call, mock alert function
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 502,
+            json: () => Promise.resolve('Error: Unable to connect.')
+        }));
+        global.alert = jest.fn();
+
+        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        const card = app.getByText('Computer screen').parentElement.parentElement;
+        const scheduleRulesButton = within(card).getByText('Schedule rules');
+        const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
+        const firstRule = rulesTable.children[1].children[0];
+
+        // Open schedule rules table, click time field on first row, change keyword
+        await user.click(scheduleRulesButton);
+        await user.click(firstRule.children[0].children[0].children[0]);
+        const timePopup = firstRule.children[0].children[0].children[1];
+        await user.selectOptions(within(timePopup).getAllByLabelText('Keyword')[0], 'sunrise');
+
+        // Click add rule button, confirm request was made
+        await user.click(firstRule.children[2].children[0]);
+        expect(global.fetch).toHaveBeenCalled();
+
+        // Confirm alert appeared, button loading animation reset
+        expect(global.alert).toHaveBeenCalledWith('Failed to edit schedule rule');
+        expect(firstRule.children[2].children[0].querySelector('.bi-pencil')).not.toBeNull();
+    });
+
+    it('shows alert and resets loading animation if delete rule API call fails', async () => {
+        // Mock fetch function to simulate failed API call, mock alert function
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 502,
+            json: () => Promise.resolve('Error: Unable to connect.')
+        }));
+        global.alert = jest.fn();
+
+        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        const card = app.getByText('Computer screen').parentElement.parentElement;
+        const scheduleRulesButton = within(card).getByText('Schedule rules');
+        const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
+        const firstRule = rulesTable.children[1].children[0];
+
+        // Click delete button on first row of table, confirm request was made
+        await user.click(scheduleRulesButton);
+        await user.click(firstRule.children[2].children[0]);
+        expect(global.fetch).toHaveBeenCalled();
+
+        // Confirm alert appeared, button loading animation reset
+        expect(global.alert).toHaveBeenCalledWith('Failed to delete schedule rule');
+        expect(firstRule.children[2].children[0].querySelector('.bi-trash')).not.toBeNull();
+    });
+
+    it('throws error when sync_schedule_rules API call fails', async () => {
+        // Mock first fetch call to succeed, second to simulate failed API call
+        const mockFetchResponses = [
+            Promise.resolve({ ok: true }),
+            Promise.resolve({
+                ok: false,
+                json: () => Promise.resolve('Node offline')
+            })
+        ];
+        global.fetch = jest.fn(() => mockFetchResponses.shift());
+        // Mock console.error
+        console.error = jest.fn();
+
+        // Get device4 card, schedule rules table, click first delete button
+        const card = app.getByText('Computer screen').parentElement.parentElement;
+        const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
+        await user.click(within(rulesTable).getAllByRole('button')[0]);
+
+        // Get toast, click yes, confirm fetch was called
+        const toast = app.getByText('Should this rule change persist after reboot?').parentElement;
+        await user.click(within(toast).getByText('Yes'));
+        expect(global.fetch).toHaveBeenCalled();
+
+        // Confirm console.error was called
+        expect(console.error).toHaveBeenCalledWith('Failed to sync schedule rules', 'Node offline');
+    });
 });
