@@ -160,8 +160,8 @@ export const ApiCardContextProvider = ({ children }) => {
                 update_instance(id, {enabled: false});
             }
         } else {
-            console.log("Failed to enable:", id);
-            console.log(result);
+            const error = await result.json();
+            console.log(`Failed to ${enable ? 'enable' : 'disable'} ${id},`, error);
         }
     };
 
@@ -174,8 +174,8 @@ export const ApiCardContextProvider = ({ children }) => {
         if (result.ok) {
             update_instance(id, {condition_met: true});
         } else {
-            console.log("Failed to trigger:", id);
-            console.log(result);
+            const error = await result.json();
+            console.log(`Failed to trigger ${id},`, error);
         }
     };
 
@@ -194,8 +194,8 @@ export const ApiCardContextProvider = ({ children }) => {
         if (result.ok) {
             update_instance(id, {turned_on: state});
         } else {
-            console.log("Failed to set power state:", id);
-            console.log(result);
+            const error = await result.json();
+            console.log(`Failed to set power state for ${id},`, error);
         }
     };
 
@@ -228,7 +228,8 @@ export const ApiCardContextProvider = ({ children }) => {
             const instance = get_instance_section(id);
             update_instance(id, {current_rule: instance.scheduled_rule});
         } else {
-            console.log("Failed to reset rule:", id);
+            const error = await result.json();
+            console.log(`Failed to reset ${id} rule,`, error);
         }
     };
 

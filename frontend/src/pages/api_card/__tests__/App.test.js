@@ -213,6 +213,10 @@ describe('App', () => {
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
+        // Confirm current rule is 767
+        const sliderHandle = card.querySelector('.sliderHandle');
+        expect(sliderHandle.innerHTML).toBe('767');
+
         // Click dropdown button, get reset option, confirm not disabled
         await user.click(dropdown.children[0]);
         const reset = within(dropdown).getByText('Reset rule');
@@ -230,8 +234,9 @@ describe('App', () => {
             headers: postHeaders
         });
 
-        // Confirm reset option is now disabled
+        // Confirm reset option is now disabled, current rule changed to 1023
         expect(reset.classList).toContain('disabled');
+        expect(sliderHandle.innerHTML).toBe('1023');
     });
 
     it('sends correct payload when new schedule rule is added', async () => {
