@@ -363,6 +363,29 @@ describe('App', () => {
         });
     });
 
+    it('disables edit schedule rule button when time field is blank', async () => {
+        // Get device4 card, schedule rules button, schedule rules table, first rule row
+        const card = app.getByText('Computer screen').parentElement.parentElement;
+        const scheduleRulesButton = within(card).getByText('Schedule rules');
+        const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
+        const firstRule = rulesTable.children[1].children[0];
+
+        // Confirm edit/delete button on first row is not disabled
+        expect(firstRule.children[2].children[0]).not.toHaveAttribute('disabled');
+
+        // Open schedule rules table, click time field on first row
+        await user.click(scheduleRulesButton);
+        await user.click(firstRule.children[0].children[0].children[0]);
+        const timePopup = firstRule.children[0].children[0].children[1];
+
+        // Click keyword toggle (change to timestamp), press enter without typing timestamp
+        await user.click(within(timePopup).getAllByLabelText('Keyword')[1]);
+        await user.type(within(timePopup).getByLabelText('Time'), '{enter}');
+
+        // Confirm add rule button is disabled
+        expect(firstRule.children[2].children[0]).toHaveAttribute('disabled');
+    });
+
     it('hides new rule field when delete button is clicked', async () => {
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const scheduleRulesButton = within(card).getByText('Schedule rules');

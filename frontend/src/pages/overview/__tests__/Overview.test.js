@@ -237,6 +237,25 @@ describe('App', () => {
         });
     });
 
+    it('shows error modal after failing to upload new config', async () => {
+        // Mock fetch function to simulate filesystem error on target node
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 409,
+            json: () => Promise.resolve('Filesystem error')
+        }));
+
+        // Get new config table, enter IP in first input
+        const newConfigs = app.getByText('Configs Ready to Upload').parentElement;
+        await user.type(within(newConfigs).getAllByRole('textbox')[0], '192.168.1.105');
+        await user.type(within(newConfigs).getAllByRole('textbox')[0], '{enter}');
+
+        // Click upload button, confirm error modal appeared
+        await user.click(within(newConfigs).getAllByText('Upload')[0]);
+        expect(app.getByText('Upload Failed')).toBeInTheDocument();
+        expect(app.getByText('Filesystem error')).toBeInTheDocument();
+    });
+
     it('sends the correct payload when a new config is deleted', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
@@ -311,6 +330,23 @@ describe('App', () => {
             }),
             headers: postHeaders
         });
+    });
+
+    it('shows error modal after failing to re-upload config', async () => {
+        // Mock fetch function to simulate unreachable target node
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 404,
+            json: () => Promise.resolve('Target node offline')
+        }));
+
+        // Get existing nodes table, click button on first row
+        const existingNodes = app.getByText('Existing Nodes').parentElement;
+        await user.click(within(existingNodes).getAllByRole('button')[0]);
+
+        // Click "Re-upload" option, confirm correct request sent
+        await user.click(app.getByText('Re-upload'));
+        expect(app.getByText('Connection Error')).toBeInTheDocument();
     });
 
     it('opens ChangeIpModal when existing node dropdown option is clicked', async () => {

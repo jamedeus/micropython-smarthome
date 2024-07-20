@@ -7,6 +7,7 @@ const average = (a, b) => {
     try {
         return parseInt((parseFloat(a) + parseFloat(b)) / 2);
     } catch(err) {
+        /* istanbul ignore next */
         console.log(err);
     }
 };

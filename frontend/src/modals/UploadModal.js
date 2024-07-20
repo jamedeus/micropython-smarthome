@@ -57,7 +57,7 @@ const UploadModal = () => {
 
         // Unable to upload because of filesystem error on node
         } else if (response.status == 409) {
-            const error = await response.text();
+            const error = await response.json();
             // Hide upload modal, show response in error modal
             closeUploadModal();
             showErrorModal({
@@ -78,7 +78,7 @@ const UploadModal = () => {
 
         // Other error: show in alert, close modal
         } else {
-            alert(await response.text());
+            alert(await response.json());
             closeUploadModal();
         }
     };

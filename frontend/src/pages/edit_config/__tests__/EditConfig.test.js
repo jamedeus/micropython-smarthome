@@ -310,7 +310,7 @@ describe('EditConfig', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ On: "Config created." })
+            json: () => Promise.resolve("Config created.")
         }));
 
         // Click next twice, confirm page3 is visible
@@ -341,6 +341,60 @@ describe('EditConfig', () => {
         await waitFor(() => {
             expect(window.location.href).toBe('/config_overview');
         }, { timeout: 1500 });
+    });
+
+    it('shows error modal if unable to upload config after submitting', async () => {
+        // Mock fetch function to succeed on first call (generate_config) and
+        // encounter target offline error on second call (reupload config to target IP)
+        const mockFetchResponses = [
+            Promise.resolve({
+                ok: true,
+                status: 200,
+                json: () => Promise.resolve("Config created.")
+            }),
+            Promise.resolve({
+                ok: false,
+                status: 404,
+                json: () => Promise.resolve('Target node offline')
+            })
+        ];
+        global.fetch = jest.fn(() => mockFetchResponses.shift());
+
+        // Click next twice, click submit button on page3
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Submit' }));
+
+        // Confirm error modal appeared
+        expect(app.getByText('Connection Error')).toBeInTheDocument();
+    });
+
+    it('shows alert if unknown error occurs while reuploading submitted config', async () => {
+        // Mock fetch function to succeed on first call (generate_config) and
+        // encounter unexpected error on second call (reupload config to target IP)
+        const mockFetchResponses = [
+            Promise.resolve({
+                ok: true,
+                status: 200,
+                json: () => Promise.resolve("Config created.")
+            }),
+            Promise.resolve({
+                ok: false,
+                status: 400,
+                json: () => Promise.resolve('Unexpected error')
+            })
+        ];
+        global.fetch = jest.fn(() => mockFetchResponses.shift());
+        // Mock alert function
+        global.alert = jest.fn();
+
+        // Click next twice, click submit button on page3
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Submit' }));
+
+        // Confirm alert was shown with response from API
+        expect(global.alert).toHaveBeenCalledWith('Unexpected error');
     });
 
     it('refuses to create config with blank schedule rules', async () => {
@@ -527,6 +581,11 @@ describe('EditConfig', () => {
         const sensor2Card = app.getByText('sensor2').parentElement.parentElement;
         await user.selectOptions(within(sensor2Card).getByLabelText('Units:'), 'celsius');
 
+        // Change sensor3 (si7021) units to kelvin, then to fahrenheit
+        const sensor3Card = app.getByText('sensor3').parentElement.parentElement;
+        await user.selectOptions(within(sensor3Card).getByLabelText('Units:'), 'kelvin');
+        await user.selectOptions(within(sensor3Card).getByLabelText('Units:'), 'fahrenheit');
+
         // Go to page3, click submit, confirm schedule rules in payload were converted
         await user.click(app.getByRole('button', { name: 'Next' }));
         await user.click(app.getByRole('button', { name: 'Next' }));
@@ -544,6 +603,15 @@ describe('EditConfig', () => {
                         relax: 22.2,
                         '12:00': 'disabled'
                     }
+                },
+                sensor3: {
+                    ...existingConfigContext.config.sensor3,
+                    units: 'fahrenheit',
+                    default_rule: 68.1,
+                        schedule: {
+                            morning: 73.5,
+                            sleep: 68.1
+                        }
                 }
             }),
             headers: postHeaders
