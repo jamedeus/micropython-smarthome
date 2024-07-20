@@ -120,7 +120,7 @@ describe('ScheduleToggleModal', () => {
         }));
 
         // Open modal, get inputs
-        await user.click(component.getByText('Schedule Disable'));
+        await user.click(component.getByText('Schedule Enable'));
         const group = document.querySelector('.input-group');
         const action = group.children[0];
         const duration = group.children[2];

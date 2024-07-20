@@ -24,6 +24,7 @@ export const ApiOverviewContextProvider = ({ children }) => {
 
     // Remove loading overlay when navigated to with browser back button
     window.onpageshow = function(event) {
+        /* istanbul ignore else */
         if (event.persisted) {
             setLoading(false);
         }

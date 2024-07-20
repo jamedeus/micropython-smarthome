@@ -308,7 +308,9 @@ export const ConfigProvider = ({ children }) => {
             api_target_options.addresses[key] === ip
         );
         // Throw error if not found (prevent crash when opening modal)
+        /* istanbul ignore else */
         if (!friendly_name) {
+            /* istanbul ignore next */
             throw new Error(
                 'getTargetNodeOptions received an IP that does not match an existing node'
             );

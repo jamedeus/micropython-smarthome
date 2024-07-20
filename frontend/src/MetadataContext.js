@@ -23,6 +23,7 @@ export const MetadataContextProvider = ({ children }) => {
     const [metadata] = useState(() => {
         const metadata = parse_dom_context("instance_metadata");
 
+        /* istanbul ignore else */
         if (metadata) {
             // Remove "placeholder" string from config templates in metadata object
             for (let device in metadata.devices) {

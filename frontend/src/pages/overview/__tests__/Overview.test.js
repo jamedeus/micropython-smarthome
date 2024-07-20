@@ -330,6 +330,12 @@ describe('App', () => {
             }),
             headers: postHeaders
         });
+
+        // Confirm shows success animation, hides modal when complete
+        expect(app.queryByText('Upload Complete')).not.toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Upload Complete')).toBeNull();
+        }, { timeout: 1500 });
     });
 
     it('shows error modal after failing to re-upload config', async () => {
