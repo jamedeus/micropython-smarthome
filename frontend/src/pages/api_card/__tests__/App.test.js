@@ -110,11 +110,11 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ Disabled: "device5" })
+            json: () => Promise.resolve({ Disabled: "sensor5" })
         }));
 
-        // Get device5 card and top-right corner dropdown menu
-        const card = app.getByText('Stairway lights').parentElement.parentElement;
+        // Get sensor5 card and top-right corner dropdown menu
+        const card = app.getByText('Motion').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
         // Get card body collapse section, confirm open (device enabled)
@@ -130,7 +130,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "disable",
-                "instance": "device5",
+                "instance": "sensor5",
                 "target": "192.168.1.100"
             }),
             headers: postHeaders
@@ -146,7 +146,7 @@ describe('App', () => {
             method: 'POST',
             body: JSON.stringify({
                 "command": "enable",
-                "instance": "device5",
+                "instance": "sensor5",
                 "target": "192.168.1.100"
             }),
             headers: postHeaders

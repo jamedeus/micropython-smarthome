@@ -129,7 +129,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
         // If successful update state (re-render immediately, not after update)
         if (result.ok) {
-            update_instance(id, "enabled", enable);
+            update_instance(id, { enabled: true });
             if (enable) {
                 // Ensure current_rule is not string (avoid NaN on slider)
                 // May be incorrect until next update for non-slider rules, but
@@ -151,7 +151,7 @@ export const ApiCardContextProvider = ({ children }) => {
                     }
                 }
             } else {
-                update_instance(id, {enabled: false});
+                update_instance(id, { enabled: false });
             }
         } else {
             const error = await result.json();
