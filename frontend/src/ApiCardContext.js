@@ -146,16 +146,22 @@ export const ApiCardContextProvider = ({ children }) => {
                 // Ensure current_rule is not string (avoid NaN on slider)
                 // May be incorrect until next update for non-slider rules, but
                 // no other rule types are displayed on the frontend anyway
-                let rule;
                 const section = get_instance_section(id);
-                if (parseInt(section.current_rule)) {
-                    rule = section.current_rule;
-                } else if (parseInt(section.scheduled_rule)) {
-                    rule = section.scheduled_rule;
-                } else {
-                    rule = section.default_rule;
+                if (isNaN(section.current_rule)) {
+                    // Use scheduled rule if not NaN
+                    if (!isNaN(section.scheduled_rule)) {
+                        update_instance(id, {
+                            enabled: true,
+                            current_rule: section.scheduled_rule
+                        });
+                    // Use default_rule as last resort (guaranteed to be number)
+                    } else {
+                        update_instance(id, {
+                            enabled: true,
+                            current_rule: section.default_rule
+                        });
+                    }
                 }
-                update_instance(id, {enabled: true, current_rule: rule});
             } else {
                 update_instance(id, {enabled: false});
             }

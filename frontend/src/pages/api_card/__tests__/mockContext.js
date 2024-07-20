@@ -145,8 +145,8 @@ export const mockContext = {
                 "default_rule": "enabled"
             },
             "device9": {
-                "current_rule": 100,
-                "enabled": true,
+                "current_rule": "disabled",
+                "enabled": false,
                 "type": "bulb",
                 "turned_on": true,
                 "schedule": {
@@ -154,15 +154,15 @@ export const mockContext = {
                     "relax": "fade/72/1800",
                     "sleep": "disabled"
                 },
-                "scheduled_rule": 100,
+                "scheduled_rule": 72,
                 "min_rule": 1,
                 "nickname": "Lamp",
                 "max_rule": 100,
                 "default_rule": 100
             },
             "device10": {
-                "current_rule": 255,
-                "enabled": true,
+                "current_rule": "disabled",
+                "enabled": false,
                 "type": "wled",
                 "turned_on": false,
                 "schedule": {
@@ -170,7 +170,7 @@ export const mockContext = {
                     "sleep": 25,
                     "relax": "fade/128/1800"
                 },
-                "scheduled_rule": 255,
+                "scheduled_rule": "disabled",
                 "min_rule": 1,
                 "nickname": "Bias lights",
                 "max_rule": 255,

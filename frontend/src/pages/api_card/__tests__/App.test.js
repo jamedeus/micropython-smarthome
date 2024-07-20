@@ -156,6 +156,56 @@ describe('App', () => {
         });
     });
 
+    it('sets slider correctly when device with non-int current_rule is enabled', async () => {
+        // Mock fetch function to simulate successful enable API call
+        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+
+        // Get device9 card and top-right corner dropdown menu
+        // Current rule is "disabled" (causes NaN on slider), but scheduled_rule (72) is valid
+        const card = app.getByText('Lamp').parentElement.parentElement;
+        const dropdown = card.children[0].children[2];
+
+        // Get card body collapse section, confirm closed (device disabled)
+        const collapse = card.children[1];
+        expect(collapse.classList).not.toContain('show');
+
+        // Click dropdown button, click enable option
+        await user.click(dropdown.children[0]);
+        await user.click(within(dropdown).getByText('Enable'));
+
+        // Confirm API call was made, card opened, slider set to scheduled_rule (72)
+        expect(global.fetch).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(collapse.classList).toContain('show');
+            expect(card.querySelector('.sliderHandle').innerHTML).toBe('72');
+        });
+    });
+
+    it('sets slider correctly when device with non-int current and scheduled rules is enabled', async () => {
+        // Mock fetch function to simulate successful enable API call
+        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+
+        // Get device10 card and top-right corner dropdown menu
+        // Current and scheduled rules are "disabled" (causes NaN on slider), but default (255) is valid
+        const card = app.getByText('Bias lights').parentElement.parentElement;
+        const dropdown = card.children[0].children[2];
+
+        // Get card body collapse section, confirm closed (device disabled)
+        const collapse = card.children[1];
+        expect(collapse.classList).not.toContain('show');
+
+        // Click dropdown button, click enable option
+        await user.click(dropdown.children[0]);
+        await user.click(within(dropdown).getByText('Enable'));
+
+        // Confirm API call was made, card opened, slider set to default_rule (255)
+        expect(global.fetch).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(collapse.classList).toContain('show');
+            expect(card.querySelector('.sliderHandle').innerHTML).toBe('255');
+        });
+    });
+
     it('sends correct payload when rule is changed', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
