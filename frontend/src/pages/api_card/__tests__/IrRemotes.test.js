@@ -36,7 +36,16 @@ describe('IrRemotes', () => {
     });
 
     it('sends correct payload when TV remote buttons are pressed', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resovle({
+                status: 'success',
+                message: {
+                    'tv': 'key_name'
+                }
+            })
+        }));
 
         // Get remote div
         const remote = app.getByText('TV Remote').parentElement.parentElement;
@@ -210,7 +219,16 @@ describe('IrRemotes', () => {
     });
 
     it('sends correct payload when AC remote buttons are pressed', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resovle({
+                status: 'success',
+                message: {
+                    'ac': 'key_name'
+                }
+            })
+        }));
 
         // Get remote div
         const remote = app.getByText('AC Remote').parentElement.parentElement;
@@ -258,7 +276,16 @@ describe('IrRemotes', () => {
     });
 
     it('sends correct payload when IR macro button is pressed', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resovle({
+                status: 'success',
+                message: {
+                    'Ran macro': 'backlight_on'
+                }
+            })
+        }));
 
         // Get macros div
         const macros = app.getByText('IR Macros').parentElement.parentElement;
@@ -304,7 +331,14 @@ describe('IrRemotes', () => {
     });
 
     it('sends correct payload when EditIrMacroModal modal is submitted', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resovle({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Get macros div, open edit modal for backlight_off macro
         const macros = app.getByText('IR Macros').parentElement.parentElement;
@@ -347,7 +381,14 @@ describe('IrRemotes', () => {
     });
 
     it('deletes macro when last action in EditIrMacroModal is removed', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resovle({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Get macros div, open edit modal for backlight_off macro
         const macros = app.getByText('IR Macros').parentElement.parentElement;
@@ -381,7 +422,14 @@ describe('IrRemotes', () => {
     });
 
     it('deletes macro when dropdown option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resovle({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Get macros div, click delete option in backlight_off dropdown
         const macros = app.getByText('IR Macros').parentElement.parentElement;

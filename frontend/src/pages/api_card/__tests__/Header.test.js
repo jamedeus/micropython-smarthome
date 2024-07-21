@@ -42,7 +42,14 @@ describe('Header', () => {
     });
 
     it('sends correct payload when reboot option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true ,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Rebooting'
+            })
+        }));
 
         // Click dropdown, click reboot option
         await user.click(component.getAllByRole('button')[1]);
@@ -60,7 +67,16 @@ describe('Header', () => {
     });
 
     it('sends correct payload when clear log option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: {
+                    clear_log: 'success'
+                }
+            })
+        }));
 
         // Click dropdown, click clear log option
         await user.click(component.getAllByRole('button')[1]);
@@ -78,7 +94,14 @@ describe('Header', () => {
     });
 
     it('sends correct payload when reset all rules option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Click dropdown, click reset all rules option
         await user.click(component.getAllByRole('button')[1]);

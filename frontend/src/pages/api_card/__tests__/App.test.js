@@ -39,7 +39,11 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ On: "device5" })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: { On: "device5" }
+            })
         }));
 
         // Get device5 power button, confirm does not have turn on or turn off class
@@ -84,7 +88,11 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ Triggered: "sensor4" })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: { Triggered: "sensor4" }
+            })
         }));
 
         // Get sensor4 trigger button, confirm does not have either class
@@ -113,7 +121,11 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ Disabled: "sensor5" })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: { Disabled: "sensor5" }
+            })
         }));
 
         // Get sensor5 card and top-right corner dropdown menu
@@ -161,7 +173,14 @@ describe('App', () => {
 
     it('sets slider correctly when device with non-int current_rule is enabled', async () => {
         // Mock fetch function to simulate successful enable API call
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: { Enabled: "device9" }
+            })
+        }));
 
         // Get device9 card and top-right corner dropdown menu
         // Current rule is "disabled" (causes NaN on slider), but scheduled_rule (72) is valid
@@ -186,7 +205,14 @@ describe('App', () => {
 
     it('sets slider correctly when device with non-int current and scheduled rules is enabled', async () => {
         // Mock fetch function to simulate successful enable API call
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: { Enabled: "device10" }
+            })
+        }));
 
         // Get device10 card and top-right corner dropdown menu
         // Current and scheduled rules are "disabled" (causes NaN on slider), but default (255) is valid
@@ -211,7 +237,14 @@ describe('App', () => {
 
     it('enforces rule slider limits when increment/decrement buttons are clicked', async () => {
         // Mock fetch function to simulate successful enable API call
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: { sensor3: "20.0" }
+            })
+        }));
 
         // Get sensor3 card, confirm current rule is 20
         const card = app.getByText('Thermostat').parentElement.parentElement;
@@ -241,7 +274,11 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ device6: 99 })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: { device6: "99" }
+            })
         }));
 
         // Get device6 card, slider minus button, slider plus button
@@ -284,9 +321,13 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "device1": "Reverted to scheduled rule",
-                "current_rule": 98
+                status: 'success',
+                message: {
+                    device1: "Reverted to scheduled rule",
+                    current_rule: 98
+                }
             })
         }));
 
@@ -324,9 +365,13 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "time": "10:00",
-                "Rule added": "enabled"
+                status: 'success',
+                message: {
+                    "time": "10:00",
+                    "Rule added": "enabled"
+                }
             })
         }));
 
@@ -367,9 +412,13 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "time": "sunrise",
-                "Rule added": "enabled"
+                status: 'success',
+                message: {
+                    "time": "sunrise",
+                    "Rule added": "enabled"
+                }
             })
         }));
 
@@ -410,9 +459,13 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "time": "sunrise",
-                "Rule added": "enabled"
+                status: 'success',
+                message: {
+                    "time": "sunrise",
+                    "Rule added": "enabled"
+                }
             })
         }));
 
@@ -464,8 +517,12 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "deleted": "morning"
+                status: 'success',
+                message: {
+                    deleted: "morning"
+                }
             })
         }));
 
@@ -534,7 +591,14 @@ describe('App', () => {
     });
 
     it('sends correct payload when user clicks yes in save rules toast', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done syncing schedule rules'
+            })
+        }));
 
         // Get device4 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
@@ -589,29 +653,33 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "group": "group1",
-                "nickname": "Accent lights",
-                "_type": "pwm",
-                "current_rule": 767,
-                "scheduled_rule": 1023,
-                "max_rule": 1023,
-                "enabled": true,
-                "rule_queue": [
-                    "fade/512/1800",
-                    "disabled",
-                    1023
-                ],
-                "min_rule": 0,
-                "state": false,
-                "triggered_by": [
-                    "sensor1",
-                    "sensor5"
-                ],
-                "default_rule": 1023,
-                "name": "device3",
-                "bright": 0,
-                "fading": false
+                status: 'success',
+                message: {
+                    "group": "group1",
+                    "nickname": "Accent lights",
+                    "_type": "pwm",
+                    "current_rule": 767,
+                    "scheduled_rule": 1023,
+                    "max_rule": 1023,
+                    "enabled": true,
+                    "rule_queue": [
+                        "fade/512/1800",
+                        "disabled",
+                        1023
+                    ],
+                    "min_rule": 0,
+                    "state": false,
+                    "triggered_by": [
+                        "sensor1",
+                        "sensor5"
+                    ],
+                    "default_rule": 1023,
+                    "name": "device3",
+                    "bright": 0,
+                    "fading": false
+                }
             })
         }));
 
@@ -758,7 +826,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve(mockContext.status)
+            json: () => Promise.resolve({
+                status: 'success',
+                message: mockContext.status
+            })
         }));
 
         // Confirm fetch has not been called
@@ -775,7 +846,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve("Error: Unable to connect.")
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
 
         // Wait 5 seconds, confirm fetched status update
@@ -792,7 +866,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve("Error: Unable to connect.")
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
 
         // Wait 5 seconds, confirm error modal is visible
@@ -800,11 +877,14 @@ describe('App', () => {
             expect(app.queryByText('Attempting to reestablish connection...')).not.toBeNull();
         }, { timeout: 5500 });
 
-        // Mock fetch function to simualte node coming back online
+        // Mock fetch function to simulate node coming back online
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve(mockContext.status)
+            json: () => Promise.resolve({
+                status: 'success',
+                message: mockContext.status
+            })
         }));
 
         // Wait 5 seconds, confirm error modal disappeared

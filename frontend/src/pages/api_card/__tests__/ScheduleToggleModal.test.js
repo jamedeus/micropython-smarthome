@@ -53,9 +53,13 @@ describe('ScheduleToggleModal', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "Disable_in_seconds": 900,
-                "Disabled": "device3"
+                status: 'success',
+                message: {
+                    "Disable_in_seconds": 900,
+                    "Disabled": "device3"
+                }
             })
         }));
 
@@ -81,9 +85,13 @@ describe('ScheduleToggleModal', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "Disable_in_seconds": 600,
-                "Disabled": "device3"
+                status: 'success',
+                message: {
+                    "Disable_in_seconds": 600,
+                    "Disabled": "device3"
+                }
             })
         }));
 
@@ -116,9 +124,13 @@ describe('ScheduleToggleModal', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "Enable_in_seconds": 3600,
-                "Enabled": "device3"
+                status: 'success',
+                message: {
+                    "Enable_in_seconds": 3600,
+                    "Enabled": "device3"
+                }
             })
         }));
 

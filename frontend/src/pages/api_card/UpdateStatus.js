@@ -23,11 +23,11 @@ export const UpdateStatus = () => {
             const response = await fetch(`/get_status/${status.metadata.id}`);
             if (response.status !== 200) {
                 const error = await response.json();
-                throw new Error(`${error} (status ${response.status})`);
+                throw new Error(`${error.message} (status ${response.status})`);
             }
             const data = await response.json();
-            setStatus(data);
-            console.log("update", data);
+            setStatus(data.message);
+            console.log("update", data.message);
             if (targetOffline) {
                 hideErrorModal();
                 targetOffline = false;

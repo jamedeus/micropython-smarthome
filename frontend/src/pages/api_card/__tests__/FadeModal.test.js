@@ -50,8 +50,10 @@ describe('FadeModal', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "device3": "fade/512/600"
+                status: 'success',
+                message: { "device3": "fade/512/600" }
             })
         }));
 
@@ -78,8 +80,10 @@ describe('FadeModal', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "device3": "fade/512/600"
+                status: 'success',
+                message: { "device3": "fade/512/600" }
             })
         }));
 

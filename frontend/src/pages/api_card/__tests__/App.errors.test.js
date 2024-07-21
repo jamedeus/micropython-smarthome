@@ -39,7 +39,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve('Error: Unable to connect.')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
 
         // Get device5 power button (turned off), confirm does not have turn on or turn off class
@@ -59,7 +62,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve('Error: Unable to connect.')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
 
         // Get device3 power button (turned on), confirm does not have turn on or turn off class
@@ -79,7 +85,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve('Error: Unable to connect.')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
 
         // Get sensor4 trigger button, confirm does not have either class
@@ -99,7 +108,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve('Error: Unable to connect.')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
 
         // Get device5 card and top-right corner dropdown menu
@@ -124,7 +136,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve('Error: Unable to connect.')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
 
         // Get device1 card and top-right corner dropdown menu
@@ -149,7 +164,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve('Error: Unable to connect.')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
 
         // Get device3 card and top-right corner dropdown menu
@@ -182,7 +200,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve('Error: Unable to connect.')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
         global.alert = jest.fn();
 
@@ -216,7 +237,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve('Error: Unable to connect.')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
         global.alert = jest.fn();
 
@@ -246,7 +270,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
-            json: () => Promise.resolve('Error: Unable to connect.')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect'
+            })
         }));
         global.alert = jest.fn();
 
@@ -272,7 +299,11 @@ describe('App', () => {
             Promise.resolve({ ok: true }),
             Promise.resolve({
                 ok: false,
-                json: () => Promise.resolve('Node offline')
+                status: 500,
+                json: () => Promise.resolve({
+                    status: 'error',
+                    message: 'Failed to save rules'
+                })
             })
         ];
         global.fetch = jest.fn(() => mockFetchResponses.shift());
@@ -290,6 +321,9 @@ describe('App', () => {
         expect(global.fetch).toHaveBeenCalled();
 
         // Confirm console.error was called
-        expect(console.error).toHaveBeenCalledWith('Failed to sync schedule rules', 'Node offline');
+        expect(console.error).toHaveBeenCalledWith(
+            'Failed to sync schedule rules',
+            'Failed to save rules'
+        );
     });
 });

@@ -37,7 +37,14 @@ describe('IrRemotes while recording macro', () => {
     });
 
     it('sends correct payload when TV remote buttons are pressed', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resovle({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Get remote div
         const remote = app.getByText('TV Remote').parentElement.parentElement;
@@ -60,7 +67,14 @@ describe('IrRemotes while recording macro', () => {
     });
 
     it('sends correct payload when AC remote buttons are pressed', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resovle({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Get remote div
         const remote = app.getByText('AC Remote').parentElement.parentElement;

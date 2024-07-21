@@ -166,7 +166,7 @@ export const ApiCardContextProvider = ({ children }) => {
             }
         } else {
             const error = await result.json();
-            console.log(`Failed to ${enable ? 'enable' : 'disable'} ${id},`, error);
+            console.log(`Failed to ${enable ? 'enable' : 'disable'} ${id},`, error.message);
         }
     };
 
@@ -180,7 +180,7 @@ export const ApiCardContextProvider = ({ children }) => {
             update_instance(id, {condition_met: true});
         } else {
             const error = await result.json();
-            console.log(`Failed to trigger ${id},`, error);
+            console.log(`Failed to trigger ${id},`, error.message);
         }
     };
 
@@ -200,7 +200,7 @@ export const ApiCardContextProvider = ({ children }) => {
             update_instance(id, {turned_on: state});
         } else {
             const error = await result.json();
-            console.log(`Failed to set power state for ${id},`, error);
+            console.log(`Failed to set power state for ${id},`, error.message);
         }
     };
 
@@ -244,7 +244,7 @@ export const ApiCardContextProvider = ({ children }) => {
             update_instance(id, {current_rule: instance.scheduled_rule});
         } else {
             const error = await result.json();
-            console.log(`Failed to reset ${id} rule,`, error);
+            console.log(`Failed to reset ${id} rule,`, error.message);
         }
     };
 
@@ -333,7 +333,7 @@ export const ApiCardContextProvider = ({ children }) => {
         );
         if (!result.ok) {
             const error = await result.json();
-            console.error('Failed to sync schedule rules', error);
+            console.error('Failed to sync schedule rules', error.message);
         }
     };
 

@@ -45,7 +45,11 @@ describe('App in record mode', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ On: "device5" })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
         }));
 
         // Get device5 power button, confirm does not have turn on or turn off class
@@ -98,7 +102,11 @@ describe('App in record mode', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ Triggered: "sensor4" })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
         }));
 
         // Get sensor4 trigger button, confirm does not have either class
@@ -131,7 +139,11 @@ describe('App in record mode', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ Disabled: "device5" })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
         }));
 
         // Get device5 card and top-right corner dropdown menu
@@ -189,7 +201,11 @@ describe('App in record mode', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ device6: 99 })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
         }));
 
         // Get device6 card, slider minus button, slider plus button
@@ -240,9 +256,10 @@ describe('App in record mode', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
+            status: 200,
             json: () => Promise.resolve({
-                "device1": "Reverted to scheduled rule",
-                "current_rule": 98
+                status: 'success',
+                message: 'Done'
             })
         }));
 
