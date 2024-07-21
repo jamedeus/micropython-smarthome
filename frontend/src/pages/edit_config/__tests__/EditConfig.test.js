@@ -84,7 +84,14 @@ describe('EditConfig', () => {
 
     it('checks for duplicate names when user types in name field', async () => {
         // Mock fetch function to simulate duplicate friendly name
-        global.fetch = jest.fn(() => Promise.resolve({ ok: false }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 409,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Config already exists with identical name'
+            })
+        }));
 
         // Get metadata section, friendly name field, enter name
         const metadata = app.getByText('Metadata').parentElement;
@@ -101,7 +108,14 @@ describe('EditConfig', () => {
         expect(nameField.classList).toContain('is-invalid');
 
         // Mock fetch function to simulate available friendly name
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Name available'
+            })
+        }));
 
         // Enter name in friendly name field, confirm invalid highlight disappeared
         await user.clear(nameField);
@@ -310,7 +324,11 @@ describe('EditConfig', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve("Config created.")
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Config created'
+            })
         }));
 
         // Click next twice, confirm page3 is visible
@@ -350,12 +368,18 @@ describe('EditConfig', () => {
             Promise.resolve({
                 ok: true,
                 status: 200,
-                json: () => Promise.resolve("Config created.")
+                json: () => Promise.resolve({
+                    status: 'success',
+                    message: 'Config created'
+                })
             }),
             Promise.resolve({
                 ok: false,
                 status: 404,
-                json: () => Promise.resolve('Target node offline')
+                json: () => Promise.resolve({
+                    status: 'error',
+                    message: 'Target node offline'
+                })
             })
         ];
         global.fetch = jest.fn(() => mockFetchResponses.shift());
@@ -376,12 +400,18 @@ describe('EditConfig', () => {
             Promise.resolve({
                 ok: true,
                 status: 200,
-                json: () => Promise.resolve("Config created.")
+                json: () => Promise.resolve({
+                    status: 'success',
+                    message: 'Config created'
+                })
             }),
             Promise.resolve({
                 ok: false,
                 status: 400,
-                json: () => Promise.resolve('Unexpected error')
+                json: () => Promise.resolve({
+                    status: 'error',
+                    message: 'Unexpected error'
+                })
             })
         ];
         global.fetch = jest.fn(() => mockFetchResponses.shift());
@@ -424,7 +454,10 @@ describe('EditConfig', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 418,
-            json: () => Promise.resolve({"Error": "Unexpected error"})
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unexpected error'
+            })
         }));
         global.alert = jest.fn();
 
@@ -435,7 +468,7 @@ describe('EditConfig', () => {
 
         // Click submit, confirm alert was shown with text from response
         await user.click(app.getByRole('button', { name: 'Submit' }));
-        expect(global.alert).toHaveBeenCalledWith('{"Error":"Unexpected error"}');
+        expect(global.alert).toHaveBeenCalledWith('"Unexpected error"');
 
         // Confirm did NOT redirect to overview
         expect(window.location.href).not.toBe('/config_overview');

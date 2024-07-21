@@ -242,7 +242,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 409,
-            json: () => Promise.resolve('Filesystem error')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Filesystem error'
+            })
         }));
 
         // Get new config table, enter IP in first input

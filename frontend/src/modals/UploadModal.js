@@ -63,7 +63,7 @@ const UploadModal = () => {
             showErrorModal({
                 title: "Upload Failed",
                 error: "failed",
-                body: error
+                body: error.message
             });
 
         // Unable to upload because node is unreachable
@@ -78,7 +78,8 @@ const UploadModal = () => {
 
         // Other error: show in alert, close modal
         } else {
-            alert(await response.json());
+            const error = await response.json();
+            alert(error.message);
             closeUploadModal();
         }
     };

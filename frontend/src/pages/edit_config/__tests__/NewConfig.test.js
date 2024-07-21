@@ -100,7 +100,11 @@ describe('NewConfig', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve('Default credentials set')
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Default credentials set'
+            })
         }));
 
         // Fill out wifi section
@@ -130,7 +134,11 @@ describe('NewConfig', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ On: "Config created." })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Config created'
+            })
         }));
 
         // Fill out metadata section
@@ -282,7 +290,11 @@ describe('NewConfig', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({ On: "Config created." })
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Config created'
+            })
         }));
 
         // Fill out metadata section
@@ -443,7 +455,11 @@ describe('NewConfig', () => {
         // Mock fetch function to simulate an existing config with the same name
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
-            status: 409
+            status: 409,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Config already exists with identical name'
+            })
         }));
 
         // Fill out first page
@@ -493,7 +509,11 @@ describe('NewConfig', () => {
         jest.clearAllMocks();
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            status: 200
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Config created'
+            })
         }));
 
         // Click overwrite button, confirm delete_config request was sent
