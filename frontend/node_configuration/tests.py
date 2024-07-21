@@ -624,7 +624,7 @@ class ConfirmRequiresPostTests(TestCaseBackupRestore):
         for endpoint in endpoints:
             response = self.client.get(endpoint)
             self.assertEqual(response.status_code, 405)
-            self.assertEqual(response.json(), {'Error': 'Must post data'})
+            self.assertEqual(response.json()['message'], 'Must post data')
 
 
 # Test edit config view
@@ -709,7 +709,7 @@ class EditConfigTests(TestCaseBackupRestore):
         # Attempt to edit non-existing node, verify error
         response = self.client.get('/edit_config/Fake')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Fake node not found'})
+        self.assertEqual(response.json()['message'], 'Fake node not found')
 
 
 # Test config generation page
@@ -815,7 +815,7 @@ class ReuploadAllTests(TestCaseBackupRestore):
         create_test_nodes()
 
         self.failed_to_connect = {
-            'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+            'message': 'Unable to connect to node, please make sure it is connected to wifi and try again.',
             'status': 404
         }
 
@@ -831,7 +831,10 @@ class ReuploadAllTests(TestCaseBackupRestore):
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'success': ['Test1', 'Test2', 'Test3'], 'failed': {}})
+            self.assertEqual(
+                response.json()['message'],
+                {'success': ['Test1', 'Test2', 'Test3'], 'failed': {}}
+            )
             self.assertEqual(mock_provision.call_count, 3)
 
     def test_reupload_all_partial_success(self):
@@ -841,7 +844,10 @@ class ReuploadAllTests(TestCaseBackupRestore):
             # Send request, validate response, validate that test1 and test3 succeeded while test2 failed
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'success': ['Test1', 'Test3'], 'failed': {'Test2': 'Offline'}})
+            self.assertEqual(
+                response.json()['message'],
+                {'success': ['Test1', 'Test3'], 'failed': {'Test2': 'Offline'}}
+            )
 
     def test_reupload_all_fail(self):
         # Expected response object
@@ -860,7 +866,7 @@ class ReuploadAllTests(TestCaseBackupRestore):
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), all_failed)
+            self.assertEqual(response.json()['message'], all_failed)
             self.assertEqual(mock_provision.call_count, 3)
 
     def test_reupload_all_fail_different_reasons(self):
@@ -880,7 +886,7 @@ class ReuploadAllTests(TestCaseBackupRestore):
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), all_failed_different_reasons)
+            self.assertEqual(response.json()['message'], all_failed_different_reasons)
 
 
 # Test endpoint called by frontend upload buttons (calls get_modules and provision)
@@ -906,7 +912,7 @@ class UploadTests(TestCaseBackupRestore):
             # Upload config, verify response
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Upload complete.')
+            self.assertEqual(response.json()['message'], 'Upload complete.')
 
         # Should create 1 Node, no configs
         self.assertEqual(len(Config.objects.all()), 1)
@@ -933,7 +939,7 @@ class UploadTests(TestCaseBackupRestore):
             # Reupload config (second URL parameter), verify response
             response = self.client.post('/upload/True', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Upload complete.')
+            self.assertEqual(response.json()['message'], 'Upload complete.')
 
         # Should have same number of configs and nodes
         self.assertEqual(len(Config.objects.all()), 3)
@@ -954,7 +960,10 @@ class UploadTests(TestCaseBackupRestore):
             # Reupload config (second URL parameter), verify error
             response = self.client.post('/upload', {'config': 'fake-config.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
-            self.assertEqual(response.json(), "ERROR: Config file doesn't exist - did you delete it manually?")
+            self.assertEqual(
+                response.json()['message'],
+                "Config file doesn't exist - did you delete it manually?"
+            )
 
         # Database should still be empty
         self.assertEqual(len(Config.objects.all()), 0)
@@ -973,7 +982,7 @@ class UploadTests(TestCaseBackupRestore):
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
             self.assertEqual(
-                response.json(),
+                response.json()['message'],
                 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
             )
 
@@ -996,7 +1005,7 @@ class UploadTests(TestCaseBackupRestore):
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 408)
             self.assertEqual(
-                response.json(),
+                response.json()['message'],
                 'Connection timed out - please press target node reset button, wait 30 seconds, and try again.'
             )
 
@@ -1010,7 +1019,7 @@ class UploadTests(TestCaseBackupRestore):
     def test_invalid_ip(self):
         response = self.client.post('/upload', {'ip': '123.456.678.90'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
+        self.assertEqual(response.json()['message'], 'Invalid IP 123.456.678.90')
 
 
 # Test view that uploads completed configs and dependencies to esp32 nodes
@@ -1037,7 +1046,7 @@ class ProvisionTests(TestCaseBackupRestore):
             self.assertEqual(response['status'], 404)
             self.assertEqual(
                 response['message'],
-                "Error: Unable to connect to node, please make sure it is connected to wifi and try again."
+                'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
             )
 
     def test_provision_connection_timeout(self):
@@ -1051,7 +1060,7 @@ class ProvisionTests(TestCaseBackupRestore):
             self.assertEqual(response['status'], 408)
             self.assertEqual(
                 response['message'],
-                "Connection timed out - please press target node reset button, wait 30 seconds, and try again."
+                'Connection timed out - please press target node reset button, wait 30 seconds, and try again.'
             )
 
     def test_provision_corrupt_filesystem(self):
@@ -1063,7 +1072,7 @@ class ProvisionTests(TestCaseBackupRestore):
 
             response = provision('123.45.67.89', 'password', 'test1.json', modules)
             self.assertEqual(response['status'], 409)
-            self.assertEqual(response['message'], "Failed due to filesystem error, please re-flash firmware.")
+            self.assertEqual(response['message'], 'Failed due to filesystem error, please re-flash firmware.')
 
 
 # Test view that connects to existing node, downloads config file, writes to database
@@ -1087,7 +1096,7 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
-                response.json(),
+                response.json()['message'],
                 {
                     'friendly_name': 'Test1',
                     'filename': 'test1.json',
@@ -1121,8 +1130,8 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
             self.assertEqual(
-                response.json(),
-                'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
+                response.json()['message'],
+                'Unable to connect to node, please make sure it is connected to wifi and try again.'
             )
 
         # Database should still be empty
@@ -1142,7 +1151,7 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
             # Post fake IP to endpoint, confirm error
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 409)
-            self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+            self.assertEqual(response.json()['message'], 'Config already exists with identical name')
 
         # Should still have 3
         self.assertEqual(len(Config.objects.all()), 3)
@@ -1155,7 +1164,7 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
     def test_invalid_ip(self):
         response = self.client.post('/restore_config', {'ip': '123.456.678.90'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
+        self.assertEqual(response.json()['message'], 'Invalid IP 123.456.678.90')
 
     # Should refuse to create in database if invalid config received
     def test_invalid_config_format(self):
@@ -1174,7 +1183,10 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
             # Post fake IP to endpoint, confirm error, confirm no models created
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 500)
-            self.assertEqual(response.json(), 'ERROR: Config format invalid, possibly outdated version.')
+            self.assertEqual(
+                response.json()['message'],
+                'Config format invalid, possibly outdated version.'
+            )
             self.assertEqual(len(Config.objects.all()), 0)
             self.assertEqual(len(Node.objects.all()), 0)
 
@@ -1822,12 +1834,12 @@ class WifiCredentialsTests(TestCaseBackupRestore):
 
         # Set default credentials, verify response + database
         response = self.client.post('/set_default_credentials', {'ssid': 'AzureDiamond', 'password': 'hunter2'})
-        self.assertEqual(response.json(), 'Default credentials set')
+        self.assertEqual(response.json()['message'], 'Default credentials set')
         self.assertEqual(len(WifiCredentials.objects.all()), 1)
 
         # Overwrite credentials, verify model only contains 1 entry
         response = self.client.post('/set_default_credentials', {'ssid': 'NewWifi', 'password': 'hunter2'})
-        self.assertEqual(response.json(), 'Default credentials set')
+        self.assertEqual(response.json()['message'], 'Default credentials set')
         self.assertEqual(len(WifiCredentials.objects.all()), 1)
 
     def test_print_method(self):
@@ -1853,7 +1865,7 @@ class GpsCoordinatesTests(TestCaseBackupRestore):
             '/set_default_location',
             {'name': 'Portland', 'lat': '45.689122409097', 'lon': '-122.63675124859863'}
         )
-        self.assertEqual(response.json(), 'Location set')
+        self.assertEqual(response.json()['message'], 'Location set')
         self.assertEqual(len(GpsCoordinates.objects.all()), 1)
 
         # Overwrite credentials, verify model only contains 1 entry
@@ -1861,7 +1873,7 @@ class GpsCoordinatesTests(TestCaseBackupRestore):
             '/set_default_location',
             {'name': 'Dallas', 'lat': '32.99171902655', 'lon': '-96.77213361367663'}
         )
-        self.assertEqual(response.json(), 'Location set')
+        self.assertEqual(response.json()['message'], 'Location set')
         self.assertEqual(len(GpsCoordinates.objects.all()), 1)
 
         # Confirm existing configs were updated
@@ -1884,22 +1896,22 @@ class DuplicateDetectionTests(TestCaseBackupRestore):
     def test_check_duplicate(self):
         # Should accept new name
         response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
-        self.assertEqual(response.json(), 'Name OK.')
+        self.assertEqual(response.json()['message'], 'Name available')
 
         # Create config with same name
         self.client.post('/generate_config_file', request_payload)
 
         # Should now reject (identical name)
         response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
-        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+        self.assertEqual(response.json()['message'], 'Config already exists with identical name')
 
         # Should reject regardless of capitalization
         response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
-        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+        self.assertEqual(response.json()['message'], 'Config already exists with identical name')
 
         # Should accept different name
         response = self.client.post('/check_duplicate', {'name': 'Unit Test'})
-        self.assertEqual(response.json(), 'Name OK.')
+        self.assertEqual(response.json()['message'], 'Name available')
 
     # Test second conditional in is_duplicate function (unreachable when used as
     # intended, prevents issues if advanced user creates Node from shell/admin)
@@ -1909,7 +1921,7 @@ class DuplicateDetectionTests(TestCaseBackupRestore):
 
         # Should reject, identical friendly name exists
         response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
-        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+        self.assertEqual(response.json()['message'], 'Config already exists with identical name')
 
 
 # Test delete config
@@ -1930,7 +1942,7 @@ class DeleteConfigTests(TestCaseBackupRestore):
         # Delete the Config created in setUp, confirm response message, confirm removed from database + disk
         response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Deleted unit-test-config.json')
+        self.assertEqual(response.json()['message'], 'Deleted unit-test-config.json')
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
@@ -1941,7 +1953,7 @@ class DeleteConfigTests(TestCaseBackupRestore):
         # Attempt to delete non-existing Config, confirm fails with correct message
         response = self.client.post('/delete_config', json.dumps('does-not-exist.json'))
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Failed to delete does-not-exist.json, does not exist')
+        self.assertEqual(response.json()['message'], 'Failed to delete does-not-exist.json, does not exist')
 
         # Confirm Config still exists
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1957,7 +1969,7 @@ class DeleteConfigTests(TestCaseBackupRestore):
             response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
             self.assertEqual(response.status_code, 500)
             self.assertEqual(
-                response.json(),
+                response.json()['message'],
                 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
             )
 
@@ -1977,7 +1989,7 @@ class DeleteConfigTests(TestCaseBackupRestore):
         # Simulate deleting through frontend, confirm normal response, confirm removed from database
         response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Deleted unit-test-config.json')
+        self.assertEqual(response.json()['message'], 'Deleted unit-test-config.json')
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
@@ -2008,7 +2020,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
         # Delete the Node created in setUp, confirm response message
         response = self.client.post('/delete_node', json.dumps('Test Node'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Deleted Test Node')
+        self.assertEqual(response.json()['message'], 'Deleted Test Node')
 
         # Confirm removed from database, disk, and cli_config.json
         self.assertEqual(len(Config.objects.all()), 0)
@@ -2025,7 +2037,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
         # Attempt to delete non-existing Node, confirm fails with correct message
         response = self.client.post('/delete_node', json.dumps('Wrong Node'))
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Failed to delete Wrong Node, does not exist')
+        self.assertEqual(response.json()['message'], 'Failed to delete Wrong Node, does not exist')
 
         # Confirm Node and Config still exist
         self.assertEqual(len(Config.objects.all()), 1)
@@ -2043,7 +2055,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
             response = self.client.post('/delete_node', json.dumps('Test Node'))
             self.assertEqual(response.status_code, 500)
             self.assertEqual(
-                response.json(),
+                response.json()['message'],
                 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
             )
 
@@ -2064,7 +2076,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
         # Delete Node, should ignore missing file on disk
         response = self.client.post('/delete_node', json.dumps('Test Node'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Deleted Test Node')
+        self.assertEqual(response.json()['message'], 'Deleted Test Node')
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertEqual(len(Node.objects.all()), 0)
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
@@ -2097,7 +2109,7 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
             request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
             response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Successfully uploaded to new IP')
+            self.assertEqual(response.json()['message'], 'Successfully uploaded to new IP')
 
             # Confirm node model IP changed, upload was called
             self.assertEqual(Node.objects.all()[0].ip, '192.168.1.255')
@@ -2111,7 +2123,7 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
         # Mock provision to return failure message without doing anything
         with patch('node_configuration.views.provision') as mock_provision:
             mock_provision.return_value = {
-                'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+                'message': 'Unable to connect to node, please make sure it is connected to wifi and try again.',
                 'status': 404
             }
 
@@ -2120,34 +2132,34 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
             response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 404)
             self.assertEqual(
-                response.json(),
-                "Error: Unable to connect to node, please make sure it is connected to wifi and try again."
+                response.json()['message'],
+                "Unable to connect to node, please make sure it is connected to wifi and try again."
             )
 
     def test_invalid_get_request(self):
         # Requires post, confirm errors
         response = self.client.get('/change_node_ip')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
     def test_invalid_parameters(self):
         # Make request with invalid IP, confirm error
         request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.555'}
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Invalid IP 192.168.1.555'})
+        self.assertEqual(response.json()['message'], 'Invalid IP 192.168.1.555')
 
         # Make request targeting non-existing node, confirm error
         request_payload = {'friendly_name': 'Test9', 'new_ip': '192.168.1.255'}
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), "Unable to change IP, node does not exist")
+        self.assertEqual(response.json()['message'], "Unable to change IP, node does not exist")
 
         # Make request with current IP, confirm error
         request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.123'}
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'New IP must be different than old'})
+        self.assertEqual(response.json()['message'], 'New IP must be different than old')
 
 
 # Test function that takes config file, returns list of dependencies for upload
@@ -2326,7 +2338,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Post frontend config generator payload to view
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Config created.')
+        self.assertEqual(response.json()['message'], 'Config created')
 
         # Confirm model was created
         self.assertEqual(len(Config.objects.all()), 1)
@@ -2348,7 +2360,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Send with edit argument (overwrite existing with same name instead of throwing duplicate error)
         response = self.client.post('/generate_config_file/True', json.dumps(modified_request_payload))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Config created.')
+        self.assertEqual(response.json()['message'], 'Config created')
 
         # Confirm same number of configs, no new config created
         self.assertEqual(len(Config.objects.all()), 1)
@@ -2369,13 +2381,13 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Post frontend config generator payload to view, confirm response + model created
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Config created.')
+        self.assertEqual(response.json()['message'], 'Config created')
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Post again, should throw error (duplicate name), should not create model
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 409)
-        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+        self.assertEqual(response.json()['message'], 'Config already exists with identical name')
         self.assertEqual(len(Config.objects.all()), 1)
 
     def test_invalid_config_file(self):
@@ -2389,7 +2401,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Post invalid payload, confirm rejected with correct error, confirm config not created
         response = self.client.post('/generate_config_file', json.dumps(invalid_request_payload))
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Cabinet Lights: Invalid default rule 9001'})
+        self.assertEqual(response.json()['message'], 'Cabinet Lights: Invalid default rule 9001')
         self.assertEqual(len(Config.objects.all()), 0)
 
     # Original bug: Did not catch DoesNotExist error, leading to traceback
@@ -2398,7 +2410,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Attempt to edit non-existing config file, verify error, confirm not created
         response = self.client.post('/generate_config_file/True', request_payload)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Config not found'})
+        self.assertEqual(response.json()['message'], 'Config not found')
         self.assertEqual(len(Config.objects.all()), 0)
 
     # Original bug: Did not catch schedule rules with no timestamp (didn't make
@@ -2414,7 +2426,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Post invalid payload, confirm rejected with correct error, confirm config not created
         response = self.client.post('/generate_config_file', json.dumps(invalid_request_payload))
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Lamp: Missing schedule rule timestamp'})
+        self.assertEqual(response.json()['message'], 'Lamp: Missing schedule rule timestamp')
         self.assertEqual(len(Config.objects.all()), 0)
 
 
@@ -2594,7 +2606,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             data = {'keyword': 'morning', 'timestamp': '08:00'}
             response = self.client.post('/add_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Keyword created')
+            self.assertEqual(response.json()['message'], 'Keyword created')
             self.assertEqual(len(ScheduleKeyword.objects.all()), 4)
 
             # Should call add and save once for each node
@@ -2628,7 +2640,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             data = {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'}
             response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Keyword updated')
+            self.assertEqual(response.json()['message'], 'Keyword updated')
 
             # Should call add and save once for each node, should not call remove
             self.assertEqual(self.mock_add.call_count, 2)
@@ -2659,7 +2671,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'}
             response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Keyword updated')
+            self.assertEqual(response.json()['message'], 'Keyword updated')
 
             # Should call add, remove, and save once for each node
             self.assertEqual(self.mock_add.call_count, 2)
@@ -2692,7 +2704,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             # Send request to delete keyword, verify response
             response = self.client.post('/delete_schedule_keyword', {'keyword': 'first'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Keyword deleted')
+            self.assertEqual(response.json()['message'], 'Keyword deleted')
 
             # Should call remove and save once for each node, should not call add
             self.assertEqual(self.mock_add.call_count, 0)
@@ -2741,7 +2753,10 @@ class ScheduleKeywordErrorTests(TestCaseBackupRestore):
         data = {'keyword': 'morning', 'timestamp': '8:00'}
         response = self.client.post('/add_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}")
+        self.assertEqual(
+            response.json()['message'],
+            "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}"
+        )
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
     def test_add_duplicate_keyword(self):
@@ -2750,7 +2765,10 @@ class ScheduleKeywordErrorTests(TestCaseBackupRestore):
         data = {'keyword': 'sunrise', 'timestamp': '08:00'}
         response = self.client.post('/add_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "{'keyword': ['Schedule keyword with this Keyword already exists.']}")
+        self.assertEqual(
+            response.json()['message'],
+            "{'keyword': ['Schedule keyword with this Keyword already exists.']}"
+        )
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
     def test_edit_invalid_timestamp(self):
@@ -2758,52 +2776,58 @@ class ScheduleKeywordErrorTests(TestCaseBackupRestore):
         data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '8:00'}
         response = self.client.post('/edit_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}")
+        self.assertEqual(
+            response.json()['message'],
+            "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}"
+        )
 
     def test_edit_duplicate_keyword(self):
         # Send request, confirm error
         data = {'keyword_old': 'first', 'keyword_new': 'sunrise', 'timestamp_new': '08:00'}
         response = self.client.post('/edit_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "{'keyword': ['Schedule keyword with this Keyword already exists.']}")
+        self.assertEqual(
+            response.json()['message'],
+            "{'keyword': ['Schedule keyword with this Keyword already exists.']}"
+        )
 
     def test_edit_non_existing_keyword(self):
         # Send request to edit keyword, verify error
         data = {'keyword_old': 'fake', 'keyword_new': 'second', 'timestamp_new': '8:00'}
         response = self.client.post('/edit_schedule_keyword', data)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Keyword not found'})
+        self.assertEqual(response.json()['message'], 'Keyword not found')
 
     def test_delete_non_existing_keyword(self):
         # Send request to delete keyword, verify error
         response = self.client.post('/delete_schedule_keyword', {'keyword': 'fake'})
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Keyword not found'})
+        self.assertEqual(response.json()['message'], 'Keyword not found')
 
     # Should not be able to delete sunrise or sunset
     def test_delete_required_keyword(self):
         # Send request to delete keyword, verify error
         response = self.client.post('/delete_schedule_keyword', {'keyword': 'sunrise'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "sunrise is required and cannot be deleted")
+        self.assertEqual(response.json()['message'], "sunrise is required and cannot be deleted")
 
         response = self.client.post('/delete_schedule_keyword', {'keyword': 'sunset'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "sunset is required and cannot be deleted")
+        self.assertEqual(response.json()['message'], "sunset is required and cannot be deleted")
 
     def test_invalid_get_request(self):
         # All keyword endpoints require post, confirm errors
         response = self.client.get('/add_schedule_keyword')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
         response = self.client.get('/edit_schedule_keyword')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
         response = self.client.get('/delete_schedule_keyword')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
 
 # Test custom management commands used to import/export config files

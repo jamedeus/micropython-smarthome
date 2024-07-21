@@ -27,6 +27,22 @@ REPO_DIR = settings.REPO_DIR
 NODE_PASSWD = settings.NODE_PASSWD
 
 
+# Helper function for successful API responses
+def standard_response(message, status=200):
+    return JsonResponse(
+        {'status': 'success', 'message': message},
+        status=status
+    )
+
+
+# Helper function for error API responses
+def error_response(message, status=400):
+    return JsonResponse(
+        {'status': 'error', 'message': message},
+        status=status
+    )
+
+
 # Decorator used throw error if request is not POST
 # Passes parsed JSON body to wrapped function as first arg
 def requires_post(func):
@@ -35,7 +51,7 @@ def requires_post(func):
         if request.method == "POST":
             data = json.loads(request.body.decode("utf-8"))
         else:
-            return JsonResponse({'Error': 'Must post data'}, status=405)
+            return error_response(message='Must post data', status=405)
         return func(data, **kwargs)
     return wrapper
 
@@ -43,12 +59,15 @@ def requires_post(func):
 @requires_post
 def upload(data, reupload=False):
     if not valid_ip(data["ip"]):
-        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, status=400)
+        return error_response(message=f'Invalid IP {data["ip"]}', status=400)
 
     try:
         config = Config.objects.get(filename=data["config"])
     except Config.DoesNotExist:
-        return JsonResponse("ERROR: Config file doesn't exist - did you delete it manually?", safe=False, status=404)
+        return error_response(
+            message="Config file doesn't exist - did you delete it manually?",
+            status=404
+        )
 
     # Get dependencies, upload
     modules = get_modules(config.config, REPO_DIR)
@@ -65,7 +84,10 @@ def upload(data, reupload=False):
         config.node = new
         config.save()
 
-    return JsonResponse(response['message'], safe=False, status=response['status'])
+    if response['status'] == 200:
+        return standard_response(message=response['message'])
+    else:
+        return error_response(message=response['message'], status=response['status'])
 
 
 def reupload_all(request):
@@ -94,7 +116,7 @@ def reupload_all(request):
     print('\nreupload_all results:')
     print(json.dumps(report, indent=4))
 
-    return JsonResponse(report, status=200)
+    return standard_response(message=report)
 
 
 @requires_post
@@ -103,15 +125,17 @@ def delete_config(data):
         # Get model entry
         target = Config.objects.get(filename=data)
     except Config.DoesNotExist:
-        return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
+        return error_response(
+            message=f"Failed to delete {data}, does not exist",
+            status=404
+        )
 
     try:
         target.delete()
-        return JsonResponse(f"Deleted {data}", safe=False, status=200)
+        return standard_response(message=f"Deleted {data}")
     except PermissionError:
-        return JsonResponse(
-            "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
-            safe=False,
+        return error_response(
+            message="Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
             status=500
         )
 
@@ -122,16 +146,18 @@ def delete_node(data):
         # Get model entry
         node = Node.objects.get(friendly_name=data)
     except Node.DoesNotExist:
-        return JsonResponse(f"Failed to delete {data}, does not exist", safe=False, status=404)
+        return error_response(
+            message=f"Failed to delete {data}, does not exist",
+            status=404
+        )
 
     try:
         # Delete from database and disk
         node.delete()
-        return JsonResponse(f"Deleted {data}", safe=False, status=200)
+        return standard_response(message=f"Deleted {data}")
     except PermissionError:
-        return JsonResponse(
-            "Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
-            safe=False,
+        return error_response(
+            message="Failed to delete, permission denied. This will break other features, check your filesystem permissions.",
             status=500
         )
 
@@ -139,16 +165,25 @@ def delete_node(data):
 @requires_post
 def change_node_ip(data):
     if not valid_ip(data["new_ip"]):
-        return JsonResponse({'Error': f'Invalid IP {data["new_ip"]}'}, status=400)
+        return error_response(
+            message=f'Invalid IP {data["new_ip"]}',
+            status=400
+        )
 
     try:
         # Get model entry, delete from disk + database
         node = Node.objects.get(friendly_name=data['friendly_name'])
     except Node.DoesNotExist:
-        return JsonResponse("Unable to change IP, node does not exist", safe=False, status=404)
+        return error_response(
+            message="Unable to change IP, node does not exist",
+            status=404
+        )
 
     if node.ip == data["new_ip"]:
-        return JsonResponse({'Error': 'New IP must be different than old'}, status=400)
+        return error_response(
+            message='New IP must be different than old',
+            status=400
+        )
 
     # Get dependencies, upload to new IP
     modules = get_modules(node.config.config, REPO_DIR)
@@ -159,9 +194,12 @@ def change_node_ip(data):
         node.ip = data["new_ip"]
         node.save()
 
-        return JsonResponse("Successfully uploaded to new IP", safe=False, status=200)
+        return standard_response(message="Successfully uploaded to new IP")
     else:
-        return JsonResponse(response['message'], safe=False, status=response['status'])
+        return error_response(
+            message=response['message'],
+            status=response['status']
+        )
 
 
 def config_overview(request):
@@ -260,7 +298,7 @@ def edit_config(request, name):
     try:
         target = Node.objects.get(friendly_name=name)
     except Node.DoesNotExist:
-        return JsonResponse({'Error': f'{name} node not found'}, status=404)
+        return error_response(message=f'{name} node not found', status=404)
 
     # Load config from database
     config = target.config.config
@@ -315,9 +353,12 @@ def check_duplicate(data):
     filename = get_config_filename(friendly_name)
 
     if is_duplicate(filename, friendly_name):
-        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+        return error_response(
+            message='Config already exists with identical name',
+            status=409
+        )
     else:
-        return JsonResponse("Name OK.", safe=False, status=200)
+        return standard_response(message='Name available')
 
 
 @requires_post
@@ -339,11 +380,14 @@ def generate_config_file(data, edit_existing=False):
         try:
             model_entry = Config.objects.get(filename=filename)
         except Config.DoesNotExist:
-            return JsonResponse({'Error': 'Config not found'}, status=404)
+            return error_response(message='Config not found', status=404)
 
     # Prevent overwriting existing config, unless editing existing
     if not edit_existing and is_duplicate(filename, data["metadata"]["id"]):
-        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+        return error_response(
+            message='Config already exists with identical name',
+            status=409
+        )
 
     # If default location set, add coordinates to config
     if len(GpsCoordinates.objects.all()) > 0:
@@ -357,7 +401,7 @@ def generate_config_file(data, edit_existing=False):
     valid = validate_full_config(data)
     if valid is not True:
         print(f"\nERROR: {valid}\n")
-        return JsonResponse({'Error': valid}, status=400)
+        return error_response(message=valid, status=400)
 
     # If creating new config, add to models + write to disk
     if not edit_existing:
@@ -369,7 +413,7 @@ def generate_config_file(data, edit_existing=False):
         model_entry.config = data
         model_entry.save()
 
-    return JsonResponse("Config created.", safe=False, status=200)
+    return standard_response(message='Config created')
 
 
 @requires_post
@@ -382,7 +426,7 @@ def set_default_credentials(data):
     new = WifiCredentials(ssid=data["ssid"], password=data["password"])
     new.save()
 
-    return JsonResponse("Default credentials set", safe=False, status=200)
+    return standard_response(message='Default credentials set')
 
 
 @requires_post
@@ -405,21 +449,20 @@ def set_default_location(data):
         config.config['metadata']['gps'] = {'lat': data['lat'], 'lon': data['lon']}
         config.save()
 
-    return JsonResponse("Location set", safe=False, status=200)
+    return standard_response(message='Location set')
 
 
 # Downloads config file from an existing node and saves to database + disk
 @requires_post
 def restore_config(data):
     if not valid_ip(data["ip"]):
-        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, status=400)
+        return error_response(message=f'Invalid IP {data["ip"]}', status=400)
 
     # Open conection, detect if node connected to network
     node = Webrepl(data["ip"], NODE_PASSWD)
     if not node.open_connection():
-        return JsonResponse(
-            "Error: Unable to connect to node, please make sure it is connected to wifi and try again.",
-            safe=False,
+        return error_response(
+            message='Unable to connect to node, please make sure it is connected to wifi and try again.',
             status=404
         )
 
@@ -432,7 +475,10 @@ def restore_config(data):
 
     # Prevent overwriting existing config
     if is_duplicate(filename, config['metadata']['id']):
-        return JsonResponse("ERROR: Config already exists with identical name.", safe=False, status=409)
+        return error_response(
+            message='Config already exists with identical name',
+            status=409
+        )
 
     # Overwrite schedule keywords with keywords from database
     config['metadata']['schedule_keywords'] = get_schedule_keywords_dict()
@@ -440,7 +486,10 @@ def restore_config(data):
     # Confirm received config is valid
     valid = validate_full_config(config)
     if valid is not True:
-        return JsonResponse("ERROR: Config format invalid, possibly outdated version.", safe=False, status=500)
+        return error_response(
+            message='Config format invalid, possibly outdated version.',
+            status=500
+        )
 
     # Create Config model entry
     config = Config(config=config, filename=filename)
@@ -461,7 +510,7 @@ def restore_config(data):
         "filename": node.config.filename,
         "ip": node.ip
     }
-    return JsonResponse(response, safe=False, status=200)
+    return standard_response(message=response)
 
 
 @requires_post
@@ -470,7 +519,7 @@ def add_schedule_keyword_config(data):
     try:
         ScheduleKeyword.objects.create(keyword=data["keyword"], timestamp=data["timestamp"])
     except ValidationError as ex:
-        return JsonResponse(str(ex), safe=False, status=400)
+        return error_response(message=str(ex), status=400)
 
     # Add keyword to all existing nodes in parallel
     commands = [(node.ip, [data["keyword"], data["timestamp"]]) for node in Node.objects.all()]
@@ -486,7 +535,7 @@ def add_schedule_keyword_config(data):
         node.config.config['metadata']['schedule_keywords'] = all_keywords
         node.config.save()
 
-    return JsonResponse("Keyword created", safe=False, status=200)
+    return standard_response(message='Keyword created')
 
 
 @requires_post
@@ -494,7 +543,7 @@ def edit_schedule_keyword_config(data):
     try:
         target = ScheduleKeyword.objects.get(keyword=data["keyword_old"])
     except ScheduleKeyword.DoesNotExist:
-        return JsonResponse({'Error': 'Keyword not found'}, status=404)
+        return error_response(message='Keyword not found', status=404)
 
     target.keyword = data["keyword_new"]
     target.timestamp = data["timestamp_new"]
@@ -502,7 +551,7 @@ def edit_schedule_keyword_config(data):
     try:
         target.save()
     except ValidationError as ex:
-        return JsonResponse(str(ex), safe=False, status=400)
+        return error_response(message=str(ex), status=400)
 
     # If timestamp changed: Call add to overwrite existing keyword
     if data["keyword_old"] == data["keyword_new"]:
@@ -532,7 +581,7 @@ def edit_schedule_keyword_config(data):
         node.config.config['metadata']['schedule_keywords'] = all_keywords
         node.config.save()
 
-    return JsonResponse("Keyword updated", safe=False, status=200)
+    return standard_response(message='Keyword updated')
 
 
 @requires_post
@@ -540,12 +589,12 @@ def delete_schedule_keyword_config(data):
     try:
         target = ScheduleKeyword.objects.get(keyword=data["keyword"])
     except ScheduleKeyword.DoesNotExist:
-        return JsonResponse({'Error': 'Keyword not found'}, status=404)
+        return error_response(message='Keyword not found', status=404)
 
     try:
         target.delete()
     except IntegrityError as ex:
-        return JsonResponse(str(ex), safe=False, status=400)
+        return error_response(message=str(ex), status=400)
 
     # Remove keyword from all existing nodes in parallel
     commands = [(node.ip, [data["keyword"]]) for node in Node.objects.all()]
@@ -561,7 +610,7 @@ def delete_schedule_keyword_config(data):
         node.config.config['metadata']['schedule_keywords'] = all_keywords
         node.config.save()
 
-    return JsonResponse("Keyword deleted", safe=False, status=200)
+    return standard_response(message='Keyword deleted')
 
 
 # Call save_schedule_keywords for all nodes in parallel

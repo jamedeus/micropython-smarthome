@@ -201,7 +201,7 @@ class SendCommandTests(TestCaseBackupRestore):
         # Make get request (requires post)
         response = self.client.get('/send_command')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
     def test_send_command_connection_failed(self):
         payload = {"command": "turn_off", "instance": "device1", "target": "192.168.1.123"}
@@ -569,7 +569,7 @@ class InvalidMacroTests(TestCaseBackupRestore):
         # Requires POST request
         response = self.client.get('/add_macro_action')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
     def test_add_invalid_macro_action(self):
         # Confirm no macros
@@ -1580,7 +1580,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
         # Make invalid get request (requires post), confirm error
         response = self.client.get('/sync_schedule_keywords')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
 
 # Test endpoint that syncs config file from node to database when user modifies schedule rules
@@ -1623,7 +1623,7 @@ class SyncScheduleRulesTests(TestCaseBackupRestore):
         # Send get request (requires post), verify error
         response = self.client.get('/sync_schedule_rules')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
     def test_invalid_node(self):
         # Send request with IP that does not exist in database, verify error
