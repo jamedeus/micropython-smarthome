@@ -51,7 +51,7 @@ describe('WifiModal', () => {
 
         // Press Restore button, confirm correct request sent
         await user.click(app.getByRole('button', { name: 'Restore' }));
-        expect(global.fetch).toHaveBeenCalledWith('restore_config', {
+        expect(global.fetch).toHaveBeenCalledWith('/restore_config', {
             method: 'POST',
             body: JSON.stringify({
                 "ip": "123.123.123.123"
@@ -92,7 +92,7 @@ describe('WifiModal', () => {
 
         // Press enter key, confirm correct request sent
         await user.type(within(modal).getByRole('textbox'), '{enter}');
-        expect(global.fetch).toHaveBeenCalledWith('restore_config', {
+        expect(global.fetch).toHaveBeenCalledWith('/restore_config', {
             method: 'POST',
             body: JSON.stringify({
                 "ip": "123.123.123.123"

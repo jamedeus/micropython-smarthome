@@ -272,7 +272,7 @@ describe('App', () => {
         await user.click(app.getByRole('button', { name: 'Delete' }));
 
         // Confirm correct request sent
-        expect(global.fetch).toHaveBeenCalledWith('delete_config', {
+        expect(global.fetch).toHaveBeenCalledWith('/delete_config', {
             method: 'POST',
             body: JSON.stringify('new-config.json'),
             headers: postHeaders
@@ -384,7 +384,7 @@ describe('App', () => {
 
         // Click delete, confirm correct request sent
         await user.click(within(modal).getByRole('button', { name: 'Delete' }));
-        expect(global.fetch).toHaveBeenCalledWith('delete_node', {
+        expect(global.fetch).toHaveBeenCalledWith('/delete_node', {
             method: 'POST',
             body: JSON.stringify('Bathroom'),
             headers: postHeaders
@@ -434,7 +434,7 @@ describe('App', () => {
 
         // Click add button, confirm correct request made
         await user.click(within(newKeywordRow).getByRole('button'));
-        expect(global.fetch).toHaveBeenCalledWith('add_schedule_keyword', {
+        expect(global.fetch).toHaveBeenCalledWith('/add_schedule_keyword', {
             method: 'POST',
             body: JSON.stringify({
                 keyword: 'New Keyword',
@@ -482,7 +482,7 @@ describe('App', () => {
 
         // Confirm correct request was sent
         await user.click(within(newKeywordRow).getByRole('button'));
-        expect(global.fetch).toHaveBeenCalledWith('add_schedule_keyword', {
+        expect(global.fetch).toHaveBeenCalledWith('/add_schedule_keyword', {
             method: 'POST',
             body: JSON.stringify({
                 keyword: 'New Keyword',
@@ -571,7 +571,7 @@ describe('App', () => {
 
         // Click edit button, confirm correct request made
         await user.click(within(firstRow).getByRole('button'));
-        expect(global.fetch).toHaveBeenCalledWith('edit_schedule_keyword', {
+        expect(global.fetch).toHaveBeenCalledWith('/edit_schedule_keyword', {
             method: 'POST',
             body: JSON.stringify({
                 keyword_old: 'morning',
@@ -601,7 +601,7 @@ describe('App', () => {
         await user.type(firstRow.children[0].children[0], '{enter}');
 
         // Confirm edit request was sent
-        expect(global.fetch).toHaveBeenCalledWith('edit_schedule_keyword', {
+        expect(global.fetch).toHaveBeenCalledWith('/edit_schedule_keyword', {
             method: 'POST',
             body: JSON.stringify({
                 keyword_old: 'morning',
@@ -616,7 +616,7 @@ describe('App', () => {
         await user.clear(firstRow.children[1].children[0]);
         await user.type(firstRow.children[1].children[0], '12:34');
         await user.type(firstRow.children[1].children[0], '{enter}');
-        expect(global.fetch).toHaveBeenCalledWith('edit_schedule_keyword', {
+        expect(global.fetch).toHaveBeenCalledWith('/edit_schedule_keyword', {
             method: 'POST',
             body: JSON.stringify({
                 keyword_old: 'New Name',
@@ -662,7 +662,7 @@ describe('App', () => {
 
         // Click delete button on first row, confirm correct request sent
         await user.click(within(table.children[0]).getByRole('button'));
-        expect(global.fetch).toHaveBeenCalledWith('delete_schedule_keyword', {
+        expect(global.fetch).toHaveBeenCalledWith('/delete_schedule_keyword', {
             method: 'POST',
             body: JSON.stringify({
                 keyword: 'morning'

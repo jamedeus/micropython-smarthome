@@ -33,7 +33,7 @@ export const RestoreModal = () => {
 
         // Send API call, wait for backend to download config file from target node
         const body = {'ip' : ipAddress };
-        const response = await send_post_request("restore_config", body);
+        const response = await send_post_request("/restore_config", body);
 
         // Restored successfully
         if (response.ok) {

@@ -45,7 +45,7 @@ describe('WifiModal', () => {
 
         // Click OK button, confirm correct request sent
         await user.click(app.getByRole('button', { name: 'OK' }));
-        expect(global.fetch).toHaveBeenCalledWith('set_default_credentials', {
+        expect(global.fetch).toHaveBeenCalledWith('/set_default_credentials', {
             method: 'POST',
             body: JSON.stringify({
                 "ssid": "mywifi",
@@ -68,7 +68,7 @@ describe('WifiModal', () => {
 
         // Simulate user pressing enter in ssid field, confirm request sent
         await user.type(app.getByLabelText('Network:'), '{enter}');
-        expect(global.fetch).toHaveBeenCalledWith('set_default_credentials', {
+        expect(global.fetch).toHaveBeenCalledWith('/set_default_credentials', {
             method: 'POST',
             body: JSON.stringify({
                 "ssid": "mywifi",
@@ -81,7 +81,7 @@ describe('WifiModal', () => {
         // Open modal again, simulate user pressing enter in password field
         await user.click(app.getByText('Set WIFI credentials'));
         await user.type(app.getByLabelText('Password:'), '{enter}');
-        expect(global.fetch).toHaveBeenCalledWith('set_default_credentials', {
+        expect(global.fetch).toHaveBeenCalledWith('/set_default_credentials', {
             method: 'POST',
             body: JSON.stringify({
                 "ssid": "mywifi",

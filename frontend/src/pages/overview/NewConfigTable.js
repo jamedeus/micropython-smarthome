@@ -37,7 +37,7 @@ const NewConfigRow = ({ filename, friendlyName }) => {
 
     // Handler for confirm delete button in modal
     const delete_config = async (filename) => {
-        let result = await send_post_request("delete_config", filename);
+        let result = await send_post_request("/delete_config", filename);
 
         // Remove filename from state if successfully deleted
         if (result.ok) {

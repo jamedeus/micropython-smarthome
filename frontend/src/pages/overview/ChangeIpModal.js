@@ -38,7 +38,7 @@ const ChangeIpModal = () => {
             new_ip: ipAddress,
             friendly_name: target
         };
-        const response = await send_post_request("change_node_ip", body);
+        const response = await send_post_request("/change_node_ip", body);
 
         // Restored successfully
         if (response.ok) {

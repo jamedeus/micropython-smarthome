@@ -53,7 +53,7 @@ const GpsModal = () => {
 
     // Called when user clicks result, posts coordinates to backend
     const select_location = async (name, lat, lon) => {
-        send_post_request('set_default_location', {name, lat, lon});
+        send_post_request('/set_default_location', {name, lat, lon});
         setVisible(false);
     };
 

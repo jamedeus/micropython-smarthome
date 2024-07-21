@@ -47,7 +47,7 @@ describe('WifiModal', () => {
 
         // Press Change button, confirm correct request sent
         await user.click(app.getByRole('button', { name: 'Change' }));
-        expect(global.fetch).toHaveBeenCalledWith('change_node_ip', {
+        expect(global.fetch).toHaveBeenCalledWith('/change_node_ip', {
             method: 'POST',
             body: JSON.stringify({
                 "new_ip": "123.123.123.123",
@@ -79,7 +79,7 @@ describe('WifiModal', () => {
 
         // Press enter key, confirm correct request sent
         await user.type(within(modal).getByRole('textbox'), '{enter}');
-        expect(global.fetch).toHaveBeenCalledWith('change_node_ip', {
+        expect(global.fetch).toHaveBeenCalledWith('/change_node_ip', {
             method: 'POST',
             body: JSON.stringify({
                 "new_ip": "123.123.123.123",

@@ -260,7 +260,7 @@ describe('GpsModal', () => {
         await user.click(app.getByText(/Portland, Multnomah County, Oregon/));
 
         // Confirm correct request was sent
-        expect(global.fetch).toHaveBeenCalledWith('set_default_location', {
+        expect(global.fetch).toHaveBeenCalledWith('/set_default_location', {
             method: 'POST',
             body: JSON.stringify({
                 "name": "Portland, Multnomah County, Oregon, 97204, United States",

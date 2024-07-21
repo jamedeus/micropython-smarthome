@@ -51,7 +51,7 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
         // Change delete button to loading animation, make API call
         setButton("loading");
         const result = await send_post_request(
-            "edit_schedule_keyword",
+            "/edit_schedule_keyword",
             payload
         );
 
@@ -71,7 +71,7 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
         // Change delete button to loading animation, make API call
         setButton("loading");
         const result = await send_post_request(
-            "delete_schedule_keyword",
+            "/delete_schedule_keyword",
             {keyword: keyword}
         );
 
@@ -172,7 +172,7 @@ const NewKeywordRow = ({ addKeyword }) => {
             keyword: keyword,
             timestamp: timestamp
         };
-        const result = await send_post_request("add_schedule_keyword", payload);
+        const result = await send_post_request("/add_schedule_keyword", payload);
 
         // If successful add to context (renders new row) + reset new keyword row
         if (result.ok) {

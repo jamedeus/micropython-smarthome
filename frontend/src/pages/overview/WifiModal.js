@@ -22,7 +22,7 @@ const WifiModal = () => {
     // Submit handler, post credentials to backend and close modal
     const setWifiCredentials = () => {
         send_post_request(
-            "set_default_credentials",
+            "/set_default_credentials",
             {ssid: ssid, password: password}
         );
         setVisible(false);
