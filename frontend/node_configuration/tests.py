@@ -92,13 +92,13 @@ class NodeTests(TestCaseBackupRestore):
         with self.assertRaises(ValidationError):
             Node.objects.create(friendly_name='Unit Test Node', ip='123.456.789.10')
 
-        # Should refuse to create negative floor
+        # Should refuse to create negative floor below -999
         with self.assertRaises(ValidationError):
-            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='-5')
+            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='-1000')
 
         # Should refuse to create floor over 999
         with self.assertRaises(ValidationError):
-            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='9999')
+            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='1000')
 
         # Should refuse to create non-int floor
         with self.assertRaises(ValidationError):
@@ -106,7 +106,10 @@ class NodeTests(TestCaseBackupRestore):
 
         # Should refuse to create with friendly name >50 characters
         with self.assertRaises(ValidationError):
-            Config.objects.create(config=test_config_1, filename='Unrealistically Long Friendly Name That Nobody Needs')
+            Config.objects.create(
+                config=test_config_1,
+                filename='Unrealistically Long Friendly Name That Nobody Needs'
+            )
 
         # Confirm no nodes were created
         self.assertEqual(len(Node.objects.all()), 0)
@@ -149,6 +152,18 @@ class NodeTests(TestCaseBackupRestore):
         cli_config = get_cli_config()
         self.assertNotIn('unit-test-node', cli_config['nodes'].keys())
         self.assertFalse(os.path.exists(config_path))
+
+    # Original issue: Node model validator raised ValidationError if floor was
+    # negative, but config validator and edit_config page only require floor to
+    # be between -999 and 999. If the user created a config with negative floor
+    # and uploaded a 500 error was returned and the Node model was not created.
+    def test_regression_create_node_with_negative_floor(self):
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Create node with negative floor, confirm exists in database
+        node = Node.objects.create(friendly_name='Basement', ip='123.45.67.89', floor='-1')
+        self.assertEqual(len(Node.objects.all()), 1)
+        self.assertIsInstance(node, Node)
 
 
 # Test the Config model
