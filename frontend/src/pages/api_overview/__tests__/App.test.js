@@ -57,7 +57,14 @@ describe('App', () => {
     });
 
     it('sends the correct request when "Reboot all" option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Click "Reboot all" dropdown option in top-right corner menu
         const header = app.getByText('Api Overview').parentElement;
@@ -69,7 +76,14 @@ describe('App', () => {
     });
 
     it('sends the correct request when "Reset all rules" option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Click "Reset all rules" dropdown option in top-right corner menu
         const header = app.getByText('Api Overview').parentElement;
@@ -81,7 +95,14 @@ describe('App', () => {
     });
 
     it('sends the correct request when a macro is run', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true, status: 200 }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Click "Late" macro button, confirm correct request sent
         await user.click(app.getByText('Late'));
@@ -96,7 +117,14 @@ describe('App', () => {
     });
 
     it('sends the correct request when a macro is deleted', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true, status: 200 }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Get "Late" macro button, open dropdown next to it
         const macroButton = app.getByText('Late').parentElement;
@@ -121,7 +149,14 @@ describe('App', () => {
     });
 
     it('starts recording macro when a new name is entered', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ status: 200 }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Name New macro available'
+            })
+        }));
 
         // Get macro section
         const macros = app.container.querySelector('.macro-container');
@@ -174,7 +209,14 @@ describe('App', () => {
 
     it('does not start recording when a duplicate name is entered', async () => {
         // Mock fetch to return status indicating duplicate name
-        global.fetch = jest.fn(() => Promise.resolve({ status: 409 }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 409,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Name New macro name is already in use'
+            })
+        }));
 
         // Get macro section, open collapse, enter duplicate name in input
         const macros = app.container.querySelector('.macro-container');
@@ -195,7 +237,15 @@ describe('App', () => {
     });
 
     it('stops recording when "Finish Recording" button is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ status: 200 }));
+        // TODO don't think this is actually called?
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Get macro section, start recording new macro
         const macros = app.container.querySelector('.macro-container');
@@ -244,7 +294,14 @@ describe('App', () => {
     });
 
     it('does not open modal if skip_instructions cookie exists', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ status: 200 }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Name New macro name available'
+            })
+        }));
 
         // Simulate cookie set when user clicks don't show again
         document.cookie = 'skip_instructions=true; path=/';
@@ -279,7 +336,14 @@ describe('App', () => {
     });
 
     it('makes correct request when macro action is deleted', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Open EditMacroModal for "Late" macro, get modal and actions table
         const macroButton = app.getByText('Late').parentElement;
@@ -294,7 +358,14 @@ describe('App', () => {
     });
 
     it('deletes macro when last action is deleted in edit modal', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Done'
+            })
+        }));
 
         // Open EditMacroModal for "Bright" macro, get modal and actions table
         const macroButton = app.getByText('Bright').parentElement;
@@ -343,7 +414,12 @@ describe('App', () => {
         // Mock fetch function to simulate failed API call, mock alert function
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
-            status: 404
+            status: 404,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Macro Late does not exist'
+            })
+
         }));
         global.alert = jest.fn();
 
