@@ -148,7 +148,7 @@ class SendCommandTests(TestCaseBackupRestore):
             # Make API call, confirm response, confirm parse_command called once
             response = self.client.post('/send_command', payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {"On": "device1"})
+            self.assertEqual(response.json()['message'], {"On": "device1"})
             self.assertEqual(mock_parse_command.call_count, 1)
 
     def test_send_command_with_extra_whitespace(self):
@@ -211,7 +211,7 @@ class SendCommandTests(TestCaseBackupRestore):
             # Make API call, confirm response, confirm parse_command called once
             response = self.client.post('/send_command', payload)
             self.assertEqual(response.status_code, 502)
-            self.assertEqual(response.json(), "Error: Unable to connect.")
+            self.assertEqual(response.json()['message'], "Unable to connect")
             self.assertEqual(mock_parse_command.call_count, 1)
 
 
@@ -230,44 +230,44 @@ class HTTPEndpointTests(TestCaseBackupRestore):
         with patch('api_endpoints.request', return_value={'humid': 48.05045, 'temp': 70.25787}):
             response = self.client.get('/get_climate_data/Test1')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'humid': 48.05045, 'temp': 70.25787})
+            self.assertEqual(response.json()['message'], {'humid': 48.05045, 'temp': 70.25787})
 
     def test_get_climate_data_offline(self):
-        with patch('api_endpoints.request', side_effect=OSError("Error: Unable to connect.")):
+        with patch('api_endpoints.request', side_effect=OSError("Unable to connect")):
             response = self.client.get('/get_climate_data/Test1')
             self.assertEqual(response.status_code, 502)
-            self.assertEqual(response.json(), "Error: Unable to connect.")
+            self.assertEqual(response.json()['message'], "Unable to connect")
 
     def test_get_climate_does_not_exist(self):
         response = self.client.get('/get_climate_data/Fake_Name')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"Error": "Node named Fake_Name not found"})
+        self.assertEqual(response.json()['message'], 'Node named Fake_Name not found')
 
     def test_get_status(self):
         # Mock request to return status object
         with patch('api_endpoints.request', return_value=config1_status):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), config1_status)
+            self.assertEqual(response.json()['message'], config1_status)
 
     def test_get_status_offline(self):
         # Mock request to simulate offline target node
-        with patch('api_endpoints.request', side_effect=OSError("Error: Unable to connect.")):
+        with patch('api_endpoints.request', side_effect=OSError("Unable to connect")):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 502)
-            self.assertEqual(response.json(), "Error: Unable to connect.")
+            self.assertEqual(response.json()['message'], "Unable to connect")
 
     def test_get_status_time_out(self):
         # Mock request to simulate network connection time out
         with patch('api_endpoints.request', return_value="Error: Request timed out"):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 502)
-            self.assertEqual(response.json(), "Error: Request timed out")
+            self.assertEqual(response.json()['message'], "Error: Request timed out")
 
     def test_get_status_does_not_exist(self):
         response = self.client.get('/get_status/Fake_Name')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"Error": "Node named Fake_Name not found"})
+        self.assertEqual(response.json()['message'], 'Node named Fake_Name not found')
 
 
 # Test model that stores and plays recorded macros
@@ -494,13 +494,13 @@ class MacroTests(TestCaseBackupRestore):
         # Should be available
         response = self.client.get('/macro_name_available/New')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Name New available.')
+        self.assertEqual(response.json()['message'], 'Name New available')
 
         # Create in database, should no longer be available
         Macro.objects.create(name='New')
         response = self.client.get('/macro_name_available/New')
         self.assertEqual(response.status_code, 409)
-        self.assertEqual(response.json(), 'Name New already in use.')
+        self.assertEqual(response.json()['message'], 'Name New already in use')
 
     def test_add_macro_action(self):
         # Confirm no macros
@@ -509,7 +509,7 @@ class MacroTests(TestCaseBackupRestore):
         # Send request, verify response, verify macro created
         response = self.client.post('/add_macro_action', self.action1)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Done')
+        self.assertEqual(response.json()['message'], 'Done')
         self.assertEqual(len(Macro.objects.all()), 1)
 
     def test_delete_macro_action(self):
@@ -520,7 +520,7 @@ class MacroTests(TestCaseBackupRestore):
         # Call view to delete just-created action
         response = self.client.get('/delete_macro_action/First Macro/0')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Done')
+        self.assertEqual(response.json()['message'], 'Done')
 
         # Should still exist
         # TODO the frontend deletes it when last action removed, should this be moved to backend?
@@ -535,7 +535,7 @@ class MacroTests(TestCaseBackupRestore):
         # Call view to delete macro
         response = self.client.get('/delete_macro/test')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Done')
+        self.assertEqual(response.json()['message'], 'Done')
         self.assertEqual(len(Macro.objects.all()), 0)
 
     def test_run_macro(self):
@@ -549,7 +549,7 @@ class MacroTests(TestCaseBackupRestore):
             # Call view to run macro, confirm response, confirm parse_command called twice
             response = self.client.get('/run_macro/First Macro')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Done')
+            self.assertEqual(response.json()['message'], 'Done')
             self.assertEqual(mock_parse_command.call_count, 2)
 
 
@@ -589,7 +589,7 @@ class InvalidMacroTests(TestCaseBackupRestore):
         # Send request, verify response, verify macro not created
         response = self.client.post('/add_macro_action', payload)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Invalid action')
+        self.assertEqual(response.json()['message'], 'Invalid action')
         self.assertEqual(len(Macro.objects.all()), 0)
 
     def test_delete_invalid_macro_action(self):
@@ -609,7 +609,7 @@ class InvalidMacroTests(TestCaseBackupRestore):
         # Attempt to delete non-existing macro action, verify response
         response = self.client.get('/delete_macro_action/First Macro/5')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'ERROR: Macro action does not exist.')
+        self.assertEqual(response.json()['message'], 'Macro action does not exist')
         self.assertEqual(len(Macro.objects.all()), 1)
 
     def test_invalid_macro_does_not_exist(self):
@@ -619,15 +619,15 @@ class InvalidMacroTests(TestCaseBackupRestore):
         # Call all endpoints, confirm correct error
         response = self.client.get('/run_macro/not-real')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Error: Macro not-real does not exist.')
+        self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
 
         response = self.client.get('/delete_macro/not-real')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Error: Macro not-real does not exist.')
+        self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
 
         response = self.client.get('/delete_macro_action/not-real/1')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Error: Macro not-real does not exist.')
+        self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
 
 
 # Test actions in overview top-right dropdown menu
@@ -646,7 +646,7 @@ class TestGlobalCommands(TestCaseBackupRestore):
             # Create 3 test nodes
             response = self.client.get('/reset_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
     def test_reset_all_offline(self):
         # Mock request to simulate offline nodes
@@ -654,7 +654,7 @@ class TestGlobalCommands(TestCaseBackupRestore):
             # Create 3 test nodes
             response = self.client.get('/reset_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
     def test_reboot_all(self):
         # Mock request to return expected response for each node
@@ -662,7 +662,7 @@ class TestGlobalCommands(TestCaseBackupRestore):
             # Create 3 test nodes
             response = self.client.get('/reboot_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
     def test_reboot_all_offline(self):
         # Mock request to simulate offline nodes
@@ -670,7 +670,7 @@ class TestGlobalCommands(TestCaseBackupRestore):
             # Create 3 test nodes
             response = self.client.get('/reboot_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
 
 # Test successful calls to all API endpoints with mocked return values
@@ -967,7 +967,7 @@ class TestEndpointErrors(TestCaseBackupRestore):
         # Test endpoints with same missing arg error in loop
         for endpoint in required_arg_endpoints:
             response = parse_command('192.168.1.123', [endpoint])
-            self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+            self.assertEqual(response, 'Error: Missing required parameters')
 
     def test_disable_invalid_arg(self):
         # Send request, verify response
@@ -1089,11 +1089,11 @@ class TestEndpointErrors(TestCaseBackupRestore):
 
     def test_ir_add_macro_action_missing_args(self):
         response = parse_command('192.168.1.123', ['ir_add_macro_action', 'test1'])
-        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+        self.assertEqual(response, 'Error: Missing required parameters')
 
     def test_set_gps_coords_missing_args(self):
         response = parse_command('192.168.1.123', ['set_gps_coords', '-90'])
-        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+        self.assertEqual(response, 'Error: Missing required parameters')
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):
@@ -1295,7 +1295,7 @@ class ApiCardTests(TestCaseBackupRestore):
 
     def test_failed_connection(self):
         # Mock request to simulate offline target node
-        with patch('api_endpoints.request', side_effect=OSError("Error: Unable to connect.")):
+        with patch('api_endpoints.request', side_effect=OSError("Unable to connect")):
             # Request page, confirm unable_to_connect template used
             response = self.client.get('/api/Test1')
             self.assertEqual(response.status_code, 200)
@@ -1336,7 +1336,7 @@ class ApiCardTests(TestCaseBackupRestore):
         # Request page, confirm correct template used
         response = self.client.get('/api/fake-node')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"Error": "Node named fake-node not found"})
+        self.assertEqual(response.json()['message'], 'Node named fake-node not found')
 
     # Original issue: View only caught errors while opening connection to the node,
     # but did not handle situations where connection was successful and an error
@@ -1406,7 +1406,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
     def test_add_errors(self):
         # Send request with no args, verify error
         response = parse_command('192.168.1.123', ['add_schedule_keyword'])
-        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+        self.assertEqual(response, 'Error: Missing required parameters')
 
         # Send request with no timestamp, verify error
         response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test'])
@@ -1415,7 +1415,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
     def test_remove_errors(self):
         # Send request with no args, verify error
         response = parse_command('192.168.1.123', ['remove_schedule_keyword'])
-        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+        self.assertEqual(response, 'Error: Missing required parameters')
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):
@@ -1458,7 +1458,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
             # Send request, verify response
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should not be called, no keywords to upload
             self.assertFalse(mock_parse_command.called)
@@ -1470,7 +1470,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 3 times: add 2 missing keywords, save
             self.assertEqual(mock_parse_command.call_count, 3)
@@ -1489,7 +1489,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
 
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 6 times: add 5 missing keywords, save
             self.assertEqual(mock_parse_command.call_count, 6)
@@ -1515,7 +1515,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
             # Send request, verify response
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 3 times: overwrite each keyword, save
             self.assertEqual(mock_parse_command.call_count, 3)
@@ -1538,7 +1538,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
             # Send request, verify response
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 3 times: Add new keyword, delete old keyword, save
             self.assertEqual(mock_parse_command.call_count, 3)
@@ -1562,7 +1562,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
             # Send request for Node with all 5, should delete same keywords deleted above
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 4 times: Delete 3 keywords no longer in database, save
             self.assertEqual(mock_parse_command.call_count, 4)
@@ -1611,7 +1611,7 @@ class SyncScheduleRulesTests(TestCaseBackupRestore):
             # Send request, verify response + function calls
             response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.123'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done syncing schedule rules")
+            self.assertEqual(response.json()['message'], "Done syncing schedule rules")
             self.assertTrue(mock_open_connection.called)
             self.assertTrue(mock_get_file.called_with('config.json'))
 
@@ -1629,7 +1629,7 @@ class SyncScheduleRulesTests(TestCaseBackupRestore):
         # Send request with IP that does not exist in database, verify error
         response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.100'})
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"Error": "Node with IP 192.168.1.100 not found"})
+        self.assertEqual(response.json()['message'], 'Node with IP 192.168.1.100 not found')
 
     def test_failed_to_save_rules(self):
         # Mock parse_command to return request timeout error
@@ -1637,7 +1637,7 @@ class SyncScheduleRulesTests(TestCaseBackupRestore):
             # Send request, verify error
             response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.123'})
             self.assertEqual(response.status_code, 500)
-            self.assertEqual(response.json(), {"Error": "Failed to save rules"})
+            self.assertEqual(response.json()['message'], 'Failed to save rules')
 
 
 # Test endpoints used to create and modify IR macros
@@ -1666,7 +1666,7 @@ class IrMacroTests(TestCaseBackupRestore):
             # Make API call, confirm response, confirm parse_command called once
             response = self.client.post('/edit_ir_macro', payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Confirm parse_command was called 9 times with correct args
             # Delete old macro, create new macro with same name, add 6 actions, save
@@ -1729,7 +1729,7 @@ class IrMacroTests(TestCaseBackupRestore):
             # Make API call, confirm response
             response = self.client.post('/add_ir_macro', payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Confirm parse_command was called 8 times with correct args
             # Create new macro, add 6 actions, save
