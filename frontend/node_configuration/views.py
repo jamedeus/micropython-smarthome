@@ -35,7 +35,7 @@ def requires_post(func):
         if request.method == "POST":
             data = json.loads(request.body.decode("utf-8"))
         else:
-            return JsonResponse({'Error': 'Must post data'}, safe=False, status=405)
+            return JsonResponse({'Error': 'Must post data'}, status=405)
         return func(data, **kwargs)
     return wrapper
 
@@ -43,7 +43,7 @@ def requires_post(func):
 @requires_post
 def upload(data, reupload=False):
     if not valid_ip(data["ip"]):
-        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
+        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, status=400)
 
     try:
         config = Config.objects.get(filename=data["config"])
@@ -94,7 +94,7 @@ def reupload_all(request):
     print('\nreupload_all results:')
     print(json.dumps(report, indent=4))
 
-    return JsonResponse(report, safe=False, status=200)
+    return JsonResponse(report, status=200)
 
 
 @requires_post
@@ -139,7 +139,7 @@ def delete_node(data):
 @requires_post
 def change_node_ip(data):
     if not valid_ip(data["new_ip"]):
-        return JsonResponse({'Error': f'Invalid IP {data["new_ip"]}'}, safe=False, status=400)
+        return JsonResponse({'Error': f'Invalid IP {data["new_ip"]}'}, status=400)
 
     try:
         # Get model entry, delete from disk + database
@@ -148,7 +148,7 @@ def change_node_ip(data):
         return JsonResponse("Unable to change IP, node does not exist", safe=False, status=404)
 
     if node.ip == data["new_ip"]:
-        return JsonResponse({'Error': 'New IP must be different than old'}, safe=False, status=400)
+        return JsonResponse({'Error': 'New IP must be different than old'}, status=400)
 
     # Get dependencies, upload to new IP
     modules = get_modules(node.config.config, REPO_DIR)
@@ -260,7 +260,7 @@ def edit_config(request, name):
     try:
         target = Node.objects.get(friendly_name=name)
     except Node.DoesNotExist:
-        return JsonResponse({'Error': f'{name} node not found'}, safe=False, status=404)
+        return JsonResponse({'Error': f'{name} node not found'}, status=404)
 
     # Load config from database
     config = target.config.config
@@ -339,7 +339,7 @@ def generate_config_file(data, edit_existing=False):
         try:
             model_entry = Config.objects.get(filename=filename)
         except Config.DoesNotExist:
-            return JsonResponse({'Error': 'Config not found'}, safe=False, status=404)
+            return JsonResponse({'Error': 'Config not found'}, status=404)
 
     # Prevent overwriting existing config, unless editing existing
     if not edit_existing and is_duplicate(filename, data["metadata"]["id"]):
@@ -357,7 +357,7 @@ def generate_config_file(data, edit_existing=False):
     valid = validate_full_config(data)
     if valid is not True:
         print(f"\nERROR: {valid}\n")
-        return JsonResponse({'Error': valid}, safe=False, status=400)
+        return JsonResponse({'Error': valid}, status=400)
 
     # If creating new config, add to models + write to disk
     if not edit_existing:
@@ -412,7 +412,7 @@ def set_default_location(data):
 @requires_post
 def restore_config(data):
     if not valid_ip(data["ip"]):
-        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, safe=False, status=400)
+        return JsonResponse({'Error': f'Invalid IP {data["ip"]}'}, status=400)
 
     # Open conection, detect if node connected to network
     node = Webrepl(data["ip"], NODE_PASSWD)
@@ -494,7 +494,7 @@ def edit_schedule_keyword_config(data):
     try:
         target = ScheduleKeyword.objects.get(keyword=data["keyword_old"])
     except ScheduleKeyword.DoesNotExist:
-        return JsonResponse({'Error': 'Keyword not found'}, safe=False, status=404)
+        return JsonResponse({'Error': 'Keyword not found'}, status=404)
 
     target.keyword = data["keyword_new"]
     target.timestamp = data["timestamp_new"]
@@ -540,7 +540,7 @@ def delete_schedule_keyword_config(data):
     try:
         target = ScheduleKeyword.objects.get(keyword=data["keyword"])
     except ScheduleKeyword.DoesNotExist:
-        return JsonResponse({'Error': 'Keyword not found'}, safe=False, status=404)
+        return JsonResponse({'Error': 'Keyword not found'}, status=404)
 
     try:
         target.delete()

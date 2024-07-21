@@ -29,7 +29,7 @@ def get_target_node(func):
         try:
             node = Node.objects.get(friendly_name=node)
         except Node.DoesNotExist:
-            return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
+            return JsonResponse({"Error": f"Node named {node} not found"}, status=404)
         return func(request, node, **kwargs)
     return wrapper
 
@@ -252,7 +252,7 @@ def sync_schedule_rules(data):
     try:
         node = Node.objects.get(ip=data['ip'])
     except Node.DoesNotExist:
-        return JsonResponse({"Error": f"Node with IP {data['ip']} not found"}, safe=False, status=404)
+        return JsonResponse({"Error": f"Node with IP {data['ip']} not found"}, status=404)
 
     # Save schedule rules to disk on node
     response = parse_command(node.ip, ['save_rules'])
@@ -270,7 +270,7 @@ def sync_schedule_rules(data):
 
         return JsonResponse("Done syncing schedule rules", safe=False, status=200)
     else:
-        return JsonResponse({"Error": "Failed to save rules"}, safe=False, status=500)
+        return JsonResponse({"Error": "Failed to save rules"}, status=500)
 
 
 @requires_post
