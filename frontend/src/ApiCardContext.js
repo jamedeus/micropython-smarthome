@@ -136,10 +136,10 @@ export const ApiCardContextProvider = ({ children }) => {
         }
 
         // Send API call to node
-        const result = await send_command(payload);
+        const response = await send_command(payload);
 
         // If successful update state (re-render immediately, not after update)
-        if (result.ok) {
+        if (response.ok) {
             update_instance(id, { enabled: true });
             if (enable) {
                 // Ensure current_rule is not string (avoid NaN on slider)
@@ -165,7 +165,7 @@ export const ApiCardContextProvider = ({ children }) => {
                 update_instance(id, { enabled: false });
             }
         } else {
-            const error = await result.json();
+            const error = await response.json();
             console.log(`Failed to ${enable ? 'enable' : 'disable'} ${id},`, error.message);
         }
     };
@@ -173,13 +173,13 @@ export const ApiCardContextProvider = ({ children }) => {
     const trigger_sensor = async (id) => {
         // Send API call to node
         const payload = {command: 'trigger_sensor', instance: id};
-        const result = await send_command(payload);
+        const response = await send_command(payload);
 
         // If successful make same change in state (re-render immediately)
-        if (result.ok) {
+        if (response.ok) {
             update_instance(id, {condition_met: true});
         } else {
-            const error = await result.json();
+            const error = await response.json();
             console.log(`Failed to trigger ${id},`, error.message);
         }
     };
@@ -193,13 +193,13 @@ export const ApiCardContextProvider = ({ children }) => {
         }
 
         // Send API call to node
-        const result = await send_command(payload);
+        const response = await send_command(payload);
 
         // If successful make same change in state (re-render immediately)
-        if (result.ok) {
+        if (response.ok) {
             update_instance(id, {turned_on: state});
         } else {
-            const error = await result.json();
+            const error = await response.json();
             console.log(`Failed to set power state for ${id},`, error.message);
         }
     };
@@ -211,8 +211,11 @@ export const ApiCardContextProvider = ({ children }) => {
             instance: id,
             rule: rule
         };
-        const result = await send_command(payload);
-        console.log(result);
+        const response = await send_command(payload);
+        if (!response.ok) {
+            const error = await response.json();
+            console.log(`Failed to set rule for ${id},`, error.message);
+        }
     };
 
     // Handler for rule sliders and buttons, updates context state immediately,
@@ -229,27 +232,30 @@ export const ApiCardContextProvider = ({ children }) => {
             instance: id,
             rule: rule
         };
-        const result = await send_command(payload);
-        console.log(result);
+        const response = await send_command(payload);
+        if (!response.ok) {
+            const error = await response.json();
+            console.log(`Failed to set rule for ${id},`, error.message);
+        }
     }, 150), []);
 
     // Called by reset option in dropdown, replaces current_rule with scheduled_rule
     const reset_rule = async (id) => {
         // Send API call to node
-        const result = await send_command({command: 'reset_rule', instance: id});
+        const response = await send_command({command: 'reset_rule', instance: id});
 
         // If successful make same change in state (re-render immediately)
-        if (result.ok) {
+        if (response.ok) {
             const instance = get_instance_section(id);
             update_instance(id, {current_rule: instance.scheduled_rule});
         } else {
-            const error = await result.json();
+            const error = await response.json();
             console.log(`Failed to reset ${id} rule,`, error.message);
         }
     };
 
     const add_schedule_rule = async (id, timestamp, rule) => {
-        const result = await send_command({
+        const response = await send_command({
             command: 'add_rule',
             instance: id,
             time: timestamp,
@@ -257,7 +263,7 @@ export const ApiCardContextProvider = ({ children }) => {
         });
 
         // Add new rule to state if successful
-        if (result.ok) {
+        if (response.ok) {
             const instance = get_instance_section(id);
             const rules = { ...instance.schedule };
             rules[timestamp] = rule;
@@ -270,14 +276,14 @@ export const ApiCardContextProvider = ({ children }) => {
     };
 
     const delete_schedule_rule = async (id, timestamp) => {
-        const result = await send_command({
+        const response = await send_command({
             command: 'remove_rule',
             instance: id,
             rule: timestamp
         });
 
         // Add new rule to state if successful
-        if (result.ok) {
+        if (response.ok) {
             const instance = get_instance_section(id);
             const rules = { ...instance.schedule };
             delete rules[timestamp];
@@ -291,7 +297,7 @@ export const ApiCardContextProvider = ({ children }) => {
 
     const edit_schedule_rule = async (id, oldTimestamp, newTimestamp, rule) => {
         // Add new rule (overwrite existing if timestamp not changed)
-        const result = await send_command({
+        const response = await send_command({
             command: 'add_rule',
             instance: id,
             time: newTimestamp,
@@ -299,18 +305,18 @@ export const ApiCardContextProvider = ({ children }) => {
             overwrite: 'overwrite'
         });
 
-        if (result.ok) {
+        if (response.ok) {
             const instance = get_instance_section(id);
             const rules = { ...instance.schedule };
 
             // If timestamp was changed delete old rule
             if (oldTimestamp != newTimestamp) {
-                const result = await send_command({
+                const response = await send_command({
                     command: 'remove_rule',
                     instance: id,
                     rule: oldTimestamp
                 });
-                if (result.ok) {
+                if (response.ok) {
                     delete rules[oldTimestamp];
                 }
             }
@@ -327,12 +333,12 @@ export const ApiCardContextProvider = ({ children }) => {
 
     // Called when user clicks yes on SaveRulesToast
     const sync_schedule_rules = async () => {
-        const result = await send_post_request(
+        const response = await send_post_request(
             '/sync_schedule_rules',
             {ip: targetIP}
         );
-        if (!result.ok) {
-            const error = await result.json();
+        if (!response.ok) {
+            const error = await response.json();
             console.error('Failed to sync schedule rules', error.message);
         }
     };
