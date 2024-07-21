@@ -12,12 +12,9 @@ from Webrepl import Webrepl
 from api.models import Macro
 from api_endpoints import endpoint_map
 from helper_functions import (
-    valid_ip,
-    valid_timestamp,
     is_device,
     get_schedule_keywords_dict,
-    get_device_and_sensor_metadata,
-    convert_celsius_temperature
+    get_device_and_sensor_metadata
 )
 
 
