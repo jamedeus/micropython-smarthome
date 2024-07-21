@@ -219,7 +219,7 @@ describe('NewConfig', () => {
 
         // Click submit, confirm correct request sent
         await user.click(app.getByRole('button', { name: 'Submit' }));
-        expect(global.fetch).toHaveBeenCalledWith('generate_config_file', {
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file', {
             method: 'POST',
             body: JSON.stringify({
                 "metadata": {
@@ -388,7 +388,7 @@ describe('NewConfig', () => {
 
         // Click submit, confirm correct request sent
         await user.click(app.getByRole('button', { name: 'Submit' }));
-        expect(global.fetch).toHaveBeenCalledWith('generate_config_file', {
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file', {
             method: 'POST',
             body: JSON.stringify({
                 "metadata": {
@@ -462,7 +462,7 @@ describe('NewConfig', () => {
         await user.click(app.getByRole('button', { name: 'Submit' }));
 
         // Confirm correct request was went
-        expect(global.fetch).toHaveBeenCalledWith('generate_config_file', {
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file', {
             method: 'POST',
             body: JSON.stringify({
                 "metadata": {
@@ -498,14 +498,14 @@ describe('NewConfig', () => {
 
         // Click overwrite button, confirm delete_config request was sent
         await user.click(app.getByRole('button', { name: 'Overwrite' }));
-        expect(global.fetch).toHaveBeenCalledWith('delete_config', {
+        expect(global.fetch).toHaveBeenCalledWith('/delete_config', {
             method: 'POST',
             body: JSON.stringify('basement.json'),
             headers: postHeaders
         });
 
         // Confirm config was submitted again, page redirected to overview
-        expect(global.fetch).toHaveBeenCalledWith('generate_config_file', {
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file', {
             method: 'POST',
             body: JSON.stringify({
                 "metadata": {

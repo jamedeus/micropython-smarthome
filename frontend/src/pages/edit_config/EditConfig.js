@@ -149,7 +149,7 @@ const EditConfig = () => {
 
         // Overwrites if editing existing config, otherwise create config
         const response = await send_post_request(
-            edit_existing ? "generate_config_file/True" : "generate_config_file",
+            edit_existing ? "/generate_config_file/True" : "/generate_config_file",
             config
         );
 
@@ -187,7 +187,7 @@ const EditConfig = () => {
         const target_filename = friendlyNameToFilename(config.metadata.id);
         // Close error modal, delete existing file, resubmit
         hideErrorModal();
-        await send_post_request("delete_config", target_filename);
+        await send_post_request("/delete_config", target_filename);
         await submitButton();
     };
 

@@ -9,7 +9,6 @@ urlpatterns = [
     # Optional argument contains name of existing node to overwrite
     path('generate_config_file', views.generate_config_file, name='generate_config_file'),
     path('generate_config_file/<str:edit_existing>', views.generate_config_file, name='generate_config_file'),
-    path('edit_config/generate_config_file/<str:edit_existing>', views.generate_config_file, name='generate_config_file'),
 
     # Post node name, returns bool
     path('check_duplicate', views.check_duplicate, name='check_duplicate'),

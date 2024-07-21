@@ -320,7 +320,7 @@ describe('EditConfig', () => {
 
         // Click submit button, confirm correct request sent
         await user.click(app.getByRole('button', { name: 'Submit' }));
-        expect(global.fetch).toHaveBeenCalledWith('generate_config_file/True', {
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file/True', {
             method: 'POST',
             body: JSON.stringify(existingConfigContext.config),
             headers: postHeaders
@@ -474,7 +474,7 @@ describe('EditConfig', () => {
         await user.click(app.getByRole('button', { name: 'Submit' }));
 
         // Confirm correct config was submitted
-        expect(global.fetch).toHaveBeenCalledWith('generate_config_file/True', {
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file/True', {
             method: 'POST',
             body: JSON.stringify({
                 ...existingConfigContext.config,
@@ -540,7 +540,7 @@ describe('EditConfig', () => {
 
         // Click submit button, confirm payload contains modified rules
         await user.click(app.getByText('Submit'));
-        expect(global.fetch).toHaveBeenCalledWith('generate_config_file/True', {
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file/True', {
             method: 'POST',
             body: JSON.stringify({
                 ...existingConfigContext.config,
@@ -590,7 +590,7 @@ describe('EditConfig', () => {
         await user.click(app.getByRole('button', { name: 'Next' }));
         await user.click(app.getByRole('button', { name: 'Next' }));
         await user.click(app.getByText('Submit'));
-        expect(global.fetch).toHaveBeenCalledWith('generate_config_file/True', {
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file/True', {
             method: 'POST',
             body: JSON.stringify({
                 ...existingConfigContext.config,
@@ -631,7 +631,7 @@ describe('EditConfig', () => {
         // Go to page3, click submit, confirm payload contains correct config
         await user.click(app.getByRole('button', { name: 'Next' }));
         await user.click(app.getByText('Submit'));
-        expect(global.fetch).toHaveBeenCalledWith('generate_config_file/True', {
+        expect(global.fetch).toHaveBeenCalledWith('/generate_config_file/True', {
             method: 'POST',
             body: JSON.stringify({
                 ...existingConfigContext.config,
