@@ -108,7 +108,7 @@ describe('WifiModal', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 418,
-            text: () => Promise.resolve("I'm a teapot")
+            json: () => Promise.resolve({"Error": "I'm a teapot"})
         }));
 
         // Enter new IP address in modal input, click submnit button
@@ -118,7 +118,7 @@ describe('WifiModal', () => {
         await user.click(app.getByRole('button', { name: 'Change' }));
 
         // Confirm error modal with arbitrary error text appeared
-        expect(app.getByText("I'm a teapot")).not.toBeNull();
+        expect(app.getByText('{"Error":"I\'m a teapot"}')).not.toBeNull();
     });
 
     it('closes modal when X button or background is clicked', async () => {

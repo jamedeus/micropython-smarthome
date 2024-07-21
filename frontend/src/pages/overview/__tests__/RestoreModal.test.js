@@ -136,7 +136,7 @@ describe('WifiModal', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 418,
-            text: () => Promise.resolve("I'm a teapot")
+            json: () => Promise.resolve({"Error": "I'm a teapot"})
         }));
         global.alert = jest.fn();
 
@@ -147,7 +147,7 @@ describe('WifiModal', () => {
         await user.click(app.getByRole('button', { name: 'Restore' }));
 
         // Confirm arbitrary error was shown in alert
-        expect(global.alert).toHaveBeenCalledWith("I'm a teapot");
+        expect(global.alert).toHaveBeenCalledWith('{"Error":"I\'m a teapot"}');
     });
 
     it('closes modal when X button or background is clicked', async () => {

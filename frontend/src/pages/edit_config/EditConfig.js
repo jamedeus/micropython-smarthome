@@ -176,7 +176,8 @@ const EditConfig = () => {
 
         // If other error, display in alert
         } else {
-            alert(await response.text());
+            const error = await response.json();
+            alert(JSON.stringify(error));
             setHighlightInvalid(true);
         }
     };

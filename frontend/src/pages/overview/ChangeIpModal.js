@@ -64,10 +64,11 @@ const ChangeIpModal = () => {
         } else {
             // Hide modal, show error modal with response from backend
             setVisible(false);
+            const error = await response.json();
             showErrorModal({
                 title: "Error",
                 error: "",
-                body: await response.text()
+                body: JSON.stringify(error)
             });
         }
     };

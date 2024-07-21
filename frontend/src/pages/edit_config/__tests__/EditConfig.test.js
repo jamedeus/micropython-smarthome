@@ -424,7 +424,7 @@ describe('EditConfig', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 418,
-            text: () => Promise.resolve("Unexpected error")
+            json: () => Promise.resolve({"Error": "Unexpected error"})
         }));
         global.alert = jest.fn();
 
@@ -435,7 +435,7 @@ describe('EditConfig', () => {
 
         // Click submit, confirm alert was shown with text from response
         await user.click(app.getByRole('button', { name: 'Submit' }));
-        expect(global.alert).toHaveBeenCalledWith("Unexpected error");
+        expect(global.alert).toHaveBeenCalledWith('{"Error":"Unexpected error"}');
 
         // Confirm did NOT redirect to overview
         expect(window.location.href).not.toBe('/config_overview');

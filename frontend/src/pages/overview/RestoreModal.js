@@ -68,7 +68,8 @@ export const RestoreModal = () => {
 
         // Other error, show in alert
         } else {
-            alert(await response.text());
+            const error = await response.json();
+            alert(JSON.stringify(error));
         }
     };
 
