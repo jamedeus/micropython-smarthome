@@ -129,7 +129,13 @@ def delete_config(data):
         )
 
     try:
-        target.delete()
+        # If config has been uploaded delete related node (also deletes config)
+        if target.node:
+            target.node.delete()
+        # Otherwise delete config
+        else:
+            target.delete()
+
         return standard_response(message=f"Deleted {data}")
     except PermissionError:
         return error_response(

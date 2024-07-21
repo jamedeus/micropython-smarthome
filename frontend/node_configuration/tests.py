@@ -2008,6 +2008,31 @@ class DeleteConfigTests(TestCaseBackupRestore):
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
+    # Original bug: The delete_config endpoint did not check if the config had
+    # a Node reverse relation. If the user created a new config with the same
+    # friendly name as an existing node and then clicked "Overwrite" in the
+    # duplicate warning modal (calls delete_config, not delete_node) this would
+    # result in a Node with no config and prevent the overview from loading.
+    def test_regression_delete_config_with_associated_node(self):
+        # Create Node, add Config (created in setUp) reverse relation
+        node = Node.objects.create(friendly_name="Test Node", ip="192.168.1.123", floor="5")
+        config = Config.objects.all()[0]
+        config.node = node
+        config.save()
+
+        # Confirm 1 node and 1 config exist
+        self.assertEqual(len(Node.objects.all()), 1)
+        self.assertEqual(len(Config.objects.all()), 1)
+
+        # Delete config, confirm correct response
+        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['message'], 'Deleted unit-test-config.json')
+
+        # Confirm both models were deleted, not just config
+        self.assertEqual(len(Node.objects.all()), 0)
+        self.assertEqual(len(Config.objects.all()), 0)
+
 
 class DeleteNodeTests(TestCaseBackupRestore):
     def setUp(self):
