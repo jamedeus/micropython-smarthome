@@ -21,8 +21,8 @@ const DebugModal = () => {
             command: 'get_attributes',
             instance: id
         });
-        const attributes = await response.json();
-        setAttributes(attributes);
+        const data = await response.json();
+        setAttributes(data);
     };
 
     return (

@@ -27,13 +27,13 @@ export const FadeModal = () => {
     // Close modal, send command to start fade
     const submit = async () => {
         setVisible(false);
-        const result = await send_command({
+        const response = await send_command({
             command: 'set_rule',
             instance: target,
             rule: `fade/${brightness}/${duration}`
         });
-        const response = await result.json();
-        console.log(response);
+        const data = await response.json();
+        console.log(data);
     };
 
     // Submit modal if enter key pressed and both fields have value

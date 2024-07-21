@@ -62,10 +62,10 @@ const ScheduleRuleRow = ({
     const addRule = async () => {
         // Start loading animation, post new rule to backend
         setLoadingButtonState('loading');
-        const result = await add_schedule_rule(id, newTime, newRule);
+        const success = await add_schedule_rule(id, newTime, newRule);
 
         // If successful hide new rule field and reset inputs
-        if (result) {
+        if (success) {
             setShowNewRule(false);
             setLoadingButtonState('delete');
             setNewTime('');
@@ -87,8 +87,8 @@ const ScheduleRuleRow = ({
     // Existing rule field add button handler
     const editRule = async () => {
         setLoadingButtonState('loading');
-        const result = await edit_schedule_rule(id, originalTime, newTime, newRule);
-        if (result) {
+        const success = await edit_schedule_rule(id, originalTime, newTime, newRule);
+        if (success) {
             setLoadingButtonState('delete');
         } else {
             alert('Failed to edit schedule rule');
@@ -99,8 +99,8 @@ const ScheduleRuleRow = ({
     // Existing rule field delete button handler
     const deleteRule = async () => {
         setLoadingButtonState('loading');
-        const result = await delete_schedule_rule(id, originalTime);
-        if (!result) {
+        const success = await delete_schedule_rule(id, originalTime);
+        if (!success) {
             alert('Failed to delete schedule rule');
             setLoadingButtonState('delete');
         }

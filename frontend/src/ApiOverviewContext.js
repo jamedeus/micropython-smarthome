@@ -32,10 +32,10 @@ export const ApiOverviewContextProvider = ({ children }) => {
 
     const deleteMacro = async (name) => {
         // Delete macro
-        const result = await fetch(`/delete_macro/${name}`);
+        const response = await fetch(`/delete_macro/${name}`);
 
         // Remove from state if successful
-        if (result.ok) {
+        if (response.ok) {
             const update = { ...macros };
             delete update[name];
             setMacros(update);
@@ -47,10 +47,10 @@ export const ApiOverviewContextProvider = ({ children }) => {
 
     const deleteMacroAction = async (name, index) => {
         // Delete macro action
-        const result = await fetch(`/delete_macro_action/${name}/${index}`);
+        const response = await fetch(`/delete_macro_action/${name}/${index}`);
 
         // Remove action from state if successful
-        if (result.ok) {
+        if (response.ok) {
             const update = { ...macros,
                 [name]: macros[name].filter((_, idx) => idx !== index)
             };

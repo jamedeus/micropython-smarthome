@@ -23,9 +23,9 @@ const MacroRow = ({ name }) => {
     const runMacro = async () => {
         // Start loading animation, make API call
         setButtonContents("loading");
-        const result = await fetch(`/run_macro/${name}`);
+        const response = await fetch(`/run_macro/${name}`);
 
-        if (result.status === 200) {
+        if (response.status === 200) {
             // Start checkmark animation, wait until complete, revert to name
             setButtonContents("complete");
             await sleep(2000);

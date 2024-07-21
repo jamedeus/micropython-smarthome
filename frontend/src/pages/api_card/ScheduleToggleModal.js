@@ -57,9 +57,9 @@ const ScheduleToggleModal = () => {
             payload.delay = String(parseInt(payload.delay) * 60);
         }
 
-        const result = await send_command(payload);
-        const response = await result.json();
-        console.log(response);
+        const response = await send_command(payload);
+        const data = await response.json();
+        console.log(data);
     };
 
     return (
