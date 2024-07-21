@@ -41,9 +41,15 @@ const ErrorModal = () => {
                             Possible causes:
                         </p>
                         <ul>
-                            <li>Node is not connected to wifi</li>
-                            <li>Node IP has changed</li>
-                            <li>Node has not run webrepl_setup</li>
+                            <li className="text-start">
+                                Node is not connected to wifi
+                            </li>
+                            <li className="text-start">
+                                Node IP has changed
+                            </li>
+                            <li className="text-start">
+                                Node has not run webrepl_setup
+                            </li>
                         </ul>
                     </>
                 );
