@@ -611,8 +611,6 @@ class ConfirmRequiresPostTests(TestCaseBackupRestore):
         endpoints = [
             '/upload',
             '/upload/reupload',
-            '/edit_config/upload',
-            '/edit_config/upload/reupload',
             '/delete_config',
             '/delete_node',
             '/check_duplicate',

@@ -185,7 +185,7 @@ describe('App', () => {
 
         // Click upload button, confirm correct request sent
         await user.click(within(newConfigs).getAllByText('Upload')[0]);
-        expect(global.fetch).toHaveBeenCalledWith('upload', {
+        expect(global.fetch).toHaveBeenCalledWith('/upload', {
             method: 'POST',
             body: JSON.stringify({
                 "config": "new-config.json",
@@ -227,7 +227,7 @@ describe('App', () => {
         await user.type(within(newConfigs).getAllByRole('textbox')[0], '{enter}');
 
         // Confirm upload request was sent
-        expect(global.fetch).toHaveBeenCalledWith('upload', {
+        expect(global.fetch).toHaveBeenCalledWith('/upload', {
             method: 'POST',
             body: JSON.stringify({
                 "config": "new-config.json",
@@ -322,7 +322,7 @@ describe('App', () => {
 
         // Click "Re-upload" option, confirm correct request sent
         await user.click(app.getByText('Re-upload'));
-        expect(global.fetch).toHaveBeenCalledWith('upload/True', {
+        expect(global.fetch).toHaveBeenCalledWith('/upload/True', {
             method: 'POST',
             body: JSON.stringify({
                 "config": "bathroom.json",

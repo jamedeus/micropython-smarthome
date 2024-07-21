@@ -36,7 +36,7 @@ const UploadModal = () => {
         // Upload config file to target IP address
         // Add /True to endpoint if reuploading (skips adding to database)
         const response = await send_post_request(
-            reupload ? 'upload/True' : 'upload',
+            reupload ? '/upload/True' : '/upload',
             {config: filename, ip: targetIP}
         );
 

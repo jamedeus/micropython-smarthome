@@ -20,12 +20,10 @@ urlpatterns = [
     path('delete_node', views.delete_node, name='delete_node'),
     path('change_node_ip', views.change_node_ip, name='change_node_ip'),
 
-    # Uploads config to node (accessible from relative path)
+    # Uploads config to node
     # Optional reupload arg prevents creating new model entry
     path('upload', views.upload, name='upload'),
     path('upload/<str:reupload>', views.upload, name='upload'),
-    path('edit_config/upload', views.upload, name='upload'),
-    path('edit_config/upload/<str:reupload>', views.upload, name='upload'),
 
     # Overview dropdown menu endpoints
     path('reupload_all', views.reupload_all, name='reupload_all'),

@@ -327,7 +327,7 @@ describe('EditConfig', () => {
         });
 
         // Confirm second request was made to re-upload modified config
-        expect(global.fetch).toHaveBeenCalledWith('upload/True', {
+        expect(global.fetch).toHaveBeenCalledWith('/upload/True', {
             method: 'POST',
             body: JSON.stringify({
                 "config": "all-devices-and-sensors.json",
