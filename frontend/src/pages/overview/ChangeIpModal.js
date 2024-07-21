@@ -68,7 +68,7 @@ const ChangeIpModal = () => {
             showErrorModal({
                 title: "Error",
                 error: "",
-                body: JSON.stringify(error)
+                body: error.message
             });
         }
     };

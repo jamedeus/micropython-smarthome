@@ -93,20 +93,20 @@ const ExistingNodesTable = () => {
 
     // Handler for confirm delete button in modal
     const delete_node = async (friendly_name) => {
-        let result = await send_post_request("/delete_node", friendly_name);
+        const response = await send_post_request("/delete_node", friendly_name);
 
         // If successful close modal and update context (rerender without this row)
-        if (result.ok) {
+        if (response.ok) {
             deleteExistingNode(friendly_name);
             hideErrorModal();
 
         // Show error if failed
         } else {
-            const error = await result.json();
+            const error = await response.json();
             showErrorModal({
                 title: "Error",
                 error: "failed",
-                body: error
+                body: error.message
             });
         }
     };

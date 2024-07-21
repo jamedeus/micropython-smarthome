@@ -43,7 +43,7 @@ export const RestoreModal = () => {
 
             // Render new row, close modal
             const data = await response.json();
-            addNewNode(data.friendly_name, data.filename, data.ip);
+            addNewNode(data.message.friendly_name, data.message.filename, data.message.ip);
             setVisible(false);
 
         // Unreachable
@@ -69,7 +69,7 @@ export const RestoreModal = () => {
         // Other error, show in alert
         } else {
             const error = await response.json();
-            alert(JSON.stringify(error));
+            alert(error.message);
         }
     };
 

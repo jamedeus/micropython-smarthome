@@ -38,9 +38,12 @@ describe('WifiModal', () => {
             ok: true,
             status: 200,
             json: () => Promise.resolve({
-                friendly_name: 'Old Node',
-                filename: 'old-node.json',
-                ip: '123.123.123.123'
+                status: 'success',
+                message: {
+                    friendly_name: 'Old Node',
+                    filename: 'old-node.json',
+                    ip: '123.123.123.123'
+                }
             })
         }));
 
@@ -79,9 +82,12 @@ describe('WifiModal', () => {
             ok: true,
             status: 200,
             json: () => Promise.resolve({
-                friendly_name: 'Old Node',
-                filename: 'old-node.json',
-                ip: '123.123.123.123'
+                status: 'success',
+                message: {
+                    friendly_name: 'Old Node',
+                    filename: 'old-node.json',
+                    ip: '123.123.123.123'
+                }
             })
         }));
 
@@ -103,7 +109,14 @@ describe('WifiModal', () => {
 
     it('shows correct error modal if unable to connect to new IP', async () => {
         // Mock fetch function to simulate failed to connect
-        global.fetch = jest.fn(() => Promise.resolve({ status: 404 }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 404,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to connect to node, please make sure it is connected to wifi and try again.'
+            })
+        }));
 
         // Enter IP address in modal input, click submit button
         const modal = app.queryByText(/config files from existing nodes/).parentElement;
@@ -117,7 +130,14 @@ describe('WifiModal', () => {
 
     it('shows correct error modal if restored config is a duplicate', async () => {
         // Mock fetch function to simulate duplicate config
-        global.fetch = jest.fn(() => Promise.resolve({ status: 409 }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 409,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Config already exists with identical name'
+            })
+        }));
 
         // Enter IP address in modal input, click submit button
         const modal = app.queryByText(/config files from existing nodes/).parentElement;
@@ -136,7 +156,10 @@ describe('WifiModal', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 418,
-            json: () => Promise.resolve({"Error": "I'm a teapot"})
+            json: () => Promise.resolve({
+                status: 'error',
+                message: "I'm a teapot"
+            })
         }));
         global.alert = jest.fn();
 
@@ -147,7 +170,7 @@ describe('WifiModal', () => {
         await user.click(app.getByRole('button', { name: 'Restore' }));
 
         // Confirm arbitrary error was shown in alert
-        expect(global.alert).toHaveBeenCalledWith('{"Error":"I\'m a teapot"}');
+        expect(global.alert).toHaveBeenCalledWith("I'm a teapot");
     });
 
     it('closes modal when X button or background is clicked', async () => {

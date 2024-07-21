@@ -65,8 +65,6 @@ describe('App', () => {
     });
 
     it('opens WifiModal when "Set WIFI credentials" option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
-
         // Click "Set WIFI credentials" dropdown option in top-right corner menu
         const header = app.getByText('Configure Nodes').parentElement;
         await user.click(within(header).getAllByRole('button')[0]);
@@ -77,8 +75,6 @@ describe('App', () => {
     });
 
     it('opens GpsModal when "Set GPS coordinates" option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
-
         // Click "Set GPS coordinates" dropdown option in top-right corner menu
         const header = app.getByText('Configure Nodes').parentElement;
         await user.click(within(header).getAllByRole('button')[0]);
@@ -92,13 +88,20 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({'success': [
-                'Bathroom',
-                'Kitchen',
-                'Living Room',
-                'Bedroom',
-                'Thermostat'
-            ], 'failed': {}})
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: {
+                    'success': [
+                        'Bathroom',
+                        'Kitchen',
+                        'Living Room',
+                        'Bedroom',
+                        'Thermostat'
+                    ],
+                    'failed': {}
+                }
+            })
         }));
 
         // Click "Re-upload" dropdown option in top-right corner menu
@@ -114,14 +117,21 @@ describe('App', () => {
         // Mock fetch function to return report with some failures
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({'success': [
-                'Living Room',
-                'Bedroom',
-            ], 'failed': {
-                Bathroom: 'Offline',
-                Kitchen: 'Connection timed out',
-                Thermostat: 'Filesystem error'
-            }})
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: {
+                    success: [
+                        'Living Room',
+                        'Bedroom',
+                    ],
+                    failed: {
+                        Bathroom: 'Offline',
+                        Kitchen: 'Connection timed out',
+                        Thermostat: 'Filesystem error'
+                    }
+                }
+            })
         }));
 
         // Click "Re-upload" dropdown option in top-right corner menu
@@ -139,8 +149,6 @@ describe('App', () => {
     });
 
     it('opens RestoreModal when "Restore config" option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
-
         // Click "Restore config" dropdown option in top-right corner menu
         const header = app.getByText('Configure Nodes').parentElement;
         await user.click(within(header).getAllByRole('button')[0]);
@@ -151,8 +159,6 @@ describe('App', () => {
     });
 
     it('opens DesktopIntegrationModal when "Desktop integration" option is clicked', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({ ok: true }));
-
         // Click "Desktop integration" dropdown option in top-right corner menu
         const header = app.getByText('Configure Nodes').parentElement;
         await user.click(within(header).getAllByRole('button')[0]);
@@ -176,7 +182,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('uploaded')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'uploaded'
+            })
         }));
 
         // Get new config table, enter IP in first input
@@ -218,7 +227,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('uploaded')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'uploaded'
+            })
         }));
 
         // Get new config table, enter IP in first input and then press enter
@@ -263,7 +275,11 @@ describe('App', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve('Deleted new-config.json')
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Deleted new-config.json'
+            })
         }));
 
         // Get new config table, click first delete button
@@ -287,7 +303,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 404,
-            json: () => Promise.resolve('Failed to delete new-config.json, does not exist')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Failed to delete new-config.json, does not exist'
+            })
         }));
 
         // Delete first new config, click delete in confirmation prompt
@@ -316,7 +335,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('uploaded')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'uploaded'
+            })
         }));
 
         // Get existing nodes table, click button on first row
@@ -346,7 +368,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 404,
-            json: () => Promise.resolve('Target node offline')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Target node offline'
+            })
         }));
 
         // Get existing nodes table, click button on first row
@@ -373,7 +398,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('Deleted Bathroom')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Deleted Bathroom'
+            })
         }));
 
         // Get existing nodes table, click button on first row, click "Delete" option
@@ -402,7 +430,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 404,
-            json: () => Promise.resolve('Failed to delete Bathroom, does not exist')
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Failed to delete Bathroom, does not exist'
+            })
         }));
 
         // Get existing nodes table, click button on first row, click "Delete" option
@@ -423,7 +454,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('Keyword created')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Keyword created'
+            })
         }));
 
         // Get keywords section, keywords table (tbody tag)
@@ -470,7 +504,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('Keyword created')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Keyword created'
+            })
         }));
 
         // Get keywords section, keywords table (tbody tag), new keyword row
@@ -500,7 +537,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 400,
-            json: () => Promise.resolve({'Error': 'Unexpected error'})
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unexpected error'
+            })
         }));
         global.alert = jest.fn();
 
@@ -515,7 +555,7 @@ describe('App', () => {
 
         // Press enter key to submit, confirm alert appears with response from API
         await user.type(newKeywordRow.children[0].children[0], '{enter}');
-        expect(global.alert).toHaveBeenCalledWith('{"Error":"Unexpected error"}');
+        expect(global.alert).toHaveBeenCalledWith('Unexpected error');
     });
 
     it('changes keyword table button when inputs are modified', async () => {
@@ -558,7 +598,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('Keyword updated')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Keyword updated'
+            })
         }));
 
         // Get keywords section, keywords table (tbody tag)
@@ -590,7 +633,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('Keyword updated')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Keyword updated'
+            })
         }));
 
         // Get keywords section, keywords table (tbody tag)
@@ -635,7 +681,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 404,
-            json: () => Promise.resolve({'Error': 'Keyword not found'})
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Keyword not found'
+            })
         }));
         global.alert = jest.fn();
 
@@ -648,7 +697,7 @@ describe('App', () => {
 
         // Click edit button, confirm alert appears with response from API
         await user.click(within(firstRow).getByRole('button'));
-        expect(global.alert).toHaveBeenCalledWith('{"Error":"Keyword not found"}');
+        expect(global.alert).toHaveBeenCalledWith('Keyword not found');
     });
 
     it('sends correct request when existing schedule keyword is deleted', async () => {
@@ -656,7 +705,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('Keyword deleted')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Keyword deleted'
+            })
         }));
 
         // Get keywords section, keywords table (tbody tag)
@@ -679,7 +731,10 @@ describe('App', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 404,
-            json: () => Promise.resolve({'Error': 'Keyword not found'})
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Keyword not found'
+            })
         }));
         global.alert = jest.fn();
 
@@ -689,6 +744,6 @@ describe('App', () => {
         await user.click(within(table.children[0]).getByRole('button'));
 
         // Confirm alert appears with response from API
-        expect(global.alert).toHaveBeenCalledWith('{"Error":"Keyword not found"}');
+        expect(global.alert).toHaveBeenCalledWith('Keyword not found');
     });
 });

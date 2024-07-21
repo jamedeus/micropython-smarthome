@@ -37,7 +37,10 @@ describe('WifiModal', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('Successfully uploaded to new IP')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Successfully uploaded to new IP'
+            })
         }));
 
         // Enter new IP address in modal input
@@ -69,7 +72,10 @@ describe('WifiModal', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve('Successfully uploaded to new IP')
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Successfully uploaded to new IP'
+            })
         }));
 
         // Enter new IP address in modal input
@@ -91,7 +97,14 @@ describe('WifiModal', () => {
 
     it('shows correct error modal if unable to connect to new IP', async () => {
         // Mock fetch function to simulate failed to connect
-        global.fetch = jest.fn(() => Promise.resolve({ status: 404 }));
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 404,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Unable to change IP, node does not exist'
+            })
+        }));
 
         // Enter new IP address in modal input, click submnit button
         const modal = app.queryByText(/file to a new IP/).parentElement;
@@ -108,7 +121,10 @@ describe('WifiModal', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 418,
-            json: () => Promise.resolve({"Error": "I'm a teapot"})
+            json: () => Promise.resolve({
+                status: 'error',
+                message: "I'm a teapot"
+            })
         }));
 
         // Enter new IP address in modal input, click submnit button
@@ -118,7 +134,7 @@ describe('WifiModal', () => {
         await user.click(app.getByRole('button', { name: 'Change' }));
 
         // Confirm error modal with arbitrary error text appeared
-        expect(app.getByText('{"Error":"I\'m a teapot"}')).not.toBeNull();
+        expect(app.getByText("I'm a teapot")).not.toBeNull();
     });
 
     it('closes modal when X button or background is clicked', async () => {

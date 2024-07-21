@@ -50,19 +50,19 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
 
         // Change delete button to loading animation, make API call
         setButton("loading");
-        const result = await send_post_request(
+        const response = await send_post_request(
             "/edit_schedule_keyword",
             payload
         );
 
         // If successful update context (re-renders this row) and reset button
-        if (result.ok) {
+        if (response.ok) {
             editKeyword(initKeyword, keyword, timestamp);
             setButton("delete");
         // Show error in alert if failed, stop loading animation
         } else {
-            const error = await result.json();
-            alert(JSON.stringify(error));
+            const error = await response.json();
+            alert(error.message);
             setButton("edit");
         }
     };
@@ -70,18 +70,18 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
     const handleDelete = async () => {
         // Change delete button to loading animation, make API call
         setButton("loading");
-        const result = await send_post_request(
+        const response = await send_post_request(
             "/delete_schedule_keyword",
             {keyword: keyword}
         );
 
         // If successful delete from context and re-render (removes this row)
-        if (result.ok) {
+        if (response.ok) {
             deleteKeyword(keyword);
         // Show error in alert if failed, stop loading animation
         } else {
-            const error = await result.json();
-            alert(JSON.stringify(error));
+            const error = await response.json();
+            alert(error.message);
             setButton("delete");
         }
     };
@@ -172,10 +172,10 @@ const NewKeywordRow = ({ addKeyword }) => {
             keyword: keyword,
             timestamp: timestamp
         };
-        const result = await send_post_request("/add_schedule_keyword", payload);
+        const response = await send_post_request("/add_schedule_keyword", payload);
 
         // If successful add to context (renders new row) + reset new keyword row
-        if (result.ok) {
+        if (response.ok) {
             addKeyword(keyword, timestamp);
             setKeyword("");
             setTimestamp("");
@@ -183,8 +183,8 @@ const NewKeywordRow = ({ addKeyword }) => {
             setButtonLoading(false);
         // Show error in alert if failed, stop loading animation
         } else {
-            const error = await result.json();
-            alert(JSON.stringify(error));
+            const error = await response.json();
+            alert(error.message);
             setButtonLoading(false);
         }
     };

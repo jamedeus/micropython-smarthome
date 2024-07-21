@@ -36,7 +36,11 @@ describe('WifiModal', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve('Default credentials set')
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Default credentials set'
+            })
         }));
 
         // Simulate user typing ssid and password
@@ -59,7 +63,11 @@ describe('WifiModal', () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
-            json: () => Promise.resolve('Default credentials set')
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Default credentials set'
+            })
         }));
 
         // Simulate user typing ssid and password
