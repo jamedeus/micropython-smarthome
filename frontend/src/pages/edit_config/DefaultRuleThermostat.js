@@ -1,8 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import { ConfigContext } from 'root/ConfigContext';
-import { convert_temperature } from 'util/thermostat_util';
-import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
+import ThermostatRuleInput from 'inputs/ThermostatRuleInput';
 
 const DefaultRuleThermostat = ({ id, instance, metadata }) => {
     const { handleInputChange } = useContext(ConfigContext);
@@ -22,11 +21,12 @@ const DefaultRuleThermostat = ({ id, instance, metadata }) => {
             <label className="w-100 fw-bold">
                 Default Rule
             </label>
-            <FloatRangeRuleInput
+            <ThermostatRuleInput
                 rule={String(instance.default_rule)}
                 setRule={onSliderMove}
-                min={convert_temperature(min_rule, "celsius", instance.units)}
-                max={convert_temperature(max_rule, "celsius", instance.units)}
+                min={min_rule}
+                max={max_rule}
+                units={instance.units ? instance.units : "celsius"}
                 sliderStep={0.1}
             />
         </div>
