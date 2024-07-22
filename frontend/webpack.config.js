@@ -16,11 +16,6 @@ const config = {
         path: path.resolve(__dirname, 'node_configuration/static/node_configuration/'),
         filename: '[name].js'
     },
-    externals: {
-        'react': 'React',
-        'react-dom': 'ReactDOM',
-        'react-transition-group': 'ReactTransitionGroup'
-    },
     devServer: {
         open: true,
         host: 'localhost',
