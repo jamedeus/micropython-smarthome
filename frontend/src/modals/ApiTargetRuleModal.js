@@ -187,6 +187,80 @@ ApiTargetRuleModalContents.propTypes = {
     showOnRule: PropTypes.bool.isRequired
 };
 
+// Help button and collapse with instructions and examples
+const ApiTargetRuleInstructions = () => {
+    // Collapse states
+    const [showHelp, setShowHelp] = useState(false);
+    const [showExamples, setShowExamples] = useState(false);
+
+    return (
+        <>
+            <Button
+                variant="secondary"
+                size="sm"
+                className="mx-auto mb-3"
+                onClick={() => setShowHelp(!showHelp)}
+            >
+                Help
+            </Button>
+
+            <Collapse in={showHelp}>
+                <div>
+                    <p className="text-center">
+                        Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.
+                    </p>
+
+                    <p className="text-center">
+                        Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the &quot;Target Node&quot; dropdown.
+                    </p>
+
+                    <p className="text-center">
+                        The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.
+                    </p>
+
+                    <p className="text-center">
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="mx-auto mb-3"
+                            onClick={() => setShowExamples(!showExamples)}
+                        >
+                            Examples
+                        </Button>
+                    </p>
+
+                    <Collapse in={showExamples}>
+                        <div>
+                            <ul>
+                                <li>
+                                    Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the <b>trigger_sensor</b> option.
+                                </li>
+                                <li>
+                                    The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and <b>set_rule</b> command below.
+                                </li>
+                                <li>
+                                    Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an <b>Ir Blaster</b>.
+                                </li>
+                            </ul>
+
+                            <p className="text-center">
+                                <Button
+                                    variant="secondary"
+                                    size="sm"
+                                    className="mx-auto mb-3"
+                                    onClick={() => setShowHelp(!showHelp)}
+                                >
+                                    Close
+                                </Button>
+                            </p>
+                        </div>
+                    </Collapse>
+                </div>
+            </Collapse>
+        </>
+    );
+};
+
 const ApiTargetRuleModal = () => {
     // Create states for modal visibility, visible page
     const [visible, setVisible] = useState(false);
@@ -218,10 +292,6 @@ const ApiTargetRuleModal = () => {
 
     // Disable submit button until a valid rule is selected
     const [submitDisabled, setSubmitDisabled] = useState(true);
-
-    // Instructions collapse states
-    const [showHelp, setShowHelp] = useState(false);
-    const [showExamples, setShowExamples] = useState(false);
 
     // Returns true if selectedRule state contains valid rule
     const ruleIsComplete = () => {
@@ -343,68 +413,8 @@ const ApiTargetRuleModal = () => {
             />
 
             <Modal.Body className="d-flex flex-column mx-auto">
-                <Button
-                    variant="secondary"
-                    size="sm"
-                    className="mx-auto mb-3"
-                    onClick={() => setShowHelp(!showHelp)}
-                >
-                    Help
-                </Button>
-
-                <Collapse in={showHelp}>
-                    <div>
-                        <p className="text-center">
-                            Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.
-                        </p>
-
-                        <p className="text-center">
-                            Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the &quot;Target Node&quot; dropdown.
-                        </p>
-
-                        <p className="text-center">
-                            The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.
-                        </p>
-
-                        <p className="text-center">
-                            <Button
-                                variant="secondary"
-                                size="sm"
-                                className="mx-auto mb-3"
-                                onClick={() => setShowExamples(!showExamples)}
-                            >
-                                Examples
-                            </Button>
-                        </p>
-
-                        <Collapse in={showExamples}>
-                            <div>
-                                <ul>
-                                    <li>
-                                        Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the <b>trigger_sensor</b> option.
-                                    </li>
-                                    <li>
-                                        The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and <b>set_rule</b> command below.
-                                    </li>
-                                    <li>
-                                        Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an <b>Ir Blaster</b>.
-                                    </li>
-                                </ul>
-
-                                <p className="text-center">
-                                    <Button
-                                        variant="secondary"
-                                        size="sm"
-                                        className="mx-auto mb-3"
-                                        onClick={() => setShowHelp(!showHelp)}
-                                    >
-                                        Close
-                                    </Button>
-                                </p>
-                            </div>
-                        </Collapse>
-                    </div>
-                </Collapse>
+                {/* Help button + collapse with instructions */}
+                <ApiTargetRuleInstructions />
 
                 {/* Cascading dropdown inputs */}
                 <ApiTargetRuleModalContents
