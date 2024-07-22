@@ -119,17 +119,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#sensor1-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="sensor1-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -340,17 +337,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#sensor2-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="sensor2-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -629,17 +623,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#sensor3-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="sensor3-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -823,17 +814,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#sensor4-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="sensor4-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -1062,17 +1050,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#sensor5-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="sensor5-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -1256,17 +1241,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#sensor6-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="sensor6-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -1455,17 +1437,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device1-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device1-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -1581,17 +1560,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device2-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device2-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -1752,17 +1728,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device3-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device3-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -1980,17 +1953,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device4-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device4-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -2174,17 +2144,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device5-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device5-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -2345,17 +2312,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device6-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device6-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -2573,17 +2537,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device7-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device7-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -2697,17 +2658,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device8-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device8-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -2868,17 +2826,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device9-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device9-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -3141,17 +3096,14 @@ exports[`App matches snapshot 1`] = `
                     class="text-center my-3"
                   >
                     <button
-                      class="open-rules btn btn-primary btn-sm"
-                      data-bs-target="#device10-schedule-rules"
-                      data-bs-toggle="collapse"
+                      class="btn btn-primary btn-sm"
                       type="button"
                     >
                       Schedule rules
                     </button>
                   </div>
                   <div
-                    class="collapse text-center"
-                    id="device10-schedule-rules"
+                    class="text-center collapse"
                   >
                     <table
                       class="table table-borderless"
@@ -3415,17 +3367,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#sensor1-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="sensor1-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -3636,17 +3585,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#sensor2-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="sensor2-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -3925,17 +3871,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#sensor3-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="sensor3-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -4119,17 +4062,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#sensor4-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="sensor4-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -4358,17 +4298,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#sensor5-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="sensor5-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -4552,17 +4489,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#sensor6-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="sensor6-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -4751,17 +4685,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device1-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device1-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -4877,17 +4808,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device2-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device2-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -5048,17 +4976,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device3-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device3-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -5276,17 +5201,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device4-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device4-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -5470,17 +5392,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device5-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device5-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -5641,17 +5560,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device6-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device6-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -5869,17 +5785,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device7-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device7-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -5993,17 +5906,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device8-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device8-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -6164,17 +6074,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device9-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device9-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"
@@ -6437,17 +6344,14 @@ exports[`App matches snapshot 1`] = `
                   class="text-center my-3"
                 >
                   <button
-                    class="open-rules btn btn-primary btn-sm"
-                    data-bs-target="#device10-schedule-rules"
-                    data-bs-toggle="collapse"
+                    class="btn btn-primary btn-sm"
                     type="button"
                   >
                     Schedule rules
                   </button>
                 </div>
                 <div
-                  class="collapse text-center"
-                  id="device10-schedule-rules"
+                  class="text-center collapse"
                 >
                   <table
                     class="table table-borderless"

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import ToggleButton from 'react-bootstrap/ToggleButton';
+import Collapse from 'react-bootstrap/Collapse';
 import Button from 'react-bootstrap/Button';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
@@ -218,6 +219,10 @@ const ApiTargetRuleModal = () => {
     // Disable submit button until a valid rule is selected
     const [submitDisabled, setSubmitDisabled] = useState(true);
 
+    // Instructions collapse states
+    const [showHelp, setShowHelp] = useState(false);
+    const [showExamples, setShowExamples] = useState(false);
+
     // Returns true if selectedRule state contains valid rule
     const ruleIsComplete = () => {
         if (subRuleIsComplete(selectedRule.on) && subRuleIsComplete(selectedRule.off)) {
@@ -342,63 +347,64 @@ const ApiTargetRuleModal = () => {
                     variant="secondary"
                     size="sm"
                     className="mx-auto mb-3"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#api-rule-modal-help"
+                    onClick={() => setShowHelp(!showHelp)}
                 >
                     Help
                 </Button>
 
-                <div className="collapse" id="api-rule-modal-help">
-                    <p className="text-center">
-                        Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.
-                    </p>
+                <Collapse in={showHelp}>
+                    <div>
+                        <p className="text-center">
+                            Just like other devices, ApiTargets can be turned on/off by sensors or manually. Instead of effecting a physical device they fire API commands.
+                        </p>
 
-                    <p className="text-center">
-                        Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the &quot;Target Node&quot; dropdown.
-                    </p>
+                        <p className="text-center">
+                            Commands are sent to the target node, which can be changed by closing this popup and selecting an option in the &quot;Target Node&quot; dropdown.
+                        </p>
 
-                    <p className="text-center">
-                        The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.
-                    </p>
-
-                    <p className="text-center">
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            className="mx-auto mb-3"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#api-rule-modal-examples"
-                        >
-                            Examples
-                        </Button>
-                    </p>
-
-                    <div className="collapse" id="api-rule-modal-examples">
-                        <ul>
-                            <li>
-                                Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the <b>trigger_sensor</b> option.
-                            </li>
-                            <li>
-                                The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and <b>set_rule</b> command below.
-                            </li>
-                            <li>
-                                Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an <b>Ir Blaster</b>.
-                            </li>
-                        </ul>
+                        <p className="text-center">
+                            The dropdowns below contain all available options for the current target node. Select a command to fire when this device is turned on, and another for when it is turned off.
+                        </p>
 
                         <p className="text-center">
                             <Button
                                 variant="secondary"
                                 size="sm"
                                 className="mx-auto mb-3"
-                                data-bs-toggle="collapse"
-                                data-bs-target="#api-rule-modal-help"
+                                onClick={() => setShowExamples(!showExamples)}
                             >
-                                Close
+                                Examples
                             </Button>
                         </p>
+
+                        <Collapse in={showExamples}>
+                            <div>
+                                <ul>
+                                    <li>
+                                        Two nodes with motion sensors can work together to cover a large room. Set Sensor1 to target the lights, then set Sensor2 to activate Sensor1 with the <b>trigger_sensor</b> option.
+                                    </li>
+                                    <li>
+                                        The thermostat can change when a door is open or closed. Set up a door sensor targeting this ApiTarget, then select the thermostat and <b>set_rule</b> command below.
+                                    </li>
+                                    <li>
+                                        Any sensor can turn a TV or Air Conditioner on/off by triggering an ApiTarget targeting an <b>Ir Blaster</b>.
+                                    </li>
+                                </ul>
+
+                                <p className="text-center">
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="mx-auto mb-3"
+                                        onClick={() => setShowHelp(!showHelp)}
+                                    >
+                                        Close
+                                    </Button>
+                                </p>
+                            </div>
+                        </Collapse>
                     </div>
-                </div>
+                </Collapse>
 
                 {/* Cascading dropdown inputs */}
                 <ApiTargetRuleModalContents

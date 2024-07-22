@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { ApiCardContext } from 'root/ApiCardContext';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
+import Collapse from 'react-bootstrap/Collapse';
 import { TimeField } from 'inputs/TimeField';
 import { RuleField } from 'inputs/RuleField';
 import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
@@ -167,59 +168,62 @@ ScheduleRuleRow.propTypes = {
     setShowNewRule: PropTypes.func.isRequired
 };
 
-const ScheduleRulesTable = ({ id, instance }) => {
+const ScheduleRulesTable = ({ id, instance, openCollapse }) => {
     const [showNewRule, setShowNewRule] = useState(false);
 
     return (
-        <div className="collapse text-center" id={`${id}-schedule-rules`}>
-            <Table borderless>
-                <thead>
-                    <tr>
-                        <th className="w-50">Time</th>
-                        <th className="w-50">Rule</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {Object.entries(instance.schedule).map(([time, rule]) => {
-                        return (
-                            <ScheduleRuleRow
-                                key={`${time}-${rule}`}
-                                id={id}
-                                instance={instance}
-                                originalTime={time}
-                                originalRule={rule}
-                                showNewRule={showNewRule}
-                                setShowNewRule={setShowNewRule}
-                            />
-                        );
-                    })}
-                    <ScheduleRuleRow
-                        key={'new'}
-                        id={id}
-                        instance={instance}
-                        existingRule={false}
-                        showNewRule={showNewRule}
-                        setShowNewRule={setShowNewRule}
-                    />
-                </tbody>
-            </Table>
+        <Collapse in={openCollapse} className="text-center">
+            <div>
+                <Table borderless>
+                    <thead>
+                        <tr>
+                            <th className="w-50">Time</th>
+                            <th className="w-50">Rule</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {Object.entries(instance.schedule).map(([time, rule]) => {
+                            return (
+                                <ScheduleRuleRow
+                                    key={`${time}-${rule}`}
+                                    id={id}
+                                    instance={instance}
+                                    originalTime={time}
+                                    originalRule={rule}
+                                    showNewRule={showNewRule}
+                                    setShowNewRule={setShowNewRule}
+                                />
+                            );
+                        })}
+                        <ScheduleRuleRow
+                            key={'new'}
+                            id={id}
+                            instance={instance}
+                            existingRule={false}
+                            showNewRule={showNewRule}
+                            setShowNewRule={setShowNewRule}
+                        />
+                    </tbody>
+                </Table>
 
-            <div className="text-center mx-3 mb-3">
-                <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setShowNewRule(true)}
-                >
-                    <i className="bi-plus-lg"></i>
-                </Button>
+                <div className="text-center mx-3 mb-3">
+                    <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => setShowNewRule(true)}
+                    >
+                        <i className="bi-plus-lg"></i>
+                    </Button>
+                </div>
             </div>
-        </div>
+        </Collapse>
     );
 };
 
 ScheduleRulesTable.propTypes = {
     id: PropTypes.string.isRequired,
-    instance: PropTypes.object.isRequired
+    instance: PropTypes.object.isRequired,
+    openCollapse: PropTypes.bool.isRequired
 };
 
 export default ScheduleRulesTable;

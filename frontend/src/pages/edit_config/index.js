@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client';
 import { ConfigProvider } from 'root/ConfigContext';
 import { MetadataContextProvider } from 'root/MetadataContext';
 import EditConfig from './EditConfig';
-import 'bootstrap/dist/js/bootstrap.min.js';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import 'spinkit/spinkit.min.css';

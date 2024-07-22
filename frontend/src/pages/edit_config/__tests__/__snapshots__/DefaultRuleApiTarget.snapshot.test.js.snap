@@ -27,15 +27,12 @@ exports[`App matches snapshot when existing rule targets IR Blaster 1`] = `
   >
     <button
       class="mx-auto mb-3 btn btn-secondary btn-sm"
-      data-bs-target="#api-rule-modal-help"
-      data-bs-toggle="collapse"
       type="button"
     >
       Help
     </button>
     <div
       class="collapse"
-      id="api-rule-modal-help"
     >
       <p
         class="text-center"
@@ -57,8 +54,6 @@ exports[`App matches snapshot when existing rule targets IR Blaster 1`] = `
       >
         <button
           class="mx-auto mb-3 btn btn-secondary btn-sm"
-          data-bs-target="#api-rule-modal-examples"
-          data-bs-toggle="collapse"
           type="button"
         >
           Examples
@@ -66,7 +61,6 @@ exports[`App matches snapshot when existing rule targets IR Blaster 1`] = `
       </p>
       <div
         class="collapse"
-        id="api-rule-modal-examples"
       >
         <ul>
           <li>
@@ -96,8 +90,6 @@ exports[`App matches snapshot when existing rule targets IR Blaster 1`] = `
         >
           <button
             class="mx-auto mb-3 btn btn-secondary btn-sm"
-            data-bs-target="#api-rule-modal-help"
-            data-bs-toggle="collapse"
             type="button"
           >
             Close
@@ -266,15 +258,12 @@ exports[`App matches snapshot when existing rule targets device 1`] = `
   >
     <button
       class="mx-auto mb-3 btn btn-secondary btn-sm"
-      data-bs-target="#api-rule-modal-help"
-      data-bs-toggle="collapse"
       type="button"
     >
       Help
     </button>
     <div
       class="collapse"
-      id="api-rule-modal-help"
     >
       <p
         class="text-center"
@@ -296,8 +285,6 @@ exports[`App matches snapshot when existing rule targets device 1`] = `
       >
         <button
           class="mx-auto mb-3 btn btn-secondary btn-sm"
-          data-bs-target="#api-rule-modal-examples"
-          data-bs-toggle="collapse"
           type="button"
         >
           Examples
@@ -305,7 +292,6 @@ exports[`App matches snapshot when existing rule targets device 1`] = `
       </p>
       <div
         class="collapse"
-        id="api-rule-modal-examples"
       >
         <ul>
           <li>
@@ -335,8 +321,6 @@ exports[`App matches snapshot when existing rule targets device 1`] = `
         >
           <button
             class="mx-auto mb-3 btn btn-secondary btn-sm"
-            data-bs-target="#api-rule-modal-help"
-            data-bs-toggle="collapse"
             type="button"
           >
             Close
@@ -510,15 +494,12 @@ exports[`App matches snapshot when self targetting 1`] = `
   >
     <button
       class="mx-auto mb-3 btn btn-secondary btn-sm"
-      data-bs-target="#api-rule-modal-help"
-      data-bs-toggle="collapse"
       type="button"
     >
       Help
     </button>
     <div
       class="collapse"
-      id="api-rule-modal-help"
     >
       <p
         class="text-center"
@@ -540,8 +521,6 @@ exports[`App matches snapshot when self targetting 1`] = `
       >
         <button
           class="mx-auto mb-3 btn btn-secondary btn-sm"
-          data-bs-target="#api-rule-modal-examples"
-          data-bs-toggle="collapse"
           type="button"
         >
           Examples
@@ -549,7 +528,6 @@ exports[`App matches snapshot when self targetting 1`] = `
       </p>
       <div
         class="collapse"
-        id="api-rule-modal-examples"
       >
         <ul>
           <li>
@@ -579,8 +557,6 @@ exports[`App matches snapshot when self targetting 1`] = `
         >
           <button
             class="mx-auto mb-3 btn btn-secondary btn-sm"
-            data-bs-target="#api-rule-modal-help"
-            data-bs-toggle="collapse"
             type="button"
           >
             Close

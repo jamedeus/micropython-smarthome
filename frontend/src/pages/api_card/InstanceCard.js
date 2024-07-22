@@ -145,6 +145,10 @@ const InstanceCard = ({ id }) => {
         get_instance_metadata(category, params.type)
     );
 
+    // Schedule rules collapse state
+    const [showScheduleRules, setShowScheduleRules] = useState(false);
+    console.log(showScheduleRules)
+
     // Rule slider handler
     const setRule = (newRule) => {
         // Prevent slider jumping if status updates while moving
@@ -256,9 +260,7 @@ const InstanceCard = ({ id }) => {
                                     <Button
                                         size="sm"
                                         variant="primary"
-                                        className="open-rules"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target={`#${id}-schedule-rules`}
+                                        onClick={() => setShowScheduleRules(!showScheduleRules)}
                                         disabled={recording ? true : false}
                                     >
                                         Schedule rules
@@ -268,6 +270,7 @@ const InstanceCard = ({ id }) => {
                                 <ScheduleRulesTable
                                     id={id}
                                     instance={localState}
+                                    openCollapse={showScheduleRules}
                                 />
                             </div>
                         </Collapse>
