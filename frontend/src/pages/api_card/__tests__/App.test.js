@@ -227,11 +227,12 @@ describe('App', () => {
         await user.click(dropdown.children[0]);
         await user.click(within(dropdown).getByText('Enable'));
 
-        // Confirm API call was made, card opened, slider set to default_rule (255)
+        // Confirm API call was made, card opened, slider set to default_rule
+        // (255, but displays 100 due to scaling)
         expect(global.fetch).toHaveBeenCalled();
         await waitFor(() => {
             expect(collapse.classList).toContain('show');
-            expect(card.querySelector('.sliderHandle').innerHTML).toBe('255');
+            expect(card.querySelector('.sliderHandle').innerHTML).toBe('100');
         });
     });
 
@@ -335,9 +336,9 @@ describe('App', () => {
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
-        // Confirm current rule is 767
+        // Confirm current rule is 767 (displays 74, scaled to 1-100 range)
         const sliderHandle = card.querySelector('.sliderHandle');
-        expect(sliderHandle.innerHTML).toBe('767');
+        expect(sliderHandle.innerHTML).toBe('74');
 
         // Click dropdown button, get reset option, confirm not disabled
         await user.click(dropdown.children[0]);
@@ -357,8 +358,9 @@ describe('App', () => {
         });
 
         // Confirm reset option is now disabled, current rule changed to 1023
+        // (displays 100, scaled to 1-100 range)
         expect(reset.classList).toContain('disabled');
-        expect(sliderHandle.innerHTML).toBe('1023');
+        expect(sliderHandle.innerHTML).toBe('100');
     });
 
     it('sends correct payload when new schedule rule is added', async () => {

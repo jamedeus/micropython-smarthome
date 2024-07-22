@@ -2492,7 +2492,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                                 style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
                                 tabindex="0"
                               >
-                                767
+                                74
                               </div>
                             </div>
                           </div>
@@ -3974,7 +3974,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                                 style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
                                 tabindex="0"
                               >
-                                255
+                                100
                               </div>
                             </div>
                           </div>
@@ -6532,7 +6532,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                               style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
                               tabindex="0"
                             >
-                              767
+                              74
                             </div>
                           </div>
                         </div>
@@ -8014,7 +8014,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                               style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
                               tabindex="0"
                             >
-                              255
+                              100
                             </div>
                           </div>
                         </div>

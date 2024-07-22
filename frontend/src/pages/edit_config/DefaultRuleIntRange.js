@@ -59,6 +59,7 @@ const DefaultRuleIntRange = ({ id, instance, metadata }) => {
                     setRule={onSliderMove}
                     min={parseInt(instance.min_rule)}
                     max={parseInt(instance.max_rule)}
+                    displayMin={metadata_min}
                 />
             </div>
 

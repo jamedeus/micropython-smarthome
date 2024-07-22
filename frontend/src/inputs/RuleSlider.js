@@ -3,7 +3,22 @@ import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import { Range, getTrackBackground } from 'react-range';
 
-const RuleSlider = ({ rule, setRule, min, max, sliderStep, buttonStep, displayType, onBlur=() => {} }) => {
+// Slider range set with min and max args
+// Slider will scale current rule to 1-100 unless a custom range is defined
+// with displayMin and/or displayMax, or if scaleDisplayValue is false
+const RuleSlider = ({
+    rule,
+    setRule,
+    min,
+    max,
+    displayMin=1,
+    displayMax=100,
+    scaleDisplayValue=true,
+    sliderStep,
+    buttonStep,
+    displayType,
+    onBlur=() => {}
+}) => {
     // Create array containing current rule, required my slider component
     const values = [rule];
 
@@ -29,15 +44,24 @@ const RuleSlider = ({ rule, setRule, min, max, sliderStep, buttonStep, displayTy
         onBlur();
     };
 
+    // Returns rule scaled to the range displayMin - displayMax
+    // Ex: Returns 70 if rule=700, min=1, max=1000, displayMin=1, displayMax=100
+    const getScaledRule = () => {
+        return (rule - min) * (displayMax - displayMin) / (max - min) + displayMin;
+    };
+
     // Returns value displayed on slider handle
+    // Scales value to display range unless scaleDisplayValue is false
     const getThumbValue = () => {
+        const displayValue = scaleDisplayValue ? getScaledRule() : rule;
+
         switch(displayType) {
             case("int"):
-                return parseInt(rule);
+                return parseInt(displayValue);
             case("float"):
-                return parseFloat(rule).toFixed(1);
+                return parseFloat(displayValue).toFixed(1);
             default:
-                return rule;
+                return displayValue;
         }
     };
 
@@ -107,6 +131,9 @@ RuleSlider.propTypes = {
     setRule: PropTypes.func.isRequired,
     min: PropTypes.number.isRequired,
     max: PropTypes.number.isRequired,
+    displayMin: PropTypes.number,
+    displayMax: PropTypes.number,
+    scaleDisplayValue: PropTypes.bool,
     sliderStep: PropTypes.number.isRequired,
     buttonStep: PropTypes.number.isRequired,
     displayType: PropTypes.string.isRequired,

@@ -48,6 +48,7 @@ const RuleInput = ({ id, params, setRule, onBlur=() => {} }) => {
                         setRule={setRule}
                         min={parseInt(params.min_rule)}
                         max={parseInt(params.max_rule)}
+                        displayMin={metadata.rule_limits[0]}
                         onBlur={onBlur}
                     />
                 </div>

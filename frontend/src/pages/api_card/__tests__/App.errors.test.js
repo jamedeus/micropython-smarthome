@@ -174,12 +174,9 @@ describe('App', () => {
         const card = app.getByText('Accent lights').parentElement.parentElement;
         const dropdown = card.children[0].children[2];
 
-        // Confirm current rule is 767
+        // Confirm current rule is 767 (displays 74, scaled to 1-100 range)
         const sliderHandle = card.querySelector('.sliderHandle');
-        expect(sliderHandle.innerHTML).toBe('767');
-
-        // Confirm current rule is 767
-        expect(within(card).getByText('767')).toBeInTheDocument();
+        expect(sliderHandle.innerHTML).toBe('74');
 
         // Click dropdown button, get reset option, confirm not disabled
         await user.click(dropdown.children[0]);
@@ -192,7 +189,7 @@ describe('App', () => {
         expect(reset.classList).not.toContain('disabled');
 
         // Confirm current rule did not change
-        expect(sliderHandle.innerHTML).toBe('767');
+        expect(sliderHandle.innerHTML).toBe('74');
     });
 
     it('shows alert and resets loading animation if add_rule API call fails', async () => {

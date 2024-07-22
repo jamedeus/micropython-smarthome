@@ -58,7 +58,7 @@ SliderRuleWrapper.propTypes = {
     children: PropTypes.node.isRequired
 };
 
-const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
+const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits, displayMin }) => {
     const setDuration = (duration) => {
         // Remove non-numeric, 5 digits max (longest fade = 86400 seconds)
         setRuleDetails({ ...ruleDetails,
@@ -81,6 +81,7 @@ const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
                 setRule={rule => setRuleDetails({ ...ruleDetails, rule: rule })}
                 min={parseInt(limits[0])}
                 max={parseInt(limits[1])}
+                displayMin={displayMin}
             />
 
             {ruleDetails.fade_rule ? (
@@ -113,7 +114,8 @@ const IntOrFadeRuleInput = ({ ruleDetails, setRuleDetails, limits }) => {
 IntOrFadeRuleInput.propTypes = {
     ruleDetails: PropTypes.object.isRequired,
     setRuleDetails: PropTypes.func.isRequired,
-    limits: PropTypes.array.isRequired
+    limits: PropTypes.array.isRequired,
+    displayMin: PropTypes.number.isRequired
 };
 
 // Renders correct input inside popup
@@ -190,6 +192,7 @@ const RuleInput = ({ ruleDetails, setRuleDetails, instance, metadata }) => {
                         instance.min_rule,
                         instance.max_rule
                     ]}
+                    displayMin={metadata.rule_limits[0]}
                 />
             );
     }
