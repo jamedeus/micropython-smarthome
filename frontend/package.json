@@ -37,7 +37,6 @@
     "react-dom": "^18.2.0",
     "react-range": "^1.8.14",
     "react-transition-group": "^4.4.5",
-    "smoothscroll-polyfill": "^0.4.4",
     "spinkit": "^2.0.1",
     "uuid": "^9.0.1"
   },
