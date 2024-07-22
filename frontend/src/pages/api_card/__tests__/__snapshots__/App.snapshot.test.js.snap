@@ -1799,7 +1799,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                1023
+                                100
                               </span>
                             </div>
                           </td>
@@ -1833,7 +1833,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                fade/512/1800
+                                Fade to 50 in 1800 seconds
                               </span>
                             </div>
                           </td>
@@ -2392,7 +2392,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                fade/100/900
+                                Fade to 100 in 900 seconds
                               </span>
                             </div>
                           </td>
@@ -2426,7 +2426,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                fade/69/1800
+                                Fade to 69 in 1800 seconds
                               </span>
                             </div>
                           </td>
@@ -2460,7 +2460,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                fade/37/900
+                                Fade to 37 in 900 seconds
                               </span>
                             </div>
                           </td>
@@ -2915,7 +2915,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                fade/100/900
+                                Fade to 100 in 900 seconds
                               </span>
                             </div>
                           </td>
@@ -2949,7 +2949,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                fade/72/1800
+                                Fade to 72 in 1800 seconds
                               </span>
                             </div>
                           </td>
@@ -3188,7 +3188,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                fade/255/900
+                                Fade to 100 in 900 seconds
                               </span>
                             </div>
                           </td>
@@ -3222,7 +3222,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                25
+                                10
                               </span>
                             </div>
                           </td>
@@ -3256,7 +3256,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                fade/128/1800
+                                Fade to 50 in 1800 seconds
                               </span>
                             </div>
                           </td>
@@ -5095,7 +5095,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              1023
+                              100
                             </span>
                           </div>
                         </td>
@@ -5129,7 +5129,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              fade/512/1800
+                              Fade to 50 in 1800 seconds
                             </span>
                           </div>
                         </td>
@@ -5688,7 +5688,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              fade/100/900
+                              Fade to 100 in 900 seconds
                             </span>
                           </div>
                         </td>
@@ -5722,7 +5722,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              fade/69/1800
+                              Fade to 69 in 1800 seconds
                             </span>
                           </div>
                         </td>
@@ -5756,7 +5756,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              fade/37/900
+                              Fade to 37 in 900 seconds
                             </span>
                           </div>
                         </td>
@@ -6211,7 +6211,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              fade/100/900
+                              Fade to 100 in 900 seconds
                             </span>
                           </div>
                         </td>
@@ -6245,7 +6245,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              fade/72/1800
+                              Fade to 72 in 1800 seconds
                             </span>
                           </div>
                         </td>
@@ -6484,7 +6484,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              fade/255/900
+                              Fade to 100 in 900 seconds
                             </span>
                           </div>
                         </td>
@@ -6518,7 +6518,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              25
+                              10
                             </span>
                           </div>
                         </td>
@@ -6552,7 +6552,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              fade/128/1800
+                              Fade to 50 in 1800 seconds
                             </span>
                           </div>
                         </td>

@@ -29,4 +29,11 @@ const debounce = (func, wait) => {
     };
 };
 
-export { sleep, average, toTitle, debounce };
+// Takes number, input range, and output range
+// Returns number scaled to output range
+// Example: Returns 70 if x=700, inMin=1, inMax=1000, outMin=1, outMax=100
+const scaleToRange = (x, inMin, inMax, outMin, outMax) => {
+    return (x - inMin) * (outMax - outMin) / (inMax - inMin) + outMin;
+};
+
+export { sleep, average, toTitle, debounce, scaleToRange };

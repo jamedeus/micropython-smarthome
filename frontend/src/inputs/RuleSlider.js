@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
 import { Range, getTrackBackground } from 'react-range';
+import { scaleToRange } from 'util/helper_functions';
 
 // Slider range set with min and max args
 // Slider will scale current rule to 1-100 unless a custom range is defined
@@ -47,7 +48,7 @@ const RuleSlider = ({
     // Returns rule scaled to the range displayMin - displayMax
     // Ex: Returns 70 if rule=700, min=1, max=1000, displayMin=1, displayMax=100
     const getScaledRule = () => {
-        return (rule - min) * (displayMax - displayMin) / (max - min) + displayMin;
+        return scaleToRange(rule, min, max, displayMin, displayMax);
     };
 
     // Returns value displayed on slider handle

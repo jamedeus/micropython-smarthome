@@ -9,7 +9,7 @@ import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 import ThermostatRuleInput from 'inputs/ThermostatRuleInput';
 import { convert_temperature } from 'util/thermostat_util';
 import { MetadataContext } from 'root/MetadataContext';
-import { average } from 'util/helper_functions';
+import { average, scaleToRange } from 'util/helper_functions';
 import { numbersOnly } from 'util/validation';
 
 // Wrapper for slider input that adds toggle which replaces input with standard
@@ -267,6 +267,40 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
         }
     };
 
+    // Returns value shown on rule span
+    const getDisplayString = () => {
+        // Return placeholder if rule is not set
+        if (ruleIsUnset(ruleDetails.rule)) {
+            return 'Set rule';
+            // Return scaled integer rule (or human-readable fade rule)
+        } else if (metadata.rule_prompt === 'int_or_fade' && ruleDetails.range_rule) {
+            return getIntOrFadeDisplayString();
+            // Return string, float, and temperature rules unchanged
+        } else {
+            return rule
+        }
+    };
+
+    // Returns int rule scaled to 1-100 range (0-100 for pwm)
+    // Returns fade rule as human-readable string (fade to X in Y seconds)
+    const getIntOrFadeDisplayString = () => {
+        const scaledRule = parseInt(scaleToRange(
+            ruleDetails.rule,
+            instance.min_rule,
+            instance.max_rule,
+            metadata.rule_limits[0],
+            100
+        ));
+
+        if (ruleDetails.fade_rule) {
+            // Use non-breaking spaces to prevent wrap point changing as slider
+            // moves on mobile
+            return `Fade\u00A0to\u00A0${scaledRule} in\u00A0${ruleDetails.duration} seconds`;
+        } else {
+            return scaledRule;
+        }
+    };
+
     return (
         <div onKeyDown={handleEnterKey}>
             {/* Display current rule, open edit popup when clicked */}
@@ -274,7 +308,7 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
                 className="form-control"
                 onClick={() => setVisible(true)}
             >
-                {ruleIsUnset(rule) ? 'Set rule' : rule}
+                {getDisplayString()}
             </span>
 
             {/* Edit rule popup */}
