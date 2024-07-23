@@ -236,7 +236,39 @@ describe('App', () => {
         });
     });
 
-    it('enforces rule slider limits when increment/decrement buttons are clicked', async () => {
+    it('enforces rule slider limits when increment button is clicked', async () => {
+        // Mock fetch function to simulate successful enable API call
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: { sensor3: "20.0" }
+            })
+        }));
+
+        // Get sensor3 card, confirm current rule is 20
+        const card = app.getByText('Thermostat').parentElement.parentElement;
+        const sliderHandle = card.querySelector('.sliderHandle');
+        expect(sliderHandle.innerHTML).toBe('20.0');
+
+        // Click slider plus button 16 times (increases by 0.5 each time, would
+        // reach 28.0 but limits should stop at 27.0)
+        for (let i = 0; i < 16; i++) {
+            await user.click(card.querySelector('.bi-plus-lg'));
+
+            // Wait for re-render before next click (fix intermittent failure)
+            const expectedValue = Math.min(27.0, 20.0 + (i + 1) * 0.5);
+            await waitFor(() => {
+                expect(sliderHandle.innerHTML).toBe(expectedValue.toFixed(1));
+            });
+        }
+
+        // Confirm current rule is 27.0
+        expect(sliderHandle.innerHTML).toBe('27.0');
+    });
+
+    it('enforces rule slider limits when decrement button is clicked', async () => {
         // Mock fetch function to simulate successful enable API call
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
@@ -256,19 +288,16 @@ describe('App', () => {
         // reach 15.0 but limits should stop at 18.0)
         for (let i = 0; i < 10; i++) {
             await user.click(card.querySelector('.bi-dash-lg'));
+
+            // Wait for re-render before next click (fix intermittent failure)
+            const expectedValue = Math.max(18.0, 20.0 - (i + 1) * 0.5);
+            await waitFor(() => {
+                expect(sliderHandle.innerHTML).toBe(expectedValue.toFixed(1));
+            });
         }
 
         // Confirm current rule is 18
         expect(sliderHandle.innerHTML).toBe('18.0');
-
-        // Click slider plus button 20 times (increases by 0.5 each time, would
-        // reach 28.0 but limits should stop at 27.0)
-        for (let i = 0; i < 20; i++) {
-            await user.click(card.querySelector('.bi-plus-lg'));
-        }
-
-        // Confirm current rule is 27.0
-        expect(sliderHandle.innerHTML).toBe('27.0');
     });
 
     it('sends correct payload when rule is changed', async () => {
