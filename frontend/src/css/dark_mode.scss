@@ -21,17 +21,6 @@
             "light": $light,
         );
 
-        /* redefine theme color variables */
-        @each $color, $value in $theme-colors {
-            --#{$variable-prefix}#{$color}: #{$value};
-        }
-
-        /* redefine theme color rgb vars (used for bg- colors) */
-        $theme-colors-rgb: map-loop($theme-colors, to-rgb, "$value");
-        @each $color, $value in $theme-colors-rgb {
-            --#{$variable-prefix}#{$color}-rgb: #{$value};
-        }
-
         $body-color: #eee;
         $body-bg: #1b1e1f;
         $card-bg: #212529;
@@ -49,11 +38,6 @@
         $modal-header-border-color: #31363b;
         $modal-footer-border-color: #31363b;
 
-        /* Use light modal close button in dark mode */
-        .btn-close {
-            @include btn-close-white();
-        }
-
         /* Input fields */
         $input-bg: #1B1E1F;
         $input-color: #ffffff;
@@ -70,11 +54,6 @@
         $input-group-addon-border-color: #1b1e1f;
         $input-group-addon-color: #ffffff;
 
-        /* Stop floating label changing color when focused */
-        .form-floating .form-control ~ label {
-            color: rgba(238, 238, 238, 0.65) !important;
-        }
-
         /* Checkboxes */
         $form-check-input-bg: #1B1E1F;
         $form-check-input-border: #1B1E1F;
@@ -88,6 +67,51 @@
         $form-select-disabled-bg: #272c31 !important;
         $form-select-disabled-color: #ffffff !important;
         $form-select-disabled-border-color: #232627 !important;
+
+        /* redefine theme color variables */
+        @each $color, $value in $theme-colors {
+            --#{$variable-prefix}#{$color}: #{$value};
+        }
+
+        /* redefine theme color rgb vars (used for bg- colors) */
+        $theme-colors-rgb: map-loop($theme-colors, to-rgb, "$value");
+        @each $color, $value in $theme-colors-rgb {
+            --#{$variable-prefix}#{$color}-rgb: #{$value};
+        }
+
+        /* Increase contrast for disabled items */
+        $dropdown-link-disabled-color: #737578 !important;
+
+        $dropdown-bg: #343A40;
+        $dropdown-link-hover-bg: #52575C;
+
+        /* Toasts */
+        $toast-background-color: #394047cc;
+
+        /* Spinkit dark mode */
+        --sk-color: #fff;
+
+        /* List group (location suggestions) */
+        $list-group-bg: #212529;
+        $list-group-border-color: rgba(0, 0, 0, 0.125);
+        $list-group-hover-bg: #1B1E1F;
+        $list-group-action-hover-bg: #1B1E1F;
+        $list-group-active-bg: #1B1E1F;
+        $list-group-action-active-bg: #1B1E1F;
+        $list-group-color: #dddddd;
+        $list-group-hover-color: #ffffff;
+        $list-group-action-hover-color: #ffffff;
+        $list-group-action-active-color: #ffffff;
+
+        /* Use light modal close button in dark mode */
+        .btn-close {
+            @include btn-close-white();
+        }
+
+        /* Stop floating label changing color when focused */
+        .form-floating .form-control ~ label {
+            color: rgba(238, 238, 238, 0.65) !important;
+        }
 
         /* Different color for select placeholder text (selected text set to fff above) */
         select:invalid {
@@ -141,12 +165,6 @@
             background-color: $dark !important;
         }
 
-        /* Increase contrast for disabled items */
-        $dropdown-link-disabled-color: #737578 !important;
-
-        $dropdown-bg: #343A40;
-        $dropdown-link-hover-bg: #52575C;
-
         /* Force bold white text on buttons (readability) */
         .btn {
             color: #fff !important;
@@ -174,28 +192,10 @@
             border: 1px solid #dee2e617 !important;
         }
 
-        /* Toasts */
-        $toast-background-color: #394047cc;
-
-        /* Spinkit dark mode */
-        --sk-color: #fff;
-
         /* Grey out disabled buttons */
         .btn-primary:disabled {
             background-color: #4b5157 !important;
         }
-
-        /* List group (location suggestions) */
-        $list-group-bg: #212529;
-        $list-group-border-color: rgba(0, 0, 0, 0.125);
-        $list-group-hover-bg: #1B1E1F;
-        $list-group-action-hover-bg: #1B1E1F;
-        $list-group-active-bg: #1B1E1F;
-        $list-group-action-active-bg: #1B1E1F;
-        $list-group-color: #dddddd;
-        $list-group-hover-color: #ffffff;
-        $list-group-action-hover-color: #ffffff;
-        $list-group-action-active-color: #ffffff;
 
         @import "node_modules/bootstrap/scss/_card";
         @import "node_modules/bootstrap/scss/_modal";
