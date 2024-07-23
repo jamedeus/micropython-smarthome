@@ -272,10 +272,14 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
         // Return placeholder if rule is not set
         if (ruleIsUnset(ruleDetails.rule)) {
             return 'Set rule';
-            // Return scaled integer rule (or human-readable fade rule)
+        // Return scaled integer rule (or human-readable fade rule)
         } else if (metadata.rule_prompt === 'int_or_fade' && ruleDetails.range_rule) {
             return getIntOrFadeDisplayString();
-            // Return string, float, and temperature rules unchanged
+        // Return temperature rules with degrees symbol and unit first letter
+        } else if (instance.units && !isNaN(ruleDetails.rule)) {
+            const temperature = parseFloat(ruleDetails.rule).toFixed(1);
+            return `${temperature} \u00B0${instance.units[0].toUpperCase()}`;
+        // Return string and float rules unchanged
         } else {
             return rule
         }

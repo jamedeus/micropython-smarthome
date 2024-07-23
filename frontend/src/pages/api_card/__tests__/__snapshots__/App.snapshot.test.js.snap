@@ -381,7 +381,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                68
+                                68.0 °F
                               </span>
                             </div>
                           </td>
@@ -415,7 +415,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                72
+                                72.0 °F
                               </span>
                             </div>
                           </td>
@@ -667,7 +667,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                23
+                                23.0 °C
                               </span>
                             </div>
                           </td>
@@ -701,7 +701,7 @@ exports[`App matches snapshot 1`] = `
                               <span
                                 class="form-control"
                               >
-                                20
+                                20.0 °C
                               </span>
                             </div>
                           </td>
@@ -3629,7 +3629,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              68
+                              68.0 °F
                             </span>
                           </div>
                         </td>
@@ -3663,7 +3663,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              72
+                              72.0 °F
                             </span>
                           </div>
                         </td>
@@ -3915,7 +3915,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              23
+                              23.0 °C
                             </span>
                           </div>
                         </td>
@@ -3949,7 +3949,7 @@ exports[`App matches snapshot 1`] = `
                             <span
                               class="form-control"
                             >
-                              20
+                              20.0 °C
                             </span>
                           </div>
                         </td>

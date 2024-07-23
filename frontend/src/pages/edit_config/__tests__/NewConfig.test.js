@@ -215,7 +215,7 @@ describe('NewConfig', () => {
         await user.selectOptions(app.getAllByLabelText('Keyword')[0], 'sleep');
         await user.type(app.getAllByLabelText('Keyword')[0], '{enter}');
         // Open rule field, press minus button next to slider twice
-        await user.click(app.getByText('71.1'));
+        await user.click(app.getByText('71.1 \u00B0F'));
         await user.click(within(
             document.querySelector('.schedule-rule-param-popup')
         ).getAllByRole('button')[0]);
