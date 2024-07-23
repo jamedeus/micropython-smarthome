@@ -237,15 +237,29 @@ describe('App', () => {
     });
 
     it('stops recording when "Finish Recording" button is clicked', async () => {
-        // TODO don't think this is actually called?
+        // Mock fetch function to return expected backend response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
             json: () => Promise.resolve({
                 status: 'success',
-                message: 'Done'
+                message: [
+                    {
+                        "ip": "192.168.1.100",
+                        "args": [
+                            "turn_off",
+                            "device1"
+                        ],
+                        "node_name": "Bedroom",
+                        "target_name": "Lights",
+                        "action_name": "Turn Off"
+                    }
+                ]
             })
         }));
+
+        // Confirm new macro name does not exist
+        expect(app.queryByText('Macro')).toBeNull();
 
         // Get macro section, start recording new macro
         const macros = app.container.querySelector('.macro-container');
@@ -258,6 +272,64 @@ describe('App', () => {
         expect(app.queryByText('Start Recording')).not.toBeNull();
         expect(app.queryByText('Finish Recording')).toBeNull();
         expect(global.history.pushState).toHaveBeenCalledWith({}, '', '/api');
+
+        // Confirm button appeared for new macro
+        expect(app.getByRole('button', { name: 'Macro' })).toBeInTheDocument();
+    });
+
+    it('requests macro actions when user clicks "Finish Recording" button', async () => {
+        // Mock fetch function to return expected backend response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: [
+                    {
+                        "ip": "192.168.1.100",
+                        "args": [
+                            "turn_off",
+                            "device1"
+                        ],
+                        "node_name": "Bedroom",
+                        "target_name": "Lights",
+                        "action_name": "Turn Off"
+                    },
+                    {
+                        "ip": "192.168.1.100",
+                        "args": [
+                            "turn_off",
+                            "device2"
+                        ],
+                        "node_name": "Bedroom",
+                        "target_name": "Lamp",
+                        "action_name": "Turn Off"
+                    }
+                ]
+            })
+        }));
+
+        // Get macro section, start recording new macro
+        const macros = app.container.querySelector('.macro-container');
+        await user.click(within(macros).getAllByRole('button')[5]);
+        await user.type(app.getByPlaceholderText('New macro name'), 'Macro');
+        await user.click(app.getByText('Start Recording'));
+
+        // Click "Finish Recording", confirm new macro button appeared
+        await user.click(app.getByText('Finish Recording'));
+        expect(app.getByRole('button', { name: 'Macro' })).toBeInTheDocument();
+
+        // Open edit modal for new macro, get table containing actions
+        const macroButton = app.getByText('Macro').parentElement;
+        await user.click(macroButton.parentElement.children[1].children[0]);
+        await user.click(app.getByText('Edit'));
+        const modal = app.getByText('Edit Macro Macro').parentElement.parentElement;
+        const actions = modal.children[1].children[1].children[1];
+
+        // Confirm table contains both actions from backend
+        expect(actions.children.length).toBe(2);
+        expect(within(actions).queryByText('Lights')).not.toBeNull();
+        expect(within(actions).queryByText('Lamp')).not.toBeNull();
     });
 
     it('sets cookie when instructions modal closed if dont show again checked', async () => {

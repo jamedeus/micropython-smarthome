@@ -76,8 +76,15 @@ export const ApiOverviewContextProvider = ({ children }) => {
     };
 
     // Reset state, remove name from URL (prevent resuming if page refreshed)
-    const finishRecording = () => {
-        setRecording("");
+    const finishRecording = async () => {
+        // Get full macro actions from backend (this is in django context, but
+        // if user pressed back after adding action it will be outdated)
+        const response = await fetch(`/get_macro_actions/${recording}`);
+        if (response.ok) {
+            const data = await response.json();
+            setMacros({ ...macros, [recording]: data.message });
+        }
+        setRecording('');
         history.pushState({}, '', '/api');
     };
 

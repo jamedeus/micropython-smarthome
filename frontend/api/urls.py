@@ -20,6 +20,7 @@ urlpatterns = [
     path('delete_macro/<str:name>', views.delete_macro, name='delete_macro'),
     path('delete_macro_action/<str:name>/<int:index>', views.delete_macro_action, name='delete_macro_action'),
     path('macro_name_available/<str:name>', views.macro_name_available, name='macro_name_available'),
+    path('get_macro_actions/<str:name>', views.get_macro_actions, name='get_macro_actions'),
     path('skip_instructions', views.skip_instructions, name='skip_instructions'),
 
     # IR macro views

@@ -396,6 +396,14 @@ def macro_name_available(request, name):
         return standard_response(message=f'Name {name} available')
 
 
+def get_macro_actions(request, name):
+    try:
+        macro = Macro.objects.get(name=name)
+        return standard_response(message=json.loads(macro.actions))
+    except Macro.DoesNotExist:
+        return error_response(message=f'Macro {name} does not exist', status=404)
+
+
 # Returns cookie to skip record macro instructions popup
 def skip_instructions(request):
     response = HttpResponse()

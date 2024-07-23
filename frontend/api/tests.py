@@ -552,6 +552,41 @@ class MacroTests(TestCaseBackupRestore):
             self.assertEqual(response.json()['message'], 'Done')
             self.assertEqual(mock_parse_command.call_count, 2)
 
+    def test_get_macro_actions(self):
+        # Create macro with 2 actions, verify exists
+        self.client.post('/add_macro_action', self.action1)
+        self.client.post('/add_macro_action', self.action2)
+        self.assertEqual(len(Macro.objects.all()), 1)
+
+        # Request macro actions, confirm correct response
+        response = self.client.get('/get_macro_actions/First Macro')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()['message'],
+            [
+                {
+                    "ip": "192.168.1.123",
+                    "args": [
+                        "turn_on",
+                        "device1"
+                    ],
+                    "node_name": "Test1",
+                    "target_name": "Cabinet Lights",
+                    "action_name": "Turn On"
+                },
+                {
+                    "ip": "192.168.1.123",
+                    "args": [
+                        "enable",
+                        "device1"
+                    ],
+                    "node_name": "Test1",
+                    "target_name": "Cabinet Lights",
+                    "action_name": "Enable"
+                }
+            ]
+        )
+
 
 class InvalidMacroTests(TestCaseBackupRestore):
     def setUp(self):
@@ -626,6 +661,10 @@ class InvalidMacroTests(TestCaseBackupRestore):
         self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
 
         response = self.client.get('/delete_macro_action/not-real/1')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
+
+        response = self.client.get('/get_macro_actions/not-real')
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
 
