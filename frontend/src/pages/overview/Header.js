@@ -17,7 +17,7 @@ const Header = () => {
         // Send request, receive report on which uploads succeeded/failed
         const response = await fetch("/reupload_all");
         const data = await response.json();
-        const report = data.message
+        const report = data.message;
         console.log(report);
 
         // Change title, show success animation, close modal when complete

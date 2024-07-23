@@ -147,7 +147,6 @@ const InstanceCard = ({ id }) => {
 
     // Schedule rules collapse state
     const [showScheduleRules, setShowScheduleRules] = useState(false);
-    console.log(showScheduleRules)
 
     // Rule slider handler
     const setRule = (newRule) => {

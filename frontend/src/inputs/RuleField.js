@@ -281,7 +281,7 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
             return `${temperature} \u00B0${instance.units[0].toUpperCase()}`;
         // Return string and float rules unchanged
         } else {
-            return rule
+            return rule;
         }
     };
 
