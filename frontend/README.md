@@ -31,6 +31,7 @@ Supported Env Vars:
 - `NODE_PASSWD`: Webrepl password of all ESP32s, defaults to `password` if omitted.
 - `SECRET_KEY`: Your django secret key, if omitted a new key will be generated each time the app starts (may break active sessions).
 - `VIRTUAL_HOST`: Reverse proxy domain, make sure to add the same domain to `ALLOWED_HOSTS`.
+- `GEOCODE_API_KEY`: API key used to get GPS coordinates from https://geocode.maps.co/ (make account for free key). This is used in the overview page default location modal to look up city coordinates, which are added to ESP32 config files and used to get accurate sunrise and sunset times.
 
 Once configuration is complete run `docker compose up -d`. The webapp can now be accessed at any of your `ALLOWED_HOSTS`, provided the domains/IPs point to your docker host.
 
