@@ -293,45 +293,49 @@ exports[`App matches snapshot 1`] = `
                   class="collapse show"
                 >
                   <div
-                    class="d-flex flex-row align-items-center my-2"
+                    class="my-4 pb-2"
                   >
-                    <button
-                      class="btn btn-none btn-sm"
-                      type="button"
-                    >
-                      <i
-                        class="bi-dash-lg"
-                      />
-                    </button>
                     <div
-                      class="w-100 mx-3"
+                      class="d-flex flex-row align-items-center my-2"
                     >
+                      <button
+                        class="btn btn-none btn-sm"
+                        type="button"
+                      >
+                        <i
+                          class="bi-dash-lg"
+                        />
+                      </button>
                       <div
-                        class="sliderTrack"
-                        style="transform: scale(1); cursor: pointer;"
+                        class="w-100 mx-3"
                       >
                         <div
-                          aria-valuemax="80.6"
-                          aria-valuemin="64.4"
-                          aria-valuenow="70"
-                          class="sliderHandle"
-                          draggable="false"
-                          role="slider"
-                          style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
-                          tabindex="0"
+                          class="sliderTrack"
+                          style="transform: scale(1); cursor: pointer;"
                         >
-                          70.0
+                          <div
+                            aria-valuemax="80.6"
+                            aria-valuemin="64.4"
+                            aria-valuenow="70"
+                            class="sliderHandle"
+                            draggable="false"
+                            role="slider"
+                            style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
+                            tabindex="0"
+                          >
+                            70.0
+                          </div>
                         </div>
                       </div>
+                      <button
+                        class="btn btn-none btn-sm"
+                        type="button"
+                      >
+                        <i
+                          class="bi-plus-lg"
+                        />
+                      </button>
                     </div>
-                    <button
-                      class="btn btn-none btn-sm"
-                      type="button"
-                    >
-                      <i
-                        class="bi-plus-lg"
-                      />
-                    </button>
                   </div>
                   <div
                     class="text-center my-3"
@@ -579,45 +583,49 @@ exports[`App matches snapshot 1`] = `
                   class="collapse show"
                 >
                   <div
-                    class="d-flex flex-row align-items-center my-2"
+                    class="my-4 pb-2"
                   >
-                    <button
-                      class="btn btn-none btn-sm"
-                      type="button"
-                    >
-                      <i
-                        class="bi-dash-lg"
-                      />
-                    </button>
                     <div
-                      class="w-100 mx-3"
+                      class="d-flex flex-row align-items-center my-2"
                     >
+                      <button
+                        class="btn btn-none btn-sm"
+                        type="button"
+                      >
+                        <i
+                          class="bi-dash-lg"
+                        />
+                      </button>
                       <div
-                        class="sliderTrack"
-                        style="transform: scale(1); cursor: pointer;"
+                        class="w-100 mx-3"
                       >
                         <div
-                          aria-valuemax="27"
-                          aria-valuemin="18"
-                          aria-valuenow="20"
-                          class="sliderHandle"
-                          draggable="false"
-                          role="slider"
-                          style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
-                          tabindex="0"
+                          class="sliderTrack"
+                          style="transform: scale(1); cursor: pointer;"
                         >
-                          20.0
+                          <div
+                            aria-valuemax="27"
+                            aria-valuemin="18"
+                            aria-valuenow="20"
+                            class="sliderHandle"
+                            draggable="false"
+                            role="slider"
+                            style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
+                            tabindex="0"
+                          >
+                            20.0
+                          </div>
                         </div>
                       </div>
+                      <button
+                        class="btn btn-none btn-sm"
+                        type="button"
+                      >
+                        <i
+                          class="bi-plus-lg"
+                        />
+                      </button>
                     </div>
-                    <button
-                      class="btn btn-none btn-sm"
-                      type="button"
-                    >
-                      <i
-                        class="bi-plus-lg"
-                      />
-                    </button>
                   </div>
                   <div
                     class="text-center my-3"
@@ -3541,45 +3549,49 @@ exports[`App matches snapshot 1`] = `
                 class="collapse show"
               >
                 <div
-                  class="d-flex flex-row align-items-center my-2"
+                  class="my-4 pb-2"
                 >
-                  <button
-                    class="btn btn-none btn-sm"
-                    type="button"
-                  >
-                    <i
-                      class="bi-dash-lg"
-                    />
-                  </button>
                   <div
-                    class="w-100 mx-3"
+                    class="d-flex flex-row align-items-center my-2"
                   >
+                    <button
+                      class="btn btn-none btn-sm"
+                      type="button"
+                    >
+                      <i
+                        class="bi-dash-lg"
+                      />
+                    </button>
                     <div
-                      class="sliderTrack"
-                      style="transform: scale(1); cursor: pointer;"
+                      class="w-100 mx-3"
                     >
                       <div
-                        aria-valuemax="80.6"
-                        aria-valuemin="64.4"
-                        aria-valuenow="70"
-                        class="sliderHandle"
-                        draggable="false"
-                        role="slider"
-                        style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
-                        tabindex="0"
+                        class="sliderTrack"
+                        style="transform: scale(1); cursor: pointer;"
                       >
-                        70.0
+                        <div
+                          aria-valuemax="80.6"
+                          aria-valuemin="64.4"
+                          aria-valuenow="70"
+                          class="sliderHandle"
+                          draggable="false"
+                          role="slider"
+                          style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
+                          tabindex="0"
+                        >
+                          70.0
+                        </div>
                       </div>
                     </div>
+                    <button
+                      class="btn btn-none btn-sm"
+                      type="button"
+                    >
+                      <i
+                        class="bi-plus-lg"
+                      />
+                    </button>
                   </div>
-                  <button
-                    class="btn btn-none btn-sm"
-                    type="button"
-                  >
-                    <i
-                      class="bi-plus-lg"
-                    />
-                  </button>
                 </div>
                 <div
                   class="text-center my-3"
@@ -3827,45 +3839,49 @@ exports[`App matches snapshot 1`] = `
                 class="collapse show"
               >
                 <div
-                  class="d-flex flex-row align-items-center my-2"
+                  class="my-4 pb-2"
                 >
-                  <button
-                    class="btn btn-none btn-sm"
-                    type="button"
-                  >
-                    <i
-                      class="bi-dash-lg"
-                    />
-                  </button>
                   <div
-                    class="w-100 mx-3"
+                    class="d-flex flex-row align-items-center my-2"
                   >
+                    <button
+                      class="btn btn-none btn-sm"
+                      type="button"
+                    >
+                      <i
+                        class="bi-dash-lg"
+                      />
+                    </button>
                     <div
-                      class="sliderTrack"
-                      style="transform: scale(1); cursor: pointer;"
+                      class="w-100 mx-3"
                     >
                       <div
-                        aria-valuemax="27"
-                        aria-valuemin="18"
-                        aria-valuenow="20"
-                        class="sliderHandle"
-                        draggable="false"
-                        role="slider"
-                        style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
-                        tabindex="0"
+                        class="sliderTrack"
+                        style="transform: scale(1); cursor: pointer;"
                       >
-                        20.0
+                        <div
+                          aria-valuemax="27"
+                          aria-valuemin="18"
+                          aria-valuenow="20"
+                          class="sliderHandle"
+                          draggable="false"
+                          role="slider"
+                          style="position: absolute; z-index: 0; cursor: grab; user-select: none; transform: translate(NaNpx, NaNpx);"
+                          tabindex="0"
+                        >
+                          20.0
+                        </div>
                       </div>
                     </div>
+                    <button
+                      class="btn btn-none btn-sm"
+                      type="button"
+                    >
+                      <i
+                        class="bi-plus-lg"
+                      />
+                    </button>
                   </div>
-                  <button
-                    class="btn btn-none btn-sm"
-                    type="button"
-                  >
-                    <i
-                      class="bi-plus-lg"
-                    />
-                  </button>
                 </div>
                 <div
                   class="text-center my-3"

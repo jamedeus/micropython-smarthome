@@ -16,14 +16,16 @@ const RuleInput = ({ id, params, setRule, onBlur=() => {} }) => {
     // Thermostat: Render correct input (matches generic float in switch below)
     if (['si7021', 'dht22'].includes(params.type)) {
         return (
-            <ThermostatRuleInput
-                rule={String(params.current_rule)}
-                setRule={setRule}
-                min={metadata.rule_limits[0]}
-                max={metadata.rule_limits[1]}
-                units={params.units}
-                onBlur={onBlur}
-            />
+            <div className="my-4 pb-2">
+                <ThermostatRuleInput
+                    rule={String(params.current_rule)}
+                    setRule={setRule}
+                    min={metadata.rule_limits[0]}
+                    max={metadata.rule_limits[1]}
+                    units={params.units}
+                    onBlur={onBlur}
+                />
+            </div>
         );
     }
 
