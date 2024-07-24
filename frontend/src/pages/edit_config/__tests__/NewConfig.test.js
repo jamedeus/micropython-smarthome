@@ -452,13 +452,14 @@ describe('NewConfig', () => {
     });
 
     it('warns user before overwriting an existing config with the same name', async () => {
-        // Mock fetch function to simulate an existing config with the same name
+        // Mock fetch function to return name available respnse (prevent next
+        // page button being disabled due to duplicate name)
         global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 409,
+            ok: true,
+            status: 200,
             json: () => Promise.resolve({
                 status: 'success',
-                message: 'Config already exists with identical name'
+                message: 'Name available'
             })
         }));
 
@@ -471,6 +472,18 @@ describe('NewConfig', () => {
         await user.clear(app.getByLabelText('Password:'));
         await user.type(app.getByLabelText('Password:'), 'hunter2');
         jest.clearAllMocks();
+
+        // Mock fetch function to simulate an existing config with the same name
+        // Duplicate name disables next page button, but theoretically another
+        // user could create config with same name after first user loads page3
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 409,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Config already exists with identical name'
+            })
+        }));
 
         // Go to page 3, click submit
         await user.click(app.getByRole('button', { name: 'Next' }));
@@ -551,13 +564,14 @@ describe('NewConfig', () => {
     });
 
     it('shows error modal if unable to overwrite duplicate config', async () => {
-        // Mock fetch function to simulate an existing config with the same name
+        // Mock fetch function to return name available respnse (prevent next
+        // page button being disabled due to duplicate name)
         global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 409,
+            ok: true,
+            status: 200,
             json: () => Promise.resolve({
                 status: 'success',
-                message: 'Config already exists with identical name'
+                message: 'Name available'
             })
         }));
 
@@ -569,6 +583,18 @@ describe('NewConfig', () => {
         await user.type(app.getByLabelText('SSID:'), 'mywifi');
         await user.clear(app.getByLabelText('Password:'));
         await user.type(app.getByLabelText('Password:'), 'hunter2');
+
+        // Mock fetch function to simulate an existing config with the same name
+        // Duplicate name disables next page button, but theoretically another
+        // user could create config with same name after first user loads page3
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 409,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'Config already exists with identical name'
+            })
+        }));
 
         // Go to page 3, click submit, confirm duplicate modal appeared
         await user.click(app.getByRole('button', { name: 'Next' }));

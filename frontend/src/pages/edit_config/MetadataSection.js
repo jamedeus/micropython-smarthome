@@ -13,7 +13,8 @@ const MetadataSection = () => {
         edit_existing,
         setShowWifiToast,
         handleInputChange,
-        highlightInvalid
+        highlightInvalid,
+        setHasInvalidFields
     } = useContext(ConfigContext);
 
     // Add invalid highlight when duplicate name entered
@@ -30,11 +31,14 @@ const MetadataSection = () => {
                 {name: new_name}
             );
 
-            // If name is duplicate add invalid highlight, otherwise remove
+            // If name is duplicate add red highlight, disable next page button
             if (!response.ok) {
                 el.classList.add('is-invalid');
+                setHasInvalidFields(true);
+            // If name available remove red highlight, enable next page button
             } else {
                 el.classList.remove('is-invalid');
+                setHasInvalidFields(false);
             }
         }
 

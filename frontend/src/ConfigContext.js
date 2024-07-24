@@ -96,6 +96,9 @@ export const ConfigProvider = ({ children }) => {
     // Create state object to control invalid field highlight
     const [highlightInvalid, setHighlightInvalid] = useState(false);
 
+    // Prevents going to next page until invalid fields fixed
+    const [hasInvalidFields, setHasInvalidFields] = useState(false);
+
     // Handler for add device and add sensor buttons
     const addInstance = (category) => {
         // Get index of new instance
@@ -390,6 +393,8 @@ export const ConfigProvider = ({ children }) => {
                 getKey,
                 highlightInvalid,
                 setHighlightInvalid,
+                hasInvalidFields,
+                setHasInvalidFields,
                 addInstance,
                 deleteInstance,
                 changeInstanceType,

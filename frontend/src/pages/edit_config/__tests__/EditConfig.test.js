@@ -99,13 +99,16 @@ describe('EditConfig', () => {
         await user.clear(nameField);
         await user.type(nameField, 'Bathroom');
 
-        // Confirm correct request sent, field was marked invalid
+        // Confirm correct request sent
         expect(global.fetch).toHaveBeenCalledWith('/check_duplicate', {
             method: 'POST',
             body: JSON.stringify({ name: "Bathroom" }),
             headers: postHeaders
         });
+
+        // Confirm field is marked invalid, next page button is disabled
         expect(nameField.classList).toContain('is-invalid');
+        expect(app.getByRole('button', { name: 'Next' })).toHaveAttribute('disabled');
 
         // Mock fetch function to simulate available friendly name
         global.fetch = jest.fn(() => Promise.resolve({
@@ -117,10 +120,13 @@ describe('EditConfig', () => {
             })
         }));
 
-        // Enter name in friendly name field, confirm invalid highlight disappeared
+        // Enter unique name in friendly name field
         await user.clear(nameField);
         await user.type(nameField, 'Other Bathroom');
+
+        // Confirm invalid highlight disappeared, next page button not disabled
         expect(nameField.classList).not.toContain('is-invalid');
+        expect(app.getByRole('button', { name: 'Next' })).not.toHaveAttribute('disabled');
 
         // Enter existing name (except for last character)
         await user.clear(nameField);
@@ -150,6 +156,17 @@ describe('EditConfig', () => {
         // Confirm both nickname fields now have red highlight
         expect(device1Nickname.classList).toContain('is-invalid');
         expect(device2Nickname.classList).toContain('is-invalid');
+
+        // Confirm next page button is disabled
+        expect(app.getByRole('button', { name: 'Next' })).toHaveAttribute('disabled');
+
+        // Change device1 nickname to "Heater2" (unique)
+        await user.type(device1Nickname, '2');
+
+        // Confirm next page button enabled, red highlights removed
+        expect(app.getByRole('button', { name: 'Next' })).not.toHaveAttribute('disabled');
+        expect(device1Nickname.classList).not.toContain('is-invalid');
+        expect(device2Nickname.classList).not.toContain('is-invalid');
     });
 
     it('clears card inputs when device type is changed', async () => {

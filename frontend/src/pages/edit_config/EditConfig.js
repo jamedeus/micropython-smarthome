@@ -99,7 +99,8 @@ const EditConfig = () => {
         config,
         target_node_ip,
         edit_existing,
-        setHighlightInvalid
+        setHighlightInvalid,
+        hasInvalidFields
     } = useContext(ConfigContext);
 
     const prevPage = () => {
@@ -220,13 +221,14 @@ const EditConfig = () => {
         );
     };
 
+    // Disabled if page3 or if invalid fields exist
     const NextPageButton = () => {
         return (
             <Button
                 variant="primary"
                 className="mb-4"
                 onClick={nextPage}
-                disabled={page === 3}
+                disabled={page === 3 || hasInvalidFields}
             >
                 Next
             </Button>
