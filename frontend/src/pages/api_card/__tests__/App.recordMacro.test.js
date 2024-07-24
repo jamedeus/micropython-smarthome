@@ -152,7 +152,9 @@ describe('App in record mode', () => {
 
         // Get card body collapse section, confirm open (device enabled)
         const collapse = card.children[1];
-        expect(collapse.classList).toContain('show');
+        await waitFor(() => {
+            expect(collapse.classList).toContain('show');
+        });
 
         // Click dropdown button, click disable option
         await user.click(dropdown.children[0]);
@@ -172,7 +174,9 @@ describe('App in record mode', () => {
             }),
             headers: postHeaders
         });
-        expect(collapse.classList).not.toContain('show');
+        await waitFor(() => {
+            expect(collapse.classList).not.toContain('show');
+        });
 
         // Click dropdown button, click enable option
         await user.click(dropdown.children[0]);

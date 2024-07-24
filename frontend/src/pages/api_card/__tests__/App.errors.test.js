@@ -120,7 +120,9 @@ describe('App', () => {
 
         // Get card body collapse section, confirm open (device enabled)
         const collapse = card.children[1];
-        expect(collapse.classList).toContain('show');
+        await waitFor(() => {
+            expect(collapse.classList).toContain('show');
+        });
 
         // Click dropdown button, click disable option
         await user.click(dropdown.children[0]);
@@ -128,7 +130,9 @@ describe('App', () => {
 
         // Confirm fetch was called, but card did not collapse
         expect(global.fetch).toHaveBeenCalled();
-        expect(collapse.classList).toContain('show');
+        await waitFor(() => {
+            expect(collapse.classList).toContain('show');
+        });
     });
 
     it('does not expand card when enable API call fails', async () => {
@@ -148,7 +152,9 @@ describe('App', () => {
 
         // Get card body collapse section, confirm closed (device disabled)
         const collapse = card.children[1];
-        expect(collapse.classList).not.toContain('show');
+        await waitFor(() => {
+            expect(collapse.classList).not.toContain('show');
+        });
 
         // Click dropdown button, click enable option
         await user.click(dropdown.children[0]);
@@ -156,7 +162,9 @@ describe('App', () => {
 
         // Confirm fetch was called, but card did not expand
         expect(global.fetch).toHaveBeenCalled();
-        expect(collapse.classList).not.toContain('show');
+        await waitFor(() => {
+            expect(collapse.classList).not.toContain('show');
+        });
     });
 
     it('does not change rule or disable dropdown option when reset_rule API call fails', async () => {
