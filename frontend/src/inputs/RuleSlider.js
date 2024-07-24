@@ -20,6 +20,16 @@ const RuleSlider = ({
     displayType,
     onBlur=() => {}
 }) => {
+    // Prevent slider leaving track if upstream rule exceeds limits.
+    // Some inputs (eg motion sensor) have limits on frontend but not firmware.
+    // If rule is set outside frontend range using CLI client this will prevent
+    // page from loading (or move slider outside track if page already loaded).
+    if (parseFloat(rule) > max) {
+        rule = max;
+    } else if (parseFloat(rule) < min) {
+        rule = min;
+    }
+
     // Create array containing current rule, required my slider component
     const values = [rule];
 
