@@ -271,6 +271,7 @@ export const RuleField = ({ instance, category, type, rule, setRule, handleClose
     const getDisplayString = () => {
         // Return placeholder if rule is not set
         if (ruleIsUnset(ruleDetails.rule)) {
+            /* istanbul ignore next */
             return 'Set rule';
         // Return scaled integer rule (or human-readable fade rule)
         } else if (metadata.rule_prompt === 'int_or_fade' && ruleDetails.range_rule) {

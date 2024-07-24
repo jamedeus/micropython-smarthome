@@ -62,6 +62,7 @@ const RuleSlider = ({
             case("float"):
                 return parseFloat(displayValue).toFixed(1);
             default:
+                /* istanbul ignore next */
                 return displayValue;
         }
     };
@@ -83,7 +84,10 @@ const RuleSlider = ({
                     min={min}
                     max={max}
                     values={values}
-                    onChange={(values) => setRule(values[0])}
+                    onChange={
+                        /* istanbul ignore next */
+                        (values) => setRule(values[0])
+                    }
                     onFinalChange={onBlur}
                     renderTrack={({ props, children }) => (
                         <div

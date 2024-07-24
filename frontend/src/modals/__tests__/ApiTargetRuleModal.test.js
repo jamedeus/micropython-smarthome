@@ -212,6 +212,34 @@ describe('ApiTargetRuleModal', () => {
         });
     });
 
+    it('opens collapse with instructions when help button is clicked', async () => {
+        // Open modal
+        await user.click(component.getByText('Add New Rule'));
+
+        // Get help button, collapses containing instructions
+        const helpButton = component.getByRole('button', { name: 'Help' });
+        const helpCollapse = helpButton.parentElement.children[1];
+        const examplesCollapse = helpCollapse.children[4];
+
+        // Confirm both collapses are closed
+        expect(helpCollapse.classList).not.toContain('show');
+        expect(examplesCollapse.classList).not.toContain('show');
+
+        // Click help button, confirm help collapse opens but not examples
+        await user.click(helpButton);
+        expect(helpCollapse.classList).toContain('show');
+        expect(examplesCollapse.classList).not.toContain('show');
+
+        // Click examples button, confirm both collapses are open
+        await user.click(component.getByRole('button', { name: 'Examples' }));
+        expect(helpCollapse.classList).toContain('show');
+        expect(examplesCollapse.classList).toContain('show');
+
+        // Click close button, confirm main collapse closes
+        await user.click(component.getByRole('button', { name: 'Close' }));
+        expect(helpCollapse.classList).not.toContain('show');
+    });
+
     it('closes modal when X button or background is clicked', async () => {
         // Confirm modal not shown
         expect(component.queryByText('API Target Rule')).toBeNull();
