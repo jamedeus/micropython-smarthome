@@ -1870,6 +1870,38 @@ class GpsCoordinatesTests(TestCaseBackupRestore):
         # Create config with no coordinates set
         self.config = Config.objects.create(config=test_config_1, filename='test1.json')
 
+    def test_get_location_suggestions(self):
+        with patch('requests.get') as mock_get:
+            # Mock requests.get to return arbitrary response
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = [{"place_id": 12345}, {"place_id": 67890}]
+            mock_get.return_value = mock_response
+
+            # Request location suggestions, confirm correct response
+            response = self.client.get('/get_location_suggestions/somewhere')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {
+                'status': 'success',
+                'message': [{"place_id": 12345}, {"place_id": 67890}]
+            })
+
+    def test_get_location_suggestions_error(self):
+        with patch('requests.get') as mock_get:
+            # Mock requests.get to return missing API key error
+            mock_response = MagicMock()
+            mock_response.status_code = 401
+            mock_response.text = 'HTTP 401: Missing API Key\r\n\r\nYour request is missing an api_key'
+            mock_get.return_value = mock_response
+
+            # Request location suggestions, confirm correct error
+            response = self.client.get('/get_location_suggestions/somewhere')
+            self.assertEqual(response.status_code, 401)
+            self.assertEqual(response.json(), {
+                'status': 'error',
+                'message': 'HTTP 401: Missing API Key\r\n\r\nYour request is missing an api_key'
+            })
+
     def test_setting_coordinates(self):
         # Database should be empty, config metadata should not contain gps key
         self.assertEqual(len(GpsCoordinates.objects.all()), 0)

@@ -221,7 +221,10 @@ describe('GpsModal', () => {
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve(mockGeocodeApiResponse)
+            json: () => Promise.resolve({
+                status: 'success',
+                message: mockGeocodeApiResponse
+            })
         }));
 
         // Simulate user typing location in input
@@ -230,7 +233,7 @@ describe('GpsModal', () => {
 
         // Confirm correct API call made, confirm suggestions appeared
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('https://geocode.maps.co/search?q=portland');
+            expect(global.fetch).toHaveBeenCalledWith('/get_location_suggestions/portland');
             expect(app.queryByText(/Portland, Multnomah County, Oregon/)).not.toBeNull();
             expect(app.queryByText(/Portland, Cumberland County, Maine/)).not.toBeNull();
             expect(app.queryByText(/Portland, San Patricio County, Texas/)).not.toBeNull();
@@ -243,12 +246,40 @@ describe('GpsModal', () => {
         expect(app.queryByText(/Portland, San Patricio County, Texas/)).toBeNull();
     });
 
+    it('shows alert when geocode API key is missing', async () => {
+        // Mock fetch function to simulate backend missing geocode API key
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 401,
+            json: () => Promise.resolve({
+                status: 'error',
+                message: 'HTTP 401: Missing API Key\r\n\r\nYour request is missing an api_key'
+            })
+        }));
+        // Mock alert function
+        global.alert = jest.fn();
+
+        // Simulate user typing location in input
+        const modal = app.getByText('Set Default Location').parentElement.parentElement;
+        await user.type(within(modal).getByRole('textbox'), 'portland');
+
+        // Confirm alert is shown with message from API response
+        await waitFor(() => {
+            expect(global.alert).toHaveBeenCalledWith(
+                'HTTP 401: Missing API Key\r\n\r\nYour request is missing an api_key'
+            );
+        }, { timeout: 2500 });
+    });
+
     it('makes correct request when user selects a location', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
-            json: () => Promise.resolve(mockGeocodeApiResponse)
+            json: () => Promise.resolve({
+                status: 'success',
+                message: mockGeocodeApiResponse
+            })
         }));
 
         // Simulate user typing location in input, clicking first suggestion

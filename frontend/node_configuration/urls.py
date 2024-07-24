@@ -29,6 +29,7 @@ urlpatterns = [
     path('reupload_all', views.reupload_all, name='reupload_all'),
     path('restore_config', views.restore_config, name='restore_config'),
     path('set_default_credentials', views.set_default_credentials, name='set_default_credentials'),
+    path('get_location_suggestions/<str:query>', views.get_location_suggestions, name='get_location_suggestions'),
     path('set_default_location', views.set_default_location, name='set_default_location'),
 
     # Schedule keyword management endpoints

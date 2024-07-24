@@ -22,11 +22,15 @@ const GpsModal = () => {
 
     // API returns array of up to 10 possible matches
     const api_call = async (search) => {
-        const response = await fetch(
-            `https://geocode.maps.co/search?q=${encodeURIComponent(search)}`
-        );
-        const data = await response.json();
-        return data;
+        const response = await fetch(`/get_location_suggestions/${encodeURIComponent(search)}`);
+        if (response.ok) {
+            const data = await response.json();
+            return data.message;
+        } else {
+            const error = await response.json();
+            alert(error.message);
+            return [];
+        }
     };
 
     // Debounced API call, writes results to state object

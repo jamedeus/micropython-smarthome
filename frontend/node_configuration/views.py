@@ -1,6 +1,7 @@
 import json
 from functools import wraps
 from concurrent.futures import ThreadPoolExecutor
+import requests
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.conf import settings
@@ -431,6 +432,15 @@ def set_default_credentials(data):
     new.save()
 
     return standard_response(message='Default credentials set')
+
+
+def get_location_suggestions(data, query):
+    response = requests.get(f'https://geocode.maps.co/search?q={query}&api_key={settings.GEOCODE_API_KEY}')
+
+    if response.status_code == 200:
+        return standard_response(message=response.json())
+    else:
+        return error_response(message=response.text, status=response.status_code)
 
 
 @requires_post

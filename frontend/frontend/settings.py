@@ -68,6 +68,9 @@ if CLI_SYNC and not os.path.exists(os.path.join(REPO_DIR, 'CLI', 'cli_config.jso
 # Set env var, cause shared utilities to use db instead of json files
 os.environ.update({'SMARTHOME_FRONTEND': 'django'})
 
+# Get API key used to get suggestions for "Set Default Location" modal
+GEOCODE_API_KEY = os.environ.get('GEOCODE_API_KEY')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
