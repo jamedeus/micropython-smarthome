@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext, useEffect, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { ApiCardContext } from 'root/ApiCardContext';
 import { MetadataContext } from 'root/MetadataContext';
@@ -14,6 +14,7 @@ import { showScheduleToggle } from './ScheduleToggleModal';
 import ChangeApiTargetRule from './ChangeApiTargetRule';
 import ClimateDataCard from './ClimateDataCard';
 import { CSSTransition } from 'react-transition-group';
+import { debounce } from 'util/helper_functions';
 import 'css/api_card_buttons.css';
 
 // Top left corner of device cards
@@ -158,9 +159,19 @@ const InstanceCard = ({ id }) => {
         debounced_set_rule(id, newRule);
     };
 
+    // Resumes status updates after 6 second delay (ignore next update)
+    // Prevents slider jumping back to original position if user releases click
+    // in last 150ms before status update (set_rule API call debounced 150ms,
+    // so rule will change after status with old rule is received. If updates
+    // resume immediately the old status will undo user changes and incorrect
+    // rule will be displayed for 5 seconds until next update.)
+    const stopEditing = useCallback(debounce(() => {
+        setEditing(false);
+    }, 6000), []);
+
     // Called when user releases click on slider, resumes status updates
     const onBlur = () => {
-        setEditing(false);
+        stopEditing();
     };
 
     // Enable/Disable dropdown option handler
