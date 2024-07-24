@@ -23,7 +23,7 @@ test_firmware:
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
 
 # Run django unit tests
-test_frontend:
+test_django:
   stage: test
   image: python:3.10-bullseye
   tags:
