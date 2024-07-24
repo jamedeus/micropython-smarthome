@@ -549,4 +549,46 @@ describe('NewConfig', () => {
         });
         expect(app.queryByText('Duplicate Warning')).toBeNull();
     });
+
+    it('shows error modal if unable to overwrite duplicate config', async () => {
+        // Mock fetch function to simulate an existing config with the same name
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 409,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Config already exists with identical name'
+            })
+        }));
+
+        // Fill out first page
+        await user.type(app.getAllByRole('textbox')[0], 'Basement');
+        await user.type(app.getByLabelText('Location:'), 'Under staircase');
+        await user.type(app.getByLabelText('Floor:'), '-1');
+        await user.clear(app.getByLabelText('SSID:'));
+        await user.type(app.getByLabelText('SSID:'), 'mywifi');
+        await user.clear(app.getByLabelText('Password:'));
+        await user.type(app.getByLabelText('Password:'), 'hunter2');
+
+        // Go to page 3, click submit, confirm duplicate modal appeared
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Next' }));
+        await user.click(app.getByRole('button', { name: 'Submit' }));
+        expect(app.queryByText('Duplicate Warning')).not.toBeNull();
+
+        // Mock fetch function to simulate filesystem error when deleting config
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: false,
+            status: 500,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
+            })
+        }));
+
+        // Click overwrite button, confirm not redirected + error modal appears
+        await user.click(app.getByRole('button', { name: 'Overwrite' }));
+        expect(app.queryByText(/Failed to delete, permission denied/)).not.toBeNull();
+        expect(window.location.href).not.toBe('/config_overview');
+    });
 });

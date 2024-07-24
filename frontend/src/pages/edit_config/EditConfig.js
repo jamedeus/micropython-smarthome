@@ -188,8 +188,20 @@ const EditConfig = () => {
         const target_filename = friendlyNameToFilename(config.metadata.id);
         // Close error modal, delete existing file, resubmit
         hideErrorModal();
-        await send_post_request("/delete_config", target_filename);
-        await submitButton();
+        const response = await send_post_request("/delete_config", target_filename);
+        // Resubmit if duplicate config deleted successfully
+        if (response.ok) {
+            await submitButton();
+        // Show error from backend if failed to delete
+        } else {
+            const error = await response.json();
+            console.log(error)
+            showErrorModal({
+                title: "Warning",
+                error: "failed",
+                body: error.message
+            });
+        }
     };
 
     const PrevPageButton = () => {
