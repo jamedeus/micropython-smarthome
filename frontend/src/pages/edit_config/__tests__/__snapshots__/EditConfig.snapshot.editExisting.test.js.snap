@@ -839,7 +839,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             />
                           </button>
                           <div
-                            class="w-100 mx-3"
+                            class="w-100 mx-4"
                           >
                             <div
                               class="sliderTrack"
@@ -1079,7 +1079,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             />
                           </button>
                           <div
-                            class="w-100 mx-3"
+                            class="w-100 mx-4"
                           >
                             <div
                               class="sliderTrack"
@@ -1595,7 +1595,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             />
                           </button>
                           <div
-                            class="w-100 mx-3"
+                            class="w-100 mx-4"
                           >
                             <div
                               class="sliderTrack"
@@ -2476,7 +2476,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             />
                           </button>
                           <div
-                            class="w-100 mx-3"
+                            class="w-100 mx-4"
                           >
                             <div
                               class="sliderTrack"
@@ -3053,7 +3053,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             />
                           </button>
                           <div
-                            class="w-100 mx-3"
+                            class="w-100 mx-4"
                           >
                             <div
                               class="sliderTrack"
@@ -3723,7 +3723,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             />
                           </button>
                           <div
-                            class="w-100 mx-3"
+                            class="w-100 mx-4"
                           >
                             <div
                               class="sliderTrack"
@@ -3958,7 +3958,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                             />
                           </button>
                           <div
-                            class="w-100 mx-3"
+                            class="w-100 mx-4"
                           >
                             <div
                               class="sliderTrack"
@@ -4879,7 +4879,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           />
                         </button>
                         <div
-                          class="w-100 mx-3"
+                          class="w-100 mx-4"
                         >
                           <div
                             class="sliderTrack"
@@ -5119,7 +5119,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           />
                         </button>
                         <div
-                          class="w-100 mx-3"
+                          class="w-100 mx-4"
                         >
                           <div
                             class="sliderTrack"
@@ -5635,7 +5635,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           />
                         </button>
                         <div
-                          class="w-100 mx-3"
+                          class="w-100 mx-4"
                         >
                           <div
                             class="sliderTrack"
@@ -6516,7 +6516,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           />
                         </button>
                         <div
-                          class="w-100 mx-3"
+                          class="w-100 mx-4"
                         >
                           <div
                             class="sliderTrack"
@@ -7093,7 +7093,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           />
                         </button>
                         <div
-                          class="w-100 mx-3"
+                          class="w-100 mx-4"
                         >
                           <div
                             class="sliderTrack"
@@ -7763,7 +7763,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           />
                         </button>
                         <div
-                          class="w-100 mx-3"
+                          class="w-100 mx-4"
                         >
                           <div
                             class="sliderTrack"
@@ -7998,7 +7998,7 @@ exports[`EditConfig matches snapshot when editing existing config file 1`] = `
                           />
                         </button>
                         <div
-                          class="w-100 mx-3"
+                          class="w-100 mx-4"
                         >
                           <div
                             class="sliderTrack"

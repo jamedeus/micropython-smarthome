@@ -307,7 +307,7 @@ exports[`App matches snapshot 1`] = `
                         />
                       </button>
                       <div
-                        class="w-100 mx-3"
+                        class="w-100 mx-4"
                       >
                         <div
                           class="sliderTrack"
@@ -597,7 +597,7 @@ exports[`App matches snapshot 1`] = `
                         />
                       </button>
                       <div
-                        class="w-100 mx-3"
+                        class="w-100 mx-4"
                       >
                         <div
                           class="sliderTrack"
@@ -1024,7 +1024,7 @@ exports[`App matches snapshot 1`] = `
                         />
                       </button>
                       <div
-                        class="w-100 mx-3"
+                        class="w-100 mx-4"
                       >
                         <div
                           class="sliderTrack"
@@ -1702,7 +1702,7 @@ exports[`App matches snapshot 1`] = `
                         />
                       </button>
                       <div
-                        class="w-100 mx-3"
+                        class="w-100 mx-4"
                       >
                         <div
                           class="sliderTrack"
@@ -2286,7 +2286,7 @@ exports[`App matches snapshot 1`] = `
                         />
                       </button>
                       <div
-                        class="w-100 mx-3"
+                        class="w-100 mx-4"
                       >
                         <div
                           class="sliderTrack"
@@ -2800,7 +2800,7 @@ exports[`App matches snapshot 1`] = `
                         />
                       </button>
                       <div
-                        class="w-100 mx-3"
+                        class="w-100 mx-4"
                       >
                         <div
                           class="sliderTrack"
@@ -3070,7 +3070,7 @@ exports[`App matches snapshot 1`] = `
                         />
                       </button>
                       <div
-                        class="w-100 mx-3"
+                        class="w-100 mx-4"
                       >
                         <div
                           class="sliderTrack"
@@ -3563,7 +3563,7 @@ exports[`App matches snapshot 1`] = `
                       />
                     </button>
                     <div
-                      class="w-100 mx-3"
+                      class="w-100 mx-4"
                     >
                       <div
                         class="sliderTrack"
@@ -3853,7 +3853,7 @@ exports[`App matches snapshot 1`] = `
                       />
                     </button>
                     <div
-                      class="w-100 mx-3"
+                      class="w-100 mx-4"
                     >
                       <div
                         class="sliderTrack"
@@ -4280,7 +4280,7 @@ exports[`App matches snapshot 1`] = `
                       />
                     </button>
                     <div
-                      class="w-100 mx-3"
+                      class="w-100 mx-4"
                     >
                       <div
                         class="sliderTrack"
@@ -4958,7 +4958,7 @@ exports[`App matches snapshot 1`] = `
                       />
                     </button>
                     <div
-                      class="w-100 mx-3"
+                      class="w-100 mx-4"
                     >
                       <div
                         class="sliderTrack"
@@ -5542,7 +5542,7 @@ exports[`App matches snapshot 1`] = `
                       />
                     </button>
                     <div
-                      class="w-100 mx-3"
+                      class="w-100 mx-4"
                     >
                       <div
                         class="sliderTrack"
@@ -6056,7 +6056,7 @@ exports[`App matches snapshot 1`] = `
                       />
                     </button>
                     <div
-                      class="w-100 mx-3"
+                      class="w-100 mx-4"
                     >
                       <div
                         class="sliderTrack"
@@ -6326,7 +6326,7 @@ exports[`App matches snapshot 1`] = `
                       />
                     </button>
                     <div
-                      class="w-100 mx-3"
+                      class="w-100 mx-4"
                     >
                       <div
                         class="sliderTrack"

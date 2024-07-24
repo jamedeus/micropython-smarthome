@@ -78,7 +78,7 @@ const RuleSlider = ({
                 <i className="bi-dash-lg"></i>
             </Button>
 
-            <div className="w-100 mx-3">
+            <div className="w-100 mx-4">
                 <Range
                     step={sliderStep}
                     min={min}
