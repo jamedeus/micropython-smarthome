@@ -31,6 +31,7 @@ const ReuploadToast = () => {
         <Toast
             show={visible}
             onClose={closeToast}
+            onClick={closeToast}
             className="fixed-bottom text-center mx-auto mb-3"
         >
             <Toast.Body>

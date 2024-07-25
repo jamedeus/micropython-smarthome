@@ -363,6 +363,30 @@ describe('App', () => {
         }, { timeout: 5500 });
     });
 
+    it('closes reupload toast when clicked', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: 'uploaded'
+            })
+        }));
+
+        // Get existing nodes table, click button on first row
+        const existingNodes = app.getByText('Existing Nodes').parentElement;
+        await user.click(within(existingNodes).getAllByRole('button')[0]);
+
+        // Click "Re-upload" option, confirm toast appeared
+        await user.click(app.getByText('Re-upload'));
+        expect(app.queryByText('Finished reuploading bathroom.json')).not.toBeNull();
+
+        // Click toast, confirm disappears before timeout complete
+        await user.click(app.getByText('Finished reuploading bathroom.json'));
+        expect(app.queryByText('Finished reuploading bathroom.json')).toBeNull();
+    });
+
     it('shows error modal after failing to re-upload config', async () => {
         // Mock fetch function to simulate unreachable target node
         global.fetch = jest.fn(() => Promise.resolve({
