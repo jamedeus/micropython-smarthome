@@ -26,8 +26,8 @@ const CardColumn = ({ category }) => {
                 .filter(id => id.startsWith(category))
                 .sort((a, b) => {
                     // Sort by index (avoids 1, 10, 11, 2, 3, etc)
-                    const indexA = parseInt(a.replace(/[a-zA-z]/g, ''));
-                    const indexB = parseInt(b.replace(/[a-zA-z]/g, ''));
+                    const indexA = parseInt(a.replace(/[a-zA-Z]/g, ''));
+                    const indexB = parseInt(b.replace(/[a-zA-Z]/g, ''));
                     return indexA - indexB;
                 })
                 .map(id => (

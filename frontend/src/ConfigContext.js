@@ -139,7 +139,7 @@ export const ConfigProvider = ({ children }) => {
         setDeleteing({
             id: id,
             category: id.replace(/[0-9]/g, ''),
-            index: parseInt(id.replace(/[a-zA-z]/g, ''))
+            index: parseInt(id.replace(/[a-zA-Z]/g, ''))
         });
 
         // Wait for animation to complete
