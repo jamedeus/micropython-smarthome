@@ -331,14 +331,18 @@ describe('App', () => {
     });
 
     it('sends correct request when an existing node is reuploaded', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: 'uploaded'
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: 'uploaded'
+                    })
+                });
+            }, 100);
         }));
 
         // Get existing nodes table, click button on first row
@@ -356,7 +360,13 @@ describe('App', () => {
             headers: postHeaders
         });
 
-        // Confirm shows success message in toast, hides toast after 5 seconds
+        // Confirm toast appears, confirm message changes when request completes
+        expect(app.queryByText('Reuploading bathroom.json to 192.168.1.100...')).not.toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Finished reuploading bathroom.json')).not.toBeNull();
+        });
+
+        // Confirm toast disappears after 5 seconds
         expect(app.queryByText('Finished reuploading bathroom.json')).not.toBeNull();
         await waitFor(() => {
             expect(app.queryByText('Finished reuploading bathroom.json')).toBeNull();
@@ -364,14 +374,18 @@ describe('App', () => {
     });
 
     it('closes reupload toast when clicked', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: 'uploaded'
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: 'uploaded'
+                    })
+                });
+            }, 100);
         }));
 
         // Get existing nodes table, click button on first row
@@ -380,10 +394,10 @@ describe('App', () => {
 
         // Click "Re-upload" option, confirm toast appeared
         await user.click(app.getByText('Re-upload'));
-        expect(app.queryByText('Finished reuploading bathroom.json')).not.toBeNull();
+        expect(app.queryByText('Reuploading bathroom.json to 192.168.1.100...')).not.toBeNull();
 
         // Click toast, confirm disappears before timeout complete
-        await user.click(app.getByText('Finished reuploading bathroom.json'));
+        await user.click(app.getByText('Reuploading bathroom.json to 192.168.1.100...'));
         expect(app.queryByText('Finished reuploading bathroom.json')).toBeNull();
     });
 

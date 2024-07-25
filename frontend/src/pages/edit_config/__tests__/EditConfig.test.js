@@ -338,15 +338,34 @@ describe('EditConfig', () => {
     });
 
     it('sends correct request when config is submitted', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: 'Config created'
+        // Mock fetch function to return generate_config success message on
+        // first call, upload success message on second call (100ms delay)
+        const mockFetchResponses = [
+            () => Promise.resolve({
+                ok: true,
+                status: 200,
+                json: () => Promise.resolve({
+                    status: 'success',
+                    message: 'Config created'
+                })
+            }),
+            () => new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({
+                        ok: true,
+                        status: 200,
+                        json: () => Promise.resolve({
+                            status: 'success',
+                            message: 'uploaded'
+                        })
+                    });
+                }, 100);
             })
-        }));
+        ];
+        global.fetch = jest.fn(() => {
+            const response = mockFetchResponses.shift();
+            return response();
+        });
 
         // Click next twice, confirm page3 is visible
         await user.click(app.getByRole('button', { name: 'Next' }));
@@ -371,8 +390,17 @@ describe('EditConfig', () => {
             headers: postHeaders
         });
 
-        // Confirm shows upload modal, redirects to overview when animation completes
-        expect(app.getByText('Upload Complete')).not.toBeNull();
+        // Confirm modal with upload animation appears
+        await waitFor(() => {
+            expect(app.getByText('Uploading...')).toBeInTheDocument();
+        });
+
+        // Confirm changes to success animation when request completes
+        await waitFor(() => {
+            expect(app.getByText('Upload Complete')).toBeInTheDocument();
+        });
+
+        // Confirm redirected to overview after success animation completes
         await waitFor(() => {
             expect(window.location.href).toBe('/config_overview');
         }, { timeout: 1500 });
@@ -382,7 +410,7 @@ describe('EditConfig', () => {
         // Mock fetch function to succeed on first call (generate_config) and
         // encounter target offline error on second call (reupload config to target IP)
         const mockFetchResponses = [
-            Promise.resolve({
+            () => Promise.resolve({
                 ok: true,
                 status: 200,
                 json: () => Promise.resolve({
@@ -390,24 +418,39 @@ describe('EditConfig', () => {
                     message: 'Config created'
                 })
             }),
-            Promise.resolve({
-                ok: false,
-                status: 404,
-                json: () => Promise.resolve({
-                    status: 'error',
-                    message: 'Target node offline'
-                })
+            () => new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve({
+                        ok: false,
+                        status: 404,
+                        json: () => Promise.resolve({
+                            status: 'error',
+                            message: 'Target node offline'
+                        })
+                    });
+                }, 100);
             })
         ];
-        global.fetch = jest.fn(() => mockFetchResponses.shift());
+        global.fetch = jest.fn(() => {
+            const response = mockFetchResponses.shift();
+            return response();
+        });
 
         // Click next twice, click submit button on page3
         await user.click(app.getByRole('button', { name: 'Next' }));
         await user.click(app.getByRole('button', { name: 'Next' }));
         await user.click(app.getByRole('button', { name: 'Submit' }));
 
-        // Confirm error modal appeared
-        expect(app.getByText('Connection Error')).toBeInTheDocument();
+        // Confirm modal with upload animation appears
+        await waitFor(() => {
+            expect(app.getByText('Uploading...')).toBeInTheDocument();
+        });
+
+        // Confirm modal closes, error modal appears when error occurs
+        await waitFor(() => {
+            expect(app.queryByText('Uploading...')).toBeNull();
+            expect(app.getByText('Connection Error')).toBeInTheDocument();
+        });
     });
 
     it('shows alert if unknown error occurs while reuploading submitted config', async () => {
