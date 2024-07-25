@@ -8,7 +8,7 @@ import Page3 from './Page3';
 import SaveWifiToast from './SaveWifiToast';
 import ApiTargetRuleModal from 'modals/ApiTargetRuleModal';
 import ErrorModal, { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
-import UploadModal, { uploadConfigFile } from 'modals/UploadModal';
+import UploadModal, { uploadConfigWithModal } from 'modals/UploadModal';
 
 // Redirect back to overview page
 const returnToOverview = () => {
@@ -164,7 +164,10 @@ const EditConfig = () => {
             // Convert friendly name into config filename
             const target_filename = friendlyNameToFilename(config.metadata.id);
             // Show upload modal, upload, redirect to overview when complete
-            uploadConfigFile(target_filename, target_node_ip, true, returnToOverview);
+            const success = await uploadConfigWithModal(target_filename, target_node_ip, true);
+            if (success) {
+                returnToOverview();
+            }
 
         // If config with same name already exists, show overwrite prompt
         } else if (!edit_existing && response.status == 409) {
@@ -196,7 +199,6 @@ const EditConfig = () => {
         // Show error from backend if failed to delete
         } else {
             const error = await response.json();
-            console.log(error)
             showErrorModal({
                 title: "Warning",
                 error: "failed",

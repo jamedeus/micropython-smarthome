@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import Modal from 'react-bootstrap/Modal';
 import { sleep } from 'util/helper_functions';
-import { send_post_request } from 'util/django_util';
-import { showErrorModal } from 'modals/ErrorModal';
 import { HeaderStaticBackdrop } from 'modals/HeaderComponents';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
+import uploadConfigFile from 'util/upload_config';
 
-export let uploadConfigFile, showUploadModal, showUploadSuccess, closeUploadModal;
+export let uploadConfigWithModal, showUploadModal, showUploadSuccess, closeUploadModal;
 
 const UploadModal = () => {
     // Create state for modal visibility, loading/success animation
@@ -30,57 +29,20 @@ const UploadModal = () => {
     // Takes config filename and target IP address, uploads file to node
     // If optional reupload bool is true no entry is created in the database
     // Shows modal with loading animation until complete, then checkmark animation
-    uploadConfigFile = async (filename, targetIP, reupload=false, onComplete=null) => {
+    uploadConfigWithModal = async (filename, targetIP, reupload=false) => {
         showUploadModal();
-
-        // Upload config file to target IP address
-        // Add /True to endpoint if reuploading (skips adding to database)
-        const response = await send_post_request(
-            reupload ? '/upload/True' : '/upload',
-            {config: filename, ip: targetIP}
-        );
-
-        // If upload successful, show success animation and reload page
-        if (response.ok) {
-            // Change title, show success animation
+        const success = await uploadConfigFile(filename, targetIP, reupload);
+        if (success) {
+            // Change title, show checkmark animation
             showUploadSuccess();
 
-            // Wait for animation to complete
+            // Wait for animation to complete, close modal
             await sleep(1200);
-
-            // Call onComplete handler if given, hide upload modal
-            if (onComplete) {
-                console.log("Calling onComplete");
-                onComplete();
-            }
             closeUploadModal();
-
-        // Unable to upload because of filesystem error on node
-        } else if (response.status == 409) {
-            const error = await response.json();
-            // Hide upload modal, show response in error modal
-            closeUploadModal();
-            showErrorModal({
-                title: "Upload Failed",
-                error: "failed",
-                body: error.message
-            });
-
-        // Unable to upload because node is unreachable
-        } else if (response.status == 404) {
-            // Hide upload modal, show error modal
-            closeUploadModal();
-            showErrorModal({
-                title: "Connection Error",
-                error: "unreachable",
-                body: targetIP
-            });
-
-        // Other error: show in alert, close modal
+            return true;
         } else {
-            const error = await response.json();
-            alert(error.message);
             closeUploadModal();
+            return false;
         }
     };
 

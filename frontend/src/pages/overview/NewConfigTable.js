@@ -9,7 +9,7 @@ import Collapse from 'react-bootstrap/Collapse';
 import { send_post_request } from 'util/django_util';
 import { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 import { formatIp, ipRegex } from 'util/validation';
-import { uploadConfigFile } from 'modals/UploadModal';
+import { uploadConfigWithModal } from 'modals/UploadModal';
 
 const NewConfigRow = ({ filename, friendlyName }) => {
     const { handleNewConfigUpload, deleteNewConfig } = useContext(OverviewContext);
@@ -19,11 +19,11 @@ const NewConfigRow = ({ filename, friendlyName }) => {
     const [uploadEnabled, setUploadEnabled] = useState(false);
 
     // Create handler for upload button
-    const uploadNewConfig = () => {
-        const onUploadComplete = () => {
+    const uploadNewConfig = async () => {
+        const success = await uploadConfigWithModal(filename, ipAddress, false);
+        if (success) {
             handleNewConfigUpload(friendlyName, filename, ipAddress);
-        };
-        uploadConfigFile(filename, ipAddress, false, onUploadComplete);
+        }
     };
 
     // Takes config filename, opens modal to confirm deletion
