@@ -356,11 +356,11 @@ describe('App', () => {
             headers: postHeaders
         });
 
-        // Confirm shows success animation, hides modal when complete
-        expect(app.queryByText('Upload Complete')).not.toBeNull();
+        // Confirm shows success message in toast, hides toast after 5 seconds
+        expect(app.queryByText('Finished reuploading bathroom.json')).not.toBeNull();
         await waitFor(() => {
-            expect(app.queryByText('Upload Complete')).toBeNull();
-        }, { timeout: 1500 });
+            expect(app.queryByText('Finished reuploading bathroom.json')).toBeNull();
+        }, { timeout: 5500 });
     });
 
     it('shows error modal after failing to re-upload config', async () => {

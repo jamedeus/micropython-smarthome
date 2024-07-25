@@ -8,12 +8,12 @@ import Dropdown from 'react-bootstrap/Dropdown';
 import { send_post_request } from 'util/django_util';
 import { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 import { showChangeIpModal } from './ChangeIpModal';
-import { uploadConfigWithModal } from 'modals/UploadModal';
+import { uploadConfigWithToast } from './ReuploadToast';
 
 const ExistingNodeRow = ({ friendly_name, filename, ip, onDelete }) => {
     // Handler for Re-upload menu option
     const reupload = () => {
-        uploadConfigWithModal(filename, ip, true);
+        uploadConfigWithToast(filename, ip);
     };
 
     // Handler for Edit menu option

@@ -12,6 +12,7 @@ import DesktopModal from './DesktopIntegrationModal';
 import RestoreModal from './RestoreModal';
 import WifiModal from './WifiModal';
 import GpsModal from './GpsModal';
+import ReuploadToast from './ReuploadToast';
 
 const App = () => {
     // Get django context
@@ -53,6 +54,7 @@ const App = () => {
             </div>
 
             {/* Modals (hidden) */}
+            <ReuploadToast />
             <UploadModal />
             <ErrorModal />
             <ChangeIpModal />
