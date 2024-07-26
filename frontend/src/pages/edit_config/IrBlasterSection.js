@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import PropTypes from 'prop-types';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
@@ -10,7 +10,11 @@ import { devicePins } from 'util/metadata';
 
 const IrBlasterSection = () => {
     // Get curent state + callbacks from context
-    const { config, addIrBlasterSection, handleIrTargetSelect } = useContext(ConfigContext);
+    const {
+        config,
+        addIrBlasterSection,
+        handleIrTargetSelect
+    } = useContext(EditConfigContext);
 
     // Create state object to set visibility
     // Default to visible if config contains ir_blaster key

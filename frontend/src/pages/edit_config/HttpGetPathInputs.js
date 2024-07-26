@@ -1,12 +1,16 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import InputWrapper from 'inputs/InputWrapper';
 
 const HttpGetPathInputs = ({ id }) => {
     // Get curent state + callback functions from context
-    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
+    const {
+        config,
+        handleInputChange,
+        highlightInvalid
+    } = useContext(EditConfigContext);
 
     // Get instance section in config
     const instance = config[id];

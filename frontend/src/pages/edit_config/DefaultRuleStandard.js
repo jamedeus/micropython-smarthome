@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import StandardRuleInput from 'inputs/StandardRuleInput';
 
 const DefaultRuleStandard = ({ id, instance }) => {
-    const { handleInputChange, highlightInvalid } = useContext(ConfigContext);
+    const { handleInputChange, highlightInvalid } = useContext(EditConfigContext);
 
     const onChange = (value) => {
         handleInputChange(id, "default_rule", value);

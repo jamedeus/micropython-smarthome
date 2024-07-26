@@ -2,11 +2,15 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import InputWrapper from 'inputs/InputWrapper';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 
 const PinSelectDropdown = ({ id, options }) => {
     // Get current config state, callback to change pin, highlightInvalid bool
-    const { config, handleInputChange, highlightInvalid } = useContext(ConfigContext);
+    const {
+        config,
+        handleInputChange,
+        highlightInvalid
+    } = useContext(EditConfigContext);
 
     // Get array of all pins used by other instances
     let usedPins = [];

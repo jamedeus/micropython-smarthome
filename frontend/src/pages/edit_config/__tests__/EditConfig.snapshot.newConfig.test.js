@@ -1,6 +1,6 @@
 import React from 'react';
 import EditConfig from '../EditConfig';
-import { ConfigProvider } from 'root/ConfigContext';
+import { EditConfigProvider } from 'root/EditConfigContext';
 import { MetadataContextProvider } from 'root/MetadataContext';
 import createMockContext from 'src/testUtils/createMockContext';
 import { newConfigContext, apiTargetOptionsContext } from './mockContext';
@@ -17,9 +17,9 @@ describe('App', () => {
         // Render App, confirm matches snapshot
         const component = render(
             <MetadataContextProvider>
-                <ConfigProvider>
+                <EditConfigProvider>
                     <EditConfig />
-                </ConfigProvider>
+                </EditConfigProvider>
             </MetadataContextProvider>
         );
         expect(component).toMatchSnapshot();

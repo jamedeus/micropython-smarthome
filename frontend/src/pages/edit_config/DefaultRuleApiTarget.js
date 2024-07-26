@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Button from 'react-bootstrap/Button';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import { showApiTargetRuleModal } from 'modals/ApiTargetRuleModal';
 
 const DefaultRuleApiTarget = ({ id, instance }) => {
@@ -9,7 +9,7 @@ const DefaultRuleApiTarget = ({ id, instance }) => {
         handleInputChange,
         getTargetNodeOptions,
         highlightInvalid
-    } = useContext(ConfigContext);
+    } = useContext(EditConfigContext);
 
     // Add invalid highlight to button if rule not set after page validated
     const invalid = highlightInvalid && !instance.default_rule;

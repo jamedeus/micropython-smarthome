@@ -22,9 +22,9 @@ const filterObjectKeys = (obj, prefix) => {
     return Object.keys(filterObject(obj, prefix));
 };
 
-export const ConfigContext = createContext();
+export const EditConfigContext = createContext();
 
-export const ConfigProvider = ({ children }) => {
+export const EditConfigProvider = ({ children }) => {
     // Parse ApiTarget options object set by django template
     // Contains valid API commands for each device/sensor of all existing nodes
     const [api_target_options] = useState(() => {
@@ -381,7 +381,7 @@ export const ConfigProvider = ({ children }) => {
     };
 
     return (
-        <ConfigContext.Provider value=
+        <EditConfigContext.Provider value=
             {{
                 config,
                 original_name,
@@ -408,11 +408,11 @@ export const ConfigProvider = ({ children }) => {
             }}
         >
             {children}
-        </ConfigContext.Provider>
+        </EditConfigContext.Provider>
     );
 };
 
-ConfigProvider.propTypes = {
+EditConfigProvider.propTypes = {
     children: PropTypes.node,
 };
 

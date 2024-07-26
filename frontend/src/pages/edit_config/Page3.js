@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import { TimeField } from 'inputs/TimeField';
 import { RuleField } from 'inputs/RuleField';
 import ApiTargetRuleButton from 'inputs/ApiTargetRuleButton';
@@ -15,7 +15,7 @@ const Page3 = () => {
         handleInputChange,
         getTargetNodeOptions,
         highlightInvalid
-    } = useContext(ConfigContext);
+    } = useContext(EditConfigContext);
 
     const deleteRule = (instance, timestamp) => {
         let rules = { ...config[instance]["schedule"] };

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import InputWrapper from 'inputs/InputWrapper';
 
 const TargetNodeDropdown = ({ id }) => {
@@ -11,7 +11,7 @@ const TargetNodeDropdown = ({ id }) => {
         api_target_options,
         handleInstanceUpdate,
         highlightInvalid
-    } = useContext(ConfigContext);
+    } = useContext(EditConfigContext);
 
     // Get instance section in config
     const instance = config[id];

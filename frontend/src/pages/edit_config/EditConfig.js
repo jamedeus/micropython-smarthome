@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import Button from 'react-bootstrap/Button';
 import { send_post_request } from 'util/django_util';
 import Page1 from './Page1';
@@ -102,7 +102,7 @@ const EditConfig = () => {
         edit_existing,
         setHighlightInvalid,
         hasInvalidFields
-    } = useContext(ConfigContext);
+    } = useContext(EditConfigContext);
 
     const prevPage = () => {
         // Go back to overview if current page is page 1

@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Button from 'react-bootstrap/Button';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import MetadataSection from './MetadataSection';
 import IrBlasterSection from './IrBlasterSection';
 import InstanceCard from './InstanceCard';
 
 const CardColumn = ({ category }) => {
-    const { config, deleteing, getKey, addInstance } = useContext(ConfigContext);
+    const { config, deleteing, getKey, addInstance } = useContext(EditConfigContext);
 
     // Slide add button up if card delete animation in progress
     const buttonClass = deleteing.category === category ? 'slide-up' : '';

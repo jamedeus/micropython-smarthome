@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import Form from 'react-bootstrap/Form';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import InputWrapper from 'inputs/InputWrapper';
 import { numbersOnly } from 'util/validation';
 import { send_post_request } from 'util/django_util';
@@ -15,7 +15,7 @@ const MetadataSection = () => {
         handleInputChange,
         highlightInvalid,
         setHasInvalidFields
-    } = useContext(ConfigContext);
+    } = useContext(EditConfigContext);
 
     // Add invalid highlight when duplicate name entered
     const prevent_duplicate_friendly_name = async (event) => {

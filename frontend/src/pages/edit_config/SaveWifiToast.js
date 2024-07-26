@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { ConfigContext } from '../../ConfigContext';
+import { EditConfigContext } from '../../EditConfigContext';
 import Toast from 'react-bootstrap/Toast';
 import Button from 'react-bootstrap/Button';
 import { send_post_request } from 'util/django_util';
@@ -9,7 +9,7 @@ const SaveWifiToast = () => {
         config,
         showWifiToast,
         setShowWifiToast
-    } = useContext(ConfigContext);
+    } = useContext(EditConfigContext);
 
     // Submit handler, post credentials to backend and close toast
     const setWifiCredentials = () => {

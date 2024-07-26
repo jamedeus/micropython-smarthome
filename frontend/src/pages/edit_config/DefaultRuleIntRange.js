@@ -2,12 +2,12 @@ import React, { useContext, useState } from 'react';
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
 import Collapse from 'react-bootstrap/Collapse';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import InputWrapper from 'inputs/InputWrapper';
 import IntRangeRuleInput from 'inputs/IntRangeRuleInput';
 
 const DefaultRuleIntRange = ({ id, instance, metadata }) => {
-    const { handleInstanceUpdate, handleInputChange } = useContext(ConfigContext);
+    const { handleInstanceUpdate, handleInputChange } = useContext(EditConfigContext);
 
     // Get slider limits from metadata object
     const metadata_min = parseInt(metadata.rule_limits[0], 10);

@@ -2,11 +2,11 @@ import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
-import { ConfigContext, filterObject } from 'root/ConfigContext';
+import { EditConfigContext, filterObject } from 'root/EditConfigContext';
 
 const Page2 = () => {
     // Get curent state + callback functions from context
-    const { config, handleSensorTargetSelect } = useContext(ConfigContext);
+    const { config, handleSensorTargetSelect } = useContext(EditConfigContext);
 
     // Get objects containing only devices and sensors
     const devices = filterObject(config, 'device');

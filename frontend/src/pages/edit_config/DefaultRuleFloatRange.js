@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import PropTypes from 'prop-types';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import FloatRangeRuleInput from 'inputs/FloatRangeRuleInput';
 
 const DefaultRuleFloatRange = ({ id, instance, metadata }) => {
-    const { handleInputChange } = useContext(ConfigContext);
+    const { handleInputChange } = useContext(EditConfigContext);
 
     // Get slider limits from metadata object
     const min_rule = parseInt(metadata.rule_limits[0], 10);

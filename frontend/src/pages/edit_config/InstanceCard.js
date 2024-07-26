@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import Card from 'react-bootstrap/Card';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { ConfigContext } from 'root/ConfigContext';
+import { EditConfigContext } from 'root/EditConfigContext';
 import { MetadataContext } from 'root/MetadataContext';
 import NicknameInput from './NicknameInput';
 import IPInput from './IPInput';
@@ -148,7 +148,7 @@ const InstanceCard = ({ id }) => {
         deleteInstance,
         changeInstanceType,
         highlightInvalid
-    } = useContext(ConfigContext);
+    } = useContext(EditConfigContext);
 
     // Get instance section in config + category (device or sensor)
     const instance = config[id];
