@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`App matches snapshot when existing rule targets IR Blaster 1`] = `
+exports[`DefaultRuleApiTarget matches snapshot when existing rule targets IR Blaster 1`] = `
 <div
   class="modal-content"
 >
@@ -231,7 +231,7 @@ exports[`App matches snapshot when existing rule targets IR Blaster 1`] = `
 </div>
 `;
 
-exports[`App matches snapshot when existing rule targets device 1`] = `
+exports[`DefaultRuleApiTarget matches snapshot when existing rule targets device 1`] = `
 <div
   class="modal-content"
 >
@@ -467,7 +467,7 @@ exports[`App matches snapshot when existing rule targets device 1`] = `
 </div>
 `;
 
-exports[`App matches snapshot when self targetting 1`] = `
+exports[`DefaultRuleApiTarget matches snapshot when self targetting 1`] = `
 <div
   class="modal-content"
 >

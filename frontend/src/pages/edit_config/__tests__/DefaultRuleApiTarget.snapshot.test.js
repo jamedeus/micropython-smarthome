@@ -6,7 +6,7 @@ import createMockContext from 'src/testUtils/createMockContext';
 import { existingConfigContext, apiTargetOptionsContext } from './mockContext';
 import { edit_config_metadata } from 'src/testUtils/mockMetadataContext';
 
-describe('App', () => {
+describe('DefaultRuleApiTarget', () => {
     let app, user;
 
     beforeAll(() => {

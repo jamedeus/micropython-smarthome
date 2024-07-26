@@ -5,7 +5,7 @@ import createMockContext from 'src/testUtils/createMockContext';
 import { mockContext } from './mockContext';
 import { postHeaders } from 'src/testUtils/headers';
 
-describe('WifiModal', () => {
+describe('ChangeIpModal', () => {
     let app, user;
 
     beforeAll(() => {
