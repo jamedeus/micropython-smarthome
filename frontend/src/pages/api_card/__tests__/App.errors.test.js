@@ -200,8 +200,8 @@ describe('App', () => {
         expect(sliderHandle.innerHTML).toBe('74');
     });
 
-    it('shows alert and resets loading animation if add_rule API call fails', async () => {
-        // Mock fetch function to simulate failed API call, mock alert function
+    it('shows error toast and resets loading animation if add_rule API call fails', async () => {
+        // Mock fetch function to simulate failed API call
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
@@ -210,7 +210,6 @@ describe('App', () => {
                 message: 'Unable to connect'
             })
         }));
-        global.alert = jest.fn();
 
         // Get device3 card, schedule rules button, schedule rules table, new rule button
         const card = app.getByText('Accent lights').parentElement.parentElement;
@@ -232,13 +231,13 @@ describe('App', () => {
         await user.click(newRuleRow.children[2].children[0]);
         expect(global.fetch).toHaveBeenCalled();
 
-        // Confirm alert appeared, button loading animation reset
-        expect(global.alert).toHaveBeenCalledWith('Failed to add schedule rule');
+        // Confirm error toast appeared, button loading animation reset
+        expect(app.queryByText('Failed to add schedule rule')).not.toBeNull();
         expect(newRuleRow.children[2].children[0].querySelector('.bi-plus-lg')).not.toBeNull();
     });
 
-    it('shows alert and resets loading animation if edit rule API call fails', async () => {
-        // Mock fetch function to simulate failed API call, mock alert function
+    it('shows error toast and resets loading animation if edit rule API call fails', async () => {
+        // Mock fetch function to simulate failed API call
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
@@ -247,7 +246,6 @@ describe('App', () => {
                 message: 'Unable to connect'
             })
         }));
-        global.alert = jest.fn();
 
         // Get device4 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
@@ -265,13 +263,13 @@ describe('App', () => {
         await user.click(firstRule.children[2].children[0]);
         expect(global.fetch).toHaveBeenCalled();
 
-        // Confirm alert appeared, button loading animation reset
-        expect(global.alert).toHaveBeenCalledWith('Failed to edit schedule rule');
+        // Confirm error toast appeared, button loading animation reset
+        expect(app.queryByText('Failed to edit schedule rule')).not.toBeNull();
         expect(firstRule.children[2].children[0].querySelector('.bi-pencil')).not.toBeNull();
     });
 
-    it('shows alert and resets loading animation if delete rule API call fails', async () => {
-        // Mock fetch function to simulate failed API call, mock alert function
+    it('shows error toast and resets loading animation if delete rule API call fails', async () => {
+        // Mock fetch function to simulate failed API call
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 502,
@@ -280,7 +278,6 @@ describe('App', () => {
                 message: 'Unable to connect'
             })
         }));
-        global.alert = jest.fn();
 
         // Get device4 card, schedule rules button, schedule rules table, first rule row
         const card = app.getByText('Computer screen').parentElement.parentElement;
@@ -293,8 +290,8 @@ describe('App', () => {
         await user.click(firstRule.children[2].children[0]);
         expect(global.fetch).toHaveBeenCalled();
 
-        // Confirm alert appeared, button loading animation reset
-        expect(global.alert).toHaveBeenCalledWith('Failed to delete schedule rule');
+        // Confirm error toast appeared, button loading animation reset
+        expect(app.queryByText('Failed to delete schedule rule')).not.toBeNull();
         expect(firstRule.children[2].children[0].querySelector('.bi-trash')).not.toBeNull();
     });
 

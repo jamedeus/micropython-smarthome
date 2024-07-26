@@ -1,5 +1,6 @@
 import { send_post_request } from 'util/django_util';
 import { showErrorModal } from 'modals/ErrorModal';
+import { showErrorToast } from 'util/ErrorToast';
 
 // Takes config filename and target IP address, uploads file to node
 // If optional reupload bool is true no entry is created in the database
@@ -35,10 +36,10 @@ const uploadConfigFile = async (filename, targetIP, reupload=false) => {
         });
         return false;
 
-    // Other error: show in alert
+    // Other error: show in error toast
     } else {
         const error = await response.json();
-        alert(error.message);
+        showErrorToast(error.message);
         return false;
     }
 };

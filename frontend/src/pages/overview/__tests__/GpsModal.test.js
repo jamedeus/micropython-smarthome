@@ -246,7 +246,7 @@ describe('GpsModal', () => {
         expect(app.queryByText(/Portland, San Patricio County, Texas/)).toBeNull();
     });
 
-    it('shows alert when geocode API key is missing', async () => {
+    it('shows error toast when geocode API key is missing', async () => {
         // Mock fetch function to simulate backend missing geocode API key
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
@@ -256,18 +256,14 @@ describe('GpsModal', () => {
                 message: 'HTTP 401: Missing API Key\r\n\r\nYour request is missing an api_key'
             })
         }));
-        // Mock alert function
-        global.alert = jest.fn();
 
         // Simulate user typing location in input
         const modal = app.getByText('Set Default Location').parentElement.parentElement;
         await user.type(within(modal).getByRole('textbox'), 'portland');
 
-        // Confirm alert is shown with message from API response
+        // Confirm error toast is shown with message from API response
         await waitFor(() => {
-            expect(global.alert).toHaveBeenCalledWith(
-                'HTTP 401: Missing API Key\r\n\r\nYour request is missing an api_key'
-            );
+            expect(app.queryByText(/HTTP 401: Missing API Key/)).not.toBeNull();
         }, { timeout: 2500 });
     });
 

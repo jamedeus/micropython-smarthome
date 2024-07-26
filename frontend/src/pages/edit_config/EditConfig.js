@@ -7,6 +7,7 @@ import Page2 from './Page2';
 import Page3 from './Page3';
 import SaveWifiToast from './SaveWifiToast';
 import ApiTargetRuleModal from 'modals/ApiTargetRuleModal';
+import ErrorToast, { showErrorToast } from 'util/ErrorToast';
 import ErrorModal, { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
 import UploadModal, { uploadConfigWithModal } from 'modals/UploadModal';
 
@@ -178,10 +179,10 @@ const EditConfig = () => {
                 handleConfirm: confirmOverwriteDuplicate
             });
 
-        // If other error, display in alert
+        // If other error, display in error toast
         } else {
             const error = await response.json();
-            alert(JSON.stringify(error.message));
+            showErrorToast(JSON.stringify(error.message));
             setHighlightInvalid(true);
         }
     };
@@ -261,6 +262,7 @@ const EditConfig = () => {
             <ApiTargetRuleModal />
             <UploadModal />
             <ErrorModal />
+            <ErrorToast />
         </>
     );
 };

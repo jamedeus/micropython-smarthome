@@ -453,7 +453,7 @@ describe('EditConfig', () => {
         });
     });
 
-    it('shows alert if unknown error occurs while reuploading submitted config', async () => {
+    it('shows error toast if unknown error occurs while reuploading submitted config', async () => {
         // Mock fetch function to succeed on first call (generate_config) and
         // encounter unexpected error on second call (reupload config to target IP)
         const mockFetchResponses = [
@@ -475,16 +475,14 @@ describe('EditConfig', () => {
             })
         ];
         global.fetch = jest.fn(() => mockFetchResponses.shift());
-        // Mock alert function
-        global.alert = jest.fn();
 
         // Click next twice, click submit button on page3
         await user.click(app.getByRole('button', { name: 'Next' }));
         await user.click(app.getByRole('button', { name: 'Next' }));
         await user.click(app.getByRole('button', { name: 'Submit' }));
 
-        // Confirm alert was shown with response from API
-        expect(global.alert).toHaveBeenCalledWith('Unexpected error');
+        // Confirm error toast was shown with response from API
+        expect(app.queryByText('Unexpected error')).not.toBeNull();
     });
 
     it('refuses to create config with blank schedule rules', async () => {
@@ -509,8 +507,8 @@ describe('EditConfig', () => {
         expect(app.container.querySelector('.is-invalid')).not.toBeNull();
     });
 
-    it('shows an alert when submit button is clicked if unexpected error received', async () => {
-        // Mock fetch function to simulate unexpected error, mock alert function
+    it('shows error toast when submit button is clicked if unexpected error received', async () => {
+        // Mock fetch function to simulate unexpected error
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 418,
@@ -519,16 +517,15 @@ describe('EditConfig', () => {
                 message: 'Unexpected error'
             })
         }));
-        global.alert = jest.fn();
 
         // Click next twice, confirm page3 is visible
         await user.click(app.getByRole('button', { name: 'Next' }));
         await user.click(app.getByRole('button', { name: 'Next' }));
         expect(app.queryByText('Add schedule rules (optional)')).not.toBeNull();
 
-        // Click submit, confirm alert was shown with text from response
+        // Click submit, confirm error toast was shown with text from response
         await user.click(app.getByRole('button', { name: 'Submit' }));
-        expect(global.alert).toHaveBeenCalledWith('"Unexpected error"');
+        expect(app.queryByText('"Unexpected error"')).not.toBeNull();
 
         // Confirm did NOT redirect to overview
         expect(window.location.href).not.toBe('/config_overview');

@@ -3,6 +3,7 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import ListGroupItem from 'react-bootstrap/ListGroupItem';
 import Modal from 'react-bootstrap/Modal';
 import Form from 'react-bootstrap/Form';
+import { showErrorToast } from 'util/ErrorToast';
 import { send_post_request } from 'util/django_util';
 import { HeaderWithCloseButton } from 'modals/HeaderComponents';
 import { debounce } from 'util/helper_functions';
@@ -28,7 +29,7 @@ const GpsModal = () => {
             return data.message;
         } else {
             const error = await response.json();
-            alert(error.message);
+            showErrorToast(error.message);
             return [];
         }
     };

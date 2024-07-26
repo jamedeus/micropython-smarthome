@@ -8,6 +8,7 @@ import { TimeField } from 'inputs/TimeField';
 import { RuleField } from 'inputs/RuleField';
 import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
 import ApiTargetRuleButton from 'inputs/ApiTargetRuleButton';
+import { showErrorToast } from 'util/ErrorToast';
 
 // Rendered for each existing rule, pass existingRule=false for new rule row
 const ScheduleRuleRow = ({
@@ -72,7 +73,7 @@ const ScheduleRuleRow = ({
             setNewTime('');
             setNewRule('');
         } else {
-            alert('Failed to add schedule rule');
+            showErrorToast('Failed to add schedule rule');
             setLoadingButtonState('edit');
         }
     };
@@ -92,7 +93,7 @@ const ScheduleRuleRow = ({
         if (success) {
             setLoadingButtonState('delete');
         } else {
-            alert('Failed to edit schedule rule');
+            showErrorToast('Failed to edit schedule rule');
             setLoadingButtonState('edit');
         }
     };
@@ -102,7 +103,7 @@ const ScheduleRuleRow = ({
         setLoadingButtonState('loading');
         const success = await delete_schedule_rule(id, originalTime);
         if (!success) {
-            alert('Failed to delete schedule rule');
+            showErrorToast('Failed to delete schedule rule');
             setLoadingButtonState('delete');
         }
     };

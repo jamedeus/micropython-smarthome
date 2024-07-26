@@ -5,6 +5,7 @@ import Button from 'react-bootstrap/Button';
 import { sleep } from 'util/helper_functions';
 import { formatIp, ipRegex } from 'util/validation';
 import { send_post_request } from 'util/django_util';
+import { showErrorToast } from 'util/ErrorToast';
 import { showErrorModal } from 'modals/ErrorModal';
 import { OverviewContext } from 'root/OverviewContext';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
@@ -66,10 +67,10 @@ export const RestoreModal = () => {
                 body: "A node with the same name or filename already exists"
             });
 
-        // Other error, show in alert
+        // Other error, show in error toast
         } else {
             const error = await response.json();
-            alert(error.message);
+            showErrorToast(error.message);
         }
     };
 

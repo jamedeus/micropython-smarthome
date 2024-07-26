@@ -187,8 +187,8 @@ describe('RestoreModal', () => {
         });
     });
 
-    it('shows alert if unexpected error occur', async () => {
-        // Mock fetch function to simulate arbitrary error, mock alert function
+    it('shows error toast if unexpected error occur', async () => {
+        // Mock fetch function to simulate arbitrary error
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
             status: 418,
@@ -197,7 +197,6 @@ describe('RestoreModal', () => {
                 message: "I'm a teapot"
             })
         }));
-        global.alert = jest.fn();
 
         // Enter IP address in modal input, click submit button
         const modal = app.queryByText(/config files from existing nodes/).parentElement;
@@ -205,8 +204,8 @@ describe('RestoreModal', () => {
         await user.type(within(modal).getByRole('textbox'), '123.123.123.123');
         await user.click(app.getByRole('button', { name: 'Restore' }));
 
-        // Confirm arbitrary error was shown in alert
-        expect(global.alert).toHaveBeenCalledWith("I'm a teapot");
+        // Confirm arbitrary error was shown in error toast
+        expect(app.queryByText("I'm a teapot")).not.toBeNull();
     });
 
     it('closes modal when X button or background is clicked', async () => {
