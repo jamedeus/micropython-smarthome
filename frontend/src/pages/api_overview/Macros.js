@@ -9,6 +9,7 @@ import DropdownButton from 'react-bootstrap/DropdownButton';
 import Collapse from 'react-bootstrap/Collapse';
 import { ApiOverviewContext } from 'root/ApiOverviewContext';
 import { openEditMacroModal } from './EditMacroModal';
+import { showErrorToast } from 'util/ErrorToast';
 import { toTitle, sleep } from 'util/helper_functions';
 import { LoadingSpinner, CheckmarkAnimation } from 'util/animations';
 import { TransitionGroup, CSSTransition } from "react-transition-group";
@@ -18,7 +19,7 @@ const MacroRow = ({ name }) => {
     const { deleteMacro } = useContext(ApiOverviewContext);
 
     // Create state that determines whether button shows text or animation
-    const [buttonContents, setButtonContents] = useState("");
+    const [ buttonContents, setButtonContents ] = useState("");
 
     const runMacro = async () => {
         // Start loading animation, make API call
@@ -32,14 +33,18 @@ const MacroRow = ({ name }) => {
             setButtonContents("title");
         } else {
             setButtonContents("title");
-            alert(`failed to run ${name} macro`);
+            showErrorToast(`failed to run ${name} macro`);
         }
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         // Start loading animation
-        setButtonContents("loading");
-        deleteMacro(name);
+        setButtonContents('loading');
+        // Delete macro, reset loading animation if fails
+        const result = await deleteMacro(name);
+        if (!result) {
+            setButtonContents('');
+        }
     };
 
     const ButtonText = () => {

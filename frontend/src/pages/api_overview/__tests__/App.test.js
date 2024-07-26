@@ -500,40 +500,54 @@ describe('App', () => {
         );
     });
 
-    it('shows an alert when macro API calls fail', async () => {
-        // Mock fetch function to simulate failed API call, mock alert function
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 404,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Macro Late does not exist'
-            })
-
+    it('shows error toast when macro API calls fail', async () => {
+        // Mock fetch function to simulate failed API call after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 404,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Macro Late does not exist'
+                    })
+                });
+            }, 100);
         }));
-        global.alert = jest.fn();
 
-        // Click the "Bright" macro button, confirm alert was shown
+        // Click the "Bright" macro button, confirm shows loading animation
         await user.click(app.getByText('Bright'));
-        expect(global.alert).toHaveBeenCalledWith('failed to run bright macro');
-        jest.clearAllMocks();
+        expect(app.container.querySelector('.loading-animation')).not.toBeNull();
+
+        // Confirm loading animation stops, toast appears when error received
+        await waitFor(() => {
+            expect(app.queryByText('failed to run bright macro')).not.toBeNull();
+            expect(app.container.querySelector('.loading-animation')).toBeNull();
+        });
 
         // Get "Late" macro button, open dropdown next to it
         const macroButton = app.getByText('Late').parentElement;
         await user.click(macroButton.parentElement.children[1].children[0]);
 
-        // Click Delete option in dropdown, confirm alert was shown
+        // Click Delete option in dropdown, confirm shows loading animation
         await user.click(app.getByText('Delete'));
-        expect(global.alert).toHaveBeenCalledWith('Failed to delete macro');
-        jest.clearAllMocks();
+        expect(app.container.querySelector('.loading-animation')).not.toBeNull();
+
+        // Confirm loading animation stops, toast appears when error received
+        await waitFor(() => {
+            expect(app.queryByText('Failed to delete macro')).not.toBeNull();
+            expect(app.container.querySelector('.loading-animation')).toBeNull();
+        });
 
         // Click Edit option in dropdown, confirm EditMacroModal appeared
         await user.click(app.getByText('Edit'));
         const modal = app.getByText('Edit Late Macro').parentElement.parentElement;
         const actions = modal.children[1];
 
-        // Click delete button next to first action, confirm alert was shown
+        // Click delete button next to first action, confirm error toast shown
         await user.click(within(actions).getAllByRole('button')[0]);
-        expect(global.alert).toHaveBeenCalledWith('Failed to delete macro action');
+        await waitFor(() => {
+            expect(app.queryByText('Failed to delete macro action')).not.toBeNull();
+        });
     });
 });

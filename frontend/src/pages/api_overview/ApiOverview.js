@@ -8,6 +8,7 @@ import Header from './Header';
 import Floors from './Floors';
 import Macros, { FinishRecordingButton } from './Macros';
 import { LoadingSpinner } from 'util/animations';
+import ErrorToast from 'util/ErrorToast';
 import 'css/loadingOverlay.css';
 
 const App = () => {
@@ -37,6 +38,7 @@ const App = () => {
 
                 {/* Modals (hidden) */}
                 <ErrorModal />
+                <ErrorToast />
                 <EditMacroModal />
                 <RecordMacroModal />
             </div>

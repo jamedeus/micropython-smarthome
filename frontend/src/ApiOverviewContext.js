@@ -1,6 +1,7 @@
 import React, { useState, createContext } from 'react';
 import PropTypes from 'prop-types';
 import Cookies from 'js-cookie';
+import { showErrorToast } from 'util/ErrorToast';
 import { parse_dom_context } from 'util/django_util';
 
 export const ApiOverviewContext = createContext();
@@ -39,9 +40,10 @@ export const ApiOverviewContextProvider = ({ children }) => {
             const update = { ...macros };
             delete update[name];
             setMacros(update);
+            return true;
         } else {
-            // TODO improve failure handling
-            alert('Failed to delete macro');
+            showErrorToast('Failed to delete macro');
+            return false;
         }
     };
 
@@ -61,8 +63,7 @@ export const ApiOverviewContextProvider = ({ children }) => {
                 deleteMacro(name);
             }
         } else {
-            // TODO improve failure handling
-            alert('Failed to delete macro action');
+            showErrorToast('Failed to delete macro action');
         }
     };
 
