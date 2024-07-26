@@ -13,6 +13,7 @@ import RestoreModal from './RestoreModal';
 import WifiModal from './WifiModal';
 import GpsModal from './GpsModal';
 import ReuploadToast from './ReuploadToast';
+import ErrorToast from 'util/ErrorToast';
 
 const App = () => {
     // Get django context
@@ -55,6 +56,7 @@ const App = () => {
 
             {/* Modals (hidden) */}
             <ReuploadToast />
+            <ErrorToast />
             <UploadModal />
             <ErrorModal />
             <ChangeIpModal />

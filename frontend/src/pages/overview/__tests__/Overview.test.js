@@ -606,17 +606,20 @@ describe('App', () => {
         });
     });
 
-    it('shows alert after failing to add a new schedule keyword', async () => {
-        // Mock fetch function to simulate backend failing to delete, mock alert function
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 400,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Unexpected error'
-            })
+    it('shows error toast after failing to add a new schedule keyword', async () => {
+        // Mock fetch function to simulate backend failing to delete
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 400,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Unexpected error'
+                    })
+                });
+            }, 100);
         }));
-        global.alert = jest.fn();
 
         // Get keywords section, keywords table (tbody tag), new keyword row
         const keywords = app.getByText('Schedule Keywords').parentElement;
@@ -627,9 +630,15 @@ describe('App', () => {
         await user.type(newKeywordRow.children[0].children[0], 'New Keyword');
         await user.type(newKeywordRow.children[1].children[0], '12:34');
 
-        // Press enter key to submit, confirm alert appears with response from API
+        // Press enter key to submit, confirm loading animation starts
         await user.type(newKeywordRow.children[0].children[0], '{enter}');
-        expect(global.alert).toHaveBeenCalledWith('Unexpected error');
+        expect(app.container.querySelector('.spinner-border')).not.toBeNull();
+
+        // Confirm animation stops, toast with API response appears when error received
+        await waitFor(() => {
+            expect(app.container.querySelector('.spinner-border')).toBeNull();
+            expect(app.queryByText('Unexpected error')).not.toBeNull();
+        });
     });
 
     it('changes keyword table button when inputs are modified', async () => {
@@ -750,17 +759,20 @@ describe('App', () => {
         });
     });
 
-    it('shows alert after failing to edit a schedule keyword', async () => {
-        // Mock fetch function to simulate backend failing to delete, mock alert function
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 404,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Keyword not found'
-            })
+    it('shows error toast after failing to edit a schedule keyword', async () => {
+        // Mock fetch function to simulate backend failing to delete
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 404,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Keyword not found'
+                    })
+                });
+            }, 100);
         }));
-        global.alert = jest.fn();
 
         // Get keywords section, keywords table. change first keyword name
         const keywords = app.getByText('Schedule Keywords').parentElement;
@@ -769,9 +781,15 @@ describe('App', () => {
         await user.clear(firstRow.children[0].children[0]);
         await user.type(firstRow.children[0].children[0], 'New Name');
 
-        // Click edit button, confirm alert appears with response from API
+        // Click edit button, confirm loading animation starts
         await user.click(within(firstRow).getByRole('button'));
-        expect(global.alert).toHaveBeenCalledWith('Keyword not found');
+        expect(app.container.querySelector('.spinner-border')).not.toBeNull();
+
+        // Confirm animation stops, toast with API response appears when error received
+        await waitFor(() => {
+            expect(app.container.querySelector('.spinner-border')).toBeNull();
+            expect(app.queryByText('Keyword not found')).not.toBeNull();
+        });
     });
 
     it('sends correct request when existing schedule keyword is deleted', async () => {
@@ -800,24 +818,31 @@ describe('App', () => {
         });
     });
 
-    it('shows alert after failing to delete a schedule keyword', async () => {
-        // Mock fetch function to simulate backend failing to delete, mock alert function
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 404,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Keyword not found'
-            })
+    it('shows error toast after failing to delete a schedule keyword', async () => {
+        // Mock fetch function to simulate backend failing to delete
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 404,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Keyword not found'
+                    })
+                });
+            }, 100);
         }));
-        global.alert = jest.fn();
 
-        // Get keywords section, click delete button on first row
+        // Click delete button on first row, confirm loading animation starts
         const keywords = app.getByText('Schedule Keywords').parentElement;
         const table = keywords.children[1].children[0].children[1];
         await user.click(within(table.children[0]).getByRole('button'));
+        expect(app.container.querySelector('.spinner-border')).not.toBeNull();
 
-        // Confirm alert appears with response from API
-        expect(global.alert).toHaveBeenCalledWith('Keyword not found');
+        // Confirm animation stops, toast with API response appears when error received
+        await waitFor(() => {
+            expect(app.container.querySelector('.spinner-border')).toBeNull();
+            expect(app.queryByText('Keyword not found')).not.toBeNull();
+        });
     });
 });

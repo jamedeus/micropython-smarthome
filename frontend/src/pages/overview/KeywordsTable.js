@@ -6,6 +6,7 @@ import Table from 'react-bootstrap/Table';
 import Button from 'react-bootstrap/Button';
 import Collapse from 'react-bootstrap/Collapse';
 import DeleteOrEditButton from 'inputs/DeleteOrEditButton';
+import { showErrorToast } from 'util/ErrorToast';
 import { send_post_request, parse_dom_context } from 'util/django_util';
 import { v4 as uuid } from 'uuid';
 
@@ -59,10 +60,10 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
         if (response.ok) {
             editKeyword(initKeyword, keyword, timestamp);
             setButton("delete");
-        // Show error in alert if failed, stop loading animation
+        // Show error toast if failed, stop loading animation
         } else {
             const error = await response.json();
-            alert(error.message);
+            showErrorToast(error.message);
             setButton("edit");
         }
     };
@@ -78,10 +79,10 @@ const KeywordRow = ({initKeyword, initTimestamp, editKeyword, deleteKeyword}) =>
         // If successful delete from context and re-render (removes this row)
         if (response.ok) {
             deleteKeyword(keyword);
-        // Show error in alert if failed, stop loading animation
+        // Show error toast if failed, stop loading animation
         } else {
             const error = await response.json();
-            alert(error.message);
+            showErrorToast(error.message);
             setButton("delete");
         }
     };
@@ -181,10 +182,10 @@ const NewKeywordRow = ({ addKeyword }) => {
             setTimestamp("");
             setButtonDisabled(true);
             setButtonLoading(false);
-        // Show error in alert if failed, stop loading animation
+        // Show error toast if failed, stop loading animation
         } else {
             const error = await response.json();
-            alert(error.message);
+            showErrorToast(error.message);
             setButtonLoading(false);
         }
     };
