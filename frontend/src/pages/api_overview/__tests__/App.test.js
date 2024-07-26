@@ -95,25 +95,43 @@ describe('App', () => {
     });
 
     it('sends the correct request when a macro is run', async () => {
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: 'Done'
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: 'Done'
+                    })
+                });
+            }, 100);
         }));
 
         // Click "Late" macro button, confirm correct request sent
         await user.click(app.getByText('Late'));
         expect(global.fetch).toHaveBeenCalledWith('/run_macro/late');
 
-        // Confirm "Late" text gone, wait for checkmark to replace loading animation
+        // Confirm "Late" text replaced by loading animation
+        await waitFor(() => {
+            expect(app.queryByText('Late')).toBeNull();
+            expect(app.container.querySelector('.loading-animation')).not.toBeNull();
+            expect(app.container.querySelector('.checkmark')).toBeNull();
+        });
+
+        // Confirm loading animation replaced by checkmark when macro finishes
         expect(app.queryByText('Late')).toBeNull();
         await waitFor(() => {
             expect(app.container.querySelector('.loading-animation')).toBeNull();
             expect(app.container.querySelector('.checkmark')).not.toBeNull();
         });
+
+        // Confirm "Late" text reappears when animation complete
+        await waitFor(() => {
+            expect(app.container.querySelector('.checkmark')).toBeNull();
+            expect(app.queryByText('Late')).not.toBeNull();
+        }, { timeout: 2500 });
     });
 
     it('sends the correct request when a macro is deleted', async () => {
