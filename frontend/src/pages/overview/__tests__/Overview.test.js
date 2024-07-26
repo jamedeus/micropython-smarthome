@@ -85,23 +85,27 @@ describe('App', () => {
     });
 
     it('sends the correct request when "Re-upload all" option is clicked', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: {
-                    'success': [
-                        'Bathroom',
-                        'Kitchen',
-                        'Living Room',
-                        'Bedroom',
-                        'Thermostat'
-                    ],
-                    'failed': {}
-                }
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: {
+                            'success': [
+                                'Bathroom',
+                                'Kitchen',
+                                'Living Room',
+                                'Bedroom',
+                                'Thermostat'
+                            ],
+                            'failed': {}
+                        }
+                    })
+                });
+            }, 100);
         }));
 
         // Click "Re-upload" dropdown option in top-right corner menu
@@ -111,27 +115,47 @@ describe('App', () => {
 
         // Confirm correct request was sent
         expect(global.fetch).toHaveBeenCalledWith('/reupload_all');
+
+        // Confirm modal with loading animation appeared
+        await waitFor(() => {
+            expect(app.getByText('Uploading...')).toBeInTheDocument();
+        });
+
+        // Confirm loading animation changes to checkmark when request complete
+        await waitFor(() => {
+            expect(app.queryByText('Uploading...')).toBeNull();
+            expect(app.getByText('Upload Complete')).toBeInTheDocument();
+        });
+
+        // Confirm modal closes automatically
+        await waitFor(() => {
+            expect(app.queryByText('Upload Complete')).toBeNull();
+        }, { timeout: 1500 });
     });
 
     it('shows error modal when "Re-upload all" fails to upload some nodes', async () => {
-        // Mock fetch function to return report with some failures
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: {
-                    success: [
-                        'Living Room',
-                        'Bedroom',
-                    ],
-                    failed: {
-                        Bathroom: 'Offline',
-                        Kitchen: 'Connection timed out',
-                        Thermostat: 'Filesystem error'
-                    }
-                }
-            })
+        // Mock fetch function to return report with some failures after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: {
+                            success: [
+                                'Living Room',
+                                'Bedroom',
+                            ],
+                            failed: {
+                                Bathroom: 'Offline',
+                                Kitchen: 'Connection timed out',
+                                Thermostat: 'Filesystem error'
+                            }
+                        }
+                    })
+                });
+            }, 100);
         }));
 
         // Click "Re-upload" dropdown option in top-right corner menu
@@ -139,8 +163,14 @@ describe('App', () => {
         await user.click(within(header).getAllByRole('button')[0]);
         await user.click(app.getByText('Re-upload all'));
 
-        // Confirm error modal appeared with failure reasons
+        // Confirm modal with loading animation appeared
         await waitFor(() => {
+            expect(app.getByText('Uploading...')).toBeInTheDocument();
+        });
+
+        // Confirm loading modal closed, error modal appeared with failure reasons
+        await waitFor(() => {
+            expect(app.queryByText('Uploading...')).toBeNull();
             expect(app.getByText('Failed Uploads')).toBeInTheDocument();
             expect(app.getByText('Bathroom: Offline')).toBeInTheDocument();
             expect(app.getByText('Kitchen: Connection timed out')).toBeInTheDocument();

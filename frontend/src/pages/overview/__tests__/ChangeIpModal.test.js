@@ -33,14 +33,18 @@ describe('ChangeIpModal', () => {
     });
 
     it('sends correct request when ChangeIpModal is submitted', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: 'Successfully uploaded to new IP'
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: 'Successfully uploaded to new IP'
+                    })
+                });
+            }, 100);
         }));
 
         // Enter new IP address in modal input
@@ -59,12 +63,25 @@ describe('ChangeIpModal', () => {
             headers: postHeaders
         });
 
-        // Confirm IP changed in existing nodes table
+        // Confirm input was replaced by loading animation
         await waitFor(() => {
+            expect(within(modal).queryByRole('textbox')).toBeNull();
+            expect(modal.querySelector('.loading-animation')).not.toBeNull();
+        });
+
+        // Confirm loading animation changes to checkmark when request complete
+        await waitFor(() => {
+            expect(modal.querySelector('.loading-animation')).toBeNull();
+            expect(modal.querySelector('.checkmark')).not.toBeNull();
+        });
+
+        // Confirm modal closed, IP changed in existing nodes table
+        await waitFor(() => {
+            expect(app.queryByText(/file to a new IP/)).toBeNull();
             const existingNodes = app.getByText('Existing Nodes').parentElement;
             expect(within(existingNodes).queryByText('192.168.1.100')).toBeNull();
             expect(within(existingNodes).queryByText('123.123.123.123')).not.toBeNull();
-        });
+        }, { timeout: 1500 });
     });
 
     it('submits modal when enter key pressed in input', async () => {
@@ -97,13 +114,17 @@ describe('ChangeIpModal', () => {
 
     it('shows correct error modal if unable to connect to new IP', async () => {
         // Mock fetch function to simulate failed to connect
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 404,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Unable to change IP, node does not exist'
-            })
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 404,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Unable to change IP, node does not exist'
+                    })
+                });
+            }, 100);
         }));
 
         // Enter new IP address in modal input, click submnit button
@@ -112,19 +133,32 @@ describe('ChangeIpModal', () => {
         await user.type(within(modal).getByRole('textbox'), '123.123.123.123');
         await user.click(app.getByRole('button', { name: 'Change' }));
 
-        // Confirm unable to connect error modal appeared
-        expect(app.getByText(/Unable to connect to/)).not.toBeNull();
+        // Confirm input was replaced by loading animation
+        await waitFor(() => {
+            expect(within(modal).queryByRole('textbox')).toBeNull();
+            expect(modal.querySelector('.loading-animation')).not.toBeNull();
+        });
+
+        // Confirm modal closed, unable to connect error modal appeared
+        await waitFor(() => {
+            expect(app.queryByText(/file to a new IP/)).toBeNull();
+            expect(app.getByText(/Unable to connect to/)).not.toBeNull();
+        }, { timeout: 1500 });
     });
 
     it('shows generic error modal if other errors occur', async () => {
         // Mock fetch function to simulate arbitrary error
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 418,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: "I'm a teapot"
-            })
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 418,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: "I'm a teapot"
+                    })
+                });
+            }, 100);
         }));
 
         // Enter new IP address in modal input, click submnit button
@@ -133,8 +167,17 @@ describe('ChangeIpModal', () => {
         await user.type(within(modal).getByRole('textbox'), '123.123.123.123');
         await user.click(app.getByRole('button', { name: 'Change' }));
 
-        // Confirm error modal with arbitrary error text appeared
-        expect(app.getByText("I'm a teapot")).not.toBeNull();
+        // Confirm input was replaced by loading animation
+        await waitFor(() => {
+            expect(within(modal).queryByRole('textbox')).toBeNull();
+            expect(modal.querySelector('.loading-animation')).not.toBeNull();
+        });
+
+        // Confirm modal closed, error modal with arbitrary error text appeared
+        await waitFor(() => {
+            expect(app.queryByText(/file to a new IP/)).toBeNull();
+            expect(app.getByText("I'm a teapot")).not.toBeNull();
+        }, { timeout: 1500 });
     });
 
     it('closes modal when X button or background is clicked', async () => {

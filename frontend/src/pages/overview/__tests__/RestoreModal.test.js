@@ -33,18 +33,22 @@ describe('RestoreModal', () => {
     });
 
     it('sends correct request when RestoreModal is submitted', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: {
-                    friendly_name: 'Old Node',
-                    filename: 'old-node.json',
-                    ip: '123.123.123.123'
-                }
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: {
+                            friendly_name: 'Old Node',
+                            filename: 'old-node.json',
+                            ip: '123.123.123.123'
+                        }
+                    })
+                });
+            }, 100);
         }));
 
         // Enter IP address in modal input
@@ -62,11 +66,17 @@ describe('RestoreModal', () => {
             headers: postHeaders
         });
 
-        // Confirm input is replaced by checkmark animation
+        // Confirm input was replaced by loading animation
         await waitFor(() => {
             expect(within(modal).queryByRole('textbox')).toBeNull();
+            expect(modal.querySelector('.loading-animation')).not.toBeNull();
+        });
+
+        // Confirm loading animation changes to checkmark when request complete
+        await waitFor(() => {
+            expect(modal.querySelector('.loading-animation')).toBeNull();
             expect(modal.querySelector('.checkmark')).not.toBeNull();
-        }, { timeout: 1500 });
+        });
 
         // Confirm modal closes automatically, node appears in existing nodes table
         await waitFor(() => {
@@ -108,14 +118,18 @@ describe('RestoreModal', () => {
     });
 
     it('shows correct error modal if unable to connect to new IP', async () => {
-        // Mock fetch function to simulate failed to connect
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 404,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Unable to connect to node, please make sure it is connected to wifi and try again.'
-            })
+        // Mock fetch function to simulate failed to connect after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 404,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Unable to connect to node, please make sure it is connected to wifi and try again.'
+                    })
+                });
+            }, 100);
         }));
 
         // Enter IP address in modal input, click submit button
@@ -124,19 +138,32 @@ describe('RestoreModal', () => {
         await user.type(within(modal).getByRole('textbox'), '123.123.123.123');
         await user.click(app.getByRole('button', { name: 'Restore' }));
 
-        // Confirm unable to connect error modal appeared
-        expect(app.getByText(/Unable to connect to/)).not.toBeNull();
+        // Confirm input was replaced by loading animation
+        await waitFor(() => {
+            expect(within(modal).queryByRole('textbox')).toBeNull();
+            expect(modal.querySelector('.loading-animation')).not.toBeNull();
+        });
+
+        // Confirm modal closes and unable to connect modal appears when error received
+        await waitFor(() => {
+            expect(app.queryByText(/config files from existing nodes/)).toBeNull();
+            expect(app.getByText(/Unable to connect to/)).not.toBeNull();
+        });
     });
 
     it('shows correct error modal if restored config is a duplicate', async () => {
-        // Mock fetch function to simulate duplicate config
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 409,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Config already exists with identical name'
-            })
+        // Mock fetch function to simulate duplicate config after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 409,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Config already exists with identical name'
+                    })
+                });
+            }, 100);
         }));
 
         // Enter IP address in modal input, click submit button
@@ -145,10 +172,19 @@ describe('RestoreModal', () => {
         await user.type(within(modal).getByRole('textbox'), '123.123.123.123');
         await user.click(app.getByRole('button', { name: 'Restore' }));
 
-        // Confirm duplicate error modal appeared
-        expect(app.getByText(
-            'A node with the same name or filename already exists'
-        )).not.toBeNull();
+        // Confirm input was replaced by loading animation
+        await waitFor(() => {
+            expect(within(modal).queryByRole('textbox')).toBeNull();
+            expect(modal.querySelector('.loading-animation')).not.toBeNull();
+        });
+
+        // Confirm modal closes and duplicate error modal appears when error received
+        await waitFor(() => {
+            expect(app.queryByText(/config files from existing nodes/)).toBeNull();
+            expect(app.getByText(
+                'A node with the same name or filename already exists'
+            )).not.toBeNull();
+        });
     });
 
     it('shows alert if unexpected error occur', async () => {
