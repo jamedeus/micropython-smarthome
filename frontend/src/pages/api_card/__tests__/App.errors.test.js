@@ -202,13 +202,17 @@ describe('App', () => {
 
     it('shows error toast and resets loading animation if add_rule API call fails', async () => {
         // Mock fetch function to simulate failed API call
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 502,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Unable to connect'
-            })
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 502,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Unable to connect'
+                    })
+                });
+            }, 100);
         }));
 
         // Get device3 card, schedule rules button, schedule rules table, new rule button
@@ -227,24 +231,32 @@ describe('App', () => {
         const timePopup = newRuleRow.children[0].children[0].children[1];
         await user.type(within(timePopup).getByLabelText('Time'), '10:00');
 
-        // Click add rule button, confirm request was made
+        // Click add rule button, confirm request was made, loading animation started
         await user.click(newRuleRow.children[2].children[0]);
         expect(global.fetch).toHaveBeenCalled();
+        expect(app.container.querySelector('.spinner-border')).not.toBeNull();
 
         // Confirm error toast appeared, button loading animation reset
-        expect(app.queryByText('Failed to add schedule rule')).not.toBeNull();
-        expect(newRuleRow.children[2].children[0].querySelector('.bi-plus-lg')).not.toBeNull();
+        await waitFor(() => {
+            expect(app.container.querySelector('.spinner-border')).toBeNull();
+            expect(app.queryByText('Failed to add schedule rule')).not.toBeNull();
+            expect(newRuleRow.children[2].children[0].querySelector('.bi-plus-lg')).not.toBeNull();
+        });
     });
 
     it('shows error toast and resets loading animation if edit rule API call fails', async () => {
         // Mock fetch function to simulate failed API call
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 502,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Unable to connect'
-            })
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 502,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Unable to connect'
+                    })
+                });
+            }, 100);
         }));
 
         // Get device4 card, schedule rules button, schedule rules table, first rule row
@@ -259,24 +271,32 @@ describe('App', () => {
         const timePopup = firstRule.children[0].children[0].children[1];
         await user.selectOptions(within(timePopup).getAllByLabelText('Keyword')[0], 'sunrise');
 
-        // Click add rule button, confirm request was made
+        // Click add rule button, confirm request was made, loading animation started
         await user.click(firstRule.children[2].children[0]);
         expect(global.fetch).toHaveBeenCalled();
+        expect(app.container.querySelector('.spinner-border')).not.toBeNull();
 
         // Confirm error toast appeared, button loading animation reset
-        expect(app.queryByText('Failed to edit schedule rule')).not.toBeNull();
-        expect(firstRule.children[2].children[0].querySelector('.bi-pencil')).not.toBeNull();
+        await waitFor(() => {
+            expect(app.container.querySelector('.spinner-border')).toBeNull();
+            expect(app.queryByText('Failed to edit schedule rule')).not.toBeNull();
+            expect(firstRule.children[2].children[0].querySelector('.bi-pencil')).not.toBeNull();
+        })
     });
 
     it('shows error toast and resets loading animation if delete rule API call fails', async () => {
         // Mock fetch function to simulate failed API call
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: false,
-            status: 502,
-            json: () => Promise.resolve({
-                status: 'error',
-                message: 'Unable to connect'
-            })
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: false,
+                    status: 502,
+                    json: () => Promise.resolve({
+                        status: 'error',
+                        message: 'Unable to connect'
+                    })
+                });
+            }, 100);
         }));
 
         // Get device4 card, schedule rules button, schedule rules table, first rule row
@@ -285,14 +305,18 @@ describe('App', () => {
         const rulesTable = within(card).getByText('Time').parentElement.parentElement.parentElement;
         const firstRule = rulesTable.children[1].children[0];
 
-        // Click delete button on first row of table, confirm request was made
+        // Click delete button on first row, confirm request was made, loading animation started
         await user.click(scheduleRulesButton);
         await user.click(firstRule.children[2].children[0]);
         expect(global.fetch).toHaveBeenCalled();
+        expect(app.container.querySelector('.spinner-border')).not.toBeNull();
 
         // Confirm error toast appeared, button loading animation reset
-        expect(app.queryByText('Failed to delete schedule rule')).not.toBeNull();
-        expect(firstRule.children[2].children[0].querySelector('.bi-trash')).not.toBeNull();
+        await waitFor(() => {
+            expect(app.container.querySelector('.spinner-border')).toBeNull();
+            expect(app.queryByText('Failed to delete schedule rule')).not.toBeNull();
+            expect(firstRule.children[2].children[0].querySelector('.bi-trash')).not.toBeNull();
+        });
     });
 
     it('throws error when sync_schedule_rules API call fails', async () => {

@@ -401,17 +401,21 @@ describe('App', () => {
     });
 
     it('sends correct payload when new schedule rule is added', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: {
-                    "time": "10:00",
-                    "Rule added": "enabled"
-                }
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: {
+                            "time": "10:00",
+                            "Rule added": "enabled"
+                        }
+                    })
+                });
+            }, 100);
         }));
 
         // Get device3 card, schedule rules button, schedule rules table, new rule button
@@ -445,20 +449,27 @@ describe('App', () => {
             }),
             headers: postHeaders
         });
+
+        // Confirm loading animation appeared
+        expect(app.container.querySelector('.spinner-border')).not.toBeNull();
     });
 
     it('sends correct payload when schedule rule value is edited', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: {
-                    "time": "sunrise",
-                    "Rule added": "enabled"
-                }
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: {
+                            "time": "sunrise",
+                            "Rule added": "enabled"
+                        }
+                    })
+                });
+            }, 100);
         }));
 
         // Get device4 card, schedule rules button, schedule rules table, first rule row
@@ -492,20 +503,27 @@ describe('App', () => {
             }),
             headers: postHeaders
         });
+
+        // Confirm loading animation appeared
+        expect(app.container.querySelector('.spinner-border')).not.toBeNull();
     });
 
     it('sends correct payload when schedule rule timestamp is edited', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: {
-                    "time": "sunrise",
-                    "Rule added": "enabled"
-                }
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: {
+                            "time": "sunrise",
+                            "Rule added": "enabled"
+                        }
+                    })
+                });
+            }, 100);
         }));
 
         // Get device4 card, schedule rules button, schedule rules table, first rule row
@@ -522,12 +540,11 @@ describe('App', () => {
         // Change keyword dropdown to sunrise
         await user.selectOptions(within(timePopup).getAllByLabelText('Keyword')[0], 'sunrise');
 
-        // Click add rule button
+        // Click add rule button, confirm loading animation appeared
         await user.click(firstRule.children[2].children[0]);
+        expect(app.container.querySelector('.spinner-border')).not.toBeNull();
 
-        // Confirm 2 API calls were made:
-        // - add_rule with new timestamp
-        // - remove_rule with original timestamp
+        // Confirm API call was made to add rule with new timestamp
         expect(global.fetch).toHaveBeenNthCalledWith(1, '/send_command', {
             method: 'POST',
             body: JSON.stringify({
@@ -540,29 +557,37 @@ describe('App', () => {
             }),
             headers: postHeaders
         });
-        expect(global.fetch).toHaveBeenNthCalledWith(2, '/send_command', {
-            method: 'POST',
-            body: JSON.stringify({
-                "command": "remove_rule",
-                "instance": "device4",
-                "rule": "morning",
-                "target": "192.168.1.100"
-            }),
-            headers: postHeaders
+
+        // Confirm second API call is made to remove rule with original timestamp
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenNthCalledWith(2, '/send_command', {
+                method: 'POST',
+                body: JSON.stringify({
+                    "command": "remove_rule",
+                    "instance": "device4",
+                    "rule": "morning",
+                    "target": "192.168.1.100"
+                }),
+                headers: postHeaders
+            });
         });
     });
 
     it('sends correct payload when a schedule rule is deleted', async () => {
-        // Mock fetch function to return expected response
-        global.fetch = jest.fn(() => Promise.resolve({
-            ok: true,
-            status: 200,
-            json: () => Promise.resolve({
-                status: 'success',
-                message: {
-                    deleted: "morning"
-                }
-            })
+        // Mock fetch function to return expected response after 100ms delay
+        global.fetch = jest.fn(() => new Promise((resolve) => {
+            setTimeout(() => {
+                resolve({
+                    ok: true,
+                    status: 200,
+                    json: () => Promise.resolve({
+                        status: 'success',
+                        message: {
+                            deleted: "morning"
+                        }
+                    })
+                });
+            }, 100);
         }));
 
         // Get device4 card, schedule rules button, schedule rules table, first rule row
