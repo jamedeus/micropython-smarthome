@@ -32,7 +32,10 @@ class Node(models.Model):
 
     ip = models.GenericIPAddressField(protocol='IPv4')
 
-    floor = models.IntegerField(default=1, validators=[MinValueValidator(0), MaxValueValidator(999)])
+    floor = models.IntegerField(
+        default=1,
+        validators=[MinValueValidator(-999), MaxValueValidator(999)]
+    )
 
     # Validate all fields before saving
     # Add to cli_config.json if CLI_SYNC enabled

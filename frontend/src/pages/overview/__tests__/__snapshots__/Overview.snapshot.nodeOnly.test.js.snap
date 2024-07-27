@@ -1,0 +1,1023 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`App matches snapshot with existing nodes but no configs 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div
+      id="not_uploaded"
+    >
+      []
+    </div>
+    <div
+      id="uploaded"
+    >
+      [{"friendly_name":"Bathroom","ip":"192.168.1.100","filename":"bathroom.json"},{"friendly_name":"Kitchen","ip":"192.168.1.101","filename":"kitchen.json"},{"friendly_name":"Living Room","ip":"192.168.1.102","filename":"living-room.json"},{"friendly_name":"Bedroom","ip":"192.168.1.103","filename":"bedroom.json"},{"friendly_name":"Thermostat","ip":"192.168.1.104","filename":"thermostat.json"}]
+    </div>
+    <div
+      id="schedule_keywords"
+    >
+      [{"id":2,"keyword":"morning","timestamp":"08:00"},{"id":3,"keyword":"sleep","timestamp":"23:00"},{"id":4,"keyword":"relax","timestamp":"20:00"}]
+    </div>
+    <div
+      id="desktop_integration_link"
+    >
+      "/static/node_configuration/micropython-smarthome-integration.zip"
+    </div>
+    <div
+      id="client_ip"
+    >
+      "127.0.0.1"
+    </div>
+    <div>
+      <div
+        class="d-flex flex-column vh-100"
+      >
+        <div
+          class="d-flex justify-content-between"
+        >
+          <button
+            class="btn btn-primary"
+            style="visibility: hidden;"
+            type="button"
+          >
+            <i
+              class="bi-chevron-left"
+            />
+          </button>
+          <h1
+            class="my-3"
+          >
+            Configure Nodes
+          </h1>
+          <div
+            class="my-auto dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="dropdown-toggle btn btn-light"
+              id="settings-button"
+              type="button"
+            >
+              <i
+                class="bi-gear-fill"
+              />
+            </button>
+          </div>
+        </div>
+        <div
+          class="text-center section px-0 pt-2 row"
+          id="existing"
+        >
+          <h3
+            class="text-center my-1"
+          >
+            Existing Nodes
+          </h3>
+          <div
+            class="collapse show"
+          >
+            <table
+              class="table-borderless table-sm table-hover mt-3 mx-auto table"
+            >
+              <thead>
+                <tr>
+                  <th
+                    class="w-50"
+                  >
+                    Name
+                  </th>
+                  <th
+                    class="w-50"
+                  >
+                    IP
+                  </th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  id="Bathroom"
+                >
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      Bathroom
+                    </span>
+                  </td>
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      192.168.1.100
+                    </span>
+                  </td>
+                  <td
+                    class="min align-middle"
+                  >
+                    <div
+                      class="my-auto dropdown"
+                    >
+                      <button
+                        aria-expanded="false"
+                        class="dropdown-toggle btn btn-primary btn-sm"
+                        id="react-aria-:r1:"
+                        type="button"
+                      >
+                        <i
+                          class="bi-list"
+                        />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr
+                  id="Kitchen"
+                >
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      Kitchen
+                    </span>
+                  </td>
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      192.168.1.101
+                    </span>
+                  </td>
+                  <td
+                    class="min align-middle"
+                  >
+                    <div
+                      class="my-auto dropdown"
+                    >
+                      <button
+                        aria-expanded="false"
+                        class="dropdown-toggle btn btn-primary btn-sm"
+                        id="react-aria-:r2:"
+                        type="button"
+                      >
+                        <i
+                          class="bi-list"
+                        />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr
+                  id="Living Room"
+                >
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      Living Room
+                    </span>
+                  </td>
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      192.168.1.102
+                    </span>
+                  </td>
+                  <td
+                    class="min align-middle"
+                  >
+                    <div
+                      class="my-auto dropdown"
+                    >
+                      <button
+                        aria-expanded="false"
+                        class="dropdown-toggle btn btn-primary btn-sm"
+                        id="react-aria-:r3:"
+                        type="button"
+                      >
+                        <i
+                          class="bi-list"
+                        />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr
+                  id="Bedroom"
+                >
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      Bedroom
+                    </span>
+                  </td>
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      192.168.1.103
+                    </span>
+                  </td>
+                  <td
+                    class="min align-middle"
+                  >
+                    <div
+                      class="my-auto dropdown"
+                    >
+                      <button
+                        aria-expanded="false"
+                        class="dropdown-toggle btn btn-primary btn-sm"
+                        id="react-aria-:r4:"
+                        type="button"
+                      >
+                        <i
+                          class="bi-list"
+                        />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr
+                  id="Thermostat"
+                >
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      Thermostat
+                    </span>
+                  </td>
+                  <td
+                    class="align-middle"
+                  >
+                    <span
+                      class="form-control keyword text-center"
+                    >
+                      192.168.1.104
+                    </span>
+                  </td>
+                  <td
+                    class="min align-middle"
+                  >
+                    <div
+                      class="my-auto dropdown"
+                    >
+                      <button
+                        aria-expanded="false"
+                        class="dropdown-toggle btn btn-primary btn-sm"
+                        id="react-aria-:r5:"
+                        type="button"
+                      >
+                        <i
+                          class="bi-list"
+                        />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div
+          class="mt-2 mb-5 text-center"
+        >
+          <button
+            class="btn btn-primary"
+            type="button"
+          >
+            Create new config
+          </button>
+        </div>
+        <div
+          class="text-center section px-0 pt-2 row"
+          id="keywords"
+        >
+          <h3
+            class="text-center my-1"
+          >
+            Schedule Keywords
+          </h3>
+          <div
+            class="collapse show"
+          >
+            <table
+              class="table-borderless table-sm table-hover mt-3 mx-auto table"
+            >
+              <thead>
+                <tr>
+                  <th
+                    class="w-50"
+                  >
+                    Keyword
+                  </th>
+                  <th
+                    class="w-50"
+                  >
+                    Timestamp
+                  </th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  id="morning_row"
+                >
+                  <td
+                    class="align-middle"
+                  >
+                    <input
+                      class="keyword text-center form-control"
+                      placeholder="Keyword"
+                      type="text"
+                      value="morning"
+                    />
+                  </td>
+                  <td
+                    class="align-middle"
+                  >
+                    <input
+                      class="keyword text-center form-control"
+                      type="time"
+                      value="08:00"
+                    />
+                  </td>
+                  <td
+                    class="min align-middle"
+                  >
+                    <button
+                      class="btn btn-danger btn-sm"
+                      type="button"
+                    >
+                      <i
+                        class="bi-trash"
+                      />
+                    </button>
+                  </td>
+                </tr>
+                <tr
+                  id="sleep_row"
+                >
+                  <td
+                    class="align-middle"
+                  >
+                    <input
+                      class="keyword text-center form-control"
+                      placeholder="Keyword"
+                      type="text"
+                      value="sleep"
+                    />
+                  </td>
+                  <td
+                    class="align-middle"
+                  >
+                    <input
+                      class="keyword text-center form-control"
+                      type="time"
+                      value="23:00"
+                    />
+                  </td>
+                  <td
+                    class="min align-middle"
+                  >
+                    <button
+                      class="btn btn-danger btn-sm"
+                      type="button"
+                    >
+                      <i
+                        class="bi-trash"
+                      />
+                    </button>
+                  </td>
+                </tr>
+                <tr
+                  id="relax_row"
+                >
+                  <td
+                    class="align-middle"
+                  >
+                    <input
+                      class="keyword text-center form-control"
+                      placeholder="Keyword"
+                      type="text"
+                      value="relax"
+                    />
+                  </td>
+                  <td
+                    class="align-middle"
+                  >
+                    <input
+                      class="keyword text-center form-control"
+                      type="time"
+                      value="20:00"
+                    />
+                  </td>
+                  <td
+                    class="min align-middle"
+                  >
+                    <button
+                      class="btn btn-danger btn-sm"
+                      type="button"
+                    >
+                      <i
+                        class="bi-trash"
+                      />
+                    </button>
+                  </td>
+                </tr>
+                <tr
+                  id="_row"
+                >
+                  <td
+                    class="align-middle"
+                  >
+                    <input
+                      class="keyword text-center form-control"
+                      placeholder="Keyword"
+                      type="text"
+                      value=""
+                    />
+                  </td>
+                  <td
+                    class="align-middle"
+                  >
+                    <input
+                      class="keyword text-center form-control"
+                      type="time"
+                      value=""
+                    />
+                  </td>
+                  <td
+                    class="min align-middle"
+                  >
+                    <button
+                      class="btn btn-primary btn-sm"
+                      disabled=""
+                      type="button"
+                    >
+                      <i
+                        class="bi-plus"
+                      />
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div
+          class="d-flex align-items-center flex-column mt-auto py-4"
+        >
+          <button
+            class="btn btn-secondary"
+            type="button"
+          >
+            Frontend
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="d-flex flex-column vh-100"
+    >
+      <div
+        class="d-flex justify-content-between"
+      >
+        <button
+          class="btn btn-primary"
+          style="visibility: hidden;"
+          type="button"
+        >
+          <i
+            class="bi-chevron-left"
+          />
+        </button>
+        <h1
+          class="my-3"
+        >
+          Configure Nodes
+        </h1>
+        <div
+          class="my-auto dropdown"
+        >
+          <button
+            aria-expanded="false"
+            class="dropdown-toggle btn btn-light"
+            id="settings-button"
+            type="button"
+          >
+            <i
+              class="bi-gear-fill"
+            />
+          </button>
+        </div>
+      </div>
+      <div
+        class="text-center section px-0 pt-2 row"
+        id="existing"
+      >
+        <h3
+          class="text-center my-1"
+        >
+          Existing Nodes
+        </h3>
+        <div
+          class="collapse show"
+        >
+          <table
+            class="table-borderless table-sm table-hover mt-3 mx-auto table"
+          >
+            <thead>
+              <tr>
+                <th
+                  class="w-50"
+                >
+                  Name
+                </th>
+                <th
+                  class="w-50"
+                >
+                  IP
+                </th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                id="Bathroom"
+              >
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    Bathroom
+                  </span>
+                </td>
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    192.168.1.100
+                  </span>
+                </td>
+                <td
+                  class="min align-middle"
+                >
+                  <div
+                    class="my-auto dropdown"
+                  >
+                    <button
+                      aria-expanded="false"
+                      class="dropdown-toggle btn btn-primary btn-sm"
+                      id="react-aria-:r1:"
+                      type="button"
+                    >
+                      <i
+                        class="bi-list"
+                      />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr
+                id="Kitchen"
+              >
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    Kitchen
+                  </span>
+                </td>
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    192.168.1.101
+                  </span>
+                </td>
+                <td
+                  class="min align-middle"
+                >
+                  <div
+                    class="my-auto dropdown"
+                  >
+                    <button
+                      aria-expanded="false"
+                      class="dropdown-toggle btn btn-primary btn-sm"
+                      id="react-aria-:r2:"
+                      type="button"
+                    >
+                      <i
+                        class="bi-list"
+                      />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr
+                id="Living Room"
+              >
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    Living Room
+                  </span>
+                </td>
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    192.168.1.102
+                  </span>
+                </td>
+                <td
+                  class="min align-middle"
+                >
+                  <div
+                    class="my-auto dropdown"
+                  >
+                    <button
+                      aria-expanded="false"
+                      class="dropdown-toggle btn btn-primary btn-sm"
+                      id="react-aria-:r3:"
+                      type="button"
+                    >
+                      <i
+                        class="bi-list"
+                      />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr
+                id="Bedroom"
+              >
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    Bedroom
+                  </span>
+                </td>
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    192.168.1.103
+                  </span>
+                </td>
+                <td
+                  class="min align-middle"
+                >
+                  <div
+                    class="my-auto dropdown"
+                  >
+                    <button
+                      aria-expanded="false"
+                      class="dropdown-toggle btn btn-primary btn-sm"
+                      id="react-aria-:r4:"
+                      type="button"
+                    >
+                      <i
+                        class="bi-list"
+                      />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr
+                id="Thermostat"
+              >
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    Thermostat
+                  </span>
+                </td>
+                <td
+                  class="align-middle"
+                >
+                  <span
+                    class="form-control keyword text-center"
+                  >
+                    192.168.1.104
+                  </span>
+                </td>
+                <td
+                  class="min align-middle"
+                >
+                  <div
+                    class="my-auto dropdown"
+                  >
+                    <button
+                      aria-expanded="false"
+                      class="dropdown-toggle btn btn-primary btn-sm"
+                      id="react-aria-:r5:"
+                      type="button"
+                    >
+                      <i
+                        class="bi-list"
+                      />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div
+        class="mt-2 mb-5 text-center"
+      >
+        <button
+          class="btn btn-primary"
+          type="button"
+        >
+          Create new config
+        </button>
+      </div>
+      <div
+        class="text-center section px-0 pt-2 row"
+        id="keywords"
+      >
+        <h3
+          class="text-center my-1"
+        >
+          Schedule Keywords
+        </h3>
+        <div
+          class="collapse show"
+        >
+          <table
+            class="table-borderless table-sm table-hover mt-3 mx-auto table"
+          >
+            <thead>
+              <tr>
+                <th
+                  class="w-50"
+                >
+                  Keyword
+                </th>
+                <th
+                  class="w-50"
+                >
+                  Timestamp
+                </th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                id="morning_row"
+              >
+                <td
+                  class="align-middle"
+                >
+                  <input
+                    class="keyword text-center form-control"
+                    placeholder="Keyword"
+                    type="text"
+                    value="morning"
+                  />
+                </td>
+                <td
+                  class="align-middle"
+                >
+                  <input
+                    class="keyword text-center form-control"
+                    type="time"
+                    value="08:00"
+                  />
+                </td>
+                <td
+                  class="min align-middle"
+                >
+                  <button
+                    class="btn btn-danger btn-sm"
+                    type="button"
+                  >
+                    <i
+                      class="bi-trash"
+                    />
+                  </button>
+                </td>
+              </tr>
+              <tr
+                id="sleep_row"
+              >
+                <td
+                  class="align-middle"
+                >
+                  <input
+                    class="keyword text-center form-control"
+                    placeholder="Keyword"
+                    type="text"
+                    value="sleep"
+                  />
+                </td>
+                <td
+                  class="align-middle"
+                >
+                  <input
+                    class="keyword text-center form-control"
+                    type="time"
+                    value="23:00"
+                  />
+                </td>
+                <td
+                  class="min align-middle"
+                >
+                  <button
+                    class="btn btn-danger btn-sm"
+                    type="button"
+                  >
+                    <i
+                      class="bi-trash"
+                    />
+                  </button>
+                </td>
+              </tr>
+              <tr
+                id="relax_row"
+              >
+                <td
+                  class="align-middle"
+                >
+                  <input
+                    class="keyword text-center form-control"
+                    placeholder="Keyword"
+                    type="text"
+                    value="relax"
+                  />
+                </td>
+                <td
+                  class="align-middle"
+                >
+                  <input
+                    class="keyword text-center form-control"
+                    type="time"
+                    value="20:00"
+                  />
+                </td>
+                <td
+                  class="min align-middle"
+                >
+                  <button
+                    class="btn btn-danger btn-sm"
+                    type="button"
+                  >
+                    <i
+                      class="bi-trash"
+                    />
+                  </button>
+                </td>
+              </tr>
+              <tr
+                id="_row"
+              >
+                <td
+                  class="align-middle"
+                >
+                  <input
+                    class="keyword text-center form-control"
+                    placeholder="Keyword"
+                    type="text"
+                    value=""
+                  />
+                </td>
+                <td
+                  class="align-middle"
+                >
+                  <input
+                    class="keyword text-center form-control"
+                    type="time"
+                    value=""
+                  />
+                </td>
+                <td
+                  class="min align-middle"
+                >
+                  <button
+                    class="btn btn-primary btn-sm"
+                    disabled=""
+                    type="button"
+                  >
+                    <i
+                      class="bi-plus"
+                    />
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div
+        class="d-flex align-items-center flex-column mt-auto py-4"
+      >
+        <button
+          class="btn btn-secondary"
+          type="button"
+        >
+          Frontend
+        </button>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;

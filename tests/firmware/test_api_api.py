@@ -910,6 +910,14 @@ class TestApi(unittest.TestCase):
         response = self.send_command(['status'])
         self.assertIsInstance(response, dict)
 
+    # Original bug: The set_rule endpoint used "if ... in" to check if the new rule contained
+    # url-encoded forward slashes (detect fade rule) without casting the rule to string. This
+    # resulted in "TypeError: 'int' object isn't iterable" if the new rule was an integer.
+    def test_53_regression_set_rule_fails_if_rule_is_int(self):
+        response = self.send_command(['set_rule', 'device1', 100])
+        self.assertEqual(self.device1.current_rule, 100)
+        self.assertEqual(response, {'device1': 100})
+
     # Must run last, lock in reboot coro blocks future API requests
     @cpython_only
     def test_999_reboot_endpoint(self):

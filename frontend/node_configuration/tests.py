@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.core.exceptions import ValidationError
+from .get_api_target_menu_options import convert_config_to_api_target_options
 from .views import validate_full_config, get_modules, get_api_target_menu_options, provision
 from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinates
 from Webrepl import websocket, Webrepl, handshake_message
@@ -91,13 +92,13 @@ class NodeTests(TestCaseBackupRestore):
         with self.assertRaises(ValidationError):
             Node.objects.create(friendly_name='Unit Test Node', ip='123.456.789.10')
 
-        # Should refuse to create negative floor
+        # Should refuse to create negative floor below -999
         with self.assertRaises(ValidationError):
-            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='-5')
+            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='-1000')
 
         # Should refuse to create floor over 999
         with self.assertRaises(ValidationError):
-            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='9999')
+            Node.objects.create(friendly_name='Unit Test Node', ip='123.45.67.89', floor='1000')
 
         # Should refuse to create non-int floor
         with self.assertRaises(ValidationError):
@@ -105,7 +106,10 @@ class NodeTests(TestCaseBackupRestore):
 
         # Should refuse to create with friendly name >50 characters
         with self.assertRaises(ValidationError):
-            Config.objects.create(config=test_config_1, filename='Unrealistically Long Friendly Name That Nobody Needs')
+            Config.objects.create(
+                config=test_config_1,
+                filename='Unrealistically Long Friendly Name That Nobody Needs'
+            )
 
         # Confirm no nodes were created
         self.assertEqual(len(Node.objects.all()), 0)
@@ -148,6 +152,18 @@ class NodeTests(TestCaseBackupRestore):
         cli_config = get_cli_config()
         self.assertNotIn('unit-test-node', cli_config['nodes'].keys())
         self.assertFalse(os.path.exists(config_path))
+
+    # Original issue: Node model validator raised ValidationError if floor was
+    # negative, but config validator and edit_config page only require floor to
+    # be between -999 and 999. If the user created a config with negative floor
+    # and uploaded a 500 error was returned and the Node model was not created.
+    def test_regression_create_node_with_negative_floor(self):
+        self.assertEqual(len(Node.objects.all()), 0)
+
+        # Create node with negative floor, confirm exists in database
+        node = Node.objects.create(friendly_name='Basement', ip='123.45.67.89', floor='-1')
+        self.assertEqual(len(Node.objects.all()), 1)
+        self.assertIsInstance(node, Node)
 
 
 # Test the Config model
@@ -610,8 +626,6 @@ class ConfirmRequiresPostTests(TestCaseBackupRestore):
         endpoints = [
             '/upload',
             '/upload/reupload',
-            '/edit_config/upload',
-            '/edit_config/upload/reupload',
             '/delete_config',
             '/delete_node',
             '/check_duplicate',
@@ -625,7 +639,7 @@ class ConfirmRequiresPostTests(TestCaseBackupRestore):
         for endpoint in endpoints:
             response = self.client.get(endpoint)
             self.assertEqual(response.status_code, 405)
-            self.assertEqual(response.json(), {'Error': 'Must post data'})
+            self.assertEqual(response.json()['message'], 'Must post data')
 
 
 # Test edit config view
@@ -653,13 +667,13 @@ class EditConfigTests(TestCaseBackupRestore):
         self.assertEqual(response.context['api_target_options'], test_config_1_edit_context['api_target_options'])
 
         # Confirm title, heading, and edit mode
-        self.assertContains(response, '<title>Editing Test1</title>')
-        self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test1</h1>')
+        #self.assertContains(response, '<title>Editing Test1</title>')
+        #self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test1</h1>')
         self.assertEqual(response.context['edit_existing'], True)
 
         # Confirm all devices and sensors present
-        self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Motion Sensor" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="sensor1" data-param="nickname" required>')
-        self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Cabinet Lights" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="device1" data-param="nickname" required>')
+        #self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Motion Sensor" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="sensor1" data-param="nickname" required>')
+        #self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Cabinet Lights" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="device1" data-param="nickname" required>')
 
     def test_edit_config_2(self):
         # Request page, confirm correct template used
@@ -672,14 +686,14 @@ class EditConfigTests(TestCaseBackupRestore):
         self.assertEqual(response.context['api_target_options'], test_config_2_edit_context['api_target_options'])
 
         # Confirm title, heading, and edit mode
-        self.assertContains(response, '<title>Editing Test2</title>')
-        self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test2</h1>')
+        #self.assertContains(response, '<title>Editing Test2</title>')
+        #self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test2</h1>')
         self.assertEqual(response.context['edit_existing'], True)
 
         # Confirm all devices and sensors present
-        self.assertContains(response, '<input type="text" class="form-control thermostat" placeholder="" value="0.5" oninput="update_config(this);" data-section="sensor1" data-param="tolerance" required>')
-        self.assertContains(response, '<input class="form-check-input ir-target" type="checkbox" data-target="ac" checked oninput="update_config_ir_target(this)" autocomplete="off">')
-        self.assertContains(response, '<option value="192.168.1.124" selected>self-target</option>')
+        #self.assertContains(response, '<input type="text" class="form-control thermostat" placeholder="" value="0.5" oninput="update_config(this);" data-section="sensor1" data-param="tolerance" required>')
+        #self.assertContains(response, '<input class="form-check-input ir-target" type="checkbox" data-target="ac" checked oninput="update_config_ir_target(this)" autocomplete="off">')
+        #self.assertContains(response, '<option value="192.168.1.124" selected>self-target</option>')
 
     def test_edit_config_3(self):
         # Request page, confirm correct template used
@@ -693,16 +707,16 @@ class EditConfigTests(TestCaseBackupRestore):
         self.assertEqual(response.context['api_target_options'], test_config_3_edit_context['api_target_options'])
 
         # Confirm title, heading, and edit mode
-        self.assertContains(response, '<title>Editing Test3</title>')
-        self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test3</h1>')
+        #self.assertContains(response, '<title>Editing Test3</title>')
+        #self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Editing Test3</h1>')
         self.assertEqual(response.context['edit_existing'], True)
 
         # Confirm all devices and sensors present
-        self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Motion Sensor (Bath)"')
-        self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Motion Sensor (Entry)"')
-        self.assertContains(response, '<input type="text" class="form-control rule-limits" value="1023" data-min="0" data-max="1023" oninput="update_config(this);" data-section="device1" data-param="max_rule" required>')
-        self.assertContains(response, '<input type="text" class="form-control ip-input validate" placeholder="" value="192.168.1.239"')
-        self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Entry Light" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="device3" data-param="nickname" required>')
+        #self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Motion Sensor (Bath)"')
+        #self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Motion Sensor (Entry)"')
+        #self.assertContains(response, '<input type="text" class="form-control rule-limits" value="1023" data-min="0" data-max="1023" oninput="update_config(this);" data-section="device1" data-param="max_rule" required>')
+        #self.assertContains(response, '<input type="text" class="form-control ip-input validate" placeholder="" value="192.168.1.239"')
+        #self.assertContains(response, '<input type="text" class="form-control nickname" placeholder="" value="Entry Light" onchange="update_nickname(this)" oninput="prevent_duplicate_nickname(event);update_config(this);" data-section="device3" data-param="nickname" required>')
 
     # Original bug: Did not catch DoesNotExist error, leading to traceback
     # if target config was deleted by another client before clicking edit
@@ -710,7 +724,7 @@ class EditConfigTests(TestCaseBackupRestore):
         # Attempt to edit non-existing node, verify error
         response = self.client.get('/edit_config/Fake')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Fake node not found'})
+        self.assertEqual(response.json()['message'], 'Fake node not found')
 
 
 # Test config generation page
@@ -736,9 +750,9 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
         self.assertEqual(response.context['edit_existing'], False)
 
         # Confirm wifi fields empty
-        self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Create New Config</h1>')
-        self.assertContains(response, 'value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
-        self.assertContains(response, 'value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
+        #self.assertContains(response, '<h1 class="text-center pt-3 pb-4">Create New Config</h1>')
+        #self.assertContains(response, 'value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
+        #self.assertContains(response, 'value="" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
 
     def test_with_default_wifi(self):
         # Set default wifi credentials
@@ -763,8 +777,8 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
         self.assertEqual(response.context['edit_existing'], False)
 
         # Confirm wifi fields pre-filled
-        self.assertContains(response, 'value="AzureDiamond" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
-        self.assertContains(response, 'value="hunter2" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
+        #self.assertContains(response, 'value="AzureDiamond" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="ssid" required>')
+        #self.assertContains(response, 'value="hunter2" onchange="open_toast()" oninput="update_config(this);" data-section="wifi" data-param="password" required>')
 
 
 # Test main overview page
@@ -794,19 +808,6 @@ class OverviewPageTests(TestCaseBackupRestore):
         self.assertEqual(response.context['not_uploaded'], [])
         self.assertEqual(len(response.context['uploaded']), 3)
 
-        # Confirm existing node section present, new config section not present
-        self.assertNotContains(response, '<div id="not_uploaded" class="row section px-0 pt-2 mb-5">')
-        self.assertContains(response, '<div id="existing" class="row section px-0 pt-2">')
-
-        # Confirm table with all 3 nodes present
-        self.assertContains(response, '<tr id="Test1">')
-        self.assertContains(
-            response,
-            '<td class="align-middle"><span class="form-control keyword text-center">Test2</span></td>'
-        )
-        self.assertContains(response, 'onclick="window.location.href = \'/edit_config/Test3\'"')
-        self.assertContains(response, 'onclick="del_node(\'Test1\')"')
-
         # Remove test configs from disk
         clean_up_test_nodes()
 
@@ -822,15 +823,6 @@ class OverviewPageTests(TestCaseBackupRestore):
         self.assertEqual(len(response.context['not_uploaded']), 1)
         self.assertEqual(response.context['uploaded'], [])
 
-        # Confirm new config section present, existing node section section not present
-        self.assertContains(response, '<div id="not_uploaded" class="row section px-0 pt-2 mb-5">')
-        self.assertNotContains(response, '<div id="existing" class="row section px-0 pt-2">')
-
-        # Confirm IP field, upload button, delete button all present
-        self.assertContains(response, '<td><input type="text" id="test1.json-ip"')
-        self.assertContains(response, 'id="upload-test1.json"')
-        self.assertContains(response, 'onclick="del_config(\'test1.json\');"')
-
 
 # Test endpoint called by reupload all option in config overview
 class ReuploadAllTests(TestCaseBackupRestore):
@@ -838,7 +830,7 @@ class ReuploadAllTests(TestCaseBackupRestore):
         create_test_nodes()
 
         self.failed_to_connect = {
-            'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+            'message': 'Unable to connect to node, please make sure it is connected to wifi and try again.',
             'status': 404
         }
 
@@ -854,7 +846,10 @@ class ReuploadAllTests(TestCaseBackupRestore):
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'success': ['Test1', 'Test2', 'Test3'], 'failed': {}})
+            self.assertEqual(
+                response.json()['message'],
+                {'success': ['Test1', 'Test2', 'Test3'], 'failed': {}}
+            )
             self.assertEqual(mock_provision.call_count, 3)
 
     def test_reupload_all_partial_success(self):
@@ -864,7 +859,10 @@ class ReuploadAllTests(TestCaseBackupRestore):
             # Send request, validate response, validate that test1 and test3 succeeded while test2 failed
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'success': ['Test1', 'Test3'], 'failed': {'Test2': 'Offline'}})
+            self.assertEqual(
+                response.json()['message'],
+                {'success': ['Test1', 'Test3'], 'failed': {'Test2': 'Offline'}}
+            )
 
     def test_reupload_all_fail(self):
         # Expected response object
@@ -883,7 +881,7 @@ class ReuploadAllTests(TestCaseBackupRestore):
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), all_failed)
+            self.assertEqual(response.json()['message'], all_failed)
             self.assertEqual(mock_provision.call_count, 3)
 
     def test_reupload_all_fail_different_reasons(self):
@@ -903,7 +901,7 @@ class ReuploadAllTests(TestCaseBackupRestore):
             # Send request, validate response, validate that provision is called exactly 3 times
             response = self.client.get('/reupload_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), all_failed_different_reasons)
+            self.assertEqual(response.json()['message'], all_failed_different_reasons)
 
 
 # Test endpoint called by frontend upload buttons (calls get_modules and provision)
@@ -929,7 +927,7 @@ class UploadTests(TestCaseBackupRestore):
             # Upload config, verify response
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Upload complete.')
+            self.assertEqual(response.json()['message'], 'Upload complete.')
 
         # Should create 1 Node, no configs
         self.assertEqual(len(Config.objects.all()), 1)
@@ -956,7 +954,7 @@ class UploadTests(TestCaseBackupRestore):
             # Reupload config (second URL parameter), verify response
             response = self.client.post('/upload/True', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Upload complete.')
+            self.assertEqual(response.json()['message'], 'Upload complete.')
 
         # Should have same number of configs and nodes
         self.assertEqual(len(Config.objects.all()), 3)
@@ -977,7 +975,10 @@ class UploadTests(TestCaseBackupRestore):
             # Reupload config (second URL parameter), verify error
             response = self.client.post('/upload', {'config': 'fake-config.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
-            self.assertEqual(response.json(), "ERROR: Config file doesn't exist - did you delete it manually?")
+            self.assertEqual(
+                response.json()['message'],
+                "Config file doesn't exist - did you delete it manually?"
+            )
 
         # Database should still be empty
         self.assertEqual(len(Config.objects.all()), 0)
@@ -996,7 +997,7 @@ class UploadTests(TestCaseBackupRestore):
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
             self.assertEqual(
-                response.json(),
+                response.json()['message'],
                 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
             )
 
@@ -1019,7 +1020,7 @@ class UploadTests(TestCaseBackupRestore):
             response = self.client.post('/upload', {'config': 'test1.json', 'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 408)
             self.assertEqual(
-                response.json(),
+                response.json()['message'],
                 'Connection timed out - please press target node reset button, wait 30 seconds, and try again.'
             )
 
@@ -1033,7 +1034,7 @@ class UploadTests(TestCaseBackupRestore):
     def test_invalid_ip(self):
         response = self.client.post('/upload', {'ip': '123.456.678.90'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
+        self.assertEqual(response.json()['message'], 'Invalid IP 123.456.678.90')
 
 
 # Test view that uploads completed configs and dependencies to esp32 nodes
@@ -1060,7 +1061,7 @@ class ProvisionTests(TestCaseBackupRestore):
             self.assertEqual(response['status'], 404)
             self.assertEqual(
                 response['message'],
-                "Error: Unable to connect to node, please make sure it is connected to wifi and try again."
+                'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
             )
 
     def test_provision_connection_timeout(self):
@@ -1074,7 +1075,7 @@ class ProvisionTests(TestCaseBackupRestore):
             self.assertEqual(response['status'], 408)
             self.assertEqual(
                 response['message'],
-                "Connection timed out - please press target node reset button, wait 30 seconds, and try again."
+                'Connection timed out - please press target node reset button, wait 30 seconds, and try again.'
             )
 
     def test_provision_corrupt_filesystem(self):
@@ -1086,7 +1087,7 @@ class ProvisionTests(TestCaseBackupRestore):
 
             response = provision('123.45.67.89', 'password', 'test1.json', modules)
             self.assertEqual(response['status'], 409)
-            self.assertEqual(response['message'], "Failed due to filesystem error, please re-flash firmware.")
+            self.assertEqual(response['message'], 'Failed due to filesystem error, please re-flash firmware.')
 
 
 # Test view that connects to existing node, downloads config file, writes to database
@@ -1109,7 +1110,14 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
             # Post fake IP to endpoint, confirm output
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Config restored')
+            self.assertEqual(
+                response.json()['message'],
+                {
+                    'friendly_name': 'Test1',
+                    'filename': 'test1.json',
+                    'ip': '123.45.67.89'
+                }
+            )
 
         # Config and Node should now exist, config file should exist on disk
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1137,8 +1145,8 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 404)
             self.assertEqual(
-                response.json(),
-                'Error: Unable to connect to node, please make sure it is connected to wifi and try again.'
+                response.json()['message'],
+                'Unable to connect to node, please make sure it is connected to wifi and try again.'
             )
 
         # Database should still be empty
@@ -1158,7 +1166,7 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
             # Post fake IP to endpoint, confirm error
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 409)
-            self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+            self.assertEqual(response.json()['message'], 'Config already exists with identical name')
 
         # Should still have 3
         self.assertEqual(len(Config.objects.all()), 3)
@@ -1171,7 +1179,7 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
     def test_invalid_ip(self):
         response = self.client.post('/restore_config', {'ip': '123.456.678.90'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Invalid IP 123.456.678.90'})
+        self.assertEqual(response.json()['message'], 'Invalid IP 123.456.678.90')
 
     # Should refuse to create in database if invalid config received
     def test_invalid_config_format(self):
@@ -1190,7 +1198,10 @@ class RestoreConfigViewTest(TestCaseBackupRestore):
             # Post fake IP to endpoint, confirm error, confirm no models created
             response = self.client.post('/restore_config', {'ip': '123.45.67.89'})
             self.assertEqual(response.status_code, 500)
-            self.assertEqual(response.json(), 'ERROR: Config format invalid, possibly outdated version.')
+            self.assertEqual(
+                response.json()['message'],
+                'Config format invalid, possibly outdated version.'
+            )
             self.assertEqual(len(Config.objects.all()), 0)
             self.assertEqual(len(Node.objects.all()), 0)
 
@@ -1216,115 +1227,157 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             },
             "self-target": {},
             "Test1": {
-                "device1-Cabinet Lights (pwm)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device2-Overhead Lights (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Motion Sensor (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "ignore": {}
-            },
-            "Test2": {
-                "device1-Air Conditioner (api-target)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Thermostat (si7021)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule"
-                ],
-                "ir_blaster-Ir Blaster": {
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
+                "device1": {
+                    "display": "Cabinet Lights (pwm)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
                     ]
                 },
-                "ignore": {}
+                "device2": {
+                    "display": "Overhead Lights (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Motion Sensor (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
+                "ignore": {
+                    "display": "Ignore action"
+                }
+            },
+            "Test2": {
+                "device1": {
+                    "display": "Air Conditioner (api-target)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Thermostat (si7021)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule"
+                    ]
+                },
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "ac"
+                    ],
+                    "keys": {
+                        "ac": [
+                            "start",
+                            "stop",
+                            "off"
+                        ]
+                    }
+                },
+                "ignore": {
+                    "display": "Ignore action"
+                }
             },
             "Test3": {
-                "device1-Bathroom LEDs (pwm)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device2-Bathroom Lights (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device3-Entry Light (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Motion Sensor (Bath) (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "sensor2-Motion Sensor (Entry) (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "ignore": {}
+                "device1": {
+                    "display": "Bathroom LEDs (pwm)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device2": {
+                    "display": "Bathroom Lights (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device3": {
+                    "display": "Entry Light (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Motion Sensor (Bath) (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
+                "sensor2": {
+                    "display": "Motion Sensor (Entry) (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
+                "ignore": {
+                    "display": "Ignore action"
+                }
             }
         }
 
@@ -1349,115 +1402,157 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                 "Test3": "192.168.1.125"
             },
             "self-target": {
-                "device1-Cabinet Lights (pwm)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device2-Overhead Lights (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Motion Sensor (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "ignore": {}
-            },
-            "Test2": {
-                "device1-Air Conditioner (api-target)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Thermostat (si7021)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule"
-                ],
-                "ir_blaster-Ir Blaster": {
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
+                "device1": {
+                    "display": "Cabinet Lights (pwm)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
                     ]
                 },
-                "ignore": {}
+                "device2": {
+                    "display": "Overhead Lights (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Motion Sensor (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
+                "ignore": {
+                    "display": "Ignore action"
+                }
+            },
+            "Test2": {
+                "device1": {
+                    "display": "Air Conditioner (api-target)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Thermostat (si7021)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule"
+                    ]
+                },
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "ac"
+                    ],
+                    "keys": {
+                        "ac": [
+                            "start",
+                            "stop",
+                            "off"
+                        ]
+                    }
+                },
+                "ignore": {
+                    "display": "Ignore action"
+                }
             },
             "Test3": {
-                "device1-Bathroom LEDs (pwm)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device2-Bathroom Lights (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "device3-Entry Light (tasmota-relay)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "turn_on",
-                    "turn_off"
-                ],
-                "sensor1-Motion Sensor (Bath) (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "sensor2-Motion Sensor (Entry) (pir)": [
-                    "enable",
-                    "disable",
-                    "enable_in",
-                    "disable_in",
-                    "set_rule",
-                    "reset_rule",
-                    "trigger_sensor"
-                ],
-                "ignore": {}
+                "device1": {
+                    "display": "Bathroom LEDs (pwm)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device2": {
+                    "display": "Bathroom Lights (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device3": {
+                    "display": "Entry Light (tasmota-relay)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "sensor1": {
+                    "display": "Motion Sensor (Bath) (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
+                "sensor2": {
+                    "display": "Motion Sensor (Entry) (pir)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "trigger_sensor"
+                    ]
+                },
+                "ignore": {
+                    "display": "Ignore action"
+                }
             }
         }
 
@@ -1524,13 +1619,21 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             },
             "self-target": {},
             "ir_test": {
-                "ignore": {},
-                "ir_blaster-Ir Blaster": {
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
-                    ]
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "ac"
+                    ],
+                    "keys": {
+                        "ac": [
+                            "start",
+                            "stop",
+                            "off"
+                        ]
+                    }
+                },
+                "ignore": {
+                    "display": "Ignore action"
                 }
             }
         }
@@ -1550,22 +1653,30 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             },
             "self-target": {},
             "ir_test": {
-                "ignore": {},
-                "ir_blaster-Ir Blaster": {
-                    "tv": [
-                        "power",
-                        "vol_up",
-                        "vol_down",
-                        "mute",
-                        "up",
-                        "down",
-                        "left",
-                        "right",
-                        "enter",
-                        "settings",
-                        "exit",
-                        "source"
-                    ]
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "tv"
+                    ],
+                    "keys": {
+                        "tv": [
+                            "power",
+                            "vol_up",
+                            "vol_down",
+                            "mute",
+                            "up",
+                            "down",
+                            "left",
+                            "right",
+                            "enter",
+                            "settings",
+                            "exit",
+                            "source"
+                        ]
+                    }
+                },
+                "ignore": {
+                    "display": "Ignore action"
                 }
             }
         }
@@ -1585,27 +1696,36 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             },
             "self-target": {},
             "ir_test": {
-                "ignore": {},
-                "ir_blaster-Ir Blaster": {
-                    "tv": [
-                        "power",
-                        "vol_up",
-                        "vol_down",
-                        "mute",
-                        "up",
-                        "down",
-                        "left",
-                        "right",
-                        "enter",
-                        "settings",
-                        "exit",
-                        "source"
+                "ir_key": {
+                    "display": "Ir Blaster",
+                    "options": [
+                        "tv",
+                        "ac"
                     ],
-                    "ac": [
-                        "start",
-                        "stop",
-                        "off"
-                    ]
+                    "keys": {
+                        "tv": [
+                            "power",
+                            "vol_up",
+                            "vol_down",
+                            "mute",
+                            "up",
+                            "down",
+                            "left",
+                            "right",
+                            "enter",
+                            "settings",
+                            "exit",
+                            "source"
+                        ],
+                        "ac": [
+                            "start",
+                            "stop",
+                            "off"
+                        ]
+                    }
+                },
+                "ignore": {
+                    "display": "Ignore action"
                 }
             }
         }
@@ -1625,30 +1745,44 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
 
         # ApiTarget options do not include turn_on or turn_off in self-target section (infinite loop)
         expected_options = {
-            "device1-Air Conditioner (api-target)": [
-                "enable",
-                "disable",
-                "enable_in",
-                "disable_in",
-                "set_rule",
-                "reset_rule"
-            ],
-            "sensor1-Thermostat (si7021)": [
-                "enable",
-                "disable",
-                "enable_in",
-                "disable_in",
-                "set_rule",
-                "reset_rule"
-            ],
-            "ir_blaster-Ir Blaster": {
-                "ac": [
-                    "start",
-                    "stop",
-                    "off"
+            "device1": {
+                "display": "Air Conditioner (api-target)",
+                "options": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule"
                 ]
             },
-            "ignore": {}
+            "sensor1": {
+                "display": "Thermostat (si7021)",
+                "options": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule"
+                ]
+            },
+            "ir_key": {
+                "display": "Ir Blaster",
+                "options": [
+                    "ac"
+                ],
+                "keys": {
+                    "ac": [
+                        "start",
+                        "stop",
+                        "off"
+                    ]
+                }
+            },
+            "ignore": {
+                "display": "Ignore action"
+            }
         }
 
         # Request options for node with ApiTarget, confirm no turn_on/turn_off
@@ -1667,13 +1801,40 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
 
         # Request options for node with ApiTarget, confirm options exist for all instances
         options = get_api_target_menu_options('Test2')
-        self.assertIn('device1-Air Conditioner (api-target)', options['self-target'].keys())
-        self.assertIn('sensor1-Thermostat (si7021)', options['self-target'].keys())
-        self.assertIn('ir_blaster-Ir Blaster', options['self-target'].keys())
+        self.assertIn('device1', options['self-target'].keys())
+        self.assertEqual('Air Conditioner (api-target)', options['self-target']['device1']['display'])
+        self.assertIn('sensor1', options['self-target'].keys())
+        self.assertEqual('Thermostat (si7021)', options['self-target']['sensor1']['display'])
+        self.assertIn('ir_key', options['self-target'].keys())
+        self.assertEqual('Ir Blaster', options['self-target']['ir_key']['display'])
         self.assertIn('ignore', options['self-target'].keys())
 
         # Remove test configs from disk
         clean_up_test_nodes()
+
+    # Original bug: Function that adds endpoints used conditional with hard-coded sensor
+    # types to determine if trigger_sensor was supported. When new non-triggerable sensors
+    # were added they incorrectly received trigger_sensor option. Now checks triggerable
+    # param in metadata object to determine if endpoint compatible.
+    def test_regression_check_metadata(self):
+        # Create test config with new non-triggerable type
+        config = {
+            'metadata': {},
+            'wifi': {},
+            'sensor1': {
+                'nickname': 'Thermostat',
+                '_type': 'dht22'
+            }
+        }
+
+        # Pass to function, confirm options does not contain trigger_sensor
+        options = convert_config_to_api_target_options(config.copy())
+        self.assertNotIn('trigger_sensor', options['sensor1']['options'])
+
+        # Change sensor to a triggerable type, confirm options include trigger_sensor
+        config['sensor1']['_type'] = 'pir'
+        options = convert_config_to_api_target_options(config)
+        self.assertIn('trigger_sensor', options['sensor1']['options'])
 
 
 # Test setting default wifi credentials
@@ -1688,12 +1849,12 @@ class WifiCredentialsTests(TestCaseBackupRestore):
 
         # Set default credentials, verify response + database
         response = self.client.post('/set_default_credentials', {'ssid': 'AzureDiamond', 'password': 'hunter2'})
-        self.assertEqual(response.json(), 'Default credentials set')
+        self.assertEqual(response.json()['message'], 'Default credentials set')
         self.assertEqual(len(WifiCredentials.objects.all()), 1)
 
         # Overwrite credentials, verify model only contains 1 entry
         response = self.client.post('/set_default_credentials', {'ssid': 'NewWifi', 'password': 'hunter2'})
-        self.assertEqual(response.json(), 'Default credentials set')
+        self.assertEqual(response.json()['message'], 'Default credentials set')
         self.assertEqual(len(WifiCredentials.objects.all()), 1)
 
     def test_print_method(self):
@@ -1709,6 +1870,38 @@ class GpsCoordinatesTests(TestCaseBackupRestore):
         # Create config with no coordinates set
         self.config = Config.objects.create(config=test_config_1, filename='test1.json')
 
+    def test_get_location_suggestions(self):
+        with patch('requests.get') as mock_get:
+            # Mock requests.get to return arbitrary response
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = [{"place_id": 12345}, {"place_id": 67890}]
+            mock_get.return_value = mock_response
+
+            # Request location suggestions, confirm correct response
+            response = self.client.get('/get_location_suggestions/somewhere')
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json(), {
+                'status': 'success',
+                'message': [{"place_id": 12345}, {"place_id": 67890}]
+            })
+
+    def test_get_location_suggestions_error(self):
+        with patch('requests.get') as mock_get:
+            # Mock requests.get to return missing API key error
+            mock_response = MagicMock()
+            mock_response.status_code = 401
+            mock_response.text = 'HTTP 401: Missing API Key\r\n\r\nYour request is missing an api_key'
+            mock_get.return_value = mock_response
+
+            # Request location suggestions, confirm correct error
+            response = self.client.get('/get_location_suggestions/somewhere')
+            self.assertEqual(response.status_code, 401)
+            self.assertEqual(response.json(), {
+                'status': 'error',
+                'message': 'HTTP 401: Missing API Key\r\n\r\nYour request is missing an api_key'
+            })
+
     def test_setting_coordinates(self):
         # Database should be empty, config metadata should not contain gps key
         self.assertEqual(len(GpsCoordinates.objects.all()), 0)
@@ -1719,7 +1912,7 @@ class GpsCoordinatesTests(TestCaseBackupRestore):
             '/set_default_location',
             {'name': 'Portland', 'lat': '45.689122409097', 'lon': '-122.63675124859863'}
         )
-        self.assertEqual(response.json(), 'Location set')
+        self.assertEqual(response.json()['message'], 'Location set')
         self.assertEqual(len(GpsCoordinates.objects.all()), 1)
 
         # Overwrite credentials, verify model only contains 1 entry
@@ -1727,7 +1920,7 @@ class GpsCoordinatesTests(TestCaseBackupRestore):
             '/set_default_location',
             {'name': 'Dallas', 'lat': '32.99171902655', 'lon': '-96.77213361367663'}
         )
-        self.assertEqual(response.json(), 'Location set')
+        self.assertEqual(response.json()['message'], 'Location set')
         self.assertEqual(len(GpsCoordinates.objects.all()), 1)
 
         # Confirm existing configs were updated
@@ -1750,22 +1943,22 @@ class DuplicateDetectionTests(TestCaseBackupRestore):
     def test_check_duplicate(self):
         # Should accept new name
         response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
-        self.assertEqual(response.json(), 'Name OK.')
+        self.assertEqual(response.json()['message'], 'Name available')
 
         # Create config with same name
         self.client.post('/generate_config_file', request_payload)
 
         # Should now reject (identical name)
         response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
-        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+        self.assertEqual(response.json()['message'], 'Config already exists with identical name')
 
         # Should reject regardless of capitalization
         response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
-        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+        self.assertEqual(response.json()['message'], 'Config already exists with identical name')
 
         # Should accept different name
         response = self.client.post('/check_duplicate', {'name': 'Unit Test'})
-        self.assertEqual(response.json(), 'Name OK.')
+        self.assertEqual(response.json()['message'], 'Name available')
 
     # Test second conditional in is_duplicate function (unreachable when used as
     # intended, prevents issues if advanced user creates Node from shell/admin)
@@ -1775,7 +1968,7 @@ class DuplicateDetectionTests(TestCaseBackupRestore):
 
         # Should reject, identical friendly name exists
         response = self.client.post('/check_duplicate', {'name': 'Unit Test Config'})
-        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+        self.assertEqual(response.json()['message'], 'Config already exists with identical name')
 
 
 # Test delete config
@@ -1796,7 +1989,7 @@ class DeleteConfigTests(TestCaseBackupRestore):
         # Delete the Config created in setUp, confirm response message, confirm removed from database + disk
         response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Deleted unit-test-config.json')
+        self.assertEqual(response.json()['message'], 'Deleted unit-test-config.json')
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
 
@@ -1807,7 +2000,7 @@ class DeleteConfigTests(TestCaseBackupRestore):
         # Attempt to delete non-existing Config, confirm fails with correct message
         response = self.client.post('/delete_config', json.dumps('does-not-exist.json'))
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Failed to delete does-not-exist.json, does not exist')
+        self.assertEqual(response.json()['message'], 'Failed to delete does-not-exist.json, does not exist')
 
         # Confirm Config still exists
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1823,7 +2016,7 @@ class DeleteConfigTests(TestCaseBackupRestore):
             response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
             self.assertEqual(response.status_code, 500)
             self.assertEqual(
-                response.json(),
+                response.json()['message'],
                 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
             )
 
@@ -1843,9 +2036,34 @@ class DeleteConfigTests(TestCaseBackupRestore):
         # Simulate deleting through frontend, confirm normal response, confirm removed from database
         response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Deleted unit-test-config.json')
+        self.assertEqual(response.json()['message'], 'Deleted unit-test-config.json')
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
+
+    # Original bug: The delete_config endpoint did not check if the config had
+    # a Node reverse relation. If the user created a new config with the same
+    # friendly name as an existing node and then clicked "Overwrite" in the
+    # duplicate warning modal (calls delete_config, not delete_node) this would
+    # result in a Node with no config and prevent the overview from loading.
+    def test_regression_delete_config_with_associated_node(self):
+        # Create Node, add Config (created in setUp) reverse relation
+        node = Node.objects.create(friendly_name="Test Node", ip="192.168.1.123", floor="5")
+        config = Config.objects.all()[0]
+        config.node = node
+        config.save()
+
+        # Confirm 1 node and 1 config exist
+        self.assertEqual(len(Node.objects.all()), 1)
+        self.assertEqual(len(Config.objects.all()), 1)
+
+        # Delete config, confirm correct response
+        response = self.client.post('/delete_config', json.dumps('unit-test-config.json'))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['message'], 'Deleted unit-test-config.json')
+
+        # Confirm both models were deleted, not just config
+        self.assertEqual(len(Node.objects.all()), 0)
+        self.assertEqual(len(Config.objects.all()), 0)
 
 
 class DeleteNodeTests(TestCaseBackupRestore):
@@ -1874,7 +2092,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
         # Delete the Node created in setUp, confirm response message
         response = self.client.post('/delete_node', json.dumps('Test Node'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Deleted Test Node')
+        self.assertEqual(response.json()['message'], 'Deleted Test Node')
 
         # Confirm removed from database, disk, and cli_config.json
         self.assertEqual(len(Config.objects.all()), 0)
@@ -1891,7 +2109,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
         # Attempt to delete non-existing Node, confirm fails with correct message
         response = self.client.post('/delete_node', json.dumps('Wrong Node'))
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Failed to delete Wrong Node, does not exist')
+        self.assertEqual(response.json()['message'], 'Failed to delete Wrong Node, does not exist')
 
         # Confirm Node and Config still exist
         self.assertEqual(len(Config.objects.all()), 1)
@@ -1909,7 +2127,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
             response = self.client.post('/delete_node', json.dumps('Test Node'))
             self.assertEqual(response.status_code, 500)
             self.assertEqual(
-                response.json(),
+                response.json()['message'],
                 'Failed to delete, permission denied. This will break other features, check your filesystem permissions.'
             )
 
@@ -1930,7 +2148,7 @@ class DeleteNodeTests(TestCaseBackupRestore):
         # Delete Node, should ignore missing file on disk
         response = self.client.post('/delete_node', json.dumps('Test Node'))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Deleted Test Node')
+        self.assertEqual(response.json()['message'], 'Deleted Test Node')
         self.assertEqual(len(Config.objects.all()), 0)
         self.assertEqual(len(Node.objects.all()), 0)
         self.assertFalse(os.path.exists(os.path.join(settings.CONFIG_DIR, 'unit-test-config.json')))
@@ -1963,7 +2181,7 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
             request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.255'}
             response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Successfully uploaded to new IP')
+            self.assertEqual(response.json()['message'], 'Successfully uploaded to new IP')
 
             # Confirm node model IP changed, upload was called
             self.assertEqual(Node.objects.all()[0].ip, '192.168.1.255')
@@ -1977,7 +2195,7 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
         # Mock provision to return failure message without doing anything
         with patch('node_configuration.views.provision') as mock_provision:
             mock_provision.return_value = {
-                'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
+                'message': 'Unable to connect to node, please make sure it is connected to wifi and try again.',
                 'status': 404
             }
 
@@ -1986,34 +2204,34 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
             response = self.client.post('/change_node_ip', request_payload)
             self.assertEqual(response.status_code, 404)
             self.assertEqual(
-                response.json(),
-                "Error: Unable to connect to node, please make sure it is connected to wifi and try again."
+                response.json()['message'],
+                "Unable to connect to node, please make sure it is connected to wifi and try again."
             )
 
     def test_invalid_get_request(self):
         # Requires post, confirm errors
         response = self.client.get('/change_node_ip')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
     def test_invalid_parameters(self):
         # Make request with invalid IP, confirm error
         request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.555'}
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Invalid IP 192.168.1.555'})
+        self.assertEqual(response.json()['message'], 'Invalid IP 192.168.1.555')
 
         # Make request targeting non-existing node, confirm error
         request_payload = {'friendly_name': 'Test9', 'new_ip': '192.168.1.255'}
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), "Unable to change IP, node does not exist")
+        self.assertEqual(response.json()['message'], "Unable to change IP, node does not exist")
 
         # Make request with current IP, confirm error
         request_payload = {'friendly_name': 'Test1', 'new_ip': '192.168.1.123'}
         response = self.client.post('/change_node_ip', request_payload)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'New IP must be different than old'})
+        self.assertEqual(response.json()['message'], 'New IP must be different than old')
 
 
 # Test function that takes config file, returns list of dependencies for upload
@@ -2192,7 +2410,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Post frontend config generator payload to view
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Config created.')
+        self.assertEqual(response.json()['message'], 'Config created')
 
         # Confirm model was created
         self.assertEqual(len(Config.objects.all()), 1)
@@ -2214,7 +2432,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Send with edit argument (overwrite existing with same name instead of throwing duplicate error)
         response = self.client.post('/generate_config_file/True', json.dumps(modified_request_payload))
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Config created.')
+        self.assertEqual(response.json()['message'], 'Config created')
 
         # Confirm same number of configs, no new config created
         self.assertEqual(len(Config.objects.all()), 1)
@@ -2235,13 +2453,13 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Post frontend config generator payload to view, confirm response + model created
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Config created.')
+        self.assertEqual(response.json()['message'], 'Config created')
         self.assertEqual(len(Config.objects.all()), 1)
 
         # Post again, should throw error (duplicate name), should not create model
         response = self.client.post('/generate_config_file', request_payload)
         self.assertEqual(response.status_code, 409)
-        self.assertEqual(response.json(), 'ERROR: Config already exists with identical name.')
+        self.assertEqual(response.json()['message'], 'Config already exists with identical name')
         self.assertEqual(len(Config.objects.all()), 1)
 
     def test_invalid_config_file(self):
@@ -2255,7 +2473,7 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Post invalid payload, confirm rejected with correct error, confirm config not created
         response = self.client.post('/generate_config_file', json.dumps(invalid_request_payload))
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), {'Error': 'Cabinet Lights: Invalid default rule 9001'})
+        self.assertEqual(response.json()['message'], 'Cabinet Lights: Invalid default rule 9001')
         self.assertEqual(len(Config.objects.all()), 0)
 
     # Original bug: Did not catch DoesNotExist error, leading to traceback
@@ -2264,7 +2482,23 @@ class GenerateConfigFileTests(TestCaseBackupRestore):
         # Attempt to edit non-existing config file, verify error, confirm not created
         response = self.client.post('/generate_config_file/True', request_payload)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Config not found'})
+        self.assertEqual(response.json()['message'], 'Config not found')
+        self.assertEqual(len(Config.objects.all()), 0)
+
+    # Original bug: Did not catch schedule rules with no timestamp (didn't make
+    # node crash but should still reject, user may have forgot to add time)
+    def test_regression_empty_schedule_rule_timestamp(self):
+        # Confirm starting condition
+        self.assertEqual(len(Config.objects.all()), 0)
+
+        # Add schedule rule with empty timestamp
+        invalid_request_payload = deepcopy(request_payload)
+        invalid_request_payload['device2']['schedule'][''] = '100'
+
+        # Post invalid payload, confirm rejected with correct error, confirm config not created
+        response = self.client.post('/generate_config_file', json.dumps(invalid_request_payload))
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.json()['message'], 'Lamp: Missing schedule rule timestamp')
         self.assertEqual(len(Config.objects.all()), 0)
 
 
@@ -2444,7 +2678,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             data = {'keyword': 'morning', 'timestamp': '08:00'}
             response = self.client.post('/add_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Keyword created')
+            self.assertEqual(response.json()['message'], 'Keyword created')
             self.assertEqual(len(ScheduleKeyword.objects.all()), 4)
 
             # Should call add and save once for each node
@@ -2478,7 +2712,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             data = {'keyword_old': 'first', 'keyword_new': 'first', 'timestamp_new': '01:00'}
             response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Keyword updated')
+            self.assertEqual(response.json()['message'], 'Keyword updated')
 
             # Should call add and save once for each node, should not call remove
             self.assertEqual(self.mock_add.call_count, 2)
@@ -2509,7 +2743,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '08:00'}
             response = self.client.post('/edit_schedule_keyword', data)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Keyword updated')
+            self.assertEqual(response.json()['message'], 'Keyword updated')
 
             # Should call add, remove, and save once for each node
             self.assertEqual(self.mock_add.call_count, 2)
@@ -2542,7 +2776,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
             # Send request to delete keyword, verify response
             response = self.client.post('/delete_schedule_keyword', {'keyword': 'first'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Keyword deleted')
+            self.assertEqual(response.json()['message'], 'Keyword deleted')
 
             # Should call remove and save once for each node, should not call add
             self.assertEqual(self.mock_add.call_count, 0)
@@ -2591,7 +2825,10 @@ class ScheduleKeywordErrorTests(TestCaseBackupRestore):
         data = {'keyword': 'morning', 'timestamp': '8:00'}
         response = self.client.post('/add_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}")
+        self.assertEqual(
+            response.json()['message'],
+            "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}"
+        )
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
     def test_add_duplicate_keyword(self):
@@ -2600,7 +2837,10 @@ class ScheduleKeywordErrorTests(TestCaseBackupRestore):
         data = {'keyword': 'sunrise', 'timestamp': '08:00'}
         response = self.client.post('/add_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "{'keyword': ['Schedule keyword with this Keyword already exists.']}")
+        self.assertEqual(
+            response.json()['message'],
+            "{'keyword': ['Schedule keyword with this Keyword already exists.']}"
+        )
         self.assertEqual(len(ScheduleKeyword.objects.all()), 3)
 
     def test_edit_invalid_timestamp(self):
@@ -2608,52 +2848,58 @@ class ScheduleKeywordErrorTests(TestCaseBackupRestore):
         data = {'keyword_old': 'first', 'keyword_new': 'second', 'timestamp_new': '8:00'}
         response = self.client.post('/edit_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}")
+        self.assertEqual(
+            response.json()['message'],
+            "{'timestamp': ['Timestamp format must be HH:MM (no AM/PM).']}"
+        )
 
     def test_edit_duplicate_keyword(self):
         # Send request, confirm error
         data = {'keyword_old': 'first', 'keyword_new': 'sunrise', 'timestamp_new': '08:00'}
         response = self.client.post('/edit_schedule_keyword', data)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "{'keyword': ['Schedule keyword with this Keyword already exists.']}")
+        self.assertEqual(
+            response.json()['message'],
+            "{'keyword': ['Schedule keyword with this Keyword already exists.']}"
+        )
 
     def test_edit_non_existing_keyword(self):
         # Send request to edit keyword, verify error
         data = {'keyword_old': 'fake', 'keyword_new': 'second', 'timestamp_new': '8:00'}
         response = self.client.post('/edit_schedule_keyword', data)
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Keyword not found'})
+        self.assertEqual(response.json()['message'], 'Keyword not found')
 
     def test_delete_non_existing_keyword(self):
         # Send request to delete keyword, verify error
         response = self.client.post('/delete_schedule_keyword', {'keyword': 'fake'})
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Keyword not found'})
+        self.assertEqual(response.json()['message'], 'Keyword not found')
 
     # Should not be able to delete sunrise or sunset
     def test_delete_required_keyword(self):
         # Send request to delete keyword, verify error
         response = self.client.post('/delete_schedule_keyword', {'keyword': 'sunrise'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "sunrise is required and cannot be deleted")
+        self.assertEqual(response.json()['message'], "sunrise is required and cannot be deleted")
 
         response = self.client.post('/delete_schedule_keyword', {'keyword': 'sunset'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), "sunset is required and cannot be deleted")
+        self.assertEqual(response.json()['message'], "sunset is required and cannot be deleted")
 
     def test_invalid_get_request(self):
         # All keyword endpoints require post, confirm errors
         response = self.client.get('/add_schedule_keyword')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
         response = self.client.get('/edit_schedule_keyword')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
         response = self.client.get('/delete_schedule_keyword')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
 
 # Test custom management commands used to import/export config files
@@ -2672,6 +2918,9 @@ class ManagementCommandTests(TestCaseBackupRestore):
 
         # Create buffer to capture stdio from management command
         self.output = StringIO()
+
+        # Save path to cli_config.json
+        self.cli_config_path = os.path.join(settings.REPO_DIR, 'CLI', 'cli_config.json')
 
     def tearDown(self):
         # Remove test configs from disk

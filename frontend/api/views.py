@@ -3,21 +3,18 @@ import itertools
 from functools import wraps
 from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
-from node_configuration.views import requires_post
+from node_configuration.views import requires_post, standard_response, error_response
 from node_configuration.models import Node, ScheduleKeyword
 from node_configuration.get_api_target_menu_options import get_api_target_menu_options
 from Webrepl import Webrepl
 from api.models import Macro
 from api_endpoints import endpoint_map
 from helper_functions import (
-    valid_ip,
-    valid_timestamp,
     is_device,
     get_schedule_keywords_dict,
-    get_device_and_sensor_metadata,
-    convert_celsius_temperature
+    get_device_and_sensor_metadata
 )
 
 
@@ -29,79 +26,38 @@ def get_target_node(func):
         try:
             node = Node.objects.get(friendly_name=node)
         except Node.DoesNotExist:
-            return JsonResponse({"Error": f"Node named {node} not found"}, safe=False, status=404)
+            return error_response(message=f'Node named {node} not found', status=404)
         return func(request, node, **kwargs)
     return wrapper
 
 
-# Returns mapping dict with device/sensor types as key, metadata dict as value
-# Dynamically generated from json metadata files for each instance type
+# Returns mapping dict with devices and sensors subdicts (types as keys)
+# containing all relevant metadata (prompts, limits, triggerable sensors)
 def get_metadata_map():
     # Get object containing metadata for all device and sensor types
     metadata = get_device_and_sensor_metadata()
-    # Combine into single list
-    metadata = metadata['devices'] + metadata['sensors']
 
-    # Build mapping dict with types as keys, dict of relevant metadata params as values
-    context = {}
-    for i in metadata:
+    output = {'devices': {}, 'sensors': {}}
+
+    # Add device config_name, rule_prompt, and rule_limits
+    for i in metadata['devices']:
         name = i["config_name"]
-        # Add rule prompt
-        context[name] = {}
-        context[name]['prompt'] = i["rule_prompt"]
-        # Add rule limits for instances which support numeric rule
+        output['devices'][name] = {}
+        output['devices'][name]['rule_prompt'] = i["rule_prompt"]
         if "rule_limits" in i.keys():
-            context[name]['limits'] = i["rule_limits"]
-        # Add triggerable param for all sensors
+            output['devices'][name]['rule_limits'] = i["rule_limits"]
+
+    # Add sensor config_name, rule_prompt, rule_limits, and triggerable bool
+    for i in metadata['sensors']:
+        name = i["config_name"]
+        output['sensors'][name] = {}
+        output['sensors'][name]['rule_prompt'] = i["rule_prompt"]
+        if "rule_limits" in i.keys():
+            output['sensors'][name]['rule_limits'] = i["rule_limits"]
         if "triggerable" in i.keys():
-            context[name]['triggerable'] = i["triggerable"]
+            output['sensors'][name]['triggerable'] = i["triggerable"]
 
-    return context
-
-
-# Receives schedule params in post, renders rule_modal template
-def edit_rule(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode("utf-8"))
-    else:
-        return render(request, 'api/rule_modal.html')
-
-    # Fade rule: Split into separate params for each field
-    if data['rule'].startswith('fade'):
-        data['fade'] = True
-        data['duration'] = data['rule'].split('/')[2]
-        data['rule'] = data['rule'].split('/')[1]
-
-    # Show timestamp field by default (unless editing existing rule with keyword)
-    if len(data['timestamp']) == 0 or valid_timestamp(data['timestamp']):
-        data['show_timestamp'] = True
-    else:
-        data['show_timestamp'] = False
-
-    # Add options for schedule keyword dropdown
-    data['schedule_keywords'] = get_schedule_keywords_dict()
-
-    # Get dict with instance types as keys, dict of relevant metadata as values
-    metadata_map = get_metadata_map()
-
-    # Add prompt type, add limits if range rule
-    data['prompt'] = metadata_map[data['type']]['prompt']
-    if 'limits' in metadata_map[data['type']].keys():
-        data['limits'] = metadata_map[data['type']]['limits']
-
-    # Thermostat: Convert limits to configured units
-    if 'units' in data['params'].keys():
-        data['limits'][0] = int(convert_celsius_temperature(data['limits'][0], data['params']['units']))
-        data['limits'][1] = int(convert_celsius_temperature(data['limits'][1], data['params']['units']))
-
-    print(json.dumps(data, indent=4))
-
-    return render(request, 'api/rule_modal.html', data)
-
-
-def legacy_api(request):
-    context = [node for node in Node.objects.all()]
-    return render(request, 'api/legacy_api.html', {'context': context})
+    return output
 
 
 @get_target_node
@@ -110,24 +66,24 @@ def get_status(request, node):
     try:
         status = parse_command(node.ip, ["status"])
     except OSError:
-        return JsonResponse("Error: Unable to connect.", safe=False, status=502)
+        return error_response(message='Unable to connect', status=502)
 
     # Success if dict, error if string
     if isinstance(status, dict):
-        return JsonResponse(status, safe=False, status=200)
+        return standard_response(message=status)
     else:
-        return JsonResponse(status, safe=False, status=502)
+        return error_response(message=status, status=502)
 
 
 @ensure_csrf_cookie
-def api_overview(request, recording=False, start=False):
+def api_overview(request, recording=False):
     rooms = {}
 
     for i in Node.objects.all():
         if i.floor in rooms.keys():
-            rooms[i.floor].append(i)
+            rooms[i.floor].append(i.friendly_name)
         else:
-            rooms[i.floor] = [i]
+            rooms[i.floor] = [i.friendly_name]
 
     context = {
         'nodes': {},
@@ -147,41 +103,31 @@ def api_overview(request, recording=False, start=False):
     if recording:
         context['recording'] = recording
 
-        # Block instructions popup if cookie set
-        if request.COOKIES.get('skip_instructions'):
-            context['skip_instructions'] = True
-
-    if start:
-        # Show instructions popup (unless cookie set)
-        context['start_recording'] = True
+    print(json.dumps(context, indent=4))
 
     return render(request, 'api/overview.html', context)
 
 
 # Takes Node, returns options for all api-target instances
-def get_api_target_instance_options(node, status):
+def get_api_target_options(node):
     # Get object containing all valid options for all nodes
     options = get_api_target_menu_options(node.friendly_name)
 
-    # Get target IP(s) of each api-target instance from config file
-    # Used as keys in options['addresses'] (above)
-    config = node.config.config
+    # Output will contain ApiTarget device IDs as keys, options as values
+    output = {}
 
-    # Find all api-target instances, find same instance in options object, add options to output
+    # Find all api-target instances and add options for their target IP to output
+    config = node.config.config
     for i in config:
         if is_device(i) and config[i]['_type'] == 'api-target':
-            # Find section in options object with matching IP, add to context
-            for node in options['addresses']:
-                if options['addresses'][node] == config[i]['ip']:
-                    status["api_target_options"][i] = options[node]
-                    break
+            # Look up node matching api-target target IP
+            target = Node.objects.get(ip=config[i]['ip'])
+            if target == node:
+                output[i] = options['self-target']
+            else:
+                output[i] = options[target.friendly_name]
 
-            # JSON-encode rule dicts
-            status['devices'][i]['current_rule'] = json.dumps(status['devices'][i]['current_rule'])
-            for rule in status['devices'][i]['schedule']:
-                status['devices'][i]['schedule'][rule] = json.dumps(status['devices'][i]['schedule'][rule])
-
-    return status
+    return output
 
 
 @ensure_csrf_cookie
@@ -193,59 +139,31 @@ def api(request, node, recording=False):
         if str(status).startswith("Error: "):
             raise OSError
 
-        # Get IR macros if IR Blaster configured
-        if status['metadata']['ir_blaster']:
-            status['metadata']['ir_macros'] = parse_command(node.ip, ["ir_get_existing_macros"])
-
     # Render connection failed page
     except OSError:
         context = {"ip": node.ip, "id": node.friendly_name}
         return render(request, 'api/unable_to_connect.html', {'context': context})
 
-    # Add IP, parsed into target_node var on frontend
-    status["metadata"]["ip"] = node.ip
+    # Add target IP (used to send API calls to node)
+    # Add name of macro being recorded (False if not recording)
+    # Add metadata mapping dict (contains rule_prompt, limits, etc)
+    context = {
+        'status': status,
+        'target_ip': node.ip,
+        'recording': recording,
+        'instance_metadata': get_metadata_map()
+    }
 
-    # If ApiTarget configured, add options for all valid API commands for current target IP
+    # If ApiTarget configured get options for ApiTargetRuleModal dropdowns
     if "api-target" in str(status):
-        status["api_target_options"] = {}
-        status = get_api_target_instance_options(node, status)
+        context['api_target_options'] = get_api_target_options(node)
 
-    # Add temp history chart to frontend if temp sensor present
-    for i in status["sensors"]:
-        if status["sensors"][i]['type'] == 'si7021':
-            status["metadata"]["thermostat"] = True
-            break
+    # If IR Blaster configured get IR macros
+    if status['metadata']['ir_blaster']:
+        context['ir_macros'] = parse_command(node.ip, ["ir_get_existing_macros"])
 
-    if recording:
-        status["metadata"]["recording"] = recording
-
-    # Get dict with instance types as keys, dict of relevant metadata as values
-    metadata_map = get_metadata_map()
-
-    # Add prompt type from metadata to all devices
-    for i in status['devices']:
-        device_type = status['devices'][i]['type']
-        status['devices'][i]['prompt'] = metadata_map[device_type]['prompt']
-
-    # Add prompt type, triggerable bool, and limits (if range rule) to all sensors
-    for i in status['sensors']:
-        sensor_type = status['sensors'][i]['type']
-        status['sensors'][i]['prompt'] = metadata_map[sensor_type]['prompt']
-        # Add limits if range rule
-        if status['sensors'][i]['prompt'] == "float_range":
-            status['sensors'][i]['min_rule'] = metadata_map[sensor_type]['limits'][0]
-            status['sensors'][i]['max_rule'] = metadata_map[sensor_type]['limits'][1]
-        # Thermostat: Convert limits to configured units
-        if 'units' in status['sensors'][i].keys():
-            units = status['sensors'][i]['units']
-            status['sensors'][i]['min_rule'] = int(convert_celsius_temperature(status['sensors'][i]['min_rule'], units))
-            status['sensors'][i]['max_rule'] = int(convert_celsius_temperature(status['sensors'][i]['max_rule'], units))
-        # Add triggerable param (disables trigger button if false)
-        status['sensors'][i]['triggerable'] = metadata_map[sensor_type]['triggerable']
-
-    print(json.dumps(status, indent=4))
-
-    return render(request, 'api/api_card.html', {'context': status})
+    print(json.dumps(context, indent=4))
+    return render(request, 'api/api_card.html', context)
 
 
 # TODO unused? Climate card updates from status object
@@ -254,9 +172,9 @@ def get_climate_data(request, node):
     try:
         data = parse_command(node.ip, ["get_climate"])
     except OSError:
-        return JsonResponse("Error: Unable to connect.", safe=False, status=502)
+        return error_response(message='Unable to connect', status=502)
 
-    return JsonResponse(data, safe=False, status=200)
+    return standard_response(message=data)
 
 
 def reboot_all(request):
@@ -268,7 +186,7 @@ def reboot_all(request):
         for result in executor.map(parse_command_wrapper, *zip(*actions)):
             print(json.dumps(result, indent=4))
 
-    return JsonResponse("Done", safe=False, status=200)
+    return standard_response(message='Done')
 
 
 def reset_all(request):
@@ -280,7 +198,7 @@ def reset_all(request):
         for result in executor.map(parse_command_wrapper, *zip(*actions)):
             print(json.dumps(result, indent=4))
 
-    return JsonResponse("Done", safe=False, status=200)
+    return standard_response(message='Done')
 
 
 # Receives node IP and existing schedule keywords in post body
@@ -321,7 +239,7 @@ def sync_schedule_keywords(data):
     if len(missing) or len(modified) or len(deleted):
         parse_command(data['ip'], ['save_schedule_keywords'])
 
-    return JsonResponse("Done", safe=False, status=200)
+    return standard_response(message='Done')
 
 
 # Receives node IP, overwrites node config with current schedule rules, updates config in backend database
@@ -331,7 +249,7 @@ def sync_schedule_rules(data):
     try:
         node = Node.objects.get(ip=data['ip'])
     except Node.DoesNotExist:
-        return JsonResponse({"Error": f"Node with IP {data['ip']} not found"}, safe=False, status=404)
+        return error_response(message=f"Node with IP {data['ip']} not found", status=404)
 
     # Save schedule rules to disk on node
     response = parse_command(node.ip, ['save_rules'])
@@ -347,47 +265,38 @@ def sync_schedule_rules(data):
         node.config.save()
         node.config.write_to_disk()
 
-        return JsonResponse("Done syncing schedule rules", safe=False, status=200)
+        return standard_response('Done syncing schedule rules')
     else:
-        return JsonResponse({"Error": "Failed to save rules"}, safe=False, status=500)
+        return error_response(message='Failed to save rules', status=500)
 
 
 @requires_post
 def send_command(data):
-    if valid_ip(data["target"]):
-        # New API Card interface
-        ip = data["target"]
-    else:
-        # Legacy API
-        try:
-            ip = Node.objects.get(friendly_name=data["target"]).ip
-        except Node.DoesNotExist:
-            return JsonResponse({"Error": f"Node named {data['target']} not found"}, safe=False, status=404)
-
+    # Get target node IP and API endpoint
+    ip = data["target"]
     cmd = data["command"]
     del data["target"], data["command"]
+
+    # Add endpoint (must be first) followed by remaining args
     args = [cmd]
+    for param in data.values():
+        # Remove extra whitespace from strings
+        if type(param) is str:
+            args.append(param.strip())
+        # Stringify objects (eg api-target rule)
+        elif type(param) in (dict, list):
+            args.append(json.dumps(param))
+        else:
+            args.append(param)
 
-    for i in data:
-        args.append(data[i].strip())
-
-    print("\n" + ip + "\n" + str(args) + "\n")
+    print(f"\nsend_command: {ip}: {str(args)}")
 
     try:
         response = parse_command(ip, args)
     except OSError:
-        return JsonResponse("Error: Unable to connect.", safe=False, status=502)
+        return error_response(message='Unable to connect', status=502)
 
-    if cmd == "disable" and len(data["delay_input"]) > 0:
-        args.insert(0, "enable_in")
-        print(ip + "\n" + str(args) + "\n")
-        parse_command(ip, args)
-    elif cmd == "enable" and len(data["delay_input"]) > 0:
-        args.insert(0, "disable_in")
-        print(ip + "\n" + str(args) + "\n")
-        parse_command(ip, args)
-
-    return JsonResponse(response, safe=False, status=200)
+    return standard_response(message=response)
 
 
 # Takes target IP + args list (first item must be endpoint name)
@@ -402,7 +311,7 @@ def parse_command(ip, args):
     try:
         return endpoint_map[endpoint](ip, args)
     except SyntaxError:
-        return {"ERROR": "Please fill out all fields"}
+        return "Error: Missing required parameters"
     except KeyError:
         return "Error: Command not found"
 
@@ -421,7 +330,7 @@ def run_macro(request, name):
     try:
         macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
-        return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
+        return error_response(message=f'Macro {name} does not exist', status=404)
 
     # List of 2-item tuples containing ip, arg list for each action
     # example: ('192.168.1.246', ['disable', 'device2'])
@@ -431,7 +340,7 @@ def run_macro(request, name):
     with ThreadPoolExecutor(max_workers=20) as executor:
         executor.map(parse_command, *zip(*actions))
 
-    return JsonResponse("Done", safe=False, status=200)
+    return standard_response(message='Done')
 
 
 @requires_post
@@ -447,54 +356,52 @@ def add_macro_action(data):
         # Delete empty macro if failed to add first action
         if not len(json.loads(macro.actions)):
             macro.delete()
-        return JsonResponse("Invalid action", safe=False, status=400)
+        return error_response('Invalid action', status=400)
 
     print(f"Added action: {data['action']}")
 
-    return JsonResponse("Done", safe=False, status=200)
-
-
-def edit_macro(request, name):
-    try:
-        macro = Macro.objects.get(name=name)
-    except Macro.DoesNotExist:
-        return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
-
-    context = {'name': name, 'actions': json.loads(macro.actions)}
-    return render(request, 'api/edit_modal.html', context)
+    return standard_response(message='Done')
 
 
 def delete_macro(request, name):
     try:
         macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
-        return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
+        return error_response(message=f'Macro {name} does not exist', status=404)
 
     macro.delete()
 
-    return JsonResponse("Done", safe=False, status=200)
+    return standard_response(message='Done')
 
 
 def delete_macro_action(request, name, index):
     try:
         macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
-        return JsonResponse(f"Error: Macro {name} does not exist.", safe=False, status=404)
+        return error_response(message=f'Macro {name} does not exist', status=404)
 
     try:
         macro.del_action(index)
     except ValueError:
-        return JsonResponse("ERROR: Macro action does not exist.", safe=False, status=404)
+        return error_response(message='Macro action does not exist', status=404)
 
-    return JsonResponse("Done", safe=False, status=200)
+    return standard_response(message='Done')
 
 
 def macro_name_available(request, name):
     try:
         Macro.objects.get(name=name)
-        return JsonResponse(f"Name {name} already in use.", safe=False, status=409)
+        return error_response(message=f'Name {name} already in use', status=409)
     except Macro.DoesNotExist:
-        return JsonResponse(f"Name {name} available.", safe=False, status=200)
+        return standard_response(message=f'Name {name} available')
+
+
+def get_macro_actions(request, name):
+    try:
+        macro = Macro.objects.get(name=name)
+        return standard_response(message=json.loads(macro.actions))
+    except Macro.DoesNotExist:
+        return error_response(message=f'Macro {name} does not exist', status=404)
 
 
 # Returns cookie to skip record macro instructions popup
@@ -522,7 +429,7 @@ def edit_ir_macro(data):
     # Save changes
     parse_command(ip, ['ir_save_macros'])
 
-    return JsonResponse("Done", safe=False, status=200)
+    return standard_response(message='Done')
 
 
 @requires_post
@@ -542,4 +449,4 @@ def add_ir_macro(data):
     # Save changes
     parse_command(ip, ['ir_save_macros'])
 
-    return JsonResponse("Done", safe=False, status=200)
+    return standard_response(message='Done')

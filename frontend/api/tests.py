@@ -7,10 +7,11 @@ from .models import Macro
 from .views import parse_command
 from api_endpoints import request, ir_commands
 from .unit_test_helpers import (
-    config1_status_object,
-    config1_api_context,
-    config2_status_object,
-    config2_api_context,
+    instance_metadata,
+    config1_status,
+    config2_status,
+    config2_api_target_options,
+    config2_ir_macros,
     config2_existing_macros
 )
 from node_configuration.models import ScheduleKeyword, Node
@@ -139,8 +140,7 @@ class SendCommandTests(TestCaseBackupRestore):
         # Set default content_type for post requests (avoid long lines)
         self.client = JSONClient()
 
-    # Simulate send_command call from new Api frontend
-    def test_send_command_api_cards(self):
+    def test_send_command(self):
         payload = {"command": "turn_off", "instance": "device1", "target": "192.168.1.123"}
 
         # Mock parse_command to do nothing
@@ -148,30 +148,60 @@ class SendCommandTests(TestCaseBackupRestore):
             # Make API call, confirm response, confirm parse_command called once
             response = self.client.post('/send_command', payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {"On": "device1"})
+            self.assertEqual(response.json()['message'], {"On": "device1"})
             self.assertEqual(mock_parse_command.call_count, 1)
 
-    # Simulate send_command call from original Api frontend
-    def test_send_command_legacy_api(self):
-        create_test_nodes()
-        payload = {"command": "turn_off", "instance": "device1", "target": "Test1"}
+    def test_send_command_with_extra_whitespace(self):
+        # Mock parse_command to check args
+        with patch('api.views.parse_command', return_value='mock') as mock_parse_command:
+            # Create payload with extra whitespace around target instance
+            payload = {
+                "command": "set_rule",
+                "instance": "   device1 ",
+                "target": "192.168.1.123",
+                "rule": 50
+            }
+            self.client.post('/send_command', payload)
 
-        # Mock parse_command to do nothing
-        with patch('api.views.parse_command', return_value={"On": "device1"}) as mock_parse_command:
-            # Make API call, confirm response, confirm parse_command called once
-            response = self.client.post('/send_command', payload)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {"On": "device1"})
-            self.assertEqual(mock_parse_command.call_count, 1)
+            # Confirm extra whitespace was removed, int rule was not modified
+            self.assertEqual(
+                mock_parse_command.call_args_list[0],
+                call('192.168.1.123', ['set_rule', 'device1', 50])
+            )
 
-        # Remove test configs from disk
-        clean_up_test_nodes()
+    def test_send_command_containing_dict(self):
+        # Mock parse_command to check args
+        with patch('api.views.parse_command', return_value='mock') as mock_parse_command:
+            # Simulate user setting api-target rule
+            payload = {
+                "command": "set_rule",
+                "instance": "device1",
+                "target": "192.168.1.123",
+                "rule": {
+                    "on": ["turn_on", "device1"],
+                    "off": ["turn_off", "device1"]
+                }
+            }
+            self.client.post('/send_command', payload)
+
+            # Confirm dict rule was stringified (node can't receive objects over API)
+            self.assertEqual(
+                mock_parse_command.call_args_list[0],
+                call(
+                    '192.168.1.123',
+                    [
+                        'set_rule',
+                        'device1',
+                        '{"on": ["turn_on", "device1"], "off": ["turn_off", "device1"]}'
+                    ]
+                )
+            )
 
     def test_send_command_invalid_method(self):
         # Make get request (requires post)
         response = self.client.get('/send_command')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
     def test_send_command_connection_failed(self):
         payload = {"command": "turn_off", "instance": "device1", "target": "192.168.1.123"}
@@ -181,39 +211,8 @@ class SendCommandTests(TestCaseBackupRestore):
             # Make API call, confirm response, confirm parse_command called once
             response = self.client.post('/send_command', payload)
             self.assertEqual(response.status_code, 502)
-            self.assertEqual(response.json(), "Error: Unable to connect.")
+            self.assertEqual(response.json()['message'], "Unable to connect")
             self.assertEqual(mock_parse_command.call_count, 1)
-
-    # Test legacy frontend enable_for/disable_for function
-    def test_legacy_api_delay_input(self):
-        create_test_nodes()
-        payload_disable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'disable'}
-        payload_enable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'enable'}
-
-        # Mock parse_command to do nothing
-        with patch('api.views.parse_command', return_value={'Disabled': 'device1'}) as mock_parse_command:
-            # Make API call, confirm response, confirm parse_command called twice
-            response = self.client.post('/send_command', payload_disable)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'Disabled': 'device1'})
-            self.assertEqual(mock_parse_command.call_count, 2)
-
-        # Mock parse_command to do nothing
-        with patch('api.views.parse_command', return_value={'Enabled': 'device1'}) as mock_parse_command:
-            # Make API call, confirm response, confirm parse_command called twice
-            response = self.client.post('/send_command', payload_enable)
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'Enabled': 'device1'})
-            self.assertEqual(mock_parse_command.call_count, 2)
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
-    def test_legacy_api_target_does_not_exist(self):
-        payload_disable = {'select_target': 'device1', 'delay_input': '5', 'target': 'Test1', 'command': 'disable'}
-        response = self.client.post('/send_command', payload_disable)
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {'Error': 'Node named Test1 not found'})
 
 
 # Test HTTP endpoints that make API requests to nodes and return the response
@@ -231,44 +230,44 @@ class HTTPEndpointTests(TestCaseBackupRestore):
         with patch('api_endpoints.request', return_value={'humid': 48.05045, 'temp': 70.25787}):
             response = self.client.get('/get_climate_data/Test1')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), {'humid': 48.05045, 'temp': 70.25787})
+            self.assertEqual(response.json()['message'], {'humid': 48.05045, 'temp': 70.25787})
 
     def test_get_climate_data_offline(self):
-        with patch('api_endpoints.request', side_effect=OSError("Error: Unable to connect.")):
+        with patch('api_endpoints.request', side_effect=OSError("Unable to connect")):
             response = self.client.get('/get_climate_data/Test1')
             self.assertEqual(response.status_code, 502)
-            self.assertEqual(response.json(), "Error: Unable to connect.")
+            self.assertEqual(response.json()['message'], "Unable to connect")
 
     def test_get_climate_does_not_exist(self):
         response = self.client.get('/get_climate_data/Fake_Name')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"Error": "Node named Fake_Name not found"})
+        self.assertEqual(response.json()['message'], 'Node named Fake_Name not found')
 
     def test_get_status(self):
         # Mock request to return status object
-        with patch('api_endpoints.request', return_value=config1_status_object):
+        with patch('api_endpoints.request', return_value=config1_status):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), config1_status_object)
+            self.assertEqual(response.json()['message'], config1_status)
 
     def test_get_status_offline(self):
         # Mock request to simulate offline target node
-        with patch('api_endpoints.request', side_effect=OSError("Error: Unable to connect.")):
+        with patch('api_endpoints.request', side_effect=OSError("Unable to connect")):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 502)
-            self.assertEqual(response.json(), "Error: Unable to connect.")
+            self.assertEqual(response.json()['message'], "Unable to connect")
 
     def test_get_status_time_out(self):
         # Mock request to simulate network connection time out
         with patch('api_endpoints.request', return_value="Error: Request timed out"):
             response = self.client.get('/get_status/Test1')
             self.assertEqual(response.status_code, 502)
-            self.assertEqual(response.json(), "Error: Request timed out")
+            self.assertEqual(response.json()['message'], "Error: Request timed out")
 
     def test_get_status_does_not_exist(self):
         response = self.client.get('/get_status/Fake_Name')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"Error": "Node named Fake_Name not found"})
+        self.assertEqual(response.json()['message'], 'Node named Fake_Name not found')
 
 
 # Test model that stores and plays recorded macros
@@ -495,13 +494,13 @@ class MacroTests(TestCaseBackupRestore):
         # Should be available
         response = self.client.get('/macro_name_available/New')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Name New available.')
+        self.assertEqual(response.json()['message'], 'Name New available')
 
         # Create in database, should no longer be available
         Macro.objects.create(name='New')
         response = self.client.get('/macro_name_available/New')
         self.assertEqual(response.status_code, 409)
-        self.assertEqual(response.json(), 'Name New already in use.')
+        self.assertEqual(response.json()['message'], 'Name New already in use')
 
     def test_add_macro_action(self):
         # Confirm no macros
@@ -510,7 +509,7 @@ class MacroTests(TestCaseBackupRestore):
         # Send request, verify response, verify macro created
         response = self.client.post('/add_macro_action', self.action1)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Done')
+        self.assertEqual(response.json()['message'], 'Done')
         self.assertEqual(len(Macro.objects.all()), 1)
 
     def test_delete_macro_action(self):
@@ -521,7 +520,7 @@ class MacroTests(TestCaseBackupRestore):
         # Call view to delete just-created action
         response = self.client.get('/delete_macro_action/First Macro/0')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Done')
+        self.assertEqual(response.json()['message'], 'Done')
 
         # Should still exist
         # TODO the frontend deletes it when last action removed, should this be moved to backend?
@@ -536,7 +535,7 @@ class MacroTests(TestCaseBackupRestore):
         # Call view to delete macro
         response = self.client.get('/delete_macro/test')
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json(), 'Done')
+        self.assertEqual(response.json()['message'], 'Done')
         self.assertEqual(len(Macro.objects.all()), 0)
 
     def test_run_macro(self):
@@ -550,8 +549,43 @@ class MacroTests(TestCaseBackupRestore):
             # Call view to run macro, confirm response, confirm parse_command called twice
             response = self.client.get('/run_macro/First Macro')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), 'Done')
+            self.assertEqual(response.json()['message'], 'Done')
             self.assertEqual(mock_parse_command.call_count, 2)
+
+    def test_get_macro_actions(self):
+        # Create macro with 2 actions, verify exists
+        self.client.post('/add_macro_action', self.action1)
+        self.client.post('/add_macro_action', self.action2)
+        self.assertEqual(len(Macro.objects.all()), 1)
+
+        # Request macro actions, confirm correct response
+        response = self.client.get('/get_macro_actions/First Macro')
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.json()['message'],
+            [
+                {
+                    "ip": "192.168.1.123",
+                    "args": [
+                        "turn_on",
+                        "device1"
+                    ],
+                    "node_name": "Test1",
+                    "target_name": "Cabinet Lights",
+                    "action_name": "Turn On"
+                },
+                {
+                    "ip": "192.168.1.123",
+                    "args": [
+                        "enable",
+                        "device1"
+                    ],
+                    "node_name": "Test1",
+                    "target_name": "Cabinet Lights",
+                    "action_name": "Enable"
+                }
+            ]
+        )
 
 
 class InvalidMacroTests(TestCaseBackupRestore):
@@ -570,7 +604,7 @@ class InvalidMacroTests(TestCaseBackupRestore):
         # Requires POST request
         response = self.client.get('/add_macro_action')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
     def test_add_invalid_macro_action(self):
         # Confirm no macros
@@ -590,7 +624,7 @@ class InvalidMacroTests(TestCaseBackupRestore):
         # Send request, verify response, verify macro not created
         response = self.client.post('/add_macro_action', payload)
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json(), 'Invalid action')
+        self.assertEqual(response.json()['message'], 'Invalid action')
         self.assertEqual(len(Macro.objects.all()), 0)
 
     def test_delete_invalid_macro_action(self):
@@ -610,7 +644,7 @@ class InvalidMacroTests(TestCaseBackupRestore):
         # Attempt to delete non-existing macro action, verify response
         response = self.client.get('/delete_macro_action/First Macro/5')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'ERROR: Macro action does not exist.')
+        self.assertEqual(response.json()['message'], 'Macro action does not exist')
         self.assertEqual(len(Macro.objects.all()), 1)
 
     def test_invalid_macro_does_not_exist(self):
@@ -620,15 +654,19 @@ class InvalidMacroTests(TestCaseBackupRestore):
         # Call all endpoints, confirm correct error
         response = self.client.get('/run_macro/not-real')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Error: Macro not-real does not exist.')
+        self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
 
         response = self.client.get('/delete_macro/not-real')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Error: Macro not-real does not exist.')
+        self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
 
         response = self.client.get('/delete_macro_action/not-real/1')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Error: Macro not-real does not exist.')
+        self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
+
+        response = self.client.get('/get_macro_actions/not-real')
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()['message'], 'Macro not-real does not exist')
 
 
 # Test actions in overview top-right dropdown menu
@@ -647,7 +685,7 @@ class TestGlobalCommands(TestCaseBackupRestore):
             # Create 3 test nodes
             response = self.client.get('/reset_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
     def test_reset_all_offline(self):
         # Mock request to simulate offline nodes
@@ -655,7 +693,7 @@ class TestGlobalCommands(TestCaseBackupRestore):
             # Create 3 test nodes
             response = self.client.get('/reset_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
     def test_reboot_all(self):
         # Mock request to return expected response for each node
@@ -663,7 +701,7 @@ class TestGlobalCommands(TestCaseBackupRestore):
             # Create 3 test nodes
             response = self.client.get('/reboot_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
     def test_reboot_all_offline(self):
         # Mock request to simulate offline nodes
@@ -671,7 +709,7 @@ class TestGlobalCommands(TestCaseBackupRestore):
             # Create 3 test nodes
             response = self.client.get('/reboot_all')
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
 
 # Test successful calls to all API endpoints with mocked return values
@@ -679,10 +717,10 @@ class TestEndpoints(TestCaseBackupRestore):
 
     def test_status(self):
         # Mock request to return status object
-        with patch('api_endpoints.request', return_value=config1_status_object):
+        with patch('api_endpoints.request', return_value=config1_status):
             # Request status, should receive expected object
             response = parse_command('192.168.1.123', ['status'])
-            self.assertEqual(response, config1_status_object)
+            self.assertEqual(response, config1_status)
 
     def test_reboot(self):
         # Mock request to return expected response
@@ -968,7 +1006,7 @@ class TestEndpointErrors(TestCaseBackupRestore):
         # Test endpoints with same missing arg error in loop
         for endpoint in required_arg_endpoints:
             response = parse_command('192.168.1.123', [endpoint])
-            self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+            self.assertEqual(response, 'Error: Missing required parameters')
 
     def test_disable_invalid_arg(self):
         # Send request, verify response
@@ -1090,11 +1128,11 @@ class TestEndpointErrors(TestCaseBackupRestore):
 
     def test_ir_add_macro_action_missing_args(self):
         response = parse_command('192.168.1.123', ['ir_add_macro_action', 'test1'])
-        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+        self.assertEqual(response, 'Error: Missing required parameters')
 
     def test_set_gps_coords_missing_args(self):
         response = parse_command('192.168.1.123', ['set_gps_coords', '-90'])
-        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+        self.assertEqual(response, 'Error: Missing required parameters')
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):
@@ -1132,62 +1170,6 @@ class TestEndpointErrors(TestCaseBackupRestore):
             self.assertFalse(mock_request.called)
 
 
-# Test endpoint that loads modal containing existing macro actions
-class EditModalTests(TestCaseBackupRestore):
-    def setUp(self):
-        # Create 3 test nodes
-        create_test_nodes()
-
-        # Create macro with a single action
-        # Payload sent by frontend to turn on node1 device1
-        payload = {
-            'name': 'Test1',
-            'action': {
-                'command': 'turn_on',
-                'instance': 'device1',
-                'target': '192.168.1.123',
-                'friendly_name': 'Cabinet Lights'
-            }
-        }
-        self.client.post('/add_macro_action', payload, content_type='application/json')
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
-    def test_edit_macro_button(self):
-        # Send request, confirm status and template used
-        response = self.client.get('/edit_macro/Test1')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'api/edit_modal.html')
-
-        expected_context = {
-            'name': 'Test1',
-            'actions': [
-                {
-                    "ip": "192.168.1.123",
-                    "args": [
-                        "turn_on",
-                        "device1"
-                    ],
-                    "node_name": "Test1",
-                    "target_name": "Cabinet Lights",
-                    "action_name": "Turn On"
-                }
-            ]
-        }
-
-        # Confirm correct context
-        self.assertEqual(response.context['name'], expected_context['name'])
-        self.assertEqual(response.context['actions'], expected_context['actions'])
-
-    def test_edit_non_existing_macro(self):
-        # Request a macro that does not exist, confirm error
-        response = self.client.get('/edit_macro/Test42')
-        self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), 'Error: Macro Test42 does not exist.')
-
-
 # Test endpoint that sets cookie to skip macro instructions modal
 class SkipInstructionsTests(TestCaseBackupRestore):
     def test_get_skip_instructions_cookie(self):
@@ -1195,38 +1177,6 @@ class SkipInstructionsTests(TestCaseBackupRestore):
         self.assertEqual(response.status_code, 200)
         self.assertTrue('skip_instructions' in response.cookies)
         self.assertEqual(response.cookies['skip_instructions'].value, 'true')
-
-
-# Test legacy api page
-class LegacyApiTests(TestCaseBackupRestore):
-    def test_legacy_api_page(self):
-        # Create 3 test nodes
-        create_test_nodes()
-
-        # Request page, confirm correct template used
-        response = self.client.get('/legacy_api')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'api/legacy_api.html')
-
-        # Confirm context contains correct number of nodes
-        self.assertEqual(len(response.context['context']), 3)
-
-        # Confirm one button for each node
-        self.assertContains(
-            response,
-            '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test1">Test1'
-        )
-        self.assertContains(
-            response,
-            '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test2">Test2'
-        )
-        self.assertContains(
-            response,
-            '<button onclick="select_node(this)" type="button" class="select_node btn btn-primary m-1" id="Test3">Test3'
-        )
-
-        # Remove test configs from disk
-        clean_up_test_nodes()
 
 
 # Test api overview page
@@ -1241,14 +1191,6 @@ class OverviewPageTests(TestCaseBackupRestore):
         self.assertEqual(response.context['nodes'], {})
         self.assertEqual(response.context['macros'], {})
 
-        # Confirm no floor or macro sections
-        self.assertNotContains(response, '<div id="floor1" class="section mt-3 mb-4 p-3">')
-        self.assertNotContains(response, '<h1 class="text-center mt-5">Macros</h1>')
-
-        # Confirm link to create first node
-        self.assertContains(response, '<h2>No Nodes Configured</h2>')
-        self.assertContains(response, '<p>Click <a href="/new_config">here</a> to create</p>')
-
     def test_overview_page_with_nodes(self):
         # Create 3 test nodes
         create_test_nodes()
@@ -1262,14 +1204,6 @@ class OverviewPageTests(TestCaseBackupRestore):
         self.assertEqual(len(response.context['nodes'][1]), 2)
         self.assertEqual(len(response.context['nodes'][2]), 1)
         self.assertEqual(response.context['macros'], {})
-
-        # Confirm floor and macro sections both present
-        self.assertContains(response, '<div id="floor1" class="section mt-3 mb-4 p-3">')
-        self.assertContains(response, '<h1 class="text-center mt-5">Macros</h1>')
-
-        # Confirm no link to create node
-        self.assertNotContains(response, '<h2>No Nodes Configured</h2>')
-        self.assertNotContains(response, '<p>Click <a href="/new_config">here</a> to create</p>')
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -1323,10 +1257,6 @@ class OverviewPageTests(TestCaseBackupRestore):
         self.assertTemplateUsed(response, 'api/overview.html')
         self.assertEqual(response.context['macros'], test_macro_context)
 
-        # Confirm macro section present with correct-name macro
-        self.assertContains(response, '<h1 class="text-center mt-5">Macros</h1>')
-        self.assertContains(response, '<h3 class="mx-auto my-auto">Test Macro</h3>')
-
         # Remove test configs from disk
         clean_up_test_nodes()
 
@@ -1335,25 +1265,17 @@ class OverviewPageTests(TestCaseBackupRestore):
         create_test_nodes()
 
         # Request page with params to start recording macro named "New Macro Name"
-        response = self.client.get('/api/recording/New Macro Name/start')
+        response = self.client.get('/api/recording/New Macro Name')
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, 'api/overview.html')
 
         # Confirm context includes correct variables
         self.assertEqual(response.context['recording'], 'New Macro Name')
-        self.assertEqual(response.context['start_recording'], True)
-
-        # Confirm contains instructions modal
-        self.assertContains(response, '<h3 class="mx-auto mb-0" id="error-modal-title">Macro Instructions</h3>')
 
         # Set cookie to skip instructions (checkbox in popup), request page again
         self.client.cookies['skip_instructions'] = 'true'
-        response = self.client.get('/api/recording/New Macro Name/start')
+        response = self.client.get('/api/recording/New Macro Name')
         self.assertEqual(response.status_code, 200)
-
-        # Should not contain instructions modal, context should include skip_instructions variable
-        self.assertNotContains(response, '<h3 class="mx-auto mb-0" id="error-modal-title">Macro Instructions</h3>')
-        self.assertEqual(response.context['skip_instructions'], True)
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -1371,46 +1293,58 @@ class ApiCardTests(TestCaseBackupRestore):
 
     def test_api_frontend(self):
         # Mock request to return the expected status object
-        with patch('api_endpoints.request', return_value=config1_status_object):
+        with patch('api_endpoints.request', return_value=config1_status):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test1')
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'api/api_card.html')
 
-            # Confirm all context keys
-            self.assertEqual(response.context['context']['metadata'], config1_api_context['metadata'])
-            self.assertEqual(response.context['context']['sensors'], config1_api_context['sensors'])
-            self.assertEqual(response.context['context']['devices'], config1_api_context['devices'])
+            # Confirm context contains status object, target IP, and metadata
+            self.assertEqual(response.context['status'], config1_status)
+            self.assertEqual(response.context['target_ip'], '192.168.1.123')
+            self.assertEqual(response.context['instance_metadata'], instance_metadata)
+
+            # Confirm not recording macro
+            self.assertFalse(response.context['recording'])
+
+            # Confirm no api_target_options or ir_macros contexts
+            self.assertFalse('api_target_options' in response.context.keys())
+            self.assertFalse('ir_macros' in response.context.keys())
 
     # Repeat test above with a node containing ApiTarget and Thermostat
     def test_api_target_and_thermostat(self):
         # Mock request to return the expected status object followed by existing_macros object
-        with patch('api_endpoints.request', side_effect=[config2_status_object, config2_existing_macros]):
+        with patch('api_endpoints.request', side_effect=[config2_status, config2_existing_macros]):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test2')
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'api/api_card.html')
 
-            # Confirm all context keys
-            self.assertEqual(response.context['context']['metadata'], config2_api_context['metadata'])
-            self.assertEqual(response.context['context']['sensors'], config2_api_context['sensors'])
-            self.assertEqual(response.context['context']['devices'], config2_api_context['devices'])
-            self.assertEqual(
-                response.context['context']['api_target_options'],
-                config2_api_context['api_target_options']
-            )
+            # Confirm context contains status object, target IP, and metadata
+            self.assertEqual(response.context['status'], config2_status)
+            self.assertEqual(response.context['target_ip'], '192.168.1.124')
+            self.assertEqual(response.context['instance_metadata'], instance_metadata)
+
+            # Confirm not recording macro
+            self.assertFalse(response.context['recording'])
+
+            # Confirm expected api_target_options and ir_macros contexts
+            self.assertEqual(response.context['api_target_options'], config2_api_target_options)
+            self.assertEqual(response.context['ir_macros'], config2_ir_macros)
 
     def test_failed_connection(self):
         # Mock request to simulate offline target node
-        with patch('api_endpoints.request', side_effect=OSError("Error: Unable to connect.")):
+        with patch('api_endpoints.request', side_effect=OSError("Unable to connect")):
             # Request page, confirm unable_to_connect template used
             response = self.client.get('/api/Test1')
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'api/unable_to_connect.html')
 
             # Confirm context
-            self.assertEqual(response.context['context']['ip'], '192.168.1.123')
-            self.assertEqual(response.context['context']['id'], 'Test1')
+            self.assertEqual(
+                response.context['context'],
+                {'ip': '192.168.1.123', 'id': 'Test1'}
+            )
 
         # Mock parse_command to simulate timed out request
         with patch('api_endpoints.request', return_value='Error: Request timed out'):
@@ -1428,20 +1362,20 @@ class ApiCardTests(TestCaseBackupRestore):
 
     def test_recording_mode(self):
         # Mock request to return the expected status object
-        with patch('api_endpoints.request', return_value=config1_status_object):
+        with patch('api_endpoints.request', return_value=config1_status):
             # Request page, confirm correct template used
             response = self.client.get('/api/Test1/macro-name')
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'api/api_card.html')
 
             # Confirm context contains macro name
-            self.assertEqual(response.context['context']['metadata']['recording'], 'macro-name')
+            self.assertEqual(response.context['recording'], 'macro-name')
 
     def test_node_does_not_exist(self):
         # Request page, confirm correct template used
         response = self.client.get('/api/fake-node')
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"Error": "Node named fake-node not found"})
+        self.assertEqual(response.json()['message'], 'Node named fake-node not found')
 
     # Original issue: View only caught errors while opening connection to the node,
     # but did not handle situations where connection was successful and an error
@@ -1468,122 +1402,6 @@ class ApiCardTests(TestCaseBackupRestore):
             response = self.client.get('/api/Test1')
             self.assertEqual(response.status_code, 200)
             self.assertTemplateUsed(response, 'api/unable_to_connect.html')
-
-
-# Test modal used to edit schedule rules
-class RuleModalTests(TestCaseBackupRestore):
-    def setUp(self):
-        # Set default content_type for post requests (avoid long lines)
-        self.client = JSONClient()
-
-        # Create 3 test nodes
-        create_test_nodes()
-
-    def tearDown(self):
-        # Remove test configs from disk
-        clean_up_test_nodes()
-
-    # Get request is sent when adding a new rule
-    def test_create_new_rule(self):
-        response = self.client.get('/edit_rule')
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'api/rule_modal.html')
-
-    def test_edit_schedule_rule(self):
-        # Send post request, confirm status and template used
-        payload = {
-            "timestamp": "14:00",
-            "rule": "enabled",
-            "type": "switch",
-            "target": "sensor3",
-            "schedule_keywords": {
-                "sunrise": "05:55",
-                "sunset": "20:20"
-            },
-            "params": {}
-        }
-        response = self.client.post('/edit_rule', payload)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'api/rule_modal.html')
-
-        # Confirm correct context
-        self.assertEqual(response.context['timestamp'], '14:00')
-        self.assertEqual(response.context['rule'], 'enabled')
-        self.assertEqual(response.context['type'], 'switch')
-        self.assertEqual(response.context['target'], 'sensor3')
-        self.assertEqual(response.context['show_timestamp'], True)
-
-    def test_edit_fade_rule(self):
-        # Send post request, confirm status and template used
-        payload = {
-            "timestamp": "14:00",
-            "rule": "fade/50/3600",
-            "type": "dimmer",
-            "target": "device1",
-            "schedule_keywords": {
-                "sunrise": "05:55",
-                "sunset": "20:20"
-            },
-            "params": {}
-        }
-        response = self.client.post('/edit_rule', payload)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'api/rule_modal.html')
-
-        # Confirm correct context
-        self.assertEqual(response.context['timestamp'], '14:00')
-        self.assertEqual(response.context['fade'], True)
-        self.assertEqual(response.context['rule'], '50')
-        self.assertEqual(response.context['duration'], '3600')
-        self.assertEqual(response.context['type'], 'dimmer')
-        self.assertEqual(response.context['target'], 'device1')
-        self.assertEqual(response.context['show_timestamp'], True)
-
-    def test_edit_keyword_rule(self):
-        # Send post request, confirm status and template used
-        payload = {
-            "timestamp": "morning",
-            "rule": "enabled",
-            "type": "switch",
-            "target": "sensor3",
-            "schedule_keywords": {
-                "sunrise": "05:55",
-                "sunset": "20:20"
-            },
-            "params": {}
-        }
-        response = self.client.post('/edit_rule', payload)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'api/rule_modal.html')
-
-        # Confirm correct context
-        self.assertEqual(response.context['timestamp'], 'morning')
-        self.assertEqual(response.context['rule'], 'enabled')
-        self.assertEqual(response.context['type'], 'switch')
-        self.assertEqual(response.context['target'], 'sensor3')
-        self.assertEqual(response.context['show_timestamp'], False)
-
-    def test_edit_thermostat_rule(self):
-        # Create payload for thermostat instance using Fahrenheit units
-        payload = {
-            "timestamp": "morning",
-            "rule": "71",
-            "type": "si7021",
-            "target": "sensor3",
-            "schedule_keywords": {
-                "sunrise": "05:55",
-                "sunset": "20:20"
-            },
-            "params": {
-                "units": "fahrenheit"
-            }
-        }
-        response = self.client.post('/edit_rule', payload)
-        self.assertEqual(response.status_code, 200)
-        self.assertTemplateUsed(response, 'api/rule_modal.html')
-
-        # Confirm metadata rule limits (Celsius) were converted to Fahrenheit
-        self.assertEqual(response.context['limits'], [64, 80])
 
 
 # Test endpoints used to manage schedule keywords
@@ -1627,7 +1445,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
     def test_add_errors(self):
         # Send request with no args, verify error
         response = parse_command('192.168.1.123', ['add_schedule_keyword'])
-        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+        self.assertEqual(response, 'Error: Missing required parameters')
 
         # Send request with no timestamp, verify error
         response = parse_command('192.168.1.123', ['add_schedule_keyword', 'test'])
@@ -1636,7 +1454,7 @@ class ScheduleKeywordTests(TestCaseBackupRestore):
     def test_remove_errors(self):
         # Send request with no args, verify error
         response = parse_command('192.168.1.123', ['remove_schedule_keyword'])
-        self.assertEqual(response, {"ERROR": "Please fill out all fields"})
+        self.assertEqual(response, 'Error: Missing required parameters')
 
     # Original bug: Timestamp regex allowed both H:MM and HH:MM, should only allow HH:MM
     def test_regression_single_digit_hour(self):
@@ -1679,7 +1497,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
             # Send request, verify response
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should not be called, no keywords to upload
             self.assertFalse(mock_parse_command.called)
@@ -1691,7 +1509,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
         with patch('api.views.parse_command', return_value="Done") as mock_parse_command:
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 3 times: add 2 missing keywords, save
             self.assertEqual(mock_parse_command.call_count, 3)
@@ -1710,7 +1528,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
 
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 6 times: add 5 missing keywords, save
             self.assertEqual(mock_parse_command.call_count, 6)
@@ -1736,7 +1554,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
             # Send request, verify response
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 3 times: overwrite each keyword, save
             self.assertEqual(mock_parse_command.call_count, 3)
@@ -1759,7 +1577,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
             # Send request, verify response
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 3 times: Add new keyword, delete old keyword, save
             self.assertEqual(mock_parse_command.call_count, 3)
@@ -1783,7 +1601,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
             # Send request for Node with all 5, should delete same keywords deleted above
             response = self.client.post('/sync_schedule_keywords', self.payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Should be called 4 times: Delete 3 keywords no longer in database, save
             self.assertEqual(mock_parse_command.call_count, 4)
@@ -1801,7 +1619,7 @@ class SyncScheduleKeywordTests(TestCaseBackupRestore):
         # Make invalid get request (requires post), confirm error
         response = self.client.get('/sync_schedule_keywords')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
 
 # Test endpoint that syncs config file from node to database when user modifies schedule rules
@@ -1832,7 +1650,7 @@ class SyncScheduleRulesTests(TestCaseBackupRestore):
             # Send request, verify response + function calls
             response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.123'})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done syncing schedule rules")
+            self.assertEqual(response.json()['message'], "Done syncing schedule rules")
             self.assertTrue(mock_open_connection.called)
             self.assertTrue(mock_get_file.called_with('config.json'))
 
@@ -1844,13 +1662,13 @@ class SyncScheduleRulesTests(TestCaseBackupRestore):
         # Send get request (requires post), verify error
         response = self.client.get('/sync_schedule_rules')
         self.assertEqual(response.status_code, 405)
-        self.assertEqual(response.json(), {'Error': 'Must post data'})
+        self.assertEqual(response.json()['message'], 'Must post data')
 
     def test_invalid_node(self):
         # Send request with IP that does not exist in database, verify error
         response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.100'})
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json(), {"Error": "Node with IP 192.168.1.100 not found"})
+        self.assertEqual(response.json()['message'], 'Node with IP 192.168.1.100 not found')
 
     def test_failed_to_save_rules(self):
         # Mock parse_command to return request timeout error
@@ -1858,7 +1676,7 @@ class SyncScheduleRulesTests(TestCaseBackupRestore):
             # Send request, verify error
             response = self.client.post('/sync_schedule_rules', {"ip": '192.168.1.123'})
             self.assertEqual(response.status_code, 500)
-            self.assertEqual(response.json(), {"Error": "Failed to save rules"})
+            self.assertEqual(response.json()['message'], 'Failed to save rules')
 
 
 # Test endpoints used to create and modify IR macros
@@ -1887,7 +1705,7 @@ class IrMacroTests(TestCaseBackupRestore):
             # Make API call, confirm response, confirm parse_command called once
             response = self.client.post('/edit_ir_macro', payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Confirm parse_command was called 9 times with correct args
             # Delete old macro, create new macro with same name, add 6 actions, save
@@ -1950,7 +1768,7 @@ class IrMacroTests(TestCaseBackupRestore):
             # Make API call, confirm response
             response = self.client.post('/add_ir_macro', payload)
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json(), "Done")
+            self.assertEqual(response.json()['message'], "Done")
 
             # Confirm parse_command was called 8 times with correct args
             # Create new macro, add 6 actions, save

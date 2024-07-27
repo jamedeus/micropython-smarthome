@@ -1,0 +1,245 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`UnableToConnect matches snapshot 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div
+      id="target_node"
+    >
+      "Bedroom"
+    </div>
+    <div>
+      <div
+        class="d-flex flex-column vh-100"
+      >
+        <div
+          class="d-flex justify-content-between"
+        >
+          <button
+            class="my-auto btn btn-adaptive"
+            type="button"
+          >
+            <i
+              class="bi-chevron-left"
+            />
+          </button>
+          <h1
+            class="my-3"
+          >
+            Connection Failed
+          </h1>
+          <button
+            class="my-auto btn btn-adaptive"
+            disabled=""
+            type="button"
+          >
+            <i
+              class="bi-list"
+            />
+          </button>
+        </div>
+        <div
+          class="d-flex flex-column h-100 justify-content-evenly my-auto"
+        >
+          <p
+            class="text-center my-3"
+          >
+            This page will reload automatically when the node is available
+          </p>
+          <div
+            class="loading-animation m-auto my-3 loading-animation-lg"
+            id="spinner"
+          >
+            <div />
+            <div />
+            <div />
+            <div />
+          </div>
+          <div
+            class="d-flex flex-column"
+          >
+            <h2
+              class="text-center mb-3"
+            >
+              Troubleshooting
+            </h2>
+            <ul
+              class="mx-auto"
+            >
+              <li>
+                Unplug the node, plug back in, make sure the red light is on
+              </li>
+              <li>
+                If the blue light stays on 30+ seconds there is a network issue
+              </li>
+              <ul>
+                <li>
+                  Is your 2.4 GHz network available?
+                </li>
+                <li>
+                  Can you connect to the internet?
+                </li>
+                <li>
+                  Did the SSID or password change?
+                </li>
+              </ul>
+            </ul>
+          </div>
+          <div
+            class="d-flex mx-auto mb-3"
+          >
+            <button
+              class="btn btn-success"
+              type="button"
+            >
+              Back to Overview
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="d-flex flex-column vh-100"
+    >
+      <div
+        class="d-flex justify-content-between"
+      >
+        <button
+          class="my-auto btn btn-adaptive"
+          type="button"
+        >
+          <i
+            class="bi-chevron-left"
+          />
+        </button>
+        <h1
+          class="my-3"
+        >
+          Connection Failed
+        </h1>
+        <button
+          class="my-auto btn btn-adaptive"
+          disabled=""
+          type="button"
+        >
+          <i
+            class="bi-list"
+          />
+        </button>
+      </div>
+      <div
+        class="d-flex flex-column h-100 justify-content-evenly my-auto"
+      >
+        <p
+          class="text-center my-3"
+        >
+          This page will reload automatically when the node is available
+        </p>
+        <div
+          class="loading-animation m-auto my-3 loading-animation-lg"
+          id="spinner"
+        >
+          <div />
+          <div />
+          <div />
+          <div />
+        </div>
+        <div
+          class="d-flex flex-column"
+        >
+          <h2
+            class="text-center mb-3"
+          >
+            Troubleshooting
+          </h2>
+          <ul
+            class="mx-auto"
+          >
+            <li>
+              Unplug the node, plug back in, make sure the red light is on
+            </li>
+            <li>
+              If the blue light stays on 30+ seconds there is a network issue
+            </li>
+            <ul>
+              <li>
+                Is your 2.4 GHz network available?
+              </li>
+              <li>
+                Can you connect to the internet?
+              </li>
+              <li>
+                Did the SSID or password change?
+              </li>
+            </ul>
+          </ul>
+        </div>
+        <div
+          class="d-flex mx-auto mb-3"
+        >
+          <button
+            class="btn btn-success"
+            type="button"
+          >
+            Back to Overview
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;

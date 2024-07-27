@@ -1,0 +1,213 @@
+/* Limit width for readability on large screen sizes */
+@media (min-width: 1200px) {
+    .container {
+        width: 960px;
+    }
+}
+
+/* Limit width to 50% on desktop but not mobile */
+@media (min-width: 768px) {
+    .max-width-md-50 {
+        max-width: 50%;
+    }
+}
+
+/* Grey out disabled buttons */
+.btn-primary:disabled {
+    background-color: #4b5157;
+    border-color: transparent !important;
+}
+
+/* Section backgrounds (existing nodes, schedule keywords) */
+.section {
+    --bs-table-bg: transparent;
+    background-color: #eee;
+    border-radius: 15px;
+    padding: 0.5rem;
+    margin: 0.1rem;
+}
+
+@media (prefers-color-scheme: dark) {
+    .section {
+        background-color: #212529;
+    }
+}
+
+/* Used for slider advanced settings collapse */
+.text-dim {
+    color: #000000;
+    opacity: 50%;
+}
+
+@media (prefers-color-scheme: dark) {
+    .text-dim {
+        color: #FFFFFF;
+    }
+}
+
+/* Remove dropdown down arrow */
+.dropdown-toggle::after {
+    display: none !important;
+}
+
+/* Prevent horizontal margins on modal */
+/* Margin keeps centered on mobile */
+/* Used in record macro modal */
+.modal-fit-contents div:nth-child(1) {
+    max-width: fit-content !important;
+    margin: auto !important;
+}
+
+/* Default: Equal-width columns */
+td {
+    width: 50%;
+}
+
+/* Minimum width column without overflowing */
+td.min {
+    width: 1%;
+    white-space: nowrap;
+}
+
+/* Vertically center contents of table row */
+tr {
+    vertical-align: middle;
+}
+
+/* Table rounded corners */
+.table thead th:first-child {
+    border-top-left-radius: 10px;
+}
+.table thead th:last-child {
+    border-top-right-radius: 10px;
+}
+.table tbody tr:last-child td:first-child {
+    border-bottom-left-radius: 10px;
+}
+.table tbody tr:last-child td:last-child {
+    border-bottom-right-radius: 10px;
+}
+
+/* Table hover highlight rounded corners */
+.table-hover th:first-child {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+.table-hover th:last-child {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+.table-hover td:first-child {
+    border-top-left-radius: 10px;
+    border-bottom-left-radius: 10px;
+}
+
+.table-hover td:last-child {
+    border-top-right-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+/* --- */
+
+/* Table cell containing schedule rule popup */
+td.schedule-rule-field {
+    position: relative;
+}
+
+/* Range sliders */
+:root {
+    --slider-track-background: #ccc;
+    --slider-track-fill: #0D6EFD;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --slider-track-background: #1B1E1F;
+        --slider-track-fill: #0D6EFD;
+    }
+}
+
+.sliderTrack {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+}
+
+.sliderHandle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    width: 42px;
+    border-radius: 100%;
+    color: #fff;
+    font-weight: bold;
+    background-color: var(--slider-track-fill);
+    outline-style: none;
+}
+
+/* Popup div for setting schedule rule timestamps and values */
+/* Aligns to parent with 20px margin on either side */
+.schedule-rule-param-popup {
+    position: absolute;
+    border-radius: 8px;
+    padding: 20px;
+    background-color: #fff;
+    z-index: 99;
+    min-width: calc(100% - 40px);
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+@media (prefers-color-scheme: dark) {
+    .schedule-rule-param-popup {
+        border-color: #1B1E1F !important;
+        background-color: #212529;
+    }
+}
+
+/* Mobile: Fill screen width instead of aligning to parent */
+@media screen and (max-width: 768px) {
+    .schedule-rule-param-popup {
+        left: 0;
+        transform: none;
+        margin-left: 20px;
+        margin-right: 20px;
+    }
+    td.schedule-rule-field {
+        position: static;
+    }
+}
+
+/* Only used on unable to connect page */
+.btn-adaptive {
+    background-color: #cccccc !important;
+}
+.btn-adaptive:disabled {
+    border-color: transparent !important;
+}
+@media (prefers-color-scheme: dark) {
+    .btn-adaptive {
+        background-color: #212529 !important;
+    }
+}
+
+/* Transitions (used in multiple other CSS files) */
+@keyframes fade-in {
+    0% {
+        opacity: 0%
+    }
+    100% {
+        opacity: 100%
+    }
+}
+
+@keyframes fade-out {
+    0% {
+        opacity: 100%
+    }
+    100% {
+        opacity: 0%
+    }
+}

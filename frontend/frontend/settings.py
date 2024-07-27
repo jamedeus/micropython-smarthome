@@ -68,6 +68,9 @@ if CLI_SYNC and not os.path.exists(os.path.join(REPO_DIR, 'CLI', 'cli_config.jso
 # Set env var, cause shared utilities to use db instead of json files
 os.environ.update({'SMARTHOME_FRONTEND': 'django'})
 
+# Get API key used to get suggestions for "Set Default Location" modal
+GEOCODE_API_KEY = os.environ.get('GEOCODE_API_KEY')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -164,16 +167,6 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'node_modules', 'bootstrap', 'dist', 'css'),
-    os.path.join(BASE_DIR, 'node_modules', 'bootstrap', 'dist', 'js'),
-    os.path.join(BASE_DIR, 'node_modules', 'bootstrap-icons', 'font'),
-    os.path.join(BASE_DIR, 'node_modules', 'spinkit'),
-    os.path.join(BASE_DIR, 'node_modules', 'jquery', 'dist'),
-    os.path.join(BASE_DIR, 'node_modules', 'smoothscroll-polyfill', 'dist'),
-    os.path.join(BASE_DIR, 'node_modules', 'rangeslider.js', 'dist'),
-]
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
@@ -212,4 +205,4 @@ PWA_APP_DIR = 'ltr'
 PWA_APP_LANG = 'en-US'
 
 # Custom service worker
-PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'webapp', 'serviceworker.js')
+PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'webapp', 'static', 'webapp', 'serviceworker.js')

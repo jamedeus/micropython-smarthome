@@ -19,8 +19,8 @@ urlpatterns = [
     path('add_macro_action', views.add_macro_action, name='add_macro_action'),
     path('delete_macro/<str:name>', views.delete_macro, name='delete_macro'),
     path('delete_macro_action/<str:name>/<int:index>', views.delete_macro_action, name='delete_macro_action'),
-    path('edit_macro/<str:name>', views.edit_macro, name='edit_macro'),
     path('macro_name_available/<str:name>', views.macro_name_available, name='macro_name_available'),
+    path('get_macro_actions/<str:name>', views.get_macro_actions, name='get_macro_actions'),
     path('skip_instructions', views.skip_instructions, name='skip_instructions'),
 
     # IR macro views
@@ -31,9 +31,6 @@ urlpatterns = [
     path('', views.api_overview, name='api_overview'),
     path('api', views.api_overview, name='api_overview'),
     path('api/recording/<str:recording>', views.api_overview, name='api_overview'),
-    path('api/recording/<str:recording>/<str:start>', views.api_overview, name='api_overview'),
     path('api/<str:node>', views.api, name='api'),
-    path('api/<str:node>/<str:recording>', views.api, name='api'),
-    path('legacy_api', views.legacy_api, name='legacy_api'),
-    path('edit_rule', views.edit_rule, name='edit_rule')
+    path('api/<str:node>/<str:recording>', views.api, name='api')
 ]

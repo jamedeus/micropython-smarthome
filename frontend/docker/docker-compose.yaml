@@ -29,6 +29,10 @@ services:
       # Optional: set webrepl password used by nodes
       # If blank defaults to "password"
       - NODE_PASSWD=password
+      # Optional: API key used by overview "Set Default Location" modal to get
+      # city coordinates (added to configs for accurate sunrise/sunset times).
+      # See https://geocode.maps.co/
+      - GEOCODE_API_KEY="xxxxxxxxxxxxxxxxx"
     volumes:
       # Persistent storage between sessions
       - smarthome-data:/repo

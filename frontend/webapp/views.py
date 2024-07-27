@@ -1,5 +1,6 @@
 from django.shortcuts import render
 
-# Create your views here.
+
 def offline(request):
+    '''Serve PWA offline page (attempts to reconnect every 15 seconds)'''
     return render(request, 'webapp/offline.html')

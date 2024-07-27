@@ -38,6 +38,9 @@ def validate_rules(instance):
 
     # Validate shedule rules
     for time in instance['schedule']:
+        if not time:
+            return f"{instance['nickname']}: Missing schedule rule timestamp"
+
         valid = schedule_validator(instance['schedule'][time], **instance)
 
         if valid is False:
@@ -277,7 +280,7 @@ def tplink_validator(rule, **kwargs):
         return False
 
 
-# Requires int between 1 and 255 (inclusive)
+# Requires int between 1 and 255 (inclusive), or fade/<int>/<int>
 @add_schedule_rule_validator(['wled'])
 @add_generic_validator
 @add_default_rule_validator(['wled'])
@@ -293,6 +296,18 @@ def wled_validator(rule, **kwargs):
         return 'Wled missing required min_rule and/or max_rule property'
 
     try:
+        if str(rule).startswith("fade"):
+            # Parse parameters from rule
+            cmd, target, period = rule.split("/")
+
+            if int(period) < 0:
+                return False
+
+            elif int(min_rule) <= int(target) <= int(max_rule):
+                return True
+            else:
+                return False
+
         # Reject "False" before reaching conditional below (would cast False to 0 and accept as valid rule)
         if isinstance(rule, bool):
             return False

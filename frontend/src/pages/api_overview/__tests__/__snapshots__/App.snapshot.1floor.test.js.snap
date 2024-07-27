@@ -1,0 +1,475 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`App matches snapshot when nodes are on 2 floors 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div
+      id="nodes"
+    >
+      {"1":["Bathroom","Kitchen","Living Room"]}
+    </div>
+    <div
+      id="macros"
+    >
+      {"late":[{"ip":"192.168.1.100","args":["set_rule","device1","519"],"node_name":"Bathroom","target_name":"Bathroom LEDs","action_name":"Set Rule 519"},{"ip":"192.168.1.100","args":["disable","device2",""],"node_name":"Bathroom","target_name":"Bathroom Lights","action_name":"Disable"},{"ip":"192.168.1.101","args":["set_rule","device1","665"],"node_name":"Kitchen","target_name":"Cabinet Lights","action_name":"Set Rule 665"},{"ip":"192.168.1.101","args":["disable","device2",""],"node_name":"Kitchen","target_name":"Overhead Lights","action_name":"Disable"},{"ip":"192.168.1.103","args":["set_rule","device1","42"],"node_name":"Bedroom","target_name":"Lights","action_name":"Set Rule 42"},{"ip":"192.168.1.103","args":["enable","sensor2",""],"node_name":"Bedroom","target_name":"Computer Sensor","action_name":"Enable"},{"ip":"192.168.1.102","args":["set_rule","device1","42"],"node_name":"Living Room","target_name":"Overhead Lights","action_name":"Set Rule 42"},{"ip":"192.168.1.102","args":["set_rule","device2","12"],"node_name":"Living Room","target_name":"Lamp","action_name":"Set Rule 12"},{"ip":"192.168.1.100","args":["disable","device3",""],"node_name":"Bathroom","target_name":"Entry Light","action_name":"Disable"},{"ip":"192.168.1.103","args":["set_rule","device3","193"],"node_name":"Bedroom","target_name":"Bias lights","action_name":"Set Rule 193"}],"bright":[{"ip":"192.168.1.103","args":["set_rule","device1","98"],"node_name":"Bedroom","target_name":"Lights","action_name":"Set Rule 98"},{"ip":"192.168.1.100","args":["disable","device1",""],"node_name":"Bathroom","target_name":"Bathroom LEDs","action_name":"Disable"},{"ip":"192.168.1.100","args":["enable","device2",""],"node_name":"Bathroom","target_name":"Bathroom Lights","action_name":"Enable"},{"ip":"192.168.1.100","args":["enable","device3",""],"node_name":"Bathroom","target_name":"Entry Light","action_name":"Enable"},{"ip":"192.168.1.101","args":["disable","device1",""],"node_name":"Kitchen","target_name":"Cabinet Lights","action_name":"Disable"},{"ip":"192.168.1.101","args":["enable","device2",""],"node_name":"Kitchen","target_name":"Overhead Lights","action_name":"Enable"},{"ip":"192.168.1.102","args":["set_rule","device1","100"],"node_name":"Living Room","target_name":"Overhead Lights","action_name":"Set Rule 100"},{"ip":"192.168.1.102","args":["set_rule","device2","100"],"node_name":"Living Room","target_name":"Lamp","action_name":"Set Rule 100"}]}
+    </div>
+    <div
+      id="recording"
+    >
+      ""
+    </div>
+    <div>
+      <div
+        class="d-flex flex-column vh-100"
+      >
+        <div
+          class="d-flex justify-content-between"
+        >
+          <button
+            class="btn btn-primary"
+            style="visibility: hidden;"
+            type="button"
+          >
+            <i
+              class="bi-list"
+            />
+          </button>
+          <h1
+            class="my-3 "
+          >
+            Api Overview
+          </h1>
+          <div
+            class="my-auto dropdown"
+          >
+            <button
+              aria-expanded="false"
+              class="dropdown-toggle btn btn-light"
+              id="settings-button"
+              type="button"
+            >
+              <i
+                class="bi-list"
+              />
+            </button>
+          </div>
+        </div>
+        <div
+          class="text-center section mt-3 mb-4 p-3"
+        >
+          <h5
+            class="mb-3 fw-bold"
+          >
+            Floor 1
+          </h5>
+          <button
+            class="m-1 btn btn-primary"
+            type="button"
+          >
+            Bathroom
+          </button>
+          <button
+            class="m-1 btn btn-primary"
+            type="button"
+          >
+            Kitchen
+          </button>
+          <button
+            class="m-1 btn btn-primary"
+            type="button"
+          >
+            Living Room
+          </button>
+        </div>
+        <h1
+          class="text-center mt-5"
+        >
+          Macros
+        </h1>
+        <div
+          class="text-center section p-3 mx-auto macro-container"
+        >
+          <div>
+            <div
+              class="d-flex mb-3"
+              id="late"
+            >
+              <div
+                class="macro-row btn-group"
+                role="group"
+              >
+                <button
+                  class="macro-button btn btn-primary"
+                  type="button"
+                >
+                  <h3
+                    class="macro-name"
+                  >
+                    Late
+                  </h3>
+                </button>
+                <div
+                  class="macro-options dropdown btn-group"
+                  role="group"
+                >
+                  <button
+                    aria-expanded="false"
+                    class="dropdown-toggle btn btn-primary"
+                    type="button"
+                  >
+                    <i
+                      class="bi-gear-fill"
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div
+              class="d-flex mb-3"
+              id="bright"
+            >
+              <div
+                class="macro-row btn-group"
+                role="group"
+              >
+                <button
+                  class="macro-button btn btn-primary"
+                  type="button"
+                >
+                  <h3
+                    class="macro-name"
+                  >
+                    Bright
+                  </h3>
+                </button>
+                <div
+                  class="macro-options dropdown btn-group"
+                  role="group"
+                >
+                  <button
+                    aria-expanded="false"
+                    class="dropdown-toggle btn btn-primary"
+                    type="button"
+                  >
+                    <i
+                      class="bi-gear-fill"
+                    />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="text-center mt-3"
+          >
+            <button
+              class="mt-3 mx-auto btn btn-secondary"
+              type="button"
+            >
+              <i
+                class="bi-plus-lg"
+              />
+            </button>
+          </div>
+          <div
+            class="p-3 collapse"
+          >
+            <div
+              class="form-floating mb-3"
+            >
+              <div
+                class="form-floating"
+              >
+                <input
+                  class="form-control"
+                  id="new-macro-name"
+                  placeholder="New macro name"
+                  type="text"
+                  value=""
+                />
+                <div
+                  class="invalid-feedback"
+                >
+                  Name already in use
+                </div>
+                <label>
+                  New macro name
+                </label>
+              </div>
+            </div>
+            <button
+              class="btn btn-success"
+              disabled=""
+              type="button"
+            >
+              Start Recording
+            </button>
+          </div>
+        </div>
+        <div
+          class="d-flex mx-auto flex-column mt-auto py-4"
+        >
+          <button
+            class="btn btn-secondary"
+            type="button"
+          >
+            Manage
+          </button>
+        </div>
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <div
+      class="d-flex flex-column vh-100"
+    >
+      <div
+        class="d-flex justify-content-between"
+      >
+        <button
+          class="btn btn-primary"
+          style="visibility: hidden;"
+          type="button"
+        >
+          <i
+            class="bi-list"
+          />
+        </button>
+        <h1
+          class="my-3 "
+        >
+          Api Overview
+        </h1>
+        <div
+          class="my-auto dropdown"
+        >
+          <button
+            aria-expanded="false"
+            class="dropdown-toggle btn btn-light"
+            id="settings-button"
+            type="button"
+          >
+            <i
+              class="bi-list"
+            />
+          </button>
+        </div>
+      </div>
+      <div
+        class="text-center section mt-3 mb-4 p-3"
+      >
+        <h5
+          class="mb-3 fw-bold"
+        >
+          Floor 1
+        </h5>
+        <button
+          class="m-1 btn btn-primary"
+          type="button"
+        >
+          Bathroom
+        </button>
+        <button
+          class="m-1 btn btn-primary"
+          type="button"
+        >
+          Kitchen
+        </button>
+        <button
+          class="m-1 btn btn-primary"
+          type="button"
+        >
+          Living Room
+        </button>
+      </div>
+      <h1
+        class="text-center mt-5"
+      >
+        Macros
+      </h1>
+      <div
+        class="text-center section p-3 mx-auto macro-container"
+      >
+        <div>
+          <div
+            class="d-flex mb-3"
+            id="late"
+          >
+            <div
+              class="macro-row btn-group"
+              role="group"
+            >
+              <button
+                class="macro-button btn btn-primary"
+                type="button"
+              >
+                <h3
+                  class="macro-name"
+                >
+                  Late
+                </h3>
+              </button>
+              <div
+                class="macro-options dropdown btn-group"
+                role="group"
+              >
+                <button
+                  aria-expanded="false"
+                  class="dropdown-toggle btn btn-primary"
+                  type="button"
+                >
+                  <i
+                    class="bi-gear-fill"
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div
+            class="d-flex mb-3"
+            id="bright"
+          >
+            <div
+              class="macro-row btn-group"
+              role="group"
+            >
+              <button
+                class="macro-button btn btn-primary"
+                type="button"
+              >
+                <h3
+                  class="macro-name"
+                >
+                  Bright
+                </h3>
+              </button>
+              <div
+                class="macro-options dropdown btn-group"
+                role="group"
+              >
+                <button
+                  aria-expanded="false"
+                  class="dropdown-toggle btn btn-primary"
+                  type="button"
+                >
+                  <i
+                    class="bi-gear-fill"
+                  />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="text-center mt-3"
+        >
+          <button
+            class="mt-3 mx-auto btn btn-secondary"
+            type="button"
+          >
+            <i
+              class="bi-plus-lg"
+            />
+          </button>
+        </div>
+        <div
+          class="p-3 collapse"
+        >
+          <div
+            class="form-floating mb-3"
+          >
+            <div
+              class="form-floating"
+            >
+              <input
+                class="form-control"
+                id="new-macro-name"
+                placeholder="New macro name"
+                type="text"
+                value=""
+              />
+              <div
+                class="invalid-feedback"
+              >
+                Name already in use
+              </div>
+              <label>
+                New macro name
+              </label>
+            </div>
+          </div>
+          <button
+            class="btn btn-success"
+            disabled=""
+            type="button"
+          >
+            Start Recording
+          </button>
+        </div>
+      </div>
+      <div
+        class="d-flex mx-auto flex-column mt-auto py-4"
+      >
+        <button
+          class="btn btn-secondary"
+          type="button"
+        >
+          Manage
+        </button>
+      </div>
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;

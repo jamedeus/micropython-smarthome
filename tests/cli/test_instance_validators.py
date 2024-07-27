@@ -90,27 +90,33 @@ class ValidatorTests(TestCase):
         self.assertFalse(api_target_validator(valid))
 
     def test_fade_rules(self):
-        # LedStrip and Tplink should accept fade rules
+        # LedStrip, Tplink, and Wled should accept fade rules
         self.assertTrue(led_strip_validator('fade/50/3600', min_rule='0', max_rule='1023'))
         self.assertTrue(tplink_validator('fade/50/3600', min_rule='1', max_rule='100'))
+        self.assertTrue(wled_validator('fade/50/3600', min_rule='1', max_rule='255'))
 
-        # LedStrip should reject if target out of range
+        # Should reject if target out of range
         self.assertFalse(led_strip_validator('fade/50/3600', min_rule='500', max_rule='1023'))
+        self.assertFalse(tplink_validator('fade/50/3600', min_rule='75', max_rule='100'))
+        self.assertFalse(wled_validator('fade/50/3600', min_rule='128', max_rule='255'))
 
-        # Both should reject if target negative
+        # Should reject if target negative
         self.assertFalse(tplink_validator('fade/-5/3600', min_rule='1', max_rule='100'))
         self.assertEqual(
             led_strip_validator('fade/-5/3600', min_rule='-500', max_rule='1023'),
             'Rule limits cannot be less than 0'
         )
+        self.assertFalse(wled_validator('fade/-5/3600', min_rule='128', max_rule='255'))
 
-        # Both should reject if period negative
+        # Should reject if period negative
         self.assertFalse(led_strip_validator('fade/50/-500', min_rule='0', max_rule='1023'))
         self.assertFalse(tplink_validator('fade/50/-500', min_rule='1', max_rule='100'))
+        self.assertFalse(wled_validator('fade/50/-500', min_rule='1', max_rule='255'))
 
-        # Both should reject if target is non-integer
+        # Should reject if target is non-integer
         self.assertFalse(led_strip_validator('fade/max/3600', min_rule='0', max_rule='1023'))
         self.assertFalse(tplink_validator('fade/max/3600', min_rule='1', max_rule='100'))
+        self.assertFalse(wled_validator('fade/max/3600', min_rule='1', max_rule='255'))
 
     def test_led_strip_rules(self):
         # Should accept int between min_rule and max_rule

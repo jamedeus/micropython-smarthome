@@ -1,0 +1,50 @@
+/* Minimum width for whole macro section */
+.macro-container {
+    min-width: 300px;
+    margin-bottom: 3rem;
+}
+
+/* Rows fill width, can expand if text is wider */
+/* Height prevents jump when animation replaces text */
+.macro-row {
+    width: 100%;
+    height: 3rem;
+}
+
+/* Centered, 3rem offset accounts for options button */
+.macro-name {
+    margin: auto;
+    padding-left: 3rem;
+}
+
+/* Fixed width to match text offset (centers text) */
+.macro-options {
+    width: 3rem;
+}
+
+/* Reduce options dropdown width */
+.macro-options div:nth-child(2) {
+    min-width: fit-content !important;
+}
+
+/* Text glow animation (recording mode) */
+.glow {
+    animation: text-glow 1.6s ease-in-out infinite;
+}
+
+@keyframes text-glow {
+    0% {
+        text-shadow: 0 0 0.2em #dc3545;
+    }
+    50% {
+        text-shadow: 0 0 0.2em #dc3545, 0 0 0.5em #dc3545, 0 0 1em #dc3545;
+    }
+    100% {
+        text-shadow: 0 0 0.2em #dc3545;
+    }
+}
+
+/* Fade out animation for EditMacroModal table rows */
+.fade-exit {
+    animation: fade-out 0.2s ease-out forwards;
+}

@@ -1,0 +1,83 @@
+/* Top-right corner of all device and sensor cards */
+.menu-button {
+    border-radius: 0.5rem !important;
+}
+
+/* Power and trigger button on/off animations */
+/* On slides hidden background up, off slides down until not visible */
+@keyframes fade-on {
+    0% {
+        background-position: 50% -15%;
+    }
+    100% {
+        background-position: 50% 35%;
+    }
+}
+
+@keyframes fade-off {
+    0% {
+        background-position: 50% 35%;
+    }
+    100% {
+        background-position: 50% -15%;
+    }
+}
+
+.btn-active-enter, .btn-active-appear {
+    animation-name: fade-on;
+    animation-duration: 1.2s;
+    animation-timing-function: ease-in-out;
+    animation-fill-mode: forwards;
+}
+
+.btn-active-enter-done {
+    background-position: 50% 35%;
+}
+
+.btn-active-exit {
+    animation-name: fade-off;
+    animation-duration: 1.2s;
+    animation-timing-function: ease-in-out;
+}
+
+/* Sensor card top-left corner button */
+.trigger-button {
+    background-image: radial-gradient(circle, #0550B8 5%, white 55%);
+    background-size: 500% 500%;
+    border-radius: 0.5rem !important;
+
+    /* Remove focus highlight */
+    box-shadow: none !important;
+}
+
+/* Device card top-left corner button */
+.power-button {
+    background-image: radial-gradient(circle, #ffc107 5%, white 55%);
+    background-size: 500% 500%;
+    border-radius: 0.5rem !important;
+
+    /* Remove focus highlight */
+    box-shadow: none !important;
+}
+
+.bi-lightbulb, .bi-exclamation-lg {
+    color: #000;
+}
+
+/* Dark mode button colors */
+@media (prefers-color-scheme: dark) {
+    :root {
+        .trigger-button, .trigger-button:disabled {
+            background-image: radial-gradient(circle, #0550B8 5%, transparent 55%);
+        }
+
+        .power-button {
+            background-image: radial-gradient(circle, #ffc107 5%, transparent 55%);
+            /*     border: 2px solid #2B2E2F !important; */
+        }
+
+        .bi-lightbulb, .bi-exclamation-lg {
+            color: #fff;
+        }
+    }
+}

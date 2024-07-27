@@ -244,7 +244,7 @@ def set_rule(target, args):
     rule = args[0]
 
     # Replace url-encoded forward slashes (fade rules)
-    if "%2F" in rule:
+    if "%2F" in str(rule):
         rule = rule.replace("%2F", "/")
 
     if target.set_rule(rule):

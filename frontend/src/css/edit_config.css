@@ -1,0 +1,49 @@
+/* Calculated when instance card deleted */
+/* Determines height of slide up animation */
+:root {
+    --animation-height: 25rem;
+}
+
+/* Applied to all cards below deleted card, slides into place */
+.slide-up {
+    animation-name: slide-up;
+    animation-duration: 0.8s;
+    animation-timing-function: ease;
+    animation-fill-mode: forwards;
+}
+
+@keyframes slide-up {
+    0% {
+        bottom: 0rem;
+    }
+    100% {
+        bottom: var(--animation-height);
+    }
+}
+
+/* Fade cards in when first added */
+.fade-in-card {
+    animation-name: fade-in;
+    animation-duration: 0.4s;
+    animation-timing-function: ease;
+    animation-fill-mode: forwards;
+}
+
+/* Applied to deleted card, fades out before being removed */
+.fade-out-card {
+    animation-name: fade-out;
+    animation-duration: 0.4s;
+    animation-timing-function: ease;
+    animation-fill-mode: forwards;
+}
+
+/* Dark mode overrides */
+@media (prefers-color-scheme: dark) {
+    :root {
+        /* Use lighter color for inputs outside cards (background contrast) */
+        /* Overrides styles above with more-specific selector */
+        #metadata input {
+            background-color: #31363b;
+        }
+    }
+}
