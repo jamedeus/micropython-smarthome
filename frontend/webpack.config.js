@@ -11,6 +11,7 @@ const config = {
         api_overview: './src/pages/api_overview/index.js',
         api_card: './src/pages/api_card/index.js',
         unable_to_connect: './src/pages/unable_to_connect/index.js',
+        offline: './src/pages/offline/index.js',
     },
     output: {
         path: path.resolve(__dirname, './webapp/static/webapp/'),
