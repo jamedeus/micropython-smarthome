@@ -22,7 +22,7 @@ const DebugModal = () => {
             instance: id
         });
         const data = await response.json();
-        setAttributes(data);
+        setAttributes(data.message);
     };
 
     return (

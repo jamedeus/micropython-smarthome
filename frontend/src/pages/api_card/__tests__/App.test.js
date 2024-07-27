@@ -766,6 +766,8 @@ describe('App', () => {
 
         // Confirm debug modal appeared with mock response text
         expect(app.queryByText(/"nickname": "Accent lights"/)).not.toBeNull();
+        // Confirm does not appear JSON wrapper
+        expect(app.queryByText(/"status": "success"/)).toBeNull();
 
         // Click modal close button, confirm closed
         await user.click(app.getAllByText('Debug')[1].parentElement.children[2]);
