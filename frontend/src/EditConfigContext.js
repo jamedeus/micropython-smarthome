@@ -212,8 +212,8 @@ export const EditConfigProvider = ({ children }) => {
     const addIrBlasterSection = (add) => {
         if (add) {
             setConfig({ ...config,
-                ir_blaster: { pin: '', target: []} }
-            );
+                ir_blaster: { pin: '', target: [], macros: {} }
+            });
         } else {
             let update = { ...config };
             delete update.ir_blaster;

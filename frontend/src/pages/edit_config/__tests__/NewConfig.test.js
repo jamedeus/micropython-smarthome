@@ -250,7 +250,8 @@ describe('NewConfig', () => {
                     "pin": "16",
                     "target": [
                         "tv"
-                    ]
+                    ],
+                    "macros": {}
                 },
                 "sensor1": {
                     "_type": "si7021",
