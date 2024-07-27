@@ -9,7 +9,7 @@ const App = () => {
     const retryConnection = async () => {
         const response = await fetch(`/get_status/${target_node}`);
         if (response.ok) {
-            location.reload();
+            window.location.reload();
         } else {
             const error = await response.json();
             console.log('Failed to connect:', error);
