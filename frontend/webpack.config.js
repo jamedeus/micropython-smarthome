@@ -13,7 +13,7 @@ const config = {
         unable_to_connect: './src/pages/unable_to_connect/index.js',
     },
     output: {
-        path: path.resolve(__dirname, 'node_configuration/static/node_configuration/'),
+        path: path.resolve(__dirname, './webapp/static/webapp/'),
         filename: '[name].js'
     },
     devServer: {
