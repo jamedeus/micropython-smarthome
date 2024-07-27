@@ -205,4 +205,4 @@ PWA_APP_DIR = 'ltr'
 PWA_APP_LANG = 'en-US'
 
 # Custom service worker
-PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'webapp', 'serviceworker.js')
+PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, 'webapp', 'static', 'webapp', 'serviceworker.js')
