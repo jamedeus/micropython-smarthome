@@ -169,7 +169,7 @@ const InstanceCard = ({ id }) => {
         setEditing(false);
     }, 6000), []);
 
-    // Called when user releases click on slider, resumes status updates
+    // Called when user releases slider click, resumes updates after 6 seconds
     const onBlur = () => {
         stopEditing();
     };
@@ -182,6 +182,12 @@ const InstanceCard = ({ id }) => {
     // Schedule toggle dropdown option handler
     const scheduleToggle = () => {
         showScheduleToggle(id, localState.enabled);
+    };
+
+    // Cancels edit mode so slider reflects new rule immediately
+    const resetRule = () => {
+        setEditing(false);
+        reset_rule(id);
     };
 
     return (
@@ -236,7 +242,7 @@ const InstanceCard = ({ id }) => {
                                     </Dropdown.Item>
                                     <Dropdown.Item
                                         disabled={localState.current_rule === localState.scheduled_rule}
-                                        onClick={() => reset_rule(id)}
+                                        onClick={resetRule}
                                     >
                                         Reset rule
                                     </Dropdown.Item>

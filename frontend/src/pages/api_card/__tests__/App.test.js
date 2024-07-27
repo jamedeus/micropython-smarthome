@@ -1,5 +1,6 @@
 import React from 'react';
 import App from '../ApiCard';
+import { fireEvent } from '@testing-library/react';
 import { ApiCardContextProvider } from 'root/ApiCardContext';
 import { MetadataContextProvider } from 'root/MetadataContext';
 import createMockContext from 'src/testUtils/createMockContext';
@@ -364,7 +365,7 @@ describe('App', () => {
                 status: 'success',
                 message: {
                     device1: "Reverted to scheduled rule",
-                    current_rule: 98
+                    current_rule: 1023
                 }
             })
         }));
@@ -397,6 +398,69 @@ describe('App', () => {
         // Confirm reset option is now disabled, current rule changed to 1023
         // (displays 100, scaled to 1-100 range)
         expect(reset.classList).toContain('disabled');
+        expect(sliderHandle.innerHTML).toBe('100');
+    });
+
+    it('cancels slider edit mode immediately when reset rule clicked', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: {
+                    device1: "Reverted to scheduled rule",
+                    current_rule: 1023
+                }
+            })
+        }));
+
+        // Get device3 card, top-right corner dropdown menu, and slider elements
+        const card = app.getByText('Accent lights').parentElement.parentElement;
+        const dropdown = card.children[0].children[2];
+        const sliderHandle = card.querySelector('.sliderHandle');
+        const sliderTrack = card.querySelector('.sliderTrack');
+
+        // Confirm current rule is 767 (displays 74, scaled to 1-100 range)
+        expect(sliderHandle.innerHTML).toBe('74');
+
+        // Mock slider element getBoundingClientRect to trick react-range that
+        // slider was moved (can't simulate user input due to jsdom)
+        sliderTrack.getBoundingClientRect = jest.fn(() => ({
+            bottom: 20,
+            height: 20,
+            left: 0,
+            right: 100,
+            top: 0,
+            width: 100,
+            x: 0,
+            y: 0
+        }));
+        sliderHandle.getBoundingClientRect = jest.fn(() => ({
+            bottom: 20,
+            height: 20,
+            left: 45,
+            right: 55,
+            top: 0,
+            width: 10,
+            x: 45,
+            y: 0
+        }));
+
+        // Simulate user dragging slider to make react-range call mocks above
+        fireEvent.mouseDown(sliderHandle, { clientX: 0, clientY: 0 });
+        fireEvent.mouseMove(document, { clientX: 50, clientY: 0 });
+        fireEvent.mouseUp(document);
+
+        // Confirm rule changed (now in edit mode, slider will not change when
+        // main state updates until 6 seconds after slider move)
+        expect(sliderHandle.innerHTML).not.toBe('74');
+
+        // Click dropdown button, click reset option
+        await user.click(dropdown.children[0]);
+        await user.click(within(dropdown).getByText('Reset rule'));
+
+        // Confirm rule changed immediately (canceled edit mode)
         expect(sliderHandle.innerHTML).toBe('100');
     });
 
