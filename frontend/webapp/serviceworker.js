@@ -1,5 +1,5 @@
 
-var staticCacheName = "django-pwa-v20d6256";
+var staticCacheName = 'django-pwa-v20d6256';
 var filesToCache = [
     '/offline/',
     '/static/css/django-pwa-app.css',
@@ -21,17 +21,18 @@ var filesToCache = [
     '/static/images/icons/splash-1668x2224.png',
     '/static/images/icons/splash-1668x2388.png',
     '/static/images/icons/splash-2048x2732.png',
-    '/static/node_configuration/api_card.js',
-    '/static/node_configuration/api_overview.js',
-    '/static/node_configuration/edit_config.js',
-    '/static/node_configuration/overview.js',
-    '/static/node_configuration/unable_to_connect.js',
-    '/static/node_configuration/449ad8adf6ae0424b7ed.woff',
-    '/static/node_configuration/dea24bf5a7646d8b84e7.woff2',
+    '/static/webapp/api_card.js',
+    '/static/webapp/api_overview.js',
+    '/static/webapp/edit_config.js',
+    '/static/webapp/overview.js',
+    '/static/webapp/offline.js',
+    '/static/webapp/unable_to_connect.js',
+    '/static/webapp/449ad8adf6ae0424b7ed.woff',
+    '/static/webapp/dea24bf5a7646d8b84e7.woff2',
 ];
 
 // Cache on install
-self.addEventListener("install", event => {
+self.addEventListener('install', event => {
     this.skipWaiting();
     event.waitUntil(
         caches.open(staticCacheName)
@@ -47,7 +48,7 @@ self.addEventListener('activate', event => {
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames
-                    .filter(cacheName => (cacheName.startsWith("django-pwa-")))
+                    .filter(cacheName => (cacheName.startsWith('django-pwa-')))
                     .filter(cacheName => (cacheName !== staticCacheName))
                     .map(cacheName => caches.delete(cacheName))
             );
@@ -56,7 +57,7 @@ self.addEventListener('activate', event => {
 });
 
 // Serve from Cache
-self.addEventListener("fetch", event => {
+self.addEventListener('fetch', event => {
     event.respondWith(
         caches.match(event.request)
             .then(response => {
