@@ -876,7 +876,8 @@ class TestGenerateConfigFile(TestCase):
             'target': [
                 'ac',
                 'tv'
-            ]
+            ],
+            'macros': {}
         }
 
         # Mock user input
