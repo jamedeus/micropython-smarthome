@@ -41,6 +41,8 @@ COPY frontend/webapp /repo/frontend/webapp
 
 # Copy python dependencies to final build stage
 COPY --from=py_build /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
+# Copy webpack bundles to final build stage
+COPY --from=node_build webapp/static/webapp/ /repo/frontend/webapp/static/webapp/
 
 # Create CLI dir (required if CLI_SYNC enabled)
 RUN mkdir /repo/CLI
