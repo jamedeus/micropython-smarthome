@@ -35,7 +35,7 @@ describe('Offline', () => {
         expect(window.location.reload).not.toHaveBeenCalled();
     });
 
-    it('reloads the page when able to connect to backend', () => {
+    it('reloads the page when able to connect to backend', async () => {
         // Mock fetch function to simulate backend available
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
@@ -50,8 +50,9 @@ describe('Offline', () => {
         // Fast forward 15 seconds, confirm fetch and reload were called
         jest.advanceTimersByTime(15000);
         expect(global.fetch).toHaveBeenCalledWith('/');
-        // TODO this fails for some reason (mock works in other project,
-        // coverage shows the line ran - maybe related to faketimers somehow?
-        // expect(window.location.reload).toHaveBeenCalled();
+        jest.useRealTimers();
+        await waitFor(() => {
+            expect(window.location.reload).toHaveBeenCalled();
+        });
     });
 });

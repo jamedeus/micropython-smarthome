@@ -14,18 +14,11 @@ describe('UnableToConnect', () => {
         });
     });
 
-    beforeEach(() => {
-        // Use fake timers
-        jest.useFakeTimers();
-    });
-
     afterEach(() => {
         jest.useRealTimers();
     });
 
     it('redirects to overview when back button is clicked', async () => {
-        jest.useRealTimers();
-
         // Create user, render app
         const user = userEvent.setup();
         const app = render(<App />);
@@ -36,8 +29,6 @@ describe('UnableToConnect', () => {
     });
 
     it('redirects to overview when "Back to Overview" button is clicked', async () => {
-        jest.useRealTimers();
-
         // Create user, render app
         const user = userEvent.setup();
         const app = render(<App />);
@@ -48,6 +39,9 @@ describe('UnableToConnect', () => {
     });
 
     it('tries to reconnect every 5 seconds', () => {
+        // Use fake timers
+        jest.useFakeTimers();
+
         // Mock fetch function to simulate target node offline
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
@@ -69,7 +63,10 @@ describe('UnableToConnect', () => {
         expect(window.location.reload).not.toHaveBeenCalled();
     });
 
-    it('reloads the page when target node back online', () => {
+    it('reloads the page when target node back online', async () => {
+        // Use fake timers
+        jest.useFakeTimers();
+
         // Mock fetch function to simulate target node online
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
@@ -88,8 +85,9 @@ describe('UnableToConnect', () => {
         // Fast forward 5 seconds, confirm fetch and reload were called
         jest.advanceTimersByTime(5000);
         expect(global.fetch).toHaveBeenCalledWith('/get_status/Bedroom');
-        // TODO this fails for some reason (mock works in other project,
-        // coverage shows the line ran - maybe related to faketimers somehow?
-        // expect(window.location.reload).toHaveBeenCalled();
+        jest.useRealTimers();
+        await waitFor(() => {
+            expect(window.location.reload).toHaveBeenCalled();
+        });
     });
 });
