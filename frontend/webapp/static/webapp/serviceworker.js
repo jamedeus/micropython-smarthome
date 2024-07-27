@@ -1,4 +1,3 @@
-
 var staticCacheName = 'django-pwa-v20d6256';
 var filesToCache = [
     '/offline/',

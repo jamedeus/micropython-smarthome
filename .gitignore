@@ -7,7 +7,15 @@ firmware/*.bin
 *.coverage.*
 .env
 *release.log
-frontend/node_configuration/static/
+frontend/webapp/static/webapp/*.woff
+frontend/webapp/static/webapp/*.woff2
+frontend/webapp/static/webapp/*.LICENSE.txt
+frontend/webapp/static/webapp/api_card.js
+frontend/webapp/static/webapp/api_overview.js
+frontend/webapp/static/webapp/edit_config.js
+frontend/webapp/static/webapp/offline.js
+frontend/webapp/static/webapp/overview.js
+frontend/webapp/static/webapp/unable_to_connect.js
 frontend/coverage/
 setup_ssl_certs.py
 *.der
