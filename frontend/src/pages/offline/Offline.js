@@ -7,7 +7,7 @@ const App = () => {
         // Reload current page once index is available
         const response = await fetch(`/`);
         if (response.ok) {
-            location.reload();
+            window.location.reload();
         }
     };
 
