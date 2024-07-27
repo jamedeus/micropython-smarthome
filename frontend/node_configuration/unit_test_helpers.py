@@ -183,7 +183,8 @@ request_payload = {
         "pin": "23",
         "target": [
             "tv"
-        ]
+        ],
+        "macros": {}
     },
     "device1": {
         "_type": "dimmer",
