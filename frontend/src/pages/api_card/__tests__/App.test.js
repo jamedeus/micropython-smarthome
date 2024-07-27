@@ -356,6 +356,71 @@ describe('App', () => {
         });
     });
 
+    it('sends correct payload when rule slider is moved', async () => {
+        // Mock fetch function to return expected response
+        global.fetch = jest.fn(() => Promise.resolve({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({
+                status: 'success',
+                message: { device3: "512" }
+            })
+        }));
+
+        // Get device3 card, rule slider elements
+        const card = app.getByText('Accent lights').parentElement.parentElement;
+        const sliderHandle = card.querySelector('.sliderHandle');
+        const sliderTrack = card.querySelector('.sliderTrack');
+
+        // Confirm current rule is 767 (displays 74, scaled to 1-100 range)
+        expect(sliderHandle.innerHTML).toBe('74');
+
+        // Mock slider element getBoundingClientRect to trick react-range that
+        // slider was moved (can't simulate user input due to jsdom)
+        sliderTrack.getBoundingClientRect = jest.fn(() => ({
+            bottom: 20,
+            height: 20,
+            left: 0,
+            right: 100,
+            top: 0,
+            width: 100,
+            x: 0,
+            y: 0
+        }));
+        sliderHandle.getBoundingClientRect = jest.fn(() => ({
+            bottom: 20,
+            height: 20,
+            left: 45,
+            right: 55,
+            top: 0,
+            width: 10,
+            x: 45,
+            y: 0
+        }));
+
+        // Simulate user dragging slider to make react-range call mocks above
+        fireEvent.mouseDown(sliderHandle, { clientX: 0, clientY: 0 });
+        fireEvent.mouseMove(document, { clientX: 50, clientY: 0 });
+        fireEvent.mouseUp(document);
+
+        // Confirm correct payload sent after debounce delay
+        await waitFor(() => {
+            expect(global.fetch).toHaveBeenCalledWith('/send_command', {
+                method: 'POST',
+                body: JSON.stringify({
+                    "command": "set_rule",
+                    "instance": "device3",
+                    "rule": 512,
+                    "target": "192.168.1.100"
+                }),
+                headers: postHeaders
+            });
+        });
+
+        // Confirm rule displayed on slider changed
+        expect(sliderHandle.innerHTML).toBe('50');
+    });
+
     it('sends correct payload when reset rule dropdown option clicked', async () => {
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({

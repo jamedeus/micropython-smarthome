@@ -95,7 +95,6 @@ const RuleSlider = ({
                     max={max}
                     values={values}
                     onChange={
-                        /* istanbul ignore next */
                         (values) => setRule(values[0])
                     }
                     onFinalChange={onBlur}
