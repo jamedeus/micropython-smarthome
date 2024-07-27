@@ -1,17 +1,17 @@
 # syntax=docker/dockerfile:1
 
 # Node dependencies build stage
-FROM node:19-buster-slim as node_build
+FROM node:19-buster-slim AS node_build
 
 # Copy directory containing package.json and react components
 COPY frontend/ .
 WORKDIR /frontend
-# Install node modules, compile react components to static file
+# Install node modules, bundle react components
 RUN npm install
 RUN npm run build
 
 # Python dependencies build stage
-FROM python:3.10-slim-buster as py_build
+FROM python:3.10-slim-buster AS py_build
 
 COPY frontend/docker/requirements.txt .
 RUN pip install --no-cache-dir -r /requirements.txt
@@ -39,23 +39,8 @@ COPY frontend/node_configuration /repo/frontend/node_configuration
 COPY frontend/frontend /repo/frontend/frontend
 COPY frontend/webapp /repo/frontend/webapp
 
-# Copy node + python dependencies to final build stage
-COPY --from=node_build node_modules/bootstrap/dist/css/bootstrap.min.css /repo/frontend/node_modules/bootstrap/dist/css/bootstrap.min.css
-COPY --from=node_build node_modules/bootstrap/dist/js/bootstrap.bundle.min.js /repo/frontend/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js
-COPY --from=node_build node_modules/bootstrap/dist/js/bootstrap.min.js /repo/frontend/node_modules/bootstrap/dist/js/bootstrap.min.js
-COPY --from=node_build node_modules/bootstrap-icons/font/bootstrap-icons.css /repo/frontend/node_modules/bootstrap-icons/font/bootstrap-icons.css
-COPY --from=node_build node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff /repo/frontend/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff
-COPY --from=node_build node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2 /repo/frontend/node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2
-COPY --from=node_build node_modules/jquery/dist/jquery.min.js /repo/frontend/node_modules/jquery/dist/jquery.min.js
-COPY --from=node_build node_modules/spinkit/spinkit.min.css /repo/frontend/node_modules/spinkit/spinkit.min.css
-COPY --from=node_build node_modules/smoothscroll-polyfill/dist/smoothscroll.min.js /repo/frontend/node_modules/smoothscroll-polyfill/dist/smoothscroll.min.js
-COPY --from=node_build node_modules/rangeslider.js/dist/rangeslider.min.js /repo/frontend/node_modules/rangeslider.js/dist/rangeslider.min.js
-COPY --from=node_build node_modules/react/umd/react.production.min.js /repo/frontend/node_modules/react/umd/react.production.min.js
-COPY --from=node_build node_modules/react-dom/umd/react-dom.production.min.js /repo/frontend/node_modules/react-dom/umd/react-dom.production.min.js
-COPY --from=node_build node_modules/react-transition-group/dist/react-transition-group.min.js /repo/frontend/node_modules/react-transition-group/dist/react-transition-group.min.js
+# Copy python dependencies to final build stage
 COPY --from=py_build /usr/local/lib/python3.10/site-packages/ /usr/local/lib/python3.10/site-packages/
-# Copy compiled react static files to final build stage
-COPY --from=node_build node_configuration/static/node_configuration/edit_config.js /repo/node_configuration/static/node_configuration/edit_config.js
 
 # Create CLI dir (required if CLI_SYNC enabled)
 RUN mkdir /repo/CLI
