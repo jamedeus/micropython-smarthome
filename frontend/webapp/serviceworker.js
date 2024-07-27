@@ -39,7 +39,7 @@ self.addEventListener('install', event => {
             .then(cache => {
                 return cache.addAll(filesToCache);
             })
-    )
+    );
 });
 
 // Clear cache on activate
@@ -66,5 +66,5 @@ self.addEventListener('fetch', event => {
             .catch(() => {
                 return caches.match('/offline/');
             })
-    )
+    );
 });

@@ -281,7 +281,7 @@ describe('App', () => {
             expect(app.container.querySelector('.spinner-border')).toBeNull();
             expect(app.queryByText('Failed to edit schedule rule')).not.toBeNull();
             expect(firstRule.children[2].children[0].querySelector('.bi-pencil')).not.toBeNull();
-        })
+        });
     });
 
     it('shows error toast and resets loading animation if delete rule API call fails', async () => {
