@@ -18,8 +18,11 @@ describe('ChangeIpModal', () => {
     });
 
     beforeEach(async () => {
+        // Use fake timers
+        jest.useFakeTimers();
+
         // Render app + create userEvent instance to use in tests
-        user = userEvent.setup();
+        user = userEvent.setup({delay: null});
         app = render(
             <OverviewContextProvider>
                 <App />
@@ -76,12 +79,13 @@ describe('ChangeIpModal', () => {
         });
 
         // Confirm modal closed, IP changed in existing nodes table
+        jest.advanceTimersByTime(1200);
         await waitFor(() => {
             expect(app.queryByText(/file to a new IP/)).toBeNull();
             const existingNodes = app.getByText('Existing Nodes').parentElement;
             expect(within(existingNodes).queryByText('192.168.1.100')).toBeNull();
             expect(within(existingNodes).queryByText('123.123.123.123')).not.toBeNull();
-        }, { timeout: 1500 });
+        });
     });
 
     it('submits modal when enter key pressed in input', async () => {
@@ -140,10 +144,11 @@ describe('ChangeIpModal', () => {
         });
 
         // Confirm modal closed, unable to connect error modal appeared
+        jest.advanceTimersByTime(1200);
         await waitFor(() => {
             expect(app.queryByText(/file to a new IP/)).toBeNull();
             expect(app.getByText(/Unable to connect to/)).not.toBeNull();
-        }, { timeout: 1500 });
+        });
     });
 
     it('shows generic error modal if other errors occur', async () => {
@@ -174,10 +179,11 @@ describe('ChangeIpModal', () => {
         });
 
         // Confirm modal closed, error modal with arbitrary error text appeared
+        jest.advanceTimersByTime(1200);
         await waitFor(() => {
             expect(app.queryByText(/file to a new IP/)).toBeNull();
             expect(app.getByText("I'm a teapot")).not.toBeNull();
-        }, { timeout: 1500 });
+        });
     });
 
     it('closes modal when X button or background is clicked', async () => {
@@ -185,11 +191,15 @@ describe('ChangeIpModal', () => {
         await user.click(app.getByText(
             /to a new IP/
         ).parentElement.parentElement.children[0].children[2]);
-        expect(app.queryByText(/to a new IP/)).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText(/to a new IP/)).toBeNull();
+        });
 
         // Open modal again, click backdrop, confirm modal closes
         await user.click(app.getByText('Change IP'));
         await user.click(document.querySelector('.modal-backdrop'));
-        expect(app.queryByText('Set Default Wifi')).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Set Default Wifi')).toBeNull();
+        });
     });
 });

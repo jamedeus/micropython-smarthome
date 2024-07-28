@@ -18,8 +18,11 @@ describe('RestoreModal', () => {
     });
 
     beforeEach(async () => {
+        // Use fake timers
+        jest.useFakeTimers();
+
         // Render app + create userEvent instance to use in tests
-        user = userEvent.setup();
+        user = userEvent.setup({delay: null});
         app = render(
             <OverviewContextProvider>
                 <App />
@@ -79,11 +82,12 @@ describe('RestoreModal', () => {
         });
 
         // Confirm modal closes automatically, node appears in existing nodes table
+        jest.advanceTimersByTime(1200);
         await waitFor(() => {
             expect(app.queryByText(/config files from existing nodes/)).toBeNull();
             const existingNodes = app.getByText('Existing Nodes').parentElement;
             expect(within(existingNodes).queryByText('123.123.123.123')).not.toBeNull();
-        }, { timeout: 1500 });
+        });
     });
 
     it('submits modal when enter key pressed in input', async () => {
@@ -205,7 +209,9 @@ describe('RestoreModal', () => {
         await user.click(app.getByRole('button', { name: 'Restore' }));
 
         // Confirm arbitrary error was shown in error toast
-        expect(app.queryByText("I'm a teapot")).not.toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText("I'm a teapot")).not.toBeNull();
+        });
     });
 
     it('closes modal when X button or background is clicked', async () => {
@@ -213,11 +219,15 @@ describe('RestoreModal', () => {
         await user.click(app.getByText(
             /config files from existing nodes/
         ).parentElement.parentElement.children[0].children[2]);
-        expect(app.queryByText(/config files from existing nodes/)).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText(/config files from existing nodes/)).toBeNull();
+        });
 
         // Open modal again, click backdrop, confirm modal closes
         await user.click(app.getByText('Restore config'));
         await user.click(document.querySelector('.modal-backdrop'));
-        expect(app.queryByText(/config files from existing nodes/)).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText(/config files from existing nodes/)).toBeNull();
+        });
     });
 });

@@ -202,8 +202,11 @@ describe('GpsModal', () => {
     });
 
     beforeEach(async () => {
+        // Use fake timers
+        jest.useFakeTimers();
+
         // Render app + create userEvent instance to use in tests
-        user = userEvent.setup();
+        user = userEvent.setup({delay: null});
         app = render(
             <OverviewContextProvider>
                 <App />
@@ -214,6 +217,10 @@ describe('GpsModal', () => {
         const header = app.getByText('Configure Nodes').parentElement;
         await user.click(within(header).getAllByRole('button')[0]);
         await user.click(app.getByText('Set GPS coordinates'));
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     it('loads suggestions when user types in input', async () => {
@@ -231,19 +238,24 @@ describe('GpsModal', () => {
         const modal = app.getByText('Set Default Location').parentElement.parentElement;
         await user.type(within(modal).getByRole('textbox'), 'portland');
 
+        // Fast forward 2 seconds (debounced API call)
+        jest.advanceTimersByTime(2000);
+
         // Confirm correct API call made, confirm suggestions appeared
+        expect(global.fetch).toHaveBeenCalledWith('/get_location_suggestions/portland');
         await waitFor(() => {
-            expect(global.fetch).toHaveBeenCalledWith('/get_location_suggestions/portland');
             expect(app.queryByText(/Portland, Multnomah County, Oregon/)).not.toBeNull();
             expect(app.queryByText(/Portland, Cumberland County, Maine/)).not.toBeNull();
             expect(app.queryByText(/Portland, San Patricio County, Texas/)).not.toBeNull();
-        }, { timeout: 2500 });
+        });
 
         // Clear input, confirm suggestions are removed
         await user.clear(within(modal).getByRole('textbox'));
-        expect(app.queryByText(/Portland, Multnomah County, Oregon/)).toBeNull();
-        expect(app.queryByText(/Portland, Cumberland County, Maine/)).toBeNull();
-        expect(app.queryByText(/Portland, San Patricio County, Texas/)).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText(/Portland, Multnomah County, Oregon/)).toBeNull();
+            expect(app.queryByText(/Portland, Cumberland County, Maine/)).toBeNull();
+            expect(app.queryByText(/Portland, San Patricio County, Texas/)).toBeNull();
+        });
     });
 
     it('shows error toast when geocode API key is missing', async () => {
@@ -261,10 +273,13 @@ describe('GpsModal', () => {
         const modal = app.getByText('Set Default Location').parentElement.parentElement;
         await user.type(within(modal).getByRole('textbox'), 'portland');
 
+        // Fast forward 2 seconds (debounced API call)
+        jest.advanceTimersByTime(2000);
+
         // Confirm error toast is shown with message from API response
         await waitFor(() => {
             expect(app.queryByText(/HTTP 401: Missing API Key/)).not.toBeNull();
-        }, { timeout: 2500 });
+        });
     });
 
     it('makes correct request when user selects a location', async () => {
@@ -281,10 +296,12 @@ describe('GpsModal', () => {
         // Simulate user typing location in input, clicking first suggestion
         const modal = app.getByText('Set Default Location').parentElement.parentElement;
         await user.type(within(modal).getByRole('textbox'), 'portland');
+        jest.advanceTimersByTime(2000);
         await waitFor(() => {
             expect(app.queryByText(/Portland, Multnomah County, Oregon/)).not.toBeNull();
-        }, { timeout: 2500 });
+        });
         await user.click(app.getByText(/Portland, Multnomah County, Oregon/));
+        jest.advanceTimersByTime(1);
 
         // Confirm correct request was sent
         expect(global.fetch).toHaveBeenCalledWith('/set_default_location', {
@@ -301,11 +318,15 @@ describe('GpsModal', () => {
     it('closes modal when X button or background is clicked', async () => {
         // Click close button, confirm modal closes
         await user.click(app.getByText('Set Default Location').parentElement.children[2]);
-        expect(app.queryByText('Set Default Location')).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Set Default Location')).toBeNull();
+        });
 
         // Open modal again, click backdrop, confirm modal closes
         await user.click(app.getByText('Set GPS coordinates'));
         await user.click(document.querySelector('.modal-backdrop'));
-        expect(app.queryByText('Set Default Location')).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Set Default Location')).toBeNull();
+        });
     });
 });
