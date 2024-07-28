@@ -88,8 +88,6 @@ describe('EditConfig', () => {
     });
 
     it('checks for duplicate names when user types in name field', async () => {
-        jest.useRealTimers();
-
         // Mock fetch function to simulate duplicate friendly name
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
@@ -104,8 +102,8 @@ describe('EditConfig', () => {
         const metadata = app.getByText('Metadata').parentElement;
         const nameField = within(metadata).getAllByRole('textbox')[0];
         await user.clear(nameField);
-        await user.click(nameField);
-        await userEvent.paste('Bathroom');
+        await user.type(nameField, 'Bathroom');
+        jest.advanceTimersByTime(200);
 
         // Confirm correct request sent
         expect(global.fetch).toHaveBeenCalledWith('/check_duplicate', {
@@ -115,8 +113,10 @@ describe('EditConfig', () => {
         });
 
         // Confirm field is marked invalid, next page button is disabled
-        expect(nameField.classList).toContain('is-invalid');
-        expect(app.getByRole('button', { name: 'Next' })).toHaveAttribute('disabled');
+        await waitFor(() => {
+            expect(nameField.classList).toContain('is-invalid');
+            expect(app.getByRole('button', { name: 'Next' })).toHaveAttribute('disabled');
+        });
 
         // Mock fetch function to simulate available friendly name
         global.fetch = jest.fn(() => Promise.resolve({
@@ -130,20 +130,26 @@ describe('EditConfig', () => {
 
         // Enter unique name in friendly name field
         await user.clear(nameField);
-        await user.click(nameField);
-        await userEvent.paste('Other Bathroom');
+        await user.type(nameField, 'Other Bathroom');
+        jest.advanceTimersByTime(200);
 
         // Confirm invalid highlight disappeared, next page button not disabled
-        expect(nameField.classList).not.toContain('is-invalid');
-        expect(app.getByRole('button', { name: 'Next' })).not.toHaveAttribute('disabled');
+        await waitFor(() => {
+            expect(nameField.classList).not.toContain('is-invalid');
+            expect(app.getByRole('button', { name: 'Next' })).not.toHaveAttribute('disabled');
+        });
 
         // Enter existing name (except for last character)
         await user.clear(nameField);
-        await user.click(nameField);
-        await userEvent.paste('All devices and sensor');
-        // Enter last character, confirm request was NOT sent (don't mark existing as duplicate)
+        await user.type(nameField, 'All devices and sensor');
+        jest.advanceTimersByTime(200);
         jest.clearAllMocks();
+
+        // Enter last character
         await user.type(nameField, 's');
+        jest.advanceTimersByTime(200);
+
+        // Confirm request was NOT sent (doesn't mark existing name as duplicate)
         expect(global.fetch).not.toHaveBeenCalled();
         expect(nameField.classList).not.toContain('is-invalid');
     });
