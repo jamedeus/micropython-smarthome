@@ -53,8 +53,8 @@ if not CONFIG_DIR:
     CONFIG_DIR = os.path.join(REPO_DIR, 'config_files')
 if not NODE_PASSWD:
     NODE_PASSWD = 'password'
-if not CLI_SYNC:
-    CLI_SYNC = False
+if not CLI_SYNC:  # pragma: no cover
+    CLI_SYNC = False  # pragma: no cover
 
 # Create config dir if it does not exist and CLI_SYNC is enabled
 if CLI_SYNC and not os.path.exists(CONFIG_DIR):

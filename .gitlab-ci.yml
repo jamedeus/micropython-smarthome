@@ -29,10 +29,12 @@ test_django:
   tags:
     - nas
     - docker
-  script:
+  before_script:
     - pip3 install pipenv
     - pipenv install --dev
     - cd frontend/
+    - export CLI_SYNC=True
+  script:
     - pipenv run coverage run --source='.' manage.py test
     - pipenv run coverage report
   coverage: '/TOTAL.*\s+(\d+\.\d+\%)$/'
