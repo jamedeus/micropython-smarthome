@@ -791,6 +791,7 @@ class OverviewPageTests(TestCaseBackupRestore):
         # Confirm correct context (empty)
         self.assertEqual(response.context['not_uploaded'], [])
         self.assertEqual(response.context['uploaded'], [])
+        self.assertEqual(response.context['schedule_keywords'], [])
 
         # Confirm neither section present
         self.assertNotContains(response, '<div id="not_uploaded" class="row section px-0 pt-2 mb-5">')
@@ -804,9 +805,32 @@ class OverviewPageTests(TestCaseBackupRestore):
         response = self.client.get('/config_overview')
         self.assertTemplateUsed(response, 'node_configuration/overview.html')
 
-        # Confirm correct context (empty configs, 3 nodes)
+        # Confirm correct context (no configs, 3 nodes, no schedule keywords)
         self.assertEqual(response.context['not_uploaded'], [])
         self.assertEqual(len(response.context['uploaded']), 3)
+        self.assertEqual(response.context['schedule_keywords'], [])
+
+        # Confirm correct node details
+        self.assertEqual(
+            response.context['uploaded'],
+            [
+                {
+                    "friendly_name": "Test1",
+                    "ip": "192.168.1.123",
+                    "filename": "test1.json"
+                },
+                {
+                    "friendly_name": "Test2",
+                    "ip": "192.168.1.124",
+                    "filename": "test2.json"
+                },
+                {
+                    "friendly_name": "Test3",
+                    "ip": "192.168.1.125",
+                    "filename": "test3.json"
+                }
+            ]
+        )
 
         # Remove test configs from disk
         clean_up_test_nodes()
@@ -819,9 +843,59 @@ class OverviewPageTests(TestCaseBackupRestore):
         response = self.client.get('/config_overview')
         self.assertTemplateUsed(response, 'node_configuration/overview.html')
 
-        # Confirm correct context (1 config, empty nodes)
+        # Confirm correct context (1 config, no nodes, no schedule keywords)
         self.assertEqual(len(response.context['not_uploaded']), 1)
+        self.assertEqual(response.context['not_uploaded'][0]['filename'], 'test1.json')
         self.assertEqual(response.context['uploaded'], [])
+        self.assertEqual(response.context['schedule_keywords'], [])
+
+        # Confirm correct config details
+        self.assertEqual(
+            response.context['not_uploaded'],
+            [
+                {
+                    "friendly_name": "Test1",
+                    "filename": "test1.json"
+                }
+            ]
+        )
+
+    def test_overview_page_with_schedule_keywords(self):
+        # Create test keywords
+        ScheduleKeyword.objects.create(keyword='morning', timestamp='08:00')
+        ScheduleKeyword.objects.create(keyword='sleep', timestamp='23:00')
+
+        # Rquest page, confirm correct template used
+        response = self.client.get('/config_overview')
+        self.assertTemplateUsed(response, 'node_configuration/overview.html')
+
+        # Confirm correct context (no configs, no nodes, 2 schedule keywords)
+        self.assertEqual(response.context['not_uploaded'], [])
+        self.assertEqual(response.context['uploaded'], [])
+        self.assertEqual(len(response.context['schedule_keywords']), 2)
+        self.assertEqual(response.context['schedule_keywords'][0]['keyword'], 'morning')
+        self.assertEqual(response.context['schedule_keywords'][1]['keyword'], 'sleep')
+
+    def test_overview_page_direct_connection(self):
+        # Simulate direct request to backend
+        response = self.client.get('/config_overview', REMOTE_ADDR='192.168.1.251')
+
+        # Confirm correct status, context contains mocked IP
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['client_ip'], '192.168.1.251')
+
+    def test_overview_page_proxy_connection(self):
+        # Simulate request to backend through reverse proxy
+        # REMOTE_ADDR is proxy host, FORWARDED_FOR is client
+        response = self.client.get(
+            '/config_overview',
+            REMOTE_ADDR='192.168.1.100',
+            HTTP_X_FORWARDED_FOR='192.168.1.251'
+        )
+
+        # Confirm correct status, context contains client IP
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context['client_ip'], '192.168.1.251')
 
 
 # Test endpoint called by reupload all option in config overview
@@ -1283,6 +1357,19 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
                         "turn_off"
                     ]
                 },
+                "device2": {
+                    "display": "Lights (api-target)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
                 "sensor1": {
                     "display": "Thermostat (si7021)",
                     "options": [
@@ -1447,6 +1534,19 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
             "Test2": {
                 "device1": {
                     "display": "Air Conditioner (api-target)",
+                    "options": [
+                        "enable",
+                        "disable",
+                        "enable_in",
+                        "disable_in",
+                        "set_rule",
+                        "reset_rule",
+                        "turn_on",
+                        "turn_off"
+                    ]
+                },
+                "device2": {
+                    "display": "Lights (api-target)",
                     "options": [
                         "enable",
                         "disable",
@@ -1747,6 +1847,17 @@ class ApiTargetMenuOptionsTest(TestCaseBackupRestore):
         expected_options = {
             "device1": {
                 "display": "Air Conditioner (api-target)",
+                "options": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule"
+                ]
+            },
+            "device2": {
+                "display": "Lights (api-target)",
                 "options": [
                     "enable",
                     "disable",

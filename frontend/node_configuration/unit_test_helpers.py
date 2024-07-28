@@ -467,6 +467,22 @@ test_config_2 = {
             }
         }
     },
+    "device2": {
+        "nickname": "Lights",
+        "_type": "api-target",
+        "ip": "192.168.1.123",
+        "default_rule": {
+            "on": [
+                "device1",
+                "turn_on"
+            ],
+            "off": [
+                "device1",
+                "turn_off"
+            ]
+        },
+        "schedule": {}
+    },
     "sensor1": {
         "_type": "si7021",
         "nickname": "Thermostat",
@@ -474,7 +490,8 @@ test_config_2 = {
         "tolerance": "0.5",
         "default_rule": 74,
         "targets": [
-            "device1"
+            "device1",
+            "device2"
         ],
         "schedule": {},
         "units": "fahrenheit"
@@ -688,6 +705,19 @@ test_config_1_edit_context = {
                     "turn_off"
                 ]
             },
+            "device2": {
+                "display": "Lights (api-target)",
+                "options": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ]
+            },
             "sensor1": {
                 "display": "Thermostat (si7021)",
                 "options": [
@@ -826,6 +856,22 @@ test_config_2_edit_context = {
                 }
             }
         },
+        "device2": {
+            "nickname": "Lights",
+            "_type": "api-target",
+            "ip": "192.168.1.123",
+            "default_rule": {
+                "on": [
+                    "device1",
+                    "turn_on"
+                ],
+                "off": [
+                    "device1",
+                    "turn_off"
+                ]
+            },
+            "schedule": {}
+        },
         "sensor1": {
             "_type": "si7021",
             "nickname": "Thermostat",
@@ -833,7 +879,8 @@ test_config_2_edit_context = {
             "tolerance": "0.5",
             "default_rule": 74,
             "targets": [
-                "device1"
+                "device1",
+                "device2"
             ],
             "schedule": {},
             "units": "fahrenheit"
@@ -855,6 +902,17 @@ test_config_2_edit_context = {
         "self-target": {
             "device1": {
                 "display": "Air Conditioner (api-target)",
+                "options": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule"
+                ]
+            },
+            "device2": {
+                "display": "Lights (api-target)",
                 "options": [
                     "enable",
                     "disable",
@@ -1207,6 +1265,19 @@ test_config_3_edit_context = {
         "Test2": {
             "device1": {
                 "display": "Air Conditioner (api-target)",
+                "options": [
+                    "enable",
+                    "disable",
+                    "enable_in",
+                    "disable_in",
+                    "set_rule",
+                    "reset_rule",
+                    "turn_on",
+                    "turn_off"
+                ]
+            },
+            "device2": {
+                "display": "Lights (api-target)",
                 "options": [
                     "enable",
                     "disable",

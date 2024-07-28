@@ -186,7 +186,8 @@ config2_status = {
             'scheduled_rule': 74,
             'enabled': True,
             'targets': [
-                'device1'
+                'device1',
+                'device2'
             ],
             'nickname': 'Thermostat',
             'condition_met': False,
@@ -266,6 +267,43 @@ config2_status = {
             },
             'nickname': 'Air Conditioner',
             'turned_on': False
+        },
+        'device2': {
+            'current_rule': {
+                'on': [
+                    'device1',
+                    'turn_on'
+                ],
+                'off': [
+                    'device1',
+                    'turn_off'
+                ]
+            },
+            'default_rule': {
+                'on': [
+                    'device1',
+                    'turn_on'
+                ],
+                'off': [
+                    'device1',
+                    'turn_off'
+                ]
+            },
+            'enabled': True,
+            'type': 'api-target',
+            'schedule': {},
+            'scheduled_rule': {
+                'on': [
+                    'device1',
+                    'turn_on'
+                ],
+                'off': [
+                    'device1',
+                    'turn_off'
+                ]
+            },
+            'nickname': 'Lights',
+            'turned_on': False
         }
     }
 }
@@ -275,6 +313,17 @@ config2_api_target_options = {
     "device1": {
         "device1": {
             "display": "Air Conditioner (api-target)",
+            "options": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule"
+            ]
+        },
+        "device2": {
+            "display": "Lights (api-target)",
             "options": [
                 "enable",
                 "disable",
@@ -307,6 +356,49 @@ config2_api_target_options = {
                     "off"
                 ]
             }
+        },
+        "ignore": {
+            "display": "Ignore action"
+        }
+    },
+    "device2": {
+        "device1": {
+            "display": "Cabinet Lights (pwm)",
+            "options": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
+            ]
+        },
+        "device2": {
+            "display": "Overhead Lights (tasmota-relay)",
+            "options": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "turn_on",
+                "turn_off"
+            ]
+        },
+        "sensor1": {
+            "display": "Motion Sensor (pir)",
+            "options": [
+                "enable",
+                "disable",
+                "enable_in",
+                "disable_in",
+                "set_rule",
+                "reset_rule",
+                "trigger_sensor"
+            ]
         },
         "ignore": {
             "display": "Ignore action"
