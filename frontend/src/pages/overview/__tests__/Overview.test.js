@@ -18,8 +18,11 @@ describe('App', () => {
     });
 
     beforeEach(() => {
+        // Use fake timers
+        jest.useFakeTimers();
+
         // Render app + create userEvent instance to use in tests
-        user = userEvent.setup();
+        user = userEvent.setup({delay: null});
         app = render(
             <OverviewContextProvider>
                 <App />
@@ -128,9 +131,10 @@ describe('App', () => {
         });
 
         // Confirm modal closes automatically
+        jest.advanceTimersByTime(1500);
         await waitFor(() => {
             expect(app.queryByText('Upload Complete')).toBeNull();
-        }, { timeout: 1500 });
+        });
     });
 
     it('shows error modal when "Re-upload all" fails to upload some nodes', async () => {
@@ -240,22 +244,22 @@ describe('App', () => {
         });
 
         // Confirm upload complete animation appears in modal
+        jest.advanceTimersByTime(100);
         await waitFor(() => {
             expect(app.queryByText('Upload Complete')).not.toBeNull();
-        }, { timeout: 1500 });
+        });
 
         // Confirm upload complete modal closes automatically
+        jest.advanceTimersByTime(1500);
         await waitFor(() => {
             expect(app.queryByText('Upload Complete')).toBeNull();
-        }, { timeout: 1500 });
+        });
 
         // Confirm new config table is removed from page (last new config uploaded)
         // Confirm new config appeared in the existing nodes table
-        await waitFor(() => {
-            expect(app.queryByText('Configs Ready to Upload')).toBeNull();
-            const existingNodes = app.getByText('Existing Nodes').parentElement;
-            expect(within(existingNodes).queryByText('192.168.1.105')).not.toBeNull();
-        }, { timeout: 1500 });
+        expect(app.queryByText('Configs Ready to Upload')).toBeNull();
+        const existingNodes = app.getByText('Existing Nodes').parentElement;
+        expect(within(existingNodes).queryByText('192.168.1.105')).not.toBeNull();
     });
 
     it('uploads new config when enter key is pressed in IP field', async () => {
@@ -351,7 +355,11 @@ describe('App', () => {
         await user.click(app.getByRole('button', { name: 'Delete' }));
 
         // Confirm error modal appeared with API response
-        expect(app.getByText('Failed to delete new-config.json, does not exist')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(app.getByText(
+                'Failed to delete new-config.json, does not exist'
+            )).toBeInTheDocument();
+        });
     });
 
     it('redirects to edit page when existing node edit option clicked', async () => {
@@ -404,9 +412,10 @@ describe('App', () => {
 
         // Confirm toast disappears after 5 seconds
         expect(app.queryByText('Finished reuploading bathroom.json')).not.toBeNull();
+        jest.advanceTimersByTime(5000);
         await waitFor(() => {
             expect(app.queryByText('Finished reuploading bathroom.json')).toBeNull();
-        }, { timeout: 5500 });
+        });
     });
 
     it('closes reupload toast when clicked', async () => {
@@ -454,7 +463,9 @@ describe('App', () => {
 
         // Click "Re-upload" option, confirm correct request sent
         await user.click(app.getByText('Re-upload'));
-        expect(app.getByText('Connection Error')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(app.getByText('Connection Error')).toBeInTheDocument();
+        });
     });
 
     it('opens ChangeIpModal when existing node dropdown option is clicked', async () => {
@@ -496,7 +507,9 @@ describe('App', () => {
         });
 
         // Confirm node was removed from existing nodes table
-        expect(within(existingNodes).queryByText('Bathroom')).toBeNull();
+        await waitFor(() => {
+            expect(within(existingNodes).queryByText('Bathroom')).toBeNull();
+        });
     });
 
     it('shows error in modal after failing to delete existing node', async () => {
@@ -520,7 +533,11 @@ describe('App', () => {
         await user.click(within(modal).getByRole('button', { name: 'Delete' }));
 
         // Confirm error modal appeared with API response
-        expect(app.getByText('Failed to delete Bathroom, does not exist')).toBeInTheDocument();
+        await waitFor(() => {
+            expect(app.getByText(
+                'Failed to delete Bathroom, does not exist'
+            )).toBeInTheDocument();
+        });
     });
 
     it('sends correct request when a schedule keyword is added', async () => {

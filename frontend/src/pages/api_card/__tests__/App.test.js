@@ -22,8 +22,11 @@ describe('App', () => {
     });
 
     beforeEach(() => {
+        // Use fake timers
+        jest.useFakeTimers();
+
         // Render app + create userEvent instance to use in tests
-        user = userEvent.setup();
+        user = userEvent.setup({delay: null});
         app = render(
             <MetadataContextProvider>
                 <ApiCardContextProvider>
@@ -327,6 +330,7 @@ describe('App', () => {
 
         // Click minus button, confirm correct payload sent
         await user.click(minus);
+        jest.advanceTimersByTime(200);
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith('/send_command', {
                 method: 'POST',
@@ -342,6 +346,7 @@ describe('App', () => {
 
         // Click plus button, confirm correct payload sent
         await user.click(plus);
+        jest.advanceTimersByTime(200);
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith('/send_command', {
                 method: 'POST',
@@ -357,6 +362,8 @@ describe('App', () => {
     });
 
     it('sends correct payload when rule slider is moved', async () => {
+        jest.useRealTimers();
+
         // Mock fetch function to return expected response
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
@@ -404,6 +411,7 @@ describe('App', () => {
         fireEvent.mouseUp(document);
 
         // Confirm correct payload sent after debounce delay
+        jest.advanceTimersByTime(200);
         await waitFor(() => {
             expect(global.fetch).toHaveBeenCalledWith('/send_command', {
                 method: 'POST',
@@ -418,7 +426,9 @@ describe('App', () => {
         });
 
         // Confirm rule displayed on slider changed
-        expect(sliderHandle.innerHTML).toBe('50');
+        await waitFor(() => {
+            expect(sliderHandle.innerHTML).toBe('50');
+        });
     });
 
     it('sends correct payload when reset rule dropdown option clicked', async () => {
@@ -462,8 +472,10 @@ describe('App', () => {
 
         // Confirm reset option is now disabled, current rule changed to 1023
         // (displays 100, scaled to 1-100 range)
-        expect(reset.classList).toContain('disabled');
-        expect(sliderHandle.innerHTML).toBe('100');
+        await waitFor(() => {
+            expect(reset.classList).toContain('disabled');
+            expect(sliderHandle.innerHTML).toBe('100');
+        });
     });
 
     it('cancels slider edit mode immediately when reset rule clicked', async () => {
@@ -526,10 +538,14 @@ describe('App', () => {
         await user.click(within(dropdown).getByText('Reset rule'));
 
         // Confirm rule changed immediately (canceled edit mode)
-        expect(sliderHandle.innerHTML).toBe('100');
+        waitFor(() => {
+            expect(sliderHandle.innerHTML).toBe('100');
+        });
     });
 
     it('sends correct payload when new schedule rule is added', async () => {
+        jest.useRealTimers();
+
         // Mock fetch function to return expected response after 100ms delay
         global.fetch = jest.fn(() => new Promise((resolve) => {
             setTimeout(() => {
@@ -584,6 +600,8 @@ describe('App', () => {
     });
 
     it('sends correct payload when schedule rule value is edited', async () => {
+        jest.useRealTimers();
+
         // Mock fetch function to return expected response after 100ms delay
         global.fetch = jest.fn(() => new Promise((resolve) => {
             setTimeout(() => {
@@ -638,6 +656,8 @@ describe('App', () => {
     });
 
     it('sends correct payload when schedule rule timestamp is edited', async () => {
+        jest.useRealTimers();
+
         // Mock fetch function to return expected response after 100ms delay
         global.fetch = jest.fn(() => new Promise((resolve) => {
             setTimeout(() => {
@@ -803,6 +823,11 @@ describe('App', () => {
         await user.click(scheduleRulesButton);
         await user.click(firstRule.children[2].children[0]);
 
+        // Confirm toast appeared
+        await waitFor(() => {
+            expect(app.queryByText(/persist after reboot/)).not.toBeNull();
+        });
+
         // Get toast, click yes, confirm correct payload sent
         const toast = app.getByText('Should this rule change persist after reboot?').parentElement;
         await user.click(within(toast).getByText('Yes'));
@@ -826,6 +851,11 @@ describe('App', () => {
         await user.click(scheduleRulesButton);
         await user.click(firstRule.children[2].children[0]);
         jest.clearAllMocks();
+
+        // Confirm toast appeared
+        await waitFor(() => {
+            expect(app.queryByText(/persist after reboot/)).not.toBeNull();
+        });
 
         // Get toast, click no, confirm no request was made
         const toast = app.getByText('Should this rule change persist after reboot?').parentElement;
@@ -894,18 +924,24 @@ describe('App', () => {
         });
 
         // Confirm debug modal appeared with mock response text
-        expect(app.queryByText(/"nickname": "Accent lights"/)).not.toBeNull();
-        // Confirm does not appear JSON wrapper
-        expect(app.queryByText(/"status": "success"/)).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText(/"nickname": "Accent lights"/)).not.toBeNull();
+            // Confirm text does not include JSON wrapper
+            expect(app.queryByText(/"status": "success"/)).toBeNull();
+        });
 
         // Click modal close button, confirm closed
         await user.click(app.getAllByText('Debug')[1].parentElement.children[2]);
-        expect(app.queryByText(/"nickname": "Accent lights"/)).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText(/"nickname": "Accent lights"/)).toBeNull();
+        });
 
         // Show modal again, click backdrop, confirm closed
         await user.click(within(dropdown).getByText('Debug'));
         await user.click(document.querySelector('.modal-backdrop'));
-        expect(app.queryByText(/"nickname": "Accent lights"/)).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText(/"nickname": "Accent lights"/)).toBeNull();
+        });
     });
 
     it('shows schedule toggle modal when dropdown option clicked', async () => {
@@ -955,6 +991,7 @@ describe('App', () => {
         });
 
         // Wait for highlight animation to complete
+        jest.advanceTimersByTime(1000);
         await waitFor(() => {
             expect(device7.parentElement.classList).toContain('highlight-enter-done');
             expect(device8.parentElement.classList).toContain('highlight-enter-done');

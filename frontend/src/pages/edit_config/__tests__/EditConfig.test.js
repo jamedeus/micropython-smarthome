@@ -20,8 +20,11 @@ describe('EditConfig', () => {
     });
 
     beforeEach(() => {
+        // Use fake timers
+        jest.useFakeTimers();
+
         // Render app + create userEvent instance to use in tests
-        user = userEvent.setup();
+        user = userEvent.setup({delay: null});
         app = render(
             <MetadataContextProvider>
                 <EditConfigProvider>
@@ -79,10 +82,14 @@ describe('EditConfig', () => {
 
         // Click "Add IR Blaster" button again, confirm collapse opens
         await user.click(app.getByRole('button', { name: 'Add IR Blaster' }));
-        expect(irBlaster.classList).toContain('show');
+        await waitFor(() => {
+            expect(irBlaster.classList).toContain('show');
+        });
     });
 
     it('checks for duplicate names when user types in name field', async () => {
+        jest.useRealTimers();
+
         // Mock fetch function to simulate duplicate friendly name
         global.fetch = jest.fn(() => Promise.resolve({
             ok: false,
@@ -97,7 +104,8 @@ describe('EditConfig', () => {
         const metadata = app.getByText('Metadata').parentElement;
         const nameField = within(metadata).getAllByRole('textbox')[0];
         await user.clear(nameField);
-        await user.type(nameField, 'Bathroom');
+        await user.click(nameField);
+        await userEvent.paste('Bathroom');
 
         // Confirm correct request sent
         expect(global.fetch).toHaveBeenCalledWith('/check_duplicate', {
@@ -122,7 +130,8 @@ describe('EditConfig', () => {
 
         // Enter unique name in friendly name field
         await user.clear(nameField);
-        await user.type(nameField, 'Other Bathroom');
+        await user.click(nameField);
+        await userEvent.paste('Other Bathroom');
 
         // Confirm invalid highlight disappeared, next page button not disabled
         expect(nameField.classList).not.toContain('is-invalid');
@@ -130,7 +139,8 @@ describe('EditConfig', () => {
 
         // Enter existing name (except for last character)
         await user.clear(nameField);
-        await user.type(nameField, 'All devices and sensor');
+        await user.click(nameField);
+        await userEvent.paste('All devices and sensor');
         // Enter last character, confirm request was NOT sent (don't mark existing as duplicate)
         jest.clearAllMocks();
         await user.type(nameField, 's');
@@ -482,7 +492,9 @@ describe('EditConfig', () => {
         await user.click(app.getByRole('button', { name: 'Submit' }));
 
         // Confirm error toast was shown with response from API
-        expect(app.queryByText('Unexpected error')).not.toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Unexpected error')).not.toBeNull();
+        });
     });
 
     it('refuses to create config with blank schedule rules', async () => {
@@ -525,7 +537,9 @@ describe('EditConfig', () => {
 
         // Click submit, confirm error toast was shown with text from response
         await user.click(app.getByRole('button', { name: 'Submit' }));
-        expect(app.queryByText('"Unexpected error"')).not.toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('"Unexpected error"')).not.toBeNull();
+        });
 
         // Confirm did NOT redirect to overview
         expect(window.location.href).not.toBe('/config_overview');

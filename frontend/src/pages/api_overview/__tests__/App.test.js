@@ -15,8 +15,11 @@ describe('App', () => {
     });
 
     beforeEach(() => {
+        // Use fake timers
+        jest.useFakeTimers();
+
         // Render app + create userEvent instance to use in tests
-        user = userEvent.setup();
+        user = userEvent.setup({delay: null});
         app = render(
             <ApiOverviewContextProvider>
                 <App />
@@ -128,10 +131,11 @@ describe('App', () => {
         });
 
         // Confirm "Late" text reappears when animation complete
+        jest.advanceTimersByTime(1500);
         await waitFor(() => {
             expect(app.container.querySelector('.checkmark')).toBeNull();
             expect(app.queryByText('Late')).not.toBeNull();
-        }, { timeout: 2500 });
+        });
     });
 
     it('sends the correct request when a macro is deleted', async () => {
@@ -159,7 +163,7 @@ describe('App', () => {
         await user.click(macros.querySelector('.bi-plus-lg'));
         await waitFor(() => {
             expect(app.getByPlaceholderText('New macro name')).toHaveFocus();
-        }, { timeout: 1500 });
+        });
 
         // Close collapse, confirm field is not focused
         await user.click(macros.querySelector('.bi-plus-lg'));
@@ -167,6 +171,7 @@ describe('App', () => {
     });
 
     it('starts recording macro when a new name is entered', async () => {
+        jest.useRealTimers();
         global.fetch = jest.fn(() => Promise.resolve({
             ok: true,
             status: 200,
@@ -188,9 +193,11 @@ describe('App', () => {
         expect(global.fetch).toHaveBeenCalledWith('/macro_name_available/New macro');
 
         // Confirm start button changed to finish, instructions modal appeared
-        expect(app.queryByText('Start Recording')).toBeNull();
-        expect(app.queryByText('Finish Recording')).not.toBeNull();
-        expect(app.queryByText('Macro Instructions')).not.toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Start Recording')).toBeNull();
+            expect(app.queryByText('Finish Recording')).not.toBeNull();
+            expect(app.queryByText('Macro Instructions')).not.toBeNull();
+        });
 
         // Confirm URL was changed
         expect(global.history.pushState).toHaveBeenCalledWith(
@@ -199,6 +206,7 @@ describe('App', () => {
     });
 
     it('redirects to different URL if node buttons are clicked while recording', async () => {
+        jest.useRealTimers();
         // Get macro section, start recording new macro
         const macros = app.container.querySelector('.macro-container');
         await user.click(within(macros).getAllByRole('button')[5]);
@@ -286,9 +294,14 @@ describe('App', () => {
         await user.click(app.getByText('Start Recording'));
 
         // Click "Finish Recording", confirm button and URL change back
+        await waitFor(() => {
+            expect(app.queryByText('Finish Recording')).not.toBeNull();
+        });
         await user.click(app.getByText('Finish Recording'));
-        expect(app.queryByText('Start Recording')).not.toBeNull();
-        expect(app.queryByText('Finish Recording')).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Start Recording')).not.toBeNull();
+            expect(app.queryByText('Finish Recording')).toBeNull();
+        });
         expect(global.history.pushState).toHaveBeenCalledWith({}, '', '/api');
 
         // Confirm button appeared for new macro
@@ -334,7 +347,13 @@ describe('App', () => {
         await user.click(app.getByText('Start Recording'));
 
         // Click "Finish Recording", confirm new macro button appeared
+        await waitFor(() => {
+            expect(app.queryByText('Finish Recording')).not.toBeNull();
+        });
         await user.click(app.getByText('Finish Recording'));
+        await waitFor(() => {
+            expect(app.queryByRole('button', { name: 'Macro' })).not.toBeNull();
+        });
         expect(app.getByRole('button', { name: 'Macro' })).toBeInTheDocument();
 
         // Open edit modal for new macro, get table containing actions
@@ -361,6 +380,9 @@ describe('App', () => {
         jest.clearAllMocks();
 
         // Check "Don't show again box", close modal
+        await waitFor(() => {
+            expect(app.queryByText('Macro Instructions')).not.toBeNull();
+        });
         await user.click(app.getByText("Don't show again"));
         await user.click(app.getByRole('button', { name: 'OK' }));
 
@@ -379,6 +401,9 @@ describe('App', () => {
         jest.clearAllMocks();
 
         // Close modal, confirm no request was sent
+        await waitFor(() => {
+            expect(app.queryByText('Macro Instructions')).not.toBeNull();
+        });
         await user.click(app.getByRole('button', { name: 'OK' }));
         expect(global.fetch).not.toHaveBeenCalled();
     });
@@ -417,12 +442,16 @@ describe('App', () => {
 
         // Click close button, confirm modal closes
         await user.click(app.getByText('Edit Late Macro').parentElement.children[2]);
-        expect(app.queryByText('Edit Late Macro')).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Edit Late Macro')).toBeNull();
+        });
 
         // Open modal again, click backdrop, confirm modal closes
         await user.click(app.getByText('Edit'));
         await user.click(document.querySelector('.modal-backdrop'));
-        expect(app.queryByText('Edit Late Macro')).toBeNull();
+        await waitFor(() => {
+            expect(app.queryByText('Edit Late Macro')).toBeNull();
+        });
     });
 
     it('makes correct request when macro action is deleted', async () => {
