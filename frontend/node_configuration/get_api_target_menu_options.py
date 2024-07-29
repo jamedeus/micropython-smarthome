@@ -1,20 +1,25 @@
-from .models import Node
+'''Functions used to generate menu options for ApiTargetRuleModal dropdowns'''
+
 from helper_functions import get_device_and_sensor_metadata
 from validation_constants import ir_blaster_options, device_endpoints, sensor_endpoints
+from .models import Node
 
 # Get object containing all device/sensor metadata
 metadata = get_device_and_sensor_metadata()
 
 
-# Takes category (devices or sensors) and type, returns metadata section
 def get_metadata_section(category, _type):
+    '''Takes category (devices or sensors) and type, returns metadata section'''
     for i in metadata[category]:
         if i['config_name'] == _type:
             return i
 
 
-# Helper function for get_api_target_menu_options, converts individual configs to frontend options
 def convert_config_to_api_target_options(config):
+    '''Helper function for get_api_target_menu_options.
+    Takes full config, returns frontend options.
+    '''
+
     # Result will contain 1 entry for each device, sensor, and ir_blaster in config
     result = {}
     for i in config:
@@ -39,22 +44,27 @@ def convert_config_to_api_target_options(config):
 
         elif i == "ir_blaster":
             # Add options for all configured IR Blaster targets
-            entry = {target: options for target, options in ir_blaster_options.items() if target in config[i]['target']}
+            entry = {target: options for target, options in ir_blaster_options.items()
+                     if target in config[i]['target']}
             if entry:
                 result["ir_key"] = {
                     "display": "Ir Blaster",
-                    "options": [target for target in ir_blaster_options.keys() if target in config[i]['target']],
-                    "keys": {target: value for target, value in entry.items() if target in config[i]['target']}
+                    "options": [target for target in ir_blaster_options
+                                if target in config[i]['target']],
+                    "keys": {target: value for target, value in entry.items()
+                             if target in config[i]['target']}
                 }
 
     return result
 
 
-# Return dict with all existing nodes, their devices and sensors, and all API commands valid for each device/sensor type
-# If friendly name of node passed as arg, name and IP are replaced with "self-target" and "127.0.0.1" respectively
-# Used to populate cascading dropdown menu in frontend
 def get_api_target_menu_options(editing_node=False):
-    dropdownObject = {
+    '''Returns object used to populate ApiTargetRuleModal cascading dropdown menu.
+    Contains all existing nodes and valid API commands for each device/sensor of each node.
+    Passing node friendly name as arg replaces its name and IP with "self-target" and "127.0.0.1".
+    '''
+
+    dropdown_object = {
         'addresses': {
             'self-target': '127.0.0.1'
         },
@@ -66,35 +76,36 @@ def get_api_target_menu_options(editing_node=False):
         entries = convert_config_to_api_target_options(node.config.config)
 
         # Skip if blank
-        if entries == {}:
+        if not entries:
             continue
 
         # If config is currently being edited, add to self-target section
         if editing_node and node.friendly_name == editing_node:
-            # Remove 'turn_on' and 'turn_off' from any api-target instances (prevent self-targeting in infinite loop)
+            # Remove 'turn_on' and 'turn_off' from any api-target instances
+            # (prevent self-targeting in infinite loop)
             new_options = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule']
-            for key, value in entries.items():
-                if entries[key]['display'].endswith('api-target)'):
-                    entries[key]['options'] = new_options
+            for instance in entries.values():
+                if instance['display'].endswith('api-target)'):
+                    instance['options'] = new_options
 
-            dropdownObject["self-target"] = entries
+            dropdown_object["self-target"] = entries
 
             # Replace localhost (placeholder for new configs) with actual IP
-            dropdownObject["addresses"]['self-target'] = node.ip
+            dropdown_object["addresses"]['self-target'] = node.ip
 
             # Add ignore option
-            dropdownObject["self-target"]['ignore'] = {
+            dropdown_object["self-target"]['ignore'] = {
                 'display': 'Ignore action'
             }
 
         # Otherwise add to main section, add IP to addresses
         else:
-            dropdownObject[node.friendly_name] = entries
-            dropdownObject['addresses'][node.friendly_name] = node.ip
+            dropdown_object[node.friendly_name] = entries
+            dropdown_object['addresses'][node.friendly_name] = node.ip
 
             # Add ignore option
-            dropdownObject[node.friendly_name]['ignore'] = {
+            dropdown_object[node.friendly_name]['ignore'] = {
                 'display': 'Ignore action'
             }
 
-    return dropdownObject
+    return dropdown_object

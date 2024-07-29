@@ -1,3 +1,5 @@
+'''Django API endpoint functions used to create and upload config files'''
+
 import json
 from functools import wraps
 from concurrent.futures import ThreadPoolExecutor
@@ -8,11 +10,14 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.templatetags.static import static
-from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates
 from Webrepl import Webrepl
 from provision_tools import get_modules, provision
-from .get_api_target_menu_options import get_api_target_menu_options
-from api_endpoints import add_schedule_keyword, remove_schedule_keyword, save_schedule_keywords, set_gps_coords
+from api_endpoints import (
+    add_schedule_keyword,
+    remove_schedule_keyword,
+    save_schedule_keywords,
+    set_gps_coords
+)
 from validate_config import validate_full_config
 from helper_functions import (
     valid_ip,
@@ -20,31 +25,34 @@ from helper_functions import (
     get_config_filename,
     get_device_and_sensor_metadata
 )
+from .get_api_target_menu_options import get_api_target_menu_options
+from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates
 
 # Env var constants
 REPO_DIR = settings.REPO_DIR
 NODE_PASSWD = settings.NODE_PASSWD
 
 
-# Helper function for successful API responses
 def standard_response(message, status=200):
+    '''Helper function for successful API responses.'''
     return JsonResponse(
         {'status': 'success', 'message': message},
         status=status
     )
 
 
-# Helper function for error API responses
 def error_response(message, status=400):
+    '''Helper function for error API responses.'''
     return JsonResponse(
         {'status': 'error', 'message': message},
         status=status
     )
 
 
-# Decorator used throw error if request is not POST
-# Passes parsed JSON body to wrapped function as first arg
 def requires_post(func):
+    '''Decorator used throw error if request is not POST.
+    Passes parsed JSON body to wrapped function as first arg.
+    '''
     @wraps(func)
     def wrapper(request, **kwargs):
         if request.method == "POST":
@@ -57,6 +65,9 @@ def requires_post(func):
 
 @requires_post
 def upload(data, reupload=False):
+    '''Takes payload with config filename and target IP, uploads config file.
+    Creates Node model entry unless reupload argument is True.
+    '''
     if not valid_ip(data["ip"]):
         return error_response(message=f'Invalid IP {data["ip"]}', status=400)
 
@@ -85,11 +96,14 @@ def upload(data, reupload=False):
 
     if response['status'] == 200:
         return standard_response(message=response['message'])
-    else:
-        return error_response(message=response['message'], status=response['status'])
+
+    return error_response(message=response['message'], status=response['status'])
 
 
 def reupload_all(request):
+    '''Iterates Node model, reuploads config file associated with each entry.
+    Called when "Re-upload all" dropdown option on overview is clicked.
+    '''
     print("Reuploading all configs...")
     nodes = Node.objects.all()
 
@@ -122,6 +136,9 @@ def reupload_all(request):
 
 @requires_post
 def delete_config(data):
+    '''Takes filename of existing config file, deletes from database and disk.
+    If Config was uploaded also deletes associated Node model entry.
+    '''
     try:
         # Get model entry
         target = Config.objects.get(filename=data)
@@ -149,6 +166,9 @@ def delete_config(data):
 
 @requires_post
 def delete_node(data):
+    '''Takes name of existing Node model entry, deletes Node and associated
+    Config entry from database, deletes config file from disk.
+    '''
     try:
         # Get model entry
         node = Node.objects.get(friendly_name=data)
@@ -171,6 +191,9 @@ def delete_node(data):
 
 @requires_post
 def change_node_ip(data):
+    '''Takes payload with IP of existing Node entry and new IP.
+    Uploads node config file to new IP, updates database entry.
+    '''
     if not valid_ip(data["new_ip"]):
         return error_response(
             message=f'Invalid IP {data["new_ip"]}',
@@ -202,19 +225,22 @@ def change_node_ip(data):
         node.save()
 
         return standard_response(message="Successfully uploaded to new IP")
-    else:
-        return error_response(
-            message=response['message'],
-            status=response['status']
-        )
+
+    return error_response(
+        message=response['message'],
+        status=response['status']
+    )
 
 
 def config_overview(request):
+    '''Renders the overview page used to manage nodes and config files.'''
     context = {
         "not_uploaded": [],
         "uploaded": [],
         "schedule_keywords": [],
-        "desktop_integration_link": static("node_configuration/micropython-smarthome-integration.zip")
+        "desktop_integration_link": static(
+            "node_configuration/micropython-smarthome-integration.zip"
+        )
     }
 
     # Reverse proxy connection: Add forwarded_for IP to context
@@ -227,10 +253,12 @@ def config_overview(request):
     # Add all schedule rules except sunrise and sunset (can't edit) to context
     # Database key is used as react unique identifier
     for keyword in ScheduleKeyword.objects.all():
-        if keyword.keyword != "sunrise" and keyword.keyword != "sunset":
-            context["schedule_keywords"].append(
-                {"id": keyword.pk, "keyword": keyword.keyword, "timestamp": keyword.timestamp}
-            )
+        if keyword.keyword not in ('sunrise', 'sunset'):
+            context["schedule_keywords"].append({
+                "id": keyword.pk,
+                "keyword": keyword.keyword,
+                "timestamp": keyword.timestamp
+            })
 
     not_uploaded = Config.objects.filter(node=None)
 
@@ -253,9 +281,10 @@ def config_overview(request):
     return render(request, 'node_configuration/overview.html', context)
 
 
-# Returns context object with all device and sensor metadata keyed by _type param
-# Used to populate configuration divs with appropriate inputs based on type
 def get_metadata_context():
+    '''Returns dict with all device and sensor metadata keyed by _type param.
+    Used to populate edit_config cards with appropriate inputs based on type.
+    '''
     # Get object containing all device/sensor metadata
     metadata = get_device_and_sensor_metadata()
     context = {'devices': {}, 'sensors': {}}
@@ -270,6 +299,8 @@ def get_metadata_context():
 
 
 def new_config(request):
+    '''Renders blank edit config page.'''
+
     # Create context with config skeleton
     context = {
         "TITLE": "Create New Config",
@@ -302,6 +333,9 @@ def new_config(request):
 
 
 def edit_config(request, name):
+    '''Takes name of existing Node model entry, renders edit config page with
+    all parameters of existing config file pre-filled.
+    '''
     try:
         target = Node.objects.get(friendly_name=name)
     except Node.DoesNotExist:
@@ -336,8 +370,9 @@ def edit_config(request, name):
     return render(request, 'node_configuration/edit-config.html', context)
 
 
-# Return True if filename or friendly_name would conflict with an existing config or node
 def is_duplicate(filename, friendly_name):
+    '''Return True if filename/friendly_name matches existing config/node.'''
+
     # Check if filename will conflict with existing configs
     try:
         Config.objects.get(filename=filename)
@@ -353,9 +388,12 @@ def is_duplicate(filename, friendly_name):
         return False
 
 
-# Used to warn when duplicate name entered in config generator
 @requires_post
 def check_duplicate(data):
+    '''Called as user types in node name field on edit config page.
+    Returns response that highlights field red when a duplicate is entered.
+    '''
+
     friendly_name = data['name']
     filename = get_config_filename(friendly_name)
 
@@ -364,12 +402,16 @@ def check_duplicate(data):
             message='Config already exists with identical name',
             status=409
         )
-    else:
-        return standard_response(message='Name available')
+
+    return standard_response(message='Name available')
 
 
 @requires_post
 def generate_config_file(data, edit_existing=False):
+    '''Receives payload when edit config page is submitted.
+    Validates payload and creates Config model entry if valid.
+    '''
+
     print("Input:")
     print(json.dumps(data, indent=4))
 
@@ -382,13 +424,6 @@ def generate_config_file(data, edit_existing=False):
 
     print(f"\nFilename: {filename}\n")
 
-    # Confirm config exists when editing existing
-    if edit_existing:
-        try:
-            model_entry = Config.objects.get(filename=filename)
-        except Config.DoesNotExist:
-            return error_response(message='Config not found', status=404)
-
     # Prevent overwriting existing config, unless editing existing
     if not edit_existing and is_duplicate(filename, data["metadata"]["id"]):
         return error_response(
@@ -399,7 +434,10 @@ def generate_config_file(data, edit_existing=False):
     # If default location set, add coordinates to config
     if len(GpsCoordinates.objects.all()) > 0:
         location = GpsCoordinates.objects.all()[0]
-        data["metadata"]["gps"] = {"lat": str(location.lat), "lon": str(location.lon)}
+        data["metadata"]["gps"] = {
+            "lat": str(location.lat),
+            "lon": str(location.lon)
+        }
 
     print("Output:")
     print(json.dumps(data, indent=4))
@@ -417,14 +455,22 @@ def generate_config_file(data, edit_existing=False):
 
     # If modifying old config, update JSON object and write to disk
     else:
-        model_entry.config = data
-        model_entry.save()
+        try:
+            model_entry = Config.objects.get(filename=filename)
+            model_entry.config = data
+            model_entry.save()
+        except Config.DoesNotExist:
+            return error_response(message='Config not found', status=404)
 
     return standard_response(message='Config created')
 
 
 @requires_post
 def set_default_credentials(data):
+    '''Receives payload when user saves wifi credentials.
+    Creates WifiCredentials model (sets default wifi on edit config page).
+    '''
+
     # If default already set, overwrite
     if len(WifiCredentials.objects.all()) > 0:
         for i in WifiCredentials.objects.all():
@@ -436,27 +482,42 @@ def set_default_credentials(data):
     return standard_response(message='Default credentials set')
 
 
-def get_location_suggestions(data, query):
-    response = requests.get(f'https://geocode.maps.co/search?q={query}&api_key={settings.GEOCODE_API_KEY}')
+def get_location_suggestions(_, query):
+    '''Receives query entered by user in default location model.
+    Returns response from geocode API (populates modal location suggestions).
+    '''
+    response = requests.get(
+        f'https://geocode.maps.co/search?q={query}&api_key={settings.GEOCODE_API_KEY}',
+        timeout=10
+    )
 
     if response.status_code == 200:
         return standard_response(message=response.json())
-    else:
-        return error_response(message=response.text, status=response.status_code)
+
+    return error_response(message=response.text, status=response.status_code)
 
 
 @requires_post
 def set_default_location(data):
+    '''Receives payload when user selects option in default location model.
+    Creates GpsCoordinates model (added to configs for sunrise/sunset times).
+    '''
+
     # If default already set, overwrite
     if len(GpsCoordinates.objects.all()) > 0:
         for i in GpsCoordinates.objects.all():
             i.delete()
 
     # Instantiate model
-    GpsCoordinates.objects.create(display=data["name"], lat=data["lat"], lon=data["lon"])
+    GpsCoordinates.objects.create(
+        display=data["name"],
+        lat=data["lat"],
+        lon=data["lon"]
+    )
 
     # Add coordinates to all existing nodes in parallel
-    commands = [(node.ip, {'latitude': data["lat"], 'longitude': data["lon"]}) for node in Node.objects.all()]
+    commands = [(node.ip, {'latitude': data["lat"], 'longitude': data["lon"]})
+                for node in Node.objects.all()]
     with ThreadPoolExecutor(max_workers=20) as executor:
         executor.map(set_gps_coords, *zip(*commands))
 
@@ -468,9 +529,11 @@ def set_default_location(data):
     return standard_response(message='Location set')
 
 
-# Downloads config file from an existing node and saves to database + disk
 @requires_post
 def restore_config(data):
+    '''Downloads config file from an existing node, creates Node and Config
+    entries in database. Can be used to recover lost database contents.
+    '''
     if not valid_ip(data["ip"]):
         return error_response(message=f'Invalid IP {data["ip"]}', status=400)
 
@@ -531,14 +594,22 @@ def restore_config(data):
 
 @requires_post
 def add_schedule_keyword_config(data):
+    '''Creates ScheduleKeyword model entry, makes API calls to add new keyword
+    to all ESP32s (Node entries) in parallel.
+    '''
+
     # Create keyword in database
     try:
-        ScheduleKeyword.objects.create(keyword=data["keyword"], timestamp=data["timestamp"])
+        ScheduleKeyword.objects.create(
+            keyword=data["keyword"],
+            timestamp=data["timestamp"]
+        )
     except ValidationError as ex:
         return error_response(message=str(ex), status=400)
 
     # Add keyword to all existing nodes in parallel
-    commands = [(node.ip, [data["keyword"], data["timestamp"]]) for node in Node.objects.all()]
+    commands = [(node.ip, [data["keyword"], data["timestamp"]])
+                for node in Node.objects.all()]
     with ThreadPoolExecutor(max_workers=20) as executor:
         executor.map(add_schedule_keyword, *zip(*commands))
 
@@ -556,6 +627,9 @@ def add_schedule_keyword_config(data):
 
 @requires_post
 def edit_schedule_keyword_config(data):
+    '''Updates existing ScheduleKeyword model entry, makes API calls to update
+    keyword on all ESP32s (Node entries) in parallel.
+    '''
     try:
         target = ScheduleKeyword.objects.get(keyword=data["keyword_old"])
     except ScheduleKeyword.DoesNotExist:
@@ -572,19 +646,22 @@ def edit_schedule_keyword_config(data):
     # If timestamp changed: Call add to overwrite existing keyword
     if data["keyword_old"] == data["keyword_new"]:
         # Update keyword on all existing nodes in parallel
-        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]]) for node in Node.objects.all()]
+        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]])
+                    for node in Node.objects.all()]
         with ThreadPoolExecutor(max_workers=20) as executor:
             executor.map(add_schedule_keyword, *zip(*commands))
 
     # If keyword changed: Remove existing keyword, add new keyword
     else:
         # Remove keyword from all existing nodes in parallel
-        commands = [(node.ip, [data["keyword_old"]]) for node in Node.objects.all()]
+        commands = [(node.ip, [data["keyword_old"]])
+                    for node in Node.objects.all()]
         with ThreadPoolExecutor(max_workers=20) as executor:
             executor.map(remove_schedule_keyword, *zip(*commands))
 
         # Add keyword to all existing nodes in parallel
-        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]]) for node in Node.objects.all()]
+        commands = [(node.ip, [data["keyword_new"], data["timestamp_new"]])
+                    for node in Node.objects.all()]
         with ThreadPoolExecutor(max_workers=20) as executor:
             executor.map(add_schedule_keyword, *zip(*commands))
 
@@ -602,6 +679,9 @@ def edit_schedule_keyword_config(data):
 
 @requires_post
 def delete_schedule_keyword_config(data):
+    '''Deletes an existing ScheduleKeyword model entry, makes API calls to
+    remove keyword from all ESP32s (Node entries) in parallel.
+    '''
     try:
         target = ScheduleKeyword.objects.get(keyword=data["keyword"])
     except ScheduleKeyword.DoesNotExist:
@@ -629,8 +709,10 @@ def delete_schedule_keyword_config(data):
     return standard_response(message='Keyword deleted')
 
 
-# Call save_schedule_keywords for all nodes in parallel
 def save_all_schedule_keywords():
+    '''Makes parallel API calls all ESP32s (Node entries) to write current
+    schedule keywords to disk. Called by endpoints that modify keywords.
+    '''
     commands = [(node.ip, "") for node in Node.objects.all()]
     with ThreadPoolExecutor(max_workers=20) as executor:
         executor.map(save_schedule_keywords, *zip(*commands))

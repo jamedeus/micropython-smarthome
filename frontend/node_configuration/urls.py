@@ -1,9 +1,12 @@
+'''Map API endpoints to backend functions'''
+
 from django.urls import path
 
 from . import views
 
 app_name = "node_configuration"
 
+# pylint: disable=line-too-long
 urlpatterns = [
     # Generate endpoint, must post form data
     # Optional argument contains name of existing node to overwrite

@@ -1,3 +1,5 @@
+'''Django database models'''
+
 import json
 import re
 from django.db import models
@@ -5,12 +7,16 @@ from node_configuration.models import Node
 
 
 def default_actions():
+    '''Returns JSON-encoded empty list (used as actions field default value)'''
     return json.dumps([])
 
 
-# Override method to automatically convert to lowercase, replace -/_ with spaces, remove special chars
-# Also allows case-insensitive lookups with Macro.objects.get()
 class NameField(models.CharField):
+    '''Override method to return stored string converted to lowercase with
+    special characters removed and -/_ replaced with spaces.
+    Also allows case-insensitive lookups with Macro.objects.get()
+    '''
+
     def to_python(self, value):
         if isinstance(value, str):
             value = re.sub('[-_]', ' ', value.lower())
@@ -21,8 +27,12 @@ class NameField(models.CharField):
 
 
 class Macro(models.Model):
+    '''Stores a set of API commands sent to one or more ESP32 Nodes.
+    All actions are run in parallel when button on overview page is clicked.
+    '''
+
     def __str__(self):
-        # Each word capitalized
+        '''Returns name with each word capitalized'''
         return self.name.title()
 
     class Meta:
@@ -40,6 +50,7 @@ class Macro(models.Model):
     actions = models.JSONField(null=False, blank=False, default=default_actions)
 
     def add_action(self, action):
+        '''Takes action dict, adds to actions object.'''
         if not isinstance(action, dict):
             raise SyntaxError
 
@@ -82,7 +93,8 @@ class Macro(models.Model):
         actions = json.loads(self.actions)
 
         # Get existing actions targeting the same node and instance
-        potential_conflicts = [i for i in actions if i['node_name'] == node_name and i['target_name'] == target_name]
+        potential_conflicts = [i for i in actions
+                               if i['node_name'] == node_name and i['target_name'] == target_name]
 
         # Remove conflicting actions for the same target instance
         for i in potential_conflicts:
@@ -110,6 +122,7 @@ class Macro(models.Model):
         self.save()
 
     def del_action(self, index):
+        '''Takes index of existing action, removes from actions object.'''
         if not isinstance(index, int):
             raise SyntaxError("Argument must be integer index of action to delete")
 
