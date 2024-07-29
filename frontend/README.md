@@ -1,5 +1,6 @@
 [![pipeline status](https://gitlab.com/jamedeus/micropython-smarthome/badges/master/pipeline.svg)](https://gitlab.com/jamedeus/micropython-smarthome/-/commits/master)
-[![Frontend coverage report](https://gitlab.com/jamedeus/micropython-smarthome/badges/master/coverage.svg?job=test_frontend&key_text=Frontend+Coverage&key_width=120)](https://gitlab.com/jamedeus/micropython-smarthome/-/commits/master)
+[![Frontend coverage report](https://gitlab.com/jamedeus/micropython-smarthome/badges/master/coverage.svg?job=test_react&key_text=Frontend+Coverage&key_width=120)](https://gitlab.com/jamedeus/micropython-smarthome/-/commits/master)
+[![Django coverage report](https://gitlab.com/jamedeus/micropython-smarthome/badges/master/coverage.svg?job=test_django&key_text=Django+Coverage&key_width=110)](https://gitlab.com/jamedeus/micropython-smarthome/-/commits/master)
 
 # Frontend
 
@@ -37,15 +38,25 @@ Once configuration is complete run `docker compose up -d`. The webapp can now be
 
 ### Local Development Server
 
-The development server can be run with django's `manage.py`:
+All frontend pages are rendered by react bundles, which are imported by django templates containing a context which is rehydrated as the initial state object. These must be compiled before the frontend can be used.
+
+To build the react bundles run:
+```
+cd frontend
+npm install
+npm run build
+```
+
+Then start the django development server (there is no separate node backend):
 ```
 cd frontend/
+pipenv run python3 manage.py migrate
 pipenv run python3 manage.py runserver
 ```
 
 The app can now be accessed at [localhost:8000/](http://localhost:8000/).
 
-Environment variables can be added to `.env` in the repository root before running.
+Environment variables can be added to `.env` in the repository root before running (see docker section for supported env vars).
 
 To access the app from clients other than the host, either set the `ALLOWED_HOSTS` env var or start the server listening on all interfaces:
 ```
@@ -55,13 +66,13 @@ pipenv run python3 manage.py runserver 0:8000
 
 #### React Development
 
-Some django templates import static files that mount a react app, which rehydrates a context from the django backend. These can be accessed from the django development server described above, there is no separate node backend.
+To automatically rebuild the webpack bundles when changes are detected run:
+```
+cd frontend
+npm run watch
+```
 
-To automatically rebuild JSX when changes are made run this command:
-```
-cd frontend/
-npx webpack --watch --config webpack.config.js
-```
+All react bundles are served from django templates, so the django development server (above) must be running to access the app. There is no node backend.
 
 ## Management commands
 
@@ -81,11 +92,16 @@ python3 manage.py import_configs_from_disk
 
 ## Unit tests
 
-Tests provide full coverage of the django backend. There are currently no tests for templates, these will be added after a future UI overhaul.
-
-To run tests:
+### Run django tests
 ```
 cd frontend/
 pipenv run coverage run --source='.' manage.py test
 pipenv run coverage report
+```
+
+### Run react tests
+```
+cd frontend/
+npm install
+npm run test -- --coverage
 ```

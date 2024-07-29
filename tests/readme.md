@@ -57,6 +57,10 @@ When the upload completes the node will reboot and run the first group of tests.
 
 Once the core tests complete the results will be printed followed by a menu used to select the next group of tests. Complete results from all tests can be viewed by pressing 6 at the menu.
 
+## Frontend
+
+See the [frontend readme](/frontend/README.md) for django and react test instructions.
+
 ## Mock Environment
 
 The mock environment runs firmware tests in cpython for coverage measurement, see [here](/tests/mock_environment/readme.md) for details. No hardware is required to run these tests.

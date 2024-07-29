@@ -38,6 +38,14 @@ cd firmware
 npm install
 ```
 
+Build the frontend and apply django database migrations:
+```
+cd frontend
+npm run build
+pipenv run python3 manage.py migrate
+```
+* Note: run `npm run watch` to automatically rebuild bundles when react components change.
+
 Install git hooks (see comments at the top of each file):
 ```
 cp hooks/pre-commit hooks/post-commit .git/hooks/
@@ -45,7 +53,7 @@ cp hooks/pre-commit hooks/post-commit .git/hooks/
 
 ## Useful documentation links
 
-[Micropython ESP32 build instructions](https://github.com/micropython/micropython/blob/master/ports/esp32/README.md#setting-up-esp-idf-and-the-build-environment)
-[Micropython release history](https://github.com/micropython/micropython/releases)
-[Micropython asyncio](https://docs.micropython.org/en/latest/library/asyncio.html)
-[Micropython manifest files](https://docs.micropython.org/en/latest/reference/manifest.html)
+* [Micropython ESP32 build instructions](https://github.com/micropython/micropython/blob/master/ports/esp32/README.md#setting-up-esp-idf-and-the-build-environment)
+* [Micropython release history](https://github.com/micropython/micropython/releases)
+* [Micropython asyncio](https://docs.micropython.org/en/latest/library/asyncio.html)
+* [Micropython manifest files](https://docs.micropython.org/en/latest/reference/manifest.html)
