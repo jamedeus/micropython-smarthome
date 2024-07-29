@@ -98,6 +98,12 @@ class EditConfigTests(TestCaseBackupRestore):
             test_config_1_edit_context['api_target_options']
         )
 
+        # Confirm metadata context has devices and sensors keys
+        self.assertEqual(
+            list(response.context['metadata'].keys()),
+            ['devices', 'sensors']
+        )
+
         # Confirm edit mode
         self.assertEqual(response.context['edit_existing'], True)
 
@@ -173,6 +179,12 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
         self.assertEqual(response.context['config'], expected_response)
         self.assertEqual(response.context['api_target_options'], get_api_target_menu_options())
         self.assertEqual(response.context['edit_existing'], False)
+
+        # Confirm metadata context has devices and sensors keys
+        self.assertEqual(
+            list(response.context['metadata'].keys()),
+            ['devices', 'sensors']
+        )
 
     def test_with_default_wifi(self):
         # Set default wifi credentials

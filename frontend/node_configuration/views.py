@@ -281,17 +281,6 @@ def config_overview(request):
     return render(request, 'node_configuration/overview.html', context)
 
 
-def get_metadata_context():
-    '''Returns dict with all device and sensor metadata keyed by _type param.
-    Used to populate edit_config cards with appropriate inputs based on type.
-    '''
-
-    # Get dict with contents of all device and sensor metadata files
-    # Combine devices and sensors keys into single dict
-    metadata = get_device_and_sensor_metadata()
-    return metadata['devices'] | metadata['sensors']
-
-
 def new_config(request):
     '''Renders blank edit config page.'''
 
@@ -311,7 +300,7 @@ def new_config(request):
             },
         },
         "api_target_options": get_api_target_menu_options(),
-        "metadata": get_metadata_context(),
+        "metadata": get_device_and_sensor_metadata(),
         "edit_existing": False
     }
 
@@ -339,7 +328,7 @@ def edit_config(request, name):
     config = target.config.config
 
     # Load device and sensor metadata
-    metadata = get_metadata_context()
+    metadata = get_device_and_sensor_metadata()
 
     # Build context object:
     # - IP and FILENAME: Used to reupload config
