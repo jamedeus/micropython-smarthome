@@ -1,13 +1,15 @@
+'''Map API endpoints to backend functions'''
+
 from django.urls import path
 
 from . import views
 
 app_name = "api"
 
+# pylint: disable=line-too-long
 urlpatterns = [
     # API call views
     path('get_status/<str:node>', views.get_status, name='get_status'),
-    path('get_climate_data/<str:node>', views.get_climate_data, name='get_climate_data'),
     path('send_command', views.send_command, name='send_command'),
     path('reboot_all', views.reboot_all, name='reboot_all'),
     path('reset_all', views.reset_all, name='reset_all'),

@@ -1,3 +1,5 @@
+'''Django API endpoint functions used to control ESP32 nodes'''
+
 import json
 import itertools
 from functools import wraps
@@ -5,22 +7,23 @@ from concurrent.futures import ThreadPoolExecutor
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
-from node_configuration.views import requires_post, standard_response, error_response
-from node_configuration.models import Node, ScheduleKeyword
-from node_configuration.get_api_target_menu_options import get_api_target_menu_options
 from Webrepl import Webrepl
-from api.models import Macro
 from api_endpoints import endpoint_map
 from helper_functions import (
     is_device,
     get_schedule_keywords_dict,
     get_device_and_sensor_metadata
 )
+from node_configuration.views import requires_post, standard_response, error_response
+from node_configuration.models import Node, ScheduleKeyword
+from node_configuration.get_api_target_menu_options import get_api_target_menu_options
+from api.models import Macro
 
 
-# Decorator looks up target node, returns error if does not exist
-# Passes node model entry to wrapped function as second arg
 def get_target_node(func):
+    '''Decorator looks up target node, returns error if does not exist
+    Passes node model entry to wrapped function as second arg
+    '''
     @wraps(func)
     def wrapper(request, node, **kwargs):
         try:
@@ -31,9 +34,11 @@ def get_target_node(func):
     return wrapper
 
 
-# Returns mapping dict with devices and sensors subdicts (types as keys)
-# containing all relevant metadata (prompts, limits, triggerable sensors)
 def get_metadata_map():
+    '''Returns mapping dict with devices and sensors subdicts (types as keys)
+    containing all relevant metadata (prompts, limits, triggerable sensors)
+    '''
+
     # Get object containing metadata for all device and sensor types
     metadata = get_device_and_sensor_metadata()
 
@@ -61,6 +66,10 @@ def get_metadata_map():
 
 @get_target_node
 def get_status(request, node):
+    '''Requests status object from ESP32 node and returns.
+    Called by API card interface every 5 seconds to update state.
+    '''
+
     # Query status object
     try:
         status = parse_command(node.ip, ["status"])
@@ -70,16 +79,18 @@ def get_status(request, node):
     # Success if dict, error if string
     if isinstance(status, dict):
         return standard_response(message=status)
-    else:
-        return error_response(message=status, status=502)
+
+    return error_response(message=status, status=502)
 
 
 @ensure_csrf_cookie
 def api_overview(request, recording=False):
+    '''Renders the API overview page'''
+
     rooms = {}
 
     for i in Node.objects.all():
-        if i.floor in rooms.keys():
+        if i.floor in rooms:
             rooms[i.floor].append(i.friendly_name)
         else:
             rooms[i.floor] = [i.friendly_name]
@@ -107,8 +118,9 @@ def api_overview(request, recording=False):
     return render(request, 'api/overview.html', context)
 
 
-# Takes Node, returns options for all api-target instances
 def get_api_target_options(node):
+    '''Takes Node, returns options for all api-target instances'''
+
     # Get object containing all valid options for all nodes
     options = get_api_target_menu_options(node.friendly_name)
 
@@ -132,6 +144,8 @@ def get_api_target_options(node):
 @ensure_csrf_cookie
 @get_target_node
 def api(request, node, recording=False):
+    '''Renders the API card interface for the requested ESP32 node'''
+
     # Get status object (used as context)
     try:
         status = parse_command(node.ip, ["status"])
@@ -165,18 +179,10 @@ def api(request, node, recording=False):
     return render(request, 'api/api_card.html', context)
 
 
-# TODO unused? Climate card updates from status object
-@get_target_node
-def get_climate_data(request, node):
-    try:
-        data = parse_command(node.ip, ["get_climate"])
-    except OSError:
-        return error_response(message='Unable to connect', status=502)
-
-    return standard_response(message=data)
-
-
 def reboot_all(request):
+    '''Sends reboot API command to all ESP32 nodes in parallel.
+    Called when "Reboot all" dropdown option on overview is clicked.
+    '''
     print('Rebooting all nodes:')
 
     # Call parse_command(node.ip, ['reboot']) for all nodes in parallel
@@ -189,6 +195,9 @@ def reboot_all(request):
 
 
 def reset_all(request):
+    '''Sends reset_all_rules API command to all ESP32 nodes in parallel.
+    Called when "Reset all rules" dropdown option on overview is clicked.
+    '''
     print('Reseting all rules:')
 
     # Call parse_command(node.ip, ['reset_all_rules']) for all nodes in parallel
@@ -200,10 +209,13 @@ def reset_all(request):
     return standard_response(message='Done')
 
 
-# Receives node IP and existing schedule keywords in post body
-# Uploads missing keywords (if any) from database
 @requires_post
 def sync_schedule_keywords(data):
+    '''
+    Receives node IP and existing schedule keywords in post body.
+    Uploads missing keywords (if any) from database.
+    '''
+
     # Get current keywords from database, target node
     database = get_schedule_keywords_dict()
     node = data['existing_keywords']
@@ -215,8 +227,10 @@ def sync_schedule_keywords(data):
     deleted = [keyword for keyword in node.keys() if keyword not in database.keys()]
 
     # Get all schedule keywords with different timestamps
-    modified = [keyword for keyword in node if keyword not in deleted and database[keyword] != node[keyword]]
-    modified = [ScheduleKeyword.objects.get(keyword=i) for i in modified if i not in ['sunrise', 'sunset']]
+    modified = [keyword for keyword in node
+                if keyword not in deleted and database[keyword] != node[keyword]]
+    modified = [ScheduleKeyword.objects.get(keyword=i) for i in modified
+                if i not in ['sunrise', 'sunset']]
 
     # Add all missing keywords, overwrite all modified keywords
     for keyword in itertools.chain(missing, modified):
@@ -226,25 +240,27 @@ def sync_schedule_keywords(data):
     for keyword in deleted:
         parse_command(data['ip'], ['remove_schedule_keyword', keyword])
 
-    # Print status messages
-    if len(missing):
+    # Print status messages for each category with 1 or more item
+    if missing:
         print(f"Added {len(missing)} missing schedule keywords")
-    if len(modified):
+    if modified:
         print(f"Updated {len(modified)} outdated schedule keywords")
-    if len(deleted):
+    if deleted:
         print(f"Deleted {len(deleted)} schedule keywords that no longer exist in database")
 
     # Save changes (if any) to disk on target node
-    if len(missing) or len(modified) or len(deleted):
+    if missing or modified or deleted:
         parse_command(data['ip'], ['save_schedule_keywords'])
 
     return standard_response(message='Done')
 
 
-# Receives node IP, overwrites node config with current schedule rules, updates config in backend database
-# Called when user clicks yes on toast notification after modifying schedule rules
 @requires_post
 def sync_schedule_rules(data):
+    '''Receives node IP, sends API call to write node current schedule rules to
+    node disk, downloads modified config from node and writes to django database.
+    Called when user clicks yes on notification after modifying schedule rule.
+    '''
     try:
         node = Node.objects.get(ip=data['ip'])
     except Node.DoesNotExist:
@@ -265,12 +281,16 @@ def sync_schedule_rules(data):
         node.config.write_to_disk()
 
         return standard_response('Done syncing schedule rules')
-    else:
-        return error_response(message='Failed to save rules', status=500)
+
+    return error_response(message='Failed to save rules', status=500)
 
 
 @requires_post
 def send_command(data):
+    '''Sends API call specified in body to ESP32 node specified in body.
+    Bridges frontend HTTP requests to non-standard ESP32 asyncio API (faster).
+    '''
+
     # Get target node IP and API endpoint
     ip = data["target"]
     cmd = data["command"]
@@ -280,7 +300,7 @@ def send_command(data):
     args = [cmd]
     for param in data.values():
         # Remove extra whitespace from strings
-        if type(param) is str:
+        if isinstance(param, str):
             args.append(param.strip())
         # Stringify objects (eg api-target rule)
         elif type(param) in (dict, list):
@@ -298,9 +318,10 @@ def send_command(data):
     return standard_response(message=response)
 
 
-# Takes target IP + args list (first item must be endpoint name)
-# Find endpoint matching first arg, call handler function with remaining args
 def parse_command(ip, args):
+    '''Takes target IP + args list (first item must be endpoint name).
+    Find endpoint matching first arg, call handler function with remaining args.
+    '''
     if len(args) == 0:
         return "Error: No command received"
 
@@ -315,9 +336,10 @@ def parse_command(ip, args):
         return "Error: Command not found"
 
 
-# Takes node instead of IP, returns JSON-printable dict with response
-# Used by bulk command endpoints (reboot_all, reset_all_rules, etc)
 def parse_command_wrapper(node, args):
+    '''Takes node instead of IP, returns JSON-printable dict with response.
+    Used by bulk command endpoints (reboot_all, reset_all_rules, etc).
+    '''
     response = parse_command(node.ip, args)
     return {
         'node': node.friendly_name,
@@ -326,6 +348,7 @@ def parse_command_wrapper(node, args):
 
 
 def run_macro(request, name):
+    '''Takes name of Macro model entry, runs all actions in parallel.'''
     try:
         macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
@@ -344,6 +367,7 @@ def run_macro(request, name):
 
 @requires_post
 def add_macro_action(data):
+    '''Adds the specified macro action to the specified Macro model entry.'''
     try:
         macro = Macro.objects.get(name=data['name'])
     except Macro.DoesNotExist:
@@ -353,7 +377,7 @@ def add_macro_action(data):
         macro.add_action(data['action'])
     except (SyntaxError, KeyError):
         # Delete empty macro if failed to add first action
-        if not len(json.loads(macro.actions)):
+        if not json.loads(macro.actions):
             macro.delete()
         return error_response('Invalid action', status=400)
 
@@ -363,6 +387,7 @@ def add_macro_action(data):
 
 
 def delete_macro(request, name):
+    '''Deletes the specified Macro model entry.'''
     try:
         macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
@@ -374,6 +399,7 @@ def delete_macro(request, name):
 
 
 def delete_macro_action(request, name, index):
+    '''Deletes specified macro action index in specified Macro model entry.'''
     try:
         macro = Macro.objects.get(name=name)
     except Macro.DoesNotExist:
@@ -388,6 +414,9 @@ def delete_macro_action(request, name, index):
 
 
 def macro_name_available(request, name):
+    '''Takes macro name entered by user when record button clicked.
+    Returns 200 if macro name is unique, 409 if duplicate.
+    '''
     try:
         Macro.objects.get(name=name)
         return error_response(message=f'Name {name} already in use', status=409)
@@ -396,6 +425,7 @@ def macro_name_available(request, name):
 
 
 def get_macro_actions(request, name):
+    '''Takes name of Macro model entry, returns actions as JSON.'''
     try:
         macro = Macro.objects.get(name=name)
         return standard_response(message=json.loads(macro.actions))
@@ -405,6 +435,7 @@ def get_macro_actions(request, name):
 
 # Returns cookie to skip record macro instructions popup
 def skip_instructions(request):
+    '''Returns cookie that prevents record macro instructions from opening.'''
     response = HttpResponse()
     response.set_cookie('skip_instructions', 'true')
     return response
@@ -412,6 +443,10 @@ def skip_instructions(request):
 
 @requires_post
 def edit_ir_macro(data):
+    '''Takes JSON with IR Blaster macro name and actions.
+    Sends API call to ESP32 to delete existing macro with same name (if any),
+    then sends API calls to add each action and write the macro to ESP32 disk.
+    '''
     ip = data['ip']
     macro_name = data['name']
 
@@ -433,6 +468,9 @@ def edit_ir_macro(data):
 
 @requires_post
 def add_ir_macro(data):
+    '''Takes JSON with IR Blaster macro name and actions.
+    Sends API calls to ESP32 to add each action and write the macro to disk.
+    '''
     ip = data['ip']
     macro_name = data['name']
 

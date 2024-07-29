@@ -1,8 +1,13 @@
+'''Custom management command used to write all Config entries in database to
+JSON files in CONFIG_DIR.
+'''
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from node_configuration.models import Config
 
 
+# pylint: disable=line-too-long, missing-class-docstring
 class Command(BaseCommand):
     help = 'Iterate config files in database and create a file in CONFIG_DIR for each'
 

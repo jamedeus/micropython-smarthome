@@ -69,7 +69,10 @@ def get_config_param_list(config, param):
 
 # Returns True if arg matches IPv4 regex, otherwise False
 def valid_ip(ip):
-    return bool(re.match(r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$', ip))
+    return bool(re.match(
+        r'^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$',
+        ip
+    ))
 
 
 # Returns True if arg matches HH:MM timestamp regex, otherwise False
@@ -133,7 +136,8 @@ def get_schedule_keywords_dict(django=False):
     # Load from SQL
     if os.environ.get('SMARTHOME_FRONTEND'):
         from node_configuration.models import ScheduleKeyword
-        return {keyword.keyword: keyword.timestamp for keyword in ScheduleKeyword.objects.all()}
+        return {keyword.keyword: keyword.timestamp
+                for keyword in ScheduleKeyword.objects.all()}
 
     # Load from config file on disk
     else:

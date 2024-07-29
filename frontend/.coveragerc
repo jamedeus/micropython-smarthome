@@ -5,6 +5,7 @@ omit =
     *wsgi.py
     *asgi.py
     */tests.py
+    */test_*
     *unit_test_helpers.py
     */migrations/*.py
 

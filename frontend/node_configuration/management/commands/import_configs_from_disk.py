@@ -1,8 +1,13 @@
+'''Custom management command used to overwrite all config files in database
+with contents of corresponding JSON files in CONFIG_DIR.
+'''
+
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
 from node_configuration.models import Config
 
 
+# pylint: disable=line-too-long, missing-class-docstring
 class Command(BaseCommand):
     help = 'Overwrite all config files in database with corresponding files in CONFIG_DIR'
 
