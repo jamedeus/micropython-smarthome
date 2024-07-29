@@ -120,7 +120,12 @@ def clean_up_test_nodes():
 
 # Replaces provision view to simulate partially successful reupload_all
 def simulate_reupload_all_partial_success(ip, password, config, modules):
-    if config == test_config_2:
+    if config == test_config_1:
+        return {
+            'message': 'Error: Unknown error',
+            'status': 500
+        }
+    elif config == test_config_2:
         return {
             'message': 'Error: Unable to connect to node, please make sure it is connected to wifi and try again.',
             'status': 404

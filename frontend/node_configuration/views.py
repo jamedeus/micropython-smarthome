@@ -111,6 +111,8 @@ def reupload_all(request):
             report['failed'][node.friendly_name] = 'Connection timed out'
         elif response['status'] == 409:
             report['failed'][node.friendly_name] = 'Filesystem error'
+        else:
+            report['failed'][node.friendly_name] = 'Unknown error'
 
     print('\nreupload_all results:')
     print(json.dumps(report, indent=4))

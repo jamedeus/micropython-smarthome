@@ -900,7 +900,7 @@ class ReuploadAllTests(TestCaseBackupRestore):
             self.assertEqual(response.status_code, 200)
             self.assertEqual(
                 response.json()['message'],
-                {'success': ['Test1', 'Test3'], 'failed': {'Test2': 'Offline'}}
+                {'success': ['Test3'], 'failed': {'Test1': 'Unknown error', 'Test2': 'Offline'}}
             )
 
     def test_reupload_all_fail(self):

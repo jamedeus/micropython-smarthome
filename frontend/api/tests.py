@@ -627,6 +627,37 @@ class InvalidMacroTests(TestCaseBackupRestore):
         self.assertEqual(response.json()['message'], 'Invalid action')
         self.assertEqual(len(Macro.objects.all()), 0)
 
+        # Create macro with 1 valid action, confirm exists
+        payload = {
+            "name": "First Macro",
+            "action": {
+                "command": "turn_on",
+                "instance": "device1",
+                "target": "192.168.1.123",
+                "friendly_name": "Cabinet Lights"
+            }
+        }
+        response = self.client.post('/add_macro_action', payload)
+        self.assertEqual(len(Macro.objects.all()), 1)
+
+        # Attempt to add second invalid action (non-existing device5)
+        payload = {
+            "name": "First Macro",
+            "action": {
+                "command": "turn_on",
+                "instance": "device5",
+                "target": "192.168.1.123",
+                "friendly_name": "Not Real"
+            }
+        }
+        response = self.client.post('/add_macro_action', payload)
+
+        # Confirm macro still exists but invalid action was not added
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(Macro.objects.all()), 1)
+        macro = Macro.objects.all()[0]
+        self.assertEqual(len(json.loads(macro.actions)), 1)
+
     def test_delete_invalid_macro_action(self):
         # Create macro, verify exists
         payload = {

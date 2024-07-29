@@ -15,34 +15,29 @@ def get_metadata_section(category, _type):
 
 # Helper function for get_api_target_menu_options, converts individual configs to frontend options
 def convert_config_to_api_target_options(config):
-    # Remove irrelevant sections
-    del config['metadata']
-    del config['wifi']
-
     # Result will contain 1 entry for each device, sensor, and ir_blaster in config
     result = {}
     for i in config:
-        if i != "ir_blaster":
-            # All devices have same options
-            if i.startswith("device"):
-                result[i] = {
-                    "display": f'{config[i]["nickname"]} ({config[i]["_type"]})',
-                    "options": device_endpoints
-                }
+        # All devices have same options
+        if i.startswith("device"):
+            result[i] = {
+                "display": f'{config[i]["nickname"]} ({config[i]["_type"]})',
+                "options": device_endpoints
+            }
 
-            # All sensors have same options except thermostat and switch (trigger unsupported)
-            elif i.startswith("sensor"):
-                result[i] = {
-                    "display": f'{config[i]["nickname"]} ({config[i]["_type"]})',
-                    "options": sensor_endpoints.copy()
-                }
+        # All sensors have same options except thermostat and switch (trigger unsupported)
+        elif i.startswith("sensor"):
+            result[i] = {
+                "display": f'{config[i]["nickname"]} ({config[i]["_type"]})',
+                "options": sensor_endpoints.copy()
+            }
 
-                # Remove trigger endpoint if sensor is not triggerable
-                sensor_metadata = get_metadata_section("sensors", config[i]["_type"])
-                if not sensor_metadata["triggerable"]:
-                    result[i]["options"].remove("trigger_sensor")
+            # Remove trigger endpoint if sensor is not triggerable
+            sensor_metadata = get_metadata_section("sensors", config[i]["_type"])
+            if not sensor_metadata["triggerable"]:
+                result[i]["options"].remove("trigger_sensor")
 
-        else:
+        elif i == "ir_blaster":
             # Add options for all configured IR Blaster targets
             entry = {target: options for target, options in ir_blaster_options.items() if target in config[i]['target']}
             if entry:

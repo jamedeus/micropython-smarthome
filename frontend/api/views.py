@@ -52,10 +52,9 @@ def get_metadata_map():
         name = i["config_name"]
         output['sensors'][name] = {}
         output['sensors'][name]['rule_prompt'] = i["rule_prompt"]
+        output['sensors'][name]['triggerable'] = i["triggerable"]
         if "rule_limits" in i.keys():
             output['sensors'][name]['rule_limits'] = i["rule_limits"]
-        if "triggerable" in i.keys():
-            output['sensors'][name]['triggerable'] = i["triggerable"]
 
     return output
 
