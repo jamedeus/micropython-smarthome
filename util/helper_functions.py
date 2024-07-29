@@ -160,9 +160,10 @@ def load_unit_test_config():
 
 
 # Reads all device and sensor metadata files
-# Returns dict with devices and sensors keys, each containing list of metadata objects
+# Returns dict with devices and sensors keys, each containing dict with
+# config_name as keys and metadata file contents as value
 def get_device_and_sensor_metadata():
-    metadata = {'devices': [], 'sensors': []}
+    metadata = {'devices': {}, 'sensors': {}}
 
     # Resolve paths to devices/metadata/ and sensors/metadata/
     util = os.path.dirname(os.path.realpath(__file__))
@@ -173,12 +174,14 @@ def get_device_and_sensor_metadata():
     # Load each device metadata and add to output object
     for i in os.listdir(device_metadata):
         with open(os.path.join(device_metadata, i), 'r') as file:
-            metadata['devices'].append(json.load(file))
+            params = json.load(file)
+            metadata['devices'][params['config_name']] = params
 
     # Load each sensor metadata and add to output object
     for i in os.listdir(sensor_metadata):
         with open(os.path.join(sensor_metadata, i), 'r') as file:
-            metadata['sensors'].append(json.load(file))
+            params = json.load(file)
+            metadata['sensors'][params['config_name']] = params
 
     return metadata
 

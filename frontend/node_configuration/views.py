@@ -285,17 +285,11 @@ def get_metadata_context():
     '''Returns dict with all device and sensor metadata keyed by _type param.
     Used to populate edit_config cards with appropriate inputs based on type.
     '''
-    # Get object containing all device/sensor metadata
+
+    # Get dict with contents of all device and sensor metadata files
+    # Combine devices and sensors keys into single dict
     metadata = get_device_and_sensor_metadata()
-    context = {'devices': {}, 'sensors': {}}
-
-    # Iterate list of dicts, add each to dict with _type as key
-    for i in metadata['devices']:
-        context['devices'][i['config_name']] = i
-    for i in metadata['sensors']:
-        context['sensors'][i['config_name']] = i
-
-    return context
+    return metadata['devices'] | metadata['sensors']
 
 
 def new_config(request):

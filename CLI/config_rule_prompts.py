@@ -25,16 +25,15 @@ def build_rule_prompt_maps():
     rule_prompt_map = {}
     rule_limits_map = {}
 
-    # Get object containing all device and sensor metadata objects
+    # Get dict with contents of all device and sensor metadata files
     metadata = get_device_and_sensor_metadata()
 
-    # Combine into single list
-    metadata = metadata['devices'] + metadata['sensors']
+    # Combine into single dict
+    metadata = metadata['devices'] | metadata['sensors']
 
-    # Iterate metadata objects, add config_name as map key, prompt function as value
-    for i in metadata:
-        _type = i['config_name']
-        prompt = i['rule_prompt']
+    # Iterate metadata, add config_name as map key, prompt function as value
+    for _type, value in metadata.items():
+        prompt = value['rule_prompt']
 
         # Determine correct prompt functions using rule_prompt key
         if prompt == "int_range":
@@ -53,8 +52,8 @@ def build_rule_prompt_maps():
             rule_prompt_map[_type] = standard_rule_prompt
 
         # If metadata contains rule_limits_map key, add to dict
-        if "rule_limits" in i.keys():
-            rule_limits_map[_type] = i['rule_limits']
+        if "rule_limits" in value.keys():
+            rule_limits_map[_type] = value['rule_limits']
 
     return rule_prompt_map, rule_limits_map
 

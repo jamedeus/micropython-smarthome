@@ -39,27 +39,25 @@ def get_metadata_map():
     containing all relevant metadata (prompts, limits, triggerable sensors)
     '''
 
-    # Get object containing metadata for all device and sensor types
+    # Get dict with contents of all device and sensor metadata files
     metadata = get_device_and_sensor_metadata()
 
     output = {'devices': {}, 'sensors': {}}
 
     # Add device config_name, rule_prompt, and rule_limits
-    for i in metadata['devices']:
-        name = i["config_name"]
-        output['devices'][name] = {}
-        output['devices'][name]['rule_prompt'] = i["rule_prompt"]
-        if "rule_limits" in i.keys():
-            output['devices'][name]['rule_limits'] = i["rule_limits"]
+    for _type, value in metadata['devices'].items():
+        output['devices'][_type] = {}
+        output['devices'][_type]['rule_prompt'] = value['rule_prompt']
+        if 'rule_limits' in value.keys():
+            output['devices'][_type]['rule_limits'] = value['rule_limits']
 
     # Add sensor config_name, rule_prompt, rule_limits, and triggerable bool
-    for i in metadata['sensors']:
-        name = i["config_name"]
-        output['sensors'][name] = {}
-        output['sensors'][name]['rule_prompt'] = i["rule_prompt"]
-        output['sensors'][name]['triggerable'] = i["triggerable"]
-        if "rule_limits" in i.keys():
-            output['sensors'][name]['rule_limits'] = i["rule_limits"]
+    for _type, value in metadata['sensors'].items():
+        output['sensors'][_type] = {}
+        output['sensors'][_type]['rule_prompt'] = value['rule_prompt']
+        output['sensors'][_type]['triggerable'] = value['triggerable']
+        if 'rule_limits' in value.keys():
+            output['sensors'][_type]['rule_limits'] = value['rule_limits']
 
     return output
 

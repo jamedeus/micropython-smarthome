@@ -4,15 +4,8 @@ from helper_functions import get_device_and_sensor_metadata
 from validation_constants import ir_blaster_options, device_endpoints, sensor_endpoints
 from .models import Node
 
-# Get object containing all device/sensor metadata
+# Get dict with contents of all device and sensor metadata files
 metadata = get_device_and_sensor_metadata()
-
-
-def get_metadata_section(category, _type):
-    '''Takes category (devices or sensors) and type, returns metadata section'''
-    for i in metadata[category]:
-        if i['config_name'] == _type:
-            return i
 
 
 def convert_config_to_api_target_options(config):
@@ -38,7 +31,7 @@ def convert_config_to_api_target_options(config):
             }
 
             # Remove trigger endpoint if sensor is not triggerable
-            sensor_metadata = get_metadata_section("sensors", config[i]["_type"])
+            sensor_metadata = metadata["sensors"][config[i]["_type"]]
             if not sensor_metadata["triggerable"]:
                 result[i]["options"].remove("trigger_sensor")
 

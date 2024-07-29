@@ -13,16 +13,16 @@ def build_dependencies_dict():
         'sensors': {}
     }
 
-    # Get object containing all device and sensor metadata objects
+    # Get dict with contents of all device and sensor metadata files
     metadata = get_device_and_sensor_metadata()
 
-    # Iterate device metadata files, add dependency lists to dict
-    for i in metadata['devices']:
-        dependencies['devices'][i['config_name']] = i['dependencies']
+    # Iterate device metadata, add each dependency list to dict
+    for _type, value in metadata['devices'].items():
+        dependencies['devices'][_type] = value['dependencies']
 
-    # Iterate sensor metadata files, add dependency lists to dict
-    for i in metadata['sensors']:
-        dependencies['sensors'][i['config_name']] = i['dependencies']
+    # Iterate sensor metadata, add each dependency list to dict
+    for _type, value in metadata['sensors'].items():
+        dependencies['sensors'][_type] = value['dependencies']
 
     return dependencies
 

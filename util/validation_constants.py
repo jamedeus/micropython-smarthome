@@ -69,15 +69,15 @@ def build_config_templates():
         "sensor": {}
     }
 
-    # Get object containing all device and sensor metadata objects
+    # Get dict with contents of all device and sensor metadata files
     metadata = get_device_and_sensor_metadata()
 
-    # Iterate device metadata files, add each config template lists to dict
-    for i in metadata['devices']:
+    # Iterate device metadata, add each config template to dict
+    for i in metadata['devices'].values():
         config_templates['device'][i['class_name']] = i['config_template']
 
-    # Iterate sensor metadata files, add each config template lists to dict
-    for i in metadata['sensors']:
+    # Iterate sensor metadata, add each config template to dict
+    for i in metadata['sensors'].values():
         config_templates['sensor'][i['class_name']] = i['config_template']
 
     return config_templates
