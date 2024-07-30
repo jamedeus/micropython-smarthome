@@ -45,23 +45,15 @@ def create_config_file(data):
             print("Unable to connect to wifi with provided credentials")
             return False
 
-        # Populate template from received dict keys
-        config = {
-            "metadata": {
-                "id": "",
-                "location": "",
-                "floor": "",
-                "schedule_keywords": {}
-            },
-            "wifi": {
-                "ssid": data["ssid"],
-                "password": data["password"]
-            }
+        # Create dict with wifi credentials
+        credentials = {
+            "ssid": data["ssid"],
+            "password": data["password"]
         }
 
-        # Write to disk
-        with open('config.json', 'w') as file:
-            json.dump(config, file)
+        # Write credentials to disk
+        with open('wifi_credentials.json', 'w') as file:
+            json.dump(credentials, file)
 
         # Write webrepl password to disk
         with open('webrepl_cfg.py', 'w') as file:

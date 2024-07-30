@@ -6,7 +6,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from .views import validate_full_config, get_api_target_menu_options
-from .models import Config, Node, WifiCredentials, GpsCoordinates
+from .models import Config, Node, GpsCoordinates
 
 # Functions used to manage cli_config.json
 from helper_functions import get_cli_config, load_unit_test_config
@@ -53,7 +53,6 @@ class ConfirmRequiresPostTests(TestCaseBackupRestore):
             '/delete_node',
             '/check_duplicate',
             '/generate_config_file',
-            '/set_default_credentials',
             '/set_default_location',
             '/restore_config'
         ]
@@ -91,7 +90,7 @@ class EditConfigTests(TestCaseBackupRestore):
         )
         self.assertEqual(
             list(response.context['config'].keys()),
-            ['metadata', 'wifi', 'device1', 'device2', 'sensor1']
+            ['metadata', 'device1', 'device2', 'sensor1']
         )
         self.assertEqual(
             response.context['api_target_options'],
@@ -139,7 +138,7 @@ class EditConfigTests(TestCaseBackupRestore):
         )
         self.assertEqual(
             list(response.context['config'].keys()),
-            ['metadata', 'wifi', 'device1', 'device2', 'device3', 'sensor1', 'sensor2']
+            ['metadata', 'device1', 'device2', 'device3', 'sensor1', 'sensor2']
         )
         self.assertEqual(
             response.context['api_target_options'],
@@ -171,8 +170,11 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
                 'floor': '',
                 'id': '',
                 'location': '',
-                'schedule_keywords': {'sunrise': '06:00', 'sunset': '18:00'}},
-            'wifi': {'password': '', 'ssid': ''}
+                'schedule_keywords': {
+                    'sunrise': '06:00',
+                    'sunset': '18:00'
+                }
+            }
         }
 
         # Confirm correct context (empty) + api target menu options + edit_existing set correctly
@@ -185,28 +187,6 @@ class ConfigGeneratorTests(TestCaseBackupRestore):
             list(response.context['metadata'].keys()),
             ['devices', 'sensors']
         )
-
-    def test_with_default_wifi(self):
-        # Set default wifi credentials
-        WifiCredentials.objects.create(ssid='AzureDiamond', password='hunter2')
-
-        # Expected config context with wifi credentials pre-filled
-        expected_response = {
-            'metadata': {
-                'floor': '',
-                'id': '',
-                'location': '',
-                'schedule_keywords': {'sunrise': '06:00', 'sunset': '18:00'}},
-            'wifi': {'password': 'hunter2', 'ssid': 'AzureDiamond'}
-        }
-
-        # Request page, confirm correct template used
-        response = self.client.get('/new_config')
-        self.assertTemplateUsed(response, 'node_configuration/edit-config.html')
-
-        # Confirm context contains credentials + edit_existing set correctly
-        self.assertEqual(response.context['config'], expected_response)
-        self.assertEqual(response.context['edit_existing'], False)
 
 
 # Test duplicate detection
@@ -377,10 +357,6 @@ class ValidateConfigTests(TestCaseBackupRestore):
         self.assertTrue(result)
 
     def test_missing_keys(self):
-        del self.valid_config['wifi']['ssid']
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Missing required key in wifi section')
-
         del self.valid_config['metadata']['id']
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Missing required key in metadata section')

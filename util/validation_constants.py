@@ -52,10 +52,6 @@ valid_config_keys = {
         "location": "",
         "floor": "",
         "schedule_keywords": ""
-    },
-    "wifi": {
-        "ssid": "",
-        "password": ""
     }
 }
 

@@ -180,10 +180,6 @@ request_payload = {
             "sunset": "18:00"
         }
     },
-    "wifi": {
-        "ssid": "mynetwork",
-        "password": "hunter2"
-    },
     "ir_blaster": {
         "pin": "23",
         "target": [
@@ -370,10 +366,6 @@ test_config_1 = {
             "sunset": "18:00"
         }
     },
-    "wifi": {
-        "ssid": "mynetwork",
-        "password": "hunter2"
-    },
     "device1": {
         "_type": "pwm",
         "nickname": "Cabinet Lights",
@@ -424,10 +416,6 @@ test_config_2 = {
             "sunrise": "06:00",
             "sunset": "18:00"
         }
-    },
-    "wifi": {
-        "ssid": "mynetwork",
-        "password": "hunter2"
     },
     "device1": {
         "nickname": "Air Conditioner",
@@ -521,10 +509,6 @@ test_config_3 = {
             "sunset": "18:00"
         }
     },
-    "wifi": {
-        "ssid": "mynetwork",
-        "password": "hunter2"
-    },
     "device1": {
         "_type": "pwm",
         "nickname": "Bathroom LEDs",
@@ -603,10 +587,6 @@ test_config_1_edit_context = {
                 "sunrise": "06:00",
                 "sunset": "18:00"
             }
-        },
-        "wifi": {
-            "ssid": "mynetwork",
-            "password": "hunter2"
         },
         "device1": {
             "_type": "pwm",
@@ -837,10 +817,6 @@ test_config_2_edit_context = {
                 "sunrise": "06:00",
                 "sunset": "18:00"
             }
-        },
-        "wifi": {
-            "ssid": "mynetwork",
-            "password": "hunter2"
         },
         "device1": {
             "nickname": "Air Conditioner",
@@ -1084,10 +1060,6 @@ test_config_3_edit_context = {
                 "sunrise": "06:00",
                 "sunset": "18:00"
             }
-        },
-        "wifi": {
-            "ssid": "mynetwork",
-            "password": "hunter2"
         },
         "device1": {
             "_type": "pwm",

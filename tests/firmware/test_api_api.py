@@ -21,10 +21,6 @@ ip = network.WLAN(network.WLAN.IF_STA).ifconfig()[0]
 
 
 config_file = {
-    "wifi": {
-        "ssid": test_config["wifi"]["ssid"],
-        "password": test_config["wifi"]["password"]
-    },
     "metadata": {
         "id": "unit-testing",
         "location": "test environment",

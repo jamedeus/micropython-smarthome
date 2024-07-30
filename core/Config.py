@@ -9,7 +9,14 @@ from machine import Pin, Timer, RTC
 import SoftwareTimer
 from Group import Group
 from api_keys import ipgeo_key
-from util import is_device, is_sensor, is_device_or_sensor, reboot, print_with_timestamp
+from util import (
+    is_device,
+    is_sensor,
+    is_device_or_sensor,
+    reboot,
+    print_with_timestamp,
+    read_wifi_credentials_from_disk
+)
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -77,9 +84,6 @@ class Config():
         print_with_timestamp("Instantiating config object...")
         log.info("Instantiating config object...")
         log.debug(f"Config file: {conf}")
-
-        # Load wifi credentials tuple
-        self.credentials = (conf["wifi"]["ssid"], conf["wifi"]["password"])
 
         # Load metadata parameters (included in status object used by frontend)
         self.identifier = conf["metadata"]["id"]
@@ -321,20 +325,20 @@ class Config():
         # Turn onboard LED on, indicates setup in progress
         led = Pin(2, Pin.OUT, value=1)
 
-        log.debug(f"Attempting to connect to {self.credentials[0]}")
-
         # Connect to wifi
         wlan = network.WLAN(network.WLAN.IF_STA)
         wlan.active(True)
         if not wlan.isconnected():
-            wlan.connect(self.credentials[0], self.credentials[1])
+            credentials = read_wifi_credentials_from_disk()
+            log.debug(f"Attempting to connect to {credentials['ssid']}")
+            wlan.connect(credentials["ssid"], credentials["password"])
 
-        # Wait until finished connecting before proceeding
-        while not wlan.isconnected():
-            continue
-        else:
-            print_with_timestamp(f"Successfully connected to {self.credentials[0]}")
-            log.info(f"Successfully connected to {self.credentials[0]}")
+            # Wait until finished connecting before proceeding
+            while not wlan.isconnected():
+                continue
+            else:
+                print_with_timestamp(f"Successfully connected to {credentials['ssid']}")
+                log.info(f"Successfully connected to {credentials['ssid']}")
 
         failed_attempts = 0
 

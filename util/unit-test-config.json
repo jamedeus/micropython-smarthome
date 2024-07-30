@@ -12,10 +12,6 @@
             "lon": "-122.63675"
         }
     },
-    "wifi": {
-        "ssid": "mynetwork",
-        "password": "hunter2"
-    },
     "device1": {
         "nickname": "Overhead",
         "_type": "dimmer",

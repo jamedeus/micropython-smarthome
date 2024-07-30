@@ -10,7 +10,6 @@ import UploadModal from 'modals/UploadModal';
 import ChangeIpModal from './ChangeIpModal';
 import DesktopModal from './DesktopIntegrationModal';
 import RestoreModal from './RestoreModal';
-import WifiModal from './WifiModal';
 import GpsModal from './GpsModal';
 import ReuploadToast from './ReuploadToast';
 import ErrorToast from 'util/ErrorToast';
@@ -62,7 +61,6 @@ const App = () => {
             <ChangeIpModal />
             <DesktopModal />
             <RestoreModal />
-            <WifiModal />
             <GpsModal />
         </div>
     );

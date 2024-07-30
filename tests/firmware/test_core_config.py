@@ -13,10 +13,6 @@ with open('config.json', 'r') as file:
     test_config = json.load(file)
 
 loaded_json = {
-    'wifi': {
-        'ssid': test_config['wifi']['ssid'],
-        'password': test_config['wifi']['password']
-    },
     'metadata': {
         'id': 'Upstairs bathroom',
         'location': 'Under counter',
@@ -69,7 +65,6 @@ class TestConfig(unittest.TestCase):
     def test_01_initial_state(self):
         # Confirm expected attributes just after instantiation
         self.assertIsInstance(self.config, Config)
-        self.assertEqual(self.config.credentials, (loaded_json["wifi"]["ssid"], loaded_json["wifi"]["password"]))
         self.assertEqual(self.config.identifier, loaded_json["metadata"]["id"])
         self.assertEqual(self.config.location, loaded_json["metadata"]["location"])
         self.assertEqual(self.config.floor, loaded_json["metadata"]["floor"])
@@ -183,7 +178,6 @@ class TestConfig(unittest.TestCase):
 
         # Confirm expected attributes
         self.assertIsInstance(config, Config)
-        self.assertEqual(config.credentials, (loaded_json["wifi"]["ssid"], loaded_json["wifi"]["password"]))
         self.assertEqual(config.identifier, loaded_json["metadata"]["id"])
         self.assertEqual(config.location, loaded_json["metadata"]["location"])
         self.assertEqual(config.floor, loaded_json["metadata"]["floor"])

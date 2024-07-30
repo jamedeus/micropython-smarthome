@@ -28,7 +28,13 @@ def async_exception_handler(loop, context):
 
 def start():
     # Instantiate config object (connects to wifi, sets up hardware, etc)
-    config = Config(read_config_from_disk())
+    try:
+        config = Config(read_config_from_disk())
+    # Load blank config template if config.json does not exist (initial setup)
+    except OSError:
+        log.info("config.json not found, loading blank template")
+        from default_config import default_config
+        config = Config(default_config)
     gc.collect()
 
     # Start webrepl (OTA updates)

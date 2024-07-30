@@ -14,10 +14,6 @@ export const newConfigContext = {
                 "sunset": "18:00",
                 "relax": "20:00"
             }
-        },
-        "wifi": {
-            "ssid": "mynetwork",
-            "password": "mypassword"
         }
     },
     "edit_existing": false
@@ -45,10 +41,6 @@ export const existingConfigContext = {
                 "lat": "-77.8401068",
                 "lon": "166.6425345"
             }
-        },
-        "wifi": {
-            "ssid": "mynetwork",
-            "password": "mypassword"
         },
         "sensor1": {
             "_type": "switch",

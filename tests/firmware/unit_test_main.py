@@ -185,9 +185,9 @@ def connect_wifi():
     wlan = network.WLAN()
     wlan.active(True)
     if not wlan.isconnected():
-        with open('config.json', 'r') as file:
-            config = json.load(file)
-        wlan.connect(config["wifi"]["ssid"], config["wifi"]["password"])
+        with open('wifi_credentials.json', 'r') as file:
+            credentials = json.load(file)
+        wlan.connect(credentials["ssid"], credentials["password"])
 
     # Wait until connected
     while not wlan.isconnected():

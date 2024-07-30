@@ -47,8 +47,6 @@ $ ./CLI/config_generator.py
 ? Enter a descriptive name for this node: Example
 ? Enter floor number: 2
 ? Enter a brief note about the node's physical location: CLI Readme
-? Enter wifi SSID (2.4 GHz only): mynet
-? Enter wifi password: *****************
 ?
 Add instances? (Use arrow keys)
  » Device

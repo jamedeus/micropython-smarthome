@@ -54,7 +54,7 @@ CardColumn.propTypes = {
 };
 
 const Page1 = () => {
-    // Render full layout with metadata, wifi, IR Blaster, and instance cards
+    // Render full layout with metadata, IR Blaster, and instance cards
     return (
         <>
             <MetadataSection />

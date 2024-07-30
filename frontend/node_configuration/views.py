@@ -26,7 +26,7 @@ from helper_functions import (
     get_device_and_sensor_metadata
 )
 from .get_api_target_menu_options import get_api_target_menu_options
-from .models import Node, Config, WifiCredentials, ScheduleKeyword, GpsCoordinates
+from .models import Node, Config, ScheduleKeyword, GpsCoordinates
 
 # Env var constants
 REPO_DIR = settings.REPO_DIR
@@ -293,22 +293,12 @@ def new_config(request):
                 'floor': '',
                 'location': '',
                 'schedule_keywords': get_schedule_keywords_dict()
-            },
-            'wifi': {
-                'ssid': '',
-                'password': ''
-            },
+            }
         },
         "api_target_options": get_api_target_menu_options(),
         "metadata": get_device_and_sensor_metadata(),
         "edit_existing": False
     }
-
-    # Add default wifi credentials if configured
-    if len(WifiCredentials.objects.all()) > 0:
-        default = WifiCredentials.objects.all()[0]
-        context["config"]["wifi"]["ssid"] = default.ssid
-        context["config"]["wifi"]["password"] = default.password
 
     print(json.dumps(context, indent=4))
 
@@ -446,23 +436,6 @@ def generate_config_file(data, edit_existing=False):
             return error_response(message='Config not found', status=404)
 
     return standard_response(message='Config created')
-
-
-@requires_post
-def set_default_credentials(data):
-    '''Receives payload when user saves wifi credentials.
-    Creates WifiCredentials model (sets default wifi on edit config page).
-    '''
-
-    # If default already set, overwrite
-    if len(WifiCredentials.objects.all()) > 0:
-        for i in WifiCredentials.objects.all():
-            i.delete()
-
-    new = WifiCredentials(ssid=data["ssid"], password=data["password"])
-    new.save()
-
-    return standard_response(message='Default credentials set')
 
 
 def get_location_suggestions(_, query):

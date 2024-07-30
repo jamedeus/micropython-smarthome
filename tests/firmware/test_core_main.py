@@ -12,10 +12,6 @@ with open('config.json', 'r') as file:
 
 
 config_file = {
-    "wifi": {
-        "ssid": test_config["wifi"]["ssid"],
-        "password": test_config["wifi"]["password"]
-    },
     "metadata": {
         "id": "unit-testing",
         "location": "test environment",
