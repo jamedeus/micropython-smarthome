@@ -35,11 +35,8 @@ exports[`App matches snapshot when creating new config file 1`] = `
           id="metadata"
         >
           <div
-            class="mb-4"
+            class="mb-4 mx-3"
           >
-            <h2>
-              Metadata
-            </h2>
             <div
               class="mb-2"
             >
@@ -338,11 +335,8 @@ exports[`App matches snapshot when creating new config file 1`] = `
         id="metadata"
       >
         <div
-          class="mb-4"
+          class="mb-4 mx-3"
         >
-          <h2>
-            Metadata
-          </h2>
           <div
             class="mb-2"
           >

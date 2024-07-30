@@ -44,8 +44,7 @@ describe('EditConfig', () => {
 
     it('warns user before redirecting to overview if changes were made', async () => {
         // Clear location field in metadata section
-        const metadata = app.getByText('Metadata').parentElement;
-        await user.clear(within(metadata).getAllByRole('textbox')[1]);
+        await user.clear(app.getByLabelText('Location:'));
 
         // Click back button, confirm warning modal appeared, confirm did not redirect
         await user.click(app.getByRole('button', { name: 'Back' }));
@@ -98,9 +97,8 @@ describe('EditConfig', () => {
             })
         }));
 
-        // Get metadata section, friendly name field, enter name
-        const metadata = app.getByText('Metadata').parentElement;
-        const nameField = within(metadata).getAllByRole('textbox')[0];
+        // Get friendly name field, enter name
+        const nameField = app.getAllByRole('textbox')[0];
         await user.clear(nameField);
         await user.type(nameField, 'Bathroom');
         jest.advanceTimersByTime(200);

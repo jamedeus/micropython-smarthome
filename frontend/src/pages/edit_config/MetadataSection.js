@@ -62,8 +62,7 @@ const MetadataSection = () => {
 
     return (
         <div id="metadata">
-            <div className="mb-4">
-                <h2>Metadata</h2>
+            <div className="mb-4 mx-3">
                 <InputWrapper label="Name">
                     <Form.Control
                         type="text"
