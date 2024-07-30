@@ -18,7 +18,9 @@ with open('config.json', 'r') as file:
 # Connect to network if not connected (get node_ip for expected_attributes)
 wlan = network.WLAN(network.WLAN.IF_STA)
 if not wlan.isconnected():
-    wlan.connect(config['wifi']['ssid'], config['wifi']['password'])
+    with open('wifi_credentials.json', 'r') as file:
+        credentials = json.load(file)
+    wlan.connect(credentials['ssid'], credentials['password'])
     while not wlan.isconnected():
         continue
 
@@ -84,7 +86,9 @@ class TestApiTarget(unittest.TestCase):
         # Required for cpython test environment (loads all tests before running
         # any, possible for other test to disconnect wifi before reaching this)
         if not wlan.isconnected():
-            wlan.connect(config['wifi']['ssid'], config['wifi']['password'])
+            with open('wifi_credentials.json', 'r') as file:
+                credentials = json.load(file)
+            wlan.connect(credentials['ssid'], credentials['password'])
             while not wlan.isconnected():
                 continue
 

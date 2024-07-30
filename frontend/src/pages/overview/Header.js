@@ -6,7 +6,6 @@ import { showErrorModal } from 'modals/ErrorModal';
 import { sleep } from 'util/helper_functions';
 import { showDesktopModal } from './DesktopIntegrationModal';
 import { showRestoreModal } from './RestoreModal';
-import { showWifiModal } from './WifiModal';
 import { showGpsModal } from './GpsModal';
 
 const Header = () => {
@@ -35,7 +34,6 @@ const Header = () => {
         }
     };
 
-    // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (
         <div className="d-flex justify-content-between">
             <Button style={{visibility: "hidden"}}>
@@ -47,9 +45,6 @@ const Header = () => {
                     <i className="bi-gear-fill"></i>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                    <Dropdown.Item onClick={() => showWifiModal()}>
-                        Set WIFI credentials
-                    </Dropdown.Item>
                     <Dropdown.Item onClick={() => showGpsModal()}>
                         Set GPS coordinates
                     </Dropdown.Item>

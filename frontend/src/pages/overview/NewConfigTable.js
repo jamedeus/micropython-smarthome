@@ -134,7 +134,6 @@ const NewConfigTable = () => {
     // Set default collapse state
     const [open, setOpen] = useState(true);
 
-    // Render full layout with metadata, wifi, IR Blaster, and instance cards
     return (
         <Row id="not_uploaded" className="text-center section pt-2 px-0 mb-5">
             <h3 className="text-center my-1" onClick={() => setOpen(!open)}>

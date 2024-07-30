@@ -44,6 +44,11 @@ def is_longitude(num):
         return False
 
 
+def read_wifi_credentials_from_disk():
+    with open('wifi_credentials.json', 'r') as file:
+        return json.load(file)
+
+
 def read_config_from_disk():
     with open('config.json', 'r') as file:
         return json.load(file)

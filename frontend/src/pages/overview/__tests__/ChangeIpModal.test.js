@@ -199,7 +199,7 @@ describe('ChangeIpModal', () => {
         await user.click(app.getByText('Change IP'));
         await user.click(document.querySelector('.modal-backdrop'));
         await waitFor(() => {
-            expect(app.queryByText('Set Default Wifi')).toBeNull();
+            expect(app.queryByText(/to a new IP/)).toBeNull();
         });
     });
 });

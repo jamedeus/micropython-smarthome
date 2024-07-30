@@ -148,10 +148,6 @@ class ValidateConfigTests(TestCase):
         self.assertTrue(result)
 
     def test_missing_keys(self):
-        del self.valid_config['wifi']['ssid']
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Missing required key in wifi section')
-
         del self.valid_config['metadata']['id']
         result = validate_full_config(self.valid_config)
         self.assertEqual(result, 'Missing required key in metadata section')
@@ -266,7 +262,6 @@ class TestGenerateConfigFile(TestCase):
     def test_run_prompt_method(self):
         # Mock all methods called by run_prompt, mock validator to return True
         with patch.object(self.generator, 'metadata_prompt') as mock_metadata_prompt, \
-             patch.object(self.generator, 'wifi_prompt') as mock_wifi_prompt, \
              patch.object(self.generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
              patch.object(self.generator, 'select_sensor_targets') as mock_select_sensor_targets, \
              patch.object(self.generator, 'finished_prompt') as mock_finished_prompt, \
@@ -275,7 +270,6 @@ class TestGenerateConfigFile(TestCase):
             # Run method, confirm all mocks called
             self.generator.run_prompt()
             self.assertTrue(mock_metadata_prompt.called_once)
-            self.assertTrue(mock_wifi_prompt.called_once)
             self.assertTrue(mock_add_devices_and_sensors.called_once)
             self.assertTrue(mock_select_sensor_targets.called_once)
             self.assertTrue(mock_finished_prompt.called_once)
@@ -287,7 +281,6 @@ class TestGenerateConfigFile(TestCase):
     def test_run_prompt_failed_validation(self):
         # Mock all methods called by run_prompt, mock validator to return False
         with patch.object(self.generator, 'metadata_prompt') as mock_metadata_prompt, \
-             patch.object(self.generator, 'wifi_prompt') as mock_wifi_prompt, \
              patch.object(self.generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
              patch.object(self.generator, 'select_sensor_targets') as mock_select_sensor_targets, \
              patch('config_generator.validate_full_config', return_value=False) as mock_validate_full_config:
@@ -295,7 +288,6 @@ class TestGenerateConfigFile(TestCase):
             # Run method, confirm all mocks called
             self.generator.run_prompt()
             self.assertTrue(mock_metadata_prompt.called_once)
-            self.assertTrue(mock_wifi_prompt.called_once)
             self.assertTrue(mock_add_devices_and_sensors.called_once)
             self.assertTrue(mock_select_sensor_targets.called_once)
             self.assertTrue(mock_validate_full_config.called_once)
@@ -332,17 +324,6 @@ class TestGenerateConfigFile(TestCase):
         self.assertEqual(self.generator.config['metadata']['id'], 'Test ID')
         self.assertEqual(self.generator.config['metadata']['floor'], '2')
         self.assertEqual(self.generator.config['metadata']['location'], 'Test Environment')
-
-    def test_wifi_prompt(self):
-        # Mock responses to the SSID and Password prompts
-        self.mock_ask.unsafe_ask.side_effect = ['MyNetwork', 'hunter2']
-        with patch('questionary.text', return_value=self.mock_ask), \
-             patch('questionary.password', return_value=self.mock_ask):
-            self.generator.wifi_prompt()
-
-        # Confirm responses added to correct keys in dict
-        self.assertEqual(self.generator.config['wifi']['ssid'], 'MyNetwork')
-        self.assertEqual(self.generator.config['wifi']['password'], 'hunter2')
 
     def test_sensor_type(self):
         self.mock_ask.unsafe_ask.return_value = 'MotionSensor'
@@ -424,10 +405,6 @@ class TestGenerateConfigFile(TestCase):
                 "floor": "1",
                 "location": "Test Environment"
             },
-            "wifi": {
-                "ssid": "mynet",
-                "password": "hunter2"
-            },
             "device1": {
                 "_type": "mosfet",
                 "nickname": "Target1",
@@ -462,7 +439,7 @@ class TestGenerateConfigFile(TestCase):
             self.assertTrue(self.mock_ask.called_once)
 
         # Confirm both devices were deleted
-        self.assertEqual(list(self.generator.config.keys()), ["metadata", "wifi", "sensor1"])
+        self.assertEqual(list(self.generator.config.keys()), ["metadata", "sensor1"])
 
     def test_delete_devices_and_sensors_no_instances(self):
         # Simulate editing config with no devices or sensors
@@ -471,10 +448,6 @@ class TestGenerateConfigFile(TestCase):
                 "id": "Target Test",
                 "floor": "1",
                 "location": "Test Environment"
-            },
-            "wifi": {
-                "ssid": "mynet",
-                "password": "hunter2"
             }
         }
 
@@ -909,10 +882,6 @@ class TestGenerateConfigFile(TestCase):
                 "floor": "1",
                 "location": "Test Environment"
             },
-            "wifi": {
-                "ssid": "mynet",
-                "password": "hunter2"
-            },
             "device1": {
                 "_type": "mosfet",
                 "nickname": "Target1",
@@ -953,10 +922,6 @@ class TestGenerateConfigFile(TestCase):
                 "id": "Target Test",
                 "floor": "1",
                 "location": "Test Environment"
-            },
-            "wifi": {
-                "ssid": "mynet",
-                "password": "hunter2"
             },
             "sensor1": {
                 "_type": "pir",
@@ -1160,10 +1125,6 @@ class TestGenerateConfigFile(TestCase):
                     "sunset": "18:00"
                 }
             },
-            "wifi": {
-                "ssid": "mynet",
-                "password": "password"
-            },
             "device1": {
                 "_type": "mosfet",
                 "nickname": "LED",
@@ -1206,7 +1167,6 @@ class TestGenerateConfigFile(TestCase):
         # Simulate user selecting each option in edit prompt
         self.mock_ask.unsafe_ask.side_effect = [
             'Edit metadata',
-            'Edit wifi credentials',
             'Add devices and sensors',
             'Delete devices and sensors',
             'Edit sensor targets',
@@ -1215,7 +1175,6 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock all methods called by run_edit_prompt, mock validator to return True
         with patch.object(generator, 'metadata_prompt') as mock_metadata_prompt, \
-             patch.object(generator, 'wifi_prompt') as mock_wifi_prompt, \
              patch.object(generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
              patch.object(generator, 'delete_devices_and_sensors') as mock_delete_devices_and_sensors, \
              patch.object(generator, 'select_sensor_targets') as mock_select_sensor_targets, \
@@ -1225,7 +1184,6 @@ class TestGenerateConfigFile(TestCase):
             # Run prompt, confirm all mocks called
             generator.run_prompt()
             self.assertTrue(mock_metadata_prompt.called_once)
-            self.assertTrue(mock_wifi_prompt.called_once)
             self.assertTrue(mock_add_devices_and_sensors.called_once)
             self.assertTrue(mock_delete_devices_and_sensors.called_once)
             self.assertTrue(mock_select_sensor_targets.called_once)
@@ -1233,7 +1191,6 @@ class TestGenerateConfigFile(TestCase):
 
             # Confirm prompt methods were called with default values from existing config
             self.assertEqual(mock_metadata_prompt.call_args_list[0][0], ("Unit Test Existing Config", "0", "Unit Test"))
-            self.assertEqual(mock_wifi_prompt.call_args_list[0][0], ("mynet", "password"))
 
             # Confirm passed_validation set to True (mock)
             self.assertTrue(generator.passed_validation)
@@ -1392,10 +1349,6 @@ class TestRegressions(TestCase):
                 "id": "Target Test",
                 "floor": "1",
                 "location": "Test Environment"
-            },
-            "wifi": {
-                "ssid": "mynet",
-                "password": "hunter2"
             },
             "device1": {
                 "_type": "mosfet",

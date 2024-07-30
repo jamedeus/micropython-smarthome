@@ -7,7 +7,7 @@ exports[`App matches snapshot when creating new config file 1`] = `
     <div
       id="config"
     >
-      {"metadata":{"id":"","floor":"","location":"","schedule_keywords":{"morning":"08:00","sleep":"23:00","sunrise":"06:00","sunset":"18:00","relax":"20:00"}},"wifi":{"ssid":"mynetwork","password":"mypassword"}}
+      {"metadata":{"id":"","floor":"","location":"","schedule_keywords":{"morning":"08:00","sleep":"23:00","sunrise":"06:00","sunset":"18:00","relax":"20:00"}}}
     </div>
     <div
       id="api_target_options"
@@ -87,45 +87,6 @@ exports[`App matches snapshot when creating new config file 1`] = `
                   class="form-control"
                   type="text"
                   value=""
-                />
-              </label>
-            </div>
-          </div>
-          <div
-            class="mb-4"
-          >
-            <h2>
-              Wifi
-            </h2>
-            <div
-              class="mb-2"
-            >
-              <label
-                class="w-100 fw-bold"
-              >
-                SSID
-                :
-                <input
-                  class="form-control"
-                  id="ssid"
-                  type="text"
-                  value="mynetwork"
-                />
-              </label>
-            </div>
-            <div
-              class="mb-2"
-            >
-              <label
-                class="w-100 fw-bold"
-              >
-                Password
-                :
-                <input
-                  class="form-control"
-                  id="password"
-                  type="password"
-                  value="mypassword"
                 />
               </label>
             </div>
@@ -429,45 +390,6 @@ exports[`App matches snapshot when creating new config file 1`] = `
                 class="form-control"
                 type="text"
                 value=""
-              />
-            </label>
-          </div>
-        </div>
-        <div
-          class="mb-4"
-        >
-          <h2>
-            Wifi
-          </h2>
-          <div
-            class="mb-2"
-          >
-            <label
-              class="w-100 fw-bold"
-            >
-              SSID
-              :
-              <input
-                class="form-control"
-                id="ssid"
-                type="text"
-                value="mynetwork"
-              />
-            </label>
-          </div>
-          <div
-            class="mb-2"
-          >
-            <label
-              class="w-100 fw-bold"
-            >
-              Password
-              :
-              <input
-                class="form-control"
-                id="password"
-                type="password"
-                value="mypassword"
               />
             </label>
           </div>

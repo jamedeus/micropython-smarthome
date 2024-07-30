@@ -131,17 +131,6 @@ class Config(models.Model):
         return super().delete(*args, **kwargs)
 
 
-# TODO fix cleartext password
-class WifiCredentials(models.Model):
-    '''Stores default wifi credentials (pre-filled on edit config form).'''
-
-    def __str__(self):
-        return self.ssid
-
-    ssid = models.TextField()
-    password = models.TextField()
-
-
 class GpsCoordinates(models.Model):
     '''Stores latitude and longitude set by user, added to all config files
     (used by firmware to look up accurate sunrise and sunset times).

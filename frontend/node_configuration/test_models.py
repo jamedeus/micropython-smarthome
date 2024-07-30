@@ -4,7 +4,7 @@ import types
 from unittest.mock import patch, MagicMock
 from django.conf import settings
 from django.core.exceptions import ValidationError
-from .models import Config, Node, WifiCredentials, ScheduleKeyword, GpsCoordinates
+from .models import Config, Node, ScheduleKeyword, GpsCoordinates
 
 # Functions used to manage cli_config.json
 from helper_functions import get_cli_config, remove_node_from_cli_config
@@ -287,37 +287,6 @@ class ConfigTests(TestCaseBackupRestore):
         # Revert
         settings.CLI_SYNC = True
         os.remove(config_path)
-
-
-# Test setting default wifi credentials
-class WifiCredentialsTests(TestCaseBackupRestore):
-    def setUp(self):
-        # Set default content_type for post requests (avoid long lines)
-        self.client = JSONClient()
-
-    def test_setting_credentials(self):
-        # Database should be empty
-        self.assertEqual(len(WifiCredentials.objects.all()), 0)
-
-        # Set default credentials, verify response + database
-        response = self.client.post(
-            '/set_default_credentials',
-            {'ssid': 'AzureDiamond', 'password': 'hunter2'}
-        )
-        self.assertEqual(response.json()['message'], 'Default credentials set')
-        self.assertEqual(len(WifiCredentials.objects.all()), 1)
-
-        # Overwrite credentials, verify model only contains 1 entry
-        response = self.client.post(
-            '/set_default_credentials',
-            {'ssid': 'NewWifi', 'password': 'hunter2'}
-        )
-        self.assertEqual(response.json()['message'], 'Default credentials set')
-        self.assertEqual(len(WifiCredentials.objects.all()), 1)
-
-    def test_print_method(self):
-        credentials = WifiCredentials.objects.create(ssid='testnet', password='hunter2')
-        self.assertEqual(credentials.__str__(), 'testnet')
 
 
 class GpsCoordinatesTests(TestCaseBackupRestore):

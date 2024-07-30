@@ -67,16 +67,6 @@ describe('App', () => {
         expect(window.location.href).toBe('/new_config');
     });
 
-    it('opens WifiModal when "Set WIFI credentials" option is clicked', async () => {
-        // Click "Set WIFI credentials" dropdown option in top-right corner menu
-        const header = app.getByText('Configure Nodes').parentElement;
-        await user.click(within(header).getAllByRole('button')[0]);
-        await user.click(app.getByText('Set WIFI credentials'));
-
-        // Confirm WifiModal appeared
-        expect(app.queryByText('Set Default Wifi')).not.toBeNull();
-    });
-
     it('opens GpsModal when "Set GPS coordinates" option is clicked', async () => {
         // Click "Set GPS coordinates" dropdown option in top-right corner menu
         const header = app.getByText('Configure Nodes').parentElement;

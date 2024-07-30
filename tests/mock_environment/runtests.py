@@ -70,9 +70,17 @@ def set_mocks():
     asyncio.sleep_ms = mock_asyncio.sleep_ms
     asyncio.sleep_us = mock_asyncio.sleep_us
 
-    # Use unit_test_config.json as mock config.json, allow saving schedule rules, keywords, etc
+    # Use unit_test_config.json as mock config, allows saving rules/keywords etc
     # Also contains IP and ports for mock_command_receiver container
-    shutil.copy2(os.path.join(repo_dir, 'tests', 'firmware', 'unit_test_config.json'), 'config.json')
+    shutil.copy2(
+        os.path.join(repo_dir, 'tests', 'firmware', 'unit_test_config.json'),
+        'config.json'
+    )
+
+    # Create mock wifi_credentials.json (ESP32 nodes create this file when user
+    # enters credentials during initial setup)
+    with open('wifi_credentials.json', 'w') as file:
+        json.dump({'ssid': 'mock_ssid', 'password': 'mock_password'}, file)
 
 
 async def run_tests():
@@ -98,6 +106,7 @@ async def run_tests():
     # Remove mock files
     try:
         os.remove('config.json')
+        os.remove('wifi_credentials.json')
         os.remove('app.log')
     except FileNotFoundError:
         pass

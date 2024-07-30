@@ -33,10 +33,6 @@ class GenerateConfigFile:
                     'floor': '',
                     'location': '',
                     'schedule_keywords': get_schedule_keywords_dict()
-                },
-                'wifi': {
-                    'ssid': '',
-                    'password': ''
                 }
             }
 
@@ -92,9 +88,8 @@ class GenerateConfigFile:
             print(json.dumps(self.config, indent=4))
             return self.run_edit_prompt()
 
-        # Prompt user to enter metadata and wifi credentials
+        # Prompt user to enter metadata
         self.metadata_prompt()
-        self.wifi_prompt()
 
         # Prompt user to add devices and sensors
         self.add_devices_and_sensors()
@@ -115,7 +110,6 @@ class GenerateConfigFile:
                 "\nWhat would you like to do?",
                 choices=[
                     "Edit metadata",
-                    "Edit wifi credentials",
                     "Add devices and sensors",
                     "Delete devices and sensors",
                     "Edit sensor targets",
@@ -128,12 +122,6 @@ class GenerateConfigFile:
                     self.config['metadata']['id'],
                     self.config['metadata']['floor'],
                     self.config['metadata']['location']
-                )
-            elif choice == 'Edit wifi credentials':
-                # Show wifi prompt with existing values pre-filled
-                self.wifi_prompt(
-                    self.config['wifi']['ssid'],
-                    self.config['wifi']['password']
                 )
             elif choice == 'Add devices and sensors':
                 # Prompt user to add devices and sensors
@@ -199,14 +187,6 @@ class GenerateConfigFile:
         ).unsafe_ask()
 
         self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
-
-    # Prompt user for wifi credentials, add to self.config
-    # Optional arguments are used to set defaults when editing existing config
-    def wifi_prompt(self, ssid="", password=""):
-        ssid = questionary.text("Enter wifi SSID (2.4 GHz only):", validate=MinLength(1), default=ssid).unsafe_ask()
-        password = questionary.password("Enter wifi password:", validate=MinLength(8), default=password).unsafe_ask()
-
-        self.config['wifi'].update({'ssid': ssid, 'password': password})
 
     def add_devices_and_sensors(self):
         # Lists to store + count device and sensor sections

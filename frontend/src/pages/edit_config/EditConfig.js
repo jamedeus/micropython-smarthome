@@ -5,7 +5,6 @@ import { send_post_request } from 'util/django_util';
 import Page1 from './Page1';
 import Page2 from './Page2';
 import Page3 from './Page3';
-import SaveWifiToast from './SaveWifiToast';
 import ApiTargetRuleModal from 'modals/ApiTargetRuleModal';
 import ErrorToast, { showErrorToast } from 'util/ErrorToast';
 import ErrorModal, { showErrorModal, hideErrorModal } from 'modals/ErrorModal';
@@ -258,7 +257,6 @@ const EditConfig = () => {
                     <NextPageButton />
                 </div>
             </div>
-            <SaveWifiToast />
             <ApiTargetRuleModal />
             <UploadModal />
             <ErrorModal />

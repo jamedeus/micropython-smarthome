@@ -38,6 +38,7 @@ module("Thermostat.py", base_path="../sensors")
 # Libraries
 module("setup_ssl_certs.py", base_path=".")
 module("api_keys.py", base_path="../lib")
+module("default_config.py", base_path="../lib")
 package("ir_tx", base_path="../lib")
 module("samsung_ir_codes.py", base_path="../lib")
 module("whynter_ir_codes.py", base_path="../lib")

@@ -12,7 +12,6 @@ const MetadataSection = () => {
         config,
         original_name,
         edit_existing,
-        setShowWifiToast,
         handleInputChange,
         highlightInvalid,
         setHasInvalidFields
@@ -61,13 +60,6 @@ const MetadataSection = () => {
         handleInputChange("metadata", "floor", input);
     };
 
-    // Show SaveWifiToast if both fields are populated when focus leaves
-    const saveWifiPrompt = () => {
-        if (config.wifi.ssid && config.wifi.password) {
-            setShowWifiToast(true);
-        }
-    };
-
     return (
         <div id="metadata">
             <div className="mb-4">
@@ -97,29 +89,6 @@ const MetadataSection = () => {
                         value={config.metadata.floor}
                         onChange={(e) => set_floor(e.target.value)}
                         isInvalid={(highlightInvalid && !config.metadata.floor)}
-                    />
-                </InputWrapper>
-            </div>
-            <div className="mb-4">
-                <h2>Wifi</h2>
-                <InputWrapper label="SSID">
-                    <Form.Control
-                        type="text"
-                        id="ssid"
-                        value={config.wifi.ssid}
-                        onChange={(e) => handleInputChange("wifi", "ssid", e.target.value)}
-                        onBlur={saveWifiPrompt}
-                        isInvalid={(highlightInvalid && !config.wifi.ssid)}
-                    />
-                </InputWrapper>
-                <InputWrapper label="Password">
-                    <Form.Control
-                        type="password"
-                        id="password"
-                        value={config.wifi.password}
-                        onChange={(e) => handleInputChange("wifi", "password", e.target.value)}
-                        onBlur={saveWifiPrompt}
-                        isInvalid={(highlightInvalid && !config.wifi.password)}
                     />
                 </InputWrapper>
             </div>
