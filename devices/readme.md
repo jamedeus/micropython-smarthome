@@ -59,7 +59,7 @@ The JSON metadata must follow this syntax:
 Parameters:
 - `config_name`: The config file `_type` parameter, lowercase with hyphens between words.
 - `class_name`: The name of the device class in your micropython file, CamelCase.
-- `display_name`: The name displayed on type select dropdown options in the web frontend.
+- `display_name`: The name displayed on config generator type select options (CLI and web frontend).
 - `dependencies`: A list of relative paths to all dependencies. This should include your device class, the `Device.py` and `core/Instance.py` base classes. If your device requires a driver from `lib/` then it must also be included (see [Thermostat.json](sensors/metadata/Thermostat.json) for an example).
 - `config_template`: A full template of the hardware-level config file for the device type.
     - All parameters in the example above are required, but more can be added (for example, an `ip` parameter for network devices).
@@ -77,8 +77,7 @@ Parameters:
 ### Integrating with client-side tools
 
 The following changes must be made when a new device class is added:
-- [ ] [`Config.hardware_classes`](core/Config.py): Add the `_type` parameter as key and the class name as value
-- [ ] [`firmware/manifest.py`](firmware/manifest.py): Add a module statement pointing to the new device class
+- [ ] [`firmware/manifest.py`](firmware/manifest.py): Add a module statement pointing to the new device class, and for each library it depends on (if any)
 - [ ] [`util/instance_validators.py`](util/instance_validators.py): Add a validator function for the new class, typically you can copy the validator method and return True instead of the rule user-selectable parameters
 
 Once the above changes have been made, run the unit tests and fix anything that fails. At a minimum the module will need to be added to [`test_provision.py](tests/cli/test_provision.py) in the `test_provision_unit_tests` test case.
