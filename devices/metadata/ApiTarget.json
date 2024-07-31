@@ -1,6 +1,7 @@
 {
     "config_name": "api-target",
     "class_name": "ApiTarget",
+    "display_name": "API command",
     "dependencies": [
         "devices/ApiTarget.py",
         "devices/Device.py",

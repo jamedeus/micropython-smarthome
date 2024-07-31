@@ -1,6 +1,7 @@
 {
     "config_name": "dht22",
     "class_name": "Dht22",
+    "display_name": "DHT22 Temperature Sensor",
     "dependencies": [
         "sensors/Dht22.py",
         "sensors/Thermostat.py",

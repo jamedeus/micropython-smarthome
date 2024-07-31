@@ -1,6 +1,7 @@
 {
     "config_name": "pir",
     "class_name": "MotionSensor",
+    "display_name": "PIR Motion Sensor",
     "dependencies": [
         "sensors/MotionSensor.py",
         "sensors/Sensor.py",

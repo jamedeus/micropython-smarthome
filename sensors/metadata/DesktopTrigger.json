@@ -1,6 +1,7 @@
 {
     "config_name": "desktop",
     "class_name": "DesktopTrigger",
+    "display_name": "Computer Activity",
     "dependencies": [
         "sensors/DesktopTrigger.py",
         "sensors/Sensor.py",

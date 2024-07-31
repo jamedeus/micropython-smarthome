@@ -1,6 +1,7 @@
 {
     "config_name": "dumb-relay",
     "class_name": "DumbRelay",
+    "display_name": "Relay",
     "dependencies": [
         "devices/DumbRelay.py",
         "devices/Device.py",

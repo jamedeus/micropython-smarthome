@@ -1,6 +1,7 @@
 {
     "config_name": "bulb",
     "class_name": "Bulb",
+    "display_name": "TP Link Smart Bulb",
     "dependencies": [
         "devices/Tplink.py",
         "devices/DimmableLight.py",

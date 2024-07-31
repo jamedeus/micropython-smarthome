@@ -1,6 +1,7 @@
 {
     "config_name": "si7021",
     "class_name": "Si7021",
+    "display_name": "SI7021 Temperature Sensor",
     "dependencies": [
         "sensors/Si7021.py",
         "sensors/Thermostat.py",

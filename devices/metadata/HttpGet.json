@@ -1,6 +1,7 @@
 {
     "config_name": "http-get",
     "class_name": "HttpGet",
+    "display_name": "HTTP Get Request",
     "dependencies": [
         "devices/HttpGet.py",
         "devices/Device.py",

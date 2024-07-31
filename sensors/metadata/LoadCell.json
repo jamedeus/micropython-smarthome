@@ -1,6 +1,7 @@
 {
     "config_name": "load-cell",
     "class_name": "LoadCell",
+    "display_name": "Load Cell Pressure Sensor",
     "dependencies": [
         "sensors/LoadCell.py",
         "sensors/Sensor.py",

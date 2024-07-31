@@ -1,6 +1,7 @@
 {
     "config_name": "switch",
     "class_name": "Switch",
+    "display_name": "Switch",
     "dependencies": [
         "sensors/Switch.py",
         "sensors/Sensor.py",

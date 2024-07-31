@@ -1,6 +1,7 @@
 {
     "config_name": "wled",
     "class_name": "Wled",
+    "display_name": "WLED",
     "dependencies": [
         "devices/Wled.py",
         "devices/DimmableLight.py",

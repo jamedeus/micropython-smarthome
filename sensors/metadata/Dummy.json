@@ -1,6 +1,7 @@
 {
     "config_name": "dummy",
     "class_name": "Dummy",
+    "display_name": "Dummy Sensor",
     "dependencies": [
         "sensors/Dummy.py",
         "sensors/Sensor.py",

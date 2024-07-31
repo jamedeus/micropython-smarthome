@@ -1,6 +1,7 @@
 {
     "config_name": "tasmota-relay",
     "class_name": "TasmotaRelay",
+    "display_name": "Tasmota Smart Relay",
     "dependencies": [
         "devices/TasmotaRelay.py",
         "devices/HttpGet.py",

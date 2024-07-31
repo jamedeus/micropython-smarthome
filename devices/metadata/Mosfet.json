@@ -1,6 +1,7 @@
 {
     "config_name": "mosfet",
     "class_name": "Mosfet",
+    "display_name": "Mosfet",
     "dependencies": [
         "devices/Mosfet.py",
         "devices/Device.py",

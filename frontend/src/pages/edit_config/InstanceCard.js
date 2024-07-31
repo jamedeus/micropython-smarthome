@@ -33,7 +33,7 @@ const TypeDropdownOptions = ({ category, exclude }) => {
                 !exclude.includes(key)
             ).map(([key, type]) => (
                 <option key={key} value={type.config_name}>
-                    {type.class_name}
+                    {type.display_name}
                 </option>
             ))
     );

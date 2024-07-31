@@ -1,6 +1,7 @@
 {
     "config_name": "desktop",
     "class_name": "DesktopTarget",
+    "display_name": "Computer Screen",
     "dependencies": [
         "devices/DesktopTarget.py",
         "devices/HttpGet.py",

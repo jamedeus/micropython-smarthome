@@ -3,6 +3,7 @@ export const edit_config_metadata = {
         "mosfet": {
             "config_name": "mosfet",
             "class_name": "Mosfet",
+            "display_name": "Mosfet",
             "dependencies": [
                 "devices/Mosfet.py",
                 "devices/Device.py",
@@ -20,6 +21,7 @@ export const edit_config_metadata = {
         "http-get": {
             "config_name": "http-get",
             "class_name": "HttpGet",
+            "display_name": "HTTP Get Request",
             "dependencies": [
                 "devices/HttpGet.py",
                 "devices/Device.py",
@@ -39,6 +41,7 @@ export const edit_config_metadata = {
         "pwm": {
             "config_name": "pwm",
             "class_name": "LedStrip",
+            "display_name": "LED Strip",
             "dependencies": [
                 "devices/LedStrip.py",
                 "devices/DimmableLight.py",
@@ -63,6 +66,7 @@ export const edit_config_metadata = {
         "desktop": {
             "config_name": "desktop",
             "class_name": "DesktopTarget",
+            "display_name": "Computer Screen",
             "dependencies": [
                 "devices/DesktopTarget.py",
                 "devices/HttpGet.py",
@@ -81,6 +85,7 @@ export const edit_config_metadata = {
         "tasmota-relay": {
             "config_name": "tasmota-relay",
             "class_name": "TasmotaRelay",
+            "display_name": "Tasmota Smart Relay",
             "dependencies": [
                 "devices/TasmotaRelay.py",
                 "devices/HttpGet.py",
@@ -99,6 +104,7 @@ export const edit_config_metadata = {
         "dimmer": {
             "config_name": "dimmer",
             "class_name": "Dimmer",
+            "display_name": "TP Link Smart Dimmer",
             "dependencies": [
                 "devices/Tplink.py",
                 "devices/DimmableLight.py",
@@ -123,6 +129,7 @@ export const edit_config_metadata = {
         "api-target": {
             "config_name": "api-target",
             "class_name": "ApiTarget",
+            "display_name": "API command",
             "dependencies": [
                 "devices/ApiTarget.py",
                 "devices/Device.py",
@@ -140,6 +147,7 @@ export const edit_config_metadata = {
         "dumb-relay": {
             "config_name": "dumb-relay",
             "class_name": "DumbRelay",
+            "display_name": "Relay",
             "dependencies": [
                 "devices/DumbRelay.py",
                 "devices/Device.py",
@@ -157,6 +165,7 @@ export const edit_config_metadata = {
         "bulb": {
             "config_name": "bulb",
             "class_name": "Bulb",
+            "display_name": "TP Link Smart Bulb",
             "dependencies": [
                 "devices/Tplink.py",
                 "devices/DimmableLight.py",
@@ -181,6 +190,7 @@ export const edit_config_metadata = {
         "wled": {
             "config_name": "wled",
             "class_name": "Wled",
+            "display_name": "WLED",
             "dependencies": [
                 "devices/Wled.py",
                 "devices/DimmableLight.py",
@@ -207,6 +217,7 @@ export const edit_config_metadata = {
         "switch": {
             "config_name": "switch",
             "class_name": "Switch",
+            "display_name": "Switch",
             "dependencies": [
                 "sensors/Switch.py",
                 "sensors/Sensor.py",
@@ -226,6 +237,7 @@ export const edit_config_metadata = {
         "dht22": {
             "config_name": "dht22",
             "class_name": "Dht22",
+            "display_name": "DHT22 Temperature Sensor",
             "dependencies": [
                 "sensors/Dht22.py",
                 "sensors/Thermostat.py",
@@ -253,6 +265,7 @@ export const edit_config_metadata = {
         "si7021": {
             "config_name": "si7021",
             "class_name": "Si7021",
+            "display_name": "SI7021 Temperature Sensor",
             "dependencies": [
                 "sensors/Si7021.py",
                 "sensors/Thermostat.py",
@@ -279,6 +292,7 @@ export const edit_config_metadata = {
         "desktop": {
             "config_name": "desktop",
             "class_name": "DesktopTrigger",
+            "display_name": "Computer Activity",
             "dependencies": [
                 "sensors/DesktopTrigger.py",
                 "sensors/Sensor.py",
@@ -298,6 +312,7 @@ export const edit_config_metadata = {
         "pir": {
             "config_name": "pir",
             "class_name": "MotionSensor",
+            "display_name": "PIR Motion Sensor",
             "dependencies": [
                 "sensors/MotionSensor.py",
                 "sensors/Sensor.py",
@@ -321,6 +336,7 @@ export const edit_config_metadata = {
         "load-cell": {
             "config_name": "load-cell",
             "class_name": "LoadCell",
+            "display_name": "Load Cell Pressure Sensor",
             "dependencies": [
                 "sensors/LoadCell.py",
                 "sensors/Sensor.py",
@@ -345,6 +361,7 @@ export const edit_config_metadata = {
         "dummy": {
             "config_name": "dummy",
             "class_name": "Dummy",
+            "display_name": "Dummy Sensor",
             "dependencies": [
                 "sensors/Dummy.py",
                 "sensors/Sensor.py",
