@@ -35,15 +35,20 @@ module("Sensor.py", base_path="../sensors")
 module("Switch.py", base_path="../sensors")
 module("Thermostat.py", base_path="../sensors")
 
-# Libraries
-module("setup_ssl_certs.py", base_path=".")
-module("api_keys.py", base_path="../lib")
-module("default_config.py", base_path="../lib")
-package("ir_tx", base_path="../lib")
-module("samsung_ir_codes.py", base_path="../lib")
-module("whynter_ir_codes.py", base_path="../lib")
+# System libraries
 module("logging.py", base_path="../lib")
-module("si7021.py", base_path="../lib")
 module("testing.py", base_path="../lib")
 module("cpython_only.py", base_path="../lib")
+
+# Hardware driver libraries
+package("ir_tx", base_path="../lib")
+module("si7021.py", base_path="../lib")
 module("hx711.py", base_path="../lib")
+
+# Configuration constants
+module("api_keys.py", base_path="../lib")
+module("setup_ssl_certs.py", base_path=".")
+module("default_config.py", base_path="../lib")
+module("hardware_classes.py", base_path="../lib")
+module("samsung_ir_codes.py", base_path="../lib")
+module("whynter_ir_codes.py", base_path="../lib")

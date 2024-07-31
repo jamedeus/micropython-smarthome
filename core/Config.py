@@ -17,6 +17,7 @@ from util import (
     print_with_timestamp,
     read_wifi_credentials_from_disk
 )
+from hardware_classes import hardware_classes
 
 # Set name for module's log lines
 log = logging.getLogger("Config")
@@ -28,31 +29,6 @@ reboot_timer = Timer(2)
 
 # Turn onboard LED on, indicates setup in progress
 led = Pin(2, Pin.OUT, value=1)
-
-# Used to dynamically import correct class for each device/sensor type
-hardware_classes = {
-    "devices": {
-        "dimmer": "Tplink",
-        "bulb": "Tplink",
-        "tasmota-relay": "TasmotaRelay",
-        "dumb-relay": "DumbRelay",
-        "desktop": "DesktopTarget",
-        "http-get": "HttpGet",
-        "pwm": "LedStrip",
-        "mosfet": "Mosfet",
-        "api-target": "ApiTarget",
-        "wled": "Wled"
-    },
-    "sensors": {
-        "pir": "MotionSensor",
-        "desktop": "DesktopTrigger",
-        "dummy": "Dummy",
-        "load-cell": "LoadCell",
-        "si7021": "Si7021",
-        "dht22": "Dht22",
-        "switch": "Switch"
-    }
-}
 
 
 # Takes name (device1 etc) and config entry, returns class instance

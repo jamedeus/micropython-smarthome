@@ -19,3 +19,4 @@ frontend/webapp/static/webapp/unable_to_connect.js
 frontend/coverage/
 setup_ssl_certs.py
 *.der
+lib/hardware_classes.py

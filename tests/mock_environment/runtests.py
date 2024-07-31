@@ -9,6 +9,7 @@ import logging
 import asyncio
 import requests
 import unittest
+import subprocess
 import nest_asyncio
 
 
@@ -81,6 +82,12 @@ def set_mocks():
     # enters credentials during initial setup)
     with open('wifi_credentials.json', 'w') as file:
         json.dump({'ssid': 'mock_ssid', 'password': 'mock_password'}, file)
+
+    # Build lib/hardware_classes.py (normally compiled into firmware)
+    subprocess.run([
+        'python3',
+        os.path.join(repo_dir, 'lib', 'build_hardware_classes.py')
+    ])
 
 
 async def run_tests():

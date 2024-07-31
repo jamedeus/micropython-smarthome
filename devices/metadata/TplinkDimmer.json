@@ -1,6 +1,6 @@
 {
     "config_name": "dimmer",
-    "class_name": "Dimmer",
+    "class_name": "Tplink",
     "display_name": "TP Link Smart Dimmer",
     "dependencies": [
         "devices/Tplink.py",

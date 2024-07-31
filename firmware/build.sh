@@ -111,6 +111,13 @@ fresh_build() {
 }
 
 
+# Generates a mapping dict from current device and sensor metadata objects
+# Used to dynamically instantiate correct device/sensor driver at boot time
+generate_hardware_classes() {
+    python3 ../lib/build_hardware_classes.py
+}
+
+
 # Must be in firmware dir
 if [[ $(pwd) != "$FIRMWARE_DIR" ]]; then
     START_DIR=$(pwd)
@@ -135,6 +142,9 @@ package_setup_page
 if [[ ! -f $FIRMWARE_DIR/setup_ssl_certs.py ]]; then
     generate_ssl_certs
 fi
+
+# Generate device/sensor driver mapping dict from metadata
+generate_hardware_classes
 
 # Update existing build unless user passed fresh arg
 if [[ $1 == "f" || $1 == "--f" || $1 == "fresh" ]]; then
