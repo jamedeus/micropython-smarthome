@@ -103,7 +103,7 @@ export const edit_config_metadata = {
         },
         "dimmer": {
             "config_name": "dimmer",
-            "class_name": "Dimmer",
+            "class_name": "Tplink",
             "display_name": "TP Link Smart Dimmer",
             "dependencies": [
                 "devices/Tplink.py",
@@ -164,7 +164,7 @@ export const edit_config_metadata = {
         },
         "bulb": {
             "config_name": "bulb",
-            "class_name": "Bulb",
+            "class_name": "Tplink",
             "display_name": "TP Link Smart Bulb",
             "dependencies": [
                 "devices/Tplink.py",
