@@ -1,6 +1,6 @@
 import json
 import unittest
-from Desktop_target import Desktop_target
+from DesktopTarget import DesktopTarget
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
@@ -13,10 +13,10 @@ class TestDesktopTarget(unittest.TestCase):
     def setUpClass(cls):
         ip = config["mock_receiver"]["ip"]
         port = config["mock_receiver"]["port"]
-        cls.instance = Desktop_target("device1", "device1", "desktop", "enabled", ip, port)
+        cls.instance = DesktopTarget("device1", "device1", "desktop", "enabled", ip, port)
 
     def test_01_initial_state(self):
-        self.assertIsInstance(self.instance, Desktop_target)
+        self.assertIsInstance(self.instance, DesktopTarget)
         self.assertTrue(self.instance.enabled)
 
     def test_02_turn_on(self):

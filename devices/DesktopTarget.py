@@ -2,10 +2,10 @@ import logging
 from HttpGet import HttpGet
 
 # Set name for module's log lines
-log = logging.getLogger("Desktop_target")
+log = logging.getLogger("DesktopTarget")
 
 
-class Desktop_target(HttpGet):
+class DesktopTarget(HttpGet):
     def __init__(self, name, nickname, _type, default_rule, ip, port=5000):
         super().__init__(name, nickname, _type, default_rule, f"{ip}:{port}", "on", "off")
 

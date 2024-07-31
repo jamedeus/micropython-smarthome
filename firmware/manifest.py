@@ -15,7 +15,7 @@ module("Instance.py", base_path="../core")
 
 # Device driver modules
 module("ApiTarget.py", base_path="../devices")
-module("Desktop_target.py", base_path="../devices")
+module("DesktopTarget.py", base_path="../devices")
 module("Device.py", base_path="../devices")
 module("DimmableLight.py", base_path="../devices")
 module("DumbRelay.py", base_path="../devices")
@@ -27,7 +27,7 @@ module("Tplink.py", base_path="../devices")
 module("Wled.py", base_path="../devices")
 
 # Sensor driver modules
-module("Desktop_trigger.py", base_path="../sensors")
+module("DesktopTrigger.py", base_path="../sensors")
 module("Dummy.py", base_path="../sensors")
 module("LoadCell.py", base_path="../sensors")
 module("MotionSensor.py", base_path="../sensors")

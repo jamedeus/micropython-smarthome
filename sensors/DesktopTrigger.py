@@ -4,10 +4,10 @@ import requests
 from Sensor import Sensor
 
 # Set name for module's log lines
-log = logging.getLogger("Desktop_sensor")
+log = logging.getLogger("DesktopTrigger")
 
 
-class Desktop_trigger(Sensor):
+class DesktopTrigger(Sensor):
     def __init__(self, name, nickname, _type, default_rule, targets, ip, port=5000):
         super().__init__(name, nickname, _type, True, None, default_rule, targets)
 

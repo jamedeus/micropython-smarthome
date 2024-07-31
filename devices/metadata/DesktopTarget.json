@@ -2,7 +2,7 @@
     "config_name": "desktop",
     "class_name": "DesktopTarget",
     "dependencies": [
-        "devices/Desktop_target.py",
+        "devices/DesktopTarget.py",
         "devices/HttpGet.py",
         "devices/Device.py",
         "core/Instance.py"

@@ -36,7 +36,7 @@ hardware_classes = {
         "bulb": "Tplink",
         "tasmota-relay": "TasmotaRelay",
         "dumb-relay": "DumbRelay",
-        "desktop": "Desktop_target",
+        "desktop": "DesktopTarget",
         "http-get": "HttpGet",
         "pwm": "LedStrip",
         "mosfet": "Mosfet",
@@ -45,7 +45,7 @@ hardware_classes = {
     },
     "sensors": {
         "pir": "MotionSensor",
-        "desktop": "Desktop_trigger",
+        "desktop": "DesktopTrigger",
         "dummy": "Dummy",
         "load-cell": "LoadCell",
         "si7021": "Si7021",

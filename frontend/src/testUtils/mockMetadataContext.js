@@ -64,7 +64,7 @@ export const edit_config_metadata = {
             "config_name": "desktop",
             "class_name": "DesktopTarget",
             "dependencies": [
-                "devices/Desktop_target.py",
+                "devices/DesktopTarget.py",
                 "devices/HttpGet.py",
                 "devices/Device.py",
                 "core/Instance.py"
@@ -280,7 +280,7 @@ export const edit_config_metadata = {
             "config_name": "desktop",
             "class_name": "DesktopTrigger",
             "dependencies": [
-                "sensors/Desktop_trigger.py",
+                "sensors/DesktopTrigger.py",
                 "sensors/Sensor.py",
                 "core/Instance.py"
             ],

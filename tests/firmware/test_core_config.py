@@ -510,7 +510,7 @@ class TestConfig(unittest.TestCase):
 
     # Original bug: desktop_trigger was broken by 9aa2a7f4, which instantiated sensors with their
     # config parameters (including target ID list), then replaced instance.targets with a list of
-    # device instances. Desktop_trigger __init__ expects targets list to contain device instances
+    # device instances. DesktopTrigger __init__ expects targets list to contain device instances
     # and checks their _type, raising an exception when the list contained strings.
     def test_20_regression_instantiate_with_desktop_trigger(self):
         # Undo instantiate_peripherals

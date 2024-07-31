@@ -2,7 +2,7 @@
     "config_name": "desktop",
     "class_name": "DesktopTrigger",
     "dependencies": [
-        "sensors/Desktop_trigger.py",
+        "sensors/DesktopTrigger.py",
         "sensors/Sensor.py",
         "core/Instance.py"
     ],

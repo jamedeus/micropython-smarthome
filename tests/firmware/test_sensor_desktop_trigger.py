@@ -4,8 +4,8 @@ import requests
 import unittest
 from Group import Group
 from MotionSensor import MotionSensor
-from Desktop_target import Desktop_target
-from Desktop_trigger import Desktop_trigger
+from DesktopTarget import DesktopTarget
+from DesktopTrigger import DesktopTrigger
 
 # Read mock API receiver address
 with open('config.json', 'r') as file:
@@ -52,8 +52,8 @@ class TestDesktopTrigger(unittest.TestCase):
         port = config["mock_receiver"]["port"]
 
         # Create test group with desktop_trigger and motion sensor targeting desktop_target
-        cls.target = Desktop_target("device1", "device1", "desktop", "enabled", ip, port)
-        cls.instance = Desktop_trigger("sensor1", "sensor1", "desktop", "enabled", [cls.target], ip, port)
+        cls.target = DesktopTarget("device1", "device1", "desktop", "enabled", ip, port)
+        cls.instance = DesktopTrigger("sensor1", "sensor1", "desktop", "enabled", [cls.target], ip, port)
         cls.pir = MotionSensor("sensor1", "sensor1", "pir", None, [cls.target], 15)
         cls.group = MockGroup('group1', [cls.instance, cls.pir])
         cls.instance.group = cls.group
@@ -67,7 +67,7 @@ class TestDesktopTrigger(unittest.TestCase):
         asyncio.run(asyncio.sleep(1))
 
     def test_01_initial_state(self):
-        self.assertIsInstance(self.instance, Desktop_trigger)
+        self.assertIsInstance(self.instance, DesktopTrigger)
         self.assertTrue(self.instance.enabled)
         self.assertEqual(self.instance.ip, config["mock_receiver"]["ip"])
         self.assertEqual(self.instance.port, config["mock_receiver"]["port"])
