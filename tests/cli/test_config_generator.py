@@ -471,7 +471,7 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'Dimmer',
+            'TP Link Smart Dimmer',
             'Overhead Lights',
             '192.168.1.123',
             '1',
@@ -594,7 +594,7 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'MotionSensor',
+            'PIR Motion Sensor',
             'Motion',
             '5',
             '14',
@@ -641,7 +641,7 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'Si7021',
+            'SI7021 Temperature Sensor',
             'Thermostat',
             'fahrenheit',
             '70',
@@ -679,7 +679,7 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'Dummy',
+            'Dummy Sensor',
             'Sunrise',
             'On',
             'Yes',
@@ -717,7 +717,7 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'DesktopTrigger',
+            'Computer Activity',
             'Computer Activity',
             'Enabled',
             '192.168.1.123',
@@ -753,7 +753,7 @@ class TestGenerateConfigFile(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'LoadCell',
+            'Load Cell Pressure Sensor',
             'Bed Sensor',
             '10000',
             '18',
@@ -1242,7 +1242,7 @@ class TestRegressions(TestCase):
 
         # Mock ask to return parameters in expected order
         self.mock_ask.unsafe_ask.side_effect = [
-            'Si7021',
+            'SI7021 Temperature Sensor',
             'Thermostat',
             'fahrenheit',
             '70',

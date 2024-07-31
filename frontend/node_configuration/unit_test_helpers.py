@@ -6,7 +6,6 @@ import tempfile
 from django.conf import settings
 from django.test import Client, TestCase
 from .models import Config, Node
-from validation_constants import config_templates
 from helper_functions import get_cli_config, write_cli_config, load_unit_test_config
 
 

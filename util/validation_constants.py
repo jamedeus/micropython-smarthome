@@ -70,11 +70,11 @@ def build_config_templates():
 
     # Iterate device metadata, add each config template to dict
     for i in metadata['devices'].values():
-        config_templates['device'][i['class_name']] = i['config_template']
+        config_templates['device'][i['display_name']] = i['config_template']
 
     # Iterate sensor metadata, add each config template to dict
     for i in metadata['sensors'].values():
-        config_templates['sensor'][i['class_name']] = i['config_template']
+        config_templates['sensor'][i['display_name']] = i['config_template']
 
     return config_templates
 

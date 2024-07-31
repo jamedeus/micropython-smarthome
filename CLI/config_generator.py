@@ -390,7 +390,7 @@ class GenerateConfigFile:
         else:
             # If Thermostat added remove option from menu (cannot have multiple)
             if config['_type'] == 'si7021':
-                self.sensor_type_options.remove('Si7021')
+                self.sensor_type_options.remove('SI7021 Temperature Sensor')
             return config
 
     def configure_ir_blaster(self):
