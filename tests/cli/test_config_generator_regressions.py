@@ -351,7 +351,11 @@ class TestRegressions(TestCase):
         self.generator.used_nicknames = ["Target1", "Target2", "Sensor"]
 
         # Mock user deleting all devices and sensors, run prompt
-        self.mock_ask.unsafe_ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)', 'Sensor (pir)']
+        self.mock_ask.unsafe_ask.return_value = [
+            'Target1 (mosfet)',
+            'Target2 (mosfet)',
+            'Sensor (pir)'
+        ]
         with patch('questionary.checkbox', return_value=self.mock_ask):
             self.generator.delete_devices_and_sensors()
             self.assertTrue(self.mock_ask.called_once)
@@ -359,3 +363,74 @@ class TestRegressions(TestCase):
         # Confirm used pins and nickname lists are now empty
         self.assertEqual(self.generator.used_pins, [])
         self.assertEqual(self.generator.used_nicknames, [])
+
+    # Original bug: When devices and sensors were deleted the selected keys
+    # were deleted from config dict without adjusting index to prevent gaps.
+    # However, when devices/sensors are added the index is determined by the
+    # number of existing devices/sensors, not the highest index. This could
+    # result in a new device/sensor overwriting one that wasn't deleted.
+    def test_prevent_non_sequential_device_and_sensor_indices(self):
+        # Start with multiple devices and sensors
+        self.generator.config = {
+            "metadata": {
+                "id": "Target Test",
+                "floor": "1",
+                "location": "Test Environment"
+            },
+            "device1": {
+                "_type": "mosfet",
+                "nickname": "Target1",
+                "default_rule": "Enabled",
+                "pin": "4",
+                "schedule": {}
+            },
+            "device2": {
+                "_type": "mosfet",
+                "nickname": "Target2",
+                "default_rule": "Enabled",
+                "pin": "13",
+                "schedule": {}
+            },
+            "sensor1": {
+                "_type": "pir",
+                "nickname": "Sensor1",
+                "pin": "5",
+                "default_rule": "5",
+                "schedule": {},
+                "targets": []
+            },
+            "sensor2": {
+                "_type": "pir",
+                "nickname": "Sensor2",
+                "pin": "21",
+                "default_rule": "5",
+                "schedule": {},
+                "targets": []
+            }
+        }
+        self.generator.used_pins = ["4", "13", "5", "21"]
+        self.generator.used_nicknames = ["Target1", "Target2", "Sensor1", "Sensor2"]
+
+        # Confirm initial config keys
+        self.assertEqual(
+            list(self.generator.config.keys()),
+            ["metadata", "device1", "device2", "sensor1", "sensor2"]
+        )
+
+        # Mock user deleting device1 and sensor1, run prompt
+        self.mock_ask.unsafe_ask.return_value = [
+            "Target1 (mosfet)",
+            "Sensor1 (pir)"
+        ]
+        with patch("questionary.checkbox", return_value=self.mock_ask):
+            self.generator.delete_devices_and_sensors()
+            self.assertTrue(self.mock_ask.called_once)
+
+        # Confirm device1 and sensor1 were deleted, device2 and sensor2 IDs
+        # were decremented to keep index sequential
+        self.assertEqual(
+            list(self.generator.config.keys()),
+            ["metadata", "device1", "sensor1"]
+        )
+        self.assertEqual(self.generator.config["device1"]["nickname"], "Target2")
+        self.assertEqual(self.generator.config["sensor1"]["nickname"], "Sensor2")

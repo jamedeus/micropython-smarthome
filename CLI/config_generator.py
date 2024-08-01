@@ -223,7 +223,10 @@ class GenerateConfigFile:
             instances_map[display] = key
 
         # Prompt user to select all devices and sensors they wish to delete
-        delete = questionary.checkbox("Select devices and sensors to delete", choices=instances_map.keys()).unsafe_ask()
+        delete = questionary.checkbox(
+            "Select devices and sensors to delete",
+            choices=instances_map.keys()
+        ).unsafe_ask()
 
         # Delete instances from config file, remove pin/nickname from used lists
         for i in delete:
@@ -231,6 +234,25 @@ class GenerateConfigFile:
             if 'pin' in self.config[instances_map[i]].keys():
                 self.used_pins.remove(self.config[instances_map[i]]['pin'])
             del self.config[instances_map[i]]
+
+        # Prevent gaps in index (eg: [device1, device3] => [device1, device2]
+        self.reindex_devices_and_sensors()
+
+    # Called after deleting devices or sensors to ensure sequential index
+    def reindex_devices_and_sensors(self):
+        # Back up devices and sensors
+        devices = [self.config[i] for i in self.config if is_device(i)]
+        sensors = [self.config[i] for i in self.config if is_sensor(i)]
+
+        # Delete all devices and sensors
+        self.config = {key: value for key, value in self.config.items()
+                       if not is_device_or_sensor(key)}
+
+        # Add devices and sensors back with sequential indices
+        for index, instance in enumerate(devices, 1):
+            self.config[f'device{index}'] = instance
+        for index, instance in enumerate(sensors, 1):
+            self.config[f'sensor{index}'] = instance
 
     # Prompt user to select from a list of valid device types
     # Used to get template in configure_device
