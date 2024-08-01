@@ -34,18 +34,22 @@ from config_prompt_validators import IntRange, FloatRange
 
 def build_rule_prompt_maps():
     '''
-    Reads all metadata files, returns 2 mapping dicts with config names as keys:
+    Reads all metadata files, returns 2 mapping dicts and a list:
 
       - rule_prompt_map: Contains keys for every class, values are rule prompt
-      functions. All rule prompt functions accept config arg and rule_type arg
-      ("default" or "schedule"). The rule_type arg determines which options
-      are shown (typically "default" ommits "Enabled" and "Disabled").
+        functions. All rule prompt functions accept config arg and rule_type
+        arg ("default" or "schedule"). The rule_type arg determines which
+        options are shown (typically "default" ommits "Enabled" and "Disabled")
 
       - rule_limits_map: Only contains keys for classes which accept numeric (int
-      or float) rules, values are 2 tuples with minimum, maximum valid rules.
+        or float) rules, values are 2 tuples with minimum, maximum valid rules
+
+      - non_triggerable_sensors: List of sensor types which do not support
+        trigger_sensor API endpoint
     '''
     _rule_prompt_map = {}
     _rule_limits_map = {}
+    _non_triggerable_sensors = []
 
     # Get dict with contents of all device and sensor metadata files
     metadata = get_device_and_sensor_metadata()
@@ -77,7 +81,11 @@ def build_rule_prompt_maps():
         if "rule_limits" in value.keys():
             _rule_limits_map[_type] = value['rule_limits']
 
-    return _rule_prompt_map, _rule_limits_map
+        # If metadata contains triggerable: false add to non_triggerable_sensors
+        if "triggerable" in value.keys() and not value["triggerable"]:
+            _non_triggerable_sensors.append(_type)
+
+    return _rule_prompt_map, _rule_limits_map, _non_triggerable_sensors
 
 
 def default_rule_prompt_router(config):
@@ -374,8 +382,7 @@ def api_call_prompt(config):
     # Sensor API options
     elif is_sensor(instance):
         # Remove trigger_sensor option if target does not support
-        if config[instance]['_type'] in ['si7021', 'switch']:
-            print("remove trigger_sensor")
+        if config[instance]['_type'] in non_triggerable_sensors:
             options = sensor_endpoints.copy()
             options.remove('trigger_sensor')
         else:
@@ -423,4 +430,4 @@ def load_config_from_ip(ip):
 
 
 # Build mapping dict (must call after functions are declared)
-rule_prompt_map, rule_limits_map = build_rule_prompt_maps()
+rule_prompt_map, rule_limits_map, non_triggerable_sensors = build_rule_prompt_maps()
