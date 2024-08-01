@@ -9,7 +9,11 @@ from instance_validators import validate_rules
 from validate_config import validate_full_config
 from validation_constants import valid_device_pins, valid_sensor_pins, config_templates
 from config_prompt_validators import IntRange, FloatRange, MinLength, NicknameValidator
-from config_rule_prompts import default_rule_prompt_router, schedule_rule_prompt_router, rule_limits_map
+from config_rule_prompts import (
+    default_rule_prompt_router,
+    schedule_rule_prompt_router,
+    rule_limits_map
+)
 from helper_functions import (
     valid_ip,
     valid_timestamp,
@@ -19,6 +23,7 @@ from helper_functions import (
     is_int,
     get_schedule_keywords_dict,
     get_existing_nodes,
+    get_config_filename,
     get_cli_config
 )
 
@@ -60,10 +65,10 @@ class GenerateConfigFile:
                 self.config = json.load(file)
 
             # Parse already-used pins and nicknames (prevent duplicates)
-            self.used_pins = [self.config[i]['pin'] for i in self.config if 'pin' in self.config[i].keys()]
-            self.used_nicknames = [
-                self.config[i]['nickname'] for i in self.config if 'nickname' in self.config[i].keys()
-            ]
+            self.used_pins = [self.config[i]['pin'] for i in self.config
+                              if 'pin' in self.config[i].keys()]
+            self.used_nicknames = [self.config[i]['nickname'] for i in self.config
+                                   if 'nickname' in self.config[i].keys()]
 
             # Show edit prompt when run_prompt called
             self.edit_mode = True
@@ -154,16 +159,20 @@ class GenerateConfigFile:
         print("\nFinished config:")
         print(json.dumps(self.config, indent=4))
 
-        choice = questionary.select("Continue editing?", choices=["Yes", "No"]).unsafe_ask()
+        choice = questionary.select(
+            "Continue editing?",
+            choices=["Yes", "No"]
+        ).unsafe_ask()
         if choice == "Yes":
             self.run_edit_prompt()
 
     def write_to_disk(self):
         # Get filename (all lowercase, replace spaces with hyphens)
-        filename = self.config["metadata"]["id"].lower().replace(" ", "-") + ".json"
+        filename = get_config_filename(self.config["metadata"]["id"])
 
         # Write to config_directory (set in cli_config.json)
-        with open(os.path.join(get_cli_config()['config_directory'], filename), 'w') as file:
+        config_path = os.path.join(get_cli_config()['config_directory'], filename)
+        with open(config_path, 'w', encoding='utf-8') as file:
             json.dump(self.config, file)
 
         print(f"\nConfig saved as {filename}")
@@ -186,13 +195,20 @@ class GenerateConfigFile:
             default=location
         ).unsafe_ask()
 
-        self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
+        self.config['metadata'].update({
+            'id': name,
+            'floor': floor,
+            'location': location
+        })
 
     def add_devices_and_sensors(self):
         # Prompt user to configure devices and sensors
         # Output of each device/sensor prompt is added to self.config
         while True:
-            choice = questionary.select("\nAdd instances?", choices=self.category_options).unsafe_ask()
+            choice = questionary.select(
+                "\nAdd instances?",
+                choices=self.category_options
+            ).unsafe_ask()
             if choice == 'Device':
                 # Get next device index
                 index = len([i for i in self.config if is_device(i)]) + 1
@@ -300,13 +316,19 @@ class GenerateConfigFile:
 
     # Prompt user to enter an IP address, enforces syntax
     def ip_address_prompt(self):
-        return questionary.text("Enter IP address:", validate=valid_ip).unsafe_ask()
+        return questionary.text(
+            "Enter IP address:",
+            validate=valid_ip
+        ).unsafe_ask()
 
     # Prompt user to select from existing node friendly names
     # Returns IP of selected node
     def apitarget_ip_prompt(self):
         options = list(self.existing_nodes.keys())
-        target = questionary.select("Select target node", choices=options).unsafe_ask()
+        target = questionary.select(
+            "Select target node",
+            choices=options
+        ).unsafe_ask()
         return self.existing_nodes[target]['ip']
 
     # Prompt user to select device type and all required params.
@@ -331,7 +353,10 @@ class GenerateConfigFile:
                 config[i] = self.pin_prompt(valid_device_pins)
 
             elif i.startswith("pin_"):
-                config[i] = self.pin_prompt(valid_device_pins, f"Select {i.split('_')[1]} pin")
+                config[i] = self.pin_prompt(
+                    valid_device_pins,
+                    f"Select {i.split('_')[1]} pin"
+                )
 
             elif i == "default_rule":
                 config[i] = default_rule_prompt_router(config)
@@ -388,7 +413,10 @@ class GenerateConfigFile:
                 config[i] = self.pin_prompt(valid_sensor_pins)
 
             elif i.startswith("pin_"):
-                config[i] = self.pin_prompt(valid_sensor_pins, f"Select {i.split('_')[1]} pin")
+                config[i] = self.pin_prompt(
+                    valid_sensor_pins,
+                    f"Select {i.split('_')[1]} pin"
+                )
 
             elif i == "default_rule":
                 config[i] = default_rule_prompt_router(config)
@@ -397,13 +425,22 @@ class GenerateConfigFile:
                 config[i] = self.ip_address_prompt()
 
             elif i == "mode":
-                config[i] = questionary.select("Select mode", choices=['cool', 'heat']).unsafe_ask()
+                config[i] = questionary.select(
+                    "Select mode",
+                    choices=['cool', 'heat']
+                ).unsafe_ask()
 
             elif i == "units":
-                config[i] = questionary.select("Select units", choices=['fahrenheit', 'celsius', 'kelvin']).unsafe_ask()
+                config[i] = questionary.select(
+                    "Select units",
+                    choices=['fahrenheit', 'celsius', 'kelvin']
+                ).unsafe_ask()
 
             elif i == "tolerance":
-                config[i] = questionary.text("Enter temperature tolerance:", validate=FloatRange(0, 10)).unsafe_ask()
+                config[i] = questionary.text(
+                    "Enter temperature tolerance:",
+                    validate=FloatRange(0, 10)
+                ).unsafe_ask()
 
         # Prompt user to add schedule rules
         config = self.schedule_rule_prompt(config)
@@ -421,7 +458,10 @@ class GenerateConfigFile:
     def configure_ir_blaster(self):
         # Prompt user for pin and targets
         pin = self.pin_prompt(valid_device_pins)
-        targets = questionary.checkbox("Select target devices", choices=['tv', 'ac']).unsafe_ask()
+        targets = questionary.checkbox(
+            "Select target devices",
+            choices=['tv', 'ac']
+        ).unsafe_ask()
 
         # Add to config
         self.config['ir_blaster'] = {
@@ -470,9 +510,14 @@ class GenerateConfigFile:
             # Pre-select option if device is already a target in existing config file
             options = []
             for display, device in targets_map.items():
-                options.append(questionary.Choice(display, checked=bool(device in self.config[sensor]['targets'])))
+                options.append(questionary.Choice(
+                    display,
+                    checked=bool(device in self.config[sensor]['targets'])
+                ))
 
-            prompt = f"\nSelect targets for {self.config[sensor]['nickname']} ({self.config[sensor]['_type']})"
+            nickname = self.config[sensor]['nickname']
+            _type = self.config[sensor]['_type']
+            prompt = f"\nSelect targets for {nickname} ({_type})"
             targets = questionary.checkbox(prompt, choices=options).unsafe_ask()
 
             # Add selection to config
@@ -485,7 +530,10 @@ class GenerateConfigFile:
         if questionary.select(prompt, choices=['Yes', 'No']).unsafe_ask() == 'Yes':
             while True:
                 config = self.add_schedule_rule(config)
-                choice = questionary.select("\nAdd another?", choices=['Yes', 'No']).unsafe_ask()
+                choice = questionary.select(
+                    "\nAdd another?",
+                    choices=['Yes', 'No']
+                ).unsafe_ask()
                 if choice == 'No':
                     break
         return config
@@ -504,14 +552,23 @@ class GenerateConfigFile:
         return config
 
     def schedule_rule_timestamp_prompt(self):
-        return questionary.text("Enter timestamp (HH:MM):", validate=valid_timestamp).unsafe_ask()
+        return questionary.text(
+            "Enter timestamp (HH:MM):",
+            validate=valid_timestamp
+        ).unsafe_ask()
 
     def schedule_rule_timestamp_or_keyword_prompt(self):
-        choice = questionary.select("\nTimestamp or keyword?", choices=['Timestamp', 'Keyword']).unsafe_ask()
+        choice = questionary.select(
+            "\nTimestamp or keyword?",
+            choices=['Timestamp', 'Keyword']
+        ).unsafe_ask()
         if choice == 'Timestamp':
             return self.schedule_rule_timestamp_prompt()
         else:
-            return questionary.select("\nSelect keyword", choices=self.schedule_keyword_options).unsafe_ask()
+            return questionary.select(
+                "\nSelect keyword",
+                choices=self.schedule_keyword_options
+            ).unsafe_ask()
 
 
 if __name__ == '__main__':

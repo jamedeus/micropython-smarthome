@@ -983,12 +983,10 @@ class TestGenerateConfigFile(TestCase):
             self.assertEqual(output['schedule'], {'10:00': 'Enabled'})
 
     def test_api_target_ip_prompt(self):
-        # Mock nodes.json contents
-        self.generator.existing_nodes = mock_cli_config['nodes']
-
         # Simulate user selecting first option, confirm correct IP returned
         self.mock_ask.unsafe_ask.side_effect = ['node1']
-        with patch('questionary.select', return_value=self.mock_ask):
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('config_generator.get_existing_nodes', return_value=mock_cli_config['nodes']):
             output = self.generator.apitarget_ip_prompt()
             self.assertEqual(output, '192.168.1.123')
 
