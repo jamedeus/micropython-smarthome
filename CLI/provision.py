@@ -1,10 +1,21 @@
 #!/usr/bin/env python3
 
-# Upload config file + main.py + all required modules and libraries in a single step
+'''
+Upload config file, main.py, and all required modules and libraries to a target
+node or IP address in a single step.
 
-# Usage: ./provision.py -c path/to/config.json -ip <target>
-# Usage: ./provision.py <friendly-name-from-cli_config.json>
-# Usage: ./provision.py --all
+Usage
+-----
+
+Upload to IP address:
+    ./provision.py -c path/to/config.json -ip <target>
+
+Reupload config file to node in cli_config.json
+    ./provision.py <friendly-name-from-cli_config.json>
+
+Reupload config files to all nodes in cli_config.json
+    Usage: ./provision.py --all
+'''
 
 import os
 import json

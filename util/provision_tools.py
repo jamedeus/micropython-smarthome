@@ -1,14 +1,20 @@
+'''Functions used by CLI tools and django backend to identify ESP32 dependency
+modules for a given config file and upload them to target ESP32.
+'''
+
 import os
 from Webrepl import Webrepl
 from api_endpoints import reboot
 from helper_functions import is_device, is_sensor, get_device_and_sensor_metadata
 
 
-# Returns dict containing dependency lists for all device and sensor types
-# Devices are in "devices" subsection, keyed by _type parmater
-# Sensors are in "sensors" subsection, keyed by _type parmater
 def build_dependencies_dict():
-    dependencies = {
+    '''Returns mapping dict used to look up device/sensor dependencies by _type.
+    Contains "devices" and "sensors" keys, each device and sensor _type param
+    keys and list of dependency module values. Generated from metadata.
+    '''
+
+    _dependencies = {
         'devices': {},
         'sensors': {}
     }
@@ -18,13 +24,13 @@ def build_dependencies_dict():
 
     # Iterate device metadata, add each dependency list to dict
     for _type, value in metadata['devices'].items():
-        dependencies['devices'][_type] = value['dependencies']
+        _dependencies['devices'][_type] = value['dependencies']
 
     # Iterate sensor metadata, add each dependency list to dict
     for _type, value in metadata['sensors'].items():
-        dependencies['sensors'][_type] = value['dependencies']
+        _dependencies['sensors'][_type] = value['dependencies']
 
-    return dependencies
+    return _dependencies
 
 
 # Combine dependency relative paths from all device and sensor metadatas, used by get_modules
@@ -41,10 +47,13 @@ core_modules = [
 ]
 
 
-# Takes full config file dict, path to repository root
-# Returns dict of local:remote filesystem paths with all dependencies
-# Dict iterated by provision to upload files
 def get_modules(config, repo_root):
+    '''Takes full config file dict, path to repository root.
+    Finds all config dependency modules, returns mapping dict with local
+    filesystem path as keys, upload destination path as values.
+    Iterated by provision to upload files to ESP32.
+    '''
+
     modules = []
 
     # Get lists of device and sensor types
@@ -72,9 +81,11 @@ def get_modules(config, repo_root):
     return modules
 
 
-# Takes target ip, password, config file dict, and modules dict
-# Upload config file + all modules in dict to target IP
 def provision(ip, password, config, modules):
+    '''Takes target IP, webrepl password, config file dict, and modules dict.
+    Uploads config file and all modules to target IP.
+    '''
+
     # Open conection, detect if node connected to network
     node = Webrepl(ip, password)
     if not node.open_connection():
@@ -88,7 +99,8 @@ def provision(ip, password, config, modules):
         node.put_file_mem(config, "config.json")
 
         # Upload all device/sensor + core modules
-        [node.put_file(local, remote) for local, remote in modules.items()]
+        for local, remote in modules.items():
+            node.put_file(local, remote)
         node.close_connection()
 
         # Reboot node via API call
