@@ -50,10 +50,6 @@ class GenerateConfigFile:
                 }
             }
 
-            # Lists for already-used pins and nicknames (prevent duplicates)
-            self.used_pins = []
-            self.used_nicknames = []
-
             # Show default prompt when run_prompt called
             self.edit_mode = False
 
@@ -75,12 +71,6 @@ class GenerateConfigFile:
             # Load existing config file
             with open(path, 'r', encoding='utf-8') as file:
                 self.config = json.load(file)
-
-            # Parse already-used pins and nicknames (prevent duplicates)
-            self.used_pins = [self.config[i]['pin'] for i in self.config
-                              if 'pin' in self.config[i].keys()]
-            self.used_nicknames = [self.config[i]['nickname'] for i in self.config
-                                   if 'nickname' in self.config[i].keys()]
 
             # Show edit prompt when run_prompt called
             self.edit_mode = True
@@ -251,11 +241,8 @@ class GenerateConfigFile:
             choices=instances_map.keys()
         ).unsafe_ask()
 
-        # Delete instances from config file, remove pin/nickname from used lists
+        # Delete instances from config file
         for i in delete:
-            self.used_nicknames.remove(self.config[instances_map[i]]['nickname'])
-            if 'pin' in self.config[instances_map[i]].keys():
-                self.used_pins.remove(self.config[instances_map[i]]['pin'])
             del self.config[instances_map[i]]
 
         # Prevent gaps in index (eg: [device1, device3] => [device1, device2]
@@ -304,22 +291,27 @@ class GenerateConfigFile:
             choices=options
         ).unsafe_ask()
 
-    # Prompt user for a nickname, add to used_nicknames list, return
+    # Prompt user for a nickname, return
+    # Does not accept duplicate nicknames that already exist in self.config
     def __nickname_prompt(self):
-        nickname = questionary.text(
+        # Get list of existing nicknames for validators (prevent duplicates)
+        used_nicknames = [self.config[i]['nickname'] for i in self.config
+                          if 'nickname' in self.config[i].keys()]
+        return questionary.text(
             "Enter a memorable nickname:",
-            validate=NicknameValidator(self.used_nicknames)
+            validate=NicknameValidator(used_nicknames)
         ).unsafe_ask()
-        self.used_nicknames.append(nickname)
-        return nickname
 
-    # Prompt user to select pin, add to used_pins list, return
-    # Takes list of options as arg, removes already-used pins to prevent duplicates
+    # Prompt user to select pin, return
+    # Takes list of options as arg, removes pins that already exist in
+    # self.config to prevent selecting duplicate
     def __pin_prompt(self, valid_pins, prompt="Select pin"):
-        choices = [pin for pin in valid_pins if pin not in self.used_pins]
-        pin = questionary.select(prompt, choices=choices).unsafe_ask()
-        self.used_pins.append(pin)
-        return pin
+        # Get list of pins used by existing devices and sensors
+        used_pins = [self.config[i]['pin'] for i in self.config
+                     if 'pin' in self.config[i].keys()]
+        # Get list of available pins, run prompt
+        choices = [pin for pin in valid_pins if pin not in used_pins]
+        return questionary.select(prompt, choices=choices).unsafe_ask()
 
     # Prompt user to enter an IP address, enforces syntax
     def __ip_address_prompt(self):

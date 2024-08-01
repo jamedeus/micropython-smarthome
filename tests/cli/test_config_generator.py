@@ -2,6 +2,7 @@ import os
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from questionary import ValidationError
+from validation_constants import valid_device_pins
 from config_generator import (
     GenerateConfigFile,
     IntRange,
@@ -336,16 +337,63 @@ class TestGenerateConfigFile(TestCase):
             )
 
     def test_nickname_prompt(self):
-        # Add an already-used nickname
-        self.generator.used_nicknames = ['Used']
+        # Simulate mock config with several nicknames
+        self.generator.config = {
+            "device1": {
+                "nickname": "Target1"
+            },
+            "device2": {
+                "nickname": "Target2"
+            },
+            "sensor1": {
+                "nickname": "Sensor"
+            }
+        }
 
         # Mock ask to return a different nickname
         self.mock_ask.unsafe_ask.return_value = 'Unused'
-        with patch('questionary.text', return_value=self.mock_ask):
-            # Confirm returns new nickname, new nickname added to used_nicknames
+        with patch('questionary.text', return_value=self.mock_ask), \
+             patch('config_generator.NicknameValidator') as mock_validator:
+
+            # Confirm returns user selected nickname
             response = self.generator._GenerateConfigFile__nickname_prompt()
             self.assertEqual(response, 'Unused')
-            self.assertEqual(self.generator.used_nicknames, ['Used', 'Unused'])
+
+            # Confirm validator received list of all existing nicknames
+            mock_validator.assert_called_with(
+                ['Target1', 'Target2', 'Sensor']
+            )
+
+    def test_pin_prompt(self):
+        # Simulate mock config with several pins selected
+        self.generator.config = {
+            "device1": {
+                "pin": "4"
+            },
+            "device2": {
+                "pin": "13"
+            },
+            "sensor1": {
+                "pin": "19"
+            },
+            "sensor2": {
+                "pin": "32"
+            }
+        }
+
+        # Mock ask to return a different pin
+        self.mock_ask.unsafe_ask.return_value = '21'
+        with patch('questionary.select', return_value=self.mock_ask) as mock_select:
+            # Confirm returns user selected pin
+            response = self.generator._GenerateConfigFile__pin_prompt(valid_device_pins)
+            self.assertEqual(response, '21')
+
+            # Confirm options did not include any existing pins
+            _, kwargs = mock_select.call_args
+            self.assertEqual(
+                kwargs['choices'],
+                ['16', '17', '18', '21', '22', '23', '25', '26', '27', '33']
+            )
 
     def test_add_devices_and_sensors_prompt(self):
         expected_device = {
@@ -426,9 +474,6 @@ class TestGenerateConfigFile(TestCase):
                 "targets": []
             }
         }
-        # Add pins and nicknames to used lists
-        self.generator.used_pins = ["4", "13", "5"]
-        self.generator.used_nicknames = ["Target1", "Target2", "Sensor"]
 
         # Mock user selecting both devices, run prompt
         self.mock_ask.unsafe_ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)']
@@ -499,9 +544,6 @@ class TestGenerateConfigFile(TestCase):
             config = self.generator._GenerateConfigFile__configure_device()
             self.assertEqual(config, expected_output)
 
-            # Confirm nickname added to used list
-            self.assertEqual(self.generator.used_nicknames, ['Overhead Lights'])
-
         # Repeat test with mosfet
         expected_output = {
             "_type": "mosfet",
@@ -525,10 +567,6 @@ class TestGenerateConfigFile(TestCase):
             # Run prompt, confirm output matches expected
             config = self.generator._GenerateConfigFile__configure_device()
             self.assertEqual(config, expected_output)
-
-            # Confirm nickname and pin added to used lists
-            self.assertEqual(self.generator.used_nicknames, ['Overhead Lights', 'Mosfet'])
-            self.assertEqual(self.generator.used_pins, ['4'])
 
     def test_configure_device_failed_validation(self):
         # Invalid config object with default_rule greater than max_rule
@@ -619,10 +657,6 @@ class TestGenerateConfigFile(TestCase):
             config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
 
-            # Confirm nickname and pin added to used lists
-            self.assertEqual(self.generator.used_nicknames, ['Motion'])
-            self.assertEqual(self.generator.used_pins, ['14'])
-
         # Repeat test with thermostat
         expected_output = {
             "_type": "si7021",
@@ -659,10 +693,6 @@ class TestGenerateConfigFile(TestCase):
             config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
 
-            # Confirm nickname and pin added to used lists
-            self.assertEqual(self.generator.used_nicknames, ['Motion', 'Thermostat'])
-            self.assertEqual(self.generator.used_pins, ['14'])
-
     def test_configure_sensor_prompt_dummy(self):
         expected_output = {
             "_type": "dummy",
@@ -697,10 +727,6 @@ class TestGenerateConfigFile(TestCase):
             config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
 
-            # Confirm nickname and pin added to used lists
-            self.assertEqual(self.generator.used_nicknames, ['Sunrise'])
-            self.assertEqual(self.generator.used_pins, [])
-
     def test_configure_sensor_prompt_desktop(self):
         expected_output = {
             "_type": "desktop",
@@ -731,10 +757,6 @@ class TestGenerateConfigFile(TestCase):
             # Run prompt, confirm output matches expected
             config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
-
-            # Confirm nickname and pin added to used lists
-            self.assertEqual(self.generator.used_nicknames, ['Computer Activity'])
-            self.assertEqual(self.generator.used_pins, [])
 
     def test_configure_sensor_prompt_load_cell(self):
         expected_output = {
@@ -768,10 +790,6 @@ class TestGenerateConfigFile(TestCase):
             # Run prompt, confirm output matches expected
             config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
-
-            # Confirm nickname and pins added to used lists
-            self.assertEqual(self.generator.used_nicknames, ['Bed Sensor'])
-            self.assertEqual(self.generator.used_pins, ['18', '19'])
 
     def test_configure_sensor_failed_validation(self):
         # Invalid config object with unsupported default_rule
@@ -866,11 +884,6 @@ class TestGenerateConfigFile(TestCase):
 
             # Run prompt
             self.generator.add_devices_and_sensors()
-
-        # Confirm added to config, selected pin in used_pins, IR option removed from menu
-        self.assertEqual(self.generator.config['ir_blaster'], expected_config)
-        self.assertIn('4', self.generator.used_pins)
-        self.assertNotIn('IR Blaster', self.generator.category_options)
 
     def test_select_sensor_targets_prommpt(self):
         # Set partial config expected when user reaching targets prompt

@@ -312,58 +312,6 @@ class TestRegressions(TestCase):
             self.assertTrue(mock_float_range.called)
             self.assertFalse(mock_int_range.called)
 
-    # Original bug: When devices/sensors were deleted their pins and nicknames
-    # were not removed from used_pins and used_nicknames, preventing the user
-    # from selecting them again
-    def test_unusable_pin_and_nicknames(self):
-        # Set partial config with 3 used pins and nicknames
-        self.generator.config = {
-            "metadata": {
-                "id": "Target Test",
-                "floor": "1",
-                "location": "Test Environment"
-            },
-            "device1": {
-                "_type": "mosfet",
-                "nickname": "Target1",
-                "default_rule": "Enabled",
-                "pin": "4",
-                "schedule": {}
-            },
-            "device2": {
-                "_type": "mosfet",
-                "nickname": "Target2",
-                "default_rule": "Enabled",
-                "pin": "13",
-                "schedule": {}
-            },
-            "sensor1": {
-                "_type": "pir",
-                "nickname": "Sensor",
-                "pin": "5",
-                "default_rule": "5",
-                "schedule": {},
-                "targets": []
-            }
-        }
-        # Add pins and nicknames to used lists
-        self.generator.used_pins = ["4", "13", "5"]
-        self.generator.used_nicknames = ["Target1", "Target2", "Sensor"]
-
-        # Mock user deleting all devices and sensors, run prompt
-        self.mock_ask.unsafe_ask.return_value = [
-            'Target1 (mosfet)',
-            'Target2 (mosfet)',
-            'Sensor (pir)'
-        ]
-        with patch('questionary.checkbox', return_value=self.mock_ask):
-            self.generator.delete_devices_and_sensors()
-            self.assertTrue(self.mock_ask.called_once)
-
-        # Confirm used pins and nickname lists are now empty
-        self.assertEqual(self.generator.used_pins, [])
-        self.assertEqual(self.generator.used_nicknames, [])
-
     # Original bug: When devices and sensors were deleted the selected keys
     # were deleted from config dict without adjusting index to prevent gaps.
     # However, when devices/sensors are added the index is determined by the
@@ -408,8 +356,6 @@ class TestRegressions(TestCase):
                 "targets": []
             }
         }
-        self.generator.used_pins = ["4", "13", "5", "21"]
-        self.generator.used_nicknames = ["Target1", "Target2", "Sensor1", "Sensor2"]
 
         # Confirm initial config keys
         self.assertEqual(
