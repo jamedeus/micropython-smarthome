@@ -2,7 +2,13 @@ import json
 import asyncio
 from math import isnan
 from functools import wraps
-from helper_functions import valid_timestamp, is_device_or_sensor, is_device, is_sensor, get_schedule_keywords_dict
+from helper_functions import (
+    valid_timestamp,
+    is_device_or_sensor,
+    is_device,
+    is_sensor,
+    get_schedule_keywords_dict
+)
 
 # Valid IR commands for each target, used in error message
 ir_commands = {
@@ -14,16 +20,16 @@ ir_commands = {
 endpoint_map = {}
 
 
-# Decorator used to populate endpoint_map
 def add_endpoint(url):
+    '''Decorator used to populate endpoint_map'''
     def _add_endpoint(func):
         endpoint_map[url] = func
         return func
     return _add_endpoint
 
 
-# Decorator adds wrapper that prevents calling func with empty param list
 def requires_params(func):
+    '''Decorator adds wrapper that prevents calling func with empty param list'''
     @wraps(func)
     def wrapper(ip, params):
         if len(params) == 0:
@@ -32,11 +38,12 @@ def requires_params(func):
     return wrapper
 
 
-# Decorator factory - takes error_message returned by wrapper function if first
-# param (target) is neither device nor sensor. Otherwise calls wrapped function
-# with target as second arg, remaining params as 3rd arg.
-# Should be placed after @requires_params
 def requires_device_or_sensor(error_message):
+    '''Decorator factory - takes error_message returned by wrapper function if
+    first param (target) is neither device nor sensor. Otherwise calls wrapped
+    function with target as second arg, remaining params as 3rd arg.
+    Should be placed after @requires_params
+    '''
     def decorator(func):
         @wraps(func)
         def wrapper(ip, params):
@@ -47,11 +54,12 @@ def requires_device_or_sensor(error_message):
     return decorator
 
 
-# Decorator factory - takes error_message returned by wrapper function if first
-# param (target) is not device. Otherwise calls wrapped function with target as
-# second arg, remaining params as 3rd arg.
-# Should be placed after @requires_params
 def requires_device(error_message):
+    '''Decorator factory - takes error_message returned by wrapper function if
+    first param (target) is not device. Otherwise calls wrapped function with
+    target as second arg, remaining params as 3rd arg.
+    Should be placed after @requires_params
+    '''
     def decorator(func):
         @wraps(func)
         def wrapper(ip, params):
@@ -62,11 +70,12 @@ def requires_device(error_message):
     return decorator
 
 
-# Decorator factory - takes error_message returned by wrapper function if first
-# param (target) is not sensor. Otherwise calls wrapped function with target as
-# second arg, remaining params as 3rd arg.
-# Should be placed after @requires_params
 def requires_sensor(error_message):
+    '''Decorator factory - takes error_message returned by wrapper function if
+    first param (target) is not sensor. Otherwise calls wrapped function with
+    target as second arg, remaining params as 3rd arg.
+    Should be placed after @requires_params
+    '''
     def decorator(func):
         @wraps(func)
         def wrapper(ip, params):
@@ -77,11 +86,17 @@ def requires_sensor(error_message):
     return decorator
 
 
-# Send JSON api request to node
 async def request(ip, msg):
+    '''Takes node IP and list with API endpoint followed by arguments (if any).
+    Sends request to node using asyncio streams.
+    '''
+
     # Open connection (5 second timeout)
     try:
-        reader, writer = await asyncio.wait_for(asyncio.open_connection(ip, 8123), timeout=5)
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection(ip, 8123),
+            timeout=5
+        )
     except asyncio.TimeoutError:
         return "Error: Request timed out"
     except OSError:
@@ -110,19 +125,19 @@ async def request(ip, msg):
 
 
 @add_endpoint("status")
-def status(ip, params):
+def status(ip, _):
     return asyncio.run(request(ip, ['status']))
 
 
 @add_endpoint("reboot")
-def reboot(ip, params):
+def reboot(ip, _):
     return asyncio.run(request(ip, ['reboot']))
 
 
 @add_endpoint("disable")
 @requires_params
 @requires_device_or_sensor("Can only disable devices and sensors")
-def disable(ip, target, params):
+def disable(ip, target, _):
     return asyncio.run(request(ip, ['disable', target]))
 
 
@@ -144,7 +159,7 @@ def disable_in(ip, target, params):
 @add_endpoint("enable")
 @requires_params
 @requires_device_or_sensor("Can only enable devices and sensors")
-def enable(ip, target, params):
+def enable(ip, target, _):
     return asyncio.run(request(ip, ['enable', target]))
 
 
@@ -186,19 +201,19 @@ def increment_rule(ip, target, params):
 @add_endpoint("reset_rule")
 @requires_params
 @requires_device_or_sensor("Can only set rules for devices and sensors")
-def reset_rule(ip, target, params):
+def reset_rule(ip, target, _):
     return asyncio.run(request(ip, ['reset_rule', target]))
 
 
 @add_endpoint("reset_all_rules")
-def reset_all_rules(ip, params):
+def reset_all_rules(ip, _):
     return asyncio.run(request(ip, ['reset_all_rules']))
 
 
 @add_endpoint("get_schedule_rules")
 @requires_params
 @requires_device_or_sensor("Only devices and sensors have schedule rules")
-def get_schedule_rules(ip, target, params):
+def get_schedule_rules(ip, target, _):
     return asyncio.run(request(ip, ['get_schedule_rules', target]))
 
 
@@ -240,12 +255,12 @@ def remove_rule(ip, target, params):
 
 
 @add_endpoint("save_rules")
-def save_rules(ip, params):
+def save_rules(ip, _):
     return asyncio.run(request(ip, ['save_rules']))
 
 
 @add_endpoint("get_schedule_keywords")
-def get_schedule_keywords(ip, params):
+def get_schedule_keywords(ip, _):
     return asyncio.run(request(ip, ['get_schedule_keywords']))
 
 
@@ -272,14 +287,14 @@ def remove_schedule_keyword(ip, params):
 
 
 @add_endpoint("save_schedule_keywords")
-def save_schedule_keywords(ip, params):
+def save_schedule_keywords(ip, _):
     return asyncio.run(request(ip, ['save_schedule_keywords']))
 
 
 @add_endpoint("get_attributes")
 @requires_params
 @requires_device_or_sensor("Must specify device or sensor")
-def get_attributes(ip, target, params):
+def get_attributes(ip, target, _):
     return asyncio.run(request(ip, ['get_attributes', target]))
 
 
@@ -288,7 +303,7 @@ def get_attributes(ip, target, params):
 def ir(ip, params):
     # First arg must be key in ir_commands dict
     target = params[0]
-    if target not in ir_commands.keys():
+    if target not in ir_commands:
         raise SyntaxError
 
     try:
@@ -298,7 +313,7 @@ def ir(ip, params):
 
 
 @add_endpoint("ir_get_existing_macros")
-def ir_get_existing_macros(ip, params):
+def ir_get_existing_macros(ip, _):
     return asyncio.run(request(ip, ['ir_get_existing_macros']))
 
 
@@ -315,7 +330,7 @@ def ir_delete_macro(ip, params):
 
 
 @add_endpoint("ir_save_macros")
-def ir_save_macros(ip, params):
+def ir_save_macros(ip, _):
     return asyncio.run(request(ip, ['ir_save_macros']))
 
 
@@ -324,8 +339,7 @@ def ir_save_macros(ip, params):
 def ir_add_macro_action(ip, params):
     if len(params) >= 3:
         return asyncio.run(request(ip, ['ir_add_macro_action', *params]))
-    else:
-        raise SyntaxError
+    raise SyntaxError
 
 
 @add_endpoint("ir_run_macro")
@@ -335,50 +349,50 @@ def ir_run_macro(ip, params):
 
 
 @add_endpoint("get_temp")
-def get_temp(ip, params):
+def get_temp(ip, _):
     return asyncio.run(request(ip, ['get_temp']))
 
 
 @add_endpoint("get_humid")
-def get_humid(ip, params):
+def get_humid(ip, _):
     return asyncio.run(request(ip, ['get_humid']))
 
 
 @add_endpoint("get_climate")
-def get_climate(ip, params):
+def get_climate(ip, _):
     return asyncio.run(request(ip, ['get_climate_data']))
 
 
 @add_endpoint("clear_log")
-def clear_log(ip, params):
+def clear_log(ip, _):
     return asyncio.run(request(ip, ['clear_log']))
 
 
 @add_endpoint("condition_met")
 @requires_params
 @requires_sensor("Must specify sensor")
-def condition_met(ip, target, params):
+def condition_met(ip, target, _):
     return asyncio.run(request(ip, ['condition_met', target]))
 
 
 @add_endpoint("trigger_sensor")
 @requires_params
 @requires_sensor("Must specify sensor")
-def trigger_sensor(ip, target, params):
+def trigger_sensor(ip, target, _):
     return asyncio.run(request(ip, ['trigger_sensor', target]))
 
 
 @add_endpoint("turn_on")
 @requires_params
 @requires_device("Can only turn on/off devices, use enable/disable for sensors")
-def turn_on(ip, target, params):
+def turn_on(ip, target, _):
     return asyncio.run(request(ip, ['turn_on', target]))
 
 
 @add_endpoint("turn_off")
 @requires_params
 @requires_device("Can only turn on/off devices, use enable/disable for sensors")
-def turn_off(ip, target, params):
+def turn_off(ip, target, _):
     return asyncio.run(request(ip, ['turn_off', target]))
 
 
@@ -388,19 +402,18 @@ def set_gps_coords(ip, params):
     if len(params) >= 2:
         payload = {'latitude': params[0], 'longitude': params[1]}
         return asyncio.run(request(ip, ['set_gps_coords', payload]))
-    else:
-        raise SyntaxError
+    raise SyntaxError
 
 
 @add_endpoint("load_cell_tare")
 @requires_params
 @requires_sensor("Must specify load cell sensor")
-def load_cell_tare(ip, target, params):
+def load_cell_tare(ip, target, _):
     return asyncio.run(request(ip, ['load_cell_tare', target]))
 
 
 @add_endpoint("load_cell_read")
 @requires_params
 @requires_sensor("Must specify load cell sensor")
-def load_cell_get_raw_reading(ip, target, params):
+def load_cell_get_raw_reading(ip, target, _):
     return asyncio.run(request(ip, ['load_cell_read', target]))

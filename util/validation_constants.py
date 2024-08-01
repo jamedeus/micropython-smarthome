@@ -85,16 +85,50 @@ config_templates = build_config_templates()
 
 # Options for each supported IR Blaster target device, used to populate ApiTarget menu
 ir_blaster_options = {
-    "tv": ['power', 'vol_up', 'vol_down', 'mute', 'up', 'down', 'left', 'right', 'enter', 'settings', 'exit', 'source'],
-    "ac": ['start', 'stop', 'off']
+    "tv": [
+        'power',
+        'vol_up',
+        'vol_down',
+        'mute',
+        'up',
+        'down',
+        'left',
+        'right',
+        'enter',
+        'settings',
+        'exit',
+        'source'
+    ],
+    "ac": [
+        'start',
+        'stop',
+        'off'
+    ]
 }
 
 
 # API endpoints supported with device as target instance
 # Used to populate options for ApiTarget rules
-device_endpoints = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'turn_on', 'turn_off']
+device_endpoints = [
+    'enable',
+    'disable',
+    'enable_in',
+    'disable_in',
+    'set_rule',
+    'reset_rule',
+    'turn_on',
+    'turn_off'
+]
 
 
 # API endpoints supported with sensor as target instance
 # Used to populate options for ApiTarget rules
-sensor_endpoints = ['enable', 'disable', 'enable_in', 'disable_in', 'set_rule', 'reset_rule', 'trigger_sensor']
+sensor_endpoints = [
+    'enable',
+    'disable',
+    'enable_in',
+    'disable_in',
+    'set_rule',
+    'reset_rule',
+    'trigger_sensor'
+]
