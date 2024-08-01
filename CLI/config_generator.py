@@ -7,7 +7,11 @@ import questionary
 from colorama import Fore
 from instance_validators import validate_rules
 from validate_config import validate_full_config
-from validation_constants import valid_device_pins, valid_sensor_pins, config_templates
+from validation_constants import (
+    valid_device_pins,
+    valid_sensor_pins,
+    config_templates
+)
 from helper_functions import (
     valid_ip,
     valid_timestamp,
@@ -20,7 +24,12 @@ from helper_functions import (
     get_config_filename,
     get_cli_config
 )
-from config_prompt_validators import IntRange, FloatRange, MinLength, NicknameValidator
+from config_prompt_validators import (
+    IntRange,
+    FloatRange,
+    MinLength,
+    NicknameValidator
+)
 from config_rule_prompts import (
     default_rule_prompt_router,
     schedule_rule_prompt_router,
@@ -48,6 +57,9 @@ class GenerateConfigFile:
             # Show default prompt when run_prompt called
             self.edit_mode = False
 
+            # Set by __validate method
+            self.passed_validation = False
+
         else:
             # Resolve path to existing config file, check for errors
             path = os.path.abspath(edit)
@@ -55,13 +67,13 @@ class GenerateConfigFile:
                 print('Error: argument must be relative path to existing config.json')
                 print('Example usage: ./CLI/config_generator.py /path/to/existing_config.json')
                 raise SystemExit
-            elif not os.path.exists(path):
+            if not os.path.exists(path):
                 print(f'Error: Config file "{sys.argv[1]}" not found')
                 print('Example usage: ./CLI/config_generator.py /path/to/existing_config.json')
                 raise SystemExit
 
             # Load existing config file
-            with open(path, 'r') as file:
+            with open(path, 'r', encoding='utf-8') as file:
                 self.config = json.load(file)
 
             # Parse already-used pins and nicknames (prevent duplicates)
@@ -88,22 +100,23 @@ class GenerateConfigFile:
         if self.edit_mode:
             print("Editing existing config:\n")
             print(json.dumps(self.config, indent=4))
-            return self.run_edit_prompt()
+            self.run_edit_prompt()
 
-        # Prompt user to enter metadata
-        self.metadata_prompt()
+        else:
+            # Prompt user to enter metadata
+            self.metadata_prompt()
 
-        # Prompt user to add devices and sensors
-        self.add_devices_and_sensors()
+            # Prompt user to add devices and sensors
+            self.add_devices_and_sensors()
 
-        # Prompt user to select targets for each sensor
-        self.select_sensor_targets()
+            # Prompt user to select targets for each sensor
+            self.select_sensor_targets()
 
-        # Validate finished config, print error if failed
-        self.__validate()
-        if self.passed_validation:
-            # Show final prompt (allows user to continue editing)
-            return self.__finished_prompt()
+            # Validate finished config, print error if failed
+            self.__validate()
+            if self.passed_validation:
+                # Show final prompt (allows user to continue editing)
+                self.__finished_prompt()
 
     def run_edit_prompt(self):
         # Prompt user to select action
@@ -222,18 +235,15 @@ class GenerateConfigFile:
                 break
 
     def delete_devices_and_sensors(self):
-        # Get list of all sensor and device IDs
-        instances = [key for key in self.config.keys() if is_device_or_sensor(key)]
+        # Map display string for each existing device and sensor to their IDs
+        # Syntax: {"Nickname (type)": "device1"}
+        instances_map = {f"{params['nickname']} ({params['_type']})": instance
+                         for instance, params in self.config.items()
+                         if is_device_or_sensor(instance)}
 
-        # Skip step if no instances
-        if len(instances) == 0:
+        # Skip prompt if no devices or sensors configured
+        if len(instances_map) == 0:
             return
-
-        # Map strings displayed for each option (syntax: "Nickname (type)") to their IDs
-        instances_map = {}
-        for key in instances:
-            display = f"{self.config[key]['nickname']} ({self.config[key]['_type']})"
-            instances_map[display] = key
 
         # Prompt user to select all devices and sensors they wish to delete
         delete = questionary.checkbox(
@@ -451,8 +461,7 @@ class GenerateConfigFile:
             print(f'{Fore.RED}ERROR{Fore.RESET}: {valid}')
             print('Resetting relevant options, please try again')
             return self.__configure_sensor(self.__reset_config_template(config))
-        else:
-            return config
+        return config
 
     def configure_ir_blaster(self):
         # Prompt user for pin and targets
@@ -572,15 +581,15 @@ class GenerateConfigFile:
 if __name__ == '__main__':
     if len(sys.argv) > 1:
         # Instantiate in edit mode with path to existing config
-        config = GenerateConfigFile(sys.argv[1])
+        generator = GenerateConfigFile(sys.argv[1])
     else:
-        config = GenerateConfigFile()
+        generator = GenerateConfigFile()
 
     try:
-        config.run_prompt()
-    except KeyboardInterrupt:
-        raise SystemExit
+        generator.run_prompt()
+    except KeyboardInterrupt as interrupt:
+        raise SystemExit from interrupt
 
     # Write to disk if passed validation
-    if config.passed_validation:
-        config.write_to_disk()
+    if generator.passed_validation:
+        generator.write_to_disk()
