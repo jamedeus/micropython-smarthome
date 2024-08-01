@@ -1255,15 +1255,158 @@ class TestRegressions(TestCase):
             '75',
             'No'
         ]
-        with patch('questionary.select', return_value=self.mock_ask), \
+        with patch('questionary.select', return_value=self.mock_ask) as mock_select, \
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt, confirm output matches expected
-            config = self.generator.configure_sensor()
-            self.assertEqual(config, sensor_config)
+            self.generator.config['sensor1'] = self.generator.configure_sensor()
+            self.assertEqual(self.generator.config['sensor1'], sensor_config)
 
-        # Confirm Si7021 option removed from sensor type options
-        self.assertNotIn('Si7021', self.generator.sensor_type_options)
+        # Simulate user attempting to add a duplicate SI7021
+        self.mock_ask.unsafe_ask.side_effect = ['SI7021 Temperature Sensor']
+        with patch('questionary.select', return_value=self.mock_ask) as mock_select:
+            # Run sensor type select prompt
+            self.generator.sensor_type()
+
+            # Confirm SI7021 was NOT in options list
+            _, kwargs = mock_select.call_args
+            self.assertFalse('SI7021 Temperature Sensor' in kwargs['choices'])
+
+    # Original bug: SI7021 was removed from sensor options after first instance
+    # added, but was not removed when editing an existing config that contained
+    # an SI7021. This allowed the user to configure multiple (not supported).
+    def test_prevent_multiple_thermostats_edit_existing(self):
+        # Simulate user already completed all prompts, added si7021
+        self.generator.config = {
+            "metadata": {
+                "id": "Unit Test Existing Config",
+                "floor": "0",
+                "location": "Unit Test",
+                "schedule_keywords": {
+                    "morning": "11:30",
+                    "relax": "23:00",
+                    "sleep": "04:15",
+                    "sunrise": "06:00",
+                    "sunset": "18:00"
+                }
+            },
+            "sensor1": {
+                "_type": "si7021",
+                "nickname": "Thermostat",
+                "default_rule": "70",
+                "mode": "cool",
+                "tolerance": "1.5",
+                "units": "fahrenheit",
+                "schedule": {},
+                "targets": []
+            }
+        }
+
+        # Get path to config directory, create if doesn't exist
+        config_directory = os.path.join(repo, 'config_files')
+        if not os.path.exists(config_directory):
+            os.mkdir(config_directory)
+
+        # Mock get_cli_config to return config directory path, write to disk
+        with patch('config_generator.get_cli_config', return_value={'config_directory': config_directory}):
+            self.generator.write_to_disk()
+
+        # Confirm file exists
+        path = os.path.join(config_directory, 'unit-test-existing-config.json')
+        self.assertTrue(os.path.exists(path))
+
+        # Instantiate new generator with path to existing config (simulate editing)
+        generator = GenerateConfigFile(path)
+        # Confirm edit_mode and config attributes
+        self.assertTrue(generator.edit_mode)
+        self.assertEqual(generator.config, self.generator.config)
+
+        # Simulate user attempting to add a duplicate SI7021
+        self.mock_ask.unsafe_ask.side_effect = ['SI7021 Temperature Sensor']
+        with patch('questionary.select', return_value=self.mock_ask) as mock_select:
+            # Run sensor type select prompt
+            generator.sensor_type()
+
+            # Confirm SI7021 was NOT in options list
+            _, kwargs = mock_select.call_args
+            self.assertFalse('SI7021 Temperature Sensor' in kwargs['choices'])
+
+        # Delete test config
+        os.remove(path)
+
+    # Original bug: Selecting SI7021 permanently removed the option from sensor
+    # type options. If user changed mind and deleted SI7021 the option would
+    # not reappear, making it impossible to configure without starting over.
+    def test_allow_si7021_after_removing_existing_si7021(self):
+        # Simulate user already completed all prompts, added si7021
+        self.generator.config = {
+            "metadata": {
+                "id": "Unit Test Existing Config",
+                "floor": "0",
+                "location": "Unit Test",
+                "schedule_keywords": {
+                    "morning": "11:30",
+                    "relax": "23:00",
+                    "sleep": "04:15",
+                    "sunrise": "06:00",
+                    "sunset": "18:00"
+                }
+            },
+            "sensor1": {
+                "_type": "si7021",
+                "nickname": "Thermostat",
+                "default_rule": "70",
+                "mode": "cool",
+                "tolerance": "1.5",
+                "units": "fahrenheit",
+                "schedule": {},
+                "targets": []
+            }
+        }
+
+        # Get path to config directory, create if doesn't exist
+        config_directory = os.path.join(repo, 'config_files')
+        if not os.path.exists(config_directory):
+            os.mkdir(config_directory)
+
+        # Mock get_cli_config to return config directory path, write to disk
+        with patch('config_generator.get_cli_config', return_value={'config_directory': config_directory}):
+            self.generator.write_to_disk()
+
+        # Confirm file exists
+        path = os.path.join(config_directory, 'unit-test-existing-config.json')
+        self.assertTrue(os.path.exists(path))
+
+        # Instantiate new generator with path to existing config, confirm edit_mode and config attributes
+        generator = GenerateConfigFile(path)
+        self.assertTrue(generator.edit_mode)
+        self.assertEqual(generator.config, self.generator.config)
+
+        # Mock user deleting existing SI7021 sensor
+        self.mock_ask.unsafe_ask.return_value = ['Thermostat (si7021)']
+        with patch('questionary.checkbox', return_value=self.mock_ask):
+            generator.delete_devices_and_sensors()
+            self.assertTrue(self.mock_ask.called_once)
+
+        # Mock user adding another si7021 (option should reappear)
+        self.mock_ask.unsafe_ask.side_effect = [
+            'SI7021 Temperature Sensor',
+            'Thermostat',
+            'fahrenheit',
+            '70',
+            'cool',
+            '1.5',
+            'No'
+        ]
+        with patch('questionary.select', return_value=self.mock_ask) as mock_select, \
+             patch('questionary.text', return_value=self.mock_ask):
+
+            # Run prompt
+            generator.config['sensor1'] = generator.configure_sensor()
+
+            # Confirm SI7021 option appeared (config no longer contains si7021)
+            _, kwargs = mock_select.call_args
+            self.assertFalse('SI7021 Temperature Sensor' in kwargs['choices'])
 
     # Original bug: IntRange was used for PIR and Thermostat rules, preventing
     # float rules from being configured. Now uses FloatRange.

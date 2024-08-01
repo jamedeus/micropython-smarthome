@@ -189,29 +189,24 @@ class GenerateConfigFile:
         self.config['metadata'].update({'id': name, 'floor': floor, 'location': location})
 
     def add_devices_and_sensors(self):
-        # Lists to store + count device and sensor sections
-        devices = [self.config[i] for i in self.config if is_device(i)]
-        sensors = [self.config[i] for i in self.config if is_sensor(i)]
-
         # Prompt user to configure devices and sensors
-        # Output of each device/sensor prompt is added to lists above
+        # Output of each device/sensor prompt is added to self.config
         while True:
             choice = questionary.select("\nAdd instances?", choices=self.category_options).unsafe_ask()
             if choice == 'Device':
-                devices.append(self.configure_device())
+                # Get next device index
+                index = len([i for i in self.config if is_device(i)]) + 1
+                # Run prompts, write user selection to new self.config section
+                self.config[f'device{index}'] = self.configure_device()
             elif choice == 'Sensor':
-                sensors.append(self.configure_sensor())
+                # Get next sensor index
+                index = len([i for i in self.config if is_sensor(i)]) + 1
+                # Run prompts, write user selection to new self.config section
+                self.config[f'sensor{index}'] = self.configure_sensor()
             elif choice == 'IR Blaster':
                 self.configure_ir_blaster()
             elif choice == 'Done':
                 break
-
-        # Add sequential device and sensor keys (device1, device2, etc)
-        # for each item in devices and sensors
-        for index, instance in enumerate(devices, 1):
-            self.config[f'device{index}'] = instance
-        for index, instance in enumerate(sensors, 1):
-            self.config[f'sensor{index}'] = instance
 
     def delete_devices_and_sensors(self):
         # Get list of all sensor and device IDs
@@ -248,9 +243,20 @@ class GenerateConfigFile:
     # Prompt user to select from a list of valid sensor types
     # Used to get template in configure_sensor
     def sensor_type(self):
+        # Get list of existing sensor types
+        sensor_types = [self.config[sensor]["_type"]
+                        for sensor in self.config if is_sensor(sensor)]
+
+        # Remove si7021 option if already configured (multiple not supported)
+        if "si7021" in sensor_types:
+            options = [_type for _type in self.sensor_type_options
+                       if not _type.startswith("SI7021")]
+        else:
+            options = self.sensor_type_options
+
         return questionary.select(
             "Select sensor type",
-            choices=self.sensor_type_options
+            choices=options
         ).unsafe_ask()
 
     # Prompt user for a nickname, add to used_nicknames list, return
@@ -388,9 +394,6 @@ class GenerateConfigFile:
             print('Resetting relevant options, please try again')
             return self.configure_sensor(self.reset_config_template(config))
         else:
-            # If Thermostat added remove option from menu (cannot have multiple)
-            if config['_type'] == 'si7021':
-                self.sensor_type_options.remove('SI7021 Temperature Sensor')
             return config
 
     def configure_ir_blaster(self):
