@@ -8,12 +8,6 @@ from colorama import Fore
 from instance_validators import validate_rules
 from validate_config import validate_full_config
 from validation_constants import valid_device_pins, valid_sensor_pins, config_templates
-from config_prompt_validators import IntRange, FloatRange, MinLength, NicknameValidator
-from config_rule_prompts import (
-    default_rule_prompt_router,
-    schedule_rule_prompt_router,
-    rule_limits_map
-)
 from helper_functions import (
     valid_ip,
     valid_timestamp,
@@ -25,6 +19,12 @@ from helper_functions import (
     get_existing_nodes,
     get_config_filename,
     get_cli_config
+)
+from config_prompt_validators import IntRange, FloatRange, MinLength, NicknameValidator
+from config_rule_prompts import (
+    default_rule_prompt_router,
+    schedule_rule_prompt_router,
+    rule_limits_map
 )
 
 
@@ -83,9 +83,6 @@ class GenerateConfigFile:
         # List of schedule keywords from config file
         self.schedule_keyword_options = list(get_schedule_keywords_dict().keys())
 
-        # Dict of existing nodes, used to populate ApiTarget options
-        self.existing_nodes = get_existing_nodes()
-
     def run_prompt(self):
         # Edit mode: print existing config and redirect to edit prompt
         if self.edit_mode:
@@ -103,10 +100,10 @@ class GenerateConfigFile:
         self.select_sensor_targets()
 
         # Validate finished config, print error if failed
-        self.validate()
+        self.__validate()
         if self.passed_validation:
             # Show final prompt (allows user to continue editing)
-            self.finished_prompt()
+            return self.__finished_prompt()
 
     def run_edit_prompt(self):
         # Prompt user to select action
@@ -141,11 +138,11 @@ class GenerateConfigFile:
                 break
 
         # Validate finished config, print error if failed
-        self.validate()
+        self.__validate()
 
     # Passes config object to validator, sets passed_validation attribute,
     # prints error message if validation failed
-    def validate(self):
+    def __validate(self):
         valid = validate_full_config(self.config)
         if valid is True:
             self.passed_validation = True
@@ -155,7 +152,7 @@ class GenerateConfigFile:
 
     # Shown when finished creating new config
     # Prints completed config and gives user option to continue editing
-    def finished_prompt(self):
+    def __finished_prompt(self):
         print("\nFinished config:")
         print(json.dumps(self.config, indent=4))
 
@@ -213,12 +210,12 @@ class GenerateConfigFile:
                 # Get next device index
                 index = len([i for i in self.config if is_device(i)]) + 1
                 # Run prompts, write user selection to new self.config section
-                self.config[f'device{index}'] = self.configure_device()
+                self.config[f'device{index}'] = self.__configure_device()
             elif choice == 'Sensor':
                 # Get next sensor index
                 index = len([i for i in self.config if is_sensor(i)]) + 1
                 # Run prompts, write user selection to new self.config section
-                self.config[f'sensor{index}'] = self.configure_sensor()
+                self.config[f'sensor{index}'] = self.__configure_sensor()
             elif choice == 'IR Blaster':
                 self.configure_ir_blaster()
             elif choice == 'Done':
@@ -252,10 +249,10 @@ class GenerateConfigFile:
             del self.config[instances_map[i]]
 
         # Prevent gaps in index (eg: [device1, device3] => [device1, device2]
-        self.reindex_devices_and_sensors()
+        self.__reindex_devices_and_sensors()
 
     # Called after deleting devices or sensors to ensure sequential index
-    def reindex_devices_and_sensors(self):
+    def __reindex_devices_and_sensors(self):
         # Back up devices and sensors
         devices = [self.config[i] for i in self.config if is_device(i)]
         sensors = [self.config[i] for i in self.config if is_sensor(i)]
@@ -272,7 +269,7 @@ class GenerateConfigFile:
 
     # Prompt user to select from a list of valid device types
     # Used to get template in configure_device
-    def device_type(self):
+    def __device_type(self):
         return questionary.select(
             "Select device type",
             choices=self.device_type_options
@@ -280,7 +277,7 @@ class GenerateConfigFile:
 
     # Prompt user to select from a list of valid sensor types
     # Used to get template in configure_sensor
-    def sensor_type(self):
+    def __sensor_type(self):
         # Get list of existing sensor types
         sensor_types = [self.config[sensor]["_type"]
                         for sensor in self.config if is_sensor(sensor)]
@@ -298,7 +295,7 @@ class GenerateConfigFile:
         ).unsafe_ask()
 
     # Prompt user for a nickname, add to used_nicknames list, return
-    def nickname_prompt(self):
+    def __nickname_prompt(self):
         nickname = questionary.text(
             "Enter a memorable nickname:",
             validate=NicknameValidator(self.used_nicknames)
@@ -308,14 +305,14 @@ class GenerateConfigFile:
 
     # Prompt user to select pin, add to used_pins list, return
     # Takes list of options as arg, removes already-used pins to prevent duplicates
-    def pin_prompt(self, valid_pins, prompt="Select pin"):
+    def __pin_prompt(self, valid_pins, prompt="Select pin"):
         choices = [pin for pin in valid_pins if pin not in self.used_pins]
         pin = questionary.select(prompt, choices=choices).unsafe_ask()
         self.used_pins.append(pin)
         return pin
 
     # Prompt user to enter an IP address, enforces syntax
-    def ip_address_prompt(self):
+    def __ip_address_prompt(self):
         return questionary.text(
             "Enter IP address:",
             validate=valid_ip
@@ -323,22 +320,25 @@ class GenerateConfigFile:
 
     # Prompt user to select from existing node friendly names
     # Returns IP of selected node
-    def apitarget_ip_prompt(self):
-        options = list(self.existing_nodes.keys())
+    def __apitarget_ip_prompt(self):
+        # Get dict of existing nodes from cli_config.json
+        existing_nodes = get_existing_nodes()
+
+        # Show prompt with names of all existing nodes
         target = questionary.select(
             "Select target node",
-            choices=options
+            choices=list(existing_nodes.keys())
         ).unsafe_ask()
-        return self.existing_nodes[target]['ip']
+        return existing_nodes[target]['ip']
 
     # Prompt user to select device type and all required params.
     # Validates config before returning - if validation fails, some
     # params are removed and the function is called with partial config
     # as config arg (re-prompts user without repeating all questions).
-    def configure_device(self, config=None):
+    def __configure_device(self, config=None):
         # Prompt user for device type, get config skeleton
         if config is None:
-            config = config_templates['device'][self.device_type()].copy()
+            config = config_templates['device'][self.__device_type()].copy()
             _type = config['_type']
         # Previously failed validation, repeat prompts for invalid params
         else:
@@ -347,13 +347,13 @@ class GenerateConfigFile:
         # Prompt user for all parameters with missing value
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
-                config[i] = self.nickname_prompt()
+                config[i] = self.__nickname_prompt()
 
             elif i == "pin":
-                config[i] = self.pin_prompt(valid_device_pins)
+                config[i] = self.__pin_prompt(valid_device_pins)
 
             elif i.startswith("pin_"):
-                config[i] = self.pin_prompt(
+                config[i] = self.__pin_prompt(
                     valid_device_pins,
                     f"Select {i.split('_')[1]} pin"
                 )
@@ -377,13 +377,13 @@ class GenerateConfigFile:
 
             # ApiTarget has own IP prompt (select friendly name from nodes in cli_config.json)
             elif i == "ip" and _type == "api-target":
-                config[i] = self.apitarget_ip_prompt()
+                config[i] = self.__apitarget_ip_prompt()
 
             elif i == "ip":
-                config[i] = self.ip_address_prompt()
+                config[i] = self.__ip_address_prompt()
 
         # Prompt user to add schedule rules
-        config = self.schedule_rule_prompt(config)
+        config = self.__schedule_rule_prompt(config)
 
         # Confirm all selections are valid
         valid = validate_rules(config)
@@ -391,29 +391,28 @@ class GenerateConfigFile:
             # Print error, remove potentially invalid parameters and re-prompt
             print(f'{Fore.RED}ERROR{Fore.RESET}: {valid}')
             print('Resetting relevant options, please try again')
-            return self.configure_device(self.reset_config_template(config))
-        else:
-            return config
+            return self.__configure_device(self.__reset_config_template(config))
+        return config
 
     # Prompt user to select sensor type and all required params.
     # Validates config before returning - if validation fails, some
     # params are removed and the function is called with partial config
     # as config arg (re-prompts user without repeating all questions).
-    def configure_sensor(self, config=None):
+    def __configure_sensor(self, config=None):
         # Prompt user for sensor type, get config skeleton
         if config is None:
-            config = config_templates['sensor'][self.sensor_type()].copy()
+            config = config_templates['sensor'][self.__sensor_type()].copy()
 
         # Prompt user for all parameters with missing value
         for i in [i for i in config if config[i] == "placeholder"]:
             if i == "nickname":
-                config[i] = self.nickname_prompt()
+                config[i] = self.__nickname_prompt()
 
             elif i == "pin":
-                config[i] = self.pin_prompt(valid_sensor_pins)
+                config[i] = self.__pin_prompt(valid_sensor_pins)
 
             elif i.startswith("pin_"):
-                config[i] = self.pin_prompt(
+                config[i] = self.__pin_prompt(
                     valid_sensor_pins,
                     f"Select {i.split('_')[1]} pin"
                 )
@@ -422,7 +421,7 @@ class GenerateConfigFile:
                 config[i] = default_rule_prompt_router(config)
 
             elif i == "ip":
-                config[i] = self.ip_address_prompt()
+                config[i] = self.__ip_address_prompt()
 
             elif i == "mode":
                 config[i] = questionary.select(
@@ -443,7 +442,7 @@ class GenerateConfigFile:
                 ).unsafe_ask()
 
         # Prompt user to add schedule rules
-        config = self.schedule_rule_prompt(config)
+        config = self.__schedule_rule_prompt(config)
 
         # Confirm all selections are valid
         valid = validate_rules(config)
@@ -451,13 +450,13 @@ class GenerateConfigFile:
             # Print error, remove potentially invalid parameters and re-prompt
             print(f'{Fore.RED}ERROR{Fore.RESET}: {valid}')
             print('Resetting relevant options, please try again')
-            return self.configure_sensor(self.reset_config_template(config))
+            return self.__configure_sensor(self.__reset_config_template(config))
         else:
             return config
 
     def configure_ir_blaster(self):
         # Prompt user for pin and targets
-        pin = self.pin_prompt(valid_device_pins)
+        pin = self.__pin_prompt(valid_device_pins)
         targets = questionary.checkbox(
             "Select target devices",
             choices=['tv', 'ac']
@@ -475,7 +474,7 @@ class GenerateConfigFile:
 
     # Takes config that failed validation, replaces potentially invalid params
     # with placeholder. Used to re-prompt user without repeating all questions.
-    def reset_config_template(self, config):
+    def __reset_config_template(self, config):
         for i in config:
             if i not in ['nickname', 'pin', '_type', 'schedule', 'targets']:
                 config[i] = 'placeholder'
@@ -525,11 +524,11 @@ class GenerateConfigFile:
 
     # Takes instance config, prompts to add schedule rules in loop until
     # user selects done. Returns config with all selected schedule rules.
-    def schedule_rule_prompt(self, config):
+    def __schedule_rule_prompt(self, config):
         prompt = f"\nWould you like to add schedule rules for {config['nickname']}?"
         if questionary.select(prompt, choices=['Yes', 'No']).unsafe_ask() == 'Yes':
             while True:
-                config = self.add_schedule_rule(config)
+                config = self.__add_schedule_rule(config)
                 choice = questionary.select(
                     "\nAdd another?",
                     choices=['Yes', 'No']
@@ -540,35 +539,34 @@ class GenerateConfigFile:
 
     # Takes config, prompts user to add a single schedule rule, returns
     # config with rule added. Called by loop in schedule_rule_prompt.
-    def add_schedule_rule(self, config):
+    def __add_schedule_rule(self, config):
         # Prompt user to select timestamp or keyword if keywords are configured
-        if len(self.schedule_keyword_options):
-            timestamp = self.schedule_rule_timestamp_or_keyword_prompt()
+        if self.schedule_keyword_options:
+            timestamp = self.__schedule_rule_timestamp_or_keyword_prompt()
         # Prompt for timestamp if no keywords are available
         else:
-            timestamp = self.schedule_rule_timestamp_prompt()
+            timestamp = self.__schedule_rule_timestamp_prompt()
         rule = schedule_rule_prompt_router(config)
         config['schedule'][timestamp] = rule
         return config
 
-    def schedule_rule_timestamp_prompt(self):
+    def __schedule_rule_timestamp_prompt(self):
         return questionary.text(
             "Enter timestamp (HH:MM):",
             validate=valid_timestamp
         ).unsafe_ask()
 
-    def schedule_rule_timestamp_or_keyword_prompt(self):
+    def __schedule_rule_timestamp_or_keyword_prompt(self):
         choice = questionary.select(
             "\nTimestamp or keyword?",
             choices=['Timestamp', 'Keyword']
         ).unsafe_ask()
         if choice == 'Timestamp':
-            return self.schedule_rule_timestamp_prompt()
-        else:
-            return questionary.select(
-                "\nSelect keyword",
-                choices=self.schedule_keyword_options
-            ).unsafe_ask()
+            return self.__schedule_rule_timestamp_prompt()
+        return questionary.select(
+            "\nSelect keyword",
+            choices=self.schedule_keyword_options
+        ).unsafe_ask()
 
 
 if __name__ == '__main__':

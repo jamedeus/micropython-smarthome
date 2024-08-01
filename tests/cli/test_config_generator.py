@@ -255,7 +255,7 @@ class TestGenerateConfigFile(TestCase):
         with patch.object(self.generator, 'metadata_prompt') as mock_metadata_prompt, \
              patch.object(self.generator, 'add_devices_and_sensors') as mock_add_devices_and_sensors, \
              patch.object(self.generator, 'select_sensor_targets') as mock_select_sensor_targets, \
-             patch.object(self.generator, 'finished_prompt') as mock_finished_prompt, \
+             patch.object(self.generator, '_GenerateConfigFile__finished_prompt') as mock_finished_prompt, \
              patch('config_generator.validate_full_config', return_value=True) as mock_validate_full_config:
 
             # Run method, confirm all mocks called
@@ -293,7 +293,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.select', return_value=self.mock_ask):
 
             # Call method, confirm edit prompt was NOT called
-            self.generator.finished_prompt()
+            self.generator._GenerateConfigFile__finished_prompt()
             mock_run_edit_prompt.assert_not_called()
 
         # Simulate user selecting Yes
@@ -302,7 +302,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.select', return_value=self.mock_ask):
 
             # Call method, confirm edit prompt WAS called
-            self.generator.finished_prompt()
+            self.generator._GenerateConfigFile__finished_prompt()
             mock_run_edit_prompt.assert_called_once()
 
     def test_metadata_prompt(self):
@@ -321,13 +321,19 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.unsafe_ask.return_value = 'MotionSensor'
 
         with patch('questionary.select', return_value=self.mock_ask):
-            self.assertEqual(self.generator.sensor_type(), 'MotionSensor')
+            self.assertEqual(
+                self.generator._GenerateConfigFile__sensor_type(),
+                'MotionSensor'
+            )
 
     def test_device_type(self):
         self.mock_ask.unsafe_ask.return_value = 'Dimmer'
 
         with patch('questionary.select', return_value=self.mock_ask):
-            self.assertEqual(self.generator.device_type(), 'Dimmer')
+            self.assertEqual(
+                self.generator._GenerateConfigFile__device_type(),
+                'Dimmer'
+            )
 
     def test_nickname_prompt(self):
         # Add an already-used nickname
@@ -337,7 +343,7 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.unsafe_ask.return_value = 'Unused'
         with patch('questionary.text', return_value=self.mock_ask):
             # Confirm returns new nickname, new nickname added to used_nicknames
-            response = self.generator.nickname_prompt()
+            response = self.generator._GenerateConfigFile__nickname_prompt()
             self.assertEqual(response, 'Unused')
             self.assertEqual(self.generator.used_nicknames, ['Used', 'Unused'])
 
@@ -379,8 +385,8 @@ class TestGenerateConfigFile(TestCase):
         # Mock device and sensor prompts to return completed config objects
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
-             patch.object(self.generator, 'configure_device', return_value=expected_device), \
-             patch.object(self.generator, 'configure_sensor', return_value=expected_sensor):
+             patch.object(self.generator, '_GenerateConfigFile__configure_device', return_value=expected_device), \
+             patch.object(self.generator, '_GenerateConfigFile__configure_sensor', return_value=expected_sensor):
 
             # Run prompt
             self.generator.add_devices_and_sensors()
@@ -490,7 +496,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt, confirm output matches expected
-            config = self.generator.configure_device()
+            config = self.generator._GenerateConfigFile__configure_device()
             self.assertEqual(config, expected_output)
 
             # Confirm nickname added to used list
@@ -517,7 +523,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt, confirm output matches expected
-            config = self.generator.configure_device()
+            config = self.generator._GenerateConfigFile__configure_device()
             self.assertEqual(config, expected_output)
 
             # Confirm nickname and pin added to used lists
@@ -565,7 +571,7 @@ class TestGenerateConfigFile(TestCase):
             # Should prompt for schedule rules (No), fail validation,
             # go through reset_config_template, and be passed back to
             # configure_device again (remaining mock inputs)
-            config = self.generator.configure_device(invalid_config)
+            config = self.generator._GenerateConfigFile__configure_device(invalid_config)
 
         # Confirm valid config received after second loop
         self.assertEqual(config, valid_config)
@@ -610,7 +616,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt, confirm output matches expected
-            config = self.generator.configure_sensor()
+            config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
 
             # Confirm nickname and pin added to used lists
@@ -650,7 +656,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt, confirm output matches expected
-            config = self.generator.configure_sensor()
+            config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
 
             # Confirm nickname and pin added to used lists
@@ -688,7 +694,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt, confirm output matches expected
-            config = self.generator.configure_sensor()
+            config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
 
             # Confirm nickname and pin added to used lists
@@ -723,7 +729,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt, confirm output matches expected
-            config = self.generator.configure_sensor()
+            config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
 
             # Confirm nickname and pin added to used lists
@@ -760,7 +766,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt, confirm output matches expected
-            config = self.generator.configure_sensor()
+            config = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(config, expected_output)
 
             # Confirm nickname and pins added to used lists
@@ -801,7 +807,7 @@ class TestGenerateConfigFile(TestCase):
             # Should prompt for schedule rules (No), fail validation,
             # go through reset_config_template, and be passed back to
             # configure_sensor again (remaining mock inputs)
-            config = self.generator.configure_sensor(invalid_config)
+            config = self.generator._GenerateConfigFile__configure_sensor(invalid_config)
 
         # Confirm valid config received after second loop
         self.assertEqual(config, valid_config)
@@ -818,7 +824,7 @@ class TestGenerateConfigFile(TestCase):
                 "10:00": "75"
             }
         }
-        reset_config = self.generator.reset_config_template(invalid_config)
+        reset_config = self.generator._GenerateConfigFile__reset_config_template(invalid_config)
 
         # Confirm correct properties reset to "placeholder"
         # Confirm schedule rules dict empty
@@ -953,7 +959,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Confirm rule added successfully
-            output = self.generator.add_schedule_rule(config)
+            output = self.generator._GenerateConfigFile__add_schedule_rule(config)
             self.assertEqual(output['schedule'], {'sunrise': 'Enabled'})
 
     def test_add_schedule_rule_no_keywords_available(self):
@@ -979,7 +985,7 @@ class TestGenerateConfigFile(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Confirm rule added successfully
-            output = self.generator.add_schedule_rule(config)
+            output = self.generator._GenerateConfigFile__add_schedule_rule(config)
             self.assertEqual(output['schedule'], {'10:00': 'Enabled'})
 
     def test_api_target_ip_prompt(self):
@@ -987,7 +993,7 @@ class TestGenerateConfigFile(TestCase):
         self.mock_ask.unsafe_ask.side_effect = ['node1']
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('config_generator.get_existing_nodes', return_value=mock_cli_config['nodes']):
-            output = self.generator.apitarget_ip_prompt()
+            output = self.generator._GenerateConfigFile__apitarget_ip_prompt()
             self.assertEqual(output, '192.168.1.123')
 
     # Confirm the correct IP prompt is run when configuring ApiTarget
@@ -1004,13 +1010,13 @@ class TestGenerateConfigFile(TestCase):
         # Simulate user declining schedule rule prompt
         self.mock_ask.unsafe_ask.side_effect = ['No']
         with patch('questionary.select', return_value=self.mock_ask), \
-             patch.object(self.generator, 'apitarget_ip_prompt') as mock_ip_prompt:
+             patch.object(self.generator, '_GenerateConfigFile__apitarget_ip_prompt') as mock_ip_prompt:
 
             # Simulate user selecting first IP option
             mock_ip_prompt.return_value = '192.168.1.123'
 
             # Run prompt, confirm correct IP prompt is called
-            self.generator.configure_device(config)
+            self.generator._GenerateConfigFile__configure_device(config)
             self.assertTrue(mock_ip_prompt.called)
 
     def test_api_target_rule_prompt(self):

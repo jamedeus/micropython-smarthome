@@ -94,14 +94,14 @@ class TestRegressions(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt, confirm output matches expected
-            self.generator.config['sensor1'] = self.generator.configure_sensor()
+            self.generator.config['sensor1'] = self.generator._GenerateConfigFile__configure_sensor()
             self.assertEqual(self.generator.config['sensor1'], sensor_config)
 
         # Simulate user attempting to add a duplicate SI7021
         self.mock_ask.unsafe_ask.side_effect = ['SI7021 Temperature Sensor']
         with patch('questionary.select', return_value=self.mock_ask) as mock_select:
             # Run sensor type select prompt
-            self.generator.sensor_type()
+            self.generator._GenerateConfigFile__sensor_type()
 
             # Confirm SI7021 was NOT in options list
             _, kwargs = mock_select.call_args
@@ -156,7 +156,7 @@ class TestRegressions(TestCase):
         self.mock_ask.unsafe_ask.side_effect = ['SI7021 Temperature Sensor']
         with patch('questionary.select', return_value=self.mock_ask) as mock_select:
             # Run sensor type select prompt
-            generator.sensor_type()
+            generator._GenerateConfigFile__sensor_type()
 
             # Confirm SI7021 was NOT in options list
             _, kwargs = mock_select.call_args
@@ -229,7 +229,7 @@ class TestRegressions(TestCase):
              patch('questionary.text', return_value=self.mock_ask):
 
             # Run prompt
-            generator.config['sensor1'] = generator.configure_sensor()
+            generator.config['sensor1'] = generator._GenerateConfigFile__configure_sensor()
 
             # Confirm SI7021 option appeared (config no longer contains si7021)
             _, kwargs = mock_select.call_args
