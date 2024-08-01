@@ -37,6 +37,10 @@ mock_cli_config = {
     'config_directory': os.path.join(repo, 'config_files')
 }
 
+# Create config directory if itt doesn't exist
+if not os.path.exists(mock_cli_config['config_directory']):
+    os.mkdir(mock_cli_config['config_directory'])
+
 
 # Simulate user input object passed to validators
 class SimulatedInput:
@@ -262,8 +266,10 @@ class TestGenerateConfigFile(TestCase):
     @classmethod
     def tearDownClass(cls):
         # Delete unit-test-existing-config.json from disk if it still exists
-        config_directory = mock_cli_config['config_directory']
-        path = os.path.join(config_directory, 'unit-test-existing-config.json')
+        path = os.path.join(
+            mock_cli_config['config_directory'],
+            'unit-test-existing-config.json'
+        )
         if os.path.exists(path):
             os.remove(path)
         # Delete fake_config_file.txt from disk if it still exists
@@ -1157,17 +1163,17 @@ class TestGenerateConfigFile(TestCase):
             }
         }
 
-        # Get path to config directory, create if doesn't exist
-        config_directory = mock_cli_config['config_directory']
-        if not os.path.exists(config_directory):
-            os.mkdir(config_directory)
-
         # Mock get_cli_config to return config directory path, write to disk
-        with patch('config_generator.get_cli_config', return_value={'config_directory': config_directory}):
+        with patch('config_generator.get_cli_config', return_value={
+            'config_directory': mock_cli_config['config_directory']
+        }):
             self.generator.write_to_disk()
 
         # Confirm file exists
-        path = os.path.join(config_directory, 'unit-test-existing-config.json')
+        path = os.path.join(
+            mock_cli_config['config_directory'],
+            'unit-test-existing-config.json'
+        )
         self.assertTrue(os.path.exists(path))
 
         # Instantiate new generator with path to existing config, confirm edit_mode and config attributes
@@ -1235,13 +1241,21 @@ class TestRegressions(TestCase):
         # Mock replaces .ask() method to simulate user input
         self.mock_ask = MagicMock()
 
+        # Path to mock existing config file (created in tests)
+        self.existing_config_path = os.path.join(
+            mock_cli_config['config_directory'],
+            'unit-test-existing-config.json'
+        )
+
     @classmethod
     def tearDownClass(cls):
         # Delete unit-test-existing-config.json from disk if it still exists
-        config_directory = mock_cli_config['config_directory']
-        path = os.path.join(config_directory, 'unit-test-existing-config.json')
-        if os.path.exists(path):
-            os.remove(path)
+        existing_config_path = os.path.join(
+            mock_cli_config['config_directory'],
+            'unit-test-existing-config.json'
+        )
+        if os.path.exists(existing_config_path):
+            os.remove(existing_config_path)
 
     # Original bug: Thermostat option remained in menu after adding to config,
     # allowing user to configure multiple thermostats (not supported)
@@ -1321,21 +1335,17 @@ class TestRegressions(TestCase):
             }
         }
 
-        # Get path to config directory, create if doesn't exist
-        config_directory = mock_cli_config['config_directory']
-        if not os.path.exists(config_directory):
-            os.mkdir(config_directory)
-
         # Mock get_cli_config to return config directory path, write to disk
-        with patch('config_generator.get_cli_config', return_value={'config_directory': config_directory}):
+        with patch('config_generator.get_cli_config', return_value={
+            'config_directory': mock_cli_config['config_directory']
+        }):
             self.generator.write_to_disk()
 
         # Confirm file exists
-        path = os.path.join(config_directory, 'unit-test-existing-config.json')
-        self.assertTrue(os.path.exists(path))
+        self.assertTrue(os.path.exists(self.existing_config_path))
 
         # Instantiate new generator with path to existing config (simulate editing)
-        generator = GenerateConfigFile(path)
+        generator = GenerateConfigFile(self.existing_config_path)
         # Confirm edit_mode and config attributes
         self.assertTrue(generator.edit_mode)
         self.assertEqual(generator.config, self.generator.config)
@@ -1351,7 +1361,7 @@ class TestRegressions(TestCase):
             self.assertFalse('SI7021 Temperature Sensor' in kwargs['choices'])
 
         # Delete test config
-        os.remove(path)
+        os.remove(self.existing_config_path)
 
     # Original bug: Selecting SI7021 permanently removed the option from sensor
     # type options. If user changed mind and deleted SI7021 the option would
@@ -1383,21 +1393,17 @@ class TestRegressions(TestCase):
             }
         }
 
-        # Get path to config directory, create if doesn't exist
-        config_directory = mock_cli_config['config_directory']
-        if not os.path.exists(config_directory):
-            os.mkdir(config_directory)
-
         # Mock get_cli_config to return config directory path, write to disk
-        with patch('config_generator.get_cli_config', return_value={'config_directory': config_directory}):
+        with patch('config_generator.get_cli_config', return_value={
+            'config_directory': mock_cli_config['config_directory']
+        }):
             self.generator.write_to_disk()
 
         # Confirm file exists
-        path = os.path.join(config_directory, 'unit-test-existing-config.json')
-        self.assertTrue(os.path.exists(path))
+        self.assertTrue(os.path.exists(self.existing_config_path))
 
         # Instantiate new generator with path to existing config, confirm edit_mode and config attributes
-        generator = GenerateConfigFile(path)
+        generator = GenerateConfigFile(self.existing_config_path)
         self.assertTrue(generator.edit_mode)
         self.assertEqual(generator.config, self.generator.config)
 
@@ -1428,7 +1434,7 @@ class TestRegressions(TestCase):
             self.assertFalse('SI7021 Temperature Sensor' in kwargs['choices'])
 
         # Delete test config
-        os.remove(path)
+        os.remove(self.existing_config_path)
 
     # Original bug: IntRange was used for PIR and Thermostat rules, preventing
     # float rules from being configured. Now uses FloatRange.
