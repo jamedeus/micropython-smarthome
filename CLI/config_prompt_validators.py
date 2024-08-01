@@ -1,8 +1,16 @@
+'''Custom questionary validators used by config_generator.py to prevent
+invalid user input.
+'''
+
 from questionary import Validator, ValidationError
 from helper_functions import is_int, is_float
 
 
 class IntRange(Validator):
+    '''Takes minimum and maximum integers, prevents submitting anything except
+    an integer within range (inclusive).
+    '''
+
     def __init__(self, minimum, maximum):
         self.minimum = int(minimum)
         self.maximum = int(maximum)
@@ -18,6 +26,10 @@ class IntRange(Validator):
 
 
 class FloatRange(Validator):
+    '''Takes minimum and maximum floats, prevents submitting anything except
+    an integer within range (inclusive).
+    '''
+
     def __init__(self, minimum, maximum):
         self.minimum = float(minimum)
         self.maximum = float(maximum)
@@ -33,6 +45,10 @@ class FloatRange(Validator):
 
 
 class MinLength(Validator):
+    '''Takes integer number of characters, prevents user from submitting a
+    string with fewer characters.
+    '''
+
     def __init__(self, min_length):
         self.min_length = int(min_length)
 
@@ -43,8 +59,11 @@ class MinLength(Validator):
             raise ValidationError(message=f"Enter {self.min_length} or more characters")
 
 
-# Instantiated with list of already-used nicknames
 class NicknameValidator(Validator):
+    '''Takes list of existing device and sensor nicknames, prevents user from
+    submitting a duplicate nickname or a blank string.
+    '''
+
     def __init__(self, used_nicknames):
         self.used_nicknames = used_nicknames
 

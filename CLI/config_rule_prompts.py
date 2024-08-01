@@ -1,3 +1,18 @@
+'''Standardized rule prompt functions used by config_generator.py for default
+and schedule rules. Functions use mapping dicts generated from metadata to show
+correct prompt based on _type parameter.
+
+  - default_rule_prompt_router: Takes device or sensor section, shows correct
+    default rule prompt, returns user selection.
+
+  - schedule_rule_prompt_router: Takes device or sensor section, shows correct
+    schedule rule prompt, returns user selection.
+
+  - rule_prompt_map: Mapping dict, maps _type to rule prompt function
+
+  - rule_limits_map: Mapping dict, maps range rule _type to minimum and maximum
+'''
+
 import json
 import questionary
 from colorama import Fore
@@ -13,15 +28,18 @@ from helper_functions import (
 )
 
 
-# Reads all metadata files, returns 2 mapping dicts with config names as keys:
-# - rule_prompt_map: Contains keys for every class, values are rule prompt
-#   functions. All rule prompt functions accept config arg and rule_type arg
-#   ("default" or "schedule"). The rule_type arg determines which options
-#   are shown (typically "default" ommits "Enabled" and "Disabled").
-#
-# - rule_limits_map: Only contains keys for classes which accept numeric (int
-#   or float) rules, values are 2 tuples with minimum, maximum valid rules.
 def build_rule_prompt_maps():
+    '''
+    Reads all metadata files, returns 2 mapping dicts with config names as keys:
+
+      - rule_prompt_map: Contains keys for every class, values are rule prompt
+      functions. All rule prompt functions accept config arg and rule_type arg
+      ("default" or "schedule"). The rule_type arg determines which options
+      are shown (typically "default" ommits "Enabled" and "Disabled").
+
+      - rule_limits_map: Only contains keys for classes which accept numeric (int
+      or float) rules, values are 2 tuples with minimum, maximum valid rules.
+    '''
     rule_prompt_map = {}
     rule_limits_map = {}
 
@@ -58,19 +76,25 @@ def build_rule_prompt_maps():
     return rule_prompt_map, rule_limits_map
 
 
-# Takes partial config, runs appropriate default rule prompt for instance type, returns user selection
 def default_rule_prompt_router(config):
+    '''Takes device or sensor config section, runs appropriate default rule
+    prompt for instance type, returns user selection.
+    '''
     return rule_prompt_map[config['_type']](config, 'default')
 
 
-# Takes partial config, runs appropriate schedule rule prompt for instance type, returns user selection
 def schedule_rule_prompt_router(config):
+    '''Takes device or sensor config section, runs appropriate schedule rule
+    prompt for instance type, returns user selection.
+    '''
     return rule_prompt_map[config['_type']](config, 'schedule')
 
 
-# Rule prompt for instances that only support standard rules ("Enabled" and "Disabled")
-# Same prompt for default and schedule rules
 def standard_rule_prompt(config, rule_type):
+    '''Rule prompt for devices and sensors that only support standard rules
+    ("Enabled" and "Disabled"), used for default and schedule rules.
+    '''
+
     # Default rule prompt
     if rule_type == "default":
         return questionary.select("Enter default rule", choices=['Enabled', 'Disabled']).unsafe_ask()
@@ -78,10 +102,13 @@ def standard_rule_prompt(config, rule_type):
         return questionary.select("Enter rule", choices=['Enabled', 'Disabled']).unsafe_ask()
 
 
-# Rule prompt for instances that support arbitrary strings in addition to standard rules
-# Default prompt: Require arbitrary string (standard rules are invalid)
-# Schedule prompt: Show standard rules in addition to string
 def string_rule_prompt(config, rule_type):
+    '''Rule prompt for devices and sensors that support arbitrary strings in
+    addition to standard rules.
+      - Default prompt: Require arbitrary string (standard rules are invalid)
+      - Schedule prompt: Show standard rules in addition to string
+    '''
+
     # Default rule prompt
     if rule_type == "default":
         return questionary.text("Enter default rule:").unsafe_ask()
@@ -95,10 +122,13 @@ def string_rule_prompt(config, rule_type):
             return choice
 
 
-# Rule prompt for instances that support "On" and "Off" in addition to standard rules
-# Default prompt: Only show "On" and "Off" (standard rules are invalid)
-# Schedule prompt: Show standard rules in addition to "On" and "Off"
 def on_off_rule_prompt(config, rule_type):
+    '''Rule prompt for devices and sensors that support "On" and "Off" in
+    addition to standard rules.
+      - Default prompt: Only show "On" and "Off" (standard rules are invalid)
+      - Schedule prompt: Show standard rules in addition to "On" and "Off"
+    '''
+
     # Default rule prompt
     if rule_type == "default":
         return questionary.select("Enter default rule", choices=['On', 'Off']).unsafe_ask()
@@ -108,10 +138,13 @@ def on_off_rule_prompt(config, rule_type):
         return questionary.select("Enter rule", choices=['Enabled', 'Disabled', 'On', 'Off']).unsafe_ask()
 
 
-# Rule prompt for instances that support float rules in addition to standard rules
-# Default prompt: Only show float prompt (standard rules are invalid)
-# Schedule prompt: Show standard rules in addition to float
 def float_rule_prompt(config, rule_type):
+    '''Rule prompt for devices and sensors that support float rules in addition
+    to standard rules.
+      - Default prompt: Only show float prompt (standard rules are invalid)
+      - Schedule prompt: Show standard rules in addition to float prompt
+    '''
+
     # Get rule limits from device/sensor metadata
     minimum, maximum = rule_limits_map[config['_type']]
 
@@ -133,10 +166,13 @@ def float_rule_prompt(config, rule_type):
             return choice
 
 
-# Rule prompt for instances that support int rules in addition to standard rules
-# Default prompt: Require int rule (standard rules are invalid)
-# Schedule prompt: Show standard rules prompt in addition to int
 def int_rule_prompt(config, rule_type):
+    '''Rule prompt for devices and sensors that support int rules in addition
+    to standard rules.
+      - Default prompt: Only show int prompt (standard rules are invalid)
+      - Schedule prompt: Show standard rules in addition to int prompt
+    '''
+
     minimum = config['min_rule']
     maximum = config['max_rule']
 
@@ -153,10 +189,13 @@ def int_rule_prompt(config, rule_type):
             return choice
 
 
-# Rule prompt for DimmableLight subclasses (support int and fade rules in addition to standard)
-# Default prompt: Require int rule (fade and standard are invalid)
-# Schedule prompt: Show standard rules and fade prompt in addition to int
 def int_or_fade_rule_prompt(config, rule_type):
+    '''Rule prompt for DimmableLight subclasses (support int and fade rules in
+    addition to standard rules).
+      - Default prompt: Only show int prompt (standard and fade are invalid)
+      - Schedule prompt: Show standard rules in addition to int and fade
+    '''
+
     minimum = config['min_rule']
     maximum = config['max_rule']
 
@@ -177,10 +216,12 @@ def int_or_fade_rule_prompt(config, rule_type):
             return choice
 
 
-# Rule prompt used by ApiTarget device class (supports complicated dict rules)
-# Default prompt: Go directly to API call rule prompt
-# Schedule prompt: Give options for standard rules or API call rule
 def api_target_rule_prompt(config, rule_type):
+    '''Rule prompt for ApiTarget device class (requires nested JSON rules)
+      - Default prompt: Go directly to JSON API call rule menus.
+      - Schedule prompt: Give options for standard rules or JSON API call rule.
+    '''
+
     # Default rule prompt
     if rule_type == "default":
         return api_call_rule_prompt(config)
@@ -190,9 +231,11 @@ def api_target_rule_prompt(config, rule_type):
         return api_target_schedule_rule_prompt(config)
 
 
-# Shows standard rule options in addition to API call option
-# Only used for schedule rules, enabled/disabled are invalid as default_rule
 def api_target_schedule_rule_prompt(config):
+    '''Shows standard rule options in addition to API call option.
+    Only sused for schedule rules, enabled/disabled invalid as default_rule.
+    '''
+
     choice = questionary.select("Select rule", choices=['Enabled', 'Disabled', 'API Call']).unsafe_ask()
     if choice == 'API Call':
         return api_call_rule_prompt(config)
@@ -200,9 +243,11 @@ def api_target_schedule_rule_prompt(config):
         return choice
 
 
-# Prompt user to select API call parameters for both ON and OFF actions
-# Returns complete ApiTarget rule dict
 def api_call_rule_prompt(config):
+    '''Prompts user to select API call parameters for both ON and OFF actions.
+    Returns complete ApiTarget JSON rule.
+    '''
+
     if questionary.confirm("Should an API call be made when the device is turned ON?").unsafe_ask():
         print('\nAPI Target ON action')
         on_action = api_call_prompt(config)
@@ -219,9 +264,11 @@ def api_call_rule_prompt(config):
     return {'on': on_action, 'off': off_action}
 
 
-# Prompt user to select parameters for an individual API call
-# Called by api_call_rule_prompt for both on and off actions
 def api_call_prompt(config):
+    '''Prompts user to select parameters for an individual API call.
+    Called twice by api_call_rule_prompt, returns half of JSON rule.
+    '''
+
     # Read target node config file from disk
     config = load_config_from_ip(config['ip'])
 
@@ -267,10 +314,11 @@ def api_call_prompt(config):
     return rule
 
 
-# Takes IP, finds matching config path in existing_nodes dict, reads
-# config file and returns contents. Used by api_call_prompt to get
-# options, determine correct rule prompt, etc.
 def load_config_from_ip(ip):
+    '''Takes IP, finds matching config path from cli_config.json nodes section,
+    reads matching config file and returns contents.
+    Used by api_call_prompt to get options, determine correct rule prompt, etc.
+    '''
     existing_nodes = get_existing_nodes()
     try:
         for i in existing_nodes:
