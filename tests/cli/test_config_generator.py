@@ -259,6 +259,17 @@ class TestGenerateConfigFile(TestCase):
         # Mock replaces .ask() method to simulate user input
         self.mock_ask = MagicMock()
 
+    @classmethod
+    def tearDownClass(cls):
+        # Delete unit-test-existing-config.json from disk if it still exists
+        config_directory = mock_cli_config['config_directory']
+        path = os.path.join(config_directory, 'unit-test-existing-config.json')
+        if os.path.exists(path):
+            os.remove(path)
+        # Delete fake_config_file.txt from disk if it still exists
+        if os.path.exists('fake_config_file.txt'):
+            os.remove('fake_config_file.txt')
+
     def test_run_prompt_method(self):
         # Mock all methods called by run_prompt, mock validator to return True
         with patch.object(self.generator, 'metadata_prompt') as mock_metadata_prompt, \
@@ -1147,7 +1158,7 @@ class TestGenerateConfigFile(TestCase):
         }
 
         # Get path to config directory, create if doesn't exist
-        config_directory = os.path.join(repo, 'config_files')
+        config_directory = mock_cli_config['config_directory']
         if not os.path.exists(config_directory):
             os.mkdir(config_directory)
 
@@ -1205,11 +1216,11 @@ class TestGenerateConfigFile(TestCase):
 
         # Attempt to instantiate with non-json config file, confirm raises error
         with self.assertRaises(SystemExit):
-            GenerateConfigFile('/does/not/exist.json')
+            GenerateConfigFile('fake_config_file.txt')
 
-        # Attempt to instantiate with invalid path, confirm raises error
+        # Attempt to instantiate with non-existing config file, confirm raises error
         with self.assertRaises(SystemExit):
-            GenerateConfigFile('/does/not/exist')
+            GenerateConfigFile('/does/not/exist.json')
 
         # Delete fake config
         os.remove('fake_config_file.txt')
@@ -1223,6 +1234,14 @@ class TestRegressions(TestCase):
 
         # Mock replaces .ask() method to simulate user input
         self.mock_ask = MagicMock()
+
+    @classmethod
+    def tearDownClass(cls):
+        # Delete unit-test-existing-config.json from disk if it still exists
+        config_directory = mock_cli_config['config_directory']
+        path = os.path.join(config_directory, 'unit-test-existing-config.json')
+        if os.path.exists(path):
+            os.remove(path)
 
     # Original bug: Thermostat option remained in menu after adding to config,
     # allowing user to configure multiple thermostats (not supported)
@@ -1303,7 +1322,7 @@ class TestRegressions(TestCase):
         }
 
         # Get path to config directory, create if doesn't exist
-        config_directory = os.path.join(repo, 'config_files')
+        config_directory = mock_cli_config['config_directory']
         if not os.path.exists(config_directory):
             os.mkdir(config_directory)
 
@@ -1365,7 +1384,7 @@ class TestRegressions(TestCase):
         }
 
         # Get path to config directory, create if doesn't exist
-        config_directory = os.path.join(repo, 'config_files')
+        config_directory = mock_cli_config['config_directory']
         if not os.path.exists(config_directory):
             os.mkdir(config_directory)
 
@@ -1407,6 +1426,9 @@ class TestRegressions(TestCase):
             # Confirm SI7021 option appeared (config no longer contains si7021)
             _, kwargs = mock_select.call_args
             self.assertFalse('SI7021 Temperature Sensor' in kwargs['choices'])
+
+        # Delete test config
+        os.remove(path)
 
     # Original bug: IntRange was used for PIR and Thermostat rules, preventing
     # float rules from being configured. Now uses FloatRange.

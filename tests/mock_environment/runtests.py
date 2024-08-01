@@ -115,6 +115,7 @@ async def run_tests():
         os.remove('config.json')
         os.remove('wifi_credentials.json')
         os.remove('app.log')
+        os.remove('webrepl_cfg.py')
     except FileNotFoundError:
         pass
 
