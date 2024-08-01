@@ -2,9 +2,13 @@ import os
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
 from questionary import ValidationError
-from validate_config import validate_full_config
-from helper_functions import load_unit_test_config
-from config_generator import GenerateConfigFile, IntRange, FloatRange, MinLength, NicknameValidator
+from config_generator import (
+    GenerateConfigFile,
+    IntRange,
+    FloatRange,
+    MinLength,
+    NicknameValidator
+)
 from config_rule_prompts import (
     api_call_prompt,
     api_target_schedule_rule_prompt,
@@ -55,203 +59,173 @@ class TestValidators(TestCase):
         validator = IntRange(1, 100)
 
         # Should accept integers between 1 and 100
-        user_input = SimulatedInput("2")
-        self.assertTrue(validator.validate(user_input))
-        user_input = SimulatedInput("75")
-        self.assertTrue(validator.validate(user_input))
+        self.assertTrue(validator.validate(SimulatedInput("2")))
+        self.assertTrue(validator.validate(SimulatedInput("75")))
 
         # Should reject integers outside range
-        user_input = SimulatedInput("999")
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput("999"))
 
-        user_input = SimulatedInput("-5")
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput("-5"))
 
         # Should reject string
-        user_input = SimulatedInput("Fifty")
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput("Fifty"))
 
     def test_float_range_validator(self):
         # Create validator accepting values between 1 and 100
         validator = FloatRange(1, 10)
 
         # Should accept integers and floats between 1 and 10
-        user_input = SimulatedInput("2")
-        self.assertTrue(validator.validate(user_input))
-        user_input = SimulatedInput("5.5")
-        self.assertTrue(validator.validate(user_input))
-        user_input = SimulatedInput("10.0")
-        self.assertTrue(validator.validate(user_input))
+        self.assertTrue(validator.validate(SimulatedInput("2")))
+        self.assertTrue(validator.validate(SimulatedInput("5.5")))
+        self.assertTrue(validator.validate(SimulatedInput("10.0")))
 
         # Should reject integers and floats outside range
-        user_input = SimulatedInput("15")
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput("15"))
 
-        user_input = SimulatedInput("-0.5")
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput("-0.5"))
 
         # Should reject string
-        user_input = SimulatedInput("Five")
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput("Five"))
 
     def test_min_length_validator(self):
         # Create validator requiring at least 5 characters
         validator = MinLength(5)
 
         # Should accept strings with 5 or more characters
-        user_input = SimulatedInput("String")
-        self.assertTrue(validator.validate(user_input))
-        user_input = SimulatedInput("12345")
-        self.assertTrue(validator.validate(user_input))
-        user_input = SimulatedInput("Super long string way longer than the minimum")
-        self.assertTrue(validator.validate(user_input))
+        self.assertTrue(validator.validate(SimulatedInput("String")))
+        self.assertTrue(validator.validate(SimulatedInput("12345")))
+        self.assertTrue(validator.validate(SimulatedInput(
+            "Super long string way longer than the minimum"
+        )))
 
         # Should reject short strings, integers, etc
-        user_input = SimulatedInput("x")
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput("x"))
 
-        user_input = SimulatedInput(5)
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput(5))
 
     def test_nickname_validator(self):
         # Create validator with 3 already-used nicknames
         validator = NicknameValidator(['Lights', 'Fan', 'Thermostat'])
 
         # Should accept unused nicknames
-        user_input = SimulatedInput("Dimmer")
-        self.assertTrue(validator.validate(user_input))
-        user_input = SimulatedInput("Lamp")
-        self.assertTrue(validator.validate(user_input))
+        self.assertTrue(validator.validate(SimulatedInput("Dimmer")))
+        self.assertTrue(validator.validate(SimulatedInput("Lamp")))
 
         # Should reject already-used nicknames
-        user_input = SimulatedInput("Lights")
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput("Lights"))
 
         # Should reject empty string
-        user_input = SimulatedInput("")
         with self.assertRaises(ValidationError):
-            validator.validate(user_input)
+            validator.validate(SimulatedInput(""))
 
 
-# Test the validate_full_config function called before saving config to disk
-class ValidateConfigTests(TestCase):
+class TestRulePrompts(TestCase):
     def setUp(self):
-        self.valid_config = load_unit_test_config()
+        # Mock replaces .ask() method to simulate user input
+        self.mock_ask = MagicMock()
 
-    def test_valid_config(self):
-        result = validate_full_config(self.valid_config)
-        self.assertTrue(result)
+    def test_int_rule_prompt(self):
+        # Create mock config object with min/max rules
+        config = {
+            'min_rule': '1',
+            'max_rule': '100'
+        }
 
-    def test_missing_keys(self):
-        del self.valid_config['metadata']['id']
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Missing required key in metadata section')
+        # Mock user input for default rule
+        self.mock_ask.unsafe_ask.return_value = '90'
 
-        del self.valid_config['metadata']
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Missing required top-level metadata key')
+        # Run default prompt with mocked user input, confirm return value
+        with patch('questionary.text', return_value=self.mock_ask):
+            rule = int_rule_prompt(config, "default")
+            self.assertEqual(rule, '90')
 
-    def test_invalid_floor(self):
-        self.valid_config['metadata']['floor'] = 'top'
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Invalid floor, must be integer')
+        # Mock user input for schedule rule
+        self.mock_ask.unsafe_ask.return_value = 'Enabled'
 
-    def test_duplicate_nicknames(self):
-        self.valid_config['device4']['nickname'] = self.valid_config['device1']['nickname']
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Contains duplicate nicknames')
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask):
+            rule = int_rule_prompt(config, "schedule")
+            self.assertEqual(rule, 'Enabled')
 
-    def test_duplicate_pins(self):
-        self.valid_config['sensor2']['pin'] = self.valid_config['sensor1']['pin']
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Contains duplicate pins')
+        # Mock user input for schedule rule
+        self.mock_ask.unsafe_ask.side_effect = ['Int', '50']
 
-    def test_invalid_device_pin(self):
-        self.valid_config['device1']['pin'] = '14'
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, f'Invalid device pin {self.valid_config["device1"]["pin"]} used')
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+            rule = int_rule_prompt(config, "schedule")
+            self.assertEqual(rule, '50')
 
-    def test_invalid_sensor_pin(self):
-        self.valid_config['sensor1']['pin'] = '3'
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, f'Invalid sensor pin {self.valid_config["sensor1"]["pin"]} used')
+    def test_float_rule_prompt(self):
+        # Create mock config object with thermostat parameters
+        config = {
+            '_type': 'dht22',
+            'units': 'fahrenheit'
+        }
 
-    def test_noninteger_pin(self):
-        self.valid_config['sensor1']['pin'] = 'three'
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Invalid pin (non-integer)')
+        # Mock user input for default rule
+        self.mock_ask.unsafe_ask.return_value = '70'
 
-    def test_invalid_device_type(self):
-        self.valid_config['device1']['_type'] = 'nuclear'
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, f'Invalid device type {self.valid_config["device1"]["_type"]} used')
+        # Run default prompt with mocked user input, confirm return value
+        with patch('questionary.text', return_value=self.mock_ask):
+            rule = float_rule_prompt(config, "default")
+            self.assertEqual(rule, '70')
 
-    def test_invalid_sensor_type(self):
-        self.valid_config['sensor1']['_type'] = 'ozone-sensor'
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, f'Invalid sensor type {self.valid_config["sensor1"]["_type"]} used')
+        # Mock user input for standard schedule rule
+        self.mock_ask.unsafe_ask.return_value = 'Enabled'
 
-    def test_invalid_ip(self):
-        self.valid_config['device1']['ip'] = '192.168.1.500'
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, f'Invalid IP {self.valid_config["device1"]["ip"]}')
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask):
+            rule = float_rule_prompt(config, "schedule")
+            self.assertEqual(rule, 'Enabled')
 
-    def test_thermostat_tolerance_out_of_range(self):
-        self.valid_config['sensor5']['tolerance'] = 12.5
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Thermostat tolerance out of range (0.1 - 10.0)')
+        # Change units to kelvin, mock user input for schedule rule
+        config['units'] = 'kelvin'
+        self.mock_ask.unsafe_ask.side_effect = ['Float', '300']
 
-    def test_invalid_thermostat_tolerance(self):
-        self.valid_config['sensor5']['tolerance'] = 'low'
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Thermostat tolerance must be int or float')
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+            rule = float_rule_prompt(config, "schedule")
+            self.assertEqual(rule, '300')
 
-    def test_pwm_min_greater_than_max(self):
-        self.valid_config['device6']['min_rule'] = 1023
-        self.valid_config['device6']['max_rule'] = 500
-        self.valid_config['device6']['default_rule'] = 700
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'min_rule cannot be greater than max_rule')
+    def test_string_rule_prompt(self):
+        # Mock user input for default rule
+        self.mock_ask.unsafe_ask.return_value = 'http://192.168.1.123:8123/endpoint'
 
-    def test_pwm_limits_negative(self):
-        self.valid_config['device6']['min_rule'] = -50
-        self.valid_config['device6']['max_rule'] = -5
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Rule limits cannot be less than 0')
+        # Run default prompt with mocked user input, confirm return value
+        with patch('questionary.text', return_value=self.mock_ask):
+            rule = string_rule_prompt({}, "default")
+            self.assertEqual(rule, 'http://192.168.1.123:8123/endpoint')
 
-    def test_pwm_limits_over_max(self):
-        self.valid_config['device6']['min_rule'] = 1023
-        self.valid_config['device6']['max_rule'] = 4096
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Rule limits cannot be greater than 1023')
+        # Mock user input for schedule rule
+        self.mock_ask.unsafe_ask.return_value = 'Enabled'
 
-    def test_pwm_invalid_default_rule(self):
-        self.valid_config['device6']['min_rule'] = 500
-        self.valid_config['device6']['max_rule'] = 1000
-        self.valid_config['device6']['default_rule'] = 1100
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Cabinet Lights: Invalid default rule 1100')
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask):
+            rule = string_rule_prompt({}, "schedule")
+            self.assertEqual(rule, 'Enabled')
 
-    def test_pwm_invalid_schedule_rule(self):
-        self.valid_config['device6']['min_rule'] = 500
-        self.valid_config['device6']['max_rule'] = 1000
-        self.valid_config['device6']['schedule']['01:00'] = 1023
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Cabinet Lights: Invalid schedule rule 1023')
+        # Mock user input for schedule rule
+        self.mock_ask.unsafe_ask.side_effect = [
+            'String',
+            'http://192.168.1.123:8123/endpoint'
+        ]
 
-    def test_pwm_noninteger_limit(self):
-        self.valid_config['device6']['min_rule'] = 'off'
-        result = validate_full_config(self.valid_config)
-        self.assertEqual(result, 'Invalid rule limits, both must be int between 0 and 1023')
+        # Run schedule prompt with mocked user input, confirm return value
+        with patch('questionary.select', return_value=self.mock_ask), \
+             patch('questionary.text', return_value=self.mock_ask):
+            rule = string_rule_prompt({}, "schedule")
+            self.assertEqual(rule, 'http://192.168.1.123:8123/endpoint')
 
 
 class TestGenerateConfigFile(TestCase):
@@ -338,9 +312,10 @@ class TestGenerateConfigFile(TestCase):
             self.generator.metadata_prompt()
 
         # Confirm responses added to correct keys in dict
-        self.assertEqual(self.generator.config['metadata']['id'], 'Test ID')
-        self.assertEqual(self.generator.config['metadata']['floor'], '2')
-        self.assertEqual(self.generator.config['metadata']['location'], 'Test Environment')
+        metadata = self.generator.config['metadata']
+        self.assertEqual(metadata['id'], 'Test ID')
+        self.assertEqual(metadata['floor'], '2')
+        self.assertEqual(metadata['location'], 'Test Environment')
 
     def test_sensor_type(self):
         self.mock_ask.unsafe_ask.return_value = 'MotionSensor'
@@ -930,7 +905,10 @@ class TestGenerateConfigFile(TestCase):
             self.assertTrue(self.mock_ask.called_once)
 
         # Confirm both devices added to sensor targets
-        self.assertEqual(self.generator.config['sensor1']['targets'], ['device1', 'device2'])
+        self.assertEqual(
+            self.generator.config['sensor1']['targets'],
+            ['device1', 'device2']
+        )
 
     def test_select_sensor_targets_no_targets(self):
         # Set partial config with no devices, only sensors
@@ -1068,9 +1046,12 @@ class TestGenerateConfigFile(TestCase):
              patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
             rule = api_target_schedule_rule_prompt(mock_config)
-            self.assertEqual(rule, {"on": ["enable", "device1"], "off": ["set_rule", "sensor1", "50"]})
+            self.assertEqual(
+                rule,
+                {"on": ["enable", "device1"], "off": ["set_rule", "sensor1", "50"]}
+            )
 
-        # Call again with simulated input selecting IR Blaster options, confirm correct rule returned
+        # Call again with simulated input selecting IR Blaster options
         self.mock_ask.unsafe_ask.side_effect = [
             'API Call',
             True,
@@ -1085,6 +1066,7 @@ class TestGenerateConfigFile(TestCase):
              patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
             rule = api_target_schedule_rule_prompt(mock_config)
+            # Confirm correct rule returned
             self.assertEqual(rule, {"on": ["ir_key", "tv", "power"], "off": ["ignore"]})
 
         # Call schedule rule router with simulated input selecting 'Enabled' option
@@ -1097,7 +1079,8 @@ class TestGenerateConfigFile(TestCase):
             rule = schedule_rule_prompt_router(mock_config)
             self.assertEqual(rule, 'Enabled')
 
-        # Call default rule router with simulated input selecting ignore option + endpoint requiring extra arg
+        # Call default rule router with simulated input selecting ignore
+        # option + endpoint requiring extra arg
         self.mock_ask.unsafe_ask.side_effect = [
             False,
             True,
@@ -1176,8 +1159,9 @@ class TestGenerateConfigFile(TestCase):
         )
         self.assertTrue(os.path.exists(path))
 
-        # Instantiate new generator with path to existing config, confirm edit_mode and config attributes
+        # Instantiate new generator with path to existing config
         generator = GenerateConfigFile(path)
+        # Confirm edit_mode and config attributes
         self.assertTrue(generator.edit_mode)
         self.assertEqual(generator.config, self.generator.config)
 
@@ -1207,7 +1191,10 @@ class TestGenerateConfigFile(TestCase):
             self.assertTrue(mock_validate_full_config.called_once)
 
             # Confirm prompt methods were called with default values from existing config
-            self.assertEqual(mock_metadata_prompt.call_args_list[0][0], ("Unit Test Existing Config", "0", "Unit Test"))
+            self.assertEqual(
+                mock_metadata_prompt.call_args_list[0][0],
+                ("Unit Test Existing Config", "0", "Unit Test")
+            )
 
             # Confirm passed_validation set to True (mock)
             self.assertTrue(generator.passed_validation)
@@ -1230,427 +1217,3 @@ class TestGenerateConfigFile(TestCase):
 
         # Delete fake config
         os.remove('fake_config_file.txt')
-
-
-class TestRegressions(TestCase):
-    def setUp(self):
-        # Create instance with mocked keywords
-        self.generator = GenerateConfigFile()
-        self.generator.schedule_keyword_options = ['sunrise', 'sunset']
-
-        # Mock replaces .ask() method to simulate user input
-        self.mock_ask = MagicMock()
-
-        # Path to mock existing config file (created in tests)
-        self.existing_config_path = os.path.join(
-            mock_cli_config['config_directory'],
-            'unit-test-existing-config.json'
-        )
-
-    @classmethod
-    def tearDownClass(cls):
-        # Delete unit-test-existing-config.json from disk if it still exists
-        existing_config_path = os.path.join(
-            mock_cli_config['config_directory'],
-            'unit-test-existing-config.json'
-        )
-        if os.path.exists(existing_config_path):
-            os.remove(existing_config_path)
-
-    # Original bug: Thermostat option remained in menu after adding to config,
-    # allowing user to configure multiple thermostats (not supported)
-    def test_prevent_multiple_thermostats(self):
-        sensor_config = {
-            "_type": "si7021",
-            "nickname": "Thermostat",
-            "default_rule": "70",
-            "mode": "cool",
-            "tolerance": "1.5",
-            "units": "fahrenheit",
-            "schedule": {
-                "10:00": "75"
-            },
-            "targets": []
-        }
-
-        # Mock ask to return parameters in expected order
-        self.mock_ask.unsafe_ask.side_effect = [
-            'SI7021 Temperature Sensor',
-            'Thermostat',
-            'fahrenheit',
-            '70',
-            'cool',
-            '1.5',
-            'Yes',
-            'Timestamp',
-            '10:00',
-            'Float',
-            '75',
-            'No'
-        ]
-        with patch('questionary.select', return_value=self.mock_ask) as mock_select, \
-             patch('questionary.text', return_value=self.mock_ask):
-
-            # Run prompt, confirm output matches expected
-            self.generator.config['sensor1'] = self.generator.configure_sensor()
-            self.assertEqual(self.generator.config['sensor1'], sensor_config)
-
-        # Simulate user attempting to add a duplicate SI7021
-        self.mock_ask.unsafe_ask.side_effect = ['SI7021 Temperature Sensor']
-        with patch('questionary.select', return_value=self.mock_ask) as mock_select:
-            # Run sensor type select prompt
-            self.generator.sensor_type()
-
-            # Confirm SI7021 was NOT in options list
-            _, kwargs = mock_select.call_args
-            self.assertFalse('SI7021 Temperature Sensor' in kwargs['choices'])
-
-    # Original bug: SI7021 was removed from sensor options after first instance
-    # added, but was not removed when editing an existing config that contained
-    # an SI7021. This allowed the user to configure multiple (not supported).
-    def test_prevent_multiple_thermostats_edit_existing(self):
-        # Simulate user already completed all prompts, added si7021
-        self.generator.config = {
-            "metadata": {
-                "id": "Unit Test Existing Config",
-                "floor": "0",
-                "location": "Unit Test",
-                "schedule_keywords": {
-                    "morning": "11:30",
-                    "relax": "23:00",
-                    "sleep": "04:15",
-                    "sunrise": "06:00",
-                    "sunset": "18:00"
-                }
-            },
-            "sensor1": {
-                "_type": "si7021",
-                "nickname": "Thermostat",
-                "default_rule": "70",
-                "mode": "cool",
-                "tolerance": "1.5",
-                "units": "fahrenheit",
-                "schedule": {},
-                "targets": []
-            }
-        }
-
-        # Mock get_cli_config to return config directory path, write to disk
-        with patch('config_generator.get_cli_config', return_value={
-            'config_directory': mock_cli_config['config_directory']
-        }):
-            self.generator.write_to_disk()
-
-        # Confirm file exists
-        self.assertTrue(os.path.exists(self.existing_config_path))
-
-        # Instantiate new generator with path to existing config (simulate editing)
-        generator = GenerateConfigFile(self.existing_config_path)
-        # Confirm edit_mode and config attributes
-        self.assertTrue(generator.edit_mode)
-        self.assertEqual(generator.config, self.generator.config)
-
-        # Simulate user attempting to add a duplicate SI7021
-        self.mock_ask.unsafe_ask.side_effect = ['SI7021 Temperature Sensor']
-        with patch('questionary.select', return_value=self.mock_ask) as mock_select:
-            # Run sensor type select prompt
-            generator.sensor_type()
-
-            # Confirm SI7021 was NOT in options list
-            _, kwargs = mock_select.call_args
-            self.assertFalse('SI7021 Temperature Sensor' in kwargs['choices'])
-
-        # Delete test config
-        os.remove(self.existing_config_path)
-
-    # Original bug: Selecting SI7021 permanently removed the option from sensor
-    # type options. If user changed mind and deleted SI7021 the option would
-    # not reappear, making it impossible to configure without starting over.
-    def test_allow_si7021_after_removing_existing_si7021(self):
-        # Simulate user already completed all prompts, added si7021
-        self.generator.config = {
-            "metadata": {
-                "id": "Unit Test Existing Config",
-                "floor": "0",
-                "location": "Unit Test",
-                "schedule_keywords": {
-                    "morning": "11:30",
-                    "relax": "23:00",
-                    "sleep": "04:15",
-                    "sunrise": "06:00",
-                    "sunset": "18:00"
-                }
-            },
-            "sensor1": {
-                "_type": "si7021",
-                "nickname": "Thermostat",
-                "default_rule": "70",
-                "mode": "cool",
-                "tolerance": "1.5",
-                "units": "fahrenheit",
-                "schedule": {},
-                "targets": []
-            }
-        }
-
-        # Mock get_cli_config to return config directory path, write to disk
-        with patch('config_generator.get_cli_config', return_value={
-            'config_directory': mock_cli_config['config_directory']
-        }):
-            self.generator.write_to_disk()
-
-        # Confirm file exists
-        self.assertTrue(os.path.exists(self.existing_config_path))
-
-        # Instantiate new generator with path to existing config, confirm edit_mode and config attributes
-        generator = GenerateConfigFile(self.existing_config_path)
-        self.assertTrue(generator.edit_mode)
-        self.assertEqual(generator.config, self.generator.config)
-
-        # Mock user deleting existing SI7021 sensor
-        self.mock_ask.unsafe_ask.return_value = ['Thermostat (si7021)']
-        with patch('questionary.checkbox', return_value=self.mock_ask):
-            generator.delete_devices_and_sensors()
-            self.assertTrue(self.mock_ask.called_once)
-
-        # Mock user adding another si7021 (option should reappear)
-        self.mock_ask.unsafe_ask.side_effect = [
-            'SI7021 Temperature Sensor',
-            'Thermostat',
-            'fahrenheit',
-            '70',
-            'cool',
-            '1.5',
-            'No'
-        ]
-        with patch('questionary.select', return_value=self.mock_ask) as mock_select, \
-             patch('questionary.text', return_value=self.mock_ask):
-
-            # Run prompt
-            generator.config['sensor1'] = generator.configure_sensor()
-
-            # Confirm SI7021 option appeared (config no longer contains si7021)
-            _, kwargs = mock_select.call_args
-            self.assertFalse('SI7021 Temperature Sensor' in kwargs['choices'])
-
-        # Delete test config
-        os.remove(self.existing_config_path)
-
-    # Original bug: IntRange was used for PIR and Thermostat rules, preventing
-    # float rules from being configured. Now uses FloatRange.
-    def test_wrong_rule_type(self):
-        # Simulate user at rule prompt after selecting thermostat
-        mock_config = {
-            "_type": "si7021",
-            "nickname": "Thermostat",
-            "default_rule": "placeholder",
-            "mode": "cool",
-            "tolerance": "placeholder",
-            "schedule": {},
-            "targets": []
-        }
-
-        # Call default rule router with simulated float rule input
-        self.mock_ask.unsafe_ask.side_effect = ['69.5']
-        with patch('questionary.text', return_value=self.mock_ask), \
-             patch('config_rule_prompts.IntRange') as mock_int_range, \
-             patch('config_rule_prompts.FloatRange') as mock_float_range:
-
-            # Confirm FloatRange called, IntRange not called
-            rule = default_rule_prompt_router(mock_config)
-            self.assertEqual(rule, '69.5')
-            self.assertTrue(mock_float_range.called)
-            self.assertFalse(mock_int_range.called)
-
-        # Call schedule rule router with simulated float rule input
-        self.mock_ask.unsafe_ask.side_effect = ['Float', '69.5']
-        with patch('questionary.select', return_value=self.mock_ask), \
-             patch('questionary.text', return_value=self.mock_ask), \
-             patch('config_rule_prompts.IntRange') as mock_int_range, \
-             patch('config_rule_prompts.FloatRange') as mock_float_range:
-
-            # Confirm FloatRange called, IntRange not called
-            rule = schedule_rule_prompt_router(mock_config)
-            self.assertEqual(rule, '69.5')
-            self.assertTrue(mock_float_range.called)
-            self.assertFalse(mock_int_range.called)
-
-        # Repeat both tests with motion sensor
-        mock_config = {
-            "_type": "pir",
-            "nickname": "Motion",
-            "default_rule": "placeholder",
-            "pin": "4",
-            "schedule": {},
-            "targets": []
-        }
-
-        # Call default rule router with simulated float rule input
-        self.mock_ask.unsafe_ask.side_effect = ['5.5']
-        with patch('questionary.text', return_value=self.mock_ask), \
-             patch('config_rule_prompts.IntRange') as mock_int_range, \
-             patch('config_rule_prompts.FloatRange') as mock_float_range:
-
-            # Confirm FloatRange called, IntRange not called
-            rule = default_rule_prompt_router(mock_config)
-            self.assertEqual(rule, '5.5')
-            self.assertTrue(mock_float_range.called)
-            self.assertFalse(mock_int_range.called)
-
-        # Call schedule rule router with simulated float rule input
-        self.mock_ask.unsafe_ask.side_effect = ['Float', '5.5']
-        with patch('questionary.select', return_value=self.mock_ask), \
-             patch('questionary.text', return_value=self.mock_ask), \
-             patch('config_rule_prompts.IntRange') as mock_int_range, \
-             patch('config_rule_prompts.FloatRange') as mock_float_range:
-
-            # Confirm FloatRange called, IntRange not called
-            rule = schedule_rule_prompt_router(mock_config)
-            self.assertEqual(rule, '5.5')
-            self.assertTrue(mock_float_range.called)
-            self.assertFalse(mock_int_range.called)
-
-    # Original bug: When devices/sensors were deleted their pins and nicknames
-    # were not removed from used_pins and used_nicknames, preventing the user
-    # from selecting them again
-    def test_unusable_pin_and_nicknames(self):
-        # Set partial config with 3 used pins and nicknames
-        self.generator.config = {
-            "metadata": {
-                "id": "Target Test",
-                "floor": "1",
-                "location": "Test Environment"
-            },
-            "device1": {
-                "_type": "mosfet",
-                "nickname": "Target1",
-                "default_rule": "Enabled",
-                "pin": "4",
-                "schedule": {}
-            },
-            "device2": {
-                "_type": "mosfet",
-                "nickname": "Target2",
-                "default_rule": "Enabled",
-                "pin": "13",
-                "schedule": {}
-            },
-            "sensor1": {
-                "_type": "pir",
-                "nickname": "Sensor",
-                "pin": "5",
-                "default_rule": "5",
-                "schedule": {},
-                "targets": []
-            }
-        }
-        # Add pins and nicknames to used lists
-        self.generator.used_pins = ["4", "13", "5"]
-        self.generator.used_nicknames = ["Target1", "Target2", "Sensor"]
-
-        # Mock user deleting all devices and sensors, run prompt
-        self.mock_ask.unsafe_ask.return_value = ['Target1 (mosfet)', 'Target2 (mosfet)', 'Sensor (pir)']
-        with patch('questionary.checkbox', return_value=self.mock_ask):
-            self.generator.delete_devices_and_sensors()
-            self.assertTrue(self.mock_ask.called_once)
-
-        # Confirm used pins and nickname lists are now empty
-        self.assertEqual(self.generator.used_pins, [])
-        self.assertEqual(self.generator.used_nicknames, [])
-
-
-class TestRulePrompts(TestCase):
-    def setUp(self):
-        # Mock replaces .ask() method to simulate user input
-        self.mock_ask = MagicMock()
-
-    def test_int_rule_prompt(self):
-        # Create mock config object with min/max rules
-        config = {
-            'min_rule': '1',
-            'max_rule': '100'
-        }
-
-        # Mock user input for default rule
-        self.mock_ask.unsafe_ask.return_value = '90'
-
-        # Run default prompt with mocked user input, confirm return value
-        with patch('questionary.text', return_value=self.mock_ask):
-            rule = int_rule_prompt(config, "default")
-            self.assertEqual(rule, '90')
-
-        # Mock user input for schedule rule
-        self.mock_ask.unsafe_ask.return_value = 'Enabled'
-
-        # Run schedule prompt with mocked user input, confirm return value
-        with patch('questionary.select', return_value=self.mock_ask):
-            rule = int_rule_prompt(config, "schedule")
-            self.assertEqual(rule, 'Enabled')
-
-        # Mock user input for schedule rule
-        self.mock_ask.unsafe_ask.side_effect = ['Int', '50']
-
-        # Run schedule prompt with mocked user input, confirm return value
-        with patch('questionary.select', return_value=self.mock_ask), \
-             patch('questionary.text', return_value=self.mock_ask):
-            rule = int_rule_prompt(config, "schedule")
-            self.assertEqual(rule, '50')
-
-    def test_float_rule_prompt(self):
-        # Create mock config object with thermostat parameters
-        config = {
-            '_type': 'dht22',
-            'units': 'fahrenheit'
-        }
-
-        # Mock user input for default rule
-        self.mock_ask.unsafe_ask.return_value = '70'
-
-        # Run default prompt with mocked user input, confirm return value
-        with patch('questionary.text', return_value=self.mock_ask):
-            rule = float_rule_prompt(config, "default")
-            self.assertEqual(rule, '70')
-
-        # Mock user input for standard schedule rule
-        self.mock_ask.unsafe_ask.return_value = 'Enabled'
-
-        # Run schedule prompt with mocked user input, confirm return value
-        with patch('questionary.select', return_value=self.mock_ask):
-            rule = float_rule_prompt(config, "schedule")
-            self.assertEqual(rule, 'Enabled')
-
-        # Change units to kelvin, mock user input for schedule rule
-        config['units'] = 'kelvin'
-        self.mock_ask.unsafe_ask.side_effect = ['Float', '300']
-
-        # Run schedule prompt with mocked user input, confirm return value
-        with patch('questionary.select', return_value=self.mock_ask), \
-             patch('questionary.text', return_value=self.mock_ask):
-            rule = float_rule_prompt(config, "schedule")
-            self.assertEqual(rule, '300')
-
-    def test_string_rule_prompt(self):
-        # Mock user input for default rule
-        self.mock_ask.unsafe_ask.return_value = 'http://192.168.1.123:8123/endpoint'
-
-        # Run default prompt with mocked user input, confirm return value
-        with patch('questionary.text', return_value=self.mock_ask):
-            rule = string_rule_prompt({}, "default")
-            self.assertEqual(rule, 'http://192.168.1.123:8123/endpoint')
-
-        # Mock user input for schedule rule
-        self.mock_ask.unsafe_ask.return_value = 'Enabled'
-
-        # Run schedule prompt with mocked user input, confirm return value
-        with patch('questionary.select', return_value=self.mock_ask):
-            rule = string_rule_prompt({}, "schedule")
-            self.assertEqual(rule, 'Enabled')
-
-        # Mock user input for schedule rule
-        self.mock_ask.unsafe_ask.side_effect = ['String', 'http://192.168.1.123:8123/endpoint']
-
-        # Run schedule prompt with mocked user input, confirm return value
-        with patch('questionary.select', return_value=self.mock_ask), \
-             patch('questionary.text', return_value=self.mock_ask):
-            rule = string_rule_prompt({}, "schedule")
-            self.assertEqual(rule, 'http://192.168.1.123:8123/endpoint')
