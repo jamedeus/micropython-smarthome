@@ -62,6 +62,14 @@ def get_config_filename(friendly_name):
     return filename
 
 
+def get_config_filepath(friendly_name):
+    '''Takes friendly_name, returns path to config file. Does not check if file
+    exists, can be used to get path for new file or to find an existing file.
+    '''
+    filename = get_config_filename(friendly_name)
+    return os.path.join(get_cli_config()['config_directory'], filename)
+
+
 def get_config_param_list(config, param):
     '''Takes config file and name of param that exists in subsections.
     Returns list of values for each occurence of the param name.

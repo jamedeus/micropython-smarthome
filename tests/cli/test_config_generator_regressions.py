@@ -138,7 +138,7 @@ class TestRegressions(TestCase):
         }
 
         # Mock get_cli_config to return config directory path, write to disk
-        with patch('config_generator.get_cli_config', return_value={
+        with patch('helper_functions.get_cli_config', return_value={
             'config_directory': mock_cli_config['config_directory']
         }):
             self.generator.write_to_disk()
@@ -196,7 +196,7 @@ class TestRegressions(TestCase):
         }
 
         # Mock get_cli_config to return config directory path, write to disk
-        with patch('config_generator.get_cli_config', return_value={
+        with patch('helper_functions.get_cli_config', return_value={
             'config_directory': mock_cli_config['config_directory']
         }):
             self.generator.write_to_disk()

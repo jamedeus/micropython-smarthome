@@ -20,7 +20,12 @@ Reupload config files to all nodes in cli_config.json
 import os
 import json
 import argparse
-from helper_functions import valid_ip, get_cli_config, add_node_to_cli_config
+from helper_functions import (
+    valid_ip,
+    get_cli_config,
+    add_node_to_cli_config,
+    get_config_filepath
+)
 from provision_tools import get_modules, dependencies, core_modules, provision
 
 
@@ -70,7 +75,7 @@ The password flag is optional and works with all modes''',
     if bool(args.config):
         # If file not found check if it exists in config_directory
         if not os.path.exists(args.config):
-            args.config = os.path.join(cli_config['config_directory'], args.config)
+            args.config = get_config_filepath(args.config)
             if not os.path.exists(args.config):
                 # Throw error if still not found in config directory
                 parser.error('Could not find config file')
@@ -124,7 +129,7 @@ class Provisioner():
             print(f"\n{i}\n")
 
             # Load config from disk
-            with open(cli_config['nodes'][i]['config'], 'r') as file:
+            with open(get_config_filepath(i), 'r', encoding='utf-8') as file:
                 config = json.load(file)
 
             # Get modules
@@ -137,7 +142,7 @@ class Provisioner():
     # Reprovision an existing node, accepts friendly name as arg
     def upload_node(self, node):
         # Load requested node config from disk
-        with open(cli_config['nodes'][node]['config'], 'r') as file:
+        with open(get_config_filepath(node), 'r', encoding='utf-8') as file:
             config = json.load(file)
 
         # Get modules, upload

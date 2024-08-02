@@ -2,13 +2,12 @@
 
 '''Main CLI script'''
 
-import os
 import json
 import requests
 from helper_functions import (
     get_cli_config,
     write_cli_config,
-    get_config_filename
+    get_config_filepath
 )
 
 
@@ -55,10 +54,7 @@ def download_all_node_config_files():
         config = download_node_config_file(params['ip'])
         if config:
             # Create JSON config file in config_directory
-            config_path = os.path.join(
-                cli_config['config_directory'],
-                get_config_filename(node)
-            )
+            config_path = get_config_filepath(node)
             with open(config_path, 'w', encoding='utf-8') as file:
                 json.dump(config, file)
 

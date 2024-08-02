@@ -32,8 +32,7 @@ from helper_functions import (
     is_int,
     get_schedule_keywords_dict,
     get_existing_nodes,
-    get_config_filename,
-    get_cli_config
+    get_config_filepath
 )
 from config_prompt_validators import (
     IntRange,
@@ -203,15 +202,10 @@ class GenerateConfigFile:
     def write_to_disk(self):
         '''Writes self.config to config_directory set in cli_config.json.'''
 
-        # Get filename (all lowercase, replace spaces with hyphens)
-        filename = get_config_filename(self.config["metadata"]["id"])
-
-        # Write to config_directory (set in cli_config.json)
-        config_path = os.path.join(get_cli_config()['config_directory'], filename)
+        config_path = get_config_filepath(self.config["metadata"]["id"])
         with open(config_path, 'w', encoding='utf-8') as file:
             json.dump(self.config, file)
-
-        print(f"\nConfig saved as {filename}")
+        print(f"\nConfig saved as {os.path.split(config_path)[1]}")
 
     def metadata_prompt(self, name="", floor="", location=""):
         '''Prompts user for node name, location, and floor; adds to self.config.
