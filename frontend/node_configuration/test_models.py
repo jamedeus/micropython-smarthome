@@ -123,8 +123,7 @@ class NodeTests(TestCaseBackupRestore):
         Config.objects.create(config=test_config_1, filename='test1.json', node=node)
         cli_config = get_cli_config()
         self.assertIn('unit-test-node', cli_config['nodes'].keys())
-        self.assertEqual(cli_config['nodes']['unit-test-node']['ip'], '123.45.67.89')
-        self.assertEqual(cli_config['nodes']['unit-test-node']['config'], config_path)
+        self.assertEqual(cli_config['nodes']['unit-test-node'], '123.45.67.89')
 
         # Delete node, should removed node from cli_config.json, should remove config from disk
         node.delete()

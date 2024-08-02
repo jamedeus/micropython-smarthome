@@ -23,12 +23,8 @@ def sync_cli_config():
         timeout=5
     )
     if response.status_code == 200:
-        nodes = response.json()['message']
-        for node, params in nodes.items():
-            if node in cli_config['nodes']:
-                cli_config['nodes'][node]['ip'] = params['ip']
-            else:
-                cli_config['nodes'][node] = params
+        # Merge response dict into cli_config with union operator
+        cli_config['nodes'] |= response.json()['message']
     else:
         print('Failed to sync nodes')
 
@@ -38,8 +34,8 @@ def sync_cli_config():
         timeout=5
     )
     if response.status_code == 200:
-        keywords = response.json()['message']
-        cli_config['schedule_keywords'] = cli_config['schedule_keywords'] | keywords
+        # Merge response dict into cli_config with union operator
+        cli_config['schedule_keywords'] |= response.json()['message']
     else:
         print('Failed to sync keywords')
 

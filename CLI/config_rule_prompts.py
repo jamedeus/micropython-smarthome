@@ -26,6 +26,7 @@ from helper_functions import (
     is_sensor,
     is_device_or_sensor,
     get_existing_nodes,
+    get_config_filepath,
     get_device_and_sensor_metadata,
     convert_celsius_temperature
 )
@@ -419,13 +420,13 @@ def load_config_from_ip(ip):
     existing_nodes = get_existing_nodes()
     try:
         for i in existing_nodes:
-            if existing_nodes[i]['ip'] == ip:
-                with open(existing_nodes[i]['config'], 'r', encoding='utf-8') as file:
+            if existing_nodes[i] == ip:
+                with open(get_config_filepath(i), 'r', encoding='utf-8') as file:
                     return json.load(file)
         raise FileNotFoundError
     except FileNotFoundError as interrupt:
         print(f"\n{Fore.RED}FATAL ERROR{Fore.RESET}: Target node config file missing from disk")
-        print("Unable to get options, please check the config path in cli_config.json")
+        print("Unable to get options, please check the config_directory in cli_config.json")
         raise SystemExit from interrupt
 
 

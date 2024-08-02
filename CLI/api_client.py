@@ -112,7 +112,7 @@ def parse_ip(args):
         if args[i] == "--all":
             args.pop(i)
             for i in nodes:
-                ip = nodes[i]["ip"]
+                ip = nodes[i]
                 print(f"{i} ({ip})")
                 # Use copy to preserve args for next node (parse_command removes endpoint)
                 cmd = args.copy()
@@ -123,7 +123,7 @@ def parse_ip(args):
 
         # User passed node name, look up IP in dict
         elif args[i] in nodes:
-            ip = nodes[args[i]]["ip"]
+            ip = nodes[args[i]]
             args.pop(i)
             return parse_command(ip, args)
 

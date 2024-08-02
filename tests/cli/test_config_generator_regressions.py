@@ -16,14 +16,8 @@ test_config = os.path.join(repo, 'util', 'unit-test-config.json')
 # Mock cli_config.json contents
 mock_cli_config = {
     'nodes': {
-        "node1": {
-            "config": test_config,
-            "ip": "192.168.1.123"
-        },
-        "node2": {
-            "config": '/not/a/real/directory',
-            "ip": "192.168.1.223"
-        }
+        "node1": "192.168.1.123",
+        "node2": "192.168.1.223"
     },
     'webrepl_password': 'password',
     'config_directory': os.path.join(repo, 'config_files')

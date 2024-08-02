@@ -379,7 +379,7 @@ class GenerateConfigFile:
             "Select target node",
             choices=list(existing_nodes.keys())
         ).unsafe_ask()
-        return existing_nodes[target]['ip']
+        return existing_nodes[target]
 
     def __configure_device(self, config=None):
         '''Prompts user to select device type followed by all required params

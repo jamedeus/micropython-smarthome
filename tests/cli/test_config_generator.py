@@ -29,20 +29,14 @@ test_config = os.path.join(repo, 'util', 'unit-test-config.json')
 # Mock cli_config.json contents
 mock_cli_config = {
     'nodes': {
-        "node1": {
-            "config": test_config,
-            "ip": "192.168.1.123"
-        },
-        "node2": {
-            "config": '/not/a/real/directory',
-            "ip": "192.168.1.223"
-        }
+        "node1": "192.168.1.123",
+        "node2": "192.168.1.223"
     },
     'webrepl_password': 'password',
     'config_directory': os.path.join(repo, 'config_files')
 }
 
-# Create config directory if itt doesn't exist
+# Create config directory if it doesn't exist
 if not os.path.exists(mock_cli_config['config_directory']):
     os.mkdir(mock_cli_config['config_directory'])
 
@@ -1060,6 +1054,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('config_rule_prompts.get_config_filepath', return_value=test_config), \
              patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
             rule = api_target_schedule_rule_prompt(mock_config)
@@ -1080,6 +1075,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('config_rule_prompts.get_config_filepath', return_value=test_config), \
              patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
             rule = api_target_schedule_rule_prompt(mock_config)
@@ -1091,6 +1087,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('config_rule_prompts.get_config_filepath', return_value=test_config), \
              patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
             rule = schedule_rule_prompt_router(mock_config)
@@ -1108,6 +1105,7 @@ class TestGenerateConfigFile(TestCase):
         with patch('questionary.select', return_value=self.mock_ask), \
              patch('questionary.text', return_value=self.mock_ask), \
              patch('questionary.confirm', return_value=self.mock_ask), \
+             patch('config_rule_prompts.get_config_filepath', return_value=test_config), \
              patch('config_rule_prompts.get_existing_nodes', return_value=mock_cli_config['nodes']):
 
             rule = default_rule_prompt_router(mock_config)

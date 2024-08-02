@@ -48,8 +48,7 @@ class Node(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         if settings.CLI_SYNC and hasattr(self, 'config'):
-            config_path = os.path.join(settings.CONFIG_DIR, self.config.filename)  # pylint: disable=no-member
-            add_node_to_cli_config(self.friendly_name, config_path, self.ip)
+            add_node_to_cli_config(self.friendly_name, self.ip)
         return super().save(*args, **kwargs)
 
     # Remove from cli_config.json if CLI_SYNC enabled
@@ -107,7 +106,7 @@ class Config(models.Model):
 
             # Add to cli_config.json
             if self.node:
-                add_node_to_cli_config(self.node.friendly_name, config_path, self.node.ip)
+                add_node_to_cli_config(self.node.friendly_name, self.node.ip)
         else:
             print('WARNING: write_to_disk called with CLI_SYNC disabled, ignoring.')
 

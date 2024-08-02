@@ -15,18 +15,9 @@ repo = os.path.split(cli)[0]
 # Mock cli_config.json contents
 mock_cli_config = {
     'nodes': {
-        "node1": {
-            "config": os.path.join(repo, "config_files", "node1.json"),
-            "ip": "192.168.1.123"
-        },
-        "node2": {
-            "config": os.path.join(repo, "config_files", "node2.json"),
-            "ip": "192.168.1.234"
-        },
-        "node3": {
-            "config": os.path.join(repo, "config_files", "node3.json"),
-            "ip": "192.168.1.111"
-        },
+        "node1": "192.168.1.123",
+        "node2": "192.168.1.234",
+        "node3": "192.168.1.111"
     },
     'webrepl_password': 'password',
     'config_directory': os.path.join(repo, 'config_files')
@@ -290,8 +281,7 @@ class TestInstantiation(TestCase):
 
         # Confirm ID from mock config was added to cli_config.json nodes section
         self.assertIn('node4', mock_cli_config['nodes'].keys())
-        self.assertEqual(mock_cli_config['nodes']['node4']['ip'], '192.168.1.123')
-        self.assertEqual(mock_cli_config['nodes']['node4']['config'], os.path.abspath('../config/node4.json'))
+        self.assertEqual(mock_cli_config['nodes']['node4'], '192.168.1.123')
 
     def test_provision_no_args(self):
         # Mock args, all blank

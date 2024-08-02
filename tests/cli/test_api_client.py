@@ -16,18 +16,9 @@ repo = os.path.dirname(tests)
 # Mock cli_config.json contents
 mock_cli_config = {
     'nodes': {
-        "node1": {
-            "config": os.path.join(repo, "config_files", "node1.json"),
-            "ip": "192.168.1.123"
-        },
-        "node2": {
-            "config": os.path.join(repo, "config_files", "node2.json"),
-            "ip": "192.168.1.234"
-        },
-        "node3": {
-            "config": os.path.join(repo, "config_files", "node3.json"),
-            "ip": "192.168.1.111"
-        },
+        "node1": "192.168.1.123",
+        "node2": "192.168.1.234",
+        "node3": "192.168.1.111"
     },
     'schedule_keywords': {
         "sunrise": "06:00",

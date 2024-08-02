@@ -374,11 +374,7 @@ class UploadTests(TestCaseBackupRestore):
         # Should exist in cli_config.json
         cli_config = get_cli_config()
         self.assertIn('test1', cli_config['nodes'].keys())
-        self.assertEqual(cli_config['nodes']['test1']['ip'], '123.45.67.89')
-        self.assertEqual(
-            cli_config['nodes']['test1']['config'],
-            os.path.join(settings.CONFIG_DIR, 'test1.json')
-        )
+        self.assertEqual(cli_config['nodes']['test1'], '123.45.67.89')
 
     def test_reupload_existing(self):
         # Create test config, confirm database
@@ -916,7 +912,7 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
         # Confirm starting IP, confirm same IP in cli_config.json
         self.assertEqual(Node.objects.all()[0].ip, '192.168.1.123')
         cli_config = get_cli_config()
-        self.assertEqual(cli_config['nodes']['test1']['ip'], '192.168.1.123')
+        self.assertEqual(cli_config['nodes']['test1'], '192.168.1.123')
 
         # Mock provision to return success message
         with patch('node_configuration.views.provision') as mock_provision:
@@ -934,7 +930,7 @@ class ChangeNodeIpTests(TestCaseBackupRestore):
 
             # Confirm IP changed in cli_config.json
             cli_config = get_cli_config()
-            self.assertEqual(cli_config['nodes']['test1']['ip'], '192.168.1.255')
+            self.assertEqual(cli_config['nodes']['test1'], '192.168.1.255')
 
     def test_target_ip_offline(self):
         # Mock provision to return failure message without doing anything

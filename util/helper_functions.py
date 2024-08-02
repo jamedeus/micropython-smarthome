@@ -107,19 +107,17 @@ def get_cli_config():
         }
 
 
-def add_node_to_cli_config(friendly_name, config_path, ip):
-    '''Takes node friendly_name, config abs path, and IP of existing node.
+def add_node_to_cli_config(friendly_name, ip):
+    '''Takes node friendly_name and IP.
     Adds (or overwrites) entry in nodes section of cli_config.json.
     '''
 
     # Remove spaces (breaks CLI tool bash completion)
     name = get_cli_config_name(friendly_name)
 
+    # Add to nodes section with cli-safe name as key, IP as value
     cli_config = get_cli_config()
-    cli_config['nodes'][name] = {
-        'config': os.path.abspath(config_path),
-        'ip': ip
-    }
+    cli_config['nodes'][name] = ip
     write_cli_config(cli_config)
 
 

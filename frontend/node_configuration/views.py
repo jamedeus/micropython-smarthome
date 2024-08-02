@@ -679,7 +679,7 @@ def get_nodes(request):
     '''Returns dict containing all existing Nodes and their IPs.
     Called by CLI tools to update cli_config.json.
     '''
-    nodes = {get_cli_config_name(node.friendly_name): {'ip': node.ip}
+    nodes = {get_cli_config_name(node.friendly_name): node.ip
              for node in Node.objects.all()}
     return standard_response(message=nodes)
 

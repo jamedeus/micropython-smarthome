@@ -33,9 +33,9 @@ class CliSyncTests(TestCaseBackupRestore):
         self.assertEqual(
             response.json()['message'],
             {
-                'test1': {'ip': '192.168.1.123'},
-                'test2': {'ip': '192.168.1.124'},
-                'test3': {'ip': '192.168.1.125'},
+                'test1': '192.168.1.123',
+                'test2': '192.168.1.124',
+                'test3': '192.168.1.125',
             }
         )
 

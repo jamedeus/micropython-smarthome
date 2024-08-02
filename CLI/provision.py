@@ -117,7 +117,7 @@ class Provisioner():
 
             # Add to cli_config.json if upload successful
             if result['status'] == 200:
-                add_node_to_cli_config(config['metadata']['id'], args.config, args.ip)
+                add_node_to_cli_config(config['metadata']['id'], args.ip)
 
         else:
             parser.print_help()
@@ -136,7 +136,7 @@ class Provisioner():
             modules = get_modules(config, repo)
 
             # Upload
-            result = provision(cli_config['nodes'][i]["ip"], self.passwd, config, modules)
+            result = provision(cli_config['nodes'][i], self.passwd, config, modules)
             print(result['message'])
 
     # Reprovision an existing node, accepts friendly name as arg
@@ -147,7 +147,7 @@ class Provisioner():
 
         # Get modules, upload
         modules = get_modules(config, repo)
-        result = provision(cli_config['nodes'][node]["ip"], self.passwd, config, modules)
+        result = provision(cli_config['nodes'][node], self.passwd, config, modules)
         print(result['message'])
 
     # Upload unit tests to IP address
