@@ -42,5 +42,10 @@ urlpatterns = [
     # Template views: overview, create new config, edit existing config
     path('config_overview', views.config_overview, name='config_overview'),
     path('new_config', views.new_config, name='new_config'),
-    path('edit_config/<str:name>', views.edit_config, name='edit_config')
+    path('edit_config/<str:name>', views.edit_config, name='edit_config'),
+
+    # Sync endpoints called by CLI tools
+    path('get_nodes', views.get_nodes, name='get_nodes'),
+    path('get_schedule_keywords', views.get_schedule_keywords, name='get_schedule_keywords'),
+    path('get_node_config/<str:ip>', views.get_node_config, name='get_node_config')
 ]

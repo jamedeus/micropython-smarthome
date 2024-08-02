@@ -23,6 +23,7 @@ from helper_functions import (
     valid_ip,
     get_schedule_keywords_dict,
     get_config_filename,
+    get_cli_config_name,
     get_device_and_sensor_metadata
 )
 from .get_api_target_menu_options import get_api_target_menu_options
@@ -672,3 +673,33 @@ def save_all_schedule_keywords():
     commands = [(node.ip, "") for node in Node.objects.all()]
     with ThreadPoolExecutor(max_workers=20) as executor:
         executor.map(save_schedule_keywords, *zip(*commands))
+
+
+def get_nodes(request):
+    '''Returns dict containing all existing Nodes and their IPs.
+    Called by CLI tools to update cli_config.json.
+    '''
+    nodes = {get_cli_config_name(node.friendly_name): {'ip': node.ip}
+             for node in Node.objects.all()}
+    return standard_response(message=nodes)
+
+
+def get_schedule_keywords(request):
+    '''Returns dict containing all existing ScheduleKeywords.
+    Called by CLI tools to update cli_config.json.
+    '''
+    return standard_response(message=get_schedule_keywords_dict())
+
+
+def get_node_config(request, ip):
+    '''Takes IP of existing Node model entry, returns config JSON.
+    Called by CLI tools to download config file.
+    '''
+    try:
+        node = Node.objects.get(ip=ip)
+        return standard_response(message=node.config.config)
+    except Node.DoesNotExist:
+        return error_response(
+            message=f'Node with IP {ip} not found',
+            status=404
+        )
